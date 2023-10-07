@@ -5,31 +5,31 @@ class RelayPubkeyMapping {
   String relayUrl;
 
 
-  List<PubkeyMapping> pubkeyMappings = [];
+  List<PubkeyMapping> pubKeyMappings = [];
 
   bool isPubKeyForRead(String pubKey) {
-    return pubkeyMappings.any((pubkeyMapping) => pubkeyMapping.isRead());
+    return pubKeyMappings.any((pubKeyMapping) => pubKey == pubKeyMapping.pubKey && pubKeyMapping.isRead());
   }
 
   bool isPubKeyForWrite(String pubKey) {
-    return pubkeyMappings.any((pubkeyMapping) => pubkeyMapping.isWrite());
+    return pubKeyMappings.any((pubKeyMapping) => pubKey == pubKeyMapping.pubKey && pubKeyMapping.isWrite());
   }
 
   RelayPubkeyMapping({
     required this.relayUrl,
-    required this.pubkeyMappings,
+    required this.pubKeyMappings,
   });
 }
 
 /// maps the direction for a pubkey read, write, both
 class PubkeyMapping {
-  String pubkey;
+  String pubKey;
 
   /// if marker is missing it means both read && write
   ReadWriteMarker? rwMarker;
 
   PubkeyMapping({
-    required this.pubkey,
+    required this.pubKey,
     this.rwMarker,
   });
 
