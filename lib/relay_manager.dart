@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-import 'dart:developer';
+import 'dart:math';
 
 import 'package:dart_ndk/relay.dart';
 import 'package:flutter/foundation.dart';
@@ -10,40 +10,77 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'filter.dart';
 
 class RelayManager {
+
+  /// Bootstrap relays from these to start looking for NIP65/NIP03 events
+  static const List<String> BOOTSTRAP_RELAYS = [
+    "wss://purplepag.es",
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+    "wss://nostr.wine",
+    "wss://relay.snort.social",
+    "wss://nostr.bitcoiner.social"
+  ];
+
+  /// Global relay registry by url
   Map<String, Relay> relays = {};
 
+  /// Global webSocket registry by url
   Map<String, WebSocketChannel> webSockets = {};
 
+  /// Global completer subscriptions by request id
   final Map<String, Completer<Map<String, dynamic>>> _completers = {};
 
+  // ====================================================================================================================
+
+  /// This will initialize the manager with bootstrap relays.
+  /// If you don't give any, will use some predefined
+  Future<void> init({List<String> bootstrapRelays = BOOTSTRAP_RELAYS}) async {
+    await Future.wait(bootstrapRelays.map((url) => connectRelay(url)).toList());
+  }
+
+  /// Connect a new relay
   Future<bool> connectRelay(String url) async {
     final wssUrl = Uri.parse(url);
     WebSocketChannel channel = WebSocketChannel.connect(wssUrl);
     webSockets[url] = channel;
 
     channel.ready.catchError((error) {
-      log(error.toString());
-      //throw Exception("Error in socket");
-      return false;
+      throw Exception("Error in socket");
     });
 
     await channel.ready;
 
-    _listen(channel);
+    channel.stream.listen((message) {
+      _handleIncommingMessage(message);
+    });
+    channel.stream.handleError((error) {
+      throw Exception("Error in socket");
+    });
     if (kDebugMode) {
       print("connected to relay: $url");
     }
     return true;
   }
 
-  _listen(WebSocketChannel channel) {
-    channel.stream.listen((message) {
-      _handleIncommingMessage(message);
-    });
-    channel.stream.handleError((error) {
-      log(error);
-      throw Exception("Error in socket");
-    });
+  Future<Map<String, dynamic>> request(String url, Filter filter) {
+    WebSocketChannel? channel = webSockets[url];
+    if (channel != null) {
+      // TODO should check if connected / state
+      String id = Random().nextInt(4294967296).toString();
+      List<dynamic> request = ["REQ", id, filter.toMap()];
+      final encoded = jsonEncode(request);
+      var completer = Completer<Map<String, dynamic>>();
+      _completers[id] = completer;
+      channel.sink.add(encoded);
+      var future =
+      completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
+        // log("Rtimeout: ${id}, $url");
+        return {};
+      });
+
+      return future;
+    }
+    return Future.error("invalid relay $url");
   }
 
   _handleIncommingMessage(dynamic message) async {
@@ -51,7 +88,7 @@ class RelayManager {
 
     if (eventJson[0] == 'OK') {
       //nip 20 used to notify clients if an EVENT was successful
-      log("OK: ${eventJson[1]}");
+      // log("OK: ${eventJson[1]}");
 
       // used for await on query
       _completers[eventJson[1]]?.complete(eventJson[1]);
@@ -59,7 +96,7 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'NOTICE') {
-      log("NOTICE: ${eventJson[1]}");
+      // log("NOTICE: ${eventJson[1]}");
       return;
     }
 
@@ -87,32 +124,13 @@ class RelayManager {
     // }
   }
 
-  Relay? getRelay(String url) {
+  Relay? _getRelay(String url) {
     return relays[url];
   }
 
-  bool doesRelaySupportNip(String url, int nip) {
+  bool _doesRelaySupportNip(String url, int nip) {
     Relay? relay = relays[url];
     return relay != null && relay.supportsNip(nip);
   }
 
-  Future<Map<String, dynamic>> request(String url, String id, Filter filter) {
-    WebSocketChannel? channel = webSockets[url];
-    if (channel != null) {
-      // TODO should check if connected / state
-      List<dynamic> request = ["REQ", id, filter.toMap()];
-      final encoded = jsonEncode(request);
-      var completer = Completer<Map<String, dynamic>>();
-      _completers[id] = completer;
-      channel.sink.add(encoded);
-      var future =
-          completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
-        log("Rtimeout: ${id}, $url");
-        return {};
-      });
-
-      return future;
-    }
-    return Future.error("invalid relay $url");
-  }
 }

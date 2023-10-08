@@ -13,8 +13,8 @@ void main() {
   test('Connect to relay', () async {
     MockRelay mockRelay = MockRelay();
     await mockRelay.startServer();
-    RelayManager relays = RelayManager();
-    await relays
+    RelayManager manager = RelayManager();
+    await manager
         .connectRelay(mockRelay.url)
         .then((value) {})
         .onError((error, stackTrace) async {
@@ -25,9 +25,9 @@ void main() {
 
   test('Try to connect to dead relay', () {
     MockRelay mockRelay1 = MockRelay();
-    RelayManager relays = RelayManager();
+    RelayManager manager = RelayManager();
     expect(
-      () async => await relays.connectRelay(mockRelay1.url),
+      () async => await manager.connectRelay(mockRelay1.url),
       throwsA(
         (e) => e is Exception,
       ),
@@ -55,21 +55,28 @@ void main() {
       mockRelay3.startServer(nip65s: NIP65s)
     ]);
 
-    RelayManager relays = RelayManager();
+    RelayManager manager = RelayManager();
+    await manager.init(bootstrapRelays: [mockRelay1.url, mockRelay2.url, mockRelay3.url]);
 
-    await Future.wait([
-      relays.connectRelay(mockRelay1.url),
-      relays.connectRelay(mockRelay2.url),
-      relays.connectRelay(mockRelay3.url)
-    ]);
-
-    String id = Random().nextInt(4294967296).toString();
-    await relays
+    await manager
         .request(
-            mockRelay1.url, id, Filter(kinds: [Nip65.kind], authors: [PUB1]))
+            mockRelay1.url, Filter(kinds: [Nip65.kind], authors: [PUB1]))
         .then((value) {
-      print("RESULT OF nip65 request: $value");
+      print("RESULT OF nip65 request for pub1: $value");
     });
+    await manager
+        .request(
+        mockRelay1.url, Filter(kinds: [Nip65.kind], authors: [PUB2]))
+        .then((value) {
+      print("RESULT OF nip65 request for pub2: $value");
+    });
+    await manager
+        .request(
+        mockRelay1.url, Filter(kinds: [Nip65.kind], authors: [PUB3]))
+        .then((value) {
+      print("RESULT OF nip65 request for pub3: $value");
+    });
+
 
     await Future.wait([
       mockRelay1.stopServer(),
