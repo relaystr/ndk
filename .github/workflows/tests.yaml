@@ -1,4 +1,4 @@
-name: test-my-lib
+name: tests
 on: [push, workflow_dispatch]
 jobs:
   tests:
