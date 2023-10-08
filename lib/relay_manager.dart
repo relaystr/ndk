@@ -2,15 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:math';
+import 'dart:developer' as developer;
 
 import 'package:dart_ndk/relay.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import 'event.dart';
 import 'filter.dart';
 
 class RelayManager {
-
   /// Bootstrap relays from these to start looking for NIP65/NIP03 events
   static const List<String> BOOTSTRAP_RELAYS = [
     "wss://purplepag.es",
@@ -30,6 +31,15 @@ class RelayManager {
   /// Global completer subscriptions by request id
   final Map<String, Completer<Map<String, dynamic>>> _completers = {};
 
+  /// Global subscriptions by request id
+  final Map<String, Function(Event)> _subscriptions = {};
+
+  // Global pub keys mappings by url
+  Map<String, Set<PubkeyMapping>> pubKeyMappings = {};
+
+  // todo: think about scoring according to nip65 nip05 kind03 etc
+  // todo:  what happens if relay go down? and comes up? how do we make active subrscriptions to that relay again?
+
   // ====================================================================================================================
 
   /// This will initialize the manager with bootstrap relays.
@@ -44,25 +54,49 @@ class RelayManager {
     WebSocketChannel channel = WebSocketChannel.connect(wssUrl);
     webSockets[url] = channel;
 
-    channel.ready.catchError((error) {
-      throw Exception("Error in socket");
-    });
+    // channel.ready.catchError((error) {
+    //   print(error);
+    //   //throw error;//Exception("Error in socket");
+    // });
 
     await channel.ready;
 
     channel.stream.listen((message) {
-      _handleIncommingMessage(message);
+      _handleIncommingMessage(message, url);
     });
     channel.stream.handleError((error) {
       throw Exception("Error in socket");
     });
-    if (kDebugMode) {
-      print("connected to relay: $url");
-    }
+    relays[url] = Relay(url);
+    developer.log("connected to relay: $url");
     return true;
   }
 
-  Future<Map<String, dynamic>> request(String url, Filter filter) {
+  Future<void> query(
+      Filter filter, Function(Event)? onEvent) async {
+    /// extract from the filter which pubKeys and directions we should use the query for such filter
+    List<PubkeyMapping> pubKeys = filter.extractPubKeyMappingsFromFilter();
+
+    /// calculate best relays for each pubKey/direction considering connectivity quality for each relay
+    Map<String, List<PubkeyMapping>> bestRelays = _calculateBestRelays(pubKeys);
+
+    List<Future> futures = [];
+    for(String url in bestRelays.keys) {
+      List<PubkeyMapping>? pubKeys = bestRelays[url];
+      Filter dedicatedFilter = filter.splitForPubKeys(pubKeys!);
+      futures.add(
+          request(url, dedicatedFilter, (json) {
+            if (onEvent != null) {
+              onEvent(json);
+            }
+          })
+      );
+    }
+    await Future.wait(futures);
+  }
+
+  Future<Map<String, dynamic>> request(
+      String url, Filter filter, Function(Event) onEvent) {
     WebSocketChannel? channel = webSockets[url];
     if (channel != null) {
       // TODO should check if connected / state
@@ -71,9 +105,10 @@ class RelayManager {
       final encoded = jsonEncode(request);
       var completer = Completer<Map<String, dynamic>>();
       _completers[id] = completer;
+      _subscriptions[id] = onEvent;
       channel.sink.add(encoded);
       var future =
-      completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
+          completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
         // log("Rtimeout: ${id}, $url");
         return {};
       });
@@ -83,7 +118,9 @@ class RelayManager {
     return Future.error("invalid relay $url");
   }
 
-  _handleIncommingMessage(dynamic message) async {
+  // =====================================================================================
+
+  _handleIncommingMessage(dynamic message, String url) async {
     List<dynamic> eventJson = json.decode(message);
 
     if (eventJson[0] == 'OK') {
@@ -101,16 +138,19 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'EVENT') {
-      _completers[eventJson[1]]?.complete(eventJson[2]);
+      Event event = Event.fromJson(eventJson[2]);
+      event.sources.add(url);
+      _subscriptions[eventJson[1]]?.call(event);
+      // _completers[eventJson[1]]?.complete(eventJson[2]);
       return;
     }
-    // if (eventJson[0] == 'EOSE') {
-    //   log("EOSE: ${eventJson[1]}, $relayUrl");
-    //   _eoseStreamController.add(eventJson);
-    //   // used for await on query
-    //   _completers[eventJson[1]]?.complete(eventJson[1]);
-    //   return;
-    // }
+    if (eventJson[0] == 'EOSE') {
+      // log("EOSE: ${eventJson[1]}, $relayUrl");
+      // _eoseStreamController.add(eventJson);
+      // used for await on query
+      _completers[eventJson[1]]?.complete(eventJson[1]);
+      return;
+    }
     // if (eventJson[0] == 'AUTH') {
     //   log("AUTH: ${eventJson[1]}");
     //   // nip 42 used to send authentication challenges
@@ -133,4 +173,28 @@ class RelayManager {
     return relay != null && relay.supportsNip(nip);
   }
 
+  bool _isPubKeyForRead(String url, String pubKey) {
+    Set<PubkeyMapping>? set = pubKeyMappings[url];
+    return set != null &&
+        set!.any((pubKeyMapping) =>
+            pubKey == pubKeyMapping.pubKey && pubKeyMapping.isRead());
+  }
+
+  bool _isPubKeyForWrite(String url, String pubKey) {
+    Set<PubkeyMapping>? set = pubKeyMappings[url];
+    return set != null &&
+        set!.any((pubKeyMapping) =>
+            pubKey == pubKeyMapping.pubKey && pubKeyMapping.isWrite());
+  }
+
+  Map<String, List<PubkeyMapping>> _calculateBestRelays(
+      List<PubkeyMapping> pubKeys) {
+    /// todo: go fetch nip65 for pubKeys and check connectivity
+    /// for now just return a map of all currently registered relays for each pubKeys
+    Map<String, List<PubkeyMapping>> map = {};
+    for (var relay in relays.keys) {
+      map[relay] = pubKeys;
+    }
+    return map;
+  }
 }

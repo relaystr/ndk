@@ -12,6 +12,9 @@ dependencies:
     sdk: flutter
   http: ^1.1.0
   web_socket_channel:  ^2.4.0
+  bip340: ^0.2.0
+  bech32: ^0.2.2
+  hex: ^0.2.0
 
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,5 @@
+import 'package:dart_ndk/pubkey_mapping.dart';
+
 class Filter {
   List<String>? ids;
   List<String>? authors;
@@ -56,6 +58,18 @@ class Filter {
   @override
   String toString() {
     return toMap().toString();
+  }
+
+  List<PubkeyMapping> extractPubKeyMappingsFromFilter() {
+    /// todo: depending on usecase (feed,profile,notifications) should generate a list of pubKeyMappings
+    /// for now just return a simple list of authors with read/write true
+    return authors!=null ? authors!.map((author) => PubkeyMapping(pubKey: author, rwMarker: ReadWriteMarker(read: true, write: true))).toList():[];
+  }
+
+  Filter splitForPubKeys(List<PubkeyMapping> pubKeyMappings) {
+    Map<String,dynamic> map = toMap();
+    map['authors'] = pubKeyMappings.map((e) => e.pubKey).toList();
+    return Filter.fromJson(map);
   }
 
 }
