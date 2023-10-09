@@ -3,6 +3,7 @@ import 'package:dart_ndk/relay_stats.dart';
 
 class Relay {
   String url;
+  bool connecting = false;
   RelayInfo? info;
   RelayStats? stats;
 

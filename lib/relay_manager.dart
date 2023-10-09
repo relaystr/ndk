@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
+import 'dart:io';
 import 'dart:math';
 import 'dart:developer' as developer;
 
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'nips/nip01/event.dart';
 import 'nips/nip01/filter.dart';
@@ -26,7 +26,7 @@ class RelayManager {
   Map<String, Relay> relays = {};
 
   /// Global webSocket registry by url
-  Map<String, WebSocketChannel> webSockets = {};
+  Map<String, WebSocket> webSockets = {};
 
   /// Global completer subscriptions by request id
   final Map<String, Completer<Map<String, dynamic>>> _completers = {};
@@ -47,29 +47,48 @@ class RelayManager {
   Future<void> init({List<String> bootstrapRelays = BOOTSTRAP_RELAYS}) async {
     await Future.wait(bootstrapRelays.map((url) => connectRelay(url)).toList());
   }
+  bool isWebSocketOpen(String url) {
+    WebSocket? webSocket = webSockets[url];
+    return webSocket!= null && webSocket!.readyState == WebSocket.open;
+  }
+
+  bool isWebSocketConnecting(String url) {
+    WebSocket? webSocket = webSockets[url];
+    return webSocket!= null && webSocket!.readyState == WebSocket.connecting;
+  }
+
+  bool isRelayConnecting(String url) {
+    Relay? relay = relays[url];
+    return relay!=null && relay.connecting;
+  }
 
   /// Connect a new relay
-  Future<bool> connectRelay(String url) async {
-    final wssUrl = Uri.parse(url);
-    WebSocketChannel channel = WebSocketChannel.connect(wssUrl);
-    webSockets[url] = channel;
-
-    // channel.ready.catchError((error) {
-    //   print(error);
-    //   //throw error;//Exception("Error in socket");
-    // });
-
-    await channel.ready;
-
-    channel.stream.listen((message) {
-      _handleIncommingMessage(message, url);
-    });
-    channel.stream.handleError((error) {
-      throw Exception("Error in socket");
-    });
+  Future<bool> connectRelay(String url, {int connectTimeout=3}) async {
     relays[url] = Relay(url);
-    developer.log("connected to relay: $url");
-    return true;
+    relays[url]!.connecting = true;
+    Future<WebSocket> future = WebSocket.connect(url).timeout(Duration(seconds: connectTimeout)).onError((error, stackTrace) {
+      relays[url]!.connecting = false;
+      print("could not connect to relay $url error:$error");
+      throw Exception();
+    });
+    webSockets[url] = await future;
+
+    relays[url]!.connecting = false;
+
+    webSockets[url]!.listen((message) {
+      _handleIncommingMessage(message, url);
+    }, onError: (error) async {
+      /// todo: handle this better
+      throw Exception("Error in socket");
+    }, onDone: () {
+      /// todo: handle this better
+    });
+
+    if (isWebSocketOpen(url)) {
+      developer.log("connected to relay: $url");
+      return true;
+    }
+    return false;
   }
 
   Future<void> query(Filter filter, Function(Nip01Event)? onEvent) async {
@@ -94,8 +113,8 @@ class RelayManager {
 
   Future<Map<String, dynamic>> request(
       String url, Filter filter, Function(Nip01Event) onEvent) {
-    WebSocketChannel? channel = webSockets[url];
-    if (channel != null) {
+    WebSocket? webSocket = webSockets[url];
+    if (webSocket != null) {
       // TODO should check if connected / state
       String id = Random().nextInt(4294967296).toString();
       List<dynamic> request = ["REQ", id, filter.toMap()];
@@ -103,7 +122,7 @@ class RelayManager {
       var completer = Completer<Map<String, dynamic>>();
       _completers[id] = completer;
       _subscriptions[id] = onEvent;
-      channel.sink.add(encoded);
+      webSocket!.add(encoded);
       var future =
           completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
         // log("Rtimeout: ${id}, $url");
