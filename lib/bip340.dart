@@ -54,20 +54,6 @@ class KeyPair {
 
   KeyPair.justPublicKey(this.publicKey);
 
-  Map<String, dynamic> toJson() => {
-    'privateKey': privateKey,
-    'publicKey': publicKey,
-    'privateKeyHr': privateKeyHr,
-    'publicKeyHr': publicKeyHr,
-  };
-
-  factory KeyPair.fromJson(Map<String, dynamic> json) => KeyPair(
-    json['privateKey'],
-    json['publicKey'],
-    json['privateKeyHr'],
-    json['publicKeyHr'],
-  );
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
