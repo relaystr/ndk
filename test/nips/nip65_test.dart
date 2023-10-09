@@ -24,4 +24,27 @@ void main() {
       'https://example.net': ReadWriteMarker.readWrite,
     });
   });
+
+  test('toEvent', () {
+    final nip65 = Nip65({
+      'https://example.com': ReadWriteMarker.readWrite,
+      'https://example.org': ReadWriteMarker.read,
+      'https://example.net': ReadWriteMarker.write,
+    });
+    final myEvent = nip65.toEvent('pubkey123');
+    expect(myEvent.pubKey, equals('pubkey123'));
+    expect(myEvent.kind, equals(Nip65.kind));
+    expect(
+        myEvent.tags,
+        equals([
+          [
+            'r',
+            'https://example.com',
+          ],
+          ['r', 'https://example.org', 'read'],
+          ['r', 'https://example.net', 'write'],
+        ]));
+    expect(myEvent.content, equals(''));
+    expect(myEvent.createdAt, equals(nip65.createdAt));
+  });
 }
