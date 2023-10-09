@@ -60,7 +60,7 @@ void main() {
       KeyPair key3 = Bip340.generatePrivateKey();
 
       Map<KeyPair, Set<String>> NIP65s = {
-        key1: {mockRelay1.url, mockRelay2.url, mockRelay3.url},
+        key1: {mockRelay1.url, mockRelay2.url},
         key2: {mockRelay2.url},
         key3: {mockRelay3.url},
       };
