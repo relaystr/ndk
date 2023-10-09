@@ -15,25 +15,22 @@ class Nip65 {
   Nip65.fromEvent(NostrEvent event) {
     createdAt = event.createdAt;
     for (var tag in event.tags) {
-      if (tag is List<dynamic>) {
-        var length = tag.length;
-        if (length > 1) {
-          var name = tag[0];
-          var url = tag[1];
-          if (name == "r") {
-            ReadWriteMarker? marker;
-            if (length > 2) {
-              var operType = tag[2];
-              if (operType == "read") {
-                marker = ReadWriteMarker(read: true);
-              } else if (operType == "write") {
-                marker = ReadWriteMarker(write: true);
-              }
-            }
-            relays[url] = marker;
-          }
-        }
+      if (tag is! List<dynamic>) continue;
+      final length = tag.length;
+      if (length <= 1) continue;
+      final name = tag[0];
+      final url = tag[1];
+      if (name != "r") continue;
+      ReadWriteMarker? marker;
+      if (length > 2) {
+        var operType = tag[2];
+        marker = operType == "read"
+            ? ReadWriteMarker(read: true)
+            : operType == "write"
+                ? ReadWriteMarker(write: true)
+                : null;
       }
+      relays[url] = marker;
     }
   }
 
