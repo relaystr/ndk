@@ -43,7 +43,6 @@ void main() {
 
     test('Try to connect to dead relay', () async {
       MockRelay mockRelay1 = MockRelay();
-      // await mockRelay1.startServer();
       RelayManager manager = RelayManager();
       try {
         await manager.connectRelay(mockRelay1.url);
