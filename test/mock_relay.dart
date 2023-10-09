@@ -4,9 +4,9 @@ import 'dart:io';
 import 'dart:developer';
 
 import 'package:dart_ndk/bip340.dart';
-import 'package:dart_ndk/nostr_event.dart';
+import 'package:dart_ndk/nips/nip01.dart';
 import 'package:dart_ndk/filter.dart';
-import 'package:dart_ndk/nips/Nip65.dart';
+import 'package:dart_ndk/nips/nip65.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class MockRelay {
@@ -65,7 +65,7 @@ class MockRelay {
         json.add("EVENT");
         json.add(id);
 
-        NostrEvent event = nip65.toEvent(key.publicKey);
+        Nip01Event event = nip65.toEvent(key.publicKey);
         event.sign(key.privateKey!);
         json.add(event.toJson());
         webSocket!.add(jsonEncode(json));

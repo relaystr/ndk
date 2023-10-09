@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dart_ndk/bip340.dart';
 
-class NostrEvent {
+class Nip01Event {
   /// Creates a new Nostr event.
   ///
   /// [pubKey] is the author's public key.
@@ -13,7 +13,7 @@ class NostrEvent {
   ///
   /// Nostr event `id` and `created_at` fields are calculated automatically.
   ///
-  NostrEvent({
+  Nip01Event({
     required this.pubKey,
     required this.kind,
     required this.tags,
@@ -28,10 +28,10 @@ class NostrEvent {
     id = _calculateId(pubKey, createdAt, kind, tags, content);
   }
 
-  NostrEvent._(this.id, this.pubKey, this.createdAt, this.kind, this.tags,
+  Nip01Event._(this.id, this.pubKey, this.createdAt, this.kind, this.tags,
       this.content, this.sig);
 
-  factory NostrEvent.fromJson(Map<String, dynamic> data) {
+  factory Nip01Event.fromJson(Map<String, dynamic> data) {
     final id = data['id'] as String;
     final pubKey = data['pubkey'] as String;
     final createdAt = data['created_at'] as int;
@@ -40,7 +40,7 @@ class NostrEvent {
     final content = data['content'] as String;
     final sig = data['sig'] as String;
 
-    return NostrEvent._(id, pubKey, createdAt, kind, tags, content, sig);
+    return Nip01Event._(id, pubKey, createdAt, kind, tags, content, sig);
   }
 
   /// The event ID is a 32-byte SHA256 hash of the serialised event data.
@@ -61,7 +61,7 @@ class NostrEvent {
   /// Event content.
   final String content;
 
-  /// 64-byte Schnorr signature of [NostrEvent.id].
+  /// 64-byte Schnorr signature of [Nip01Event.id].
   String sig = '';
 
   /// Relay that an event was received from
@@ -94,7 +94,7 @@ class NostrEvent {
 
   // Individual events with the same "id" are equivalent
   @override
-  bool operator ==(other) => other is NostrEvent && id == other.id;
+  bool operator ==(other) => other is Nip01Event && id == other.id;
   @override
   int get hashCode => id.hashCode;
 
