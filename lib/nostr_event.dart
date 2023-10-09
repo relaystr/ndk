@@ -13,8 +13,13 @@ class NostrEvent {
   ///
   /// Nostr event `id` and `created_at` fields are calculated automatically.
   ///
-  NostrEvent(this.pubKey, this.kind, this.tags, this.content,
-      {int? publishAt}) {
+  NostrEvent({
+    required this.pubKey,
+    required this.kind,
+    required this.tags,
+    required this.content,
+    int? publishAt,
+  }) {
     if (publishAt != null) {
       createdAt = publishAt;
     } else {
