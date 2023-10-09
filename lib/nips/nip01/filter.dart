@@ -60,6 +60,7 @@ class Filter {
     return toMap().toString();
   }
 
+  /// todo: this should not be here, since it is lib code and not spec stuff
   List<PubkeyMapping> extractPubKeyMappingsFromFilter() {
     /// todo: depending on usecase (feed,profile,notifications) should generate a list of pubKeyMappings
     /// for now just return a simple list of authors with read/write true
@@ -73,6 +74,7 @@ class Filter {
         : [];
   }
 
+  /// todo: this should not be here, since it is lib code and not spec stuff
   Filter splitForPubKeys(List<PubkeyMapping> pubKeyMappings) {
     Map<String, dynamic> map = toMap();
     map['authors'] = pubKeyMappings.map((e) => e.pubKey).toList();

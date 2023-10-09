@@ -1,4 +1,5 @@
 import 'package:bip340/bip340.dart' as bip340;
+import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'helpers.dart';
 
 class Bip340 {
@@ -35,32 +36,4 @@ class Bip340 {
 
     return KeyPair(privKey, pubKey, privKeyHr, pubKeyHr);
   }
-}
-
-class KeyPair {
-  /// [privateKey] is a 32-bytes hex-encoded string
-  String? privateKey;
-
-  /// [publicKey] is a 32-bytes hex-encoded string
-  final String publicKey;
-
-  /// [privateKeyHr] is a human readable private key e.g. nsec
-  String? privateKeyHr;
-
-  /// [publicKeyHr] is a human readable public key e.g. npub
-  String? publicKeyHr;
-
-  KeyPair(this.privateKey, this.publicKey, this.privateKeyHr, this.publicKeyHr);
-
-  KeyPair.justPublicKey(this.publicKey);
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is KeyPair &&
-          runtimeType == other.runtimeType &&
-          publicKey == other.publicKey;
-
-  @override
-  int get hashCode => publicKey.hashCode;
 }

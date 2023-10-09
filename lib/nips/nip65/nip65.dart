@@ -1,7 +1,7 @@
 // ignore_for_file: file_names
 
-import 'nip01.dart';
-import '../pubkey_mapping.dart';
+import '../nip01/event.dart';
+import '../../pubkey_mapping.dart';
 
 class Nip65 {
   static const int kind = 10002;

@@ -8,8 +8,8 @@ import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'nips/nip01.dart';
-import 'filter.dart';
+import 'nips/nip01/event.dart';
+import 'nips/nip01/filter.dart';
 
 class RelayManager {
   /// Bootstrap relays from these to start looking for NIP65/NIP03 events

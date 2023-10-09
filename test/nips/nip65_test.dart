@@ -1,5 +1,5 @@
-import 'package:dart_ndk/nips/nip65.dart';
-import 'package:dart_ndk/nips/nip01.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:flutter_test/flutter_test.dart';
 

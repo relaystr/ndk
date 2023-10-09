@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:dart_ndk/bip340.dart';
+import 'package:dart_ndk/nips/nip01/bip340.dart';
 
 class Nip01Event {
   /// Creates a new Nostr event.

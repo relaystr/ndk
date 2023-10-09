@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:developer';
 
-import 'package:dart_ndk/bip340.dart';
-import 'package:dart_ndk/nips/nip01.dart';
-import 'package:dart_ndk/filter.dart';
-import 'package:dart_ndk/nips/nip65.dart';
+import 'package:dart_ndk/nips/nip01/bip340.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/key_pair.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class MockRelay {
