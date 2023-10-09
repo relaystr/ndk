@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:developer';
 
 import 'package:dart_ndk/bip340.dart';
-import 'package:dart_ndk/event.dart';
+import 'package:dart_ndk/nostr_event.dart';
 import 'package:dart_ndk/filter.dart';
 import 'package:dart_ndk/nips/Nip65.dart';
 import 'package:flutter_test/flutter_test.dart';

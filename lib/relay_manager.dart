@@ -8,7 +8,7 @@ import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'event.dart';
+import 'nostr_event.dart';
 import 'filter.dart';
 
 class RelayManager {

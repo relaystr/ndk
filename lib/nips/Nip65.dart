@@ -1,6 +1,6 @@
 // ignore_for_file: file_names
 
-import '../event.dart';
+import '../nostr_event.dart';
 import '../pubkey_mapping.dart';
 
 class Nip65 {
