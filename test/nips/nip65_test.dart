@@ -13,7 +13,7 @@ void main() {
       tags: [
         ['r', 'https://example.com', 'read'],
         ['r', 'https://example.org', 'write'],
-        ['w', 'https://example.net'],
+        ['r', 'https://example.net'],
         ['invalid'],
       ],
     );
