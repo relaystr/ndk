@@ -8,7 +8,7 @@ import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'nostr_event.dart';
+import 'nips/nip01.dart';
 import 'filter.dart';
 
 class RelayManager {
@@ -32,7 +32,7 @@ class RelayManager {
   final Map<String, Completer<Map<String, dynamic>>> _completers = {};
 
   /// Global subscriptions by request id
-  final Map<String, Function(NostrEvent)> _subscriptions = {};
+  final Map<String, Function(Nip01Event)> _subscriptions = {};
 
   // Global pub keys mappings by url
   Map<String, Set<PubkeyMapping>> pubKeyMappings = {};
@@ -72,7 +72,7 @@ class RelayManager {
     return true;
   }
 
-  Future<void> query(Filter filter, Function(NostrEvent)? onEvent) async {
+  Future<void> query(Filter filter, Function(Nip01Event)? onEvent) async {
     /// extract from the filter which pubKeys and directions we should use the query for such filter
     List<PubkeyMapping> pubKeys = filter.extractPubKeyMappingsFromFilter();
 
@@ -93,7 +93,7 @@ class RelayManager {
   }
 
   Future<Map<String, dynamic>> request(
-      String url, Filter filter, Function(NostrEvent) onEvent) {
+      String url, Filter filter, Function(Nip01Event) onEvent) {
     WebSocketChannel? channel = webSockets[url];
     if (channel != null) {
       // TODO should check if connected / state
@@ -135,7 +135,7 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'EVENT') {
-      NostrEvent event = NostrEvent.fromJson(eventJson[2]);
+      Nip01Event event = Nip01Event.fromJson(eventJson[2]);
       event.sources.add(url);
       _subscriptions[eventJson[1]]?.call(event);
       // _completers[eventJson[1]]?.complete(eventJson[2]);

@@ -1,6 +1,6 @@
 // ignore_for_file: file_names
 
-import '../nostr_event.dart';
+import 'nip01.dart';
 import '../pubkey_mapping.dart';
 
 class Nip65 {
@@ -12,7 +12,7 @@ class Nip65 {
 
   Nip65(this.relays);
 
-  Nip65.fromEvent(NostrEvent event) {
+  Nip65.fromEvent(Nip01Event event) {
     createdAt = event.createdAt;
     for (var tag in event.tags) {
       if (tag is! List<dynamic>) continue;
@@ -34,8 +34,8 @@ class Nip65 {
     }
   }
 
-  NostrEvent toEvent(String pubKey) {
-    return NostrEvent(
+  Nip01Event toEvent(String pubKey) {
+    return Nip01Event(
       pubKey: pubKey,
       kind: Nip65.kind,
       tags: relays.entries.map((entry) {

@@ -1,11 +1,11 @@
-import 'package:dart_ndk/nips/Nip65.dart';
-import 'package:dart_ndk/nostr_event.dart';
+import 'package:dart_ndk/nips/nip65.dart';
+import 'package:dart_ndk/nips/nip01.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('Nip65.fromEvent', () {
-    final event = NostrEvent(
+    final event = Nip01Event(
       publishAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       pubKey: 'pubkeyUser1',
       kind: Nip65.kind,
