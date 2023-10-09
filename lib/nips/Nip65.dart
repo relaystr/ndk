@@ -37,8 +37,8 @@ class Nip65 {
     }
   }
 
-  Event toEvent(String pubKey) {
-    return Event(
+  NostrEvent toEvent(String pubKey) {
+    return NostrEvent(
         pubKey,
         Nip65.kind,
         relays.entries.map((entry) {
