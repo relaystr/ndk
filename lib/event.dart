@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:clock/clock.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dart_ndk/bip340.dart';
 
@@ -15,9 +14,9 @@ class Event {
   /// Nostr event `id` and `created_at` fields are calculated automatically.
   ///
   Event(this.pubKey, this.kind, this.tags, this.content,
-      {DateTime? publishAt}) {
+      {int? publishAt}) {
     if (publishAt != null) {
-      createdAt = publishAt.millisecondsSinceEpoch ~/ 1000;
+      createdAt = publishAt;
     } else {
       createdAt = _secondsSinceEpoch();
     }
@@ -95,8 +94,7 @@ class Event {
   int get hashCode => id.hashCode;
 
   static int _secondsSinceEpoch() {
-    final now = clock.now();
-    final secondsSinceEpoch = now.millisecondsSinceEpoch ~/ 1000;
+    final secondsSinceEpoch = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     return secondsSinceEpoch;
   }
 

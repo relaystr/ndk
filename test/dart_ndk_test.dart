@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dart_ndk/bip340.dart';
 import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/filter.dart';
@@ -28,7 +26,7 @@ void main() {
   });
 
   group('Relay Manager', () {
-    test('Connect to relay', () async {
+      test('Connect to relay', () async {
       MockRelay mockRelay = MockRelay();
       await mockRelay.startServer();
       RelayManager manager = RelayManager();
@@ -67,10 +65,12 @@ void main() {
         key3: {mockRelay3.url},
       };
 
+      int nip65CreateAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
       await Future.wait([
-        mockRelay1.startServer(nip65s: NIP65s),
-        mockRelay2.startServer(nip65s: NIP65s),
-        mockRelay3.startServer(nip65s: NIP65s)
+        mockRelay1.startServer(nip65s: NIP65s, nip65CreatedAt: nip65CreateAt),
+        mockRelay2.startServer(),
+        mockRelay3.startServer()
       ]);
       // ===============================================
 

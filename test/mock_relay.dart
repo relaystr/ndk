@@ -14,6 +14,7 @@ class MockRelay {
   HttpServer? server;
   WebSocket? webSocket;
   Map<KeyPair, Set<String>>? nip65s;
+  int? nip65CreatedAt;
 
   static int startPort = 4040;
 
@@ -24,9 +25,10 @@ class MockRelay {
     startPort++;
   }
 
-  Future<void> startServer({Map<KeyPair, Set<String>>? nip65s}) async {
+  Future<void> startServer({Map<KeyPair, Set<String>>? nip65s, int? nip65CreatedAt}) async {
     if (nip65s != null) {
       this.nip65s = nip65s;
+      this.nip65CreatedAt = nip65CreatedAt;
     }
     await HttpServer.bind(InternetAddress.loopbackIPv4, port!).then((server) {
       this.server = server;
@@ -63,7 +65,7 @@ class MockRelay {
         json.add("EVENT");
         json.add(id);
 
-        Event event = Event(author, Nip65.kind, relays.map((relay) => ["r", relay]).toList(), "");
+        Event event = Event(author, Nip65.kind, relays.map((relay) => ["r", relay]).toList(), "", publishAt: nip65CreatedAt!);
         event.sign(key.privateKey!);
         json.add(event.toJson());
         webSocket!.add(jsonEncode(json));
