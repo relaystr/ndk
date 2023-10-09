@@ -36,24 +36,25 @@ class Nip65 {
 
   NostrEvent toEvent(String pubKey) {
     return NostrEvent(
-        pubKey,
-        Nip65.kind,
-        relays.entries.map((entry) {
-          final url = entry.key;
-          final marker = entry.value;
-          List<String> list = ["r", url];
-          if (marker != null) {
-            if (marker.read && !marker.write) {
-              list.add("read");
-            } else {
-              if (marker.write) {
-                list.add("write");
-              }
+      pubKey: pubKey,
+      kind: Nip65.kind,
+      tags: relays.entries.map((entry) {
+        final url = entry.key;
+        final marker = entry.value;
+        List<String> list = ["r", url];
+        if (marker != null) {
+          if (marker.read && !marker.write) {
+            list.add("read");
+          } else {
+            if (marker.write) {
+              list.add("write");
             }
           }
-          return list;
-        }).toList(),
-        "",
-        publishAt: createdAt);
+        }
+        return list;
+      }).toList(),
+      content: "",
+      publishAt: createdAt,
+    );
   }
 }
