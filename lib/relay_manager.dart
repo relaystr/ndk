@@ -66,12 +66,11 @@ class RelayManager {
   Future<bool> connectRelay(String url, {int connectTimeout=3}) async {
     relays[url] = Relay(url);
     relays[url]!.connecting = true;
-    Future<WebSocket> future = WebSocket.connect(url).timeout(Duration(seconds: connectTimeout)).onError((error, stackTrace) {
+    webSockets[url] = await WebSocket.connect(url).timeout(Duration(seconds: connectTimeout)).onError((error, stackTrace) {
       relays[url]!.connecting = false;
       print("could not connect to relay $url error:$error");
       throw Exception();
     });
-    webSockets[url] = await future;
 
     relays[url]!.connecting = false;
 
