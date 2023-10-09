@@ -1,3 +1,5 @@
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+
 /// maps the direction for a pubkey read, write, both
 class PubkeyMapping {
   String pubKey;
@@ -11,22 +13,10 @@ class PubkeyMapping {
   });
 
   bool isRead() {
-    return rwMarker == ReadWriteMarker.read;
+    return rwMarker.isRead;
   }
 
   bool isWrite() {
-    return rwMarker == ReadWriteMarker.write;
+    return rwMarker.isWrite;
   }
-
-  // @override
-  // bool operator ==(Object other) =>
-  //     identical(this, other) ||
-  //     other is PubkeyMapping &&
-  //         runtimeType == other.runtimeType &&
-  //         pubKey == other.pubKey;
-  //
-  // @override
-  // int get hashCode => pubKey.hashCode;
 }
-
-enum ReadWriteMarker { read, write, readWrite }

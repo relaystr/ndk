@@ -1,5 +1,7 @@
 import 'package:dart_ndk/pubkey_mapping.dart';
 
+import '../nip65/read_write_marker.dart';
+
 class Filter {
   List<String>? ids;
   List<String>? authors;

@@ -1,7 +1,8 @@
 // ignore_for_file: file_names
 
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+
 import '../nip01/event.dart';
-import '../../pubkey_mapping.dart';
 
 class Nip65 {
   static const int kind = 10002;
@@ -21,18 +22,15 @@ class Nip65 {
       final name = tag[0];
       final url = tag[1];
       if (name != "r") continue;
-      ReadWriteMarker marker = ReadWriteMarker.readWrite;
+      ReadWriteMarker? marker = ReadWriteMarker.readWrite;
       if (length > 2) {
         var operType = tag[2];
         switch (operType) {
           case "read":
-            marker = ReadWriteMarker.read;
+            marker = ReadWriteMarker.readOnly;
             break;
           case "write":
-            marker = ReadWriteMarker.write;
-            break;
-          default:
-            marker = ReadWriteMarker.readWrite;
+            marker = ReadWriteMarker.writeOnly;
             break;
         }
       }
@@ -48,14 +46,12 @@ class Nip65 {
         final url = entry.key;
         final marker = entry.value;
         List<String> list = ["r", url];
-
-        if (marker == ReadWriteMarker.read) {
+        if (marker == ReadWriteMarker.readOnly) {
           list.add("read");
         }
-        if (marker == ReadWriteMarker.write) {
+        if (marker == ReadWriteMarker.writeOnly) {
           list.add("write");
         }
-
         return list;
       }).toList(),
       content: "",
