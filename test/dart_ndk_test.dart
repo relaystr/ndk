@@ -27,7 +27,7 @@ void main() {
   });
 
   group('Relay Manager', () {
-      test('Connect to relay', () async {
+    test('Connect to relay', () async {
       MockRelay mockRelay = MockRelay();
       await mockRelay.startServer();
       RelayManager manager = RelayManager();
@@ -61,9 +61,14 @@ void main() {
       KeyPair key3 = Bip340.generatePrivateKey();
 
       Map<KeyPair, Nip65> nip65s = {
-        key1: Nip65({mockRelay1.url : null, mockRelay2.url: null}, ),
-        key2: Nip65({mockRelay2.url: null}),
-        key3: Nip65({mockRelay3.url: ReadWriteMarker.writeOnly()}),
+        key1: Nip65(
+          {
+            mockRelay1.url: ReadWriteMarker.readWrite,
+            mockRelay2.url: ReadWriteMarker.readWrite
+          },
+        ),
+        key2: Nip65({mockRelay2.url: ReadWriteMarker.readWrite}),
+        key3: Nip65({mockRelay3.url: ReadWriteMarker.write}),
       };
 
       await Future.wait([
@@ -84,8 +89,10 @@ void main() {
               kinds: [Nip65.kind],
               authors: keys.map((e) => e.publicKey).toList()), (event) {
         Nip65 nip65 = Nip65.fromEvent(event);
-        print("RESULT OF nip65 request for ${event.pubKey}: ${nip65.relays.keys} (source:${event.sources})");
-        KeyPair key = nip65s.keys.where((k) => k.publicKey == event.pubKey).first;
+        print(
+            "RESULT OF nip65 request for ${event.pubKey}: ${nip65.relays.keys} (source:${event.sources})");
+        KeyPair key =
+            nip65s.keys.where((k) => k.publicKey == event.pubKey).first;
         expect(nip65.relays.keys, nip65s[key]!.relays.keys);
         expect(nip65.relays.values, nip65s[key]!.relays.values);
       });

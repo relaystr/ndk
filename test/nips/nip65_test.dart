@@ -19,9 +19,9 @@ void main() {
     );
     final nip65 = Nip65.fromEvent(event);
     expect(nip65.relays, {
-      'https://example.com': ReadWriteMarker(read: true),
-      'https://example.org': ReadWriteMarker(write: true),
-      'https://example.net': null,
+      'https://example.com': ReadWriteMarker.read,
+      'https://example.org': ReadWriteMarker.write,
+      'https://example.net': ReadWriteMarker.readWrite,
     });
   });
 }
