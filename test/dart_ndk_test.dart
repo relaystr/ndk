@@ -2,6 +2,7 @@ import 'package:dart_ndk/bip340.dart';
 import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/filter.dart';
 import 'package:dart_ndk/nips/Nip65.dart';
+import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hex/hex.dart';
 
@@ -59,16 +60,14 @@ void main() {
       KeyPair key2 = Bip340.generatePrivateKey();
       KeyPair key3 = Bip340.generatePrivateKey();
 
-      Map<KeyPair, Set<String>> NIP65s = {
-        key1: {mockRelay1.url, mockRelay2.url},
-        key2: {mockRelay2.url},
-        key3: {mockRelay3.url},
+      Map<KeyPair, Nip65> nip65s = {
+        key1: Nip65({mockRelay1.url : null, mockRelay2.url: null}, ),
+        key2: Nip65({mockRelay2.url: null}),
+        key3: Nip65({mockRelay3.url: ReadWriteMarker.writeOnly()}),
       };
 
-      int nip65CreateAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
       await Future.wait([
-        mockRelay1.startServer(nip65s: NIP65s, nip65CreatedAt: nip65CreateAt),
+        mockRelay1.startServer(nip65s: nip65s),
         mockRelay2.startServer(),
         mockRelay3.startServer()
       ]);
@@ -86,8 +85,9 @@ void main() {
               authors: keys.map((e) => e.publicKey).toList()), (event) {
         Nip65 nip65 = Nip65.fromEvent(event);
         print("RESULT OF nip65 request for ${event.pubKey}: ${nip65.relays.keys} (source:${event.sources})");
-        KeyPair key = NIP65s.keys.where((k) => k.publicKey == event.pubKey).first;
-        expect(nip65.relays.keys.toList(), NIP65s[key]!.toList());
+        KeyPair key = nip65s.keys.where((k) => k.publicKey == event.pubKey).first;
+        expect(nip65.relays.keys, nip65s[key]!.relays.keys);
+        expect(nip65.relays.values, nip65s[key]!.relays.values);
       });
 
       // ===============================================

@@ -8,7 +8,12 @@ class Nip65 {
 
   Map<String, ReadWriteMarker?> relays = {};
 
+  int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+  Nip65(this.relays);
+
   Nip65.fromEvent(NostrEvent event) {
+    createdAt = event.createdAt;
     for (var tag in event.tags) {
       if (tag is List<dynamic>) {
         var length = tag.length;
@@ -30,5 +35,28 @@ class Nip65 {
         }
       }
     }
+  }
+
+  Event toEvent(String pubKey) {
+    return Event(
+        pubKey,
+        Nip65.kind,
+        relays.entries.map((entry) {
+          final url = entry.key;
+          final marker = entry.value;
+          List<String> list = ["r", url];
+          if (marker != null) {
+            if (marker.read && !marker.write) {
+              list.add("read");
+            } else {
+              if (marker.write) {
+                list.add("write");
+              }
+            }
+          }
+          return list;
+        }).toList(),
+        "",
+        publishAt: createdAt);
   }
 }

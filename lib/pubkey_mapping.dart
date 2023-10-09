@@ -36,4 +36,19 @@ class ReadWriteMarker {
   bool read;
   bool write;
   ReadWriteMarker({this.read = false, this.write = false});
+
+  ReadWriteMarker.readOnly({this.read = true, this.write = false});
+
+  ReadWriteMarker.writeOnly({this.read = false, this.write = true});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReadWriteMarker &&
+          runtimeType == other.runtimeType &&
+          read == other.read &&
+          write == other.write;
+
+  @override
+  int get hashCode => read.hashCode ^ write.hashCode;
 }
