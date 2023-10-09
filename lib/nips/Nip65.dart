@@ -8,7 +8,7 @@ class Nip65 {
 
   Map<String, ReadWriteMarker?> relays = {};
 
-  Nip65.fromEvent(Event event) {
+  Nip65.fromEvent(NostrEvent event) {
     for (var tag in event.tags) {
       if (tag is List<dynamic>) {
         var length = tag.length;

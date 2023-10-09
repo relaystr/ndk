@@ -32,7 +32,7 @@ class RelayManager {
   final Map<String, Completer<Map<String, dynamic>>> _completers = {};
 
   /// Global subscriptions by request id
-  final Map<String, Function(Event)> _subscriptions = {};
+  final Map<String, Function(NostrEvent)> _subscriptions = {};
 
   // Global pub keys mappings by url
   Map<String, Set<PubkeyMapping>> pubKeyMappings = {};
@@ -72,8 +72,7 @@ class RelayManager {
     return true;
   }
 
-  Future<void> query(
-      Filter filter, Function(Event)? onEvent) async {
+  Future<void> query(Filter filter, Function(NostrEvent)? onEvent) async {
     /// extract from the filter which pubKeys and directions we should use the query for such filter
     List<PubkeyMapping> pubKeys = filter.extractPubKeyMappingsFromFilter();
 
@@ -81,22 +80,20 @@ class RelayManager {
     Map<String, List<PubkeyMapping>> bestRelays = _calculateBestRelays(pubKeys);
 
     List<Future> futures = [];
-    for(String url in bestRelays.keys) {
+    for (String url in bestRelays.keys) {
       List<PubkeyMapping>? pubKeys = bestRelays[url];
       Filter dedicatedFilter = filter.splitForPubKeys(pubKeys!);
-      futures.add(
-          request(url, dedicatedFilter, (json) {
-            if (onEvent != null) {
-              onEvent(json);
-            }
-          })
-      );
+      futures.add(request(url, dedicatedFilter, (json) {
+        if (onEvent != null) {
+          onEvent(json);
+        }
+      }));
     }
     await Future.wait(futures);
   }
 
   Future<Map<String, dynamic>> request(
-      String url, Filter filter, Function(Event) onEvent) {
+      String url, Filter filter, Function(NostrEvent) onEvent) {
     WebSocketChannel? channel = webSockets[url];
     if (channel != null) {
       // TODO should check if connected / state
@@ -138,7 +135,7 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'EVENT') {
-      Event event = Event.fromJson(eventJson[2]);
+      NostrEvent event = NostrEvent.fromJson(eventJson[2]);
       event.sources.add(url);
       _subscriptions[eventJson[1]]?.call(event);
       // _completers[eventJson[1]]?.complete(eventJson[2]);

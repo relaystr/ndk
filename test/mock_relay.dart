@@ -25,7 +25,8 @@ class MockRelay {
     startPort++;
   }
 
-  Future<void> startServer({Map<KeyPair, Set<String>>? nip65s, int? nip65CreatedAt}) async {
+  Future<void> startServer(
+      {Map<KeyPair, Set<String>>? nip65s, int? nip65CreatedAt}) async {
     if (nip65s != null) {
       this.nip65s = nip65s;
       this.nip65CreatedAt = nip65CreatedAt;
@@ -57,7 +58,6 @@ class MockRelay {
 
   void _respondeNip65(List<String> authors, String id) {
     authors.forEach((author) {
-
       KeyPair key = nip65s!.keys.where((key) => key.publicKey == author).first;
       Set<String>? relays = nip65s![key];
       if (relays != null) {
@@ -65,7 +65,9 @@ class MockRelay {
         json.add("EVENT");
         json.add(id);
 
-        Event event = Event(author, Nip65.kind, relays.map((relay) => ["r", relay]).toList(), "", publishAt: nip65CreatedAt!);
+        NostrEvent event = NostrEvent(author, Nip65.kind,
+            relays.map((relay) => ["r", relay]).toList(), "",
+            publishAt: nip65CreatedAt!);
         event.sign(key.privateKey!);
         json.add(event.toJson());
         webSocket!.add(jsonEncode(json));
