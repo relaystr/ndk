@@ -30,7 +30,9 @@ void main() {
       try {
         await manager.connectRelay(mockRelay1.url);
         fail("should throw exception");
-      } catch (e) {}
+      } catch (e) {
+        // success
+      }
       ;
     });
 
@@ -72,8 +74,8 @@ void main() {
               kinds: [Nip65.kind],
               authors: keys.map((e) => e.publicKey).toList()), (event) {
         Nip65 nip65 = Nip65.fromEvent(event);
-        print(
-            "RESULT OF nip65 request for ${event.pubKey}: ${nip65.relays.keys} (source:${event.sources})");
+        // print(
+        //     "RESULT OF nip65 request for ${event.pubKey}: ${nip65.relays.keys} (source:${event.sources})");
         KeyPair key =
             nip65s.keys.where((k) => k.publicKey == event.pubKey).first;
         expect(nip65.relays.keys, nip65s[key]!.relays.keys);

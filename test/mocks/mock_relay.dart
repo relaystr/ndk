@@ -57,7 +57,7 @@ class MockRelay {
   }
 
   void _respondeNip65(List<String> authors, String id) {
-    authors.forEach((author) {
+    for (var author in authors) {
       KeyPair key = nip65s!.keys.where((key) => key.publicKey == author).first;
       Nip65? nip65 = nip65s![key];
       if (nip65 != null && nip65.relays.isNotEmpty) {
@@ -70,12 +70,12 @@ class MockRelay {
         json.add(event.toJson());
         webSocket!.add(jsonEncode(json));
       }
-    });
+    }
   }
 
   Future<void> stopServer() async {
     if (server != null) {
-      log('closing server on localhost:${url}');
+      log('closing server on localhost:$url');
       await server!.close();
     }
   }

@@ -49,12 +49,12 @@ class RelayManager {
   }
   bool isWebSocketOpen(String url) {
     WebSocket? webSocket = webSockets[url];
-    return webSocket!= null && webSocket!.readyState == WebSocket.open;
+    return webSocket!= null && webSocket.readyState == WebSocket.open;
   }
 
   bool isWebSocketConnecting(String url) {
     WebSocket? webSocket = webSockets[url];
-    return webSocket!= null && webSocket!.readyState == WebSocket.connecting;
+    return webSocket!= null && webSocket.readyState == WebSocket.connecting;
   }
 
   bool isRelayConnecting(String url) {
@@ -121,7 +121,7 @@ class RelayManager {
       var completer = Completer<Map<String, dynamic>>();
       _completers[id] = completer;
       _subscriptions[id] = onEvent;
-      webSocket!.add(encoded);
+      webSocket.add(encoded);
       var future =
           completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
         // log("Rtimeout: ${id}, $url");
@@ -191,14 +191,14 @@ class RelayManager {
   bool _isPubKeyForRead(String url, String pubKey) {
     Set<PubkeyMapping>? set = pubKeyMappings[url];
     return set != null &&
-        set!.any((pubKeyMapping) =>
+        set.any((pubKeyMapping) =>
             pubKey == pubKeyMapping.pubKey && pubKeyMapping.isRead());
   }
 
   bool _isPubKeyForWrite(String url, String pubKey) {
     Set<PubkeyMapping>? set = pubKeyMappings[url];
     return set != null &&
-        set!.any((pubKeyMapping) =>
+        set.any((pubKeyMapping) =>
             pubKey == pubKeyMapping.pubKey && pubKeyMapping.isWrite());
   }
 
