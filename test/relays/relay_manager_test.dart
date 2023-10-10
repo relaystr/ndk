@@ -1,5 +1,6 @@
 import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
@@ -9,7 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 import '../mocks/mock_relay.dart';
 
 void main() {
-
   group('Relay Manager', () {
     test('Connect to relay', () async {
       MockRelay mockRelay = MockRelay();
@@ -36,7 +36,23 @@ void main() {
       ;
     });
 
-    test('Get Nip65 for some pubkeys', () async {
+    test('Request text note', () async {
+      MockRelay mockRelay1 = MockRelay();
+      KeyPair key1 = Bip340.generatePrivateKey();
+      Map<KeyPair, Nip01Event> key1TextNotes = { key1: textNote(key1)};
+      await mockRelay1.startServer(textNotes: key1TextNotes);
+
+      RelayManager manager = RelayManager();
+      await manager.init(bootstrapRelays: [mockRelay1.url]);
+
+      Filter filter = Filter(
+          kinds: [Nip01Event.textNoteKind], authors: [key1.publicKey]);
+      expect(
+          manager.request(mockRelay1.url, filter),
+          emitsInAnyOrder(key1TextNotes.values));
+    });
+
+    test(skip: 'WiP', 'Gossip/Outbox model', () async {
       MockRelay mockRelay1 = MockRelay();
       MockRelay mockRelay2 = MockRelay();
       MockRelay mockRelay3 = MockRelay();
@@ -45,21 +61,29 @@ void main() {
       KeyPair key2 = Bip340.generatePrivateKey();
       KeyPair key3 = Bip340.generatePrivateKey();
 
+      Map<KeyPair, Nip01Event> key1TextNotes = { key3: textNote(key1)};
+      Map<KeyPair, Nip01Event> key2TextNotes = { key3: textNote(key1)};
+      Map<KeyPair, Nip01Event> key3TextNotes = { key3: textNote(key3)};
+
+      Nip65 nip65ForKey1 = Nip65({ mockRelay1.url: ReadWriteMarker.readWrite,mockRelay2.url: ReadWriteMarker.readWrite });
+      Nip65 nip65ForKey2 = Nip65({ mockRelay1.url: ReadWriteMarker.readOnly, mockRelay2.url: ReadWriteMarker.writeOnly });
+      Nip65 nip65ForKey3 = Nip65({ mockRelay3.url: ReadWriteMarker.readWrite});
+
       Map<KeyPair, Nip65> nip65s = {
-        key1: Nip65(
-          {
-            mockRelay1.url: ReadWriteMarker.readWrite,
-            mockRelay2.url: ReadWriteMarker.readWrite
-          },
-        ),
-        key2: Nip65({mockRelay2.url: ReadWriteMarker.readWrite}),
-        key3: Nip65({mockRelay3.url: ReadWriteMarker.writeOnly}),
+        key1: nip65ForKey1,
+        key2: nip65ForKey2,
+        key3: nip65ForKey3
       };
 
+      /// key1 reads and writes to relay 1 & 2, has its notes on both relays
+      /// key2 reads from relay 1 and writes to relay 2, has its notes ONLY on relay 2
+      /// key3 reads and writes ONLY to relay 3, has its notes ONLY on relay 3
+
       await Future.wait([
-        mockRelay1.startServer(nip65s: nip65s),
-        mockRelay2.startServer(),
-        mockRelay3.startServer()
+        mockRelay1.startServer(nip65s: nip65s, textNotes: key1TextNotes),
+        mockRelay2.startServer(
+            textNotes: {}..addAll(key1TextNotes)..addAll(key2TextNotes)),
+        mockRelay3.startServer(textNotes: key3TextNotes)
       ]);
       // ===============================================
 
@@ -67,27 +91,33 @@ void main() {
       await manager.init(
           bootstrapRelays: [mockRelay1.url, mockRelay2.url, mockRelay3.url]);
 
-      List<KeyPair> keys = [key1, key2, key3];
+      /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
+      Stream<Nip01Event> query = manager.query(Filter(
+          kinds: [Nip01Event.textNoteKind],
+          authors: [key1.publicKey, key2.publicKey, key3.publicKey]));
 
-      await manager.query(
-          Filter(
-              kinds: [Nip65.kind],
-              authors: keys.map((e) => e.publicKey).toList()), (event) {
-        Nip65 nip65 = Nip65.fromEvent(event);
-        // print(
-        //     "RESULT OF nip65 request for ${event.pubKey}: ${nip65.relays.keys} (source:${event.sources})");
-        KeyPair key =
-            nip65s.keys.where((k) => k.publicKey == event.pubKey).first;
-        expect(nip65.relays.keys, nip65s[key]!.relays.keys);
-        expect(nip65.relays.values, nip65s[key]!.relays.values);
-      });
+      List<Nip01Event> expectedAllNotes = []..addAll(
+          key1TextNotes.values)..addAll(key2TextNotes.values)..addAll(
+          key3TextNotes.values);
+      expect(query, emitsInAnyOrder(expectedAllNotes));
 
       // ===============================================
       await Future.wait([
         mockRelay1.stopServer(),
         mockRelay2.stopServer(),
-        mockRelay3.stopServer()
-      ]);
+        mockRelay3.stopServer
+          (
+        )
+      ]
+      );
     });
   });
+}
+
+Nip01Event textNote(KeyPair key2) {
+  return Nip01Event(
+      kind: Nip01Event.textNoteKind,
+      pubKey: key2.publicKey,
+      content: "some note from key ${key2.publicKey}",
+      tags: []);
 }

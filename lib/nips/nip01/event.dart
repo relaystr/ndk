@@ -4,6 +4,9 @@ import 'package:crypto/crypto.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 
 class Nip01Event {
+
+  static const int textNoteKind = 1;
+
   /// Creates a new Nostr event.
   ///
   /// [pubKey] is the author's public key.
@@ -110,5 +113,10 @@ class Nip01Event {
     final bytes = utf8.encode(jsonData);
     final digest = sha256.convert(bytes);
     return digest.toString();
+  }
+
+  @override
+  String toString() {
+    return 'Nip01Event{pubKey: $pubKey, createdAt: $createdAt, kind: $kind, tags: $tags, content: $content, sources: $sources}';
   }
 }

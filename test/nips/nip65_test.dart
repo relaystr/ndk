@@ -51,6 +51,7 @@ void main() {
       expect(myEvent.createdAt, equals(nip65.createdAt));
     });
   });
+
   group('ReadWriteMarker', () {
     test('isRead', () {
       expect(ReadWriteMarker.readOnly.isRead, true);

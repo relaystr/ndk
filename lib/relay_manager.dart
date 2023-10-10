@@ -10,6 +10,7 @@ import 'package:dart_ndk/pubkey_mapping.dart';
 
 import 'nips/nip01/event.dart';
 import 'nips/nip01/filter.dart';
+import 'package:async/async.dart' show StreamGroup;
 
 class RelayManager {
   /// Bootstrap relays from these to start looking for NIP65/NIP03 events
@@ -32,7 +33,7 @@ class RelayManager {
   final Map<String, Completer<Map<String, dynamic>>> _completers = {};
 
   /// Global subscriptions by request id
-  final Map<String, Function(Nip01Event)> _subscriptions = {};
+  final Map<String, StreamController<Nip01Event>> _subscriptions = {};
 
   // Global pub keys mappings by url
   Map<String, Set<PubkeyMapping>> pubKeyMappings = {};
@@ -90,28 +91,24 @@ class RelayManager {
     return false;
   }
 
-  Future<void> query(Filter filter, Function(Nip01Event)? onEvent) async {
+  Stream<Nip01Event> query(Filter filter) {
     /// extract from the filter which pubKeys and directions we should use the query for such filter
     List<PubkeyMapping> pubKeys = filter.extractPubKeyMappingsFromFilter();
 
     /// calculate best relays for each pubKey/direction considering connectivity quality for each relay
     Map<String, List<PubkeyMapping>> bestRelays = _calculateBestRelays(pubKeys);
 
-    List<Future> futures = [];
+    List<Stream<Nip01Event>> streams = [];
+
     for (String url in bestRelays.keys) {
       List<PubkeyMapping>? pubKeys = bestRelays[url];
       Filter dedicatedFilter = filter.splitForPubKeys(pubKeys!);
-      futures.add(request(url, dedicatedFilter, (json) {
-        if (onEvent != null) {
-          onEvent(json);
-        }
-      }));
+      streams.add(request(url,dedicatedFilter));
     }
-    await Future.wait(futures);
+    return StreamGroup.merge(streams);
   }
 
-  Future<Map<String, dynamic>> request(
-      String url, Filter filter, Function(Nip01Event) onEvent) {
+  Stream<Nip01Event> request(String url, Filter filter) {
     WebSocket? webSocket = webSockets[url];
     if (webSocket != null) {
       // TODO should check if connected / state
@@ -120,17 +117,18 @@ class RelayManager {
       final encoded = jsonEncode(request);
       var completer = Completer<Map<String, dynamic>>();
       _completers[id] = completer;
-      _subscriptions[id] = onEvent;
-      webSocket.add(encoded);
-      var future =
-          completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
-        // log("Rtimeout: ${id}, $url");
-        return {};
-      });
 
-      return future;
+      _subscriptions[id] = StreamController<Nip01Event>();
+      webSocket.add(encoded);
+      // var future =
+      //     completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
+      //   // log("Rtimeout: ${id}, $url");
+      //   return {};
+      // });
+
+      return _subscriptions[id]!.stream;
     }
-    return Future.error("invalid relay $url");
+    return const Stream.empty();
   }
 
   // =====================================================================================
@@ -155,7 +153,7 @@ class RelayManager {
     if (eventJson[0] == 'EVENT') {
       Nip01Event event = Nip01Event.fromJson(eventJson[2]);
       event.sources.add(url);
-      _subscriptions[eventJson[1]]?.call(event);
+      _subscriptions[eventJson[1]]?.add(event);
       // _completers[eventJson[1]]?.complete(eventJson[2]);
       return;
     }
