@@ -13,7 +13,7 @@ and the Flutter guide for
 
 
 [![Build Status](https://github.com/relaystr/dart_ndk/workflows/tests/badge.svg)](https://github.com/relaystr/dart_ndk/actions?query=workflow%3A"tests"+branch%3Amaster)
-![Coverage](https://raw.githubusercontent.com/relaystr/dart_ndk/master/coverage_badge.svg?sanitize=true)
+![Coverage](https://raw.githubusercontent.com/relaystr/dart_ndk/master/coverage_badge.png?sanitize=true)
 [![Pub](https://img.shields.io/pub/v/dart_ndk.svg)](https://pub.dev/packages/dart_ndk)
 
 TODO: Put a short description of the package here that helps potential users
