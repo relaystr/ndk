@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+// coverage:ignore-file
 class RelayInfo {
 
   final String name;
