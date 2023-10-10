@@ -78,16 +78,19 @@ class MockRelay {
 
   void _respondeTextNote(List<String> authors, String requestId) {
     for (var author in authors) {
-      KeyPair key = textNotes!.keys.where((key) => key.publicKey == author).first;
-      Nip01Event? textNote = textNotes![key];
-      if (textNote != null) {
-        List<dynamic> json = [];
-        json.add("EVENT");
-        json.add(requestId);
+      List<KeyPair> keys = textNotes!.keys.where((key) => key.publicKey == author).toList();
+      if (keys!=null && keys.isNotEmpty) {
+        KeyPair key = keys.first;
+        Nip01Event? textNote = textNotes![key];
+        if (textNote != null) {
+          List<dynamic> json = [];
+          json.add("EVENT");
+          json.add(requestId);
 
-        textNote.sign(key.privateKey!);
-        json.add(textNote.toJson());
-        webSocket!.add(jsonEncode(json));
+          textNote.sign(key.privateKey!);
+          json.add(textNote.toJson());
+          webSocket!.add(jsonEncode(json));
+        }
       }
     }
   }

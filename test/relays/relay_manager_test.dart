@@ -52,7 +52,9 @@ void main() {
           emitsInAnyOrder(key1TextNotes.values));
     });
 
-    test(skip: 'WiP', 'Gossip/Outbox model', () async {
+    test(
+        // skip: 'WiP',
+        'Gossip/Outbox model', () async {
       MockRelay mockRelay1 = MockRelay();
       MockRelay mockRelay2 = MockRelay();
       MockRelay mockRelay3 = MockRelay();
