@@ -1,12 +1,10 @@
-import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Nip65', ()
-  {
+  group('Nip65', () {
     test('fromEvent', () {
       final event = Nip01Event(
         publishAt: DateTime
@@ -51,6 +49,18 @@ void main() {
           ]));
       expect(myEvent.content, equals(''));
       expect(myEvent.createdAt, equals(nip65.createdAt));
+    });
+  });
+  group('ReadWriteMarker', () {
+    test('isRead', () {
+      expect(ReadWriteMarker.readOnly.isRead, true);
+      expect(ReadWriteMarker.readWrite.isRead, true);
+      expect(ReadWriteMarker.writeOnly.isRead, false);
+    });
+    test('isWrite', () {
+      expect(ReadWriteMarker.readOnly.isWrite, false);
+      expect(ReadWriteMarker.readWrite.isWrite, true);
+      expect(ReadWriteMarker.writeOnly.isWrite, true);
     });
   });
 }
