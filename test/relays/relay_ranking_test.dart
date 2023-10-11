@@ -1,6 +1,3 @@
-import 'dart:js_util';
-import 'dart:math';
-
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -54,7 +51,7 @@ void main() {
         content: ""),
   ];
 
-  group('Relay Ranking', () {
+  group('relay ranking basic tests', () {
     test('Rank relays with empty connectedRelays list', () async {
       final pubkeys = ['alice', 'bob', 'carol'];
       final result = rankRelays(
@@ -100,6 +97,56 @@ void main() {
       expect(result.notCoveredPubkeys.length, equals(1));
       expect(result.notCoveredPubkeys[0].desiredCoverage, equals(2));
       expect(result.notCoveredPubkeys[0].missingCoverage, equals(1));
+    });
+  });
+
+  group('read write direction', () {
+    test('write only', () async {
+      final pubkeys = ['alice', 'bob', 'carol'];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.writeOnly,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+      );
+
+      // check that all directions are write
+      result.ranking.forEach((element) {
+        expect(element.direction, equals(ReadWriteMarker.writeOnly));
+      });
+    });
+
+    test('read only', () async {
+      final pubkeys = ['alice', 'bob', 'carol'];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.readOnly,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+      );
+
+      // check that all directions are write
+      result.ranking.forEach((element) {
+        expect(element.direction, equals(ReadWriteMarker.readOnly));
+      });
+    });
+
+    test('read/write', () async {
+      final pubkeys = ['alice', 'bob', 'carol'];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.readWrite,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+      );
+
+      // check that all directions are write
+      result.ranking.forEach((element) {
+        expect(element.direction, equals(ReadWriteMarker.readWrite));
+      });
     });
   });
 }
