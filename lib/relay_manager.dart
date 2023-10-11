@@ -227,7 +227,7 @@ class RelayManager {
     Map<String, List<PubkeyMapping>> map = {};
     /// todo: go fetch nip65 for pubKeys and check connectivity
     for (PubkeyMapping pubKey in pubKeys) {
-      Nip65 nip65 = null;
+      // Nip65 nip65 = null;
     }
     return map;
   }
