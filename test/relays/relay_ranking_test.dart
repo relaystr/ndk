@@ -256,7 +256,7 @@ void main() {
       final pubkeys = ['alice', 'bob', 'carol', 'dave'];
       final result = rankRelays(
         pubkeys: pubkeys,
-        direction: ReadWriteMarker.readOnly,
+        direction: ReadWriteMarker.readWrite,
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
@@ -279,6 +279,37 @@ void main() {
       expect(example2.score, equals(example3.score));
       expect(example1.score, equals(example5.score));
       expect(example1.score, lessThan(example2.score));
+    });
+
+    // todo: discuss if this is the desired behavior or if readOnly means radOnly!!! in that context
+    test('prio readWriteRelays', () async {
+      final pubkeys = ['alice', 'bob', 'carol', 'dave'];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.writeOnly,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+        rankingScoringConfig: const RelayRankingScoringConfig(),
+      );
+
+      final example1 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example1.com';
+      });
+      final example2 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example2.com';
+      });
+
+      final aliceWriteRelay = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://alice.example.com';
+      });
+
+      final bobWriteRelay = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://bob.example.com';
+      });
+
+      expect(bobWriteRelay.score, lessThan(example2.score));
+      expect(aliceWriteRelay.score, lessThan(example1.score));
     });
   });
 }
