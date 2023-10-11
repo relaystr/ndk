@@ -41,11 +41,23 @@ class RelayRankingConfig {
 
 class RelayRankingResult {
   final List<RelayRanking> ranking;
-  final List<String> notCoveredPubkeys;
+  final List<NotCoveredPubkey> notCoveredPubkeys;
 
   RelayRankingResult({
     required this.ranking,
     required this.notCoveredPubkeys,
+  });
+}
+
+class NotCoveredPubkey {
+  final String pubkey;
+  final int missingCoverage;
+  final int desiredCoverage;
+
+  NotCoveredPubkey({
+    required this.pubkey,
+    required this.desiredCoverage,
+    required this.missingCoverage,
   });
 }
 
