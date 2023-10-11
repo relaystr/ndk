@@ -250,4 +250,35 @@ void main() {
       expect(example1.score, lessThan(example2.score));
     });
   });
+
+  group('scoring', () {
+    test('consistency', () async {
+      final pubkeys = ['alice', 'bob', 'carol', 'dave'];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.readOnly,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+        rankingScoringConfig: const RelayRankingScoringConfig(),
+      );
+
+      final example1 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example1.com';
+      });
+      final example2 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example2.com';
+      });
+      final example3 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example3.com';
+      });
+      final example5 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example5.com';
+      });
+
+      expect(example2.score, equals(example3.score));
+      expect(example1.score, equals(example5.score));
+      expect(example1.score, lessThan(example2.score));
+    });
+  });
 }
