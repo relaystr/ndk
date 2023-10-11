@@ -142,7 +142,8 @@ void main() {
 
     // ================================================================================================
 
-    test(skip: 'WiP', 'query all keys and do not use redundant relays',
+    test(
+        skip: 'WiP', 'query all keys and do not use redundant relays',
         () async {
       await startServers();
       RelayManager manager = RelayManager();

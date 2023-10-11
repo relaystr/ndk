@@ -13,6 +13,10 @@ import 'nips/nip01/filter.dart';
 import 'package:async/async.dart' show StreamGroup;
 
 class RelayManager {
+
+  static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;
+  static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
+
   /// Bootstrap relays from these to start looking for NIP65/NIP03 events
   static const List<String> BOOTSTRAP_RELAYS = [
     "wss://purplepag.es",
@@ -64,7 +68,7 @@ class RelayManager {
   }
 
   /// Connect a new relay
-  Future<bool> connectRelay(String url, {int connectTimeout=3}) async {
+  Future<bool> connectRelay(String url, {int connectTimeout=DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
     relays[url] = Relay(url);
     relays[url]!.connecting = true;
     webSockets[url] = await WebSocket.connect(url).timeout(Duration(seconds: connectTimeout)).onError((error, stackTrace) {
@@ -78,10 +82,10 @@ class RelayManager {
     webSockets[url]!.listen((message) {
       _handleIncommingMessage(message, url);
     }, onError: (error) async {
-      /// todo: handle this better
+      /// todo: handle this better, should clean subscription stuff
       throw Exception("Error in socket");
     }, onDone: () {
-      /// todo: handle this better
+      /// todo: handle this better, should clean subscription stuff
     });
 
     if (isWebSocketOpen(url)) {
@@ -116,9 +120,6 @@ class RelayManager {
     return StreamGroup.merge(streams);
   }
 
-  int DEFAULT_STREAM_TIMEOUT = 5;
-
-
   Stream<Nip01Event> request(String url, Filter filter, {bool closeOnEOSE = true, int? idleTimeout}) {
     WebSocket? webSocket = webSockets[url];
     if (webSocket != null) {
@@ -137,7 +138,7 @@ class RelayManager {
       //   return {};
       // });
 
-      return _subscriptions[id]!.stream.timeout(Duration(seconds: idleTimeout?? DEFAULT_STREAM_TIMEOUT), onTimeout: (sink) {
+      return _subscriptions[id]!.stream.timeout(Duration(seconds: idleTimeout?? DEFAULT_STREAM_IDLE_TIMEOUT), onTimeout: (sink) {
         sink.close();
       });
     }
