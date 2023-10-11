@@ -149,4 +149,43 @@ void main() {
       });
     });
   });
+
+  group('exceptions', () {
+    test('empty pubkeys', () async {
+      expect(
+        () => rankRelays(
+          pubkeys: [],
+          direction: ReadWriteMarker.readWrite,
+          eventData: exampleEventData,
+          connectedRelays: [],
+          pubkeyCoverage: 2,
+        ),
+        throwsA(Exception),
+      );
+    });
+    test('empty event data', () async {
+      expect(
+        () => rankRelays(
+          pubkeys: ["something"],
+          direction: ReadWriteMarker.readWrite,
+          eventData: [],
+          connectedRelays: [],
+          pubkeyCoverage: 2,
+        ),
+        throwsA(Exception),
+      );
+    });
+    test('coverage < 1', () async {
+      expect(
+        () => rankRelays(
+          pubkeys: ["something"],
+          direction: ReadWriteMarker.readWrite,
+          eventData: exampleEventData,
+          connectedRelays: [],
+          pubkeyCoverage: 0,
+        ),
+        throwsA(Exception),
+      );
+    });
+  });
 }
