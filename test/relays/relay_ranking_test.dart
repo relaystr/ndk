@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -98,6 +100,35 @@ void main() {
       expect(result.notCoveredPubkeys[0].desiredCoverage, equals(2));
       expect(result.notCoveredPubkeys[0].missingCoverage, equals(1));
     });
+
+    test('results contain covered pubkeys', () async {
+      final pubkeys = ['alice', 'bob', 'carol'];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.readOnly,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+      );
+
+      final example1 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example1.com';
+      });
+      final example2 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example2.com';
+      });
+      final example3 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example3.com';
+      });
+
+      expect(example1.coveredPubkeys, contains('alice'));
+      expect(example1.coveredPubkeys, contains('alice'));
+
+      expect(example2.coveredPubkeys, contains('bob'));
+      expect(example3.coveredPubkeys, contains('bob'));
+
+      expect(example3.coveredPubkeys, contains('carol'));
+    });
   });
 
   group('read write direction', () {
@@ -186,6 +217,37 @@ void main() {
         ),
         throwsA(Exception),
       );
+    });
+  });
+
+  group('scoring', () {
+    test('readonly', () async {
+      final pubkeys = ['alice', 'bob', 'carol', 'dave'];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.readOnly,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+        rankingScoringConfig: const RelayRankingScoringConfig(),
+      );
+
+      final example1 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example1.com';
+      });
+      final example2 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example2.com';
+      });
+      final example3 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example3.com';
+      });
+      final example5 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example5.com';
+      });
+
+      expect(example2.score, equals(example3.score));
+      expect(example1.score, equals(example5.score));
+      expect(example1.score, lessThan(example2.score));
     });
   });
 }
