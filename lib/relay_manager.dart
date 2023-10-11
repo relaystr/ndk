@@ -29,11 +29,11 @@ class RelayManager {
   /// Global webSocket registry by url
   Map<String, WebSocket> webSockets = {};
 
-  /// Global completer subscriptions by request id
-  final Map<String, Completer<Map<String, dynamic>>> _completers = {};
-
-  /// Global subscriptions by request id
+  /// Global subscriptions streams by request id
   final Map<String, StreamController<Nip01Event>> _subscriptions = {};
+
+  /// Queries close stream flag map by request Id (value true will close stream when receive EOSE, false will keep listening until client closes)
+  final Map<String, bool> _requestQueries = {};
 
   /// Global pub keys mappings by url
   Map<String, Set<PubkeyMapping>> pubKeyMappings = {};
@@ -45,7 +45,7 @@ class RelayManager {
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
-  Future<void> init({List<String> bootstrapRelays = BOOTSTRAP_RELAYS}) async {
+  Future<void> connect({List<String> bootstrapRelays = BOOTSTRAP_RELAYS}) async {
     await Future.wait(bootstrapRelays.map((url) => connectRelay(url)).toList());
   }
   bool isWebSocketOpen(String url) {
@@ -91,7 +91,15 @@ class RelayManager {
     return false;
   }
 
+  Stream<Nip01Event> subscription(Filter filter) {
+    return _doSubscriptionOrQuery(filter, false);
+  }
+
   Stream<Nip01Event> query(Filter filter) {
+    return _doSubscriptionOrQuery(filter, true);
+  }
+
+  Stream<Nip01Event> _doSubscriptionOrQuery(Filter filter, bool closeOnEOSE, {int? idleTimeout}) {
     /// extract from the filter which pubKeys and directions we should use the query for such filter
     List<PubkeyMapping> pubKeys = filter.extractPubKeyMappingsFromFilter();
 
@@ -103,21 +111,24 @@ class RelayManager {
     for (String url in bestRelays.keys) {
       List<PubkeyMapping>? pubKeys = bestRelays[url];
       Filter dedicatedFilter = filter.splitForPubKeys(pubKeys!);
-      streams.add(request(url,dedicatedFilter));
+      streams.add(request(url,dedicatedFilter, closeOnEOSE:closeOnEOSE, idleTimeout: idleTimeout));
     }
     return StreamGroup.merge(streams);
   }
 
-  Stream<Nip01Event> request(String url, Filter filter) {
+  int DEFAULT_STREAM_TIMEOUT = 5;
+
+
+  Stream<Nip01Event> request(String url, Filter filter, {bool closeOnEOSE = true, int? idleTimeout}) {
     WebSocket? webSocket = webSockets[url];
     if (webSocket != null) {
       // TODO should check if connected / state
       String id = Random().nextInt(4294967296).toString();
       List<dynamic> request = ["REQ", id, filter.toMap()];
       final encoded = jsonEncode(request);
-      var completer = Completer<Map<String, dynamic>>();
-      _completers[id] = completer;
-
+      // var completer = Completer<Map<String, dynamic>>();
+      // _completers[id] = completer;
+      _requestQueries[id] = closeOnEOSE;
       _subscriptions[id] = StreamController<Nip01Event>();
       webSocket.add(encoded);
       // var future =
@@ -126,7 +137,9 @@ class RelayManager {
       //   return {};
       // });
 
-      return _subscriptions[id]!.stream;
+      return _subscriptions[id]!.stream.timeout(Duration(seconds: idleTimeout?? DEFAULT_STREAM_TIMEOUT), onTimeout: (sink) {
+        sink.close();
+      });
     }
     return const Stream.empty();
   }
@@ -141,7 +154,7 @@ class RelayManager {
       // log("OK: ${eventJson[1]}");
 
       // used for await on query
-      _completers[eventJson[1]]?.complete(eventJson[1]);
+      //_completers[eventJson[1]]?.complete(eventJson[1]);
       return;
     }
 
@@ -158,10 +171,10 @@ class RelayManager {
       return;
     }
     if (eventJson[0] == 'EOSE') {
-      // log("EOSE: ${eventJson[1]}, $relayUrl");
-      // _eoseStreamController.add(eventJson);
-      // used for await on query
-      _completers[eventJson[1]]?.complete(eventJson[1]);
+      // print("EOSE: ${eventJson[1]}, $url");
+      if (_requestQueries[eventJson[1]]!=null && _requestQueries[eventJson[1]]!) {
+        _subscriptions[eventJson[1]]?.close();
+      }
       return;
     }
     // if (eventJson[0] == 'AUTH') {
@@ -200,6 +213,7 @@ class RelayManager {
             pubKey == pubKeyMapping.pubKey && pubKeyMapping.isWrite());
   }
 
+  /// relay -> list of pubKey mappings
   Map<String, List<PubkeyMapping>> _calculateBestRelays(
       List<PubkeyMapping> pubKeys) {
     /// todo: go fetch nip65 for pubKeys and check connectivity
