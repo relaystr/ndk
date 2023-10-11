@@ -151,7 +151,7 @@ void main() {
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
-      /// relay 1, 3 & 4 should be used, since relay 2 keys are all also kept on relay 1 so not needed
+      /// only relay 1, 3 & 4 should be used, since relay 2 keys are all also kept on relay 1 so should not be needed
       Stream<Nip01Event> query = manager.subscription(Filter(kinds: [
         Nip01Event.textNoteKind
       ], authors: [
@@ -167,6 +167,7 @@ void main() {
           fail("should not use relay 2 (${relay2.url}) in gossip model");
         }
       }
+      /// todo: how to ALSO check if actually all notes are returned in the stream?
       //List<Nip01Event> expectedAllNotes = [...key1TextNotes.values, ...key2TextNotes.values, ...key3TextNotes.values, ...key4TextNotes.values];
       //expect(query, emitsInAnyOrder(key1TextNotes.values));
 

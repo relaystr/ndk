@@ -4,7 +4,6 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 class PubkeyMapping {
   String pubKey;
 
-  /// if marker is missing it means both read && write
   ReadWriteMarker rwMarker;
 
   PubkeyMapping({

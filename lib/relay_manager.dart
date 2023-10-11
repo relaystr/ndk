@@ -12,6 +12,8 @@ import 'nips/nip01/event.dart';
 import 'nips/nip01/filter.dart';
 import 'package:async/async.dart' show StreamGroup;
 
+import 'nips/nip65/nip65.dart';
+
 class RelayManager {
 
   static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;
@@ -39,8 +41,8 @@ class RelayManager {
   /// Queries close stream flag map by request Id (value true will close stream when receive EOSE, false will keep listening until client closes)
   final Map<String, bool> _requestQueries = {};
 
-  /// Global pub keys mappings by url
-  Map<String, Set<PubkeyMapping>> pubKeyMappings = {};
+  /// Global nip65 map by pubKey
+  Map<String,Nip65> nip65s = {};
 
   // todo: think about scoring according to nip65 nip05 kind03 etc
   // todo:  what happens if relay go down? and comes up? how do we make active subrscriptions to that relay again?
@@ -127,16 +129,9 @@ class RelayManager {
       String id = Random().nextInt(4294967296).toString();
       List<dynamic> request = ["REQ", id, filter.toMap()];
       final encoded = jsonEncode(request);
-      // var completer = Completer<Map<String, dynamic>>();
-      // _completers[id] = completer;
       _requestQueries[id] = closeOnEOSE;
       _subscriptions[id] = StreamController<Nip01Event>();
       webSocket.add(encoded);
-      // var future =
-      //     completer.future.timeout(const Duration(seconds: 10), onTimeout: () {
-      //   // log("Rtimeout: ${id}, $url");
-      //   return {};
-      // });
 
       return _subscriptions[id]!.stream.timeout(Duration(seconds: idleTimeout?? DEFAULT_STREAM_IDLE_TIMEOUT), onTimeout: (sink) {
         sink.close();
@@ -155,7 +150,9 @@ class RelayManager {
       // log("OK: ${eventJson[1]}");
 
       // used for await on query
-      //_completers[eventJson[1]]?.complete(eventJson[1]);
+      if (_requestQueries[eventJson[1]]!=null && _requestQueries[eventJson[1]]!) {
+        _subscriptions[eventJson[1]]?.close();
+      }
       return;
     }
 
@@ -168,7 +165,6 @@ class RelayManager {
       Nip01Event event = Nip01Event.fromJson(eventJson[2]);
       event.sources.add(url);
       _subscriptions[eventJson[1]]?.add(event);
-      // _completers[eventJson[1]]?.complete(eventJson[2]);
       return;
     }
     if (eventJson[0] == 'EOSE') {
@@ -200,28 +196,48 @@ class RelayManager {
     return relay != null && relay.supportsNip(nip);
   }
 
-  bool _isPubKeyForRead(String url, String pubKey) {
-    Set<PubkeyMapping>? set = pubKeyMappings[url];
-    return set != null &&
-        set.any((pubKeyMapping) =>
-            pubKey == pubKeyMapping.pubKey && pubKeyMapping.isRead());
-  }
-
-  bool _isPubKeyForWrite(String url, String pubKey) {
-    Set<PubkeyMapping>? set = pubKeyMappings[url];
-    return set != null &&
-        set.any((pubKeyMapping) =>
-            pubKey == pubKeyMapping.pubKey && pubKeyMapping.isWrite());
-  }
+  // bool _isPubKeyForRead(String url, String pubKey) {
+  //   Set<PubkeyMapping>? set = pubKeyMappings[url];
+  //   return set != null &&
+  //       set.any((pubKeyMapping) =>
+  //           pubKey == pubKeyMapping.pubKey && pubKeyMapping.isRead());
+  // }
+  //
+  // bool _isPubKeyForWrite(String url, String pubKey) {
+  //   Set<PubkeyMapping>? set = pubKeyMappings[url];
+  //   return set != null &&
+  //       set.any((pubKeyMapping) =>
+  //           pubKey == pubKeyMapping.pubKey && pubKeyMapping.isWrite());
+  // }
 
   /// relay -> list of pubKey mappings
   Map<String, List<PubkeyMapping>> _calculateBestRelays(
       List<PubkeyMapping> pubKeys) {
+
+    Map<String,List<PubkeyMapping>> byScore = _relaysByScore(pubKeys);
+    if (byScore!=null && byScore.isNotEmpty) {
+      return byScore;
+    }
+
+    /// if everything fails just return a map of all currently registered connected relays for each pubKeys
+    return _allConnectedRelaysForAllPubKeysMapping(pubKeys);
+  }
+
+  Map<String,List<PubkeyMapping>> _relaysByScore(pubKeys) {
+    Map<String, List<PubkeyMapping>> map = {};
     /// todo: go fetch nip65 for pubKeys and check connectivity
-    /// for now just return a map of all currently registered relays for each pubKeys
+    for (PubkeyMapping pubKey in pubKeys) {
+      Nip65 nip65 = null;
+    }
+    return map;
+  }
+
+  Map<String, List<PubkeyMapping>> _allConnectedRelaysForAllPubKeysMapping(List<PubkeyMapping> pubKeys) {
     Map<String, List<PubkeyMapping>> map = {};
     for (var relay in relays.keys) {
-      map[relay] = pubKeys;
+      if (isWebSocketOpen(relay)) {
+        map[relay] = pubKeys;
+      }
     }
     return map;
   }
