@@ -16,12 +16,13 @@ RelayRankingResult rankRelays({
   required List<Nip01Event> eventData,
   List<Relay> connectedRelays = const [],
   int pubkeyCoverage = 2,
-  RelayRankingConfig rankingConfig = const RelayRankingConfig(),
+  RelayRankingScoringConfig rankingScoringConfig =
+      const RelayRankingScoringConfig(),
 }) {
   throw UnimplementedError();
 }
 
-class RelayRankingConfig {
+class RelayRankingScoringConfig {
   final int connectedRelaysScore;
   final int nip65Score;
   final int nip05Score;
@@ -29,7 +30,7 @@ class RelayRankingConfig {
   final int lastFetchedScore;
   final int tagHintScore;
 
-  const RelayRankingConfig({
+  const RelayRankingScoringConfig({
     this.connectedRelaysScore = 60,
     this.nip65Score = 50,
     this.nip05Score = 40,

@@ -45,6 +45,13 @@ void main() {
           ["r", "wss://dave.example.com", "write"],
         ],
         content: ""),
+    Nip01Event(
+        pubKey: "singleRelay",
+        kind: Nip65.kind,
+        tags: [
+          ["r", "wss://singleRelay.example"],
+        ],
+        content: ""),
   ];
 
   group('Relay Ranking', () {
@@ -56,7 +63,7 @@ void main() {
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
-        rankingConfig: RelayRankingConfig(),
+        rankingScoringConfig: RelayRankingScoringConfig(),
       );
 
       expect(result, isA<RelayRankingResult>());
@@ -73,11 +80,26 @@ void main() {
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
-        rankingConfig: RelayRankingConfig(),
+        rankingScoringConfig: RelayRankingScoringConfig(),
       );
       expect(result.notCoveredPubkeys.length, equals(1));
       expect(result.notCoveredPubkeys[0].pubkey, equals('unknown'));
       expect(result.notCoveredPubkeys[0].desiredCoverage, equals(2));
+    });
+
+    test('partial coverage', () async {
+      final pubkeys = ['singleRelay'];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.readOnly,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+      );
+
+      expect(result.notCoveredPubkeys.length, equals(1));
+      expect(result.notCoveredPubkeys[0].desiredCoverage, equals(2));
+      expect(result.notCoveredPubkeys[0].missingCoverage, equals(1));
     });
   });
 }
