@@ -221,7 +221,7 @@ void main() {
   });
 
   group('scoring', () {
-    test('readonly', () async {
+    test('consistency', () async {
       final pubkeys = ['alice', 'bob', 'carol', 'dave'];
       final result = rankRelays(
         pubkeys: pubkeys,
