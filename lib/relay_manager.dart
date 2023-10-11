@@ -35,7 +35,7 @@ class RelayManager {
   /// Global subscriptions by request id
   final Map<String, StreamController<Nip01Event>> _subscriptions = {};
 
-  // Global pub keys mappings by url
+  /// Global pub keys mappings by url
   Map<String, Set<PubkeyMapping>> pubKeyMappings = {};
 
   // todo: think about scoring according to nip65 nip05 kind03 etc

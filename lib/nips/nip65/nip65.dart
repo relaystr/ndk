@@ -1,5 +1,3 @@
-// ignore_for_file: file_names
-
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 
 import '../nip01/event.dart';
@@ -7,6 +5,7 @@ import '../nip01/event.dart';
 class Nip65 {
   static const int kind = 10002;
 
+  // Pub keys -> markers
   Map<String, ReadWriteMarker> relays = {};
 
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
