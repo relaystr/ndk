@@ -9,6 +9,7 @@ import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/nips/nip02/metadata.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:async/async.dart' show StreamGroup;
 
@@ -185,20 +186,26 @@ void main() {
       await stopServers();
     });
 
-    getFeedTextNotesForNpub(String npub, RelayManager manager, {int count=1}) async {
-      int i=1;
-      while (i<=count) {
+    getFeedTextNotesForNpub(String npub, RelayManager manager,
+        {int iterations = 1}) async {
+      int i = 1;
+      while (i <= iterations) {
         final t0 = DateTime.now();
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        Nip02ContactList? contactList = await manager.loadContactList(
-            key.publicKey);
+        Nip02ContactList? contactList =
+            await manager.loadContactList(key.publicKey);
 
         if (contactList != null) {
-          Stream<Nip01Event> query = await manager.query(Filter(kinds: [
-            Nip01Event.textNoteKind
-          ], authors: contactList.contacts, limit: 10), relayMinCount: 1);
+          print(
+              "Have contact list with ${contactList.contacts.length} contacts");
+          Stream<Nip01Event> query = await manager.query(
+              Filter(
+                  kinds: [Nip01Event.textNoteKind],
+                  authors: contactList.contacts,
+                  limit: 10),
+              relayMinCount: 2);
           List<Nip01Event> events = await query.toList();
           Map<String, int> eventCountsByRelay = {};
           events.forEach((event) {
@@ -209,9 +216,8 @@ void main() {
                 eventCountsByRelay[event.sources.first]! + 1;
           });
 
-          print("Received ${events
-              .length} text note events from ${eventCountsByRelay
-              .length} relays");
+          print(
+              "Received ${events.length} text note events from ${eventCountsByRelay.length} relays");
 
           // List<MapEntry<String, int>> sortedEntries = eventCountsByRelay.entries.toList()
           //   ..sort((a, b) => b.value.compareTo(a.value));
@@ -220,36 +226,86 @@ void main() {
           //   print("Received ${value} text note events from relay $key");
           // });
           final t1 = DateTime.now();
-          print("===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
+          print(
+              "===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
           i++;
         }
       }
     }
 
+    calculateBestRelaysForPubKeys(String npub, RelayManager manager,
+        {int iterations = 1}) async {
+      int i = 1;
+      while (i <= iterations) {
+        final t0 = DateTime.now();
+
+        KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
+
+        Nip02ContactList? contactList =
+        await manager.loadContactList(key.publicKey);
+
+        if (contactList != null) {
+          Map<String, List<PubkeyMapping>> bestRelays =
+          await manager.calculateBestRelaysForPubKeyMappings(
+              contactList.contacts
+                  .map((pubKey) => PubkeyMapping(
+                  pubKey: pubKey, rwMarker: ReadWriteMarker.writeOnly))
+                  .toList(),
+              relayMinCountPerPubKey: 2,
+            onProgress: (stepName, count,total) {
+                if (count % 100 == 0 || (total-count) < 10) {
+                  print("[PROGRESS] $stepName: $count/$total");
+                }
+            }
+          );
+          print("BEST ${bestRelays.length} RELAYS:");
+          bestRelays.forEach((url, pubKeys) {
+            print("  $url ${pubKeys.length} follows");
+          });
+
+        }
+        final t1 = DateTime.now();
+        print(
+            "===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
+        i++;
+      }
+    }
+
     // ================================================================================================
     //
-    test(
-        'Love is Bitcoin (3k follows) feed text notes', () async {
+    test('Love is Bitcoin (3k follows) feed best relays', () async {
       RelayManager manager = RelayManager();
       await manager.connect();
-      await getFeedTextNotesForNpub("npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx", manager, count: 3);
-    });
-    test(
-        'Fmar feed text notes', () async {
+      String npub =
+          "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx";
+      await calculateBestRelaysForPubKeys(npub, manager, iterations: 2);
+      // await getFeedTextNotesForNpub(npub,manager, count: 3);
+    }, timeout: const Timeout.factor(10));
+
+    test('Fmar feed best relays', () async {
       RelayManager manager = RelayManager();
       await manager.connect();
+      String npub =
+          "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams";
+      await calculateBestRelaysForPubKeys(npub, manager, iterations: 2);
+      // await getFeedTextNotesForNpub(npub,manager, count: 3);
+    }, timeout: const Timeout.factor(10));
 
-      await getFeedTextNotesForNpub("npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams", manager, count: 1);
-    });
-    test(
-        'Leo feed text notes', () async {
+    test('Leo feed best relays', () async {
       RelayManager manager = RelayManager();
       await manager.connect();
+      String npub = "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur";
+      await calculateBestRelaysForPubKeys(npub, manager, iterations: 2);
+      // await getFeedTextNotesForNpub(npub,manager,iterations: 3);
+    }, timeout: const Timeout.factor(10));
 
-      await getFeedTextNotesForNpub("npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur", manager, count: 3);
-    });
-
-
+    test('Fiatjaf feed best relays', () async {
+      RelayManager manager = RelayManager();
+      await manager.connect();
+      String npub = "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6";
+      await calculateBestRelaysForPubKeys(npub, manager, iterations: 2);
+      // await getFeedTextNotesForNpub(npub,manager,iterations: 3);
+    }, timeout: const Timeout.factor(10));
   });
 }
 

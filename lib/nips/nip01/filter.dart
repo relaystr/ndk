@@ -76,10 +76,9 @@ class Filter {
         : [];
   }
 
-  /// todo: this should not be here, since it is lib code and not spec stuff
-  Filter splitForPubKeys(List<PubkeyMapping> pubKeyMappings) {
+  Filter cloneWithAuthors(List<String> authors) {
     Map<String, dynamic> map = toMap();
-    map['authors'] = pubKeyMappings.map((e) => e.pubKey).toList();
+    map['authors'] = authors;
     return Filter.fromJson(map);
   }
 }
