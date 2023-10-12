@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
+import 'package:dart_ndk/nips/nip02/metadata.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:async/async.dart' show StreamGroup;
 
 import '../mocks/mock_relay.dart';
 
@@ -130,7 +135,7 @@ void main() {
       await manager.connect(
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
-      Stream<Nip01Event> query = manager.query(
+      Stream<Nip01Event> query = await manager.query(
           Filter(kinds: [Nip01Event.textNoteKind], authors: [key4.publicKey]));
       await for (final event in query.take(4)) {
         print(event);
@@ -143,8 +148,8 @@ void main() {
     // ================================================================================================
 
     test(
-        skip: 'WiP', 'query all keys and do not use redundant relays',
-        () async {
+        // skip: 'WiP',
+        'query all keys and do not use redundant relays', () async {
       await startServers();
       RelayManager manager = RelayManager();
       await manager.connect(
@@ -152,26 +157,72 @@ void main() {
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1, 3 & 4 should be used, since relay 2 keys are all also kept on relay 1 so should not be needed
-      Stream<Nip01Event> query = manager.subscription(Filter(kinds: [
-        Nip01Event.textNoteKind
-      ], authors: [
-        key1.publicKey,
-        key2.publicKey,
-        key3.publicKey,
-        key4.publicKey
-      ]));
+      Stream<Nip01Event> query = await manager.subscription(
+          Filter(kinds: [
+            Nip01Event.textNoteKind
+          ], authors: [
+            key1.publicKey,
+            key2.publicKey,
+            key3.publicKey,
+            key4.publicKey
+          ]),
+          relayMinCount: 1);
 
       await for (final event in query.take(4)) {
         print(event);
         if (event.sources.contains(relay2.url)) {
           fail("should not use relay 2 (${relay2.url}) in gossip model");
         }
+        if (event.sources.contains(relay3.url)) {
+          fail("should not use relay 3 (${relay3.url}) in gossip model");
+        }
       }
+
       /// todo: how to ALSO check if actually all notes are returned in the stream?
       //List<Nip01Event> expectedAllNotes = [...key1TextNotes.values, ...key2TextNotes.values, ...key3TextNotes.values, ...key4TextNotes.values];
       //expect(query, emitsInAnyOrder(key1TextNotes.values));
 
       await stopServers();
+    });
+
+    // ================================================================================================
+
+    test(
+        // skip: 'WiP',
+        'Love is Bitcoin npub from external relays', () async {
+      String fmarNpub = "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx";
+      KeyPair fmar = KeyPair.justPublicKey(Helpers.decodeBech32(fmarNpub)[0]);
+      RelayManager manager = RelayManager();
+      try {
+        await manager.connect();
+      } catch (e) {
+        print(e);
+      }
+
+      Stream<Nip01Event> contactListQuery = await manager.query(
+          Filter(kinds: [Nip02ContactList.kind], authors: [fmar.publicKey]),
+          relayMinCount: manager.relays.length);
+
+      Nip02ContactList? contactList;
+
+      await for (final event in contactListQuery) {
+        if (contactList==null || contactList.createdAt < event.createdAt) {
+          contactList = Nip02ContactList.fromEvent(event);
+          print("FOUND ${contactList.contacts
+              .length} contacts, querying for text notes from ${contactList.sources}");
+        }
+      }
+
+      if (contactList != null) {
+        print("FOUND ${contactList.contacts
+            .length} contacts, querying for text notes");
+        Stream<Nip01Event> query = await manager.subscription(Filter(kinds: [
+          Nip01Event.textNoteKind
+        ], authors: contactList.contacts), relayMinCount: 1);
+        await for (final event in query.take(4)) {
+          print(event);
+        }
+      }
     });
   });
 }

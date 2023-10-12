@@ -18,4 +18,16 @@ class PubkeyMapping {
   bool isWrite() {
     return rwMarker.isWrite;
   }
+
+  @override
+  String toString() {
+    String result = '$pubKey ';
+    if (rwMarker == ReadWriteMarker.readOnly) {
+      result += "(read)";
+    }
+    if (rwMarker == ReadWriteMarker.writeOnly) {
+      result += "(write)";
+    }
+    return result;
+  }
 }

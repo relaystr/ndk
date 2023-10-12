@@ -57,4 +57,9 @@ class Nip65 {
       publishAt: createdAt,
     );
   }
+
+  @override
+  String toString() {
+    return 'Nip65{relays: $relays}';
+  }
 }
