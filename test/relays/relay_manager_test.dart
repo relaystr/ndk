@@ -185,70 +185,68 @@ void main() {
       await stopServers();
     });
 
-    getFeedTextNotesForNpub(String npub, RelayManager manager) async {
-      KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
+    getFeedTextNotesForNpub(String npub, RelayManager manager, {int count=1}) async {
+      int i=1;
+      while (i<=count) {
+        final t0 = DateTime.now();
 
-      Nip02ContactList? contactList = await manager.loadContactList(key.publicKey);
+        KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-      if (contactList != null) {
-        Stream<Nip01Event> query = await manager.query(Filter(kinds: [
-          Nip01Event.textNoteKind
-        ], authors: contactList.contacts, limit: 10), relayMinCount: 2);
-        List<Nip01Event> events = await query.toList();
-        Map<String,int> eventCountsByRelay = {};
-        events.forEach((event) {
-          if (eventCountsByRelay[event.sources.first]==null) {
-            eventCountsByRelay[event.sources.first] = 0;
-          }
-          eventCountsByRelay[event.sources.first]= eventCountsByRelay[event.sources.first]!+1;
-        });
-        List<MapEntry<String, int>> sortedEntries = eventCountsByRelay.entries.toList()
+        Nip02ContactList? contactList = await manager.loadContactList(
+            key.publicKey);
 
-          ..sort((a, b) => b.value.compareTo(a.value));
-        eventCountsByRelay = Map<String, int>.fromEntries(sortedEntries);
+        if (contactList != null) {
+          Stream<Nip01Event> query = await manager.query(Filter(kinds: [
+            Nip01Event.textNoteKind
+          ], authors: contactList.contacts, limit: 10), relayMinCount: 2);
+          List<Nip01Event> events = await query.toList();
+          Map<String, int> eventCountsByRelay = {};
+          events.forEach((event) {
+            if (eventCountsByRelay[event.sources.first] == null) {
+              eventCountsByRelay[event.sources.first] = 0;
+            }
+            eventCountsByRelay[event.sources.first] =
+                eventCountsByRelay[event.sources.first]! + 1;
+          });
 
-        eventCountsByRelay.forEach((key, value) {
-          print("Received ${value} text note events from relay $key");
-        });
+          print("Received ${events
+              .length} text note events from ${eventCountsByRelay
+              .length} relays");
+
+          // List<MapEntry<String, int>> sortedEntries = eventCountsByRelay.entries.toList()
+          //   ..sort((a, b) => b.value.compareTo(a.value));
+          // eventCountsByRelay = Map<String, int>.fromEntries(sortedEntries);
+          // eventCountsByRelay.forEach((key, value) {
+          //   print("Received ${value} text note events from relay $key");
+          // });
+          final t1 = DateTime.now();
+          print("===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
+          i++;
+        }
       }
     }
 
     // ================================================================================================
     //
     test(
-        'Love is Bitcoin feed text notes', () async {
+        'Love is Bitcoin (3k follows) feed text notes', () async {
       RelayManager manager = RelayManager();
       await manager.connect();
-      await getFeedTextNotesForNpub("npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx", manager);
+      await getFeedTextNotesForNpub("npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx", manager, count: 3);
     });
     test(
         'Fmar feed text notes', () async {
       RelayManager manager = RelayManager();
       await manager.connect();
 
-      final t0 = DateTime.now();
-      await getFeedTextNotesForNpub("npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams", manager);
-      final t1 = DateTime.now();
-      print("===== 1st time took ${t1.difference(t0).inMilliseconds} ms");
-
-      await getFeedTextNotesForNpub("npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams", manager);
-      final t2 = DateTime.now();
-      print("===== 2nd time took ${t2.difference(t1).inMilliseconds} ms");
-
+      await getFeedTextNotesForNpub("npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams", manager, count: 3);
     });
     test(
-        'leo feed text notes', () async {
+        'Leo feed text notes', () async {
       RelayManager manager = RelayManager();
       await manager.connect();
 
-      final t0 = DateTime.now();
-      await getFeedTextNotesForNpub("npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur", manager);
-      final t1 = DateTime.now();
-      print("===== 1st time took ${t1.difference(t0).inMilliseconds} ms");
-
-      await getFeedTextNotesForNpub("npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur", manager);
-      final t2 = DateTime.now();
-      print("===== 2nd time took ${t2.difference(t1).inMilliseconds} ms");
+      await getFeedTextNotesForNpub("npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur", manager, count: 3);
     });
 
 

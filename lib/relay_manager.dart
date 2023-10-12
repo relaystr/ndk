@@ -18,8 +18,8 @@ import 'package:async/async.dart' show StreamGroup;
 import 'nips/nip65/nip65.dart';
 
 class RelayManager {
-  static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;
-  static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
+  static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 1;
+  static const int DEFAULT_STREAM_IDLE_TIMEOUT = 1;
   static const int DEFAULT_BEST_RELAYS_MIN_COUNT = 2;
 
   /// Bootstrap relays from these to start looking for NIP65/NIP03 events

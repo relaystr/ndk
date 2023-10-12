@@ -55,7 +55,7 @@ class MockRelay {
             List<dynamic> eose = [];
             eose.add("EOSE");
             eose.add(requestId);
-            webSocket!.add(jsonEncode(eose));
+            webSocket.add(jsonEncode(eose));
           }
         });
         log('Listening on localhost:${server.port}');
