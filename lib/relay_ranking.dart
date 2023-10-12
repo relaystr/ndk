@@ -19,6 +19,18 @@ RelayRankingResult rankRelays({
   RelayRankingScoringConfig rankingScoringConfig =
       const RelayRankingScoringConfig(),
 }) {
+  if (pubkeys.isEmpty) {
+    throw ArgumentError('pubkeys cannot be empty');
+  }
+
+  if (pubkeyCoverage < 1) {
+    throw ArgumentError('pubkeyCoverage cannot be less than 1');
+  }
+
+  if (eventData.isEmpty) {
+    throw ArgumentError('eventData cannot be empty');
+  }
+
   throw UnimplementedError();
 }
 

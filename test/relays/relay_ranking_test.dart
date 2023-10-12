@@ -227,7 +227,7 @@ void main() {
           connectedRelays: [],
           pubkeyCoverage: 2,
         ),
-        throwsA(Exception),
+        throwsA(isA<ArgumentError>()),
       );
     });
     test('empty event data', () async {
@@ -239,7 +239,7 @@ void main() {
           connectedRelays: [],
           pubkeyCoverage: 2,
         ),
-        throwsA(Exception),
+        throwsA(isA<ArgumentError>()),
       );
     });
     test('coverage < 1', () async {
@@ -251,7 +251,7 @@ void main() {
           connectedRelays: [],
           pubkeyCoverage: 0,
         ),
-        throwsA(Exception),
+        throwsA(isA<ArgumentError>()),
       );
     });
   });
