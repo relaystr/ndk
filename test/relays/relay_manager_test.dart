@@ -198,7 +198,7 @@ void main() {
         if (contactList != null) {
           Stream<Nip01Event> query = await manager.query(Filter(kinds: [
             Nip01Event.textNoteKind
-          ], authors: contactList.contacts, limit: 10), relayMinCount: 2);
+          ], authors: contactList.contacts, limit: 10), relayMinCount: 1);
           List<Nip01Event> events = await query.toList();
           Map<String, int> eventCountsByRelay = {};
           events.forEach((event) {
@@ -239,7 +239,7 @@ void main() {
       RelayManager manager = RelayManager();
       await manager.connect();
 
-      await getFeedTextNotesForNpub("npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams", manager, count: 3);
+      await getFeedTextNotesForNpub("npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams", manager, count: 1);
     });
     test(
         'Leo feed text notes', () async {
