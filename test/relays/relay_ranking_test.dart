@@ -51,6 +51,42 @@ void main() {
           ["r", "wss://singleRelay.example"],
         ],
         content: ""),
+    Nip01Event(
+        pubKey: "erin",
+        kind: Nip65.kind,
+        tags: [
+          ["r", "wss://example5.com"],
+          ["r", "wss://example6.com"],
+          ["r", "wss://popular.example"],
+        ],
+        content: ""),
+    Nip01Event(
+        pubKey: "frank",
+        kind: Nip65.kind,
+        tags: [
+          ["r", "wss://example6.com"],
+          ["r", "wss://example7.com"],
+          ["r", "wss://popular.example"],
+        ],
+        content: ""),
+    Nip01Event(
+        pubKey: "grace",
+        kind: Nip65.kind,
+        tags: [
+          ["r", "wss://example7.com"],
+          ["r", "wss://example8.com"],
+          ["r", "wss://popular.example"],
+        ],
+        content: ""),
+    Nip01Event(
+        pubKey: "heidi",
+        kind: Nip65.kind,
+        tags: [
+          ["r", "wss://example8.com"],
+          ["r", "wss://example9.com"],
+          ["r", "wss://popular.example"],
+        ],
+        content: ""),
   ];
 
   group('relay ranking basic tests', () {
@@ -310,6 +346,28 @@ void main() {
 
       expect(bobWriteRelay.score, lessThan(example2.score));
       expect(aliceWriteRelay.score, lessThan(example1.score));
+    });
+
+    test('highest score', () async {
+      final pubkeys = [
+        'erin',
+        'frank',
+        'grace',
+        'heidi',
+      ];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.readWrite,
+        eventData: exampleEventData,
+        connectedRelays: [],
+        pubkeyCoverage: 2,
+        rankingScoringConfig: const RelayRankingScoringConfig(),
+      );
+
+      // get the highest score
+      final highestScoreRelay = result.ranking.first;
+
+      expect(highestScoreRelay.relay.url, equals("wss://popular.example"));
     });
   });
 }
