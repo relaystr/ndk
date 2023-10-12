@@ -110,4 +110,15 @@ class Helpers {
 
     return result;
   }
+
+  static bool isNotBlank(String? str) {
+    if (str != null && str.trim() != "") {
+      return true;
+    }
+    return false;
+  }
+
+  static bool isBlank(String? str) {
+    return !isNotBlank(str);
+  }
 }

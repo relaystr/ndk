@@ -1,11 +1,17 @@
+import 'dart:convert';
+
+import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+
 import '../nip01/event.dart';
 
 class Nip02ContactList {
   static const int kind = 3;
 
   List<String> contacts = [];
-  List<String> relays = [];
+  List<String> contactRelays = [];
   List<String> petnames = [];
+  Map<String, ReadWriteMarker> relaysInContent = {};
 
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   List<String> sources = [];
@@ -28,8 +34,30 @@ class Nip02ContactList {
         }
       }
       contacts.add(contact);
-      relays.add(relay);
+      contactRelays.add(relay);
       petnames.add(petname);
+    }
+    if (Helpers.isNotBlank(event.content)) {
+      try {
+        Map<String, dynamic> json = jsonDecode(event.content);
+        if (json.entries.isNotEmpty) {
+          for (var entry in json.entries) {
+            try {
+              bool read = entry.value["read"]?? false;
+              bool write = entry.value["write"]?? false;
+              if (read || write) {
+                relaysInContent[entry.key] =
+                    ReadWriteMarker.from(read: read, write: write);
+              }
+            } catch (e) {
+              print("Could not parse relay ${entry.key} , content : ${event.content}");
+            }
+          }
+        }
+      } catch (e) {
+        // invalid json in content, ignore
+      }
+
     }
     if (event.sources!=null) {
       sources.addAll(event.sources);
@@ -42,7 +70,7 @@ class Nip02ContactList {
       kind: Nip02ContactList.kind,
       tags: contacts.map((contact) {
         int idx = contacts.indexOf(contact);
-        List<String> list = ["p", contact, relays[idx], petnames[idx]];
+        List<String> list = ["p", contact, contactRelays[idx], petnames[idx]];
         return list;
       }).toList(),
       content: "",

@@ -5,6 +5,9 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:developer' as developer;
 
+import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/nips/nip02/metadata.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 
@@ -20,7 +23,7 @@ class RelayManager {
   static const int DEFAULT_BEST_RELAYS_MIN_COUNT = 2;
 
   /// Bootstrap relays from these to start looking for NIP65/NIP03 events
-  static const List<String> BOOTSTRAP_RELAYS = [
+  static const List<String> DEFAULT_BOOTSTRAP_RELAYS = [
     "wss://purplepag.es",
     "wss://relay.damus.io",
     "wss://nos.lol",
@@ -28,6 +31,8 @@ class RelayManager {
     "wss://relay.snort.social",
     "wss://nostr.bitcoiner.social"
   ];
+
+  List<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
 
   /// Global relay registry by url
   Map<String, Relay> relays = {};
@@ -46,15 +51,16 @@ class RelayManager {
   /// Global nip65 map by pubKey
   Map<String, Nip65> nip65s = {};
 
-  // todo: think about scoring according to nip65 nip05 kind03 etc
-  // todo:  what happens if relay go down? and comes up? how do we make active subrscriptions to that relay again?
+  /// Global nip02 contact lists map by pubKey
+  Map<String, Nip02ContactList> nip02s = {};
 
   // ====================================================================================================================
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
   Future<void> connect(
-      {List<String> bootstrapRelays = BOOTSTRAP_RELAYS}) async {
+      {List<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS}) async {
+    this.bootstrapRelays = bootstrapRelays;
     await Future.wait(bootstrapRelays.map((url) => connectRelay(url)).toList());
   }
 
@@ -125,24 +131,22 @@ class RelayManager {
       {bool closeOnEOSE = true,
       int? idleTimeout,
       StreamGroup<Nip01Event>? streamGroup}) {
-    WebSocket? webSocket = webSockets[url];
-    if (webSocket != null) {
-      // TODO should check if connected / state
+    if (isWebSocketOpen(url)) {
       String id = Random().nextInt(4294967296).toString();
       List<dynamic> request = ["REQ", id, filter.toMap()];
       final encoded = jsonEncode(request);
-      // print("Request for relay $url -> $encoded");
       _requestQueries[id] = closeOnEOSE;
       _subscriptions[id] = StreamController<Nip01Event>();
       if (streamGroup != null) {
         _subscriptionGroups[id] = streamGroup;
       }
-      webSocket.add(encoded);
+      // print("Request for relay $url -> $encoded");
+      webSockets[url]!.add(encoded);
 
       return _subscriptions[id]!.stream.timeout(
           Duration(seconds: idleTimeout ?? DEFAULT_STREAM_IDLE_TIMEOUT),
           onTimeout: (sink) {
-        print("TIMED OUT on relay $url for query $filter");
+        print("TIMED OUT on relay $url");
         sink.close();
       });
     }
@@ -216,6 +220,7 @@ class RelayManager {
       {bool closeOnEOSE = true,
       int? idleTimeout,
       int relayMinCount = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
+
     /// extract from the filter which pubKeys and directions we should use the query for such filter
     List<PubkeyMapping> pubKeys = filter.extractPubKeyMappingsFromFilter();
 
@@ -232,7 +237,7 @@ class RelayManager {
     for (var url in bestRelays.keys) {
       List<PubkeyMapping>? pubKeys = bestRelays[url];
       Filter dedicatedFilter = filter.splitForPubKeys(pubKeys!);
-      print("SPLITING request on $url filter $dedicatedFilter");
+//      print("SPLITING request on $url filter $dedicatedFilter");
       streamGroup.add(request(url, dedicatedFilter,
           closeOnEOSE: closeOnEOSE,
           idleTimeout: idleTimeout,
@@ -265,60 +270,31 @@ class RelayManager {
     /// if everything fails just return a map of all currently registered connected relays for each pubKeys
     return _allConnectedRelays(pubKeys);
   }
+  Map<String, List<PubkeyMapping>> _allConnectedRelays(
+      List<PubkeyMapping> pubKeys) {
+    Map<String, List<PubkeyMapping>> map = {};
+    for (var relay in relays.keys) {
+      if (isWebSocketOpen(relay)) {
+        map[relay] = pubKeys;
+      }
+    }
+    return map;
+  }
+
 
   /// - get all nip65s for all pubKeys
   /// - construct a map of relays and pubKeys that use it in some marker direction (write for outbox feed)
-  /// - sort this map by descending amount of pubKeys (in future take other stuff into account like source of relay list other than nip65, and so on)
+  /// - sort this map by descending amount of pubKeys (in future take other stuff into account like source of relay list)
   /// - starting from the top (biggest count of pubKeys) iterate and:
   ///   - check if relay is connected or can connect
   ///   - construct a map of pubKeys and minimum amount of relays needed for each pub key coverage
   ///   - gather best Relays
-
   Future<Map<String, List<PubkeyMapping>>> _relaysByScore(
       List<PubkeyMapping> pubKeys, int relayMinCount) async {
-    Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
 
-    await for (final event in await requestRelays(
-        relays.keys.toList(),
-        Filter(
-            authors: pubKeys.map((e) => e.pubKey).toList(),
-            kinds: [Nip65.kind]))) {
-      if (nip65s[event.pubKey] == null ||
-          nip65s[event.pubKey]!.createdAt < event.createdAt) {
-        nip65s[event.pubKey] = Nip65.fromEvent(event);
-        print(
-            "Received nip65 AND UPDATED more recent version from ${event.sources}, nip65s size = ${nip65s.length}");
-      }
-    }
+    await _loadMissingRelayListsFromNip65OrNip02(pubKeys);
 
-    int i = 0;
-    for (PubkeyMapping pubKey in pubKeys) {
-      /// todo get missing nip65s in memory in batches from relays, not one by one!
-      Nip65? nip65 = nip65s[pubKey.pubKey]; //await getNip65(pubKey.pubKey);
-      if (nip65 != null) {
-        i++;
-        print("GOT nip65 $i / ${pubKeys.length}");
-        nip65!.relays.forEach((url, marker) {
-          if (pubKey.rwMarker.isWrite && marker.isWrite ||
-              pubKey.rwMarker.isRead && marker.isRead) {
-            Set<PubkeyMapping>? set = pubKeysByRelayUrl[url];
-            if (set == null) {
-              pubKeysByRelayUrl[url] = {};
-            }
-            pubKeysByRelayUrl[url]!.add(pubKey);
-          }
-        });
-      }
-    }
-
-    /// sort by pubKeys count for each relay descending
-    List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =
-        pubKeysByRelayUrl.entries.toList()
-
-          /// todo: use more stuff to improve sorting
-          ..sort((a, b) => b.value.length.compareTo(a.value.length));
-    pubKeysByRelayUrl =
-        Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
+    Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = await _buildPubKeysMapFromRelayLists(pubKeys);
 
     Map<String, Set<String>> minimumRelaysCoverageByPubkey = {};
     Map<String, List<PubkeyMapping>> bestRelays = {};
@@ -354,18 +330,109 @@ class RelayManager {
     return bestRelays;
   }
 
-  Map<String, List<PubkeyMapping>> _allConnectedRelays(
-      List<PubkeyMapping> pubKeys) {
-    Map<String, List<PubkeyMapping>> map = {};
-    for (var relay in relays.keys) {
-      if (isWebSocketOpen(relay)) {
-        map[relay] = pubKeys;
+  _loadMissingRelayListsFromNip65OrNip02(List<PubkeyMapping> pubKeys) async {
+    List<String> missingPubKeys = [];
+    for (var pubKey in pubKeys) {
+      Map<String,ReadWriteMarker>? map = getRelayMarkerMap(pubKey.pubKey);
+      if (map==null || map.isEmpty) {
+        missingPubKeys.add(pubKey.pubKey);
       }
     }
-    return map;
+    if (missingPubKeys.isNotEmpty) {
+      await for (final event in await requestRelays(
+          bootstrapRelays,
+          Filter(
+              authors: missingPubKeys,
+              kinds: [Nip65.kind, Nip02ContactList.kind]))) {
+        switch (event.kind) {
+          case Nip65.kind:
+            if (nip65s[event.pubKey] == null ||
+                nip65s[event.pubKey]!.createdAt < event.createdAt) {
+              nip65s[event.pubKey] = Nip65.fromEvent(event);
+            }
+            break;
+          case Nip02ContactList.kind:
+            if (nip02s[event.pubKey] == null ||
+                nip02s[event.pubKey]!.createdAt < event.createdAt) {
+              nip02s[event.pubKey] = Nip02ContactList.fromEvent(event);
+            }
+            break;
+        }
+      }
+    }
   }
 
-// Future<Nip65?> getNip65(String pubKey) async {
+  Future<Nip02ContactList?> loadContactList(String pubKey) async {
+    if (nip02s[pubKey]==null) {
+      Stream<Nip01Event> contactListQuery = await requestRelays( bootstrapRelays,
+          Filter(kinds: [Nip02ContactList.kind], authors: [pubKey]));
+
+      await for (final event in contactListQuery) {
+        if (nip02s[pubKey]==null || nip02s[pubKey]!.createdAt < event.createdAt) {
+          nip02s[pubKey] = Nip02ContactList.fromEvent(event);
+        }
+      }
+    }
+    return nip02s[pubKey];
+  }
+
+  Map<String,ReadWriteMarker>? getRelayMarkerMap(String pubKey) {
+    Nip65? nip65 = nip65s[pubKey]; //await getNip65(pubKey.pubKey);
+    if (nip65 != null && nip65.relays.isNotEmpty) {
+      return nip65.relays;
+    } else {
+      Nip02ContactList? nip02 = nip02s[pubKey];
+      if (nip02!=null && nip02.relaysInContent.isNotEmpty) {
+        return nip02.relaysInContent;
+      }
+    }
+    return null;
+  }
+
+  _buildPubKeysMapFromRelayLists(List<PubkeyMapping> pubKeys) async {
+    Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
+    int foundCount = 0;
+    for (PubkeyMapping pubKey in pubKeys) {
+      bool foundRelayList = false;
+      Map<String, ReadWriteMarker>? relayMap = getRelayMarkerMap(pubKey.pubKey);
+      if (relayMap!=null && relayMap.isNotEmpty) {
+        foundRelayList = true;
+        relayMap.forEach((url, marker) {
+          _handleRelayUrlForPubKey(pubKey, url,marker, pubKeysByRelayUrl);
+        });
+      }
+      if (foundRelayList) {
+        foundCount++;
+      } else {
+        print("Missing relay list from nip65 or nip02 for ${pubKey.pubKey} (${Helpers.encodeBech32(pubKey.pubKey, "npub")})");
+      }
+    }
+    print("Have lists of relays for ${foundCount}/${pubKeys.length} pubKeys "+(foundCount < pubKeys.length? "(missing ${pubKeys.length - foundCount})":""));
+
+    /// sort by pubKeys count for each relay descending
+    List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =
+    pubKeysByRelayUrl.entries.toList()
+
+    /// todo: use more stuff to improve sorting
+      ..sort((a, b) => b.value.length.compareTo(a.value.length));
+    return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
+  }
+
+  _handleRelayUrlForPubKey(PubkeyMapping pubKey, String url, ReadWriteMarker marker, Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl) {
+    String? cleanUrl = Relay.clean(url);
+    if (cleanUrl!=null) {
+      if (pubKey.rwMarker.isWrite && marker.isWrite ||
+          pubKey.rwMarker.isRead && marker.isRead) {
+        Set<PubkeyMapping>? set = pubKeysByRelayUrl[cleanUrl];
+        if (set == null) {
+          pubKeysByRelayUrl[cleanUrl] = {};
+        }
+        pubKeysByRelayUrl[cleanUrl]!.add(pubKey);
+      }
+    }
+  }
+
+// Future<Nip65?> getSingleNip65(String pubKey) async {
 //   if (nip65s[pubKey] == null) {
 //     await for (final event in await requestRelays(relays.keys.take(3).toList(), Filter(authors: [pubKey], kinds: [Nip65.kind], limit:1))) {
 //       if (nip65s[pubKey] == null || nip65s[pubKey]!.createdAt < event.createdAt) {
