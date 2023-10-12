@@ -50,6 +50,18 @@ class Nip02ContactList {
                     ReadWriteMarker.from(read: read, write: write);
               }
             } catch (e) {
+              try {
+                Map<String, dynamic> decodedValue = jsonDecode(entry.value);
+                bool read = decodedValue["read"]?? false;
+                bool write = decodedValue["write"]?? false;
+                if (read || write) {
+                  relaysInContent[entry.key] =
+                      ReadWriteMarker.from(read: read, write: write);
+                }
+                continue;
+              } catch (e) {
+                print("Could not parse relay ${entry.key} , entry : ${entry.value}");
+              }
               print("Could not parse relay ${entry.key} , content : ${event.content}");
             }
           }
