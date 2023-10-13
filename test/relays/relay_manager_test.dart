@@ -296,8 +296,8 @@ void main() {
     // ================================================================================================
     // REAL EXTERNAL RELAYS FOR SOME NPUBS
     // ================================================================================================
-    _calculateBestRelaysForNpub(String npub,
-        {int iterations = 1, required int relayMinCountPerPubKey}) async {
+    _calculateBestRelaysForNpubContactsFeed(String npub,
+        {String? expectedRelayUrl, int iterations = 1, required int relayMinCountPerPubKey}) async {
       RelayManager manager = RelayManager();
       await manager.connect();
       int i = 1;
@@ -309,24 +309,28 @@ void main() {
         Nip02ContactList? contactList =
             await manager.loadContactList(key.publicKey);
 
-        if (contactList != null) {
-          Map<String, List<PubkeyMapping>> bestRelays = await manager
-              .calculateBestRelaysForPubKeyMappings(
-                  contactList.contacts
-                      .map((pubKey) => PubkeyMapping(
-                          pubKey: pubKey, rwMarker: ReadWriteMarker.writeOnly))
-                      .toList(),
-                  relayMinCountPerPubKey: relayMinCountPerPubKey,
-                  onProgress: (stepName, count, total) {
-            if (count % 100 == 0 || (total - count) < 10) {
-              print("[PROGRESS] $stepName: $count/$total");
-            }
-          });
-          print(
-              "BEST ${bestRelays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
-          bestRelays.forEach((url, pubKeys) {
-            print("  $url ${pubKeys.length} follows");
-          });
+        expect(contactList != null, true);
+
+        Map<String, List<PubkeyMapping>> bestRelays = await manager
+            .calculateBestRelaysForPubKeyMappings(
+                contactList!.contacts
+                    .map((pubKey) => PubkeyMapping(
+                        pubKey: pubKey, rwMarker: ReadWriteMarker.writeOnly))
+                    .toList(),
+                relayMinCountPerPubKey: relayMinCountPerPubKey,
+                onProgress: (stepName, count, total) {
+          if (count % 100 == 0 || (total - count) < 10) {
+            print("[PROGRESS] $stepName: $count/$total");
+          }
+        });
+        print(
+            "BEST ${bestRelays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
+        bestRelays.forEach((url, pubKeys) {
+          print("  $url ${pubKeys.length} follows");
+        });
+
+        if (Helpers.isNotBlank(expectedRelayUrl)) {
+          expect(bestRelays.keys.contains(TEST_FMAR_RELAY_URL), true);
         }
         final t1 = DateTime.now();
         print(
@@ -336,31 +340,31 @@ void main() {
     }
 
     test('Leo feed best relays', () async {
-      await _calculateBestRelaysForNpub(
+      await _calculateBestRelaysForNpubContactsFeed(
           "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
           iterations: 2,
-          relayMinCountPerPubKey: 2);
+          relayMinCountPerPubKey: 3);
     }, timeout: const Timeout.factor(10));
 
     test('Fmar feed best relays', () async {
-      await _calculateBestRelaysForNpub(
+      await _calculateBestRelaysForNpubContactsFeed(
           "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams",
           iterations: 2,
-          relayMinCountPerPubKey: 2);
+          relayMinCountPerPubKey: 3);
     }, timeout: const Timeout.factor(10));
 
     test('Fiatjaf feed best relays', () async {
-      await _calculateBestRelaysForNpub(
+      await _calculateBestRelaysForNpubContactsFeed(
           "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
           iterations: 2,
           relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Love is Bitcoin (3k follows) feed best relays', () async {
-      await _calculateBestRelaysForNpub(
+      await _calculateBestRelaysForNpubContactsFeed(
           "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
-          iterations: 10,
-          relayMinCountPerPubKey: 2);
+          iterations: 3,
+          relayMinCountPerPubKey: 1);
     }, timeout: const Timeout.factor(10));
 
   });

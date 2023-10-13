@@ -30,7 +30,6 @@ class RelayManager {
     "wss://relay.damus.io",
     "wss://nos.lol",
     "wss://nostr.wine",
-    // "wss://relay.snort.social",
     "wss://nostr.bitcoiner.social"
   ];
 
@@ -87,31 +86,49 @@ class RelayManager {
     try {
       relays[url] = Relay(url);
       relays[url]!.tryingToConnect();
+      if (url.startsWith("wss://brb.io")) {
+        relays[url]!.failedToConnect();
+        return false;
+      }
       print("connecting to relay $url");
       webSockets[url] = await WebSocket.connect(url)
           .timeout(Duration(seconds: connectTimeout))
           .catchError((error) {
-        print(error.toString());
-        relays[url]!.failedToConnect();
-        return Future<WebSocket>.error(error.toString());
+            relays[url]!.failedToConnect();
+            return Future<WebSocket>.error(error);
       });
-
-      webSockets[url]!.listen((message) {
-        _handleIncommingMessage(message, url);
-      }, onError: (error) async {
-        /// todo: handle this better, should clean subscription stuff
-        throw Exception("Error in socket");
-      }, onDone: () {
-        /// todo: handle this better, should clean subscription stuff
-      });
+      // try {
+      //   webSockets[url]!.done.then((value) {
+      //     print("!!!!!!! $url IS DONE $value");
+      //     webSockets.remove(url);
+      //   },).onError((error, stackTrace) {
+      //     print("error on done $error");
+      //   });
+      //   // print('WebSocket donw');
+      // } catch (error) {
+      //   print('WebScoket done with error $error');
+      // }
 
       if (isWebSocketOpen(url)) {
         developer.log("connected to relay: $url");
         relays[url]!.succeededToConnect();
+        webSockets[url]!.listen((message) {
+          _handleIncommingMessage(message, url);
+        }, onError: (error) async {
+          /// todo: handle this better, should clean subscription stuff
+          throw Exception("Error in socket");
+          print("onError $url on listen $error");
+        }, onDone: () {
+          webSockets[url]!.close();
+          webSockets.remove(url);
+          print("onDone $url on listen");
+
+          /// todo: handle this better, should clean subscription stuff
+        });
         return true;
       }
     } catch (e) {
-      print("ERROR!!!!!!!!!!!!!!!!!!!! $e");
+      print("!! could not connect to $url -> $e");
     }
     relays[url]!.failedToConnect();
     return false;
@@ -337,7 +354,7 @@ class RelayManager {
               relayMinCount)) {
         continue;
       }
-      if (! await _isRelayConnected(url)) {
+      if (!await _isRelayConnected(url)) {
         continue;
       }
       if (bestRelays[url] == null) {
