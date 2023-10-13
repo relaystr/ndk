@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
@@ -116,8 +118,8 @@ class RelayManager {
           _handleIncommingMessage(message, url);
         }, onError: (error) async {
           /// todo: handle this better, should clean subscription stuff
-          throw Exception("Error in socket");
           print("onError $url on listen $error");
+          throw Exception("Error in socket");
         }, onDone: () {
           webSockets[url]!.close();
           webSockets.remove(url);
@@ -305,7 +307,7 @@ class RelayManager {
         onProgress: onProgress);
 
     /// try by score
-    if (byScore != null && byScore.isNotEmpty) {
+    if (byScore.isNotEmpty) {
       return byScore;
     }
 
@@ -481,10 +483,9 @@ class RelayManager {
         //   print("Missing relay list from nip65 or nip02 for ${pubKey.pubKey} (${Helpers.encodeBech32(pubKey.pubKey, "npub")})");
       }
     }
-    print("Have lists of relays for ${foundCount}/${pubKeys.length} pubKeys " +
-        (foundCount < pubKeys.length
+    print("Have lists of relays for $foundCount/${pubKeys.length} pubKeys ${foundCount < pubKeys.length
             ? "(missing ${pubKeys.length - foundCount})"
-            : ""));
+            : ""}");
 
     /// sort by pubKeys count for each relay descending
     List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =

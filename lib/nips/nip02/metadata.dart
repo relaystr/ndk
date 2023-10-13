@@ -73,9 +73,7 @@ class Nip02ContactList {
       }
 
     }
-    if (event.sources!=null) {
-      sources.addAll(event.sources);
-    }
+    sources.addAll(event.sources);
   }
 
   Nip01Event toEvent(String pubKey) {

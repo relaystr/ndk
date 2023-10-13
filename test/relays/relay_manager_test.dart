@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 
 import 'package:dart_ndk/dart_ndk.dart';
@@ -11,7 +13,6 @@ import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:async/async.dart' show StreamGroup;
 
 import '../mocks/mock_relay.dart';
 
@@ -274,13 +275,13 @@ void main() {
               relayMinCountPerPubKey: 2);
           List<Nip01Event> events = await query.toList();
           Map<String, int> eventCountsByRelay = {};
-          events.forEach((event) {
+          for (var event in events) {
             if (eventCountsByRelay[event.sources.first] == null) {
               eventCountsByRelay[event.sources.first] = 0;
             }
             eventCountsByRelay[event.sources.first] =
                 eventCountsByRelay[event.sources.first]! + 1;
-          });
+          }
 
           print(
               "Received ${events.length} text note events from ${eventCountsByRelay.length} relays");
