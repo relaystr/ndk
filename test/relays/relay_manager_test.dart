@@ -330,7 +330,7 @@ void main() {
         });
 
         if (Helpers.isNotBlank(expectedRelayUrl)) {
-          expect(bestRelays.keys.contains(TEST_FMAR_RELAY_URL), true);
+          expect(bestRelays.keys.contains(expectedRelayUrl), true);
         }
         final t1 = DateTime.now();
         print(
