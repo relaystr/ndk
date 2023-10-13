@@ -22,7 +22,7 @@ Dart Nostr Development Kit
 
 ### Gossip/outbox model of relay discovery and connectivity
 
-The simplest characterization of the gossip model is just this: reading the posts of people you follow from the relays that they wrote them to.
+The simplest characterization of the gossip model is just this: *reading the posts of people you follow from the relays that they wrote them to.*
 
 <img src="https://mikedilger.com/gossip-model/gossip-model.png" style="width:400px; height:400px"/>
 
