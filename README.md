@@ -20,8 +20,9 @@ Dart Nostr Development Kit
 
 ## Features
 
-- gossip/outbox model of relay discovery and connectivity (details (here)[https://mikedilger.com/gossip-model/])
+- gossip/outbox model of relay discovery and connectivity
 <img src="https://mikedilger.com/gossip-model/gossip-model.png" style="width:200px; height:200px"/>
+more details on [https://mikedilger.com/gossip-model/](https://mikedilger.com/gossip-model/)
 
 ## Getting started
 Add the following to your `pubspec.yaml` file:
