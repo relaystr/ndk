@@ -21,7 +21,7 @@ Dart Nostr Development Kit
 ## Features
 
 - gossip/outbox model of relay discovery and connectivity (details (here)[https://mikedilger.com/gossip-model/])
-<img src="https://mikedilger.com/gossip-model/gossip-model.png"/>
+<img src="https://mikedilger.com/gossip-model/gossip-model.png" style="width:200px; height:200px"/>
 
 ## Getting started
 Add the following to your `pubspec.yaml` file:
@@ -35,9 +35,6 @@ dependencies:
 
 
 ```dart
-import 'package:dart_ndk/relay_manager.dart';
-
-void main() {
   RelayManager manager = RelayManager();
   
   await manager.connect();
@@ -47,7 +44,6 @@ void main() {
   await for (final event in query.take(4)) {
     print(event);
   }
-}
 ```
 
 ## Additional information
