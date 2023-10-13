@@ -53,6 +53,11 @@ void main() {
   });
 
   group('ReadWriteMarker', () {
+    test('from', () {
+      expect(ReadWriteMarker.from(read: true, write: true), ReadWriteMarker.readWrite);
+      expect(() => ReadWriteMarker.from(read: false, write: false), throwsException);
+    });
+
     test('isRead', () {
       expect(ReadWriteMarker.readOnly.isRead, true);
       expect(ReadWriteMarker.readWrite.isRead, true);

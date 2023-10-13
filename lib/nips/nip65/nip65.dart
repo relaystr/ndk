@@ -59,7 +59,9 @@ class Nip65 {
   }
 
   @override
+  // coverage:ignore-start
   String toString() {
     return 'Nip65{relays: $relays}';
   }
+  // coverage:ignore-end
 }

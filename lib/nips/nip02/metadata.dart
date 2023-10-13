@@ -16,6 +16,8 @@ class Nip02ContactList {
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   List<String> sources = [];
 
+  Nip02ContactList(this.contacts);
+
   Nip02ContactList.fromEvent(Nip01Event event) {
     createdAt = event.createdAt;
     for (var tag in event.tags) {
@@ -82,7 +84,7 @@ class Nip02ContactList {
       kind: Nip02ContactList.kind,
       tags: contacts.map((contact) {
         int idx = contacts.indexOf(contact);
-        List<String> list = ["p", contact, contactRelays[idx], petnames[idx]];
+        List<String> list = ["p", contact, contactRelays.length > idx? contactRelays[idx]:"", petnames.length > idx ?petnames[idx]:""];
         return list;
       }).toList(),
       content: "",
