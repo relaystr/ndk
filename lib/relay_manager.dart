@@ -18,10 +18,11 @@ import 'package:async/async.dart' show StreamGroup;
 import 'nips/nip65/nip65.dart';
 
 class RelayManager {
-  static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 5;
-  static const int DEFAULT_STREAM_IDLE_TIMEOUT = 3;
+  static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;
+  static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
   static const int DEFAULT_BEST_RELAYS_MIN_COUNT = 2;
   static const int MAX_AUTHORS_PER_REQUEST = 100;
+  static const int FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS = 60 * 5;
 
   /// Bootstrap relays from these to start looking for NIP65/NIP03 events
   static const List<String> DEFAULT_BOOTSTRAP_RELAYS = [
@@ -85,22 +86,15 @@ class RelayManager {
       {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
     try {
       relays[url] = Relay(url);
-      relays[url]!.connecting = true;
+      relays[url]!.tryingToConnect();
       print("connecting to relay $url");
       webSockets[url] = await WebSocket.connect(url)
           .timeout(Duration(seconds: connectTimeout))
           .catchError((error) {
         print(error.toString());
+        relays[url]!.failedToConnect();
         return Future<WebSocket>.error(error.toString());
-        //   relays[url]!.connecting = false;
       });
-      //     .catchError( (error, stackTrace) {
-      //   relays[url]!.connecting = false;
-      //   print("could not connect to relay $url error:$error");
-      //   throw Exception();
-      // });
-
-      relays[url]!.connecting = false;
 
       webSockets[url]!.listen((message) {
         _handleIncommingMessage(message, url);
@@ -113,11 +107,13 @@ class RelayManager {
 
       if (isWebSocketOpen(url)) {
         developer.log("connected to relay: $url");
+        relays[url]!.succeededToConnect();
         return true;
       }
     } catch (e) {
       print("ERROR!!!!!!!!!!!!!!!!!!!! $e");
     }
+    relays[url]!.failedToConnect();
     return false;
   }
 
@@ -128,9 +124,9 @@ class RelayManager {
   }
 
   Future<Stream<Nip01Event>> query(Filter filter,
-      {int relayMinCount = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
+      {int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
     return _doSubscriptionOrQuery(filter,
-        closeOnEOSE: true, relayMinCountPerPubKey: relayMinCount);
+        closeOnEOSE: true, relayMinCountPerPubKey: relayMinCountPerPubKey);
   }
 
   Stream<Nip01Event> request(String url, Filter filter,
@@ -152,7 +148,8 @@ class RelayManager {
       return _subscriptions[id]!.stream.timeout(
           Duration(seconds: idleTimeout ?? DEFAULT_STREAM_IDLE_TIMEOUT),
           onTimeout: (sink) {
-        print("TIMED OUT on relay $url for ${jsonEncode(filter.toMap())}");
+        // print("TIMED OUT on relay $url for ${jsonEncode(filter.toMap())}");
+        print("TIMED OUT on relay $url for kinds ${filter.kinds}");
         sink.close();
       });
     }
@@ -330,7 +327,8 @@ class RelayManager {
     Map<String, List<PubkeyMapping>> bestRelays = {};
 
     if (onProgress != null) {
-      onProgress.call("Calculating best relays", minimumRelaysCoverageByPubkey.length,pubKeysByRelayUrl.length);
+      onProgress.call("Calculating best relays",
+          minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
     }
     for (String url in pubKeysByRelayUrl.keys) {
       if (!pubKeysByRelayUrl[url]!.any((pub_key) =>
@@ -339,17 +337,13 @@ class RelayManager {
               relayMinCount)) {
         continue;
       }
-      Relay? relay = relays[url];
-      if (relay == null || !isWebSocketOpen(url)) {
-        try {
-          await connectRelay(url);
-        } catch(e) {
-          print("FUCK $e");
-        }
+      if (! await _isRelayConnected(url)) {
+        continue;
       }
       if (bestRelays[url] == null) {
         bestRelays[url] = [];
       }
+
       for (PubkeyMapping pubKey in pubKeysByRelayUrl[url]!) {
         Set<String>? relays = minimumRelaysCoverageByPubkey[pubKey.pubKey];
         if (relays == null) {
@@ -363,9 +357,9 @@ class RelayManager {
       }
       if (onProgress != null) {
         // print("Calculating best relays minimumRelaysCoverageByPubkey.length:${minimumRelaysCoverageByPubkey.length} pubKeysByRelayUrl.length: ${pubKeys.length}");
-        onProgress.call("Calculating best relays", minimumRelaysCoverageByPubkey.length,pubKeys.length);
+        onProgress.call("Calculating best relays",
+            minimumRelaysCoverageByPubkey.length, pubKeys.length);
       }
-
     }
 
     return bestRelays;
@@ -391,8 +385,7 @@ class RelayManager {
           bootstrapRelays,
           Filter(
               authors: missingPubKeys,
-              kinds: [Nip65.kind, Nip02ContactList.kind]
-          ))) {
+              kinds: [Nip65.kind, Nip02ContactList.kind]))) {
         switch (event.kind) {
           case Nip65.kind:
             if (nip65s[event.pubKey] == null ||
@@ -501,6 +494,27 @@ class RelayManager {
         pubKeysByRelayUrl[cleanUrl]!.add(pubKey);
       }
     }
+  }
+
+  Future<bool> _isRelayConnected(String url) async {
+    Relay? relay = relays[url];
+    if (relay == null || !isWebSocketOpen(url)) {
+      if (relay != null &&
+          !relay.wasLastConnectTryLongerThanSeconds(
+              FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS)) {
+        // don't try too often
+        return false;
+      }
+      if (!await connectRelay(url)) {
+        // could not connect
+        return false;
+      }
+      if (!isWebSocketOpen(url)) {
+        // web socket is not open
+        return false;
+      }
+    }
+    return true;
   }
 
 // Future<Nip65?> getSingleNip65(String pubKey) async {

@@ -4,6 +4,8 @@ import 'package:dart_ndk/relay_stats.dart';
 class Relay {
   String url;
   bool connecting = false;
+  int? lastConnectTry;
+  int? lastSuccessfulConnect;
   RelayInfo? info;
   RelayStats? stats;
 
@@ -11,6 +13,24 @@ class Relay {
 
   bool supportsNip(int nip) {
     return info!=null && info!.nips.contains(nip);
+  }
+
+  void tryingToConnect() {
+    lastConnectTry = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    connecting = true;
+  }
+
+  void succeededToConnect() {
+    lastSuccessfulConnect = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    connecting = false;
+  }
+
+  void failedToConnect() {
+    connecting = false;
+  }
+
+  bool wasLastConnectTryLongerThanSeconds(int seconds) {
+    return lastConnectTry==null || lastConnectTry! < DateTime.now().add(Duration(seconds: -seconds)).millisecondsSinceEpoch ~/ 1000;
   }
 
   static RegExp RELAY_URL_REGEX = RegExp(
