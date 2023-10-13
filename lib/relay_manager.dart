@@ -30,7 +30,7 @@ class RelayManager {
     "wss://relay.damus.io",
     "wss://nos.lol",
     "wss://nostr.wine",
-    "wss://relay.snort.social",
+    // "wss://relay.snort.social",
     "wss://nostr.bitcoiner.social"
   ];
 
