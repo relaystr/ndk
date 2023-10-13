@@ -10,6 +10,7 @@ class Helpers {
   static const _chars =
       'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
 
+  // coverage:ignore-line
   static final Random _rnd = Random();
 
   static String getRandomString(int length) {

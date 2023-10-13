@@ -11,15 +11,8 @@ class PubkeyMapping {
     required this.rwMarker,
   });
 
-  bool isRead() {
-    return rwMarker.isRead;
-  }
-
-  bool isWrite() {
-    return rwMarker.isWrite;
-  }
-
   @override
+  // coverage:ignore-start
   String toString() {
     String result = '$pubKey ';
     if (rwMarker == ReadWriteMarker.readOnly) {
@@ -30,4 +23,5 @@ class PubkeyMapping {
     }
     return result;
   }
+  // coverage:ignore-end
 }
