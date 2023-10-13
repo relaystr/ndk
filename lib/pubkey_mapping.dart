@@ -11,8 +11,8 @@ class PubkeyMapping {
     required this.rwMarker,
   });
 
-  @override
   // coverage:ignore-start
+  @override
   String toString() {
     String result = '$pubKey ';
     if (rwMarker == ReadWriteMarker.readOnly) {
