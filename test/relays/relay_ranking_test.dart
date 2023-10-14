@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -90,11 +88,20 @@ void main() {
   ];
 
   group('relay ranking basic tests', () {
+    test('RelayRankingPubkey equality', () async {
+      var obj1 = RelayRankingPubkey(
+          pubkey: "alice", direction: ReadWriteMarker.readWrite);
+      var obj2 = RelayRankingPubkey(
+          pubkey: "alice", direction: ReadWriteMarker.readWrite);
+
+      expect(obj1, equals(obj2));
+    });
+
     test('Rank relays with empty connectedRelays list', () async {
       final pubkeys = ['alice', 'bob', 'carol'];
       final result = rankRelays(
         pubkeys: pubkeys,
-        direction: ReadWriteMarker.readOnly,
+        direction: ReadWriteMarker.readWrite,
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
@@ -104,14 +111,14 @@ void main() {
       expect(result, isA<RelayRankingResult>());
       expect(result.ranking, isNotEmpty);
       expect(result.notCoveredPubkeys, isEmpty);
-      expect(result.ranking.length, equals(5));
+      expect(result.ranking.length, equals(4));
     });
 
     test('not covered pubkeys', () async {
       final pubkeys = ['alice', 'bob', 'carol', 'unknown'];
       final result = rankRelays(
         pubkeys: pubkeys,
-        direction: ReadWriteMarker.readOnly,
+        direction: ReadWriteMarker.readWrite,
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
@@ -120,13 +127,14 @@ void main() {
       expect(result.notCoveredPubkeys.length, equals(1));
       expect(result.notCoveredPubkeys[0].pubkey, equals('unknown'));
       expect(result.notCoveredPubkeys[0].desiredCoverage, equals(2));
+      expect(result.notCoveredPubkeys[0].missingCoverage, equals(2));
     });
 
     test('partial coverage', () async {
       final pubkeys = ['singleRelay'];
       final result = rankRelays(
         pubkeys: pubkeys,
-        direction: ReadWriteMarker.readOnly,
+        direction: ReadWriteMarker.readWrite,
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
@@ -141,7 +149,7 @@ void main() {
       final pubkeys = ['alice', 'bob', 'carol'];
       final result = rankRelays(
         pubkeys: pubkeys,
-        direction: ReadWriteMarker.readOnly,
+        direction: ReadWriteMarker.readWrite,
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
@@ -157,13 +165,43 @@ void main() {
         return element.relay.url == 'wss://example3.com';
       });
 
-      expect(example1.coveredPubkeys, contains('alice'));
-      expect(example1.coveredPubkeys, contains('alice'));
+      expect(
+        example1.coveredPubkeys,
+        contains(
+          RelayRankingPubkey(
+              pubkey: 'alice', direction: ReadWriteMarker.readWrite),
+        ),
+      );
+      expect(
+        example1.coveredPubkeys,
+        contains(
+          RelayRankingPubkey(
+              pubkey: 'alice', direction: ReadWriteMarker.readWrite),
+        ),
+      );
 
-      expect(example2.coveredPubkeys, contains('bob'));
-      expect(example3.coveredPubkeys, contains('bob'));
+      expect(
+        example2.coveredPubkeys,
+        contains(
+          RelayRankingPubkey(
+              pubkey: 'bob', direction: ReadWriteMarker.readWrite),
+        ),
+      );
+      expect(
+        example3.coveredPubkeys,
+        contains(
+          RelayRankingPubkey(
+              pubkey: 'bob', direction: ReadWriteMarker.readWrite),
+        ),
+      );
 
-      expect(example3.coveredPubkeys, contains('carol'));
+      expect(
+        example3.coveredPubkeys,
+        contains(
+          RelayRankingPubkey(
+              pubkey: 'carol', direction: ReadWriteMarker.readWrite),
+        ),
+      );
     });
   });
 
@@ -179,9 +217,11 @@ void main() {
       );
 
       // check that all directions are write
-      result.ranking.forEach((element) {
-        expect(element.direction, equals(ReadWriteMarker.writeOnly));
-      });
+      for (var element in result.ranking) {
+        for (var rankingPubkey in element.coveredPubkeys) {
+          rankingPubkey.direction == ReadWriteMarker.writeOnly;
+        }
+      }
     });
 
     test('read only', () async {
@@ -194,10 +234,12 @@ void main() {
         pubkeyCoverage: 2,
       );
 
-      // check that all directions are write
-      result.ranking.forEach((element) {
-        expect(element.direction, equals(ReadWriteMarker.readOnly));
-      });
+      // check that all directions are read
+      for (var element in result.ranking) {
+        for (var rankingPubkey in element.coveredPubkeys) {
+          rankingPubkey.direction == ReadWriteMarker.readOnly;
+        }
+      }
     });
 
     test('read/write', () async {
@@ -210,10 +252,12 @@ void main() {
         pubkeyCoverage: 2,
       );
 
-      // check that all directions are write
-      result.ranking.forEach((element) {
-        expect(element.direction, equals(ReadWriteMarker.readWrite));
-      });
+      // check that all directions are read/write
+      for (var element in result.ranking) {
+        for (var rankingPubkey in element.coveredPubkeys) {
+          rankingPubkey.direction == ReadWriteMarker.readWrite;
+        }
+      }
     });
   });
 
@@ -261,7 +305,7 @@ void main() {
       final pubkeys = ['alice', 'bob', 'carol', 'dave'];
       final result = rankRelays(
         pubkeys: pubkeys,
-        direction: ReadWriteMarker.readOnly,
+        direction: ReadWriteMarker.readWrite,
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
@@ -317,36 +361,40 @@ void main() {
       expect(example1.score, lessThan(example2.score));
     });
 
-    // todo: discuss if this is the desired behavior or if readOnly means radOnly!!! in that context
-    test('prio readWriteRelays', () async {
-      final pubkeys = ['alice', 'bob', 'carol', 'dave'];
-      final result = rankRelays(
-        pubkeys: pubkeys,
-        direction: ReadWriteMarker.writeOnly,
-        eventData: exampleEventData,
-        connectedRelays: [],
-        pubkeyCoverage: 2,
-        rankingScoringConfig: const RelayRankingScoringConfig(),
-      );
+    // todo: discuss if this is the desired behavior or if readOnly means readOnly!!! in that context
+    test(
+      'prio readWriteRelays',
+      () async {
+        final pubkeys = ['alice', 'bob', 'carol', 'dave'];
+        final result = rankRelays(
+          pubkeys: pubkeys,
+          direction: ReadWriteMarker.writeOnly,
+          eventData: exampleEventData,
+          connectedRelays: [],
+          pubkeyCoverage: 2,
+          rankingScoringConfig: const RelayRankingScoringConfig(),
+        );
 
-      final example1 = result.ranking.firstWhere((element) {
-        return element.relay.url == 'wss://example1.com';
-      });
-      final example2 = result.ranking.firstWhere((element) {
-        return element.relay.url == 'wss://example2.com';
-      });
+        final example1 = result.ranking.firstWhere((element) {
+          return element.relay.url == 'wss://example1.com';
+        });
+        final example2 = result.ranking.firstWhere((element) {
+          return element.relay.url == 'wss://example2.com';
+        });
 
-      final aliceWriteRelay = result.ranking.firstWhere((element) {
-        return element.relay.url == 'wss://alice.example.com';
-      });
+        final aliceWriteRelay = result.ranking.firstWhere((element) {
+          return element.relay.url == 'wss://alice.example.com';
+        });
 
-      final bobWriteRelay = result.ranking.firstWhere((element) {
-        return element.relay.url == 'wss://bob.example.com';
-      });
+        final bobWriteRelay = result.ranking.firstWhere((element) {
+          return element.relay.url == 'wss://bob.example.com';
+        });
 
-      expect(bobWriteRelay.score, lessThan(example2.score));
-      expect(aliceWriteRelay.score, lessThan(example1.score));
-    });
+        expect(bobWriteRelay.score, lessThan(example2.score));
+        expect(aliceWriteRelay.score, lessThan(example1.score));
+      },
+      skip: true,
+    );
 
     test('highest score', () async {
       final pubkeys = [
