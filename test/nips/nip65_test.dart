@@ -7,9 +7,7 @@ void main() {
   group('Nip65', () {
     test('fromEvent', () {
       final event = Nip01Event(
-        publishAt: DateTime
-            .now()
-            .millisecondsSinceEpoch ~/ 1000,
+        publishAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: Nip65.kind,
         content: "",
@@ -54,8 +52,10 @@ void main() {
 
   group('ReadWriteMarker', () {
     test('from', () {
-      expect(ReadWriteMarker.from(read: true, write: true), ReadWriteMarker.readWrite);
-      expect(() => ReadWriteMarker.from(read: false, write: false), throwsException);
+      expect(ReadWriteMarker.from(read: true, write: true),
+          ReadWriteMarker.readWrite);
+      expect(() => ReadWriteMarker.from(read: false, write: false),
+          throwsException);
     });
 
     test('isRead', () {
@@ -67,6 +67,17 @@ void main() {
       expect(ReadWriteMarker.readOnly.isWrite, false);
       expect(ReadWriteMarker.readWrite.isWrite, true);
       expect(ReadWriteMarker.writeOnly.isWrite, true);
+    });
+    test('matchesReadOrWrite', () {
+      ReadWriteMarker r = ReadWriteMarker.readOnly;
+      ReadWriteMarker w = ReadWriteMarker.writeOnly;
+      ReadWriteMarker rw = ReadWriteMarker.readWrite;
+
+      expect(r.matchesReadOrWrite(r), true);
+      expect(w.matchesReadOrWrite(w), true);
+      expect(r.matchesReadOrWrite(rw), true);
+      expect(w.matchesReadOrWrite(rw), true);
+      expect(r.matchesReadOrWrite(w), false);
     });
   });
 }
