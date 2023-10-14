@@ -21,4 +21,8 @@ enum ReadWriteMarker {
 
   bool get isWrite =>
       this == ReadWriteMarker.writeOnly || this == ReadWriteMarker.readWrite;
+
+  bool matchesReadOrWrite(ReadWriteMarker other) {
+    return isRead && other.isRead || isWrite && other.isWrite;
+  }
 }

@@ -3,20 +3,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:math';
-import 'dart:developer' as developer;
 
+import 'package:async/async.dart' show StreamGroup;
+import 'package:collection/collection.dart';
 import 'package:dart_ndk/nips/nip02/metadata.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
-import 'package:collection/collection.dart';
+import 'package:dart_ndk/relay.dart';
 
 import 'nips/nip01/event.dart';
 import 'nips/nip01/filter.dart';
-import 'package:async/async.dart' show StreamGroup;
-
 import 'nips/nip65/nip65.dart';
 
 class RelayManager {
@@ -503,8 +502,7 @@ class RelayManager {
       Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl) {
     String? cleanUrl = Relay.clean(url);
     if (cleanUrl != null) {
-      if (pubKey.rwMarker.isWrite && marker.isWrite ||
-          pubKey.rwMarker.isRead && marker.isRead) {
+      if (pubKey.rwMarker.matchesReadOrWrite(marker)) {
         Set<PubkeyMapping>? set = pubKeysByRelayUrl[cleanUrl];
         if (set == null) {
           pubKeysByRelayUrl[cleanUrl] = {};
