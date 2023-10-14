@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_ranking.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -416,6 +419,52 @@ void main() {
       final highestScoreRelay = result.ranking.first;
 
       expect(highestScoreRelay.relay.url, equals("wss://popular.example"));
+    });
+
+    test('boost connected relays', () async {
+      final pubkeys = [
+        'erin',
+        'frank',
+        'grace',
+        'heidi',
+      ];
+      final result = rankRelays(
+        pubkeys: pubkeys,
+        direction: ReadWriteMarker.readWrite,
+        eventData: exampleEventData,
+        connectedRelays: [
+          Relay("wss://example1.com"),
+          Relay("wss://example2.com"),
+          Relay("wss://example5.com"),
+          Relay("wss://example6.com"),
+        ],
+        pubkeyCoverage: 2,
+        rankingScoringConfig: const RelayRankingScoringConfig(),
+      );
+
+      final example6 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example6.com';
+      });
+
+      final example7 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example7.com';
+      });
+      final example8 = result.ranking.firstWhere((element) {
+        return element.relay.url == 'wss://example8.com';
+      });
+
+      expect(
+        example7.score,
+        equals(example8.score),
+      );
+      expect(
+        example6.score,
+        greaterThan(example7.score),
+      );
+      expect(
+        example6.coveredPubkeys.length,
+        equals(example7.coveredPubkeys.length),
+      );
     });
   });
 }
