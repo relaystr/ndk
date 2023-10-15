@@ -55,7 +55,7 @@ class MockRelay {
             List<dynamic> eose = [];
             eose.add("EOSE");
             eose.add(requestId);
-            webSocket!.add(jsonEncode(eose));
+            webSocket.add(jsonEncode(eose));
           }
         });
         log('Listening on localhost:${server.port}');
@@ -83,7 +83,7 @@ class MockRelay {
   void _respondeTextNote(List<String> authors, String requestId) {
     for (var author in authors) {
       List<KeyPair> keys = textNotes!.keys.where((key) => key.publicKey == author).toList();
-      if (keys!=null && keys.isNotEmpty) {
+      if (keys.isNotEmpty) {
         KeyPair key = keys.first;
         Nip01Event? textNote = textNotes![key];
         if (textNote != null) {

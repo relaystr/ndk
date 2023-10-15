@@ -11,11 +11,17 @@ class PubkeyMapping {
     required this.rwMarker,
   });
 
-  bool isRead() {
-    return rwMarker.isRead;
+  // coverage:ignore-start
+  @override
+  String toString() {
+    String result = '$pubKey ';
+    if (rwMarker == ReadWriteMarker.readOnly) {
+      result += "(read)";
+    }
+    if (rwMarker == ReadWriteMarker.writeOnly) {
+      result += "(write)";
+    }
+    return result;
   }
-
-  bool isWrite() {
-    return rwMarker.isWrite;
-  }
+  // coverage:ignore-end
 }

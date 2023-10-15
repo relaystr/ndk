@@ -15,6 +15,7 @@ dependencies:
   bech32: ^0.2.2
   hex: ^0.2.0
   crypto: ^3.0.3
+  collection: ^1.17.2
 
 dev_dependencies:
   flutter_test:

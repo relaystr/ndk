@@ -57,4 +57,11 @@ class Nip65 {
       publishAt: createdAt,
     );
   }
+
+  @override
+  // coverage:ignore-start
+  String toString() {
+    return 'Nip65{relays: $relays}';
+  }
+  // coverage:ignore-end
 }
