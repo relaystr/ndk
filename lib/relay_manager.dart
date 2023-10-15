@@ -533,15 +533,15 @@ class RelayManager {
     return true;
   }
 
-// Future<Nip65?> getSingleNip65(String pubKey) async {
-//   if (nip65s[pubKey] == null) {
-//     await for (final event in await requestRelays(relays.keys.take(3).toList(), Filter(authors: [pubKey], kinds: [Nip65.kind], limit:1))) {
-//       if (nip65s[pubKey] == null || nip65s[pubKey]!.createdAt < event.createdAt) {
-//         nip65s[pubKey] = Nip65.fromEvent(event);
-//         print("Received Nip65 ${nip65s[pubKey]}");
-//       }
-//     }
-//   }
-//   return nip65s[pubKey];
-// }
+  Future<Nip65?> getSingleNip65(String pubKey) async {
+    if (nip65s[pubKey] == null) {
+      await for (final event in await requestRelays(bootstrapRelays.toList(), Filter(authors: [pubKey], kinds: [Nip65.kind], limit:1))) {
+        if (nip65s[pubKey] == null || nip65s[pubKey]!.createdAt < event.createdAt) {
+          nip65s[pubKey] = Nip65.fromEvent(event);
+          print("Received Nip65 ${nip65s[pubKey]}");
+        }
+      }
+    }
+    return nip65s[pubKey];
+  }
 }
