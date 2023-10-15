@@ -47,8 +47,8 @@ dependencies:
   await manager.connect();
   
   Stream<Nip01Event> query = await manager.query(
-      Filter(kinds: [Nip01Event.textNoteKind], authors: [key4.publicKey]));
-  await for (final event in query.take(4)) {
+      Filter(kinds: [Nip01Event.textNoteKind], authors: [pubKey]));
+  await for (final event in query) {
     print(event);
   }
 ```
