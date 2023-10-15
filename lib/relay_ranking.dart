@@ -1,6 +1,7 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/relay.dart';
 
 ///
@@ -60,9 +61,9 @@ RelayRankingResult rankRelays({
       if (index != -1) {
         // relay is already in list, add pubkey to coveredPubkeys
         relayRanking[index].coveredPubkeys.add(
-              RelayRankingPubkey(
-                pubkey: event.pubKey,
-                direction: _extractDirectionFromString(
+              PubkeyMapping(
+                pubKey: event.pubKey,
+                rwMarker: _extractDirectionFromString(
                     _nullIfOutOfBounds(relayTag, 2)),
               ),
             );
@@ -75,9 +76,9 @@ RelayRankingResult rankRelays({
           relay: Relay(relayTag[1] as String),
           score: -1,
           coveredPubkeys: [
-            RelayRankingPubkey(
-              pubkey: event.pubKey,
-              direction:
+            PubkeyMapping(
+              pubKey: event.pubKey,
+              rwMarker:
                   _extractDirectionFromString(_nullIfOutOfBounds(relayTag, 2)),
             ),
           ],
@@ -92,8 +93,8 @@ RelayRankingResult rankRelays({
   for (RelayRanking relayRank in relayRanking) {
     // count how many pubkeys are covered by this relay that i am looking for
     int coveredPubkeysCount = 0;
-    for (RelayRankingPubkey relayRankingPubkey in relayRank.coveredPubkeys) {
-      if (pubkeys.contains(relayRankingPubkey.pubkey)) {
+    for (PubkeyMapping relayRankingPubkey in relayRank.coveredPubkeys) {
+      if (pubkeys.contains(relayRankingPubkey.pubKey)) {
         coveredPubkeysCount += 1;
       }
     }
@@ -123,8 +124,8 @@ RelayRankingResult rankRelays({
       if (myCoverage == 0) break;
 
       // check if relayRank contains myPubkey
-      if (relayRank.coveredPubkeys.contains(
-          RelayRankingPubkey(pubkey: myPubkey, direction: myDirection))) {
+      if (relayRank.coveredPubkeys
+          .contains(PubkeyMapping(pubKey: myPubkey, rwMarker: myDirection))) {
         // relayRank already contains myPubkey, add it to finalRanking
         myCoverage -= 1;
         // add relayRank to finalRanking if it is not already in there
@@ -236,7 +237,7 @@ class NotCoveredPubkey {
 class RelayRanking {
   final Relay relay;
   int score;
-  final List<RelayRankingPubkey> coveredPubkeys;
+  final List<PubkeyMapping> coveredPubkeys;
 
   // overwrite == operator
   @override
@@ -251,24 +252,5 @@ class RelayRanking {
     required this.relay,
     required this.score,
     required this.coveredPubkeys,
-  });
-}
-
-class RelayRankingPubkey {
-  final String pubkey;
-  final ReadWriteMarker direction;
-
-  // overwrite == operator
-  @override
-  bool operator ==(covariant RelayRankingPubkey other) {
-    return pubkey == other.pubkey && direction == other.direction;
-  }
-
-  @override
-  int get hashCode => pubkey.hashCode ^ direction.hashCode;
-
-  RelayRankingPubkey({
-    required this.pubkey,
-    required this.direction,
   });
 }

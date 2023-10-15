@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_ranking.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -92,10 +93,10 @@ void main() {
 
   group('relay ranking basic tests', () {
     test('RelayRankingPubkey equality', () async {
-      var obj1 = RelayRankingPubkey(
-          pubkey: "alice", direction: ReadWriteMarker.readWrite);
-      var obj2 = RelayRankingPubkey(
-          pubkey: "alice", direction: ReadWriteMarker.readWrite);
+      var obj1 =
+          PubkeyMapping(pubKey: "alice", rwMarker: ReadWriteMarker.readWrite);
+      var obj2 =
+          PubkeyMapping(pubKey: "alice", rwMarker: ReadWriteMarker.readWrite);
 
       expect(obj1, equals(obj2));
     });
@@ -171,38 +172,33 @@ void main() {
       expect(
         example1.coveredPubkeys,
         contains(
-          RelayRankingPubkey(
-              pubkey: 'alice', direction: ReadWriteMarker.readWrite),
+          PubkeyMapping(pubKey: 'alice', rwMarker: ReadWriteMarker.readWrite),
         ),
       );
       expect(
         example1.coveredPubkeys,
         contains(
-          RelayRankingPubkey(
-              pubkey: 'alice', direction: ReadWriteMarker.readWrite),
+          PubkeyMapping(pubKey: 'alice', rwMarker: ReadWriteMarker.readWrite),
         ),
       );
 
       expect(
         example2.coveredPubkeys,
         contains(
-          RelayRankingPubkey(
-              pubkey: 'bob', direction: ReadWriteMarker.readWrite),
+          PubkeyMapping(pubKey: 'bob', rwMarker: ReadWriteMarker.readWrite),
         ),
       );
       expect(
         example3.coveredPubkeys,
         contains(
-          RelayRankingPubkey(
-              pubkey: 'bob', direction: ReadWriteMarker.readWrite),
+          PubkeyMapping(pubKey: 'bob', rwMarker: ReadWriteMarker.readWrite),
         ),
       );
 
       expect(
         example3.coveredPubkeys,
         contains(
-          RelayRankingPubkey(
-              pubkey: 'carol', direction: ReadWriteMarker.readWrite),
+          PubkeyMapping(pubKey: 'carol', rwMarker: ReadWriteMarker.readWrite),
         ),
       );
     });
@@ -222,7 +218,7 @@ void main() {
       // check that all directions are write
       for (var element in result.ranking) {
         for (var rankingPubkey in element.coveredPubkeys) {
-          rankingPubkey.direction == ReadWriteMarker.writeOnly;
+          rankingPubkey.rwMarker == ReadWriteMarker.writeOnly;
         }
       }
     });
@@ -240,7 +236,7 @@ void main() {
       // check that all directions are read
       for (var element in result.ranking) {
         for (var rankingPubkey in element.coveredPubkeys) {
-          rankingPubkey.direction == ReadWriteMarker.readOnly;
+          rankingPubkey.rwMarker == ReadWriteMarker.readOnly;
         }
       }
     });
@@ -258,7 +254,7 @@ void main() {
       // check that all directions are read/write
       for (var element in result.ranking) {
         for (var rankingPubkey in element.coveredPubkeys) {
-          rankingPubkey.direction == ReadWriteMarker.readWrite;
+          rankingPubkey.rwMarker == ReadWriteMarker.readWrite;
         }
       }
     });
