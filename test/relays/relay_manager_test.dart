@@ -369,4 +369,32 @@ void main() {
     }, timeout: const Timeout.factor(10));
 
   });
+  // test('testing not timing out on subscriptions', () async {
+  //   RelayManager manager = RelayManager();
+  //   await manager.connect();
+  //   KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(
+  //       "npub1cd32tje2tyhcnm3mwen2hwcghs0vfyupcxjd9aff9e64rhgu755qa9wt08"
+  //       //     "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams"
+  //   )[0]);
+  //   Map<String, List<PubkeyMapping>> bestRelays =
+  //   await manager.calculateBestRelaysForPubKeyMappings(
+  //       [PubkeyMapping(pubKey: key.publicKey, rwMarker: ReadWriteMarker.readWrite)],
+  //       relayMinCountPerPubKey: 1
+  //   );
+  //   print(
+  //       "BEST ${bestRelays.length} RELAYS (min 1 per pubKey):");
+  //   bestRelays.forEach((url, pubKeys) {
+  //     print("  $url ${pubKeys.length} follows");
+  //   });
+  //   Stream<Nip01Event> query = await manager.subscription(
+  //       Filter(
+  //           kinds: [Nip01Event.textNoteKind],
+  //           authors: [key.publicKey]));
+  //
+  //   await for (final event in query) {
+  //     print(event);
+  //   }
+  // }, timeout: const Timeout.factor(10));
+  //
+
 }
