@@ -51,7 +51,8 @@ class RelayInfo {
   static Future<RelayInfo?> get(String url) async {
     Uri uri = Uri.parse(url).replace(scheme: 'https');
     final response = await http.get(uri,
-        headers: {'Accept': 'application/nostr+json'});
+        headers: {'Accept': 'application/nostr+json'},
+    );
     try {
       final decodedResponse = jsonDecode(
           utf8.decode(response.bodyBytes)) as Map;

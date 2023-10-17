@@ -143,8 +143,8 @@ class RelayManager {
     return false;
   }
 
-  List<Relay> getConnectedRelaysFromNip65(Nip65 nip65) {
-    return nip65.relays.keys.where((url) => isRelayConnected(url)).map((
+  List<Relay> getConnectedRelays(List<String> urls) {
+    return urls.where((url) => isRelayConnected(url)).map((
         url) => relays[url]!).toList();
   }
 
@@ -166,8 +166,7 @@ class RelayManager {
     return _doSubscriptionOrQuery(filter, relayMap, closeOnEOSE: false);
   }
 
-  Future<Stream<Nip01Event>> query(Filter filter, Map<String, List<PubkeyMapping>> relayMap,
-      {int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
+  Future<Stream<Nip01Event>> query(Filter filter, Map<String, List<PubkeyMapping>> relayMap) async {
     return _doSubscriptionOrQuery(filter, relayMap, closeOnEOSE: true);
   }
 
@@ -370,7 +369,7 @@ class RelayManager {
   Future<Map<String, List<PubkeyMapping>>> _relaysByScore(
       List<String> pubKeys, RelayDirection direction, int relayMinCount,
       {Function(String stepName, int count, int total)? onProgress}) async {
-    await _loadMissingRelayListsFromNip65OrNip02(pubKeys,
+    await loadMissingRelayListsFromNip65OrNip02(pubKeys,
         onProgress: onProgress);
 
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl =
@@ -421,7 +420,7 @@ class RelayManager {
     return bestRelays;
   }
 
-  _loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
+  Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
       {Function(String stepName, int count, int total)? onProgress}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
@@ -504,6 +503,9 @@ class RelayManager {
     }
     return null;
   }
+  Nip02ContactList? getContactList(String pubKey) {
+    return nip02s[pubKey];
+  }
 
   _buildPubKeysMapFromRelayLists(List<String> pubKeys, RelayDirection direction) async {
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
@@ -564,7 +566,6 @@ class RelayManager {
       return _reconnectRelay(url, force: true);
     }));
   }
-
 
   Future<bool> _reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = relays[url];
