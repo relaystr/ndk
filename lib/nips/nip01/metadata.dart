@@ -2,6 +2,8 @@ import 'package:dart_ndk/nips/nip01/helpers.dart';
 
 class Metadata {
 
+  static const int kind = 0;
+
   String? pubKey;
   String? name;
   String? displayName;
