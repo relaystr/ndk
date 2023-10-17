@@ -9,7 +9,7 @@ import 'dart:math';
 
 import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
-import 'package:dart_ndk/nips/nip02/metadata.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
