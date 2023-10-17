@@ -144,7 +144,7 @@ class RelayManager {
   Future<Stream<Nip01Event>> query(Filter filter,
       {int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
     return _doSubscriptionOrQuery(filter,
-        closeOnEOSE: true, relayMinCountPerPubKey: relayMinCountPerPubKey);
+        closeOnEOSE: true, relayMinCountPerPubKey: relayMinCountPerPubKey, idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT );
   }
 
   Stream<Nip01Event> request(String url, Filter filter,
@@ -163,13 +163,15 @@ class RelayManager {
       // print("Request for relay $url -> $encoded");
       webSockets[url]!.add(encoded);
 
-      return _subscriptions[id]!.stream.timeout(
-          Duration(seconds: idleTimeout ?? DEFAULT_STREAM_IDLE_TIMEOUT),
+      Stream<Nip01Event> stream = _subscriptions[id]!.stream;
+
+      return idleTimeout!=null ? stream.timeout(
+          Duration(seconds: idleTimeout),
           onTimeout: (sink) {
         // print("TIMED OUT on relay $url for ${jsonEncode(filter.toMap())}");
         print("TIMED OUT on relay $url for kinds ${filter.kinds}");
         sink.close();
-      });
+      }) : stream;
     }
     return const Stream.empty();
   }
