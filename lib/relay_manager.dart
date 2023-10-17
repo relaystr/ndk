@@ -126,10 +126,10 @@ class RelayManager {
           print("onError $url on listen $error");
           throw Exception("Error in socket");
         }, onDone: () {
-          if (webSockets[url] != null) {
-            webSockets[url]!.close();
-            webSockets.remove(url);
-          }
+          // if (webSockets[url] != null) {
+          //   webSockets[url]!.close();
+          //   webSockets.remove(url);
+          // }
           print("onDone $url on listen");
 
           /// todo: handle this better, should clean subscription stuff
