@@ -208,7 +208,7 @@ void main() {
       Map<String, List<PubkeyMapping>> bestRelays = await manager
           .calculateBestRelaysForPubKeyMappings(
               [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
-              RelayDirection.write,
+              RelayDirection.outbox,
               relayMinCountPerPubKey: 1, onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
@@ -227,7 +227,7 @@ void main() {
       // relayMinCountPerPubKey: 2
       bestRelays = await manager.calculateBestRelaysForPubKeyMappings(
           [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
-          RelayDirection.write,
+          RelayDirection.outbox,
           relayMinCountPerPubKey: 2, onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
@@ -311,7 +311,7 @@ void main() {
 
         Map<String, List<PubkeyMapping>> bestRelays = await manager
             .calculateBestRelaysForPubKeyMappings(
-                contactList!.contacts, RelayDirection.write,
+                contactList!.contacts, RelayDirection.outbox,
                 relayMinCountPerPubKey: relayMinCountPerPubKey,
                 onProgress: (stepName, count, total) {
           if (count % 100 == 0 || (total - count) < 10) {

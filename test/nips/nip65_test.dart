@@ -69,13 +69,13 @@ void main() {
       expect(ReadWriteMarker.readWrite.isWrite, true);
       expect(ReadWriteMarker.writeOnly.isWrite, true);
     });
-    test('matchesDirection', () {
+    test('matchesMarker', () {
       ReadWriteMarker r = ReadWriteMarker.readOnly;
       ReadWriteMarker w = ReadWriteMarker.writeOnly;
       ReadWriteMarker rw = ReadWriteMarker.readWrite;
 
-      RelayDirection read = RelayDirection.read;
-      RelayDirection write = RelayDirection.write;
+      RelayDirection read = RelayDirection.inbox;
+      RelayDirection write = RelayDirection.outbox;
 
       expect(read.matchesMarker(r), true);
       expect(write.matchesMarker(w), true);

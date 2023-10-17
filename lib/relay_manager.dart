@@ -270,7 +270,7 @@ class RelayManager {
     /// TODO allow for more usecases
     /// extract from the filter which pubKeys and directions we should use the query for such filter
     List<String> pubKeys = filter.authors!=null ? filter.authors!: [];
-    RelayDirection direction = RelayDirection.write;
+    RelayDirection direction = RelayDirection.outbox;
 
     /// calculate best relays for each pubKey/direction considering connectivity quality for each relay
     Map<String, List<PubkeyMapping>> bestRelays =
