@@ -39,7 +39,7 @@ class RelayInfo {
     if (json["icon"]!=null) {
       icon = json["icon"];
     } else {
-      icon = "$url/favicon.ico";
+      icon = "${url}/favicon.ico";
     }
     final List<dynamic> nips = json["supported_nips"] ?? [];
     final String software = json["software"] ?? "";
@@ -48,11 +48,17 @@ class RelayInfo {
         name, description, pubKey, contact, nips, software, version, icon);
   }
 
-  static Future<RelayInfo> get(String url) async {
+  static Future<RelayInfo?> get(String url) async {
     Uri uri = Uri.parse(url).replace(scheme: 'https');
     final response = await http.get(uri,
         headers: {'Accept': 'application/nostr+json'});
-    final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-    return RelayInfo.fromJson(decodedResponse, uri.toString());
+    try {
+      final decodedResponse = jsonDecode(
+          utf8.decode(response.bodyBytes)) as Map;
+      return RelayInfo.fromJson(decodedResponse, uri.toString());
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 }

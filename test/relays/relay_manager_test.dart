@@ -12,6 +12,7 @@ import 'package:dart_ndk/nips/nip02/metadata.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../mocks/mock_relay.dart';
@@ -146,7 +147,7 @@ void main() {
       await manager.connect(
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
-      Stream<Nip01Event> query = await manager.query(
+      Stream<Nip01Event> query = await manager.queryWithCalculation(
           Filter(kinds: [Nip01Event.textNoteKind], authors: [key4.publicKey]));
       await for (final event in query.take(4)) {
         print(event);
@@ -168,7 +169,7 @@ void main() {
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1, 3 & 4 should be used, since relay 2 keys are all also kept on relay 1 so should not be needed
-      Stream<Nip01Event> query = await manager.query(
+      Stream<Nip01Event> query = await manager.queryWithCalculation(
           Filter(kinds: [
             Nip01Event.textNoteKind
           ], authors: [
@@ -206,10 +207,8 @@ void main() {
       // relayMinCountPerPubKey: 1
       Map<String, List<PubkeyMapping>> bestRelays = await manager
           .calculateBestRelaysForPubKeyMappings(
-              [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]
-                  .map((pubKey) => PubkeyMapping(
-                      pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite))
-                  .toList(),
+              [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
+              RelayDirection.write,
               relayMinCountPerPubKey: 1, onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
@@ -227,10 +226,8 @@ void main() {
 
       // relayMinCountPerPubKey: 2
       bestRelays = await manager.calculateBestRelaysForPubKeyMappings(
-          [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]
-              .map((pubKey) => PubkeyMapping(
-                  pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite))
-              .toList(),
+          [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
+          RelayDirection.write,
           relayMinCountPerPubKey: 2, onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
@@ -267,7 +264,7 @@ void main() {
         if (contactList != null) {
           print(
               "Have contact list with ${contactList.contacts.length} contacts");
-          Stream<Nip01Event> query = await manager.query(
+          Stream<Nip01Event> query = await manager.subscriptionWithCalculation(
               Filter(
                   kinds: [Nip01Event.textNoteKind],
                   authors: contactList.contacts,
@@ -314,10 +311,7 @@ void main() {
 
         Map<String, List<PubkeyMapping>> bestRelays = await manager
             .calculateBestRelaysForPubKeyMappings(
-                contactList!.contacts
-                    .map((pubKey) => PubkeyMapping(
-                        pubKey: pubKey, rwMarker: ReadWriteMarker.writeOnly))
-                    .toList(),
+                contactList!.contacts, RelayDirection.write,
                 relayMinCountPerPubKey: relayMinCountPerPubKey,
                 onProgress: (stepName, count, total) {
           if (count % 100 == 0 || (total - count) < 10) {
@@ -373,28 +367,38 @@ void main() {
   //   RelayManager manager = RelayManager();
   //   await manager.connect();
   //   KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(
-  //       "npub1cd32tje2tyhcnm3mwen2hwcghs0vfyupcxjd9aff9e64rhgu755qa9wt08"
-  //       //     "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams"
+  //       // "npub1cd32tje2tyhcnm3mwen2hwcghs0vfyupcxjd9aff9e64rhgu755qa9wt08"
+  //           "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams"
   //   )[0]);
-  //   Map<String, List<PubkeyMapping>> bestRelays =
-  //   await manager.calculateBestRelaysForPubKeyMappings(
-  //       [PubkeyMapping(pubKey: key.publicKey, rwMarker: ReadWriteMarker.readWrite)],
-  //       relayMinCountPerPubKey: 1
-  //   );
-  //   print(
-  //       "BEST ${bestRelays.length} RELAYS (min 1 per pubKey):");
-  //   bestRelays.forEach((url, pubKeys) {
-  //     print("  $url ${pubKeys.length} follows");
-  //   });
-  //   Stream<Nip01Event> query = await manager.subscription(
-  //       Filter(
-  //           kinds: [Nip01Event.textNoteKind],
-  //           authors: [key.publicKey]));
+  //   // Map<String, List<PubkeyMapping>> bestRelays =
+  //   // await manager.calculateBestRelaysForPubKeyMappings(
+  //   //     [PubkeyMapping(pubKey: key.publicKey, rwMarker: ReadWriteMarker.readWrite)],
+  //   //     relayMinCountPerPubKey: 1
+  //   // );
+  //   // print(
+  //   //     "BEST ${bestRelays.length} RELAYS (min 1 per pubKey):");
+  //   // bestRelays.forEach((url, pubKeys) {
+  //   //   print("  $url ${pubKeys.length} follows");
+  //   // });
+  //   Nip02ContactList? contactList =
+  //       await manager.loadContactList(key.publicKey);
   //
-  //   await for (final event in query) {
-  //     print(event);
+  //   if (contactList != null) {
+  //     print(
+  //         "Have contact list with ${contactList.contacts.length} contacts");
+  //     Stream<Nip01Event> query = await manager.subscriptionWithCalculation(
+  //         Filter(
+  //             kinds: [Nip01Event.textNoteKind],
+  //             authors: contactList.contacts),
+  //         relayMinCountPerPubKey: 2);
+  //     // Stream<Nip01Event> query = await manager.subscription(
+  //     //     Filter(
+  //     //         kinds: [Nip01Event.textNoteKind],
+  //     //         authors: [key.publicKey]));
+  //     //
+  //     await for (final event in query) {
+  //      print(event);
+  //     }
   //   }
   // }, timeout: const Timeout.factor(10));
-  //
-
 }

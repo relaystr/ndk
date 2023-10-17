@@ -1,6 +1,7 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/read_write.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -68,16 +69,20 @@ void main() {
       expect(ReadWriteMarker.readWrite.isWrite, true);
       expect(ReadWriteMarker.writeOnly.isWrite, true);
     });
-    test('matchesReadOrWrite', () {
+    test('matchesDirection', () {
       ReadWriteMarker r = ReadWriteMarker.readOnly;
       ReadWriteMarker w = ReadWriteMarker.writeOnly;
       ReadWriteMarker rw = ReadWriteMarker.readWrite;
 
-      expect(r.matchesReadOrWrite(r), true);
-      expect(w.matchesReadOrWrite(w), true);
-      expect(r.matchesReadOrWrite(rw), true);
-      expect(w.matchesReadOrWrite(rw), true);
-      expect(r.matchesReadOrWrite(w), false);
+      RelayDirection read = RelayDirection.read;
+      RelayDirection write = RelayDirection.write;
+
+      expect(read.matchesMarker(r), true);
+      expect(write.matchesMarker(w), true);
+      expect(read.matchesMarker(rw), true);
+      expect(write.matchesMarker(rw), true);
+      expect(read.matchesMarker(w), false);
+      expect(write.matchesMarker(r), false);
     });
   });
 }
