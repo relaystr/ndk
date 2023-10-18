@@ -96,7 +96,9 @@ class RelayManager {
         return false;
       }
       print("connecting to relay $url");
-      webSockets[url] = await WebSocket.connect(url)
+      HttpClient httpClient = HttpClient();
+      httpClient.idleTimeout = const Duration(seconds: 3600);
+      webSockets[url] = await WebSocket.connect(url, customClient: httpClient)
           .timeout(Duration(seconds: connectTimeout))
           .catchError((error) {
         relays[url]!.failedToConnect();
@@ -130,7 +132,11 @@ class RelayManager {
 
   void startListeningToSocket(String url) {
     // print("listening on $url...");
-    webSockets[url]!.listen((message) {
+    webSockets[url]!.asBroadcastStream(onCancel: (sub) {
+      print("onCancel $sub");
+    }, onListen: (sub) {
+      // print("onListen $sub");
+    }).listen((message) {
       _handleIncommingMessage(message, url);
     }, onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
@@ -138,14 +144,14 @@ class RelayManager {
       throw Exception("Error in socket");
     }, onDone: () {
       print("onDone $url on listen, trying to reconnect");
-      if (isWebSocketOpen(url)) {
-        print("closing $url webSocket");
-        webSockets[url]!.close().then((value) async {
-          print("closed $url. Reconnecting");
-          await connectRelay(url);
-        },);
-      }
-      //startListeningToSocket(url);
+      // if (isWebSocketOpen(url)) {
+      //   print("closing $url webSocket");
+      //   webSockets[url]!.close().then((value) async {
+      //     print("closed $url. Reconnecting");
+      //     await connectRelay(url);
+      //   },);
+      // }
+      startListeningToSocket(url);
       // if (webSockets[url] != null) {
       //   webSockets[url]!.close();
       //   webSockets.remove(url);
@@ -198,7 +204,7 @@ class RelayManager {
       if (streamGroup != null) {
         _subscriptionGroups[id] = streamGroup;
       }
-      print("Request for relay $url , $encoded (state is: ${webSockets[url]!.readyState})");
+      // print("Request for relay $url , $encoded (state is: ${webSockets[url]!.readyState})");
       webSockets[url]!.add(encoded);
 
       Stream<Nip01Event> stream = _subscriptions[id]!.stream;
