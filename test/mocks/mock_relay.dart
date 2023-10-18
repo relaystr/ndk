@@ -38,6 +38,10 @@ class MockRelay {
       server.transform(WebSocketTransformer()).listen((webSocket) {
         this.webSocket = webSocket;
         webSocket.listen((message) {
+          if (message=="ping") {
+            webSocket.add("pong");
+            return;
+          }
           var eventJson = json.decode(message);
           if (eventJson[0] == "REQ") {
             String requestId = eventJson[1];

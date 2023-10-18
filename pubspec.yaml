@@ -16,11 +16,19 @@ dependencies:
   hex: ^0.2.0
   crypto: ^3.0.3
   collection: ^1.17.2
+#  websocket_universal: ^1.1.1
+#  rinf: ^4.12.2
+#  ffi: ^2.1.0
+#  flutter_rust_bridge: ^1.82.1
+#  freezed_annotation: ^2.4.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.3
+#  ffigen: ^9.0.1
+#  build_runner: ^2.4.6
+#  freezed: ^2.4.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
