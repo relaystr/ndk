@@ -118,7 +118,7 @@ class RelayManager {
 
       if (isWebSocketOpen(url)) {
         developer.log("connected to relay: $url");
-        webSockets[url]!.pingInterval = const Duration(seconds: WEB_SOCKET_PING_INTERVAL_SECONDS);
+        // webSockets[url]!.pingInterval = const Duration(seconds: WEB_SOCKET_PING_INTERVAL_SECONDS);
         relays[url]!.succeededToConnect();
         startListeningToSocket(url);
         return true;
@@ -144,14 +144,14 @@ class RelayManager {
       throw Exception("Error in socket");
     }, onDone: () {
       print("onDone $url on listen, trying to reconnect");
-      // if (isWebSocketOpen(url)) {
-      //   print("closing $url webSocket");
-      //   webSockets[url]!.close().then((value) async {
-      //     print("closed $url. Reconnecting");
-      //     await connectRelay(url);
-      //   },);
-      // }
-      startListeningToSocket(url);
+      if (isWebSocketOpen(url)) {
+        print("closing $url webSocket");
+        webSockets[url]!.close().then((value) async {
+          print("closed $url. Reconnecting");
+          await connectRelay(url);
+        },);
+      }
+      // startListeningToSocket(url);
       // if (webSockets[url] != null) {
       //   webSockets[url]!.close();
       //   webSockets.remove(url);
