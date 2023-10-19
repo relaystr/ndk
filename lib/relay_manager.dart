@@ -16,6 +16,7 @@ import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_info.dart';
 import 'package:dart_ndk/relay_set.dart';
+import 'package:flutter/foundation.dart';
 
 import 'nips/nip01/event.dart';
 import 'nips/nip01/filter.dart';
@@ -93,7 +94,7 @@ class RelayManager {
   Future<bool> connectRelay(String url,
       {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
     try {
-      if (relays[url]==null) {
+      if (relays[url] == null) {
         relays[url] = Relay(url);
       }
       relays[url]!.tryingToConnect();
@@ -263,11 +264,14 @@ class RelayManager {
     if (eventJson[0] == 'EVENT') {
       Nip01Event event = Nip01Event.fromJson(eventJson[2]);
       event.sources.add(url);
-      if (relays[url]!=null) {
+      if (relays[url] != null) {
         int eventsRead = relays[url]!.stats.eventsRead[event.kind] ?? 0;
         relays[url]!.stats.eventsRead[event.kind] = eventsRead + 1;
         int bytesRead = relays[url]!.stats.dataReadBytes[event.kind] ?? 0;
-        relays[url]!.stats.dataReadBytes[event.kind]= bytesRead + message.toString().codeUnits.length;
+        relays[url]!.stats.dataReadBytes[event.kind] = bytesRead + message
+            .toString()
+            .codeUnits
+            .length;
       }
       _subscriptions[eventJson[1]]?.add(event);
       return;
@@ -312,8 +316,6 @@ class RelayManager {
       {bool closeOnEOSE = true,
         int? idleTimeout,
         int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
-    /// TODO allow for more usecases
-    /// extract from the filter which pubKeys and directions we should use the query for such filter
     List<String> pubKeys = filter.authors != null ? filter.authors! : [];
     RelayDirection direction = RelayDirection.outbox;
 
@@ -322,10 +324,12 @@ class RelayManager {
     await calculateRelaySet(pubKeys, direction,
         relayMinCountPerPubKey: relayMinCountPerPubKey);
 
-    print("BEST ${relaySet.map.length} RELAYS:");
-    relaySet.map.forEach((url, pubKeys) {
-      print("  $url ${pubKeys.length} follows");
-    });
+    if (kDebugMode) {
+      print("BEST ${relaySet.map.length} RELAYS:");
+      relaySet.map.forEach((url, pubKeys) {
+        print("  $url ${pubKeys.length} follows");
+      });
+    }
 
     return _doSubscriptionOrQuery(
         filter, relaySet, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
@@ -335,19 +339,46 @@ class RelayManager {
       RelaySet relaySet,
       {bool closeOnEOSE = true,
         int? idleTimeout}) async {
+
     StreamGroup<Nip01Event> streamGroup = StreamGroup<Nip01Event>();
+
     for (var url in relaySet.map.keys) {
-      Filter dedicatedFilter = filter;
-      List<PubkeyMapping>? pubKeys = relaySet.map[url];
-      if (pubKeys!=null && pubKeys.isNotEmpty) {
-        List<String> authorsForSlice = pubKeys!.map((e) => e.pubKey).toList()
-          ..addAll(relaySet.notCoveredPubkeys.keys);
-        dedicatedFilter = filter.cloneWithAuthors(authorsForSlice);
-      }
-      requestWithSlicingFilterAuthors(dedicatedFilter, streamGroup, url,
+      Filter relayFilter = splitFilter(relaySet.map[url]!, filter, relaySet.direction, relaySet.notCoveredPubkeys.keys.toList());
+
+      requestWithSlicingFilterAuthors(relayFilter, streamGroup, url,
           closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
     }
     return streamGroup.stream;
+  }
+
+  Filter splitFilter(List<PubkeyMapping> pubKeyMappings, Filter filter, RelayDirection direction, List<String> notCoveredPubKeys) {
+    Filter relayFilter = filter;
+    /// TODO allow for more usecases
+    /// extract from the filter which pubKeys and directions we should use the query for such filter
+    if (pubKeyMappings.isEmpty) {
+      relayFilter = filter;
+    } else if (filter.authors!=null && filter.authors!.isNotEmpty &&
+        direction == RelayDirection.outbox
+    ) {
+      List<String> pubKeysForRelay = [];
+      for (String pubKey in filter.authors!) {
+        if (pubKeyMappings.any((pubKeyMapping) => pubKey == pubKeyMapping.pubKey || notCoveredPubKeys.contains(pubKey))) {
+          pubKeysForRelay.add(pubKey);
+        }
+      }
+      relayFilter = filter.cloneWithAuthors(pubKeysForRelay);
+    } else if (filter.pTags!=null && filter.pTags!.isNotEmpty && direction == RelayDirection.inbox) {
+      List<String> pubKeysForRelay = [];
+      for (String pubKey in filter.pTags!) {
+        if (pubKeyMappings.any((pubKeyMapping) => pubKey == pubKeyMapping.pubKey || notCoveredPubKeys.contains(pubKey))) {
+          pubKeysForRelay.add(pubKey);
+        }
+      }
+      relayFilter = filter.cloneWithPTags(pubKeysForRelay);
+    } else {
+      // ???
+    }
+    return relayFilter;
   }
 
   void requestWithSlicingFilterAuthors(Filter filter,
@@ -382,8 +413,8 @@ class RelayManager {
   }
 
   /// relay -> list of pubKey mappings
-  Future<RelaySet> calculateRelaySet(
-      List<String> pubKeys, RelayDirection direction,
+  Future<RelaySet> calculateRelaySet(List<String> pubKeys,
+      RelayDirection direction,
       {required int relayMinCountPerPubKey,
         Function(String, int, int)? onProgress}) async {
     RelaySet byScore = await _relaysByPopularity(
@@ -396,7 +427,10 @@ class RelayManager {
     }
 
     /// if everything fails just return a map of all currently registered connected relays for each pubKeys
-    return RelaySet(relayMinCountPerPubkey: relayMinCountPerPubKey, direction: direction, map: _allConnectedRelays(pubKeys), notCoveredPubkeys: {});
+    return RelaySet(relayMinCountPerPubkey: relayMinCountPerPubKey,
+        direction: direction,
+        map: _allConnectedRelays(pubKeys),
+        notCoveredPubkeys: {});
   }
 
   Map<String, List<PubkeyMapping>> _allConnectedRelays(List<String> pubKeys) {
@@ -435,7 +469,7 @@ class RelayManager {
       onProgress.call("Calculating best relays",
           minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
     }
-    Map<String,int> notCoveredPubkeys = {};
+    Map<String, int> notCoveredPubkeys = {};
     pubKeys.forEach((pubKey) {
       notCoveredPubkeys[pubKey] = relayMinCount;
     });
@@ -462,7 +496,7 @@ class RelayManager {
         relays.add(url);
         if (!bestRelays[url]!.contains(pubKey)) {
           bestRelays[url]!.add(pubKey);
-          int count = notCoveredPubkeys[pubKey.pubKey]?? relayMinCount;
+          int count = notCoveredPubkeys[pubKey.pubKey] ?? relayMinCount;
           notCoveredPubkeys[pubKey.pubKey] = count - 1;
         }
       }
@@ -475,11 +509,13 @@ class RelayManager {
       }
     }
 
-    print(notCoveredPubkeys.length);
-    notCoveredPubkeys.removeWhere((key, value) => value <=0);
+    notCoveredPubkeys.removeWhere((key, value) => value <= 0);
 
     return RelaySet(
-        relayMinCountPerPubkey: relayMinCount, direction: direction, map: bestRelays, notCoveredPubkeys: notCoveredPubkeys);
+        relayMinCountPerPubkey: relayMinCount,
+        direction: direction,
+        map: bestRelays,
+        notCoveredPubkeys: notCoveredPubkeys);
   }
 
   Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,

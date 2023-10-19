@@ -63,4 +63,9 @@ class Filter {
     map['authors'] = authors;
     return Filter.fromJson(map);
   }
+  Filter cloneWithPTags(List<String> pTags) {
+    Map<String, dynamic> map = toMap();
+    map['#p'] = pTags;
+    return Filter.fromJson(map);
+  }
 }
