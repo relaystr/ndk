@@ -366,7 +366,9 @@ class RelayManager {
           pubKeysForRelay.add(pubKey);
         }
       }
-      relayFilter = filter.cloneWithAuthors(pubKeysForRelay);
+      if (pubKeysForRelay.isNotEmpty) {
+        relayFilter = filter.cloneWithAuthors(pubKeysForRelay);
+      }
     } else if (filter.pTags!=null && filter.pTags!.isNotEmpty && direction == RelayDirection.inbox) {
       List<String> pubKeysForRelay = [];
       for (String pubKey in filter.pTags!) {
@@ -374,7 +376,9 @@ class RelayManager {
           pubKeysForRelay.add(pubKey);
         }
       }
-      relayFilter = filter.cloneWithPTags(pubKeysForRelay);
+      if (pubKeysForRelay.isNotEmpty) {
+        relayFilter = filter.cloneWithPTags(pubKeysForRelay);
+      }
     } else {
       // ???
     }
