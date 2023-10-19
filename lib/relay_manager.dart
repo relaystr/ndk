@@ -109,8 +109,6 @@ class RelayManager {
       webSockets[url] = await WebSocket.connect(url, customClient: httpClient)
           .timeout(Duration(seconds: connectTimeout))
           .catchError((error) {
-        relays[url]!.failedToConnect();
-        relays[url]!.stats.connectionErrors++;
         return Future<WebSocket>.error(error);
       });
       // try {
