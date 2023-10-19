@@ -7,7 +7,7 @@ class Relay {
   int? lastConnectTry;
   int? lastSuccessfulConnect;
   RelayInfo? info;
-  RelayStats? stats;
+  RelayStats stats = RelayStats();
 
   Relay(this.url);
 

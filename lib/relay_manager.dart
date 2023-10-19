@@ -15,6 +15,7 @@ import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_info.dart';
+import 'package:dart_ndk/relay_set.dart';
 
 import 'nips/nip01/event.dart';
 import 'nips/nip01/filter.dart';
@@ -45,6 +46,9 @@ class RelayManager {
 
   /// Global webSocket registry by url
   Map<String, WebSocket> webSockets = {};
+
+  // Global registry of RelaySets
+  Map<String, RelaySet> relaySets = {};
 
   /// Global subscriptions streams by request id
   final Map<String, StreamController<Nip01Event>> _subscriptions = {};
@@ -89,10 +93,13 @@ class RelayManager {
   Future<bool> connectRelay(String url,
       {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
     try {
-      relays[url] = Relay(url);
+      if (relays[url]==null) {
+        relays[url] = Relay(url);
+      }
       relays[url]!.tryingToConnect();
       if (url.startsWith("wss://brb.io")) {
         relays[url]!.failedToConnect();
+        relays[url]!.stats.connectionErrors++;
         return false;
       }
       print("connecting to relay $url");
@@ -102,6 +109,7 @@ class RelayManager {
           .timeout(Duration(seconds: connectTimeout))
           .catchError((error) {
         relays[url]!.failedToConnect();
+        relays[url]!.stats.connectionErrors++;
         return Future<WebSocket>.error(error);
       });
       // try {
@@ -120,6 +128,7 @@ class RelayManager {
         developer.log("connected to relay: $url");
         // webSockets[url]!.pingInterval = const Duration(seconds: WEB_SOCKET_PING_INTERVAL_SECONDS);
         relays[url]!.succeededToConnect();
+        relays[url]!.stats.connections++;
         startListeningToSocket(url);
         return true;
       }
@@ -127,13 +136,14 @@ class RelayManager {
       print("!! could not connect to $url -> $e");
     }
     relays[url]!.failedToConnect();
+    relays[url]!.stats.connectionErrors++;
     return false;
   }
 
   void startListeningToSocket(String url) {
     // print("listening on $url...");
     webSockets[url]!.asBroadcastStream(onCancel: (sub) {
-      print("onCancel $sub");
+      // print("onCancel ${sub.");
     }, onListen: (sub) {
       // print("onListen $sub");
     }).listen((message) {
@@ -144,12 +154,15 @@ class RelayManager {
       throw Exception("Error in socket");
     }, onDone: () {
       print("onDone $url on listen, trying to reconnect");
+      relays[url]!.stats.connectionErrors++;
       if (isWebSocketOpen(url)) {
         print("closing $url webSocket");
-        webSockets[url]!.close().then((value) async {
+        webSockets[url]!.close().then((value) {
           print("closed $url. Reconnecting");
-          await connectRelay(url);
+          connectRelay(url);
         },);
+      } else {
+        connectRelay(url);
       }
       // startListeningToSocket(url);
       // if (webSockets[url] != null) {
@@ -161,7 +174,7 @@ class RelayManager {
   }
 
 
-  List<Relay> getConnectedRelays(List<String> urls) {
+  List<Relay> getConnectedRelays(Iterable<String> urls) {
     return urls.where((url) => isRelayConnected(url)).map((url) => relays[url]!)
         .toList();
   }
@@ -181,14 +194,14 @@ class RelayManager {
   }
 
   Future<Stream<Nip01Event>> subscription(Filter filter,
-      Map<String, List<PubkeyMapping>> relayMap,
+      RelaySet relaySet,
       {int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
-    return _doSubscriptionOrQuery(filter, relayMap, closeOnEOSE: false);
+    return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: false);
   }
 
   Future<Stream<Nip01Event>> query(Filter filter,
-      Map<String, List<PubkeyMapping>> relayMap) async {
-    return _doSubscriptionOrQuery(filter, relayMap, closeOnEOSE: true);
+      RelaySet relaySet) async {
+    return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: true);
   }
 
   Stream<Nip01Event> request(String url, Filter filter,
@@ -205,7 +218,11 @@ class RelayManager {
         _subscriptionGroups[id] = streamGroup;
       }
       // print("Request for relay $url , $encoded (state is: ${webSockets[url]!.readyState})");
-      webSockets[url]!.add(encoded);
+      try {
+        webSockets[url]!.add(encoded);
+      } catch (e) {
+        print(e);
+      }
 
       Stream<Nip01Event> stream = _subscriptions[id]!.stream;
 
@@ -246,6 +263,12 @@ class RelayManager {
     if (eventJson[0] == 'EVENT') {
       Nip01Event event = Nip01Event.fromJson(eventJson[2]);
       event.sources.add(url);
+      if (relays[url]!=null) {
+        int eventsRead = relays[url]!.stats.eventsRead[event.kind] ?? 0;
+        relays[url]!.stats.eventsRead[event.kind] = eventsRead + 1;
+        int bytesRead = relays[url]!.stats.dataReadBytes[event.kind] ?? 0;
+        relays[url]!.stats.dataReadBytes[event.kind]= bytesRead + message.toString().codeUnits.length;
+      }
       _subscriptions[eventJson[1]]?.add(event);
       return;
     }
@@ -295,28 +318,32 @@ class RelayManager {
     RelayDirection direction = RelayDirection.outbox;
 
     /// calculate best relays for each pubKey/direction considering connectivity quality for each relay
-    Map<String, List<PubkeyMapping>> bestRelays =
-    await calculateBestRelaysForPubKeyMappings(pubKeys, direction,
+    RelaySet relaySet =
+    await calculateRelaySet(pubKeys, direction,
         relayMinCountPerPubKey: relayMinCountPerPubKey);
 
-    print("BEST ${bestRelays.length} RELAYS:");
-    bestRelays.forEach((url, pubKeys) {
+    print("BEST ${relaySet.map.length} RELAYS:");
+    relaySet.map.forEach((url, pubKeys) {
       print("  $url ${pubKeys.length} follows");
     });
 
     return _doSubscriptionOrQuery(
-        filter, bestRelays, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
+        filter, relaySet, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
   }
 
   Future<Stream<Nip01Event>> _doSubscriptionOrQuery(Filter filter,
-      Map<String, List<PubkeyMapping>> relayMap,
+      RelaySet relaySet,
       {bool closeOnEOSE = true,
         int? idleTimeout}) async {
     StreamGroup<Nip01Event> streamGroup = StreamGroup<Nip01Event>();
-    for (var url in relayMap.keys) {
-      List<PubkeyMapping>? pubKeys = relayMap[url];
-      Filter dedicatedFilter =
-      filter.cloneWithAuthors(pubKeys!.map((e) => e.pubKey).toList());
+    for (var url in relaySet.map.keys) {
+      Filter dedicatedFilter = filter;
+      List<PubkeyMapping>? pubKeys = relaySet.map[url];
+      if (pubKeys!=null && pubKeys.isNotEmpty) {
+        List<String> authorsForSlice = pubKeys!.map((e) => e.pubKey).toList()
+          ..addAll(relaySet.notCoveredPubkeys.keys);
+        dedicatedFilter = filter.cloneWithAuthors(authorsForSlice);
+      }
       requestWithSlicingFilterAuthors(dedicatedFilter, streamGroup, url,
           closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
     }
@@ -355,21 +382,21 @@ class RelayManager {
   }
 
   /// relay -> list of pubKey mappings
-  Future<Map<String, List<PubkeyMapping>>> calculateBestRelaysForPubKeyMappings(
+  Future<RelaySet> calculateRelaySet(
       List<String> pubKeys, RelayDirection direction,
       {required int relayMinCountPerPubKey,
         Function(String, int, int)? onProgress}) async {
-    Map<String, List<PubkeyMapping>> byScore = await _relaysByScore(
+    RelaySet byScore = await _relaysByPopularity(
         pubKeys, direction, relayMinCountPerPubKey,
         onProgress: onProgress);
 
     /// try by score
-    if (byScore.isNotEmpty) {
+    if (byScore.map.isNotEmpty) {
       return byScore;
     }
 
     /// if everything fails just return a map of all currently registered connected relays for each pubKeys
-    return _allConnectedRelays(pubKeys);
+    return RelaySet(relayMinCountPerPubkey: relayMinCountPerPubKey, direction: direction, map: _allConnectedRelays(pubKeys), notCoveredPubkeys: {});
   }
 
   Map<String, List<PubkeyMapping>> _allConnectedRelays(List<String> pubKeys) {
@@ -391,7 +418,7 @@ class RelayManager {
   ///   - check if relay is connected or can connect
   ///   - for each pubKey mapped for given relay check if you already have minimum amount of relay coverage (use auxiliary map to remember this)
   ///     - if not add this relay to list of best relays
-  Future<Map<String, List<PubkeyMapping>>> _relaysByScore(List<String> pubKeys,
+  Future<RelaySet> _relaysByPopularity(List<String> pubKeys,
       RelayDirection direction, int relayMinCount,
       {Function(String stepName, int count, int total)? onProgress}) async {
     await loadMissingRelayListsFromNip65OrNip02(pubKeys,
@@ -408,6 +435,10 @@ class RelayManager {
       onProgress.call("Calculating best relays",
           minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
     }
+    Map<String,int> notCoveredPubkeys = {};
+    pubKeys.forEach((pubKey) {
+      notCoveredPubkeys[pubKey] = relayMinCount;
+    });
     for (String url in pubKeysByRelayUrl.keys) {
       if (!pubKeysByRelayUrl[url]!.any((pub_key) =>
       minimumRelaysCoverageByPubkey[pub_key.pubKey] == null ||
@@ -431,6 +462,8 @@ class RelayManager {
         relays.add(url);
         if (!bestRelays[url]!.contains(pubKey)) {
           bestRelays[url]!.add(pubKey);
+          int count = notCoveredPubkeys[pubKey.pubKey]?? relayMinCount;
+          notCoveredPubkeys[pubKey.pubKey] = count - 1;
         }
       }
       if (onProgress != null) {
@@ -442,7 +475,11 @@ class RelayManager {
       }
     }
 
-    return bestRelays;
+    print(notCoveredPubkeys.length);
+    notCoveredPubkeys.removeWhere((key, value) => value <=0);
+
+    return RelaySet(
+        relayMinCountPerPubkey: relayMinCount, direction: direction, map: bestRelays, notCoveredPubkeys: notCoveredPubkeys);
   }
 
   Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
@@ -506,20 +543,28 @@ class RelayManager {
     print("Loaded ${foundKeys.length} relay lists ");
   }
 
-  Future<Nip02ContactList?> loadContactList(String pubKey) async {
-    if (nip02s[pubKey] == null) {
-      Stream<Nip01Event> contactListQuery = await requestRelays(
-          bootstrapRelays, idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT,
-          Filter(kinds: [Nip02ContactList.kind], authors: [pubKey], limit: 1));
-
-      await for (final event in contactListQuery) {
-        if (nip02s[pubKey] == null ||
-            nip02s[pubKey]!.createdAt < event.createdAt) {
-          nip02s[pubKey] = Nip02ContactList.fromEvent(event);
+  Future<Nip02ContactList?> loadContactList(String pubKey,
+      {bool forceRefresh = false}) async {
+    if (nip02s[pubKey] == null || forceRefresh) {
+      try {
+        await for (final event in await requestRelays(
+            bootstrapRelays, idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT,
+            Filter(kinds: [Nip02ContactList.kind], authors: [pubKey], limit: 1)
+        )) {
+          if (nip02s[pubKey] == null ||
+              nip02s[pubKey]!.createdAt < event.createdAt) {
+            nip02s[pubKey] = Nip02ContactList.fromEvent(event);
+          }
         }
+      } catch (e) {
+        // probably timeout;
       }
     }
-    return nip02s[pubKey];
+    return
+      nip02s
+      [
+      pubKey
+      ];
   }
 
   Map<String, ReadWriteMarker>? getRelayMarkerMap(String pubKey) {

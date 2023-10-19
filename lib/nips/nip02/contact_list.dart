@@ -19,12 +19,15 @@ class Nip02ContactList {
   Map<String, ReadWriteMarker> relaysInContent = {};
 
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  int? loadedTimestamp;
+
   List<String> sources = [];
 
   Nip02ContactList(this.contacts);
 
   Nip02ContactList.fromEvent(Nip01Event event) {
     createdAt = event.createdAt;
+    loadedTimestamp = DateTime.now().millisecondsSinceEpoch ~/1000;
     for (var tag in event.tags) {
       if (tag is! List<dynamic>) continue;
       final length = tag.length;

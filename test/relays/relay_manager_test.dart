@@ -11,8 +11,8 @@ import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../mocks/mock_relay.dart';
@@ -205,8 +205,8 @@ void main() {
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       // relayMinCountPerPubKey: 1
-      Map<String, List<PubkeyMapping>> bestRelays = await manager
-          .calculateBestRelaysForPubKeyMappings(
+      RelaySet relaySet = await manager
+          .calculateRelaySet(
               [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
               RelayDirection.outbox,
               relayMinCountPerPubKey: 1, onProgress: (stepName, count, total) {
@@ -214,18 +214,18 @@ void main() {
           print("[PROGRESS] $stepName: $count/$total");
         }
       });
-      print("BEST ${bestRelays.length} RELAYS:");
-      bestRelays.forEach((url, pubKeys) {
+      print("BEST ${relaySet.map.length} RELAYS:");
+      relaySet.map.forEach((url, pubKeys) {
         print("  $url ${pubKeys.length} follows");
       });
 
-      expect(bestRelays.containsKey(relay1.url), true);
-      expect(bestRelays.containsKey(relay2.url), false);
-      expect(bestRelays.containsKey(relay3.url), false);
-      expect(bestRelays.containsKey(relay4.url), true);
+      expect(relaySet.map.containsKey(relay1.url), true);
+      expect(relaySet.map.containsKey(relay2.url), false);
+      expect(relaySet.map.containsKey(relay3.url), false);
+      expect(relaySet.map.containsKey(relay4.url), true);
 
       // relayMinCountPerPubKey: 2
-      bestRelays = await manager.calculateBestRelaysForPubKeyMappings(
+      relaySet = await manager.calculateRelaySet(
           [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
           RelayDirection.outbox,
           relayMinCountPerPubKey: 2, onProgress: (stepName, count, total) {
@@ -233,15 +233,15 @@ void main() {
           print("[PROGRESS] $stepName: $count/$total");
         }
       });
-      print("BEST ${bestRelays.length} RELAYS:");
-      bestRelays.forEach((url, pubKeys) {
+      print("BEST ${relaySet.map.length} RELAYS:");
+      relaySet.map.forEach((url, pubKeys) {
         print("  $url ${pubKeys.length} follows");
       });
 
-      expect(bestRelays.containsKey(relay1.url), true);
-      expect(bestRelays.containsKey(relay2.url), true);
-      expect(bestRelays.containsKey(relay3.url), false);
-      expect(bestRelays.containsKey(relay4.url), true);
+      expect(relaySet.map.containsKey(relay1.url), true);
+      expect(relaySet.map.containsKey(relay2.url), true);
+      expect(relaySet.map.containsKey(relay3.url), false);
+      expect(relaySet.map.containsKey(relay4.url), true);
 
       await stopServers();
     });
@@ -309,8 +309,8 @@ void main() {
 
         expect(contactList != null, true);
 
-        Map<String, List<PubkeyMapping>> bestRelays = await manager
-            .calculateBestRelaysForPubKeyMappings(
+        RelaySet bestRelays = await manager
+            .calculateRelaySet(
                 contactList!.contacts, RelayDirection.outbox,
                 relayMinCountPerPubKey: relayMinCountPerPubKey,
                 onProgress: (stepName, count, total) {
@@ -319,13 +319,13 @@ void main() {
           }
         });
         print(
-            "BEST ${bestRelays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
-        bestRelays.forEach((url, pubKeys) {
+            "BEST ${bestRelays.map.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
+        bestRelays.map.forEach((url, pubKeys) {
           print("  $url ${pubKeys.length} follows");
         });
 
         if (Helpers.isNotBlank(expectedRelayUrl)) {
-          expect(bestRelays.keys.contains(expectedRelayUrl), true);
+          expect(bestRelays.map.keys.contains(expectedRelayUrl), true);
         }
         final t1 = DateTime.now();
         print(
