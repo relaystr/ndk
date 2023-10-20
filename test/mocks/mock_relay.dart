@@ -46,7 +46,7 @@ class MockRelay {
           if (eventJson[0] == "REQ") {
             String requestId = eventJson[1];
             log('Received: $eventJson');
-            Filter filter = Filter.fromJson(eventJson[2]);
+            Filter filter = Filter.fromMap(eventJson[2]);
             if (filter.kinds != null && filter.authors != null) {
               if (filter.kinds!.contains(Nip65.kind) && nip65s != null) {
                 _respondeNip65(filter.authors!, requestId);
