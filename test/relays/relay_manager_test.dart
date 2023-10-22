@@ -14,10 +14,12 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar/isar.dart' as isar;
 
 import '../mocks/mock_relay.dart';
 
-void main() {
+void main() async {
+  await isar.Isar.initialize("./libisar.so");//initializeIsarCore(download: true);
 
   MockRelay relay1 = MockRelay();
   MockRelay relay2 = MockRelay();
@@ -87,17 +89,17 @@ void main() {
     /// key2 reads and writes to relay 1 & 2, has its notes on both relays
     /// key3 reads and writes to relay 1, has its notes ONLY on relay 1
     /// key4 reads and writes ONLY to relay 4, has its notes ONLY on relay 4
-    Nip65 nip65ForKey1 = Nip65({
+    Nip65 nip65ForKey1 = Nip65.fromMap(key1.publicKey,{
       relay1.url: ReadWriteMarker.readWrite,
       relay2.url: ReadWriteMarker.readWrite,
       relay3.url: ReadWriteMarker.readWrite
     });
-    Nip65 nip65ForKey2 = Nip65({
+    Nip65 nip65ForKey2 = Nip65.fromMap(key2.publicKey,{
       relay1.url: ReadWriteMarker.readWrite,
       relay2.url: ReadWriteMarker.readWrite
     });
-    Nip65 nip65ForKey3 = Nip65({relay1.url: ReadWriteMarker.readWrite});
-    Nip65 nip65ForKey4 = Nip65({relay4.url: ReadWriteMarker.readWrite});
+    Nip65 nip65ForKey3 = Nip65.fromMap(key3.publicKey,{relay1.url: ReadWriteMarker.readWrite});
+    Nip65 nip65ForKey4 = Nip65.fromMap(key4.publicKey,{relay4.url: ReadWriteMarker.readWrite});
 
     Map<KeyPair, Nip65> nip65s = {
       key1: nip65ForKey1,
@@ -144,6 +146,7 @@ void main() {
       await startServers();
 
       RelayManager manager = RelayManager();
+      await manager.init();
       await manager.connect(
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
@@ -164,6 +167,7 @@ void main() {
         'query all keys and do not use redundant relays', () async {
       await startServers();
       RelayManager manager = RelayManager();
+      await manager.init();
       await manager.connect(
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
@@ -201,6 +205,7 @@ void main() {
         () async {
       await startServers();
       RelayManager manager = RelayManager();
+      await manager.init();
       await manager.connect(
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
@@ -248,7 +253,7 @@ void main() {
   });
 
   group(
-      skip: true,
+      // skip: true,
       "Calculate best relays (external REAL)", () {
     getFeedTextNotesForNpub(String npub, RelayManager manager,
         {int iterations = 1}) async {
@@ -297,6 +302,7 @@ void main() {
     _calculateBestRelaysForNpubContactsFeed(String npub,
         {String? expectedRelayUrl, int iterations = 1, required int relayMinCountPerPubKey}) async {
       RelayManager manager = RelayManager();
+      await manager.init();
       await manager.connect();
       int i = 1;
       while (i <= iterations) {
@@ -344,8 +350,8 @@ void main() {
     test('Fmar feed best relays', () async {
       await _calculateBestRelaysForNpubContactsFeed(
           "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams",
-          iterations: 2,
-          relayMinCountPerPubKey: 3);
+          iterations: 1,
+          relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Fiatjaf feed best relays', () async {
@@ -365,6 +371,7 @@ void main() {
   });
   // test('testing not timing out on subscriptions', () async {
   //   RelayManager manager = RelayManager();
+  //   await manager.init();
   //   await manager.connect();
   //   KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(
   //       // "npub1cd32tje2tyhcnm3mwen2hwcghs0vfyupcxjd9aff9e64rhgu755qa9wt08"

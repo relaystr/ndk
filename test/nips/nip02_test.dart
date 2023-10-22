@@ -33,12 +33,12 @@ void main() {
     });
 
     test('toEvent', () {
-      final nip02 = Nip02ContactList([
+      final nip02 = Nip02ContactList.fromContacts('pubkey123', [
         'contact1',
         'contact2',
         'contact3',
       ]);
-      final myEvent = nip02.toEvent('pubkey123');
+      final myEvent = nip02.toEvent();
       expect(myEvent.pubKey, equals('pubkey123'));
       expect(myEvent.kind, equals(Nip02ContactList.kind));
       expect(

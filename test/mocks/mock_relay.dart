@@ -71,12 +71,12 @@ class MockRelay {
     for (var author in authors) {
       KeyPair key = nip65s!.keys.where((key) => key.publicKey == author).first;
       Nip65? nip65 = nip65s![key];
-      if (nip65 != null && nip65.relays.isNotEmpty) {
+      if (nip65 != null && nip65.urls.isNotEmpty) {
         List<dynamic> json = [];
         json.add("EVENT");
         json.add(requestId);
 
-        Nip01Event event = nip65.toEvent(key.publicKey);
+        Nip01Event event = nip65.toEvent();
         event.sign(key.privateKey!);
         json.add(event.toJson());
         webSocket!.add(jsonEncode(json));

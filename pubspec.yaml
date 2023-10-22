@@ -16,6 +16,10 @@ dependencies:
   hex: ^0.2.0
   crypto: ^3.0.3
   collection: ^1.17.2
+  path_provider: ^2.1.1
+  isar: ^4.0.0-dev.14
+  isar_flutter_libs: ^4.0.0-dev.14
+
 #  websocket_universal: ^1.1.1
 #  rinf: ^4.12.2
 #  ffi: ^2.1.0
@@ -27,7 +31,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.3
 #  ffigen: ^9.0.1
-#  build_runner: ^2.4.6
+  build_runner: ^2.4.6
 #  freezed: ^2.4.5
 
 # For information on the generic Dart part of this file, see the

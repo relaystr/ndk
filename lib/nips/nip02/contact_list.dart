@@ -2,11 +2,20 @@ import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:isar/isar.dart';
 
 import '../nip01/event.dart';
 
+part 'contact_list.g.dart';
+
+@collection
 class Nip02ContactList {
   static const int kind = 3;
+
+  String get id => pubKey;
+
+  @ignore
+  late String pubKey;
 
   List<String> contacts = [];
   List<String> contactRelays = [];
@@ -16,17 +25,21 @@ class Nip02ContactList {
   List<String> followedCommunities = [];
   List<String> followedEvents = [];
 
-  Map<String, ReadWriteMarker> relaysInContent = {};
+  List<String> relaysInContent = [];
+  List<ReadWriteMarker> markersInContent = [];
 
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   int? loadedTimestamp;
 
   List<String> sources = [];
 
-  Nip02ContactList(this.contacts);
+  Nip02ContactList();
+
+  Nip02ContactList.fromContacts(this.pubKey, this.contacts);
 
   Nip02ContactList.fromEvent(Nip01Event event) {
     createdAt = event.createdAt;
+    pubKey = event.pubKey;
     loadedTimestamp = DateTime.now().millisecondsSinceEpoch ~/1000;
     for (var tag in event.tags) {
       if (tag is! List<dynamic>) continue;
@@ -66,8 +79,8 @@ class Nip02ContactList {
               bool read = entry.value["read"] ?? false;
               bool write = entry.value["write"] ?? false;
               if (read || write) {
-                relaysInContent[entry.key] =
-                    ReadWriteMarker.from(read: read, write: write);
+                relaysInContent.add(entry.key);
+                markersInContent.add(ReadWriteMarker.from(read: read, write: write));
               }
             } catch (e) {
               try {
@@ -75,8 +88,8 @@ class Nip02ContactList {
                 bool read = decodedValue["read"] ?? false;
                 bool write = decodedValue["write"] ?? false;
                 if (read || write) {
-                  relaysInContent[entry.key] =
-                      ReadWriteMarker.from(read: read, write: write);
+                  relaysInContent.add(entry.key);
+                  markersInContent.add(ReadWriteMarker.from(read: read, write: write));
                 }
                 continue;
               } catch (e) {
@@ -118,7 +131,7 @@ class Nip02ContactList {
     }).toList();
   }
 
-  Nip01Event toEvent(String pubKey) {
+  Nip01Event toEvent() {
     return Nip01Event(
       pubKey: pubKey,
       kind: Nip02ContactList.kind,
@@ -127,4 +140,13 @@ class Nip02ContactList {
       publishAt: createdAt,
     );
   }
+
+  Map<String, ReadWriteMarker> relaysMap() {
+    Map<String, ReadWriteMarker> map = {};
+    for (var i = 0; i < relaysInContent.length; i++) {
+      map[relaysInContent[i]] = markersInContent[i];
+    }
+    return map;
+  }
+
 }

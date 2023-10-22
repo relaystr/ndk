@@ -9,6 +9,7 @@ import 'dart:math';
 
 import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
+import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/pubkey_mapping.dart';
@@ -42,6 +43,8 @@ class RelayManager {
 
   List<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
 
+  CacheManager cache = CacheManager();
+
   /// Global relay registry by url
   Map<String, Relay> relays = {};
 
@@ -60,12 +63,16 @@ class RelayManager {
   final Map<String, bool> _requestQueries = {};
 
   /// Global nip65 map by pubKey
-  Map<String, Nip65> nip65s = {};
+  // Map<String, Nip65> nip65s = {};
 
   /// Global nip02 contact lists map by pubKey
-  Map<String, Nip02ContactList> nip02s = {};
+  // Map<String, Nip02ContactList> nip02s = {};
 
   // ====================================================================================================================
+
+  Future<void> init() async {
+    await cache.init();
+  }
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
@@ -503,9 +510,9 @@ class RelayManager {
         }
       }
       if (onProgress != null) {
-        print(
-            "Calculating best relays minimumRelaysCoverageByPubkey.length:${minimumRelaysCoverageByPubkey
-                .length} pubKeysByRelayUrl.length: ${pubKeys.length}");
+        // print(
+        //     "Calculating best relays minimumRelaysCoverageByPubkey.length:${minimumRelaysCoverageByPubkey
+        //         .length} pubKeysByRelayUrl.length: ${pubKeys.length}");
         onProgress.call("Calculating best relays",
             minimumRelaysCoverageByPubkey.length, pubKeys.length);
       }
@@ -545,9 +552,11 @@ class RelayManager {
                 kinds: [Nip65.kind, Nip02ContactList.kind]))) {
           switch (event.kind) {
             case Nip65.kind:
-              if (nip65s[event.pubKey] == null ||
-                  nip65s[event.pubKey]!.createdAt < event.createdAt) {
-                nip65s[event.pubKey] = Nip65.fromEvent(event);
+              Nip65? nip65 = cache.loadNip65(event.pubKey);
+              if (nip65 == null ||
+                  nip65!.createdAt < event.createdAt) {
+                nip65 = Nip65.fromEvent(event);
+                await cache.saveNip65(nip65);
                 if (onProgress != null && !foundKeys.contains(event.pubKey)) {
                   foundKeys.add(event.pubKey);
                   onProgress.call(
@@ -557,9 +566,11 @@ class RelayManager {
               }
               break;
             case Nip02ContactList.kind:
-              if (nip02s[event.pubKey] == null ||
-                  nip02s[event.pubKey]!.createdAt < event.createdAt) {
-                nip02s[event.pubKey] = Nip02ContactList.fromEvent(event);
+              Nip02ContactList? contactList = cache.loadNip02ContactList(event.pubKey);
+              if (contactList == null ||
+                  contactList!.createdAt < event.createdAt) {
+                contactList = Nip02ContactList.fromEvent(event);
+                await cache.saveNip02ContactList(contactList);
                 if (onProgress != null && !foundKeys.contains(event.pubKey)) {
                   foundKeys.add(event.pubKey);
                   onProgress.call(
@@ -583,43 +594,41 @@ class RelayManager {
 
   Future<Nip02ContactList?> loadContactList(String pubKey,
       {bool forceRefresh = false}) async {
-    if (nip02s[pubKey] == null || forceRefresh) {
+    Nip02ContactList? contactList = cache.loadNip02ContactList(pubKey);
+    if (contactList == null || forceRefresh) {
       try {
         await for (final event in await requestRelays(
             bootstrapRelays, idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT,
             Filter(kinds: [Nip02ContactList.kind], authors: [pubKey], limit: 1)
         )) {
-          if (nip02s[pubKey] == null ||
-              nip02s[pubKey]!.createdAt < event.createdAt) {
-            nip02s[pubKey] = Nip02ContactList.fromEvent(event);
+          if (contactList == null ||
+              contactList!.createdAt < event.createdAt) {
+            contactList = Nip02ContactList.fromEvent(event);
+            await cache.saveNip02ContactList(contactList);
           }
         }
       } catch (e) {
         // probably timeout;
       }
     }
-    return
-      nip02s
-      [
-      pubKey
-      ];
+    return contactList;
   }
 
   Map<String, ReadWriteMarker>? getRelayMarkerMap(String pubKey) {
-    Nip65? nip65 = nip65s[pubKey]; //await getNip65(pubKey.pubKey);
-    if (nip65 != null && nip65.relays.isNotEmpty) {
-      return nip65.relays;
+    Nip65? nip65 = cache.loadNip65(pubKey);
+    if (nip65 != null && nip65.urls.isNotEmpty) {
+      return nip65.relaysMap();
     } else {
-      Nip02ContactList? nip02 = nip02s[pubKey];
+      Nip02ContactList? nip02 = cache.loadNip02ContactList(pubKey);
       if (nip02 != null && nip02.relaysInContent.isNotEmpty) {
-        return nip02.relaysInContent;
+        return nip02.relaysMap();
       }
     }
     return null;
   }
 
   Nip02ContactList? getContactList(String pubKey) {
-    return nip02s[pubKey];
+    return cache.loadNip02ContactList(pubKey);
   }
 
   _buildPubKeysMapFromRelayLists(List<String> pubKeys,
@@ -633,7 +642,7 @@ class RelayManager {
         foundRelayList = true;
         relayMap.forEach((url, marker) {
           _handleRelayUrlForPubKey(
-              pubKey, direction, url, marker, pubKeysByRelayUrl);
+              pubKey, direction, url, marker!, pubKeysByRelayUrl);
         });
       }
       if (foundRelayList) {
@@ -707,17 +716,19 @@ class RelayManager {
   }
 
   Future<Nip65?> getSingleNip65(String pubKey) async {
-    if (nip65s[pubKey] == null) {
+    Nip65? nip65 = cache.loadNip65(pubKey);
+    if (nip65 == null) {
       await for (final event in await requestRelays(bootstrapRelays.toList(),
           Filter(authors: [pubKey], kinds: [Nip65.kind], limit: 1))) {
-        if (nip65s[pubKey] == null ||
-            nip65s[pubKey]!.createdAt < event.createdAt) {
-          nip65s[pubKey] = Nip65.fromEvent(event);
-          print("Received Nip65 ${nip65s[pubKey]}");
+        if (nip65 == null ||
+            nip65!.createdAt < event.createdAt) {
+          nip65 = Nip65.fromEvent(event);
+          // should it be sync or async is ok?
+          await cache.saveNip65(nip65);
         }
       }
     }
-    return nip65s[pubKey];
+    return nip65;
   }
 
   Future<RelayInfo?> getRelayInfo(String url) async {
