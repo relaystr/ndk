@@ -219,15 +219,17 @@ void main() async {
           print("[PROGRESS] $stepName: $count/$total");
         }
       });
-      print("BEST ${relaySet.map.length} RELAYS:");
-      relaySet.map.forEach((url, pubKeys) {
-        print("  $url ${pubKeys.length} follows");
+      print("BEST ${relaySet.items.length} RELAYS:");
+      relaySet.items.forEach((item) {
+        print("  ${item.url} ${item.pubKeyMappings.length} follows");
       });
 
-      expect(relaySet.map.containsKey(relay1.url), true);
-      expect(relaySet.map.containsKey(relay2.url), false);
-      expect(relaySet.map.containsKey(relay3.url), false);
-      expect(relaySet.map.containsKey(relay4.url), true);
+      Iterable<String> urls = relaySet.items.map((e) => e.url);
+      expect(urls.contains(relay1.url), true);
+      expect(urls.contains(relay2.url), false);
+      expect(urls.contains(relay3.url), false);
+      expect(urls.contains(relay4.url), true);
+      expect(relaySet.notCoveredPubkeys.isEmpty, true);
 
       // relayMinCountPerPubKey: 2
       relaySet = await manager.calculateRelaySet(
@@ -238,15 +240,16 @@ void main() async {
           print("[PROGRESS] $stepName: $count/$total");
         }
       });
-      print("BEST ${relaySet.map.length} RELAYS:");
-      relaySet.map.forEach((url, pubKeys) {
-        print("  $url ${pubKeys.length} follows");
+      print("BEST ${relaySet.items.length} RELAYS:");
+      relaySet.items.forEach((item) {
+        print("  ${item.url} ${item.pubKeyMappings.length} follows");
       });
 
-      expect(relaySet.map.containsKey(relay1.url), true);
-      expect(relaySet.map.containsKey(relay2.url), true);
-      expect(relaySet.map.containsKey(relay3.url), false);
-      expect(relaySet.map.containsKey(relay4.url), true);
+      urls = relaySet.items.map((e) => e.url);
+      expect(urls.contains(relay1.url), true);
+      expect(urls.contains(relay2.url), true);
+      expect(urls.contains(relay3.url), false);
+      expect(urls.contains(relay4.url), true);
 
       await stopServers();
     });
@@ -315,23 +318,36 @@ void main() async {
 
         expect(contactList != null, true);
 
-        RelaySet bestRelays = await manager
-            .calculateRelaySet(
-                contactList!.contacts, RelayDirection.outbox,
-                relayMinCountPerPubKey: relayMinCountPerPubKey,
-                onProgress: (stepName, count, total) {
-          if (count % 100 == 0 || (total - count) < 10) {
-            print("[PROGRESS] $stepName: $count/$total");
-          }
-        });
+        RelaySet? bestRelays = await manager.getRelaySet("feed", key.publicKey);
+        if (bestRelays==null) {
+          bestRelays = await manager
+              .calculateRelaySet(
+              contactList!.contacts, RelayDirection.outbox,
+              relayMinCountPerPubKey: relayMinCountPerPubKey,
+              onProgress: (stepName, count, total) {
+                if (count % 100 == 0 || (total - count) < 10) {
+                  print("[PROGRESS] $stepName: $count/$total");
+                }
+              });
+          bestRelays.name = "feed";
+          bestRelays.pubKey = key.publicKey;
+          await manager.saveRelaySet(bestRelays);
+        } else {
+          final startTime = DateTime.now();
+          print("connecting ${bestRelays.items.length} relays");
+          List<bool> connected = await Future.wait(bestRelays.items.map((item) => manager.connectRelay(item.url)));
+          final endTime = DateTime.now();
+          final duration = endTime.difference(startTime);
+          print("CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element ).length} FAILED took ${duration.inMilliseconds} ms");
+        }
         print(
-            "BEST ${bestRelays.map.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
-        bestRelays.map.forEach((url, pubKeys) {
-          print("  $url ${pubKeys.length} follows");
+            "BEST ${bestRelays.items.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
+        bestRelays.items.forEach((item) {
+          print("  ${item.url} ${item.pubKeyMappings.length} follows");
         });
 
         if (Helpers.isNotBlank(expectedRelayUrl)) {
-          expect(bestRelays.map.keys.contains(expectedRelayUrl), true);
+          expect(bestRelays.items.map((e) => e.url).toList().contains(expectedRelayUrl), true);
         }
         final t1 = DateTime.now();
         print(
@@ -343,8 +359,8 @@ void main() async {
     test('Leo feed best relays', () async {
       await _calculateBestRelaysForNpubContactsFeed(
           "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
-          iterations: 2,
-          relayMinCountPerPubKey: 3);
+          iterations: 1,
+          relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Fmar feed best relays', () async {
@@ -354,18 +370,25 @@ void main() async {
           relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
+    test('mikedilger feed best relays', () async {
+      await _calculateBestRelaysForNpubContactsFeed(
+          "npub1acg6thl5psv62405rljzkj8spesceyfz2c32udakc2ak0dmvfeyse9p35c",
+          iterations: 1,
+          relayMinCountPerPubKey: 2);
+    }, timeout: const Timeout.factor(10));
+
     test('Fiatjaf feed best relays', () async {
       await _calculateBestRelaysForNpubContactsFeed(
           "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
-          iterations: 2,
+          iterations: 1,
           relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Love is Bitcoin (3k follows) feed best relays', () async {
       await _calculateBestRelaysForNpubContactsFeed(
           "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
-          iterations: 3,
-          relayMinCountPerPubKey: 1);
+          iterations: 1,
+          relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
   });

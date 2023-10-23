@@ -33,7 +33,7 @@ void main() {
     });
 
     test('toEvent', () {
-      final nip02 = Nip02ContactList.fromContacts('pubkey123', [
+      final nip02 = Nip02ContactList('pubkey123', [
         'contact1',
         'contact2',
         'contact3',

@@ -1,6 +1,10 @@
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:isar/isar.dart';
+
+part 'pubkey_mapping.g.dart';
 
 /// maps the direction for a pubkey read, write, both
+@embedded
 class PubkeyMapping {
   String pubKey;
 

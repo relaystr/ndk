@@ -3,43 +3,24 @@ import 'package:isar/isar.dart';
 
 import '../nip01/event.dart';
 
-part 'nip65.g.dart';
-
-@collection
 class Nip65 {
   static const int kind = 10002;
 
-  String get id => pubKey;
-
-  @ignore
   late String pubKey;
 
-  List<String> urls = [];
-  List<ReadWriteMarker> markers = [];
+  Map<String,ReadWriteMarker> relays = {};
 
-  Nip65(this.urls, this.markers);
-
-  Nip65.fromMap(String pubKey, Map<String, ReadWriteMarker> map) {
-    this.pubKey = pubKey;
-    for(MapEntry<String,ReadWriteMarker> entry in map.entries) {
-      urls.add(entry.key);
-      markers.add(entry.value);
-    }
+  Nip65.fromMap(this.pubKey, Map<String, ReadWriteMarker> map) {
+    relays = map;
   } // Pub keys -> markers
-  // Map<String, dynamic> relays = {};
 
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
   // Nip65(this.relays);
 
   Map<String, ReadWriteMarker> relaysMap() {
-    Map<String, ReadWriteMarker> map = {};
-    for (var i = 0; i < urls.length; i++) {
-      map[urls[i]] = markers[i];
-    }
-    return map;
+    return relays;
   }
-
 
   Nip65.fromEvent(Nip01Event event) {
     pubKey = event.pubKey;
@@ -63,8 +44,7 @@ class Nip65 {
             break;
         }
       }
-      urls.add(url);
-      markers.add(marker);
+      relays[url] = marker;
     }
   }
 
@@ -72,9 +52,9 @@ class Nip65 {
     return Nip01Event(
       pubKey: pubKey,
       kind: Nip65.kind,
-      tags: urls.map((url) {
-        ReadWriteMarker marker = markers[urls!.indexOf(url)];
-        List<String> list = ["r", url];
+      tags: relays.entries.map((entry) {
+        ReadWriteMarker marker = entry.value;
+        List<String> list = ["r", entry.key];
         if (marker == ReadWriteMarker.readOnly) {
           list.add("read");
         }
@@ -91,7 +71,7 @@ class Nip65 {
   @override
   // coverage:ignore-start
   String toString() {
-    return 'Nip65{urls: $urls}';
+    return 'Nip65{urls: $relays}';
   }
   // coverage:ignore-end
 }
