@@ -38,7 +38,10 @@ class RelayManager {
     "wss://relay.damus.io",
     "wss://nos.lol",
     "wss://nostr.wine",
-    "wss://nostr.bitcoiner.social"
+    // "wss://nostr.bitcoiner.social"
+    "wss://nostr-pub.wellorder.net",
+    "wss://offchain.pub",
+    "wss://relay.mostr.pub"
   ];
 
   List<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
@@ -71,7 +74,7 @@ class RelayManager {
   // ====================================================================================================================
 
   Future<void> init({String? dbPath}) async {
-    // await cache.init(dbPath);
+    await cache.init(dbPath);
   }
 
   /// This will initialize the manager with bootstrap relays.
@@ -494,7 +497,7 @@ class RelayManager {
         onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
       }
       try {
-        await for (final event in await requestRelays(idleTimeout: 15, bootstrapRelays, Filter(authors: missingPubKeys, kinds: [Nip65.kind, Nip02ContactList.kind]))) {
+        await for (final event in await requestRelays(idleTimeout: 10, bootstrapRelays, Filter(authors: missingPubKeys, kinds: [Nip65.kind, Nip02ContactList.kind]))) {
           switch (event.kind) {
             case Nip65.kind:
               if (found[event.pubKey] == null || found[event.pubKey]!.createdAt < event.createdAt) {
@@ -648,7 +651,7 @@ class RelayManager {
         if (userRelayList == null || userRelayList!.createdAt < event.createdAt) {
           userRelayList = UserRelayList.fromNip65(Nip65.fromEvent(event));
           // should it be sync or async is ok?
-          await cache.saveUserRelayList(userRelayList);
+          // await cache.saveUserRelayList(userRelayList);
         }
       }
     }
