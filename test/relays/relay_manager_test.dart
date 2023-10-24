@@ -13,6 +13,7 @@ import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_set.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart' as isar;
@@ -318,23 +319,23 @@ void main() async {
             await manager.loadContactList(key.publicKey);
 
         expect(contactList != null, true);
-        int j=1;
-        int count=0;
-        String relay = "wss://nostr-pub.wellorder.net";
-        await manager.loadMissingRelayListsFromNip65OrNip02(contactList!.contacts);
-        for (String contact in contactList!.contacts) {
-          UserRelayList? userRelayList = await manager.getSingleUserRelayList(contact);
-          if (userRelayList!=null && userRelayList.items.any((element) => element.url == relay)) {
-            print (" checking for $relay among ${userRelayList!.items.length} relays of contact ${contact} found ${count} ... $j/${contactList.contacts.length}");
-            count++;
-          } else {
-            print (" checking for $relay among relays of contact ${contact} DID NOT FOUND ... $j/${contactList.contacts.length}");
-          }
-          j++;
-        }
+        // int j=1;
+        // int count=0;
+        // String relay = "wss://nostr-pub.wellorder.net";
+        // await manager.loadMissingRelayListsFromNip65OrNip02(contactList!.contacts);
+        // for (String contact in contactList!.contacts) {
+        //   UserRelayList? userRelayList = await manager.getSingleUserRelayList(contact);
+        //   if (userRelayList!=null && userRelayList.items.any((element) => Relay.clean(element.url) == relay)) {
+        //     print (" checking for $relay among ${userRelayList!.items.length} relays of contact ${contact} found ${count} ... $j/${contactList.contacts.length}");
+        //     count++;
+        //   } else {
+        //     print (" checking for $relay among relays of contact ${contact} DID NOT FOUND ... $j/${contactList.contacts.length}");
+        //   }
+        //   j++;
+        // }
 
         String setName = "feed,$relayMinCountPerPubKey,";
-        RelaySet? bestRelays = await manager.getRelaySet(setName, key.publicKey);
+        RelaySet? bestRelays = null;//await manager.getRelaySet(setName, key.publicKey);
         if (bestRelays==null) {
           bestRelays = await manager
               .calculateRelaySet(
@@ -359,7 +360,7 @@ void main() async {
         print(
             "BEST ${bestRelays.items.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
         bestRelays.items.forEach((item) {
-          print("  ${item.url} ${item.pubKeyMappings.length} follows");
+          print("  ${item.url} ${item.pubKeyMappings.length} follows ${item.pubKeyMappings.length<=2? item.pubKeyMappings:""}");
         });
 
         if (Helpers.isNotBlank(expectedRelayUrl)) {
@@ -390,7 +391,7 @@ void main() async {
       await _calculateBestRelaysForNpubContactsFeed(
           "npub1acg6thl5psv62405rljzkj8spesceyfz2c32udakc2ak0dmvfeyse9p35c",
           iterations: 1,
-          relayMinCountPerPubKey: 1);
+          relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Fiatjaf feed best relays', () async {

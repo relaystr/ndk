@@ -388,7 +388,6 @@ class RelayManager {
     return cache.saveRelaySet(relaySet);
   }
 
-
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet(List<String> pubKeys, RelayDirection direction,
       {required int relayMinCountPerPubKey, Function(String, int, int)? onProgress}) async {
@@ -407,7 +406,7 @@ class RelayManager {
     List<RelaySetItem> items = [];
     for (var relay in relays.keys) {
       if (isWebSocketOpen(relay)) {
-        items.add (RelaySetItem(relay, pubKeys.map((pubKey) => PubkeyMapping(pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite)).toList()));
+        items.add(RelaySetItem(relay, pubKeys.map((pubKey) => PubkeyMapping(pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite)).toList()));
       }
     }
     return items;
@@ -428,7 +427,6 @@ class RelayManager {
 
     Map<String, Set<String>> minimumRelaysCoverageByPubkey = {};
     Map<String, List<PubkeyMapping>> bestRelays = {};
-
     if (onProgress != null) {
       print("Calculating best relays...");
       onProgress.call("Calculating best relays", minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
@@ -476,8 +474,11 @@ class RelayManager {
         relayMinCountPerPubkey: relayMinCount,
         direction: direction,
         items: bestRelays.entries.map((entry) => RelaySetItem(entry.key, entry.value)).toList(),
-        notCoveredPubkeys: notCoveredPubkeys.entries.map((entry) => NotCoveredPubKey(entry.key, entry.value),).toList()
-    );
+        notCoveredPubkeys: notCoveredPubkeys.entries
+            .map(
+              (entry) => NotCoveredPubKey(entry.key, entry.value),
+            )
+            .toList());
   }
 
   Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys, {Function(String stepName, int count, int total)? onProgress}) async {
@@ -489,32 +490,42 @@ class RelayManager {
         missingPubKeys.add(pubKey);
       }
     }
-    Map<String, UserRelayList> found = {};
+    Map<String, UserRelayList> fromNip65s = {};
+    Map<String, UserRelayList> fromNip02Contacts = {};
+    Set<String> found = {};
 
     if (missingPubKeys.isNotEmpty) {
       print("loading missing relay lists ${missingPubKeys.length}");
       if (onProgress != null) {
-        onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
+        onProgress.call("loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
-        await for (final event in await requestRelays(idleTimeout: 10, bootstrapRelays, Filter(authors: missingPubKeys, kinds: [Nip65.kind, Nip02ContactList.kind]))) {
+        await for (final event
+            in await requestRelays(idleTimeout: 10, bootstrapRelays, Filter(authors: missingPubKeys, kinds: [Nip65.kind, Nip02ContactList.kind]))) {
           switch (event.kind) {
             case Nip65.kind:
-              if (found[event.pubKey] == null || found[event.pubKey]!.createdAt < event.createdAt) {
-                found[event.pubKey] = UserRelayList.fromNip65(Nip65.fromEvent(event));
+              Nip65 nip65 = Nip65.fromEvent(event);
+              if (nip65.relays.isNotEmpty) {
+                UserRelayList fromNip65 = UserRelayList.fromNip65(nip65);
+                if (fromNip65s[event.pubKey] == null || fromNip65s[event.pubKey]!.createdAt < event.createdAt) {
+                  fromNip65s[event.pubKey] = fromNip65;
+                }
                 if (onProgress != null) {
-                  onProgress.call("loading missing relay lists", found.keys.length, missingPubKeys.length);
+                  found.add(event.pubKey);
+                  onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
                 }
               }
               break;
             case Nip02ContactList.kind:
-              if ( found[event.pubKey] == null || found[event.pubKey]!.createdAt < event.createdAt) {
-                Nip02ContactList contactList = Nip02ContactList.fromEvent(event);
-                if (contactList.relaysInContent.isNotEmpty) {
-                  found[event.pubKey] = UserRelayList.fromNip02ContactList(contactList);
+              Nip02ContactList contactList = Nip02ContactList.fromEvent(event);
+              if (contactList.relaysInContent.isNotEmpty) {
+                UserRelayList fromContacts = UserRelayList.fromNip02ContactList(contactList);
+                if (fromNip02Contacts[event.pubKey] == null || fromNip02Contacts[event.pubKey]!.createdAt < event.createdAt) {
+                  fromNip02Contacts[event.pubKey] = fromContacts;
                 }
                 if (onProgress != null) {
-                  onProgress.call("loading missing relay lists", found.keys.length, missingPubKeys.length);
+                  found.add(event.pubKey);
+                  onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
                 }
               }
               break;
@@ -523,12 +534,20 @@ class RelayManager {
       } catch (e) {
         print(e);
       }
-      await cache.saveUserRelayLists(found.values.toList());
+      Set<UserRelayList> relayLists = Set.of(fromNip65s.values);
+      // Only add kind3 contents relays if there is no Nip65 for given pubKey.
+      // This is because kind3 contents relay should be deprecated, and if we have a nip65 list should be considered more up-to-date.
+      for(MapEntry<String,UserRelayList> entry in fromNip02Contacts.entries) {
+        if (!fromNip65s.containsKey(entry.key)) {
+          relayLists.add(entry.value);
+        }
+      }
+      await cache.saveUserRelayLists(relayLists.toList());
       if (onProgress != null) {
-        onProgress.call("loading missing relay lists", found.keys.length, missingPubKeys.length);
+        onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
       }
     }
-    print("Loaded ${found.keys.length} relay lists ");
+    print("Loaded ${found.length} relay lists ");
   }
 
   Future<Nip02ContactList?> loadContactList(String pubKey, {bool forceRefresh = false}) async {
@@ -545,7 +564,7 @@ class RelayManager {
         // probably timeout;
       }
     }
-    if (contactList!=null) {
+    if (contactList != null) {
       await cache.saveNip02ContactList(contactList);
     }
     return contactList;
@@ -571,6 +590,7 @@ class RelayManager {
   _buildPubKeysMapFromRelayLists(List<String> pubKeys, RelayDirection direction) async {
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
     int foundCount = 0;
+    // int specificRelayCount = 0 ;
     for (String pubKey in pubKeys) {
       UserRelayList? userRelayList = cache.loadUserRelayList(pubKey);
       if (userRelayList != null) {
@@ -578,6 +598,11 @@ class RelayManager {
           foundCount++;
         }
         for (var item in userRelayList.items) {
+          // Set<PubkeyMapping>? set = pubKeysByRelayUrl["wss://nostr-pub.wellorder.net"];
+          // if (Relay.clean(item.url) == "wss://nostr-pub.wellorder.net") {
+          //   print("FOUND WELL ORDER $specificRelayCount , ${set!=null? set.length : 0} in map");
+          //   specificRelayCount++;
+          // }
           _handleRelayUrlForPubKey(pubKey, direction, item.url, item.marker, pubKeysByRelayUrl);
         }
       } else {
@@ -621,7 +646,8 @@ class RelayManager {
     }));
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element ).length} FAILED took ${duration.inMilliseconds} ms");
+    print(
+        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
   }
 
   Future<bool> _reconnectRelay(String url, {bool force = false}) async {
@@ -666,5 +692,4 @@ class RelayManager {
     }
     return null;
   }
-
 }
