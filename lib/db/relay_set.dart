@@ -2,7 +2,7 @@ import 'package:dart_ndk/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:isar/isar.dart';
 
-import 'nips/nip65/read_write_marker.dart';
+import '../nips/nip65/read_write_marker.dart';
 
 part 'relay_set.g.dart';
 
@@ -16,7 +16,7 @@ class RelaySetItem {
 
 @collection
 class RelaySet {
-  String get id => name + pubKey;
+  String get id => buildId(name, pubKey);
 
   List<String> get urls => items.map((e) => e.url).toList();
 
@@ -30,8 +30,6 @@ class RelaySet {
 
   List<RelaySetItem> items = [];
 
-  // Map<String, List<PubkeyMapping>> map;
-
   List<NotCoveredPubKey> notCoveredPubkeys = [];
 
   RelaySet(
@@ -41,15 +39,9 @@ class RelaySet {
       this.notCoveredPubkeys = const [],
       required this.direction});
 
-// List<String> getRelaysForPubKey(String pubKey) {
-//   List<String> relays = [];
-//   for (MapEntry<String,List<PubkeyMapping>> entry in map.entries) {
-//     if (entry.value.any((element) => element.pubKey == pubKey,)) {
-//       relays.add(entry.key);
-//     }
-//   }
-//   return relays;
-// }
+  static buildId(String name, String pubKey) {
+    return "$name,$pubKey";
+  }
 }
 
 @embedded

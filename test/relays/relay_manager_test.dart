@@ -1,8 +1,7 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 
 import 'package:dart_ndk/dart_ndk.dart';
+import 'package:dart_ndk/db/user_contacts.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
@@ -14,14 +13,13 @@ import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_set.dart';
+import 'package:dart_ndk/db/relay_set.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart' as isar;
 
 import '../mocks/mock_relay.dart';
 
 void main() async {
-  await isar.Isar.initialize("./libisar.so");//initializeIsarCore(download: true);
 
   MockRelay relay1 = MockRelay();
   MockRelay relay2 = MockRelay();
@@ -148,7 +146,6 @@ void main() async {
       await startServers();
 
       RelayManager manager = RelayManager();
-      await manager.init();
       await manager.connect(
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
@@ -169,7 +166,6 @@ void main() async {
         'query all keys and do not use redundant relays', () async {
       await startServers();
       RelayManager manager = RelayManager();
-      await manager.init();
       await manager.connect(
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
@@ -207,7 +203,6 @@ void main() async {
         () async {
       await startServers();
       RelayManager manager = RelayManager();
-      await manager.init();
       await manager.connect(
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
@@ -268,16 +263,16 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        Nip02ContactList? contactList =
-            await manager.loadContactList(key.publicKey);
+        UserContacts? userContacts =
+            await manager.loadUserContacts(key.publicKey);
 
-        if (contactList != null) {
+        if (userContacts != null) {
           print(
-              "Have contact list with ${contactList.contacts.length} contacts");
+              "Have contact list with ${userContacts.contacts.length} contacts");
           Stream<Nip01Event> query = await manager.subscriptionWithCalculation(
               Filter(
                   kinds: [Nip01Event.textNoteKind],
-                  authors: contactList.contacts,
+                  authors: userContacts.pubKeys,
                   limit: 10),
               relayMinCountPerPubKey: 2);
           List<Nip01Event> events = await query.toList();
@@ -307,7 +302,6 @@ void main() async {
     _calculateBestRelaysForNpubContactsFeed(String npub,
         {String? expectedRelayUrl, int iterations = 1, required int relayMinCountPerPubKey}) async {
       RelayManager manager = RelayManager();
-      await manager.init();
       await manager.connect();
       int i = 1;
       while (i <= iterations) {
@@ -315,10 +309,10 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        Nip02ContactList? contactList =
-            await manager.loadContactList(key.publicKey);
+        UserContacts? userContacts =
+            await manager.loadUserContacts(key.publicKey);
 
-        expect(contactList != null, true);
+        expect(userContacts != null, true);
         // int j=1;
         // int count=0;
         // String relay = "wss://nostr-pub.wellorder.net";
@@ -339,7 +333,7 @@ void main() async {
         if (bestRelays==null) {
           bestRelays = await manager
               .calculateRelaySet(
-              contactList!.contacts, RelayDirection.outbox,
+              userContacts!.pubKeys, RelayDirection.outbox,
               relayMinCountPerPubKey: relayMinCountPerPubKey,
               onProgress: (stepName, count, total) {
                 if (count % 100 == 0 || (total - count) < 10) {

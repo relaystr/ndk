@@ -37,6 +37,10 @@ const UserRelayListSchema = IsarGeneratedSchema(
         type: IsarType.objectList,
         target: 'RelayListItem',
       ),
+      IsarPropertySchema(
+        name: 'urls',
+        type: IsarType.stringList,
+      ),
     ],
     indexes: [],
   ),
@@ -63,6 +67,14 @@ int serializeUserRelayList(IsarWriter writer, UserRelayList object) {
         serializeRelayListItem(objectWriter, value);
         IsarCore.endObject(listWriter, objectWriter);
       }
+    }
+    IsarCore.endList(writer, listWriter);
+  }
+  {
+    final list = object.urls;
+    final listWriter = IsarCore.beginList(writer, 5, list.length);
+    for (var i = 0; i < list.length; i++) {
+      IsarCore.writeString(listWriter, i, list[i]);
     }
     IsarCore.endList(writer, listWriter);
   }
@@ -159,6 +171,23 @@ dynamic deserializeUserRelayListProp(IsarReader reader, int property) {
                   list[i] = embedded;
                 }
               }
+            }
+            IsarCore.freeReader(reader);
+            return list;
+          }
+        }
+      }
+    case 5:
+      {
+        final length = IsarCore.readList(reader, 5, IsarCore.readerPtrPtr);
+        {
+          final reader = IsarCore.readerPtr;
+          if (reader.isNull) {
+            return const <String>[];
+          } else {
+            final list = List<String>.filled(length, '', growable: true);
+            for (var i = 0; i < length; i++) {
+              list[i] = IsarCore.readString(reader, i) ?? '';
             }
             IsarCore.freeReader(reader);
             return list;
@@ -662,6 +691,200 @@ extension UserRelayListQueryFilter
       );
     });
   }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 5,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 5,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 5,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 5,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsIsEmpty() {
+    return not().urlsIsNotEmpty();
+  }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterFilterCondition>
+      urlsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterOrEqualCondition(property: 5, value: null),
+      );
+    });
+  }
 }
 
 extension UserRelayListQueryObject
@@ -777,6 +1000,12 @@ extension UserRelayListQueryWhereDistinct
       return query.addDistinctBy(3);
     });
   }
+
+  QueryBuilder<UserRelayList, UserRelayList, QAfterDistinct> distinctByUrls() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(5);
+    });
+  }
 }
 
 extension UserRelayListQueryProperty1
@@ -804,6 +1033,12 @@ extension UserRelayListQueryProperty1
       itemsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<UserRelayList, List<String>, QAfterProperty> urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
     });
   }
 }
@@ -835,6 +1070,13 @@ extension UserRelayListQueryProperty2<R>
       return query.addProperty(4);
     });
   }
+
+  QueryBuilder<UserRelayList, (R, List<String>), QAfterProperty>
+      urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
 }
 
 extension UserRelayListQueryProperty3<R1, R2>
@@ -862,6 +1104,13 @@ extension UserRelayListQueryProperty3<R1, R2>
       itemsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<UserRelayList, (R1, R2, List<String>), QOperations>
+      urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
     });
   }
 }

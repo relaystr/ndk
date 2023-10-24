@@ -51,6 +51,10 @@ const RelaySetSchema = IsarGeneratedSchema(
         name: 'id',
         type: IsarType.string,
       ),
+      IsarPropertySchema(
+        name: 'urls',
+        type: IsarType.stringList,
+      ),
     ],
     indexes: [],
   ),
@@ -99,6 +103,14 @@ int serializeRelaySet(IsarWriter writer, RelaySet object) {
     IsarCore.endList(writer, listWriter);
   }
   IsarCore.writeString(writer, 7, object.id);
+  {
+    final list = object.urls;
+    final listWriter = IsarCore.beginList(writer, 8, list.length);
+    for (var i = 0; i < list.length; i++) {
+      IsarCore.writeString(listWriter, i, list[i]);
+    }
+    IsarCore.endList(writer, listWriter);
+  }
   return Isar.fastHash(object.id);
 }
 
@@ -156,7 +168,7 @@ RelaySet deserializeRelaySet(IsarReader reader) {
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
-        _notCoveredPubkeys = const <NotCoveredPubKey>[];
+        _notCoveredPubkeys = const [];
       } else {
         final list = List<NotCoveredPubKey>.filled(
             length,
@@ -255,7 +267,7 @@ dynamic deserializeRelaySetProp(IsarReader reader, int property) {
         {
           final reader = IsarCore.readerPtr;
           if (reader.isNull) {
-            return const <NotCoveredPubKey>[];
+            return const [];
           } else {
             final list = List<NotCoveredPubKey>.filled(
                 length,
@@ -286,6 +298,23 @@ dynamic deserializeRelaySetProp(IsarReader reader, int property) {
       }
     case 7:
       return IsarCore.readString(reader, 7) ?? '';
+    case 8:
+      {
+        final length = IsarCore.readList(reader, 8, IsarCore.readerPtrPtr);
+        {
+          final reader = IsarCore.readerPtr;
+          if (reader.isNull) {
+            return const <String>[];
+          } else {
+            final list = List<String>.filled(length, '', growable: true);
+            for (var i = 0; i < length; i++) {
+              list[i] = IsarCore.readString(reader, i) ?? '';
+            }
+            IsarCore.freeReader(reader);
+            return list;
+          }
+        }
+      }
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -1158,6 +1187,194 @@ extension RelaySetQueryFilter
       );
     });
   }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition>
+      urlsElementGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition>
+      urlsElementGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsElementLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition>
+      urlsElementLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsElementBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 8,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsElementContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsElementMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 8,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 8,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition>
+      urlsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 8,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsIsEmpty() {
+    return not().urlsIsNotEmpty();
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterOrEqualCondition(property: 8, value: null),
+      );
+    });
+  }
 }
 
 extension RelaySetQueryObject
@@ -1353,6 +1570,12 @@ extension RelaySetQueryWhereDistinct
       return query.addDistinctBy(4);
     });
   }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterDistinct> distinctByUrls() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(8);
+    });
+  }
 }
 
 extension RelaySetQueryProperty1
@@ -1397,6 +1620,12 @@ extension RelaySetQueryProperty1
   QueryBuilder<RelaySet, String, QAfterProperty> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<RelaySet, List<String>, QAfterProperty> urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
     });
   }
 }
@@ -1448,6 +1677,12 @@ extension RelaySetQueryProperty2<R>
       return query.addProperty(7);
     });
   }
+
+  QueryBuilder<RelaySet, (R, List<String>), QAfterProperty> urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
 }
 
 extension RelaySetQueryProperty3<R1, R2>
@@ -1495,6 +1730,12 @@ extension RelaySetQueryProperty3<R1, R2>
   QueryBuilder<RelaySet, (R1, R2, String), QOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<RelaySet, (R1, R2, List<String>), QOperations> urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
     });
   }
 }
