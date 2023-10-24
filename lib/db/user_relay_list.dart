@@ -16,6 +16,7 @@ class UserRelayList {
 
   UserRelayList(this.id, this.items, this.createdAt, this.refreshedTimestamp);
 
+  @ignore
   List<String> get urls => items.map((e) => e.url).toList();
 
   static UserRelayList fromNip65(Nip65 nip65) {

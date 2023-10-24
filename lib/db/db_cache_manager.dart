@@ -26,9 +26,9 @@ class IsarCacheManager implements CacheManager {
         UserRelayListSchema, RelaySetSchema, UserContactsSchema
       ],
     );
-    // await isar.writeAsync((isar) {
-    //   isar.clear();
-    // });
+    await isar.writeAsync((isar) {
+      isar.clear();
+    });
   }
 
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -84,5 +84,16 @@ class IsarCacheManager implements CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     print("SAVED ${userContacts.pubKey} UserContacts took ${duration.inMilliseconds} ms");
+  }
+
+  @override
+  Future<void> saveManyUserContacts(List<UserContacts> list) async {
+    final startTime = DateTime.now();
+    await isar.writeAsync((isar) {
+      isar.userContacts.putAll(list);
+    });
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print("SAVED ${list.length} UserContacts took ${duration.inMilliseconds} ms");
   }
 }

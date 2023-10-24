@@ -12,6 +12,7 @@ class UserContacts {
 
   List<Contact> contacts;
 
+  @ignore
   List<String> get pubKeys => contacts.map((e) => e.pubKey).toList();
 
   List<String>? followedTags;
@@ -23,7 +24,7 @@ class UserContacts {
 
   UserContacts(this.pubKey, this.contacts, this.createdAt, this.refreshedTimestamp);
 
-  static UserContacts? fromNip02ContactList(Nip02ContactList nip02contactList) {
+  static UserContacts fromNip02ContactList(Nip02ContactList nip02contactList) {
     List<Contact> contacts = nip02contactList.contacts.map((contact) {
       int idx = nip02contactList.contacts.indexOf(contact);
       String? relay = nip02contactList.contactRelays.length > idx ? nip02contactList.contactRelays[idx] : null;

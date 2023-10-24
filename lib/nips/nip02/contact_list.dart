@@ -129,4 +129,10 @@ class Nip02ContactList {
       publishAt: createdAt,
     );
   }
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || other is Nip02ContactList && runtimeType == other.runtimeType && pubKey == other.pubKey;
+
+  @override
+  int get hashCode => pubKey.hashCode;
 }

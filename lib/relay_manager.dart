@@ -487,6 +487,7 @@ class RelayManager {
     }
     Map<String, UserRelayList> fromNip65s = {};
     Map<String, UserRelayList> fromNip02Contacts = {};
+    Set<Nip02ContactList> contactLists = {};
     Set<String> found = {};
 
     if (missingPubKeys.isNotEmpty) {
@@ -513,6 +514,7 @@ class RelayManager {
               break;
             case Nip02ContactList.kind:
               Nip02ContactList contactList = Nip02ContactList.fromEvent(event);
+              contactLists.add(contactList);
               if (contactList.relaysInContent.isNotEmpty) {
                 UserRelayList fromContacts = UserRelayList.fromNip02ContactList(contactList);
                 if (fromNip02Contacts[event.pubKey] == null || fromNip02Contacts[event.pubKey]!.createdAt < event.createdAt) {
@@ -538,6 +540,17 @@ class RelayManager {
         }
       }
       await cacheManager.saveUserRelayLists(relayLists.toList());
+
+      // also save to DB any fresher nip02 contact list as UserContacts
+      List<UserContacts> manyUserContactsToSave = [];
+      for(Nip02ContactList contactList in contactLists) {
+        UserContacts? userContacts = cacheManager.loadUserContacts(contactList.pubKey);
+        if (userContacts==null || userContacts.createdAt < contactList.createdAt) {
+          manyUserContactsToSave.add(UserContacts.fromNip02ContactList(contactList));
+        }
+      }
+      await cacheManager.saveManyUserContacts(manyUserContactsToSave);
+
       if (onProgress != null) {
         onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
       }
@@ -653,7 +666,7 @@ class RelayManager {
         if (userRelayList == null || userRelayList.createdAt < event.createdAt) {
           userRelayList = UserRelayList.fromNip65(Nip65.fromEvent(event));
           // should it be sync or async is ok?
-          // await cache.saveUserRelayList(userRelayList);
+          await cacheManager.saveUserRelayList(userRelayList);
         }
       }
     }

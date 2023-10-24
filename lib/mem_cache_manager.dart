@@ -52,4 +52,11 @@ class MemCacheManager implements CacheManager {
   Future<void> saveUserContacts(UserContacts userContacts) async {
     this.userContacts[userContacts.pubKey] = userContacts;
   }
+
+  @override
+  Future<void> saveManyUserContacts(List<UserContacts> list) async {
+    for (var userContacts in list) {
+      this.userContacts[userContacts.pubKey] = userContacts;
+    }
+  }
 }

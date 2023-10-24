@@ -12,5 +12,6 @@ abstract class CacheManager {
   Future<void> saveRelaySet(RelaySet relaySet);
 
   Future<void> saveUserContacts(UserContacts userContacts);
+  Future<void> saveManyUserContacts(List<UserContacts> userContacts);
   UserContacts? loadUserContacts(String pubKey);
 }
