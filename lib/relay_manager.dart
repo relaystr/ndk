@@ -310,7 +310,7 @@ class RelayManager {
     if (requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
       print("making fallback requests to ${bootstrapRelays.length} bootstrap relays for ${filter.authors!=null ? filter.authors!.length: 0} authors with kinds: ${filter.kinds}");
       for (var url in bootstrapRelays) {
-        requests = RelaySet.sliceFilterAuthors(filter, url);
+        requests.addAll(RelaySet.sliceFilterAuthors(filter, url));
       }
     }
     for (RelayRequest request in requests) {

@@ -32,20 +32,22 @@ class RelaySet {
 
   List<RelaySetItem> items = [];
 
-  bool fallbackToBootstrapRelays=true;
+  bool fallbackToBootstrapRelays = true;
 
   List<NotCoveredPubKey> notCoveredPubkeys = [];
 
-  RelaySet(
-      {
-      required this.relayMinCountPerPubkey,
-      required this.items,
-      this.notCoveredPubkeys = const [],
-      required this.direction});
+  RelaySet({
+    required this.relayMinCountPerPubkey,
+    required this.items,
+    this.notCoveredPubkeys = const [],
+    required this.direction,
+    this.fallbackToBootstrapRelays = true
+  });
 
   static buildId(String name, String pubKey) {
     return "$name,$pubKey";
   }
+
   static const int MAX_AUTHORS_PER_REQUEST = 100;
 
   List<RelayRequest> splitIntoRequests(NostrFilter.Filter filter) {
@@ -73,7 +75,7 @@ class RelaySet {
         if (pubKeysForRelay.isNotEmpty) {
           requests.addAll(sliceFilterAuthors(filter.cloneWithPTags(pubKeysForRelay), item.url));
         }
-      } else if (filter.eTags !=null && direction == RelayDirection.inbox) {
+      } else if (filter.eTags != null && direction == RelayDirection.inbox) {
         requests.add(RelayRequest(item.url, filter));
       } else {
         /// TODO ????
