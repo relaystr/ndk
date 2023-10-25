@@ -9,11 +9,14 @@ import 'package:dart_ndk/db/relay_set.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
+import 'db/user_metadata.dart';
+
 class MemCacheManager implements CacheManager {
 
   Map<String, UserRelayList> userRelayLists = {};
   Map<String, RelaySet> relaySets = {};
   Map<String, UserContacts> userContacts = {};
+  Map<String, UserMetadata> userMetadatas = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -58,5 +61,74 @@ class MemCacheManager implements CacheManager {
     for (var userContacts in list) {
       this.userContacts[userContacts.pubKey] = userContacts;
     }
+  }
+
+  @override
+  UserMetadata? loadUserMetadata(String pubKey) {
+    return userMetadatas[pubKey];
+  }
+
+  @override
+  Future<void> saveUserMetadata(UserMetadata metadata) async {
+    userMetadatas[metadata.pubKey] = metadata;
+  }
+
+  @override
+  Future<void> saveUserMetadatas(List<UserMetadata> list) async {
+    for (var metadata in list) {
+      this.userMetadatas[metadata.pubKey] = metadata;
+    }
+  }
+
+  @override
+  Future<void> removeAllRelaySets() async {
+    relaySets.clear();
+  }
+
+  @override
+  Future<void> removeAllUserContacts() async {
+    userContacts.clear();
+  }
+
+  @override
+  Future<void> removeAllUserMetadatas() async {
+    userMetadatas.clear();
+  }
+
+  @override
+  Future<void> removeAllUserRelayLists() async {
+    userRelayLists.clear();
+  }
+
+  @override
+  Future<void> removeRelaySet(String name, String pubKey) async {
+    relaySets.remove(RelaySet.buildId(name, pubKey));
+  }
+
+  @override
+  Future<void> removeUserContacts(String pubKey) async {
+    userContacts.remove(pubKey);
+  }
+
+  @override
+  Future<void> removeUserMetadata(String pubKey) async {
+    userMetadatas.remove(pubKey);
+  }
+
+  @override
+  Future<void> removeUserRelayList(String pubKey) async {
+    userRelayLists.remove(pubKey);
+  }
+
+  @override
+  List<UserMetadata?> loadUserMetadatas(List<String> pubKeys) {
+    List<UserMetadata> result = [];
+    for(String pubKey in pubKeys) {
+      UserMetadata? metadata = userMetadatas[pubKey];
+      if (metadata!=null) {
+        result.add(metadata);
+      }
+    }
+    return result;
   }
 }

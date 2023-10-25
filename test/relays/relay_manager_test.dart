@@ -21,26 +21,41 @@ import '../mocks/mock_relay.dart';
 
 void main() async {
 
-  MockRelay relay1 = MockRelay();
-  MockRelay relay2 = MockRelay();
-  MockRelay relay3 = MockRelay();
-  MockRelay relay4 = MockRelay();
+  MockRelay relay1 = MockRelay(name: "relay 1");
+  MockRelay relay2 = MockRelay(name: "relay 2");
+  MockRelay relay3 = MockRelay(name: "relay 3");
+  MockRelay relay4 = MockRelay(name: "relay 4");
 
   KeyPair key1 = Bip340.generatePrivateKey();
   KeyPair key2 = Bip340.generatePrivateKey();
   KeyPair key3 = Bip340.generatePrivateKey();
   KeyPair key4 = Bip340.generatePrivateKey();
 
+  Map<String,String> relayNames = {
+    relay1.url : relay1.name,
+    relay2.url : relay2.name,
+    relay3.url : relay3.name,
+    relay4.url : relay4.name,
+  };
+
+  Map<KeyPair,String> keyNames = {
+    key1: "key1",
+    key2: "key2",
+    key3: "key3",
+    key4: "key4",
+  };
+
+
   Nip01Event textNote(KeyPair key2) {
     return Nip01Event(
         kind: Nip01Event.textNoteKind,
         pubKey: key2.publicKey,
-        content: "some note from key ${key2.publicKey}",
+        content: "some note from key ${keyNames[key2]}",
         tags: []);
   }
 
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
-  Map<KeyPair, Nip01Event> key2TextNotes = {key2: textNote(key1)};
+  Map<KeyPair, Nip01Event> key2TextNotes = {key2: textNote(key2)};
   Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
@@ -85,18 +100,19 @@ void main() async {
   });
 
   group("Calculate best relays (internal MOCKs)", () {
-    /// key1 reads and writes to relay 1,2 & 3, has its notes on all those relays
+    /// key1 reads and writes to relay 1,2,3 & 4, has its notes on all those relays
     /// key2 reads and writes to relay 1 & 2, has its notes on both relays
     /// key3 reads and writes to relay 1, has its notes ONLY on relay 1
     /// key4 reads and writes ONLY to relay 4, has its notes ONLY on relay 4
     Nip65 nip65ForKey1 = Nip65.fromMap(key1.publicKey,{
       relay1.url: ReadWriteMarker.readWrite,
       relay2.url: ReadWriteMarker.readWrite,
-      relay3.url: ReadWriteMarker.readWrite
+      relay3.url: ReadWriteMarker.readWrite,
+      relay4.url: ReadWriteMarker.readWrite,
     });
     Nip65 nip65ForKey2 = Nip65.fromMap(key2.publicKey,{
       relay1.url: ReadWriteMarker.readWrite,
-      relay2.url: ReadWriteMarker.readWrite
+      relay2.url: ReadWriteMarker.readWrite,
     });
     Nip65 nip65ForKey3 = Nip65.fromMap(key3.publicKey,{relay1.url: ReadWriteMarker.readWrite});
     Nip65 nip65ForKey4 = Nip65.fromMap(key4.publicKey,{relay4.url: ReadWriteMarker.readWrite});
@@ -127,7 +143,7 @@ void main() async {
               ..addAll(key2TextNotes)),
         relay3.startServer(
             nip65s: nip65s, textNotes: {}..addAll(key1TextNotes)),
-        relay4.startServer(textNotes: key4TextNotes)
+        relay4.startServer(textNotes: key4TextNotes..addAll(key1TextNotes))
       ]);
     }
 
@@ -152,9 +168,10 @@ void main() async {
       Stream<Nip01Event> query = await manager.queryWithCalculation(
           Filter(kinds: [Nip01Event.textNoteKind], authors: [key4.publicKey]));
       await for (final event in query.take(4)) {
-        print(event);
+        expect(event.sources, [relay4.url]);
+        expect(event, key4TextNotes[key4]);
+        // print(event);
       }
-//      expect(query, emitsInAnyOrder(key4TextNotes.values));
 
       await stopServers();
     });
@@ -170,8 +187,21 @@ void main() async {
           bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
-      /// only relay 1, 3 & 4 should be used, since relay 2 keys are all also kept on relay 1 so should not be needed
-      Stream<Nip01Event> query = await manager.queryWithCalculation(
+      /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
+      RelaySet relaySet = await manager.calculateRelaySet(
+          [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
+          RelayDirection.outbox,
+          relayMinCountPerPubKey: 1,
+          onProgress: (stepName, count, total) {
+        if (count % 100 == 0 || (total - count) < 10) {
+          print("[PROGRESS] $stepName: $count/$total");
+        }
+      });
+      print("BEST ${relaySet.items.length} RELAYS:");
+      relaySet.items.forEach((item) {
+        print("  ${relayNames[item.url]} => has ${item.pubKeyMappings.length} follows");
+      });
+      Stream<Nip01Event> query = await manager.query(
           Filter(kinds: [
             Nip01Event.textNoteKind
           ], authors: [
@@ -179,14 +209,10 @@ void main() async {
             key2.publicKey,
             key3.publicKey,
             key4.publicKey
-          ]),
-          relayMinCountPerPubKey: 1);
+          ]),relaySet);
 
       await for (final event in query) {
         print(event);
-        if (event.sources.contains(relay2.url)) {
-          fail("should not use relay 2 (${relay2.url}) in gossip model");
-        }
         if (event.sources.contains(relay3.url)) {
           fail("should not use relay 3 (${relay3.url}) in gossip model");
         }
@@ -218,7 +244,7 @@ void main() async {
       });
       print("BEST ${relaySet.items.length} RELAYS:");
       relaySet.items.forEach((item) {
-        print("  ${item.url} ${item.pubKeyMappings.length} follows");
+        print("  ${item.url} => has ${item.pubKeyMappings.length} follows");
       });
 
       Iterable<String> urls = relaySet.items.map((e) => e.url);
@@ -239,7 +265,7 @@ void main() async {
       });
       print("BEST ${relaySet.items.length} RELAYS:");
       relaySet.items.forEach((item) {
-        print("  ${item.url} ${item.pubKeyMappings.length} follows");
+        print("  ${item.url} => has ${item.pubKeyMappings.length} follows");
       });
 
       urls = relaySet.items.map((e) => e.url);

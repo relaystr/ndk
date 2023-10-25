@@ -1,10 +1,13 @@
+import 'dart:convert';
+
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 
 class Metadata {
 
   static const int kind = 0;
 
-  String? pubKey;
+  late String pubKey;
   String? name;
   String? displayName;
   String? picture;
@@ -17,7 +20,7 @@ class Metadata {
   int? updatedAt;
 
   Metadata({
-    this.pubKey,
+    this.pubKey = "",
     this.name,
     this.displayName,
     this.picture,
@@ -31,7 +34,6 @@ class Metadata {
   });
 
   Metadata.fromJson(Map<String, dynamic> json) {
-    pubKey = json['pub_key'];
     name = json['name'];
     displayName = json['display_name'];
     picture = json['picture'];
@@ -46,12 +48,12 @@ class Metadata {
 
   Map<String, dynamic> toFullJson() {
     var data = toJson();
-    data['pub_key'] = this.pubKey;
+    data['pub_key'] = pubKey;
     return data;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['name'] = name;
     data['display_name'] = displayName;
     data['picture'] = picture;
@@ -65,24 +67,16 @@ class Metadata {
     return data;
   }
 
-  String getName() {
-    if (displayName != null && Helpers.isNotBlank(displayName)) {
-      return displayName!;
+  static Metadata fromEvent(Nip01Event event) {
+    Metadata metadata = Metadata();
+    if (Helpers.isNotBlank(event.content)) {
+      Map<String,dynamic> json = jsonDecode(event.content);
+      if (json!=null) {
+        metadata = Metadata.fromJson(json);
+      }
     }
-    if (name != null && Helpers.isNotBlank(name)) {
-      return name!;
-    }
-    return pubKey!;
-  }
-
-  bool matchesSearch(String str) {
-    str = str.trim().toLowerCase();
-    String d = displayName != null ? displayName!.toLowerCase()! : "";
-    String n = name != null ? name!.toLowerCase()! : "";
-    String str2 = " $str";
-    return d.startsWith(str) ||
-        d.contains(str2) ||
-        n.startsWith(str) ||
-        n.contains(str2);
+    metadata.pubKey = event.pubKey;
+    metadata.updatedAt = event.createdAt;
+    return metadata;
   }
 }

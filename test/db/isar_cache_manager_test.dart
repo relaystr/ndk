@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/db/relay_set.dart';
 import 'package:dart_ndk/db/user_contacts.dart';

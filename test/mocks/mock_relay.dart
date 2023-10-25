@@ -10,6 +10,7 @@ import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class MockRelay {
+  String name;
   int? port;
   HttpServer? server;
   WebSocket? webSocket;
@@ -20,7 +21,7 @@ class MockRelay {
 
   String get url => "ws://localhost:$port";
 
-  MockRelay({this.nip65s}) {
+  MockRelay({required this.name, this.nip65s}) {
     port = startPort;
     startPort++;
   }

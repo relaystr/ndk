@@ -11,6 +11,7 @@ import 'package:async/async.dart' show StreamGroup;
 import 'package:collection/collection.dart';
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/user_contacts.dart';
+import 'package:dart_ndk/db/user_metadata.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
@@ -24,6 +25,7 @@ import 'package:flutter/foundation.dart';
 
 import 'nips/nip01/event.dart';
 import 'nips/nip01/filter.dart';
+import 'nips/nip01/metadata.dart';
 import 'nips/nip65/nip65.dart';
 
 class RelayManager {
@@ -192,8 +194,8 @@ class RelayManager {
     return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: false);
   }
 
-  Future<Stream<Nip01Event>> query(Filter filter, RelaySet relaySet) async {
-    return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: true);
+  Future<Stream<Nip01Event>> query(Filter filter, RelaySet relaySet, {int? idleTimeout}) async {
+    return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: true, idleTimeout:idleTimeout);
   }
 
   Stream<Nip01Event> request(String url, Filter filter, {bool closeOnEOSE = true, int? idleTimeout, StreamGroup<Nip01Event>? streamGroup}) {
@@ -316,15 +318,16 @@ class RelayManager {
     StreamGroup<Nip01Event> streamGroup = StreamGroup<Nip01Event>();
 
     for (var item in relaySet.items) {
-      Filter relayFilter = splitFilter(item.pubKeyMappings, filter, relaySet.direction, relaySet.notCoveredPubkeys);
-
-      requestWithSlicingFilterAuthors(relayFilter, streamGroup, item.url, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
+      Filter? relayFilter = splitFilter(item.pubKeyMappings, filter, relaySet.direction, relaySet.notCoveredPubkeys);
+      if (relayFilter!=null) {
+        requestWithSlicingFilterAuthors(relayFilter, streamGroup, item.url, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
+      }
     }
     return streamGroup.stream;
   }
 
-  Filter splitFilter(List<PubkeyMapping> pubKeyMappings, Filter filter, RelayDirection direction, List<NotCoveredPubKey> notCoveredPubKeys) {
-    Filter relayFilter = filter;
+  Filter? splitFilter(List<PubkeyMapping> pubKeyMappings, Filter filter, RelayDirection direction, List<NotCoveredPubKey> notCoveredPubKeys) {
+    Filter? relayFilter;
 
     /// TODO allow for more usecases
     /// extract from the filter which pubKeys and directions we should use the query for such filter
@@ -558,6 +561,38 @@ class RelayManager {
     print("Loaded ${found.length} relay lists ");
   }
 
+  Future<void> loadMissingUserMetadatas(List<String> pubKeys, RelaySet relaySet) async {
+    List<String> missingPubKeys = [];
+    for (var pubKey in pubKeys) {
+      UserMetadata? userMetadata = cacheManager.loadUserMetadata(pubKey);
+      if (userMetadata == null) {
+        // TODO check if not too old (time passed since last refreshed timestamp)
+        missingPubKeys.add(pubKey);
+      }
+    }
+    Map<String,Metadata> metadatas = {};
+
+    if (missingPubKeys.isNotEmpty) {
+      print("loading missing user metadatas ${missingPubKeys.length}");
+      try {
+        await for (final event
+        in await query(
+          idleTimeout: 2,
+          Filter(authors: missingPubKeys, kinds: [Metadata.kind]),
+          relaySet
+        )) {
+          if (metadatas[event.pubKey] == null || metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
+              metadatas[event.pubKey] = Metadata.fromEvent(event);
+          }
+        }
+      } catch (e) {
+        print(e);
+      }
+      await cacheManager.saveUserMetadatas(metadatas.values.map((metadata) => UserMetadata.fromMetadata(metadata)).toList());
+    }
+    print("Loaded ${metadatas.length} user metadatas ");
+  }
+
   Future<UserContacts?> loadUserContacts(String pubKey, {bool forceRefresh = false}) async {
     UserContacts? userContacts = cacheManager.loadUserContacts(pubKey);
     if (userContacts == null || forceRefresh) {
@@ -580,6 +615,14 @@ class RelayManager {
 
   UserContacts? getUserContacts(String pubKey) {
     return cacheManager.loadUserContacts(pubKey);
+  }
+
+  List<UserMetadata?> getUserMetadatas(List<String> pubKeys) {
+    return cacheManager.loadUserMetadatas(pubKeys);
+  }
+
+  UserMetadata? getUserMetadata(String pubKey) {
+    return cacheManager.loadUserMetadata(pubKey);
   }
 
   _buildPubKeysMapFromRelayLists(List<String> pubKeys, RelayDirection direction) async {
