@@ -161,25 +161,48 @@ int serializeUserMetadata(IsarWriter writer, UserMetadata object) {
 
 @isarProtected
 UserMetadata deserializeUserMetadata(IsarReader reader) {
-  final object = UserMetadata();
-  object.pubKey = IsarCore.readString(reader, 2) ?? '';
-  object.name = IsarCore.readString(reader, 3);
-  object.displayName = IsarCore.readString(reader, 4);
-  object.picture = IsarCore.readString(reader, 5);
-  object.banner = IsarCore.readString(reader, 6);
-  object.website = IsarCore.readString(reader, 7);
-  object.about = IsarCore.readString(reader, 8);
-  object.nip05 = IsarCore.readString(reader, 9);
-  object.lud16 = IsarCore.readString(reader, 10);
-  object.lud06 = IsarCore.readString(reader, 11);
+  final String _pubKey;
+  _pubKey = IsarCore.readString(reader, 2) ?? "";
+  final String? _name;
+  _name = IsarCore.readString(reader, 3);
+  final String? _displayName;
+  _displayName = IsarCore.readString(reader, 4);
+  final String? _picture;
+  _picture = IsarCore.readString(reader, 5);
+  final String? _banner;
+  _banner = IsarCore.readString(reader, 6);
+  final String? _website;
+  _website = IsarCore.readString(reader, 7);
+  final String? _about;
+  _about = IsarCore.readString(reader, 8);
+  final String? _nip05;
+  _nip05 = IsarCore.readString(reader, 9);
+  final String? _lud16;
+  _lud16 = IsarCore.readString(reader, 10);
+  final String? _lud06;
+  _lud06 = IsarCore.readString(reader, 11);
+  final int? _updatedAt;
   {
     final value = IsarCore.readLong(reader, 12);
     if (value == -9223372036854775808) {
-      object.updatedAt = null;
+      _updatedAt = null;
     } else {
-      object.updatedAt = value;
+      _updatedAt = value;
     }
   }
+  final object = UserMetadata(
+    pubKey: _pubKey,
+    name: _name,
+    displayName: _displayName,
+    picture: _picture,
+    banner: _banner,
+    website: _website,
+    about: _about,
+    nip05: _nip05,
+    lud16: _lud16,
+    lud06: _lud06,
+    updatedAt: _updatedAt,
+  );
   return object;
 }
 
@@ -189,7 +212,7 @@ dynamic deserializeUserMetadataProp(IsarReader reader, int property) {
     case 1:
       return IsarCore.readString(reader, 1) ?? '';
     case 2:
-      return IsarCore.readString(reader, 2) ?? '';
+      return IsarCore.readString(reader, 2) ?? "";
     case 3:
       return IsarCore.readString(reader, 3);
     case 4:

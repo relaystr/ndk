@@ -43,6 +43,10 @@ const RelaySetSchema = IsarGeneratedSchema(
         target: 'RelaySetItem',
       ),
       IsarPropertySchema(
+        name: 'fallbackToBootstrapRelays',
+        type: IsarType.bool,
+      ),
+      IsarPropertySchema(
         name: 'notCoveredPubkeys',
         type: IsarType.objectList,
         target: 'NotCoveredPubKey',
@@ -89,9 +93,10 @@ int serializeRelaySet(IsarWriter writer, RelaySet object) {
     }
     IsarCore.endList(writer, listWriter);
   }
+  IsarCore.writeBool(writer, 6, object.fallbackToBootstrapRelays);
   {
     final list = object.notCoveredPubkeys;
-    final listWriter = IsarCore.beginList(writer, 6, list.length);
+    final listWriter = IsarCore.beginList(writer, 7, list.length);
     for (var i = 0; i < list.length; i++) {
       {
         final value = list[i];
@@ -102,10 +107,10 @@ int serializeRelaySet(IsarWriter writer, RelaySet object) {
     }
     IsarCore.endList(writer, listWriter);
   }
-  IsarCore.writeString(writer, 7, object.id);
+  IsarCore.writeString(writer, 8, object.id);
   {
     final list = object.urls;
-    final listWriter = IsarCore.beginList(writer, 8, list.length);
+    final listWriter = IsarCore.beginList(writer, 9, list.length);
     for (var i = 0; i < list.length; i++) {
       IsarCore.writeString(listWriter, i, list[i]);
     }
@@ -164,7 +169,7 @@ RelaySet deserializeRelaySet(IsarReader reader) {
   }
   final List<NotCoveredPubKey> _notCoveredPubkeys;
   {
-    final length = IsarCore.readList(reader, 6, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 7, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -205,6 +210,7 @@ RelaySet deserializeRelaySet(IsarReader reader) {
   );
   object.name = IsarCore.readString(reader, 1) ?? '';
   object.pubKey = IsarCore.readString(reader, 2) ?? '';
+  object.fallbackToBootstrapRelays = IsarCore.readBool(reader, 6);
   return object;
 }
 
@@ -262,8 +268,10 @@ dynamic deserializeRelaySetProp(IsarReader reader, int property) {
         }
       }
     case 6:
+      return IsarCore.readBool(reader, 6);
+    case 7:
       {
-        final length = IsarCore.readList(reader, 6, IsarCore.readerPtrPtr);
+        final length = IsarCore.readList(reader, 7, IsarCore.readerPtrPtr);
         {
           final reader = IsarCore.readerPtr;
           if (reader.isNull) {
@@ -296,11 +304,11 @@ dynamic deserializeRelaySetProp(IsarReader reader, int property) {
           }
         }
       }
-    case 7:
-      return IsarCore.readString(reader, 7) ?? '';
     case 8:
+      return IsarCore.readString(reader, 8) ?? '';
+    case 9:
       {
-        final length = IsarCore.readList(reader, 8, IsarCore.readerPtrPtr);
+        final length = IsarCore.readList(reader, 9, IsarCore.readerPtrPtr);
         {
           final reader = IsarCore.readerPtr;
           if (reader.isNull) {
@@ -327,6 +335,7 @@ sealed class _RelaySetUpdate {
     String? pubKey,
     int? relayMinCountPerPubkey,
     RelayDirection? direction,
+    bool? fallbackToBootstrapRelays,
   });
 }
 
@@ -342,6 +351,7 @@ class _RelaySetUpdateImpl implements _RelaySetUpdate {
     Object? pubKey = ignore,
     Object? relayMinCountPerPubkey = ignore,
     Object? direction = ignore,
+    Object? fallbackToBootstrapRelays = ignore,
   }) {
     return collection.updateProperties([
           id
@@ -351,6 +361,8 @@ class _RelaySetUpdateImpl implements _RelaySetUpdate {
           if (relayMinCountPerPubkey != ignore)
             3: relayMinCountPerPubkey as int?,
           if (direction != ignore) 4: direction as RelayDirection?,
+          if (fallbackToBootstrapRelays != ignore)
+            6: fallbackToBootstrapRelays as bool?,
         }) >
         0;
   }
@@ -363,6 +375,7 @@ sealed class _RelaySetUpdateAll {
     String? pubKey,
     int? relayMinCountPerPubkey,
     RelayDirection? direction,
+    bool? fallbackToBootstrapRelays,
   });
 }
 
@@ -378,12 +391,15 @@ class _RelaySetUpdateAllImpl implements _RelaySetUpdateAll {
     Object? pubKey = ignore,
     Object? relayMinCountPerPubkey = ignore,
     Object? direction = ignore,
+    Object? fallbackToBootstrapRelays = ignore,
   }) {
     return collection.updateProperties(id, {
       if (name != ignore) 1: name as String?,
       if (pubKey != ignore) 2: pubKey as String?,
       if (relayMinCountPerPubkey != ignore) 3: relayMinCountPerPubkey as int?,
       if (direction != ignore) 4: direction as RelayDirection?,
+      if (fallbackToBootstrapRelays != ignore)
+        6: fallbackToBootstrapRelays as bool?,
     });
   }
 }
@@ -400,6 +416,7 @@ sealed class _RelaySetQueryUpdate {
     String? pubKey,
     int? relayMinCountPerPubkey,
     RelayDirection? direction,
+    bool? fallbackToBootstrapRelays,
   });
 }
 
@@ -415,12 +432,15 @@ class _RelaySetQueryUpdateImpl implements _RelaySetQueryUpdate {
     Object? pubKey = ignore,
     Object? relayMinCountPerPubkey = ignore,
     Object? direction = ignore,
+    Object? fallbackToBootstrapRelays = ignore,
   }) {
     return query.updateProperties(limit: limit, {
       if (name != ignore) 1: name as String?,
       if (pubKey != ignore) 2: pubKey as String?,
       if (relayMinCountPerPubkey != ignore) 3: relayMinCountPerPubkey as int?,
       if (direction != ignore) 4: direction as RelayDirection?,
+      if (fallbackToBootstrapRelays != ignore)
+        6: fallbackToBootstrapRelays as bool?,
     });
   }
 }
@@ -444,6 +464,7 @@ class _RelaySetQueryBuilderUpdateImpl implements _RelaySetQueryUpdate {
     Object? pubKey = ignore,
     Object? relayMinCountPerPubkey = ignore,
     Object? direction = ignore,
+    Object? fallbackToBootstrapRelays = ignore,
   }) {
     final q = query.build();
     try {
@@ -452,6 +473,8 @@ class _RelaySetQueryBuilderUpdateImpl implements _RelaySetQueryUpdate {
         if (pubKey != ignore) 2: pubKey as String?,
         if (relayMinCountPerPubkey != ignore) 3: relayMinCountPerPubkey as int?,
         if (direction != ignore) 4: direction as RelayDirection?,
+        if (fallbackToBootstrapRelays != ignore)
+          6: fallbackToBootstrapRelays as bool?,
       });
     } finally {
       q.close();
@@ -1002,6 +1025,20 @@ extension RelaySetQueryFilter
   }
 
   QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition>
+      fallbackToBootstrapRelaysEqualTo(
+    bool value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 6,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition>
       notCoveredPubkeysIsEmpty() {
     return not().notCoveredPubkeysIsNotEmpty();
   }
@@ -1010,7 +1047,7 @@ extension RelaySetQueryFilter
       notCoveredPubkeysIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 6, value: null),
+        const GreaterOrEqualCondition(property: 7, value: null),
       );
     });
   }
@@ -1022,7 +1059,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 7,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1037,7 +1074,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 7,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1053,7 +1090,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 7,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1068,7 +1105,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 7,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1083,7 +1120,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 7,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1099,7 +1136,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 7,
+          property: 8,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -1115,7 +1152,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 7,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1130,7 +1167,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 7,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1144,7 +1181,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 7,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1158,7 +1195,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 7,
+          property: 8,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1170,7 +1207,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 7,
+          property: 8,
           value: '',
         ),
       );
@@ -1181,7 +1218,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 7,
+          property: 8,
           value: '',
         ),
       );
@@ -1195,7 +1232,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 8,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1211,7 +1248,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 8,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1227,7 +1264,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 8,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1242,7 +1279,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 8,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1258,7 +1295,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 8,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1274,7 +1311,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 8,
+          property: 9,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -1290,7 +1327,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 8,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1305,7 +1342,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 8,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1319,7 +1356,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 8,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1333,7 +1370,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 8,
+          property: 9,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1345,7 +1382,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 8,
+          property: 9,
           value: '',
         ),
       );
@@ -1357,7 +1394,7 @@ extension RelaySetQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 8,
+          property: 9,
           value: '',
         ),
       );
@@ -1371,7 +1408,7 @@ extension RelaySetQueryFilter
   QueryBuilder<RelaySet, RelaySet, QAfterFilterCondition> urlsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 8, value: null),
+        const GreaterOrEqualCondition(property: 9, value: null),
       );
     });
   }
@@ -1449,11 +1486,25 @@ extension RelaySetQuerySortBy on QueryBuilder<RelaySet, RelaySet, QSortBy> {
     });
   }
 
+  QueryBuilder<RelaySet, RelaySet, QAfterSortBy>
+      sortByFallbackToBootstrapRelays() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6);
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterSortBy>
+      sortByFallbackToBootstrapRelaysDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6, sort: Sort.desc);
+    });
+  }
+
   QueryBuilder<RelaySet, RelaySet, QAfterSortBy> sortById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        7,
+        8,
         caseSensitive: caseSensitive,
       );
     });
@@ -1463,7 +1514,7 @@ extension RelaySetQuerySortBy on QueryBuilder<RelaySet, RelaySet, QSortBy> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        7,
+        8,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -1527,17 +1578,31 @@ extension RelaySetQuerySortThenBy
     });
   }
 
+  QueryBuilder<RelaySet, RelaySet, QAfterSortBy>
+      thenByFallbackToBootstrapRelays() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6);
+    });
+  }
+
+  QueryBuilder<RelaySet, RelaySet, QAfterSortBy>
+      thenByFallbackToBootstrapRelaysDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6, sort: Sort.desc);
+    });
+  }
+
   QueryBuilder<RelaySet, RelaySet, QAfterSortBy> thenById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(7, caseSensitive: caseSensitive);
+      return query.addSortBy(8, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<RelaySet, RelaySet, QAfterSortBy> thenByIdDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 }
@@ -1571,9 +1636,16 @@ extension RelaySetQueryWhereDistinct
     });
   }
 
+  QueryBuilder<RelaySet, RelaySet, QAfterDistinct>
+      distinctByFallbackToBootstrapRelays() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(6);
+    });
+  }
+
   QueryBuilder<RelaySet, RelaySet, QAfterDistinct> distinctByUrls() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(8);
+      return query.addDistinctBy(9);
     });
   }
 }
@@ -1610,22 +1682,29 @@ extension RelaySetQueryProperty1
     });
   }
 
-  QueryBuilder<RelaySet, List<NotCoveredPubKey>, QAfterProperty>
-      notCoveredPubkeysProperty() {
+  QueryBuilder<RelaySet, bool, QAfterProperty>
+      fallbackToBootstrapRelaysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<RelaySet, String, QAfterProperty> idProperty() {
+  QueryBuilder<RelaySet, List<NotCoveredPubKey>, QAfterProperty>
+      notCoveredPubkeysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<RelaySet, List<String>, QAfterProperty> urlsProperty() {
+  QueryBuilder<RelaySet, String, QAfterProperty> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<RelaySet, List<String>, QAfterProperty> urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
     });
   }
 }
@@ -1665,22 +1744,29 @@ extension RelaySetQueryProperty2<R>
     });
   }
 
-  QueryBuilder<RelaySet, (R, List<NotCoveredPubKey>), QAfterProperty>
-      notCoveredPubkeysProperty() {
+  QueryBuilder<RelaySet, (R, bool), QAfterProperty>
+      fallbackToBootstrapRelaysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<RelaySet, (R, String), QAfterProperty> idProperty() {
+  QueryBuilder<RelaySet, (R, List<NotCoveredPubKey>), QAfterProperty>
+      notCoveredPubkeysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<RelaySet, (R, List<String>), QAfterProperty> urlsProperty() {
+  QueryBuilder<RelaySet, (R, String), QAfterProperty> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<RelaySet, (R, List<String>), QAfterProperty> urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
     });
   }
 }
@@ -1720,22 +1806,29 @@ extension RelaySetQueryProperty3<R1, R2>
     });
   }
 
-  QueryBuilder<RelaySet, (R1, R2, List<NotCoveredPubKey>), QOperations>
-      notCoveredPubkeysProperty() {
+  QueryBuilder<RelaySet, (R1, R2, bool), QOperations>
+      fallbackToBootstrapRelaysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<RelaySet, (R1, R2, String), QOperations> idProperty() {
+  QueryBuilder<RelaySet, (R1, R2, List<NotCoveredPubKey>), QOperations>
+      notCoveredPubkeysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<RelaySet, (R1, R2, List<String>), QOperations> urlsProperty() {
+  QueryBuilder<RelaySet, (R1, R2, String), QOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<RelaySet, (R1, R2, List<String>), QOperations> urlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
     });
   }
 }

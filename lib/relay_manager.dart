@@ -32,7 +32,6 @@ class RelayManager {
   static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;
   static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
   static const int DEFAULT_BEST_RELAYS_MIN_COUNT = 2;
-  static const int MAX_AUTHORS_PER_REQUEST = 100;
   static const int FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS = 60;
   static const int WEB_SOCKET_PING_INTERVAL_SECONDS = 3;
 
@@ -56,9 +55,6 @@ class RelayManager {
 
   /// Global webSocket registry by url
   Map<String, WebSocket> webSockets = {};
-
-  // Global registry of RelaySets
-  // Map<String, RelaySet> relaySets = {};
 
   /// Global subscriptions streams by request id
   final Map<String, StreamController<Nip01Event>> _subscriptions = {};
@@ -181,15 +177,6 @@ class RelayManager {
     return urls.where((url) => isRelayConnected(url)).map((url) => relays[url]!).toList();
   }
 
-  Future<Stream<Nip01Event>> subscriptionWithCalculation(Filter filter, {int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
-    return _doCalculateBestRelaysAndDoSubscriptionOrQuery(filter, closeOnEOSE: false, relayMinCountPerPubKey: relayMinCountPerPubKey);
-  }
-
-  Future<Stream<Nip01Event>> queryWithCalculation(Filter filter, {int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
-    return _doCalculateBestRelaysAndDoSubscriptionOrQuery(filter,
-        closeOnEOSE: true, relayMinCountPerPubKey: relayMinCountPerPubKey, idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT);
-  }
-
   Future<Stream<Nip01Event>> subscription(Filter filter, RelaySet relaySet, {int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
     return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: false);
   }
@@ -198,7 +185,7 @@ class RelayManager {
     return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: true, idleTimeout:idleTimeout);
   }
 
-  Stream<Nip01Event> request(String url, Filter filter, {bool closeOnEOSE = true, int? idleTimeout, StreamGroup<Nip01Event>? streamGroup}) {
+  Stream<Nip01Event> _doRequest(String url, Filter filter, {bool closeOnEOSE = true, int? idleTimeout, StreamGroup<Nip01Event>? streamGroup}) {
     if (isWebSocketOpen(url)) {
       String id = Random().nextInt(4294967296).toString();
       List<dynamic> request = ["REQ", id, filter.toMap()];
@@ -296,94 +283,53 @@ class RelayManager {
     return relay != null && relay.supportsNip(nip);
   }
 
-  Future<Stream<Nip01Event>> _doCalculateBestRelaysAndDoSubscriptionOrQuery(Filter filter,
-      {bool closeOnEOSE = true, int? idleTimeout, int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
-    List<String> pubKeys = filter.authors != null ? filter.authors! : [];
-    RelayDirection direction = RelayDirection.outbox;
-
-    /// calculate best relays for each pubKey/direction considering connectivity quality for each relay
-    RelaySet relaySet = await calculateRelaySet(pubKeys, direction, relayMinCountPerPubKey: relayMinCountPerPubKey);
-
-    if (kDebugMode) {
-      print("BEST ${relaySet.items.length} RELAYS:");
-      relaySet.items.forEach((item) {
-        print("  ${item.url} ${pubKeys.length} follows");
-      });
-    }
-
-    return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
-  }
+  // Future<Stream<Nip01Event>> _doCalculateBestRelaysAndDoSubscriptionOrQuery(Filter filter,
+  //     {bool closeOnEOSE = true, int? idleTimeout, int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT}) async {
+  //   List<String> pubKeys = filter.authors != null ? filter.authors! : [];
+  //   RelayDirection direction = RelayDirection.outbox;
+  //
+  //   /// calculate best relays for each pubKey/direction considering connectivity quality for each relay
+  //   RelaySet relaySet = await calculateRelaySet(pubKeys, direction, relayMinCountPerPubKey: relayMinCountPerPubKey);
+  //
+  //   if (kDebugMode) {
+  //     print("BEST ${relaySet.items.length} RELAYS:");
+  //     relaySet.items.forEach((item) {
+  //       print("  ${item.url} ${pubKeys.length} follows");
+  //     });
+  //   }
+  //
+  //   return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
+  // }
 
   Future<Stream<Nip01Event>> _doSubscriptionOrQuery(Filter filter, RelaySet relaySet, {bool closeOnEOSE = true, int? idleTimeout}) async {
     StreamGroup<Nip01Event> streamGroup = StreamGroup<Nip01Event>();
-    int requestsRelayCount = 0;
-    for (var item in relaySet.items) {
-      Filter? relayFilter = splitFilter(item.pubKeyMappings, filter, relaySet.direction, relaySet.notCoveredPubkeys);
-      if (relayFilter!=null) {
-        requestsRelayCount++;
-        requestWithSlicingFilterAuthors(relayFilter, streamGroup, item.url, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
-      }
-    }
-    print("request for ${filter.authors!=null ? filter.authors!.length: 0} authors with kinds: ${filter.kinds} made requests to $requestsRelayCount relays");
-    if (requestsRelayCount==0 && relaySet.fallbackToBootstrapRelays) {
+    List<RelayRequest> requests = relaySet.splitIntoRequests(filter);
+
+    print("request for ${filter.authors!=null ? filter.authors!.length: 0} authors with kinds: ${filter.kinds} made requests to ${requests.length} relays");
+
+    if (requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
       print("making fallback requests to ${bootstrapRelays.length} bootstrap relays for ${filter.authors!=null ? filter.authors!.length: 0} authors with kinds: ${filter.kinds}");
       for (var url in bootstrapRelays) {
-        requestWithSlicingFilterAuthors(filter, streamGroup, url, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
+        requests = RelaySet.sliceFilterAuthors(filter, url);
       }
+    }
+    for (RelayRequest request in requests) {
+      streamGroup.add(_doRequest(request.url, request.filter, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout, streamGroup: streamGroup));
+    }
+    if (requests.isEmpty) {
+      return const Stream.empty();
     }
     return streamGroup.stream;
   }
 
-  Filter? splitFilter(List<PubkeyMapping> pubKeyMappings, Filter filter, RelayDirection direction, List<NotCoveredPubKey> notCoveredPubKeys) {
-    Filter? relayFilter;
-
-    /// TODO allow for more usecases
-    /// extract from the filter which pubKeys and directions we should use the query for such filter
-    if (pubKeyMappings.isEmpty) {
-      relayFilter = filter;
-    } else if (filter.authors != null && filter.authors!.isNotEmpty && direction == RelayDirection.outbox) {
-      List<String> pubKeysForRelay = [];
-      for (String pubKey in filter.authors!) {
-        if (pubKeyMappings.any((pubKeyMapping) => pubKey == pubKeyMapping.pubKey || notCoveredPubKeys.any((element) => element.pubKey == pubKey))) {
-          pubKeysForRelay.add(pubKey);
-        }
-      }
-      if (pubKeysForRelay.isNotEmpty) {
-        relayFilter = filter.cloneWithAuthors(pubKeysForRelay);
-      }
-    } else if (filter.pTags != null && filter.pTags!.isNotEmpty && direction == RelayDirection.inbox) {
-      List<String> pubKeysForRelay = [];
-      for (String pubKey in filter.pTags!) {
-        if (pubKeyMappings.any((pubKeyMapping) => pubKey == pubKeyMapping.pubKey || notCoveredPubKeys.any((element) => element.pubKey == pubKey))) {
-          pubKeysForRelay.add(pubKey);
-        }
-      }
-      if (pubKeysForRelay.isNotEmpty) {
-        relayFilter = filter.cloneWithPTags(pubKeysForRelay);
-      }
-    } else if (filter.eTags !=null && direction == RelayDirection.inbox) {
-      relayFilter = filter;
-    } else {
-      /// TODO ????
-    }
-    return relayFilter;
-  }
-
-  void requestWithSlicingFilterAuthors(Filter filter, StreamGroup<Nip01Event> streamGroup, String url, {bool closeOnEOSE = true, int? idleTimeout}) {
-    if (filter.authors != null && filter.authors!.length > MAX_AUTHORS_PER_REQUEST) {
-      Iterable<List<String>> slices = filter.authors!.slices(MAX_AUTHORS_PER_REQUEST);
-      for (List<String> slice in slices) {
-        streamGroup.add(request(url, filter.cloneWithAuthors(slice), closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout, streamGroup: streamGroup));
-      }
-    } else {
-      streamGroup.add(request(url, filter, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout, streamGroup: streamGroup));
-    }
-  }
-
   Future<Stream<Nip01Event>> requestRelays(List<String> urls, Filter filter, {int idleTimeout = DEFAULT_STREAM_IDLE_TIMEOUT}) async {
     StreamGroup<Nip01Event> streamGroup = StreamGroup<Nip01Event>();
+    List<RelayRequest> requests = [];
     for (var url in urls) {
-      requestWithSlicingFilterAuthors(filter, streamGroup, url, closeOnEOSE: true, idleTimeout: idleTimeout);
+      requests.addAll(RelaySet.sliceFilterAuthors(filter, url));
+    }
+    for (var request in requests) {
+      streamGroup.add(_doRequest(request.url, request.filter, closeOnEOSE: true, idleTimeout: idleTimeout, streamGroup: streamGroup));
     }
     return streamGroup.stream.timeout(Duration(seconds: idleTimeout + 1));
   }

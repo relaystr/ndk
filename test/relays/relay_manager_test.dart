@@ -20,7 +20,6 @@ import 'package:isar/isar.dart' as isar;
 import '../mocks/mock_relay.dart';
 
 void main() async {
-
   MockRelay relay1 = MockRelay(name: "relay 1");
   MockRelay relay2 = MockRelay(name: "relay 2");
   MockRelay relay3 = MockRelay(name: "relay 3");
@@ -31,27 +30,22 @@ void main() async {
   KeyPair key3 = Bip340.generatePrivateKey();
   KeyPair key4 = Bip340.generatePrivateKey();
 
-  Map<String,String> relayNames = {
-    relay1.url : relay1.name,
-    relay2.url : relay2.name,
-    relay3.url : relay3.name,
-    relay4.url : relay4.name,
+  Map<String, String> relayNames = {
+    relay1.url: relay1.name,
+    relay2.url: relay2.name,
+    relay3.url: relay3.name,
+    relay4.url: relay4.name,
   };
 
-  Map<KeyPair,String> keyNames = {
+  Map<KeyPair, String> keyNames = {
     key1: "key1",
     key2: "key2",
     key3: "key3",
     key4: "key4",
   };
 
-
   Nip01Event textNote(KeyPair key2) {
-    return Nip01Event(
-        kind: Nip01Event.textNoteKind,
-        pubKey: key2.publicKey,
-        content: "some note from key ${keyNames[key2]}",
-        tags: []);
+    return Nip01Event(kind: Nip01Event.textNoteKind, pubKey: key2.publicKey, content: "some note from key ${keyNames[key2]}", tags: []);
   }
 
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
@@ -63,10 +57,7 @@ void main() async {
     test('Connect to relay', () async {
       await relay1.startServer();
       RelayManager manager = RelayManager();
-      await manager
-          .connectRelay(relay1.url)
-          .then((value) {})
-          .onError((error, stackTrace) async {
+      await manager.connectRelay(relay1.url).then((value) {}).onError((error, stackTrace) async {
         await relay1.stopServer();
       });
       await relay1.stopServer();
@@ -88,10 +79,9 @@ void main() async {
       RelayManager manager = RelayManager();
       await manager.connect(bootstrapRelays: [relay1.url]);
 
-      Filter filter =
-          Filter(kinds: [Nip01Event.textNoteKind], authors: [key1.publicKey]);
+      Filter filter = Filter(kinds: [Nip01Event.textNoteKind], authors: [key1.publicKey]);
 
-      Stream<Nip01Event> query = manager.request(relay1.url, filter);
+      Stream<Nip01Event> query = await manager.requestRelays([relay1.url], filter);
 
       expect(query, emitsInAnyOrder(key1TextNotes.values));
 
@@ -104,18 +94,18 @@ void main() async {
     /// key2 reads and writes to relay 1 & 2, has its notes on both relays
     /// key3 reads and writes to relay 1, has its notes ONLY on relay 1
     /// key4 reads and writes ONLY to relay 4, has its notes ONLY on relay 4
-    Nip65 nip65ForKey1 = Nip65.fromMap(key1.publicKey,{
+    Nip65 nip65ForKey1 = Nip65.fromMap(key1.publicKey, {
       relay1.url: ReadWriteMarker.readWrite,
       relay2.url: ReadWriteMarker.readWrite,
       relay3.url: ReadWriteMarker.readWrite,
       relay4.url: ReadWriteMarker.readWrite,
     });
-    Nip65 nip65ForKey2 = Nip65.fromMap(key2.publicKey,{
+    Nip65 nip65ForKey2 = Nip65.fromMap(key2.publicKey, {
       relay1.url: ReadWriteMarker.readWrite,
       relay2.url: ReadWriteMarker.readWrite,
     });
-    Nip65 nip65ForKey3 = Nip65.fromMap(key3.publicKey,{relay1.url: ReadWriteMarker.readWrite});
-    Nip65 nip65ForKey4 = Nip65.fromMap(key4.publicKey,{relay4.url: ReadWriteMarker.readWrite});
+    Nip65 nip65ForKey3 = Nip65.fromMap(key3.publicKey, {relay1.url: ReadWriteMarker.readWrite});
+    Nip65 nip65ForKey4 = Nip65.fromMap(key4.publicKey, {relay4.url: ReadWriteMarker.readWrite});
 
     Map<KeyPair, Nip65> nip65s = {
       key1: nip65ForKey1,
@@ -141,8 +131,7 @@ void main() async {
             textNotes: {}
               ..addAll(key1TextNotes)
               ..addAll(key2TextNotes)),
-        relay3.startServer(
-            nip65s: nip65s, textNotes: {}..addAll(key1TextNotes)),
+        relay3.startServer(nip65s: nip65s, textNotes: {}..addAll(key1TextNotes)),
         relay4.startServer(textNotes: key4TextNotes..addAll(key1TextNotes))
       ]);
     }
@@ -162,11 +151,13 @@ void main() async {
       await startServers();
 
       RelayManager manager = RelayManager();
-      await manager.connect(
-          bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
-      Stream<Nip01Event> query = await manager.queryWithCalculation(
-          Filter(kinds: [Nip01Event.textNoteKind], authors: [key4.publicKey]));
+      RelaySet relaySet =
+          await manager.calculateRelaySet([key4.publicKey], RelayDirection.outbox, relayMinCountPerPubKey: RelayManager.DEFAULT_BEST_RELAYS_MIN_COUNT);
+
+      Stream<Nip01Event> query = await manager.query(Filter(kinds: [Nip01Event.textNoteKind], authors: [key4.publicKey]), relaySet);
+
       await for (final event in query.take(4)) {
         expect(event.sources, [relay4.url]);
         expect(event, key4TextNotes[key4]);
@@ -183,16 +174,12 @@ void main() async {
         'query all keys and do not use redundant relays', () async {
       await startServers();
       RelayManager manager = RelayManager();
-      await manager.connect(
-          bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
-      RelaySet relaySet = await manager.calculateRelaySet(
-          [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
-          RelayDirection.outbox,
-          relayMinCountPerPubKey: 1,
-          onProgress: (stepName, count, total) {
+      RelaySet relaySet = await manager.calculateRelaySet([key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey], RelayDirection.outbox,
+          relayMinCountPerPubKey: 1, onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
         }
@@ -201,15 +188,8 @@ void main() async {
       relaySet.items.forEach((item) {
         print("  ${relayNames[item.url]} => has ${item.pubKeyMappings.length} follows");
       });
-      Stream<Nip01Event> query = await manager.query(
-          Filter(kinds: [
-            Nip01Event.textNoteKind
-          ], authors: [
-            key1.publicKey,
-            key2.publicKey,
-            key3.publicKey,
-            key4.publicKey
-          ]),relaySet);
+      Stream<Nip01Event> query =
+          await manager.query(Filter(kinds: [Nip01Event.textNoteKind], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]), relaySet);
 
       await for (final event in query) {
         print(event);
@@ -225,19 +205,14 @@ void main() async {
       await stopServers();
     });
 
-    test("calculate best relays and check that it doesn't use redundant relays",
-        () async {
+    test("calculate best relays and check that it doesn't use redundant relays", () async {
       await startServers();
       RelayManager manager = RelayManager();
-      await manager.connect(
-          bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       // relayMinCountPerPubKey: 1
-      RelaySet relaySet = await manager
-          .calculateRelaySet(
-              [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
-              RelayDirection.outbox,
-              relayMinCountPerPubKey: 1, onProgress: (stepName, count, total) {
+      RelaySet relaySet = await manager.calculateRelaySet([key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey], RelayDirection.outbox,
+          relayMinCountPerPubKey: 1, onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
         }
@@ -255,9 +230,7 @@ void main() async {
       expect(relaySet.notCoveredPubkeys.isEmpty, true);
 
       // relayMinCountPerPubKey: 2
-      relaySet = await manager.calculateRelaySet(
-          [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
-          RelayDirection.outbox,
+      relaySet = await manager.calculateRelaySet([key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey], RelayDirection.outbox,
           relayMinCountPerPubKey: 2, onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
@@ -281,52 +254,11 @@ void main() async {
   group(
       // skip: true,
       "Calculate best relays (external REAL)", () {
-    getFeedTextNotesForNpub(String npub, RelayManager manager,
-        {int iterations = 1}) async {
-      int iteration = 1;
-      while (iteration <= iterations) {
-        final t0 = DateTime.now();
-
-        KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
-
-        UserContacts? userContacts =
-            await manager.loadUserContacts(key.publicKey);
-
-        if (userContacts != null) {
-          print(
-              "Have contact list with ${userContacts.contacts.length} contacts");
-          Stream<Nip01Event> query = await manager.subscriptionWithCalculation(
-              Filter(
-                  kinds: [Nip01Event.textNoteKind],
-                  authors: userContacts.pubKeys,
-                  limit: 10),
-              relayMinCountPerPubKey: 2);
-          List<Nip01Event> events = await query.toList();
-          Map<String, int> eventCountsByRelay = {};
-          for (var event in events) {
-            if (eventCountsByRelay[event.sources.first] == null) {
-              eventCountsByRelay[event.sources.first] = 0;
-            }
-            eventCountsByRelay[event.sources.first] =
-                eventCountsByRelay[event.sources.first]! + 1;
-          }
-
-          print(
-              "Received ${events.length} text note events from ${eventCountsByRelay.length} relays");
-
-          final t1 = DateTime.now();
-          print(
-              "===== iteration #$iteration, time took ${t1.difference(t0).inMilliseconds} ms");
-          iteration++;
-        }
-      }
-    }
 
     // ================================================================================================
     // REAL EXTERNAL RELAYS FOR SOME NPUBS
     // ================================================================================================
-    _calculateBestRelaysForNpubContactsFeed(String npub,
-        {String? expectedRelayUrl, int iterations = 1, required int relayMinCountPerPubKey}) async {
+    _calculateBestRelaysForNpubContactsFeed(String npub, {String? expectedRelayUrl, int iterations = 1, required int relayMinCountPerPubKey}) async {
       RelayManager manager = RelayManager();
       await manager.connect();
       int i = 1;
@@ -335,8 +267,7 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        UserContacts? userContacts =
-            await manager.loadUserContacts(key.publicKey);
+        UserContacts? userContacts = await manager.loadUserContacts(key.publicKey);
 
         expect(userContacts != null, true);
         // int j=1;
@@ -355,17 +286,14 @@ void main() async {
         // }
 
         String setName = "feed,$relayMinCountPerPubKey,";
-        RelaySet? bestRelays = null;//await manager.getRelaySet(setName, key.publicKey);
-        if (bestRelays==null) {
-          bestRelays = await manager
-              .calculateRelaySet(
-              userContacts!.pubKeys, RelayDirection.outbox,
-              relayMinCountPerPubKey: relayMinCountPerPubKey,
+        RelaySet? bestRelays = null; //await manager.getRelaySet(setName, key.publicKey);
+        if (bestRelays == null) {
+          bestRelays = await manager.calculateRelaySet(userContacts!.pubKeys, RelayDirection.outbox, relayMinCountPerPubKey: relayMinCountPerPubKey,
               onProgress: (stepName, count, total) {
-                if (count % 100 == 0 || (total - count) < 10) {
-                  print("[PROGRESS] $stepName: $count/$total");
-                }
-              });
+            if (count % 100 == 0 || (total - count) < 10) {
+              print("[PROGRESS] $stepName: $count/$total");
+            }
+          });
           bestRelays.name = setName;
           bestRelays.pubKey = key.publicKey;
           await manager.saveRelaySet(bestRelays);
@@ -375,59 +303,47 @@ void main() async {
           List<bool> connected = await Future.wait(bestRelays.items.map((item) => manager.connectRelay(item.url)));
           final endTime = DateTime.now();
           final duration = endTime.difference(startTime);
-          print("CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element ).length} FAILED took ${duration.inMilliseconds} ms");
+          print(
+              "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
         }
-        print(
-            "BEST ${bestRelays.items.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
+        print("BEST ${bestRelays.items.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
         bestRelays.items.forEach((item) {
-          print("  ${item.url} ${item.pubKeyMappings.length} follows ${item.pubKeyMappings.length<=2? item.pubKeyMappings:""}");
+          print("  ${item.url} ${item.pubKeyMappings.length} follows ${item.pubKeyMappings.length <= 2 ? item.pubKeyMappings : ""}");
         });
 
         if (Helpers.isNotBlank(expectedRelayUrl)) {
           expect(bestRelays.items.map((e) => e.url).toList().contains(expectedRelayUrl), true);
         }
         final t1 = DateTime.now();
-        print(
-            "===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
+        print("===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
         i++;
       }
     }
 
     test('Leo feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
-          "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
-          iterations: 1,
-          relayMinCountPerPubKey: 2);
+      await _calculateBestRelaysForNpubContactsFeed("npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
+          iterations: 1, relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Fmar feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
-          "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams",
-          iterations: 1,
-          relayMinCountPerPubKey: 2);
+      await _calculateBestRelaysForNpubContactsFeed("npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams",
+          iterations: 1, relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('mikedilger feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
-          "npub1acg6thl5psv62405rljzkj8spesceyfz2c32udakc2ak0dmvfeyse9p35c",
-          iterations: 1,
-          relayMinCountPerPubKey: 2);
+      await _calculateBestRelaysForNpubContactsFeed("npub1acg6thl5psv62405rljzkj8spesceyfz2c32udakc2ak0dmvfeyse9p35c",
+          iterations: 1, relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Fiatjaf feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
-          "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
-          iterations: 1,
-          relayMinCountPerPubKey: 2);
+      await _calculateBestRelaysForNpubContactsFeed("npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
+          iterations: 1, relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Love is Bitcoin (3k follows) feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
-          "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
-          iterations: 1,
-          relayMinCountPerPubKey: 2);
+      await _calculateBestRelaysForNpubContactsFeed("npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
+          iterations: 1, relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
-
   });
   // test('testing not timing out on subscriptions', () async {
   //   RelayManager manager = RelayManager();
