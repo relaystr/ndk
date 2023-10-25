@@ -30,6 +30,8 @@ class RelaySet {
 
   List<RelaySetItem> items = [];
 
+  bool fallbackToBootstrapRelays=true;
+
   List<NotCoveredPubKey> notCoveredPubkeys = [];
 
   RelaySet(

@@ -316,11 +316,19 @@ class RelayManager {
 
   Future<Stream<Nip01Event>> _doSubscriptionOrQuery(Filter filter, RelaySet relaySet, {bool closeOnEOSE = true, int? idleTimeout}) async {
     StreamGroup<Nip01Event> streamGroup = StreamGroup<Nip01Event>();
-
+    int requestsRelayCount = 0;
     for (var item in relaySet.items) {
       Filter? relayFilter = splitFilter(item.pubKeyMappings, filter, relaySet.direction, relaySet.notCoveredPubkeys);
       if (relayFilter!=null) {
+        requestsRelayCount++;
         requestWithSlicingFilterAuthors(relayFilter, streamGroup, item.url, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
+      }
+    }
+    print("request for ${filter.authors!=null ? filter.authors!.length: 0} authors with kinds: ${filter.kinds} made requests to $requestsRelayCount relays");
+    if (requestsRelayCount==0 && relaySet.fallbackToBootstrapRelays) {
+      print("making fallback requests to ${bootstrapRelays.length} bootstrap relays for ${filter.authors!=null ? filter.authors!.length: 0} authors with kinds: ${filter.kinds}");
+      for (var url in bootstrapRelays) {
+        requestWithSlicingFilterAuthors(filter, streamGroup, url, closeOnEOSE: closeOnEOSE, idleTimeout: idleTimeout);
       }
     }
     return streamGroup.stream;
@@ -353,8 +361,10 @@ class RelayManager {
       if (pubKeysForRelay.isNotEmpty) {
         relayFilter = filter.cloneWithPTags(pubKeysForRelay);
       }
+    } else if (filter.eTags !=null && direction == RelayDirection.inbox) {
+      relayFilter = filter;
     } else {
-      // ???
+      /// TODO ????
     }
     return relayFilter;
   }
@@ -596,19 +606,21 @@ class RelayManager {
   Future<UserContacts?> loadUserContacts(String pubKey, {bool forceRefresh = false}) async {
     UserContacts? userContacts = cacheManager.loadUserContacts(pubKey);
     if (userContacts == null || forceRefresh) {
+      UserContacts? loadedUserContacts;
       try {
         await for (final event in await requestRelays(
             bootstrapRelays, idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT, Filter(kinds: [Nip02ContactList.kind], authors: [pubKey], limit: 1))) {
           if (userContacts == null || userContacts.createdAt < event.createdAt) {
-            userContacts = UserContacts.fromNip02ContactList(Nip02ContactList.fromEvent(event));
+            loadedUserContacts = UserContacts.fromNip02ContactList(Nip02ContactList.fromEvent(event));
           }
         }
       } catch (e) {
         // probably timeout;
       }
-    }
-    if (userContacts != null) {
-      await cacheManager.saveUserContacts(userContacts);
+      if (loadedUserContacts != null) {
+        await cacheManager.saveUserContacts(loadedUserContacts);
+        userContacts = loadedUserContacts;
+      }
     }
     return userContacts;
   }
