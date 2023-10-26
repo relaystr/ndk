@@ -21,7 +21,7 @@ void main() async {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String contact1 = "contact1";
     String pubKey1 = "pubKey1";
-    DbContactList userContacts = DbContactList(pubKey1, [contact1], refreshedTimestamp: now);
+    DbContactList userContacts = DbContactList(pubKey1, [contact1]);
     await cacheManager.saveContactList(userContacts);
 
     DbContactList? loadedUserContacts = cacheManager.loadContactList(pubKey1) as DbContactList?;
