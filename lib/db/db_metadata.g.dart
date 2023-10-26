@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user_metadata.dart';
+part of 'db_metadata.dart';
 
 // **************************************************************************
 // _IsarCollectionGenerator
@@ -10,13 +10,13 @@ part of 'user_metadata.dart';
 // ignore_for_file: duplicate_ignore, invalid_use_of_protected_member, lines_longer_than_80_chars, constant_identifier_names, avoid_js_rounded_ints, no_leading_underscores_for_local_identifiers, require_trailing_commas, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_in_if_null_operators, library_private_types_in_public_api, prefer_const_constructors
 // ignore_for_file: type=lint
 
-extension GetUserMetadataCollection on Isar {
-  IsarCollection<String, UserMetadata> get userMetadatas => this.collection();
+extension GetDbMetadataCollection on Isar {
+  IsarCollection<String, DbMetadata> get dbMetadatas => this.collection();
 }
 
-const UserMetadataSchema = IsarGeneratedSchema(
+const DbMetadataSchema = IsarGeneratedSchema(
   schema: IsarSchema(
-    name: 'UserMetadata',
+    name: 'DbMetadata',
     idName: 'id',
     embedded: false,
     properties: [
@@ -71,16 +71,16 @@ const UserMetadataSchema = IsarGeneratedSchema(
     ],
     indexes: [],
   ),
-  converter: IsarObjectConverter<String, UserMetadata>(
-    serialize: serializeUserMetadata,
-    deserialize: deserializeUserMetadata,
-    deserializeProperty: deserializeUserMetadataProp,
+  converter: IsarObjectConverter<String, DbMetadata>(
+    serialize: serializeDbMetadata,
+    deserialize: deserializeDbMetadata,
+    deserializeProperty: deserializeDbMetadataProp,
   ),
   embeddedSchemas: [],
 );
 
 @isarProtected
-int serializeUserMetadata(IsarWriter writer, UserMetadata object) {
+int serializeDbMetadata(IsarWriter writer, DbMetadata object) {
   IsarCore.writeString(writer, 1, object.id);
   IsarCore.writeString(writer, 2, object.pubKey);
   {
@@ -160,7 +160,7 @@ int serializeUserMetadata(IsarWriter writer, UserMetadata object) {
 }
 
 @isarProtected
-UserMetadata deserializeUserMetadata(IsarReader reader) {
+DbMetadata deserializeDbMetadata(IsarReader reader) {
   final String _pubKey;
   _pubKey = IsarCore.readString(reader, 2) ?? "";
   final String? _name;
@@ -190,7 +190,7 @@ UserMetadata deserializeUserMetadata(IsarReader reader) {
       _updatedAt = value;
     }
   }
-  final object = UserMetadata(
+  final object = DbMetadata(
     pubKey: _pubKey,
     name: _name,
     displayName: _displayName,
@@ -207,7 +207,7 @@ UserMetadata deserializeUserMetadata(IsarReader reader) {
 }
 
 @isarProtected
-dynamic deserializeUserMetadataProp(IsarReader reader, int property) {
+dynamic deserializeDbMetadataProp(IsarReader reader, int property) {
   switch (property) {
     case 1:
       return IsarCore.readString(reader, 1) ?? '';
@@ -245,7 +245,7 @@ dynamic deserializeUserMetadataProp(IsarReader reader, int property) {
   }
 }
 
-sealed class _UserMetadataUpdate {
+sealed class _DbMetadataUpdate {
   bool call({
     required String id,
     String? pubKey,
@@ -262,10 +262,10 @@ sealed class _UserMetadataUpdate {
   });
 }
 
-class _UserMetadataUpdateImpl implements _UserMetadataUpdate {
-  const _UserMetadataUpdateImpl(this.collection);
+class _DbMetadataUpdateImpl implements _DbMetadataUpdate {
+  const _DbMetadataUpdateImpl(this.collection);
 
-  final IsarCollection<String, UserMetadata> collection;
+  final IsarCollection<String, DbMetadata> collection;
 
   @override
   bool call({
@@ -301,7 +301,7 @@ class _UserMetadataUpdateImpl implements _UserMetadataUpdate {
   }
 }
 
-sealed class _UserMetadataUpdateAll {
+sealed class _DbMetadataUpdateAll {
   int call({
     required List<String> id,
     String? pubKey,
@@ -318,10 +318,10 @@ sealed class _UserMetadataUpdateAll {
   });
 }
 
-class _UserMetadataUpdateAllImpl implements _UserMetadataUpdateAll {
-  const _UserMetadataUpdateAllImpl(this.collection);
+class _DbMetadataUpdateAllImpl implements _DbMetadataUpdateAll {
+  const _DbMetadataUpdateAllImpl(this.collection);
 
-  final IsarCollection<String, UserMetadata> collection;
+  final IsarCollection<String, DbMetadata> collection;
 
   @override
   int call({
@@ -354,13 +354,13 @@ class _UserMetadataUpdateAllImpl implements _UserMetadataUpdateAll {
   }
 }
 
-extension UserMetadataUpdate on IsarCollection<String, UserMetadata> {
-  _UserMetadataUpdate get update => _UserMetadataUpdateImpl(this);
+extension DbMetadataUpdate on IsarCollection<String, DbMetadata> {
+  _DbMetadataUpdate get update => _DbMetadataUpdateImpl(this);
 
-  _UserMetadataUpdateAll get updateAll => _UserMetadataUpdateAllImpl(this);
+  _DbMetadataUpdateAll get updateAll => _DbMetadataUpdateAllImpl(this);
 }
 
-sealed class _UserMetadataQueryUpdate {
+sealed class _DbMetadataQueryUpdate {
   int call({
     String? pubKey,
     String? name,
@@ -376,10 +376,10 @@ sealed class _UserMetadataQueryUpdate {
   });
 }
 
-class _UserMetadataQueryUpdateImpl implements _UserMetadataQueryUpdate {
-  const _UserMetadataQueryUpdateImpl(this.query, {this.limit});
+class _DbMetadataQueryUpdateImpl implements _DbMetadataQueryUpdate {
+  const _DbMetadataQueryUpdateImpl(this.query, {this.limit});
 
-  final IsarQuery<UserMetadata> query;
+  final IsarQuery<DbMetadata> query;
   final int? limit;
 
   @override
@@ -412,17 +412,17 @@ class _UserMetadataQueryUpdateImpl implements _UserMetadataQueryUpdate {
   }
 }
 
-extension UserMetadataQueryUpdate on IsarQuery<UserMetadata> {
-  _UserMetadataQueryUpdate get updateFirst =>
-      _UserMetadataQueryUpdateImpl(this, limit: 1);
+extension DbMetadataQueryUpdate on IsarQuery<DbMetadata> {
+  _DbMetadataQueryUpdate get updateFirst =>
+      _DbMetadataQueryUpdateImpl(this, limit: 1);
 
-  _UserMetadataQueryUpdate get updateAll => _UserMetadataQueryUpdateImpl(this);
+  _DbMetadataQueryUpdate get updateAll => _DbMetadataQueryUpdateImpl(this);
 }
 
-class _UserMetadataQueryBuilderUpdateImpl implements _UserMetadataQueryUpdate {
-  const _UserMetadataQueryBuilderUpdateImpl(this.query, {this.limit});
+class _DbMetadataQueryBuilderUpdateImpl implements _DbMetadataQueryUpdate {
+  const _DbMetadataQueryBuilderUpdateImpl(this.query, {this.limit});
 
-  final QueryBuilder<UserMetadata, UserMetadata, QOperations> query;
+  final QueryBuilder<DbMetadata, DbMetadata, QOperations> query;
   final int? limit;
 
   @override
@@ -460,18 +460,18 @@ class _UserMetadataQueryBuilderUpdateImpl implements _UserMetadataQueryUpdate {
   }
 }
 
-extension UserMetadataQueryBuilderUpdate
-    on QueryBuilder<UserMetadata, UserMetadata, QOperations> {
-  _UserMetadataQueryUpdate get updateFirst =>
-      _UserMetadataQueryBuilderUpdateImpl(this, limit: 1);
+extension DbMetadataQueryBuilderUpdate
+    on QueryBuilder<DbMetadata, DbMetadata, QOperations> {
+  _DbMetadataQueryUpdate get updateFirst =>
+      _DbMetadataQueryBuilderUpdateImpl(this, limit: 1);
 
-  _UserMetadataQueryUpdate get updateAll =>
-      _UserMetadataQueryBuilderUpdateImpl(this);
+  _DbMetadataQueryUpdate get updateAll =>
+      _DbMetadataQueryBuilderUpdateImpl(this);
 }
 
-extension UserMetadataQueryFilter
-    on QueryBuilder<UserMetadata, UserMetadata, QFilterCondition> {
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idEqualTo(
+extension DbMetadataQueryFilter
+    on QueryBuilder<DbMetadata, DbMetadata, QFilterCondition> {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -486,7 +486,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idGreaterThan(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -501,7 +501,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       idGreaterThanOrEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -517,7 +517,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idLessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idLessThan(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -532,7 +532,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       idLessThanOrEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -548,7 +548,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idBetween(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idBetween(
     String lower,
     String upper, {
     bool caseSensitive = true,
@@ -565,7 +565,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idStartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -580,7 +580,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idEndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -595,7 +595,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idContains(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -609,7 +609,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idMatches(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -623,7 +623,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> idIsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -634,8 +634,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      idIsNotEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
@@ -646,7 +645,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> pubKeyEqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -661,8 +660,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pubKeyGreaterThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyGreaterThan(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -677,7 +675,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       pubKeyGreaterThanOrEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -693,8 +691,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pubKeyLessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyLessThan(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -709,7 +706,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       pubKeyLessThanOrEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -725,7 +722,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> pubKeyBetween(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyBetween(
     String lower,
     String upper, {
     bool caseSensitive = true,
@@ -742,8 +739,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pubKeyStartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -758,8 +754,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pubKeyEndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -774,8 +769,9 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pubKeyContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
@@ -787,7 +783,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> pubKeyMatches(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -801,8 +797,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pubKeyIsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pubKeyIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -813,7 +808,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       pubKeyIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -825,20 +820,19 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nameIsNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 3));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nameIsNotNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 3));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nameEqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -853,8 +847,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nameGreaterThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameGreaterThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -869,7 +862,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       nameGreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -885,7 +878,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nameLessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameLessThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -900,7 +893,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       nameLessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -916,7 +909,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nameBetween(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameBetween(
     String? lower,
     String? upper, {
     bool caseSensitive = true,
@@ -933,8 +926,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nameStartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -949,7 +941,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nameEndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -964,7 +956,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nameContains(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -978,7 +970,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nameMatches(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -992,8 +984,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nameIsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -1004,8 +995,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nameIsNotEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
@@ -1016,21 +1006,21 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 4));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 4));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1046,7 +1036,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameGreaterThan(
     String? value, {
     bool caseSensitive = true,
@@ -1062,7 +1052,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameGreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1078,7 +1068,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameLessThan(
     String? value, {
     bool caseSensitive = true,
@@ -1094,7 +1084,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameLessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1110,7 +1100,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameBetween(
     String? lower,
     String? upper, {
@@ -1128,7 +1118,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -1144,7 +1134,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -1160,7 +1150,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1173,7 +1163,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1186,7 +1176,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1198,7 +1188,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       displayNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1210,22 +1200,20 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureIsNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 5));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       pictureIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 5));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureEqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1240,7 +1228,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       pictureGreaterThan(
     String? value, {
     bool caseSensitive = true,
@@ -1256,7 +1244,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       pictureGreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1272,8 +1260,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureLessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureLessThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1288,7 +1275,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       pictureLessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1304,8 +1291,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureBetween(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureBetween(
     String? lower,
     String? upper, {
     bool caseSensitive = true,
@@ -1322,8 +1308,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureStartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1338,8 +1323,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureEndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1354,8 +1338,9 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
@@ -1367,8 +1352,9 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
@@ -1380,8 +1366,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      pictureIsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> pictureIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -1392,7 +1377,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       pictureIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1404,21 +1389,20 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      bannerIsNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 6));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       bannerIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 6));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> bannerEqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1433,8 +1417,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      bannerGreaterThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerGreaterThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1449,7 +1432,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       bannerGreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1465,8 +1448,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      bannerLessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerLessThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1481,7 +1463,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       bannerLessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1497,7 +1479,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> bannerBetween(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerBetween(
     String? lower,
     String? upper, {
     bool caseSensitive = true,
@@ -1514,8 +1496,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      bannerStartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1530,8 +1511,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      bannerEndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1546,8 +1526,9 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      bannerContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
@@ -1559,7 +1540,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> bannerMatches(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1573,8 +1554,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      bannerIsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> bannerIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -1585,7 +1565,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       bannerIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1597,22 +1577,20 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteIsNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 7));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       websiteIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 7));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteEqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1627,7 +1605,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       websiteGreaterThan(
     String? value, {
     bool caseSensitive = true,
@@ -1643,7 +1621,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       websiteGreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1659,8 +1637,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteLessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteLessThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1675,7 +1652,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       websiteLessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1691,8 +1668,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteBetween(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteBetween(
     String? lower,
     String? upper, {
     bool caseSensitive = true,
@@ -1709,8 +1685,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteStartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1725,8 +1700,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteEndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1741,8 +1715,9 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
@@ -1754,8 +1729,9 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
@@ -1767,8 +1743,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      websiteIsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> websiteIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -1779,7 +1754,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       websiteIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1791,21 +1766,19 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      aboutIsNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 8));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      aboutIsNotNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 8));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> aboutEqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1820,8 +1793,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      aboutGreaterThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutGreaterThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1836,7 +1808,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       aboutGreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1852,7 +1824,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> aboutLessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutLessThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -1867,7 +1839,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       aboutLessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -1883,7 +1855,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> aboutBetween(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutBetween(
     String? lower,
     String? upper, {
     bool caseSensitive = true,
@@ -1900,8 +1872,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      aboutStartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1916,7 +1887,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> aboutEndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1931,7 +1902,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> aboutContains(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1945,7 +1916,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> aboutMatches(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1959,8 +1930,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      aboutIsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> aboutIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -1971,7 +1941,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       aboutIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1983,21 +1953,19 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nip05IsNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05IsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 9));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nip05IsNotNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05IsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 9));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nip05EqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05EqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2012,8 +1980,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nip05GreaterThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05GreaterThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2028,7 +1995,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       nip05GreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -2044,7 +2011,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nip05LessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05LessThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2059,7 +2026,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       nip05LessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -2075,7 +2042,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nip05Between(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05Between(
     String? lower,
     String? upper, {
     bool caseSensitive = true,
@@ -2092,8 +2059,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nip05StartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05StartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2108,7 +2074,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nip05EndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05EndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2123,7 +2089,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nip05Contains(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05Contains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2137,7 +2103,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> nip05Matches(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05Matches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2151,8 +2117,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      nip05IsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> nip05IsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -2163,7 +2128,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       nip05IsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -2175,21 +2140,19 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud16IsNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16IsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 10));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud16IsNotNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16IsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 10));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud16EqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16EqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2204,8 +2167,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud16GreaterThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16GreaterThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2220,7 +2182,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       lud16GreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -2236,7 +2198,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud16LessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16LessThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2251,7 +2213,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       lud16LessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -2267,7 +2229,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud16Between(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16Between(
     String? lower,
     String? upper, {
     bool caseSensitive = true,
@@ -2284,8 +2246,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud16StartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16StartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2300,7 +2261,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud16EndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16EndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2315,7 +2276,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud16Contains(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16Contains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2329,7 +2290,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud16Matches(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16Matches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2343,8 +2304,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud16IsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud16IsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -2355,7 +2315,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       lud16IsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -2367,21 +2327,19 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud06IsNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06IsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 11));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud06IsNotNull() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06IsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 11));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud06EqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06EqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2396,8 +2354,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud06GreaterThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06GreaterThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2412,7 +2369,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       lud06GreaterThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -2428,7 +2385,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud06LessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06LessThan(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -2443,7 +2400,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       lud06LessThanOrEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -2459,7 +2416,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud06Between(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06Between(
     String? lower,
     String? upper, {
     bool caseSensitive = true,
@@ -2476,8 +2433,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud06StartsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06StartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2492,7 +2448,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud06EndsWith(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06EndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2507,7 +2463,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud06Contains(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06Contains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2521,7 +2477,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition> lud06Matches(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06Matches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2535,8 +2491,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      lud06IsEmpty() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> lud06IsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
@@ -2547,7 +2502,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       lud06IsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -2559,22 +2514,21 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       updatedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 12));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       updatedAtIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 12));
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      updatedAtEqualTo(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> updatedAtEqualTo(
     int? value,
   ) {
     return QueryBuilder.apply(this, (query) {
@@ -2587,7 +2541,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       updatedAtGreaterThan(
     int? value,
   ) {
@@ -2601,7 +2555,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       updatedAtGreaterThanOrEqualTo(
     int? value,
   ) {
@@ -2615,8 +2569,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      updatedAtLessThan(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> updatedAtLessThan(
     int? value,
   ) {
     return QueryBuilder.apply(this, (query) {
@@ -2629,7 +2582,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
       updatedAtLessThanOrEqualTo(
     int? value,
   ) {
@@ -2643,8 +2596,7 @@ extension UserMetadataQueryFilter
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterFilterCondition>
-      updatedAtBetween(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> updatedAtBetween(
     int? lower,
     int? upper,
   ) {
@@ -2660,12 +2612,12 @@ extension UserMetadataQueryFilter
   }
 }
 
-extension UserMetadataQueryObject
-    on QueryBuilder<UserMetadata, UserMetadata, QFilterCondition> {}
+extension DbMetadataQueryObject
+    on QueryBuilder<DbMetadata, DbMetadata, QFilterCondition> {}
 
-extension UserMetadataQuerySortBy
-    on QueryBuilder<UserMetadata, UserMetadata, QSortBy> {
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortById(
+extension DbMetadataQuerySortBy
+    on QueryBuilder<DbMetadata, DbMetadata, QSortBy> {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2675,7 +2627,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByIdDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByIdDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2686,7 +2638,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByPubKey(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByPubKey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2696,7 +2648,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByPubKeyDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByPubKeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2707,7 +2659,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByName(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2717,7 +2669,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByNameDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByNameDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2728,7 +2680,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByDisplayName(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByDisplayName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2738,7 +2690,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByDisplayNameDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByDisplayNameDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2749,7 +2701,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByPicture(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByPicture(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2759,7 +2711,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByPictureDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByPictureDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2770,7 +2722,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByBanner(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByBanner(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2780,7 +2732,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByBannerDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByBannerDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2791,7 +2743,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByWebsite(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByWebsite(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2801,7 +2753,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByWebsiteDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByWebsiteDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2812,7 +2764,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByAbout(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByAbout(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2822,7 +2774,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByAboutDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByAboutDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2833,7 +2785,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByNip05(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByNip05(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2843,7 +2795,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByNip05Desc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByNip05Desc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2854,7 +2806,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByLud16(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByLud16(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2864,7 +2816,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByLud16Desc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByLud16Desc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2875,7 +2827,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByLud06(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByLud06(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2885,7 +2837,7 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByLud06Desc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByLud06Desc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -2896,489 +2848,487 @@ extension UserMetadataQuerySortBy
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByUpdatedAt() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(12);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> sortByUpdatedAtDesc() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(12, sort: Sort.desc);
     });
   }
 }
 
-extension UserMetadataQuerySortThenBy
-    on QueryBuilder<UserMetadata, UserMetadata, QSortThenBy> {
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenById(
+extension DbMetadataQuerySortThenBy
+    on QueryBuilder<DbMetadata, DbMetadata, QSortThenBy> {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(1, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByIdDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByIdDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(1, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByPubKey(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByPubKey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(2, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByPubKeyDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByPubKeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(2, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByName(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(3, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByNameDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByNameDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(3, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByDisplayName(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByDisplayName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(4, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByDisplayNameDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByDisplayNameDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(4, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByPicture(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByPicture(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByPictureDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByPictureDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByBanner(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByBanner(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(6, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByBannerDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByBannerDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByWebsite(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByWebsite(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(7, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByWebsiteDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByWebsiteDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByAbout(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByAbout(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(8, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByAboutDesc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByAboutDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByNip05(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByNip05(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(9, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByNip05Desc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByNip05Desc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(9, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByLud16(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByLud16(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(10, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByLud16Desc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByLud16Desc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(10, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByLud06(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByLud06(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(11, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByLud06Desc(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByLud06Desc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(11, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByUpdatedAt() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(12);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterSortBy> thenByUpdatedAtDesc() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(12, sort: Sort.desc);
     });
   }
 }
 
-extension UserMetadataQueryWhereDistinct
-    on QueryBuilder<UserMetadata, UserMetadata, QDistinct> {
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByPubKey(
+extension DbMetadataQueryWhereDistinct
+    on QueryBuilder<DbMetadata, DbMetadata, QDistinct> {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByPubKey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(2, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByName(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(3, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct>
-      distinctByDisplayName({bool caseSensitive = true}) {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByDisplayName(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(4, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByPicture(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByPicture(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(5, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByBanner(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByBanner(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(6, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByWebsite(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByWebsite(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(7, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByAbout(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByAbout(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(8, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByNip05(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByNip05(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(9, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByLud16(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByLud16(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(10, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct> distinctByLud06(
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByLud06(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(11, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserMetadata, UserMetadata, QAfterDistinct>
-      distinctByUpdatedAt() {
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(12);
     });
   }
 }
 
-extension UserMetadataQueryProperty1
-    on QueryBuilder<UserMetadata, UserMetadata, QProperty> {
-  QueryBuilder<UserMetadata, String, QAfterProperty> idProperty() {
+extension DbMetadataQueryProperty1
+    on QueryBuilder<DbMetadata, DbMetadata, QProperty> {
+  QueryBuilder<DbMetadata, String, QAfterProperty> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(1);
     });
   }
 
-  QueryBuilder<UserMetadata, String, QAfterProperty> pubKeyProperty() {
+  QueryBuilder<DbMetadata, String, QAfterProperty> pubKeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> nameProperty() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> displayNameProperty() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> displayNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> pictureProperty() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> pictureProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> bannerProperty() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> bannerProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> websiteProperty() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> websiteProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> aboutProperty() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> aboutProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> nip05Property() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> nip05Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(9);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> lud16Property() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> lud16Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(10);
     });
   }
 
-  QueryBuilder<UserMetadata, String?, QAfterProperty> lud06Property() {
+  QueryBuilder<DbMetadata, String?, QAfterProperty> lud06Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(11);
     });
   }
 
-  QueryBuilder<UserMetadata, int?, QAfterProperty> updatedAtProperty() {
+  QueryBuilder<DbMetadata, int?, QAfterProperty> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(12);
     });
   }
 }
 
-extension UserMetadataQueryProperty2<R>
-    on QueryBuilder<UserMetadata, R, QAfterProperty> {
-  QueryBuilder<UserMetadata, (R, String), QAfterProperty> idProperty() {
+extension DbMetadataQueryProperty2<R>
+    on QueryBuilder<DbMetadata, R, QAfterProperty> {
+  QueryBuilder<DbMetadata, (R, String), QAfterProperty> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(1);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String), QAfterProperty> pubKeyProperty() {
+  QueryBuilder<DbMetadata, (R, String), QAfterProperty> pubKeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty> nameProperty() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty>
-      displayNameProperty() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> displayNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty> pictureProperty() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> pictureProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty> bannerProperty() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> bannerProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty> websiteProperty() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> websiteProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty> aboutProperty() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> aboutProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty> nip05Property() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> nip05Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(9);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty> lud16Property() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> lud16Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(10);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, String?), QAfterProperty> lud06Property() {
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> lud06Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(11);
     });
   }
 
-  QueryBuilder<UserMetadata, (R, int?), QAfterProperty> updatedAtProperty() {
+  QueryBuilder<DbMetadata, (R, int?), QAfterProperty> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(12);
     });
   }
 }
 
-extension UserMetadataQueryProperty3<R1, R2>
-    on QueryBuilder<UserMetadata, (R1, R2), QAfterProperty> {
-  QueryBuilder<UserMetadata, (R1, R2, String), QOperations> idProperty() {
+extension DbMetadataQueryProperty3<R1, R2>
+    on QueryBuilder<DbMetadata, (R1, R2), QAfterProperty> {
+  QueryBuilder<DbMetadata, (R1, R2, String), QOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(1);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String), QOperations> pubKeyProperty() {
+  QueryBuilder<DbMetadata, (R1, R2, String), QOperations> pubKeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations> nameProperty() {
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations>
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations>
       displayNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations> pictureProperty() {
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations> pictureProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations> bannerProperty() {
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations> bannerProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations> websiteProperty() {
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations> websiteProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations> aboutProperty() {
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations> aboutProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations> nip05Property() {
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations> nip05Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(9);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations> lud16Property() {
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations> lud16Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(10);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, String?), QOperations> lud06Property() {
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations> lud06Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(11);
     });
   }
 
-  QueryBuilder<UserMetadata, (R1, R2, int?), QOperations> updatedAtProperty() {
+  QueryBuilder<DbMetadata, (R1, R2, int?), QOperations> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(12);
     });

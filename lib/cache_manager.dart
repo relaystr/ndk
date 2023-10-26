@@ -1,7 +1,11 @@
-import 'package:dart_ndk/db/relay_set.dart';
-import 'package:dart_ndk/db/user_contacts.dart';
-import 'package:dart_ndk/db/user_metadata.dart';
+import 'package:dart_ndk/db/db_relay_set.dart';
+import 'package:dart_ndk/db/db_contact_list.dart';
+import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/nips/nip02/contact_list.dart';
+
+import 'models/relay_set.dart';
+import 'nips/nip01/metadata.dart';
 
 abstract class CacheManager {
 
@@ -16,17 +20,17 @@ abstract class CacheManager {
   Future<void> removeRelaySet(String name, String pubKey);
   Future<void> removeAllRelaySets();
 
-  Future<void> saveUserContacts(UserContacts userContacts);
-  Future<void> saveManyUserContacts(List<UserContacts> userContacts);
-  UserContacts? loadUserContacts(String pubKey);
-  Future<void> removeUserContacts(String pubKey);
-  Future<void> removeAllUserContacts();
+  Future<void> saveContactList(ContactList contactList);
+  Future<void> saveContactLists(List<ContactList> contactLists);
+  ContactList? loadContactList(String pubKey);
+  Future<void> removeContactList(String pubKey);
+  Future<void> removeAllContactLists();
 
-  Future<void> saveUserMetadata(UserMetadata metadata);
-  Future<void> saveUserMetadatas(List<UserMetadata> metadatas);
-  UserMetadata? loadUserMetadata(String pubKey);
-  List<UserMetadata?> loadUserMetadatas(List<String> pubKeys);
-  Future<void> removeUserMetadata(String pubKey);
-  Future<void> removeAllUserMetadatas();
+  Future<void> saveMetadata(Metadata metadata);
+  Future<void> saveMetadatas(List<Metadata> metadatas);
+  Metadata? loadMetadata(String pubKey);
+  List<Metadata?> loadMetadatas(List<String> pubKeys);
+  Future<void> removeMetadata(String pubKey);
+  Future<void> removeAllMetadatas();
 
 }

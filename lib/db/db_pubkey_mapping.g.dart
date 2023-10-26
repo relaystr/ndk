@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'pubkey_mapping.dart';
+part of 'db_pubkey_mapping.dart';
 
 // **************************************************************************
 // _IsarEmbeddedGenerator
@@ -10,9 +10,9 @@ part of 'pubkey_mapping.dart';
 // ignore_for_file: duplicate_ignore, invalid_use_of_protected_member, lines_longer_than_80_chars, constant_identifier_names, avoid_js_rounded_ints, no_leading_underscores_for_local_identifiers, require_trailing_commas, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_in_if_null_operators, library_private_types_in_public_api, prefer_const_constructors
 // ignore_for_file: type=lint
 
-const PubkeyMappingSchema = IsarGeneratedSchema(
+const DbPubkeyMappingSchema = IsarGeneratedSchema(
   schema: IsarSchema(
-    name: 'PubkeyMapping',
+    name: 'DbPubkeyMapping',
     embedded: true,
     properties: [
       IsarPropertySchema(
@@ -20,50 +20,41 @@ const PubkeyMappingSchema = IsarGeneratedSchema(
         type: IsarType.string,
       ),
       IsarPropertySchema(
-        name: 'rwMarker',
+        name: 'marker',
         type: IsarType.string,
-        enumMap: {"readOnly": "r", "writeOnly": "w", "readWrite": "rw"},
       ),
     ],
     indexes: [],
   ),
-  converter: IsarObjectConverter<void, PubkeyMapping>(
-    serialize: serializePubkeyMapping,
-    deserialize: deserializePubkeyMapping,
+  converter: IsarObjectConverter<void, DbPubkeyMapping>(
+    serialize: serializeDbPubkeyMapping,
+    deserialize: deserializeDbPubkeyMapping,
   ),
 );
 
 @isarProtected
-int serializePubkeyMapping(IsarWriter writer, PubkeyMapping object) {
+int serializeDbPubkeyMapping(IsarWriter writer, DbPubkeyMapping object) {
   IsarCore.writeString(writer, 1, object.pubKey);
-  IsarCore.writeString(writer, 2, object.rwMarker.asText);
+  IsarCore.writeString(writer, 2, object.marker);
   return 0;
 }
 
 @isarProtected
-PubkeyMapping deserializePubkeyMapping(IsarReader reader) {
+DbPubkeyMapping deserializeDbPubkeyMapping(IsarReader reader) {
   final String _pubKey;
   _pubKey = IsarCore.readString(reader, 1) ?? '';
-  final ReadWriteMarker _rwMarker;
-  _rwMarker = _pubkeyMappingRwMarker[
-          IsarCore.readString(reader, 2) ?? ReadWriteMarker.readOnly] ??
-      ReadWriteMarker.readOnly;
-  final object = PubkeyMapping(
+  final String _marker;
+  _marker = IsarCore.readString(reader, 2) ?? '';
+  final object = DbPubkeyMapping(
     pubKey: _pubKey,
-    rwMarker: _rwMarker,
+    marker: _marker,
   );
   return object;
 }
 
-const _pubkeyMappingRwMarker = {
-  r'r': ReadWriteMarker.readOnly,
-  r'w': ReadWriteMarker.writeOnly,
-  r'rw': ReadWriteMarker.readWrite,
-};
-
-extension PubkeyMappingQueryFilter
-    on QueryBuilder<PubkeyMapping, PubkeyMapping, QFilterCondition> {
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+extension DbPubkeyMappingQueryFilter
+    on QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QFilterCondition> {
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -79,7 +70,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyGreaterThan(
     String value, {
     bool caseSensitive = true,
@@ -95,7 +86,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyGreaterThanOrEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -111,7 +102,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyLessThan(
     String value, {
     bool caseSensitive = true,
@@ -127,7 +118,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyLessThanOrEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -143,7 +134,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyBetween(
     String lower,
     String upper, {
@@ -161,7 +152,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -177,7 +168,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -193,7 +184,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -206,7 +197,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -219,7 +210,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -231,7 +222,7 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
       pubKeyIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -243,92 +234,186 @@ extension PubkeyMappingQueryFilter
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
-      rwMarkerEqualTo(
-    ReadWriteMarker value,
-  ) {
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
           property: 2,
-          value: value.asText,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
-      rwMarkerGreaterThan(
-    ReadWriteMarker value,
-  ) {
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
           property: 2,
-          value: value.asText,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
-      rwMarkerGreaterThanOrEqualTo(
-    ReadWriteMarker value,
-  ) {
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
           property: 2,
-          value: value.asText,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
-      rwMarkerLessThan(
-    ReadWriteMarker value,
-  ) {
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
           property: 2,
-          value: value.asText,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
-      rwMarkerLessThanOrEqualTo(
-    ReadWriteMarker value,
-  ) {
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
           property: 2,
-          value: value.asText,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
-  QueryBuilder<PubkeyMapping, PubkeyMapping, QAfterFilterCondition>
-      rwMarkerBetween(
-    ReadWriteMarker lower,
-    ReadWriteMarker upper,
-  ) {
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
           property: 2,
-          lower: lower.asText,
-          upper: upper.asText,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 2,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 2,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QAfterFilterCondition>
+      markerIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 2,
+          value: '',
         ),
       );
     });
   }
 }
 
-extension PubkeyMappingQueryObject
-    on QueryBuilder<PubkeyMapping, PubkeyMapping, QFilterCondition> {}
+extension DbPubkeyMappingQueryObject
+    on QueryBuilder<DbPubkeyMapping, DbPubkeyMapping, QFilterCondition> {}

@@ -5,7 +5,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 
 import '../nip01/event.dart';
 
-class Nip02ContactList {
+class ContactList {
   static const int kind = 3;
   late String pubKey;
 
@@ -17,18 +17,16 @@ class Nip02ContactList {
   List<String> followedCommunities = [];
   List<String> followedEvents = [];
 
-  Map<String, ReadWriteMarker> relaysInContent = {};
-
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   int? loadedTimestamp;
 
   List<String> sources = [];
 
-  Nip02ContactList(this.pubKey, this.contacts);
+  ContactList(this.pubKey, this.contacts);
 
-  Nip02ContactList.fromEvent(Nip01Event event) {
+  ContactList.fromEvent(Nip01Event event) {
     pubKey = event.pubKey;
-    createdAt = event.createdAt;
+    createdAt = event.createdAt!;
     loadedTimestamp = DateTime.now().millisecondsSinceEpoch ~/1000;
     for (var tag in event.tags) {
       if (tag is! List<dynamic>) continue;
@@ -59,6 +57,11 @@ class Nip02ContactList {
         followedEvents.add(id);
       }
     }
+    sources.addAll(event.sources);
+  }
+
+  static Map<String, ReadWriteMarker> relaysFromContent(Nip01Event event) {
+    Map<String, ReadWriteMarker> map = {};
     if (Helpers.isNotBlank(event.content)) {
       try {
         Map<String, dynamic> json = jsonDecode(event.content);
@@ -68,7 +71,7 @@ class Nip02ContactList {
               bool read = entry.value["read"] ?? false;
               bool write = entry.value["write"] ?? false;
               if (read || write) {
-                relaysInContent[entry.key] =
+                map[entry.key] =
                     ReadWriteMarker.from(read: read, write: write);
               }
             } catch (e) {
@@ -77,7 +80,7 @@ class Nip02ContactList {
                 bool read = decodedValue["read"] ?? false;
                 bool write = decodedValue["write"] ?? false;
                 if (read || write) {
-                  relaysInContent[entry.key] =
+                  map[entry.key] =
                       ReadWriteMarker.from(read: read, write: write);
                 }
                 continue;
@@ -94,8 +97,9 @@ class Nip02ContactList {
         // invalid json in content, ignore
       }
     }
-    sources.addAll(event.sources);
+    return map;
   }
+
 
   List<List<String>> contactsToJson() {
     return contacts.map((contact) {
@@ -123,15 +127,15 @@ class Nip02ContactList {
   Nip01Event toEvent() {
     return Nip01Event(
       pubKey: pubKey,
-      kind: Nip02ContactList.kind,
+      kind: ContactList.kind,
       tags: contactsToJson()..addAll(tagListToJson(followedTags, "t"))..addAll(tagListToJson(followedCommunities, "a"))..addAll(tagListToJson(followedEvents, "e")),
       content: "",
-      publishAt: createdAt,
+      createdAt: createdAt,
     );
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is Nip02ContactList && runtimeType == other.runtimeType && pubKey == other.pubKey;
+  bool operator ==(Object other) => identical(this, other) || other is ContactList && runtimeType == other.runtimeType && pubKey == other.pubKey;
 
   @override
   int get hashCode => pubKey.hashCode;

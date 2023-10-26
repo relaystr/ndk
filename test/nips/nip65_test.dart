@@ -8,7 +8,7 @@ void main() {
   group('Nip65', () {
     test('fromEvent', () {
       final event = Nip01Event(
-        publishAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: Nip65.kind,
         content: "",

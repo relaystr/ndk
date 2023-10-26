@@ -21,14 +21,14 @@ class Nip01Event {
     required this.kind,
     required this.tags,
     required this.content,
-    int? publishAt,
+    int? createdAt,
   }) {
-    if (publishAt != null) {
-      createdAt = publishAt;
-    } else {
-      createdAt = _secondsSinceEpoch();
+    if (createdAt==0) {
+      createdAt = DateTime
+          .now()
+          .millisecondsSinceEpoch ~/ 1000;
     }
-    id = _calculateId(pubKey, createdAt, kind, tags, content);
+    id = _calculateId(pubKey, createdAt!, kind, tags, content);
   }
 
   Nip01Event._(this.id, this.pubKey, this.createdAt, this.kind, this.tags,
@@ -89,7 +89,7 @@ class Nip01Event {
 
   bool get isValid {
     // Validate event data
-    if (id != _calculateId(pubKey, createdAt, kind, tags, content)) {
+    if (id != _calculateId(pubKey, createdAt!, kind, tags, content)) {
       return false;
     }
     return true;

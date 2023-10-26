@@ -7,9 +7,9 @@ void main() {
   group('Nip02', () {
     test('fromEvent', () {
       final event = Nip01Event(
-        publishAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
-        kind: Nip02ContactList.kind,
+        kind: ContactList.kind,
         content: "{\"wss://nos.lol\":{\"read\":true,\"write\":true},\"wss://relay.damus.io\":{\"read\":true,\"write\":true}}",
         tags: [
           ['p', 'contact1'],
@@ -19,28 +19,28 @@ void main() {
           ['invalid'],
         ],
       );
-      final nip02 = Nip02ContactList.fromEvent(event);
+      final nip02 = ContactList.fromEvent(event);
       expect(nip02.contacts, [
         'contact1',
         'contact2',
         'contact3',
         'contact4',
       ]);
-      expect(nip02.relaysInContent, {
+      expect(ContactList.relaysFromContent(event), {
         "wss://nos.lol": ReadWriteMarker.readWrite,
         "wss://relay.damus.io": ReadWriteMarker.readWrite,
       });
     });
 
     test('toEvent', () {
-      final nip02 = Nip02ContactList('pubkey123', [
+      final nip02 = ContactList('pubkey123', [
         'contact1',
         'contact2',
         'contact3',
       ]);
       final myEvent = nip02.toEvent();
       expect(myEvent.pubKey, equals('pubkey123'));
-      expect(myEvent.kind, equals(Nip02ContactList.kind));
+      expect(myEvent.kind, equals(ContactList.kind));
       expect(
           myEvent.tags,
           equals([

@@ -885,8 +885,8 @@ const RelayListItemSchema = IsarGeneratedSchema(
       ),
       IsarPropertySchema(
         name: 'marker',
-        type: IsarType.string,
-        enumMap: {"readOnly": "r", "writeOnly": "w", "readWrite": "rw"},
+        type: IsarType.byte,
+        enumMap: {"readOnly": 0, "writeOnly": 1, "readWrite": 2},
       ),
     ],
     indexes: [],
@@ -900,7 +900,7 @@ const RelayListItemSchema = IsarGeneratedSchema(
 @isarProtected
 int serializeRelayListItem(IsarWriter writer, RelayListItem object) {
   IsarCore.writeString(writer, 1, object.url);
-  IsarCore.writeString(writer, 2, object.marker.asText);
+  IsarCore.writeByte(writer, 2, object.marker.index);
   return 0;
 }
 
@@ -909,9 +909,14 @@ RelayListItem deserializeRelayListItem(IsarReader reader) {
   final String _url;
   _url = IsarCore.readString(reader, 1) ?? '';
   final ReadWriteMarker _marker;
-  _marker = _relayListItemMarker[
-          IsarCore.readString(reader, 2) ?? ReadWriteMarker.readOnly] ??
-      ReadWriteMarker.readOnly;
+  {
+    if (IsarCore.readNull(reader, 2)) {
+      _marker = ReadWriteMarker.readOnly;
+    } else {
+      _marker = _relayListItemMarker[IsarCore.readByte(reader, 2)] ??
+          ReadWriteMarker.readOnly;
+    }
+  }
   final object = RelayListItem(
     _url,
     _marker,
@@ -920,9 +925,9 @@ RelayListItem deserializeRelayListItem(IsarReader reader) {
 }
 
 const _relayListItemMarker = {
-  r'r': ReadWriteMarker.readOnly,
-  r'w': ReadWriteMarker.writeOnly,
-  r'rw': ReadWriteMarker.readWrite,
+  0: ReadWriteMarker.readOnly,
+  1: ReadWriteMarker.writeOnly,
+  2: ReadWriteMarker.readWrite,
 };
 
 extension RelayListItemQueryFilter
@@ -1113,7 +1118,7 @@ extension RelayListItemQueryFilter
       return query.addFilterCondition(
         EqualCondition(
           property: 2,
-          value: value.asText,
+          value: value.index,
         ),
       );
     });
@@ -1127,7 +1132,7 @@ extension RelayListItemQueryFilter
       return query.addFilterCondition(
         GreaterCondition(
           property: 2,
-          value: value.asText,
+          value: value.index,
         ),
       );
     });
@@ -1141,7 +1146,7 @@ extension RelayListItemQueryFilter
       return query.addFilterCondition(
         GreaterOrEqualCondition(
           property: 2,
-          value: value.asText,
+          value: value.index,
         ),
       );
     });
@@ -1155,7 +1160,7 @@ extension RelayListItemQueryFilter
       return query.addFilterCondition(
         LessCondition(
           property: 2,
-          value: value.asText,
+          value: value.index,
         ),
       );
     });
@@ -1169,7 +1174,7 @@ extension RelayListItemQueryFilter
       return query.addFilterCondition(
         LessOrEqualCondition(
           property: 2,
-          value: value.asText,
+          value: value.index,
         ),
       );
     });
@@ -1184,8 +1189,8 @@ extension RelayListItemQueryFilter
       return query.addFilterCondition(
         BetweenCondition(
           property: 2,
-          lower: lower.asText,
-          upper: upper.asText,
+          lower: lower.index,
+          upper: upper.index,
         ),
       );
     });

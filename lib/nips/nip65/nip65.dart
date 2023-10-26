@@ -24,7 +24,7 @@ class Nip65 {
 
   Nip65.fromEvent(Nip01Event event) {
     pubKey = event.pubKey;
-    createdAt = event.createdAt;
+    createdAt = event.createdAt!;
     for (var tag in event.tags) {
       if (tag is! List<dynamic>) continue;
       final length = tag.length;
@@ -64,7 +64,7 @@ class Nip65 {
         return list;
       }).toList(),
       content: "",
-      publishAt: createdAt,
+      createdAt: createdAt,
     );
   }
 

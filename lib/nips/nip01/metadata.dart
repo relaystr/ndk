@@ -79,4 +79,24 @@ class Metadata {
     metadata.updatedAt = event.createdAt;
     return metadata;
   }
+  String getName() {
+    if (displayName != null && Helpers.isNotBlank(displayName)) {
+      return displayName!;
+    }
+    if (name != null && Helpers.isNotBlank(name)) {
+      return name!;
+    }
+    return pubKey;
+  }
+
+  bool matchesSearch(String str) {
+    str = str.trim().toLowerCase();
+    String d = displayName != null ? displayName!.toLowerCase(): "";
+    String n = name != null ? name!.toLowerCase(): "";
+    String str2 = " $str";
+    return d.startsWith(str) ||
+        d.contains(str2) ||
+        n.startsWith(str) ||
+        n.contains(str2);
+  }
 }

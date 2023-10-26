@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:isar/isar.dart';
@@ -27,11 +28,11 @@ class UserRelayList {
         DateTime.now().millisecondsSinceEpoch ~/1000);
   }
 
-  static UserRelayList fromNip02ContactList(Nip02ContactList nip02contactList) {
+  static UserRelayList fromNip02EventContent(Nip01Event event) {
     return UserRelayList(
-        nip02contactList.pubKey,
-        nip02contactList.relaysInContent.entries.map((entry) => RelayListItem(entry.key, entry.value)).toList(),
-        nip02contactList.createdAt,
+        event.pubKey,
+        ContactList.relaysFromContent(event).entries.map((entry) => RelayListItem(entry.key, entry.value)).toList(),
+        event.createdAt!,
         DateTime.now().millisecondsSinceEpoch ~/1000);
   }
 }

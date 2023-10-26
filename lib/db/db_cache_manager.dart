@@ -2,15 +2,18 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/user_contacts.dart';
-import 'package:dart_ndk/db/user_metadata.dart';
+import 'package:dart_ndk/db/db_contact_list.dart';
+import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/db/relay_set.dart';
+import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
-class IsarCacheManager extends CacheManager {
+import '../models/relay_set.dart';
+import '../nips/nip01/metadata.dart';
+
+class DbCacheManager extends CacheManager {
 
   late Isar isar;
 
@@ -25,9 +28,9 @@ class IsarCacheManager extends CacheManager {
       engine: IsarEngine.isar,
       schemas: [
         UserRelayListSchema,
-        RelaySetSchema,
-        UserContactsSchema,
-        UserMetadataSchema,
+        DbRelaySetSchema,
+        DbContactListSchema,
+        DbMetadataSchema,
       ],
     );
     // await isar.writeAsync((isar) {
@@ -50,19 +53,18 @@ class IsarCacheManager extends CacheManager {
   }
 
   RelaySet? loadRelaySet(String name, String pubKey) {
-    return isar.relaySets.get(RelaySet.buildId(name, pubKey));
+    return isar.dbRelaySets.get(RelaySet.buildId(name, pubKey));
   }
 
   Future<void> saveRelaySet(RelaySet relaySet) async {
     final startTime = DateTime.now();
     await isar.writeAsync((isar) {
-      isar.relaySets.put(relaySet);
+      isar.dbRelaySets.put(DbRelaySet.fromRelaySet(relaySet));
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     print("SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
   }
-
 
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
     final startTime = DateTime.now();
@@ -75,55 +77,55 @@ class IsarCacheManager extends CacheManager {
   }
 
   @override
-  UserContacts? loadUserContacts(String pubKey) {
-    return isar.userContacts.get(pubKey);
+  ContactList? loadContactList(String pubKey) {
+    return isar.dbContactLists.get(pubKey);
   }
 
   @override
-  Future<void> saveUserContacts(UserContacts userContacts) async {
+  Future<void> saveContactList(ContactList contactList) async {
     final startTime = DateTime.now();
     await isar.writeAsync((isar) {
-      isar.userContacts.put(userContacts);
+      isar.dbContactLists.put(DbContactList.fromContactList(contactList));
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${userContacts.pubKey} UserContacts took ${duration.inMilliseconds} ms");
+    print("SAVED ${contactList.pubKey} UserContacts took ${duration.inMilliseconds} ms");
   }
 
   @override
-  Future<void> saveManyUserContacts(List<UserContacts> list) async {
+  Future<void> saveContactLists(List<ContactList> list) async {
     final startTime = DateTime.now();
     await isar.writeAsync((isar) {
-      isar.userContacts.putAll(list);
+      isar.dbContactLists.putAll(list.map((e) => DbContactList.fromContactList(e)).toList());
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${list.length} UserContacts took ${duration.inMilliseconds} ms");
+    print("SAVED ${list.length} ContactLists took ${duration.inMilliseconds} ms");
   }
 
   @override
-  UserMetadata? loadUserMetadata(String pubKey) {
-    return isar.userMetadatas.get(pubKey);
+  Metadata? loadMetadata(String pubKey) {
+    return isar.dbMetadatas.get(pubKey);
   }
 
   @override
   Future<void> removeAllRelaySets() async {
     await isar.writeAsync((isar) {
-      isar.relaySets.clear();
+      isar.dbRelaySets.clear();
     });
   }
 
   @override
-  Future<void> removeAllUserContacts() async {
+  Future<void> removeAllContactLists() async {
     await isar.writeAsync((isar) {
-      isar.userContacts.clear();
+      isar.dbContactLists.clear();
     });
   }
 
   @override
-  Future<void> removeAllUserMetadatas() async {
+  Future<void> removeAllMetadatas() async {
     await isar.writeAsync((isar) {
-      isar.userMetadatas.clear();
+      isar.dbMetadatas.clear();
     });
   }
 
@@ -137,21 +139,21 @@ class IsarCacheManager extends CacheManager {
   @override
   Future<void> removeRelaySet(String name, String pubKey) async {
     await isar.writeAsync((isar) {
-      isar.relaySets.delete(RelaySet.buildId(name, pubKey));
+      isar.dbRelaySets.delete(RelaySet.buildId(name, pubKey));
     });
   }
 
   @override
-  Future<void> removeUserContacts(String pubKey) async {
+  Future<void> removeContactList(String pubKey) async {
     await isar.writeAsync((isar) {
-      isar.userContacts.delete(pubKey);
+      isar.dbContactLists.delete(pubKey);
     });
   }
 
   @override
-  Future<void> removeUserMetadata(String pubKey) async {
+  Future<void> removeMetadata(String pubKey) async {
     await isar.writeAsync((isar) {
-      isar.userMetadatas.delete(pubKey);
+      isar.dbMetadatas.delete(pubKey);
     });
   }
 
@@ -163,21 +165,21 @@ class IsarCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> saveUserMetadata(UserMetadata metadata) async {
+  Future<void> saveMetadata(Metadata metadata) async {
     final startTime = DateTime.now();
     await isar.writeAsync((isar) {
-      isar.userMetadatas.put(metadata);
+      isar.dbMetadatas.put(DbMetadata.fromMetadata(metadata));
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED UserMetadata took ${duration.inMilliseconds} ms");
+    print("SAVED Metadata took ${duration.inMilliseconds} ms");
   }
 
   @override
-  Future<void> saveUserMetadatas(List<UserMetadata> metadatas) async {
+  Future<void> saveMetadatas(List<Metadata> metadatas) async {
     final startTime = DateTime.now();
     await isar.writeAsync((isar) {
-      isar.userMetadatas.putAll(metadatas);
+      isar.dbMetadatas.putAll(metadatas.map((metadata) => DbMetadata.fromMetadata(metadata)).toList());
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
@@ -185,7 +187,7 @@ class IsarCacheManager extends CacheManager {
   }
 
   @override
-  List<UserMetadata?> loadUserMetadatas(List<String> pubKeys) {
-    return isar.userMetadatas.getAll(pubKeys);
+  List<Metadata?> loadMetadatas(List<String> pubKeys) {
+    return isar.dbMetadatas.getAll(pubKeys);
   }
 }

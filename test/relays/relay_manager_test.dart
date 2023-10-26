@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/db/user_contacts.dart';
+import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
@@ -13,7 +14,7 @@ import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/db/relay_set.dart';
+import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart' as isar;
 
@@ -45,7 +46,7 @@ void main() async {
   };
 
   Nip01Event textNote(KeyPair key2) {
-    return Nip01Event(kind: Nip01Event.textNoteKind, pubKey: key2.publicKey, content: "some note from key ${keyNames[key2]}", tags: []);
+    return Nip01Event(kind: Nip01Event.textNoteKind, pubKey: key2.publicKey, content: "some note from key ${keyNames[key2]}", tags: [], createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
   }
 
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
@@ -154,7 +155,13 @@ void main() async {
       await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       RelaySet relaySet =
-          await manager.calculateRelaySet([key4.publicKey], RelayDirection.outbox, relayMinCountPerPubKey: RelayManager.DEFAULT_BEST_RELAYS_MIN_COUNT);
+          await manager.calculateRelaySet(
+              name:"test",
+              ownerPubKey: "test",
+              pubKeys: [key4.publicKey],
+              direction: RelayDirection.outbox,
+              relayMinCountPerPubKey: RelayManager.DEFAULT_BEST_RELAYS_MIN_COUNT
+          );
 
       Stream<Nip01Event> query = await manager.query(Filter(kinds: [Nip01Event.textNoteKind], authors: [key4.publicKey]), relaySet);
 
@@ -178,15 +185,20 @@ void main() async {
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
-      RelaySet relaySet = await manager.calculateRelaySet([key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey], RelayDirection.outbox,
-          relayMinCountPerPubKey: 1, onProgress: (stepName, count, total) {
+      RelaySet relaySet = await manager.calculateRelaySet(
+          name: "feed",
+          ownerPubKey: "ownerPubKey",
+          pubKeys: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
+          direction: RelayDirection.outbox,
+          relayMinCountPerPubKey: 1,
+          onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
         }
       });
-      print("BEST ${relaySet.items.length} RELAYS:");
-      relaySet.items.forEach((item) {
-        print("  ${relayNames[item.url]} => has ${item.pubKeyMappings.length} follows");
+      print("BEST ${relaySet.relaysMap.length} RELAYS:");
+      relaySet.relaysMap.forEach((url, pubKeyMappings) {
+        print("  ${relayNames[url]} => has ${pubKeyMappings.length} follows");
       });
       Stream<Nip01Event> query =
           await manager.query(Filter(kinds: [Nip01Event.textNoteKind], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]), relaySet);
@@ -205,47 +217,60 @@ void main() async {
       await stopServers();
     });
 
-    test("calculate best relays and check that it doesn't use redundant relays", () async {
+    test("calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays", () async {
       await startServers();
       RelayManager manager = RelayManager();
       await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       // relayMinCountPerPubKey: 1
-      RelaySet relaySet = await manager.calculateRelaySet([key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey], RelayDirection.outbox,
-          relayMinCountPerPubKey: 1, onProgress: (stepName, count, total) {
-        if (count % 100 == 0 || (total - count) < 10) {
-          print("[PROGRESS] $stepName: $count/$total");
-        }
-      });
-      print("BEST ${relaySet.items.length} RELAYS:");
-      relaySet.items.forEach((item) {
-        print("  ${item.url} => has ${item.pubKeyMappings.length} follows");
+      RelaySet relaySet = await manager.calculateRelaySet(
+          name: "feed",
+          ownerPubKey: "ownerPubKey",
+          pubKeys: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
+          direction: RelayDirection.outbox,
+          relayMinCountPerPubKey: 1,
+          onProgress: (stepName, count, total) {
+            if (count % 100 == 0 || (total - count) < 10) {
+              print("[PROGRESS] $stepName: $count/$total");
+            }
+          });
+      print("BEST ${relaySet.relaysMap.length} RELAYS:");
+      relaySet.relaysMap.forEach((url, pubKeyMappings) {
+        print("  ${url} => has ${pubKeyMappings.length} follows");
       });
 
-      Iterable<String> urls = relaySet.items.map((e) => e.url);
-      expect(urls.contains(relay1.url), true);
-      expect(urls.contains(relay2.url), false);
-      expect(urls.contains(relay3.url), false);
-      expect(urls.contains(relay4.url), true);
+      expect(relaySet.urls.contains(relay1.url), true);
+      expect(relaySet.urls.contains(relay2.url), false);
+      expect(relaySet.urls.contains(relay3.url), false);
+      expect(relaySet.urls.contains(relay4.url), true);
       expect(relaySet.notCoveredPubkeys.isEmpty, true);
+      await stopServers();
+    });
 
-      // relayMinCountPerPubKey: 2
-      relaySet = await manager.calculateRelaySet([key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey], RelayDirection.outbox,
+    test("calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays", () async {
+      await startServers();
+      RelayManager manager = RelayManager();
+      await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
+
+      RelaySet relaySet = await manager.calculateRelaySet(
+          name: "feed",
+          ownerPubKey: "ownerPubKey",
+          pubKeys: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey],
+          direction: RelayDirection.outbox,
           relayMinCountPerPubKey: 2, onProgress: (stepName, count, total) {
         if (count % 100 == 0 || (total - count) < 10) {
           print("[PROGRESS] $stepName: $count/$total");
         }
       });
-      print("BEST ${relaySet.items.length} RELAYS:");
-      relaySet.items.forEach((item) {
-        print("  ${item.url} => has ${item.pubKeyMappings.length} follows");
+      print("BEST ${relaySet.relaysMap.length} RELAYS:");
+      relaySet.relaysMap.forEach((url,pubKeyMappings) {
+        print("  ${url} => has ${pubKeyMappings.length} follows");
       });
 
-      urls = relaySet.items.map((e) => e.url);
-      expect(urls.contains(relay1.url), true);
-      expect(urls.contains(relay2.url), true);
-      expect(urls.contains(relay3.url), false);
-      expect(urls.contains(relay4.url), true);
+      expect(relaySet.urls.contains(relay1.url), true);
+      expect(relaySet.urls.contains(relay2.url), true);
+      expect(relaySet.urls.contains(relay3.url), false);
+      expect(relaySet.urls.contains(relay4.url), true);
 
       await stopServers();
     });
@@ -267,9 +292,9 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        UserContacts? userContacts = await manager.loadUserContacts(key.publicKey);
+        ContactList? contactList = await manager.loadContactList(key.publicKey);
 
-        expect(userContacts != null, true);
+        expect(contactList != null, true);
         // int j=1;
         // int count=0;
         // String relay = "wss://nostr-pub.wellorder.net";
@@ -288,7 +313,12 @@ void main() async {
         String setName = "feed,$relayMinCountPerPubKey,";
         RelaySet? bestRelays = null; //await manager.getRelaySet(setName, key.publicKey);
         if (bestRelays == null) {
-          bestRelays = await manager.calculateRelaySet(userContacts!.pubKeys, RelayDirection.outbox, relayMinCountPerPubKey: relayMinCountPerPubKey,
+          bestRelays = await manager.calculateRelaySet(
+              name: "feed",
+              ownerPubKey: key.publicKey,
+              pubKeys: contactList!.contacts,
+              direction: RelayDirection.outbox,
+              relayMinCountPerPubKey: relayMinCountPerPubKey,
               onProgress: (stepName, count, total) {
             if (count % 100 == 0 || (total - count) < 10) {
               print("[PROGRESS] $stepName: $count/$total");
@@ -299,20 +329,20 @@ void main() async {
           await manager.saveRelaySet(bestRelays);
         } else {
           final startTime = DateTime.now();
-          print("connecting ${bestRelays.items.length} relays");
-          List<bool> connected = await Future.wait(bestRelays.items.map((item) => manager.connectRelay(item.url)));
+          print("connecting ${bestRelays.relaysMap.length} relays");
+          List<bool> connected = await Future.wait(bestRelays.urls.map((url) => manager.connectRelay(url)));
           final endTime = DateTime.now();
           final duration = endTime.difference(startTime);
           print(
               "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
         }
-        print("BEST ${bestRelays.items.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
-        bestRelays.items.forEach((item) {
-          print("  ${item.url} ${item.pubKeyMappings.length} follows ${item.pubKeyMappings.length <= 2 ? item.pubKeyMappings : ""}");
+        print("BEST ${bestRelays.relaysMap.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
+        bestRelays.relaysMap.forEach((url, pubKeyMappings) {
+          print("  ${url} ${pubKeyMappings.length} follows ${pubKeyMappings.length <= 2 ? pubKeyMappings : ""}");
         });
 
         if (Helpers.isNotBlank(expectedRelayUrl)) {
-          expect(bestRelays.items.map((e) => e.url).toList().contains(expectedRelayUrl), true);
+          expect(bestRelays.urls.contains(expectedRelayUrl), true);
         }
         final t1 = DateTime.now();
         print("===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");

@@ -2,21 +2,23 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/user_contacts.dart';
+import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/db/relay_set.dart';
+import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
-import 'db/user_metadata.dart';
+import 'db/db_metadata.dart';
+import 'models/relay_set.dart';
+import 'nips/nip01/metadata.dart';
 
 class MemCacheManager implements CacheManager {
 
   Map<String, UserRelayList> userRelayLists = {};
   Map<String, RelaySet> relaySets = {};
-  Map<String, UserContacts> userContacts = {};
-  Map<String, UserMetadata> userMetadatas = {};
+  Map<String, ContactList> contactLists = {};
+  Map<String, Metadata> metadatas = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -47,36 +49,36 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  UserContacts? loadUserContacts(String pubKey) {
-    return userContacts[pubKey];
+  ContactList? loadContactList(String pubKey) {
+    return contactLists[pubKey];
   }
 
   @override
-  Future<void> saveUserContacts(UserContacts userContacts) async {
-    this.userContacts[userContacts.pubKey] = userContacts;
+  Future<void> saveContactList(ContactList contactList) async {
+    this.contactLists[contactList.pubKey] = contactList;
   }
 
   @override
-  Future<void> saveManyUserContacts(List<UserContacts> list) async {
-    for (var userContacts in list) {
-      this.userContacts[userContacts.pubKey] = userContacts;
+  Future<void> saveContactLists(List<ContactList> list) async {
+    for (var contactList in list) {
+      this.contactLists[contactList.pubKey] = contactList;
     }
   }
 
   @override
-  UserMetadata? loadUserMetadata(String pubKey) {
-    return userMetadatas[pubKey];
+  Metadata? loadMetadata(String pubKey) {
+    return metadatas[pubKey];
   }
 
   @override
-  Future<void> saveUserMetadata(UserMetadata metadata) async {
-    userMetadatas[metadata.pubKey] = metadata;
+  Future<void> saveMetadata(Metadata metadata) async {
+    metadatas[metadata.pubKey] = metadata;
   }
 
   @override
-  Future<void> saveUserMetadatas(List<UserMetadata> list) async {
+  Future<void> saveMetadatas(List<Metadata> list) async {
     for (var metadata in list) {
-      this.userMetadatas[metadata.pubKey] = metadata;
+      metadatas[metadata.pubKey] = metadata;
     }
   }
 
@@ -86,13 +88,13 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> removeAllUserContacts() async {
-    userContacts.clear();
+  Future<void> removeAllContactLists() async {
+    contactLists.clear();
   }
 
   @override
-  Future<void> removeAllUserMetadatas() async {
-    userMetadatas.clear();
+  Future<void> removeAllMetadatas() async {
+    metadatas.clear();
   }
 
   @override
@@ -106,13 +108,13 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> removeUserContacts(String pubKey) async {
-    userContacts.remove(pubKey);
+  Future<void> removeContactList(String pubKey) async {
+    contactLists.remove(pubKey);
   }
 
   @override
-  Future<void> removeUserMetadata(String pubKey) async {
-    userMetadatas.remove(pubKey);
+  Future<void> removeMetadata(String pubKey) async {
+    metadatas.remove(pubKey);
   }
 
   @override
@@ -121,10 +123,10 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  List<UserMetadata?> loadUserMetadatas(List<String> pubKeys) {
-    List<UserMetadata> result = [];
+  List<Metadata?> loadMetadatas(List<String> pubKeys) {
+    List<Metadata> result = [];
     for(String pubKey in pubKeys) {
-      UserMetadata? metadata = userMetadatas[pubKey];
+      Metadata? metadata = metadatas[pubKey];
       if (metadata!=null) {
         result.add(metadata);
       }
