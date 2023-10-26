@@ -127,6 +127,7 @@ class RelayManager {
         relays[url]!.succeededToConnect();
         relays[url]!.stats.connections++;
         startListeningToSocket(url);
+        getRelayInfo(url);
         return true;
       }
     } catch (e) {
@@ -273,12 +274,12 @@ class RelayManager {
     // }
   }
 
-  Relay? _getRelay(String url) {
+  Relay? getRelay(String url) {
     return relays[url];
   }
 
   bool _doesRelaySupportNip(String url, int nip) {
-    Relay? relay = relays[url];
+    Relay? relay = relays[Relay.clean(url)];
     return relay != null && relay.supportsNip(nip);
   }
 
@@ -681,10 +682,9 @@ class RelayManager {
   }
 
   Future<RelayInfo?> getRelayInfo(String url) async {
-    Relay? relay = relays[url];
-    if (relay != null) {
-      relay.info ??= await RelayInfo.get(url);
-      return relay.info;
+    if (relays[url] != null) {
+      relays[url]!.info ??= await RelayInfo.get(url);
+      return relays[url]!.info;
     }
     return null;
   }
