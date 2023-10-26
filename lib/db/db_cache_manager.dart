@@ -1,12 +1,11 @@
 import 'dart:core';
-import 'dart:io';
 
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
+import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
@@ -18,16 +17,19 @@ class DbCacheManager extends CacheManager {
 
   late Isar isar;
 
-  Future<void> init({String? path}) async {
+  Future<void> init({String? directory}) async {
     // await Isar.initialize("./libisar_android_armv7.so");//initializeIsarCore(download: true);
 
     // final dir = await getApplicationDocumentsDirectory();
     // final dir = Directory.systemTemp.createTempSync()
+    if (directory == Isar.sqliteInMemory) {
+      await Isar.initialize();
+    }
     isar = Isar.open(
       name: "db_ndk_${kDebugMode?"debug":"release"}",
       inspector: false, //kDebugMode,
-      directory: path ?? Directory.systemTemp.path,
-      engine: IsarEngine.isar,
+      directory: directory ?? Isar.sqliteInMemory, //Directory.systemTemp.path,
+      engine: directory == Isar.sqliteInMemory ? IsarEngine.sqlite: IsarEngine.isar,
       schemas: [
         DbUserRelayListSchema,
         DbRelaySetSchema,

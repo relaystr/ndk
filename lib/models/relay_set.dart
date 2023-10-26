@@ -83,6 +83,14 @@ class RelaySet {
       return [RelayRequest(url, filter)];
     }
   }
+
+  void addMoreRelays(Map<String,List<PubkeyMapping>> more) {
+    more.forEach((key, value) {
+      if (!relaysMap.keys.contains(key)) {
+        relaysMap[key] = value;
+      }
+    });
+  }
 }
 
 class RelayRequest {

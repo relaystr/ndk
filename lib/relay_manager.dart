@@ -10,8 +10,6 @@ import 'dart:math';
 import 'package:async/async.dart' show StreamGroup;
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
-import 'package:dart_ndk/db/db_contact_list.dart';
-import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
@@ -393,6 +391,7 @@ class RelayManager {
       required RelayDirection direction,
       required int relayMinCountPerPubKey,
       Function(String stepName, int count, int total)? onProgress}) async {
+
     await loadMissingRelayListsFromNip65OrNip02(pubKeys, onProgress: onProgress);
 
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = await _buildPubKeysMapFromRelayLists(pubKeys, direction);
@@ -613,7 +612,21 @@ class RelayManager {
     List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries = pubKeysByRelayUrl.entries.toList()
 
       /// todo: use more stuff to improve sorting
-      ..sort((a, b) => b.value.length.compareTo(a.value.length));
+      ..sort((a, b) {
+        int rr = b.value.length.compareTo(a.value.length);
+        if (rr==0) {
+          // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
+          bool aC = isWebSocketOpen(a.key);
+          bool bC = isWebSocketOpen(b.key);
+          if (aC != bC) {
+            return aC ? -1 : 1;
+          }
+          return 0;
+        }
+        return rr;
+      })
+    ;
+
     return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
   }
 
