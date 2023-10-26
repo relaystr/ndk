@@ -45,7 +45,7 @@ class RelayManager {
     "wss://relay.mostr.pub"
   ];
 
-  List<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
+  Iterable<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
 
   CacheManager cacheManager = MemCacheManager();
 
@@ -71,7 +71,7 @@ class RelayManager {
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
-  Future<void> connect({List<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS}) async {
+  Future<void> connect({Iterable<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS}) async {
     this.bootstrapRelays = bootstrapRelays;
     await Future.wait(bootstrapRelays.map((url) => connectRelay(url)).toList());
   }
