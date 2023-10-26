@@ -1,10 +1,9 @@
-import 'package:dart_ndk/db/db_pubkey_mapping.dart';
-import 'package:dart_ndk/db/db_relay_set_item.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:isar/isar.dart';
 
 import '../models/pubkey_mapping.dart';
 import '../models/relay_set.dart';
+import '../nips/nip65/read_write_marker.dart';
 
 part 'db_relay_set.g.dart';
 
@@ -41,3 +40,30 @@ class DbRelaySet extends RelaySet {
       : super(name: set.name, pubKey: set.pubKey, relaysMap: set.relaysMap, direction: set.direction, relayMinCountPerPubkey: set.relayMinCountPerPubkey);
 
 }
+
+@Embedded(inheritance: false)
+class DbPubkeyMapping extends PubkeyMapping {
+  @override
+  String get pubKey => super.pubKey;
+
+  String get marker => super.rwMarker.name;
+
+  DbPubkeyMapping({required super.pubKey, required String marker}) : super(rwMarker: fromName(marker));
+
+  static ReadWriteMarker fromName(String name) {
+    if (name == ReadWriteMarker.readOnly.name) {
+      return ReadWriteMarker.readOnly;
+    } else if (name == ReadWriteMarker.writeOnly.name) {
+      return ReadWriteMarker.writeOnly;
+    }
+    return ReadWriteMarker.readWrite;
+  }
+}
+@embedded
+class DbRelaySetItem {
+  String url;
+  List<DbPubkeyMapping> pubKeyMappings;
+
+  DbRelaySetItem(this.url, this.pubKeyMappings);
+}
+

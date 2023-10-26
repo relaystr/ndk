@@ -1,10 +1,7 @@
-import 'package:dart_ndk/db/db_relay_set.dart';
-import 'package:dart_ndk/db/db_contact_list.dart';
-import 'package:dart_ndk/db/db_metadata.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 
 import 'models/relay_set.dart';
+import 'models/user_relay_list.dart';
 import 'nips/nip01/metadata.dart';
 
 abstract class CacheManager {

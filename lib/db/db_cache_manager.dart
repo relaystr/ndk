@@ -4,13 +4,14 @@ import 'dart:io';
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
 import '../models/relay_set.dart';
+import '../models/user_relay_list.dart';
 import '../nips/nip01/metadata.dart';
 
 class DbCacheManager extends CacheManager {
@@ -23,11 +24,12 @@ class DbCacheManager extends CacheManager {
     // final dir = await getApplicationDocumentsDirectory();
     // final dir = Directory.systemTemp.createTempSync()
     isar = Isar.open(
-      inspector: kDebugMode,
+      name: "db_ndk_${kDebugMode?"debug":"release"}",
+      inspector: false, //kDebugMode,
       directory: path ?? Directory.systemTemp.path,
       engine: IsarEngine.isar,
       schemas: [
-        UserRelayListSchema,
+        DbUserRelayListSchema,
         DbRelaySetSchema,
         DbContactListSchema,
         DbMetadataSchema,
@@ -41,15 +43,15 @@ class DbCacheManager extends CacheManager {
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
     final startTime = DateTime.now();
     await isar.writeAsync((isar) {
-      isar.userRelayLists.put(userRelayList);
+      isar.dbUserRelayLists.put(DbUserRelayList.fromUserRelayList(userRelayList));
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED UserRelayList ${userRelayList.id} took ${duration.inMilliseconds} ms");
+    print("SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
   }
 
   UserRelayList? loadUserRelayList(String pubKey) {
-    return isar.userRelayLists.get(pubKey);
+    return isar.dbUserRelayLists.get(pubKey);
   }
 
   RelaySet? loadRelaySet(String name, String pubKey) {
@@ -69,7 +71,7 @@ class DbCacheManager extends CacheManager {
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
     final startTime = DateTime.now();
     await isar.writeAsync((isar) {
-      isar.userRelayLists.putAll(userRelayLists);
+      isar.dbUserRelayLists.putAll(userRelayLists.map((e) => DbUserRelayList.fromUserRelayList(e),).toList());
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
@@ -132,7 +134,7 @@ class DbCacheManager extends CacheManager {
   @override
   Future<void> removeAllUserRelayLists() async {
     await isar.writeAsync((isar) {
-      isar.userRelayLists.clear();
+      isar.dbUserRelayLists.clear();
     });
   }
 
@@ -160,7 +162,7 @@ class DbCacheManager extends CacheManager {
   @override
   Future<void> removeUserRelayList(String pubKey) async {
     await isar.writeAsync((isar) {
-      isar.userRelayLists.delete(pubKey);
+      isar.dbUserRelayLists.delete(pubKey);
     });
   }
 

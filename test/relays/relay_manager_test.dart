@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
@@ -277,7 +277,7 @@ void main() async {
   });
 
   group(
-      // skip: true,
+      //skip: true,
       "Calculate best relays (external REAL)", () {
 
     // ================================================================================================

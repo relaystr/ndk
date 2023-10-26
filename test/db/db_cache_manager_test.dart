@@ -2,11 +2,9 @@
 
 import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
-import 'package:dart_ndk/db/db_pubkey_mapping.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
-import 'package:dart_ndk/db/db_relay_set_item.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,15 +27,16 @@ void main() async {
     expect(loadedUserContacts.contacts, userContacts.contacts);
   });
 
-  test('UserRelayList', () async {
+  test('DbUserRelayList', () async {
     DbCacheManager cacheManager = DbCacheManager();
     cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
-    UserRelayList userRelayList = UserRelayList(pubKey1, [RelayListItem("wss://bla.com", ReadWriteMarker.readWrite)], now, now);
+    DbUserRelayList userRelayList =
+      DbUserRelayList(pubKey: pubKey1, items: [DbRelayListItem("wss://bla.com", ReadWriteMarker.readWrite)], createdAt: now, refreshedTimestamp: now);
     await cacheManager.saveUserRelayList(userRelayList);
 
-    UserRelayList? loadedUserRelayList = cacheManager.loadUserRelayList(pubKey1);
+    DbUserRelayList? loadedUserRelayList = cacheManager.loadUserRelayList(pubKey1) as DbUserRelayList?;
     expect(loadedUserRelayList!.id, userRelayList.id);
     expect(loadedUserRelayList.items.length, userRelayList.items.length);
     for (var i = 0; i < userRelayList.items.length; i++) {

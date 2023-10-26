@@ -11,7 +11,7 @@ import 'package:async/async.dart' show StreamGroup;
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
+import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
@@ -21,6 +21,7 @@ import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_info.dart';
 
 import 'models/relay_set.dart';
+import 'models/user_relay_list.dart';
 import 'nips/nip01/event.dart';
 import 'nips/nip01/filter.dart';
 import 'nips/nip01/metadata.dart';
@@ -64,7 +65,7 @@ class RelayManager {
 
   // ====================================================================================================================
 
-  Future<void> setCacheManager(CacheManager cacheManager) async {
+  void setCacheManager(CacheManager cacheManager) {
     this.cacheManager = cacheManager;
   }
 
@@ -594,15 +595,15 @@ class RelayManager {
     for (String pubKey in pubKeys) {
       UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
       if (userRelayList != null) {
-        if (userRelayList.items.isNotEmpty) {
+        if (userRelayList.relays.isNotEmpty) {
           foundCount++;
         }
-        for (var item in userRelayList.items) {
-          _handleRelayUrlForPubKey(pubKey, direction, item.url, item.marker, pubKeysByRelayUrl);
+        for (var entry in userRelayList.relays.entries) {
+          _handleRelayUrlForPubKey(pubKey, direction, entry.key, entry.value, pubKeysByRelayUrl);
         }
       } else {
         int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        await cacheManager.saveUserRelayList(UserRelayList(pubKey, [], now, now));
+        await cacheManager.saveUserRelayList(UserRelayList(pubKey: pubKey, relays: {}, createdAt: now, refreshedTimestamp: now));
       }
     }
     print("Have lists of relays for $foundCount/${pubKeys.length} pubKeys ${foundCount < pubKeys.length ? "(missing ${pubKeys.length - foundCount})" : ""}");

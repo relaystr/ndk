@@ -23,11 +23,9 @@ class Nip01Event {
     required this.content,
     int? createdAt,
   }) {
-    if (createdAt==0) {
-      createdAt = DateTime
-          .now()
-          .millisecondsSinceEpoch ~/ 1000;
-    }
+    this.createdAt = (createdAt==null || createdAt==0) ?  DateTime
+        .now()
+        .millisecondsSinceEpoch ~/ 1000 : createdAt;
     id = _calculateId(pubKey, createdAt!, kind, tags, content);
   }
 

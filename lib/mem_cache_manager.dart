@@ -1,16 +1,10 @@
 import 'dart:core';
-import 'dart:io';
 
 import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/db_contact_list.dart';
-import 'package:dart_ndk/db/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
-import 'package:dart_ndk/db/db_relay_set.dart';
-import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
 
-import 'db/db_metadata.dart';
 import 'models/relay_set.dart';
+import 'models/user_relay_list.dart';
 import 'nips/nip01/metadata.dart';
 
 class MemCacheManager implements CacheManager {
@@ -22,7 +16,7 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
-    userRelayLists[userRelayList.id] = userRelayList;
+    userRelayLists[userRelayList.pubKey] = userRelayList;
   }
 
   @override
@@ -44,7 +38,7 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
     for (var userRelayList in userRelayLists) {
-      this.userRelayLists[userRelayList.id] = userRelayList;
+      this.userRelayLists[userRelayList.pubKey] = userRelayList;
     }
   }
 
