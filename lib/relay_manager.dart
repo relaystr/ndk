@@ -90,7 +90,11 @@ class RelayManager {
   }
 
   /// Connect a new relay
-  Future<bool> connectRelay(String url, {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
+  Future<bool> connectRelay(String dirtyUrl, {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
+    String? url = Relay.clean(dirtyUrl);
+    if (url==null) {
+      return false;
+    }
     try {
       if (relays[url] == null) {
         relays[url] = Relay(url);
