@@ -492,7 +492,7 @@ class RelayManager {
       }
       try {
         await for (final event
-            in await requestRelays(idleTimeout: 10, bootstrapRelays, Filter(authors: missingPubKeys, kinds: [Nip65.kind, ContactList.kind]))) {
+            in await requestRelays(idleTimeout: missingPubKeys.length > 1 ? 10 : 2, bootstrapRelays, Filter(authors: missingPubKeys, kinds: [Nip65.kind, ContactList.kind]))) {
           switch (event.kind) {
             case Nip65.kind:
               Nip65 nip65 = Nip65.fromEvent(event);
