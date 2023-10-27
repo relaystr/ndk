@@ -43,7 +43,7 @@ class RelayManager {
     "wss://relay.mostr.pub"
   ];
 
-  Iterable<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
+  List<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
 
   CacheManager cacheManager = MemCacheManager();
 
@@ -69,9 +69,18 @@ class RelayManager {
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
-  Future<void> connect({Iterable<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS}) async {
-    this.bootstrapRelays = bootstrapRelays;
-    await Future.wait(bootstrapRelays.map((url) => connectRelay(url)).toList());
+  Future<void> connect({Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS}) async {
+    bootstrapRelays = [];
+    for ( String url in urls) {
+      String? clean = Relay.clean(url);
+      if (clean!=null) {
+        bootstrapRelays.add(clean);
+      }
+    }
+    if (bootstrapRelays.isEmpty) {
+      bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
+    }
+    await Future.wait(urls.map((url) => connectRelay(url)).toList());
   }
 
   bool isWebSocketOpen(String url) {
@@ -160,11 +169,11 @@ class RelayManager {
         webSockets[url]!.close().then(
           (value) {
             print("closed $url. Reconnecting");
-            connectRelay(url);
+            _reconnectRelay(url);
           },
         );
       } else {
-        connectRelay(url);
+        _reconnectRelay(url);
       }
       // startListeningToSocket(url);
       // if (webSockets[url] != null) {
@@ -247,7 +256,11 @@ class RelayManager {
         int bytesRead = relays[url]!.stats.dataReadBytes[event.kind] ?? 0;
         relays[url]!.stats.dataReadBytes[event.kind] = bytesRead + message.toString().codeUnits.length;
       }
-      _subscriptions[eventJson[1]]?.add(event);
+      var id = eventJson[1];
+      StreamController<Nip01Event>? sub = _subscriptions[id];
+      if (sub!=null) {
+        sub.add(event);
+      }
       return;
     }
     if (eventJson[0] == 'EOSE') {

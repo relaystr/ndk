@@ -78,7 +78,7 @@ void main() async {
       await relay1.startServer(textNotes: key1TextNotes);
 
       RelayManager manager = RelayManager();
-      await manager.connect(bootstrapRelays: [relay1.url]);
+      await manager.connect(urls: [relay1.url]);
 
       Filter filter = Filter(kinds: [Nip01Event.textNoteKind], authors: [key1.publicKey]);
 
@@ -152,7 +152,7 @@ void main() async {
       await startServers();
 
       RelayManager manager = RelayManager();
-      await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      await manager.connect(urls: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       RelaySet relaySet =
           await manager.calculateRelaySet(
@@ -181,7 +181,7 @@ void main() async {
         'query all keys and do not use redundant relays', () async {
       await startServers();
       RelayManager manager = RelayManager();
-      await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      await manager.connect(urls: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
@@ -220,7 +220,7 @@ void main() async {
     test("calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays", () async {
       await startServers();
       RelayManager manager = RelayManager();
-      await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      await manager.connect(urls: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       // relayMinCountPerPubKey: 1
       RelaySet relaySet = await manager.calculateRelaySet(
@@ -250,7 +250,7 @@ void main() async {
     test("calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays", () async {
       await startServers();
       RelayManager manager = RelayManager();
-      await manager.connect(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      await manager.connect(urls: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       RelaySet relaySet = await manager.calculateRelaySet(
           name: "feed",
