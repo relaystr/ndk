@@ -37,14 +37,14 @@ class DbCacheManager extends CacheManager {
         DbMetadataSchema,
       ],
     );
-    // await isar.writeAsync((isar) {
+    // isar.write((isar) {
     //   isar.clear();
     // });
   }
 
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
     final startTime = DateTime.now();
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbUserRelayLists.put(DbUserRelayList.fromUserRelayList(userRelayList));
     });
     final endTime = DateTime.now();
@@ -62,7 +62,7 @@ class DbCacheManager extends CacheManager {
 
   Future<void> saveRelaySet(RelaySet relaySet) async {
     final startTime = DateTime.now();
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbRelaySets.put(DbRelaySet.fromRelaySet(relaySet));
     });
     final endTime = DateTime.now();
@@ -72,7 +72,7 @@ class DbCacheManager extends CacheManager {
 
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
     final startTime = DateTime.now();
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbUserRelayLists.putAll(userRelayLists.map((e) => DbUserRelayList.fromUserRelayList(e),).toList());
     });
     final endTime = DateTime.now();
@@ -88,7 +88,7 @@ class DbCacheManager extends CacheManager {
   @override
   Future<void> saveContactList(ContactList contactList) async {
     final startTime = DateTime.now();
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbContactLists.put(DbContactList.fromContactList(contactList));
     });
     final endTime = DateTime.now();
@@ -99,7 +99,7 @@ class DbCacheManager extends CacheManager {
   @override
   Future<void> saveContactLists(List<ContactList> list) async {
     final startTime = DateTime.now();
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbContactLists.putAll(list.map((e) => DbContactList.fromContactList(e)).toList());
     });
     final endTime = DateTime.now();
@@ -114,56 +114,56 @@ class DbCacheManager extends CacheManager {
 
   @override
   Future<void> removeAllRelaySets() async {
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbRelaySets.clear();
     });
   }
 
   @override
   Future<void> removeAllContactLists() async {
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbContactLists.clear();
     });
   }
 
   @override
   Future<void> removeAllMetadatas() async {
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbMetadatas.clear();
     });
   }
 
   @override
   Future<void> removeAllUserRelayLists() async {
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbUserRelayLists.clear();
     });
   }
 
   @override
   Future<void> removeRelaySet(String name, String pubKey) async {
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbRelaySets.delete(RelaySet.buildId(name, pubKey));
     });
   }
 
   @override
   Future<void> removeContactList(String pubKey) async {
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbContactLists.delete(pubKey);
     });
   }
 
   @override
   Future<void> removeMetadata(String pubKey) async {
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbMetadatas.delete(pubKey);
     });
   }
 
   @override
   Future<void> removeUserRelayList(String pubKey) async {
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbUserRelayLists.delete(pubKey);
     });
   }
@@ -171,7 +171,7 @@ class DbCacheManager extends CacheManager {
   @override
   Future<void> saveMetadata(Metadata metadata) async {
     final startTime = DateTime.now();
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbMetadatas.put(DbMetadata.fromMetadata(metadata));
     });
     final endTime = DateTime.now();
@@ -182,7 +182,7 @@ class DbCacheManager extends CacheManager {
   @override
   Future<void> saveMetadatas(List<Metadata> metadatas) async {
     final startTime = DateTime.now();
-    await isar.writeAsync((isar) {
+    isar.write((isar) {
       isar.dbMetadatas.putAll(metadatas.map((metadata) => DbMetadata.fromMetadata(metadata)).toList());
     });
     final endTime = DateTime.now();
