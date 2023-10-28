@@ -17,6 +17,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_info.dart';
+import 'package:flutter/foundation.dart';
 
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
@@ -262,6 +263,10 @@ class RelayManager {
             StreamController<Nip01Event>? sub = _subscriptions[id];
             if (sub != null) {
               sub.add(event);
+            }
+          } else {
+            if (kDebugMode) {
+              print("INVALID EVENT SIGNATURE: $event");
             }
           }
         });
