@@ -1,9 +1,9 @@
 // ignore_for_file: avoid_print
 
 import 'package:dart_ndk/db/db_cache_manager.dart';
+import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
-import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
@@ -19,7 +19,7 @@ void main() async {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String contact1 = "contact1";
     String pubKey1 = "pubKey1";
-    DbContactList userContacts = DbContactList(pubKey1, [contact1]);
+    DbContactList userContacts = DbContactList(pubKey: pubKey1, contacts: [contact1]);
     await cacheManager.saveContactList(userContacts);
 
     DbContactList? loadedUserContacts = cacheManager.loadContactList(pubKey1) as DbContactList?;

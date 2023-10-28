@@ -163,8 +163,8 @@ DbContactList deserializeDbContactList(IsarReader reader) {
     }
   }
   final object = DbContactList(
-    _pubKey,
-    _contacts,
+    pubKey: _pubKey,
+    contacts: _contacts,
   );
   {
     final length = IsarCore.readList(reader, 4, IsarCore.readerPtrPtr);

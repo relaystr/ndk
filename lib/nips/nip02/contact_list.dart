@@ -22,7 +22,7 @@ class ContactList {
 
   List<String> sources = [];
 
-  ContactList(this.pubKey, this.contacts);
+  ContactList({required this.pubKey, required this.contacts});
 
   ContactList.fromEvent(Nip01Event event) {
     pubKey = event.pubKey;

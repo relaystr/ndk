@@ -10,12 +10,13 @@ void main() {
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: ContactList.KIND,
-        content: "{\"wss://nos.lol\":{\"read\":true,\"write\":true},\"wss://relay.damus.io\":{\"read\":true,\"write\":true}}",
+        content:
+            "{\"wss://nos.lol\":{\"read\":true,\"write\":true},\"wss://relay.damus.io\":{\"read\":true,\"write\":true}}",
         tags: [
           ['p', 'contact1'],
           ['p', 'contact2'],
           ['p', 'contact3'],
-          ['p', 'contact4','wss://relay.com','petname'],
+          ['p', 'contact4', 'wss://relay.com', 'petname'],
           ['invalid'],
         ],
       );
@@ -33,7 +34,7 @@ void main() {
     });
 
     test('toEvent', () {
-      final nip02 = ContactList('pubkey123', [
+      final nip02 = ContactList(pubKey: 'pubkey123', contacts: [
         'contact1',
         'contact2',
         'contact3',
@@ -44,9 +45,9 @@ void main() {
       expect(
           myEvent.tags,
           equals([
-            ['p','contact1','',''],
-            ['p','contact2','',''],
-            ['p','contact3','',''],
+            ['p', 'contact1', '', ''],
+            ['p', 'contact2', '', ''],
+            ['p', 'contact3', '', ''],
           ]));
       expect(myEvent.content, equals(''));
       expect(myEvent.createdAt, equals(nip02.createdAt));

@@ -96,7 +96,7 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${contactList.pubKey} UserContacts took ${duration.inMilliseconds} ms");
+    print("SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
   }
 
   @override

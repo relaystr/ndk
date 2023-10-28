@@ -68,6 +68,10 @@ const DbMetadataSchema = IsarGeneratedSchema(
         name: 'updatedAt',
         type: IsarType.long,
       ),
+      IsarPropertySchema(
+        name: 'cleanNip05',
+        type: IsarType.string,
+      ),
     ],
     indexes: [],
   ),
@@ -156,6 +160,14 @@ int serializeDbMetadata(IsarWriter writer, DbMetadata object) {
     }
   }
   IsarCore.writeLong(writer, 12, object.updatedAt ?? -9223372036854775808);
+  {
+    final value = object.cleanNip05;
+    if (value == null) {
+      IsarCore.writeNull(writer, 13);
+    } else {
+      IsarCore.writeString(writer, 13, value);
+    }
+  }
   return Isar.fastHash(object.id);
 }
 
@@ -240,6 +252,8 @@ dynamic deserializeDbMetadataProp(IsarReader reader, int property) {
           return value;
         }
       }
+    case 13:
+      return IsarCore.readString(reader, 13);
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -259,6 +273,7 @@ sealed class _DbMetadataUpdate {
     String? lud16,
     String? lud06,
     int? updatedAt,
+    String? cleanNip05,
   });
 }
 
@@ -281,6 +296,7 @@ class _DbMetadataUpdateImpl implements _DbMetadataUpdate {
     Object? lud16 = ignore,
     Object? lud06 = ignore,
     Object? updatedAt = ignore,
+    Object? cleanNip05 = ignore,
   }) {
     return collection.updateProperties([
           id
@@ -296,6 +312,7 @@ class _DbMetadataUpdateImpl implements _DbMetadataUpdate {
           if (lud16 != ignore) 10: lud16 as String?,
           if (lud06 != ignore) 11: lud06 as String?,
           if (updatedAt != ignore) 12: updatedAt as int?,
+          if (cleanNip05 != ignore) 13: cleanNip05 as String?,
         }) >
         0;
   }
@@ -315,6 +332,7 @@ sealed class _DbMetadataUpdateAll {
     String? lud16,
     String? lud06,
     int? updatedAt,
+    String? cleanNip05,
   });
 }
 
@@ -337,6 +355,7 @@ class _DbMetadataUpdateAllImpl implements _DbMetadataUpdateAll {
     Object? lud16 = ignore,
     Object? lud06 = ignore,
     Object? updatedAt = ignore,
+    Object? cleanNip05 = ignore,
   }) {
     return collection.updateProperties(id, {
       if (pubKey != ignore) 2: pubKey as String?,
@@ -350,6 +369,7 @@ class _DbMetadataUpdateAllImpl implements _DbMetadataUpdateAll {
       if (lud16 != ignore) 10: lud16 as String?,
       if (lud06 != ignore) 11: lud06 as String?,
       if (updatedAt != ignore) 12: updatedAt as int?,
+      if (cleanNip05 != ignore) 13: cleanNip05 as String?,
     });
   }
 }
@@ -373,6 +393,7 @@ sealed class _DbMetadataQueryUpdate {
     String? lud16,
     String? lud06,
     int? updatedAt,
+    String? cleanNip05,
   });
 }
 
@@ -395,6 +416,7 @@ class _DbMetadataQueryUpdateImpl implements _DbMetadataQueryUpdate {
     Object? lud16 = ignore,
     Object? lud06 = ignore,
     Object? updatedAt = ignore,
+    Object? cleanNip05 = ignore,
   }) {
     return query.updateProperties(limit: limit, {
       if (pubKey != ignore) 2: pubKey as String?,
@@ -408,6 +430,7 @@ class _DbMetadataQueryUpdateImpl implements _DbMetadataQueryUpdate {
       if (lud16 != ignore) 10: lud16 as String?,
       if (lud06 != ignore) 11: lud06 as String?,
       if (updatedAt != ignore) 12: updatedAt as int?,
+      if (cleanNip05 != ignore) 13: cleanNip05 as String?,
     });
   }
 }
@@ -438,6 +461,7 @@ class _DbMetadataQueryBuilderUpdateImpl implements _DbMetadataQueryUpdate {
     Object? lud16 = ignore,
     Object? lud06 = ignore,
     Object? updatedAt = ignore,
+    Object? cleanNip05 = ignore,
   }) {
     final q = query.build();
     try {
@@ -453,6 +477,7 @@ class _DbMetadataQueryBuilderUpdateImpl implements _DbMetadataQueryUpdate {
         if (lud16 != ignore) 10: lud16 as String?,
         if (lud06 != ignore) 11: lud06 as String?,
         if (updatedAt != ignore) 12: updatedAt as int?,
+        if (cleanNip05 != ignore) 13: cleanNip05 as String?,
       });
     } finally {
       q.close();
@@ -2610,6 +2635,199 @@ extension DbMetadataQueryFilter
       );
     });
   }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05IsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 13));
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05IsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 13));
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> cleanNip05EqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 13,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05GreaterThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 13,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05GreaterThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 13,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05LessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 13,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05LessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 13,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> cleanNip05Between(
+    String? lower,
+    String? upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 13,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05StartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 13,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05EndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 13,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05Contains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 13,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition> cleanNip05Matches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 13,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05IsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 13,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05IsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 13,
+          value: '',
+        ),
+      );
+    });
+  }
 }
 
 extension DbMetadataQueryObject
@@ -2859,6 +3077,27 @@ extension DbMetadataQuerySortBy
       return query.addSortBy(12, sort: Sort.desc);
     });
   }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByCleanNip05(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        13,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByCleanNip05Desc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        13,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
 }
 
 extension DbMetadataQuerySortThenBy
@@ -3028,6 +3267,20 @@ extension DbMetadataQuerySortThenBy
       return query.addSortBy(12, sort: Sort.desc);
     });
   }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByCleanNip05(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(13, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByCleanNip05Desc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(13, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension DbMetadataQueryWhereDistinct
@@ -3107,6 +3360,13 @@ extension DbMetadataQueryWhereDistinct
       return query.addDistinctBy(12);
     });
   }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByCleanNip05(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(13, caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension DbMetadataQueryProperty1
@@ -3180,6 +3440,12 @@ extension DbMetadataQueryProperty1
   QueryBuilder<DbMetadata, int?, QAfterProperty> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(12);
+    });
+  }
+
+  QueryBuilder<DbMetadata, String?, QAfterProperty> cleanNip05Property() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(13);
     });
   }
 }
@@ -3257,6 +3523,12 @@ extension DbMetadataQueryProperty2<R>
       return query.addProperty(12);
     });
   }
+
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> cleanNip05Property() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(13);
+    });
+  }
 }
 
 extension DbMetadataQueryProperty3<R1, R2>
@@ -3331,6 +3603,13 @@ extension DbMetadataQueryProperty3<R1, R2>
   QueryBuilder<DbMetadata, (R1, R2, int?), QOperations> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(12);
+    });
+  }
+
+  QueryBuilder<DbMetadata, (R1, R2, String?), QOperations>
+      cleanNip05Property() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(13);
     });
   }
 }
