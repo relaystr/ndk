@@ -46,6 +46,16 @@ class Metadata {
     updatedAt = json['updated_at'];
   }
 
+  String? get cleanNip05 {
+    if (nip05!=null) {
+      if (nip05!.startsWith("_@")) {
+        return nip05!.trim().toLowerCase()!.replaceAll("_@", "@");
+      }
+      return nip05!.trim().toLowerCase();
+    }
+    return null;
+  }
+
   Map<String, dynamic> toFullJson() {
     var data = toJson();
     data['pub_key'] = pubKey;
@@ -99,4 +109,13 @@ class Metadata {
         n.startsWith(str) ||
         n.contains(str2);
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Metadata && runtimeType == other.runtimeType &&
+              pubKey == other.pubKey;
+
+  @override
+  int get hashCode => pubKey.hashCode;
 }

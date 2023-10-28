@@ -6,6 +6,7 @@ import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
 import 'nips/nip01/metadata.dart';
+import 'nips/nip05/nip05.dart';
 
 class MemCacheManager implements CacheManager {
 
@@ -13,6 +14,7 @@ class MemCacheManager implements CacheManager {
   Map<String, RelaySet> relaySets = {};
   Map<String, ContactList> contactLists = {};
   Map<String, Metadata> metadatas = {};
+  Map<String, Nip05> nip05s = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -25,6 +27,65 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
+    for (var userRelayList in userRelayLists) {
+      this.userRelayLists[userRelayList.pubKey] = userRelayList;
+    }
+  }
+
+  @override
+  Future<void> removeAllUserRelayLists() async {
+    userRelayLists.clear();
+  }
+
+  @override
+  Future<void> removeUserRelayList(String pubKey) async {
+    userRelayLists.remove(pubKey);
+  }
+
+  /*****************************************************************************/
+
+  @override
+  Future<void> saveNip05(Nip05 nip05) async {
+    nip05s[nip05.pubKey] = nip05;
+  }
+
+  @override
+  Nip05? loadNip05(String pubKey) {
+    return nip05s[pubKey];
+  }
+  @override
+  List<Nip05?> loadNip05s(List<String> pubKeys) {
+    List<Nip05> result = [];
+    for(String pubKey in pubKeys) {
+      Nip05? nip05 = nip05s[pubKey];
+      if (nip05!=null) {
+        result.add(nip05);
+      }
+    }
+    return result;
+  }
+
+  @override
+  Future<void> saveNip05s(List<Nip05> nip05s) async {
+    for (var nip05 in nip05s) {
+      this.nip05s[nip05.pubKey] = nip05;
+    }
+  }
+
+  @override
+  Future<void> removeAllNip05s() async {
+    nip05s.clear();
+  }
+
+  @override
+  Future<void> removeNip05(String pubKey) async {
+    nip05s.remove(pubKey);
+  }
+
+  /*****************************************************************************/
+  
+  @override
   RelaySet? loadRelaySet(String name, String pubKey) {
     return relaySets[RelaySet.buildId(name,pubKey)];
   }
@@ -32,14 +93,6 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> saveRelaySet(RelaySet relaySet) async {
     relaySets[relaySet.id] = relaySet;
-  }
-
-
-  @override
-  Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
-    for (var userRelayList in userRelayLists) {
-      this.userRelayLists[userRelayList.pubKey] = userRelayList;
-    }
   }
 
   @override
@@ -92,11 +145,6 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> removeAllUserRelayLists() async {
-    userRelayLists.clear();
-  }
-
-  @override
   Future<void> removeRelaySet(String name, String pubKey) async {
     relaySets.remove(RelaySet.buildId(name, pubKey));
   }
@@ -109,11 +157,6 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeMetadata(String pubKey) async {
     metadatas.remove(pubKey);
-  }
-
-  @override
-  Future<void> removeUserRelayList(String pubKey) async {
-    userRelayLists.remove(pubKey);
   }
 
   @override

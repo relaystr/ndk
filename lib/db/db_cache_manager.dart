@@ -3,6 +3,7 @@ import 'dart:core';
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
+import 'package:dart_ndk/db/db_nip05.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
@@ -12,6 +13,7 @@ import 'package:isar/isar.dart';
 import '../models/relay_set.dart';
 import '../models/user_relay_list.dart';
 import '../nips/nip01/metadata.dart';
+import '../nips/nip05/nip05.dart';
 
 class DbCacheManager extends CacheManager {
 
@@ -27,7 +29,7 @@ class DbCacheManager extends CacheManager {
     }
     isar = Isar.open(
       name: "db_ndk_${kDebugMode?"debug":"release"}",
-      inspector: false, //kDebugMode,
+      inspector: kDebugMode,
       directory: directory ?? Isar.sqliteInMemory, //Directory.systemTemp.path,
       engine: directory == Isar.sqliteInMemory ? IsarEngine.sqlite: IsarEngine.isar,
       schemas: [
@@ -35,6 +37,7 @@ class DbCacheManager extends CacheManager {
         DbRelaySetSchema,
         DbContactListSchema,
         DbMetadataSchema,
+        DbNip05Schema
       ],
     );
     // isar.write((isar) {
@@ -127,13 +130,6 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> removeAllMetadatas() async {
-    isar.write((isar) {
-      isar.dbMetadatas.clear();
-    });
-  }
-
-  @override
   Future<void> removeAllUserRelayLists() async {
     isar.write((isar) {
       isar.dbUserRelayLists.clear();
@@ -155,16 +151,18 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> removeMetadata(String pubKey) async {
-    isar.write((isar) {
-      isar.dbMetadatas.delete(pubKey);
-    });
-  }
-
-  @override
   Future<void> removeUserRelayList(String pubKey) async {
     isar.write((isar) {
       isar.dbUserRelayLists.delete(pubKey);
+    });
+  }
+  
+  /************************************************************************************************/
+
+  @override
+  Future<void> removeMetadata(String pubKey) async {
+    isar.write((isar) {
+      isar.dbMetadatas.delete(pubKey);
     });
   }
 
@@ -193,5 +191,60 @@ class DbCacheManager extends CacheManager {
   @override
   List<Metadata?> loadMetadatas(List<String> pubKeys) {
     return isar.dbMetadatas.getAll(pubKeys);
+  }
+
+  @override
+  Future<void> removeAllMetadatas() async {
+    isar.write((isar) {
+      isar.dbMetadatas.clear();
+    });
+  }
+
+  /************************************************************************************************/
+
+  @override
+  Future<void> removeNip05(String pubKey) async {
+    isar.write((isar) {
+      isar.dbNip05s.delete(pubKey);
+    });
+  }
+
+  @override
+  Future<void> saveNip05(Nip05 nip05) async {
+    final startTime = DateTime.now();
+    isar.write((isar) {
+      isar.dbNip05s.put(DbNip05.fromNip05(nip05));
+    });
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print("SAVED Nip05 took ${duration.inMilliseconds} ms");
+  }
+
+  @override
+  Future<void> saveNip05s(List<Nip05> nip05s) async {
+    final startTime = DateTime.now();
+    isar.write((isar) {
+      isar.dbNip05s.putAll(nip05s.map((nip05) => DbNip05.fromNip05(nip05)).toList());
+    });
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print("SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
+  }
+
+  @override
+  List<Nip05?> loadNip05s(List<String> pubKeys) {
+    return isar.dbNip05s.getAll(pubKeys);
+  }
+
+  @override
+  Nip05? loadNip05(String pubKey) {
+    return isar.dbNip05s.get(pubKey);
+  }
+
+  @override
+  Future<void> removeAllNip05s() async {
+    isar.write((isar) {
+      isar.dbNip05s.clear();
+    });
   }
 }

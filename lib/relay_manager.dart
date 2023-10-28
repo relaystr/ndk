@@ -675,7 +675,7 @@ class RelayManager {
     return relay != null && isWebSocketOpen(url);
   }
 
-  reconnectRelays(Iterable<String> urls) async {
+  Future<void> reconnectRelays(Iterable<String> urls) async {
     final startTime = DateTime.now();
     print("connecting ${urls.length} relays in parallel");
     List<bool> connected = await Future.wait(urls.map((url) {

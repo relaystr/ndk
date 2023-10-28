@@ -3,6 +3,7 @@ import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
 import 'nips/nip01/metadata.dart';
+import 'nips/nip05/nip05.dart';
 
 abstract class CacheManager {
 
@@ -29,5 +30,12 @@ abstract class CacheManager {
   List<Metadata?> loadMetadatas(List<String> pubKeys);
   Future<void> removeMetadata(String pubKey);
   Future<void> removeAllMetadatas();
+
+  Future<void> saveNip05(Nip05 nip05);
+  Future<void> saveNip05s(List<Nip05> nip05s);
+  Nip05? loadNip05(String pubKey);
+  List<Nip05?> loadNip05s(List<String> pubKeys);
+  Future<void> removeNip05(String pubKey);
+  Future<void> removeAllNip05s();
 
 }
