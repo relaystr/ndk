@@ -16,12 +16,13 @@ class MockRelay {
   WebSocket? webSocket;
   Map<KeyPair, Nip65>? nip65s;
   Map<KeyPair, Nip01Event>? textNotes;
+  bool signEvents;
 
   static int startPort = 4040;
 
   String get url => "ws://localhost:$port";
 
-  MockRelay({required this.name, this.nip65s}) {
+  MockRelay({required this.name, this.nip65s, this.signEvents=true}) {
     port = startPort;
     startPort++;
   }
@@ -49,10 +50,10 @@ class MockRelay {
             log('Received: $eventJson');
             Filter filter = Filter.fromMap(eventJson[2]);
             if (filter.kinds != null && filter.authors != null) {
-              if (filter.kinds!.contains(Nip65.kind) && nip65s != null) {
+              if (filter.kinds!.contains(Nip65.KIND) && nip65s != null) {
                 _respondeNip65(filter.authors!, requestId);
               }
-              if (filter.kinds!.contains(Nip01Event.textNoteKind) && textNotes != null) {
+              if (filter.kinds!.contains(Nip01Event.TEXT_NODE_KIND) && textNotes != null) {
                 _respondeTextNote(filter.authors!, requestId);
               }
               // todo: other
@@ -78,7 +79,9 @@ class MockRelay {
         json.add(requestId);
 
         Nip01Event event = nip65.toEvent();
-        event.sign(key.privateKey!);
+        if (signEvents) {
+          event.sign(key.privateKey!);
+        }
         json.add(event.toJson());
         webSocket!.add(jsonEncode(json));
       }
@@ -96,7 +99,9 @@ class MockRelay {
           json.add("EVENT");
           json.add(requestId);
 
-          textNote.sign(key.privateKey!);
+          if (signEvents) {
+            textNote.sign(key.privateKey!);
+          }
           json.add(textNote.toJson());
           webSocket!.add(jsonEncode(json));
         }

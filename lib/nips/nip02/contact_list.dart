@@ -6,7 +6,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import '../nip01/event.dart';
 
 class ContactList {
-  static const int kind = 3;
+  static const int KIND = 3;
   late String pubKey;
 
   List<String> contacts = [];
@@ -127,7 +127,7 @@ class ContactList {
   Nip01Event toEvent() {
     return Nip01Event(
       pubKey: pubKey,
-      kind: ContactList.kind,
+      kind: ContactList.KIND,
       tags: contactsToJson()..addAll(tagListToJson(followedTags, "t"))..addAll(tagListToJson(followedCommunities, "a"))..addAll(tagListToJson(followedEvents, "e")),
       content: "",
       createdAt: createdAt,

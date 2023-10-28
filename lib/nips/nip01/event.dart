@@ -5,7 +5,7 @@ import 'package:dart_ndk/nips/nip01/bip340.dart';
 
 class Nip01Event {
 
-  static const int textNoteKind = 1;
+  static const int TEXT_NODE_KIND = 1;
 
   /// Creates a new Nostr event.
   ///

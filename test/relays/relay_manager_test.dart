@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/db/db_contact_list.dart';
-import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
@@ -13,10 +11,7 @@ import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
-import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar/isar.dart' as isar;
 
 import '../mocks/mock_relay.dart';
 
@@ -46,7 +41,7 @@ void main() async {
   };
 
   Nip01Event textNote(KeyPair key2) {
-    return Nip01Event(kind: Nip01Event.textNoteKind, pubKey: key2.publicKey, content: "some note from key ${keyNames[key2]}", tags: [], createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    return Nip01Event(kind: Nip01Event.TEXT_NODE_KIND, pubKey: key2.publicKey, content: "some note from key ${keyNames[key2]}", tags: [], createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
   }
 
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
@@ -80,7 +75,7 @@ void main() async {
       RelayManager manager = RelayManager();
       await manager.connect(urls: [relay1.url]);
 
-      Filter filter = Filter(kinds: [Nip01Event.textNoteKind], authors: [key1.publicKey]);
+      Filter filter = Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey]);
 
       Stream<Nip01Event> query = await manager.requestRelays([relay1.url], filter);
 
@@ -88,6 +83,23 @@ void main() async {
 
       await relay1.stopServer();
     });
+
+    // ================================================================================================
+
+    test('verify signatures of events', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1", signEvents: false);
+      await relay1.startServer(textNotes: key1TextNotes);
+      RelayManager manager = RelayManager();
+      await manager.connect(urls: [relay1.url]);
+      Stream<Nip01Event> stream = await manager.requestRelays([relay1.url], Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND]));
+      expect(stream, emitsDone);
+      // stream.listen((event) {
+      //   fail("should not emit any events, since relay does not sign");
+      // });
+      await relay1.stopServer();
+    });
+
+
   });
 
   group("Calculate best relays (internal MOCKs)", () {
@@ -147,7 +159,6 @@ void main() async {
     }
 
     // ================================================================================================
-
     test('query events from key that writes only on one relay', () async {
       await startServers();
 
@@ -163,7 +174,7 @@ void main() async {
               relayMinCountPerPubKey: RelayManager.DEFAULT_BEST_RELAYS_MIN_COUNT
           );
 
-      Stream<Nip01Event> query = await manager.query(Filter(kinds: [Nip01Event.textNoteKind], authors: [key4.publicKey]), relaySet);
+      Stream<Nip01Event> query = await manager.query(Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key4.publicKey]), relaySet);
 
       await for (final event in query.take(4)) {
         expect(event.sources, [relay4.url]);
@@ -201,7 +212,7 @@ void main() async {
         print("  ${relayNames[url]} => has ${pubKeyMappings.length} follows");
       });
       Stream<Nip01Event> query =
-          await manager.query(Filter(kinds: [Nip01Event.textNoteKind], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]), relaySet);
+          await manager.query(Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]), relaySet);
 
       await for (final event in query) {
         print(event);

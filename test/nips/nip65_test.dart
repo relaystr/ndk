@@ -10,7 +10,7 @@ void main() {
       final event = Nip01Event(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
-        kind: Nip65.kind,
+        kind: Nip65.KIND,
         content: "",
         tags: [
           ['r', 'wss://example.com', 'read'],
@@ -36,7 +36,7 @@ void main() {
       });
       final myEvent = nip65.toEvent();
       expect(myEvent.pubKey, equals(pubKey));
-      expect(myEvent.kind, equals(Nip65.kind));
+      expect(myEvent.kind, equals(Nip65.KIND));
       expect(
           myEvent.tags,
           equals([

@@ -9,7 +9,7 @@ void main() {
       final event = Nip01Event(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
-        kind: ContactList.kind,
+        kind: ContactList.KIND,
         content: "{\"wss://nos.lol\":{\"read\":true,\"write\":true},\"wss://relay.damus.io\":{\"read\":true,\"write\":true}}",
         tags: [
           ['p', 'contact1'],
@@ -40,7 +40,7 @@ void main() {
       ]);
       final myEvent = nip02.toEvent();
       expect(myEvent.pubKey, equals('pubkey123'));
-      expect(myEvent.kind, equals(ContactList.kind));
+      expect(myEvent.kind, equals(ContactList.KIND));
       expect(
           myEvent.tags,
           equals([
