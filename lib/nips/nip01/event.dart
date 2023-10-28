@@ -26,7 +26,7 @@ class Nip01Event {
     this.createdAt = (createdAt==null || createdAt==0) ?  DateTime
         .now()
         .millisecondsSinceEpoch ~/ 1000 : createdAt;
-    id = _calculateId(pubKey, createdAt!, kind, tags, content);
+    id = _calculateId(pubKey, this.createdAt!, kind, tags, content);
   }
 
   Nip01Event._(this.id, this.pubKey, this.createdAt, this.kind, this.tags,
