@@ -20,7 +20,9 @@ import 'package:dart_ndk/relay_info.dart';
 
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
+import 'nips/nip01/bip340_event_verifier.dart';
 import 'nips/nip01/event.dart';
+import 'nips/nip01/event_verifier.dart';
 import 'nips/nip01/filter.dart';
 import 'nips/nip01/metadata.dart';
 import 'nips/nip65/nip65.dart';
@@ -47,6 +49,8 @@ class RelayManager {
 
   CacheManager cacheManager = MemCacheManager();
 
+  EventVerifier eventVerifier = Bip340EventVerifier();
+
   /// Global relay registry by url
   Map<String, Relay> relays = {};
 
@@ -62,10 +66,6 @@ class RelayManager {
   final Map<String, bool> _requestQueries = {};
 
   // ====================================================================================================================
-
-  void setCacheManager(CacheManager cacheManager) {
-    this.cacheManager = cacheManager;
-  }
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
@@ -249,19 +249,24 @@ class RelayManager {
 
     if (eventJson[0] == 'EVENT') {
       Nip01Event event = Nip01Event.fromJson(eventJson[2]);
-      event.sources.add(url);
-      if (relays[url] != null) {
-        int eventsRead = relays[url]!.stats.eventsRead[event.kind] ?? 0;
-        relays[url]!.stats.eventsRead[event.kind] = eventsRead + 1;
-        int bytesRead = relays[url]!.stats.dataReadBytes[event.kind] ?? 0;
-        relays[url]!.stats.dataReadBytes[event.kind] = bytesRead + message.toString().codeUnits.length;
+      if (event.isValid) {
+        // check signature is valid
+        eventVerifier.verify(event).then((validSig) {
+          if (validSig) {
+            event.sources.add(url);
+            if (relays[url] != null) {
+              relays[url]!.incStatsByNewEvent(event,
+                  message.toString().codeUnits.length);
+            }
+            var id = eventJson[1];
+            StreamController<Nip01Event>? sub = _subscriptions[id];
+            if (sub != null) {
+              sub.add(event);
+            }
+          }
+        });
+        return;
       }
-      var id = eventJson[1];
-      StreamController<Nip01Event>? sub = _subscriptions[id];
-      if (sub!=null) {
-        sub.add(event);
-      }
-      return;
     }
     if (eventJson[0] == 'EOSE') {
       // print("EOSE: ${eventJson[1]}, $url");
@@ -719,3 +724,4 @@ class RelayManager {
     return null;
   }
 }
+

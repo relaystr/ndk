@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/relay_info.dart';
 import 'package:dart_ndk/relay_stats.dart';
 
@@ -48,5 +49,12 @@ class Relay {
       return null;
     }
     return adr;
+  }
+
+  void incStatsByNewEvent(Nip01Event event, int bytes) {
+    int eventsRead = stats.eventsRead[event.kind] ?? 0;
+    stats.eventsRead[event.kind] = eventsRead + 1;
+    int bytesRead = stats.dataReadBytes[event.kind] ?? 0;
+    stats.dataReadBytes[event.kind] = bytesRead + bytes;
   }
 }
