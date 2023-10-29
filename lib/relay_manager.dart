@@ -13,6 +13,7 @@ import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip09/deletion.dart';
 import 'package:dart_ndk/nips/nip25/reactions.dart';
@@ -254,6 +255,7 @@ class RelayManager {
   Future<void> broadcastSignedEvent(Nip01Event event, String url) async {
     if (isWebSocketOpen(url)) {
       try {
+        print("BROADCASTING to $url : kind: ${event.kind} author: ${event.pubKey}");
         webSockets[url]!.add(jsonEncode(["EVENT", event.toJson()]));
       } catch (e) {
         print("ERROR BROADCASTING $url -> $e");
@@ -342,12 +344,14 @@ class RelayManager {
     }
     return contactList;
   }
+
   // if cached user relay list is older that now minus this duration that we should go refresh it,
   // otherwise we risk adding/removing relays to a list that is out of date and thus loosing relays other client has added/removed since.
   static const Duration REFRESH_USER_RELAY_DURATION = Duration(minutes: 10);
 
   Future<UserRelayList?> ensureUpToDateUserRelayList(EventSigner signer) async {
-    UserRelayList? userRelayList = cacheManager.loadUserRelayList(signer.getPublicKey());
+    UserRelayList? userRelayList =
+        cacheManager.loadUserRelayList(signer.getPublicKey());
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_USER_RELAY_DURATION)
             .millisecondsSinceEpoch ~/
@@ -356,30 +360,32 @@ class RelayManager {
         userRelayList.refreshedTimestamp == null ||
         userRelayList.refreshedTimestamp! < sometimeAgo;
     if (refresh) {
-      userRelayList =
-          await getSingleUserRelayList(signer.getPublicKey(), forceRefresh: true);
+      userRelayList = await getSingleUserRelayList(signer.getPublicKey(),
+          forceRefresh: true);
     }
     return userRelayList;
   }
 
-  Future<UserRelayList> broadcastAddNip65Relay(String relayUrl, ReadWriteMarker marker,
-      Iterable<String> broadcastRelays, EventSigner signer) async {
+  Future<UserRelayList> broadcastAddNip65Relay(
+      String relayUrl,
+      ReadWriteMarker marker,
+      Iterable<String> broadcastRelays,
+      EventSigner signer) async {
     UserRelayList? userRelayList = await ensureUpToDateUserRelayList(signer);
-    if (userRelayList==null) {
-      int now = DateTime
-          .now()
-          .millisecondsSinceEpoch ~/ 1000;
-      userRelayList =
-          UserRelayList(
-              pubKey: signer.getPublicKey(),
-              relays: { for (String url in broadcastRelays)
-                url: ReadWriteMarker.readWrite},
-              createdAt: now,
-              refreshedTimestamp: now);
+    if (userRelayList == null) {
+      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      userRelayList = UserRelayList(
+          pubKey: signer.getPublicKey(),
+          relays: {
+            for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
+          },
+          createdAt: now,
+          refreshedTimestamp: now);
     }
     userRelayList.relays[relayUrl] = marker;
     await Future.wait([
-      broadcastEvent(userRelayList.toNip65().toEvent(), broadcastRelays, signer),
+      broadcastEvent(
+          userRelayList.toNip65().toEvent(), broadcastRelays, signer),
       cacheManager.saveUserRelayList(userRelayList)
     ]);
     return userRelayList;
@@ -388,28 +394,62 @@ class RelayManager {
   Future<UserRelayList?> broadcastRemoveNip65Relay(String relayUrl,
       Iterable<String> broadcastRelays, EventSigner signer) async {
     UserRelayList? userRelayList = await ensureUpToDateUserRelayList(signer);
-    if (userRelayList==null) {
-      int now = DateTime
-          .now()
-          .millisecondsSinceEpoch ~/ 1000;
-      userRelayList =
-          UserRelayList(
-              pubKey: signer.getPublicKey(),
-              relays: { for (String url in broadcastRelays)
-                url: ReadWriteMarker.readWrite},
-              createdAt: now,
-              refreshedTimestamp: now);
+    if (userRelayList == null) {
+      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      userRelayList = UserRelayList(
+          pubKey: signer.getPublicKey(),
+          relays: {
+            for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
+          },
+          createdAt: now,
+          refreshedTimestamp: now);
     }
-    if (userRelayList != null &&
-        userRelayList.relays.keys.contains(relayUrl)) {
+    if (userRelayList != null && userRelayList.relays.keys.contains(relayUrl)) {
       userRelayList.relays.remove(relayUrl);
-      userRelayList.refreshedTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      userRelayList.refreshedTimestamp =
+          DateTime.now().millisecondsSinceEpoch ~/ 1000;
       await Future.wait([
-        broadcastEvent(userRelayList.toNip65().toEvent(), broadcastRelays, signer),
+        broadcastEvent(
+            userRelayList.toNip65().toEvent(), broadcastRelays, signer),
         cacheManager.saveUserRelayList(userRelayList)
       ]);
     }
     return userRelayList;
+  }
+
+  Future<Nip01Event?> getMetadataEvent(EventSigner signer) async {
+    Nip01Event? loaded;
+    await for (final event in await requestRelays(
+        bootstrapRelays,
+        idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT,
+        Filter(
+            kinds: [Metadata.KIND],
+            authors: [signer.getPublicKey()],
+            limit: 1))) {
+      if (loaded == null || loaded.createdAt! < event.createdAt!) {
+        loaded = event;
+      }
+    }
+    return loaded;
+  }
+
+  Future<Metadata> broadcastMetadata(Metadata metadata,
+      Iterable<String> broadcastRelays, EventSigner signer) async {
+    Nip01Event? event = await getMetadataEvent(signer);
+    if (event != null) {
+      Map<String, dynamic> map = json.decode(event.content);
+      map.addAll(metadata.toJson());
+      event = Nip01Event(pubKey: event.pubKey, kind: event.kind, tags: event.tags, content: json.encode(map), createdAt: Helpers.now);
+    } else {
+      event = metadata.toEvent();
+    }
+    await broadcastEvent(event, broadcastRelays, signer);
+
+    metadata.updatedAt = Helpers.now;
+    metadata.refreshedTimestamp = Helpers.now;
+    await cacheManager.saveMetadata(metadata);
+
+    return metadata;
   }
 
   // =====================================================================================
@@ -792,11 +832,12 @@ class RelayManager {
       try {
         await for (final event in await query(
             idleTimeout: 2,
-            Filter(authors: missingPubKeys, kinds: [Metadata.kind]),
+            Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
             relaySet)) {
           if (metadatas[event.pubKey] == null ||
               metadatas[event.pubKey]!.updatedAt! < event.createdAt!) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
+            metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
           }
         }
       } catch (e) {
@@ -839,6 +880,38 @@ class RelayManager {
       }
     }
     return contactList;
+  }
+
+  Future<Metadata?> getSingleMetadata(String pubKey,
+      {bool forceRefresh = false,
+      int idleTimeout = DEFAULT_STREAM_IDLE_TIMEOUT}) async {
+    Metadata? metadata = cacheManager.loadMetadata(pubKey);
+    if (metadata == null || forceRefresh) {
+      Metadata? loadedMetadata;
+      try {
+        await for (final event in await requestRelays(
+            bootstrapRelays,
+            idleTimeout: idleTimeout,
+            Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1))) {
+          if (loadedMetadata == null ||
+              loadedMetadata.updatedAt == null ||
+              loadedMetadata.updatedAt! < event.createdAt!) {
+            loadedMetadata = Metadata.fromEvent(event);
+          }
+        }
+      } catch (e) {
+        // probably timeout;
+      }
+      if (loadedMetadata != null &&
+          (metadata == null ||
+              loadedMetadata.updatedAt == null || metadata.updatedAt==null ||
+              loadedMetadata.updatedAt! < metadata.updatedAt! || forceRefresh) ) {
+        loadedMetadata.refreshedTimestamp = Helpers.now;
+        await cacheManager.saveMetadata(loadedMetadata);
+        metadata = loadedMetadata;
+      }
+    }
+    return metadata;
   }
 
   _buildPubKeysMapFromRelayLists(
@@ -947,7 +1020,8 @@ class RelayManager {
     return true;
   }
 
-  Future<UserRelayList?> getSingleUserRelayList(String pubKey, {bool forceRefresh=false}) async {
+  Future<UserRelayList?> getSingleUserRelayList(String pubKey,
+      {bool forceRefresh = false}) async {
     UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
     if (userRelayList == null || forceRefresh) {
       /// todo should also load from nip02

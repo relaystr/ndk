@@ -69,6 +69,10 @@ const DbMetadataSchema = IsarGeneratedSchema(
         type: IsarType.long,
       ),
       IsarPropertySchema(
+        name: 'refreshedTimestamp',
+        type: IsarType.long,
+      ),
+      IsarPropertySchema(
         name: 'cleanNip05',
         type: IsarType.string,
       ),
@@ -160,12 +164,14 @@ int serializeDbMetadata(IsarWriter writer, DbMetadata object) {
     }
   }
   IsarCore.writeLong(writer, 12, object.updatedAt ?? -9223372036854775808);
+  IsarCore.writeLong(
+      writer, 13, object.refreshedTimestamp ?? -9223372036854775808);
   {
     final value = object.cleanNip05;
     if (value == null) {
-      IsarCore.writeNull(writer, 13);
+      IsarCore.writeNull(writer, 14);
     } else {
-      IsarCore.writeString(writer, 13, value);
+      IsarCore.writeString(writer, 14, value);
     }
   }
   return Isar.fastHash(object.id);
@@ -202,6 +208,15 @@ DbMetadata deserializeDbMetadata(IsarReader reader) {
       _updatedAt = value;
     }
   }
+  final int? _refreshedTimestamp;
+  {
+    final value = IsarCore.readLong(reader, 13);
+    if (value == -9223372036854775808) {
+      _refreshedTimestamp = null;
+    } else {
+      _refreshedTimestamp = value;
+    }
+  }
   final object = DbMetadata(
     pubKey: _pubKey,
     name: _name,
@@ -214,6 +229,7 @@ DbMetadata deserializeDbMetadata(IsarReader reader) {
     lud16: _lud16,
     lud06: _lud06,
     updatedAt: _updatedAt,
+    refreshedTimestamp: _refreshedTimestamp,
   );
   return object;
 }
@@ -253,7 +269,16 @@ dynamic deserializeDbMetadataProp(IsarReader reader, int property) {
         }
       }
     case 13:
-      return IsarCore.readString(reader, 13);
+      {
+        final value = IsarCore.readLong(reader, 13);
+        if (value == -9223372036854775808) {
+          return null;
+        } else {
+          return value;
+        }
+      }
+    case 14:
+      return IsarCore.readString(reader, 14);
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -273,6 +298,7 @@ sealed class _DbMetadataUpdate {
     String? lud16,
     String? lud06,
     int? updatedAt,
+    int? refreshedTimestamp,
     String? cleanNip05,
   });
 }
@@ -296,6 +322,7 @@ class _DbMetadataUpdateImpl implements _DbMetadataUpdate {
     Object? lud16 = ignore,
     Object? lud06 = ignore,
     Object? updatedAt = ignore,
+    Object? refreshedTimestamp = ignore,
     Object? cleanNip05 = ignore,
   }) {
     return collection.updateProperties([
@@ -312,7 +339,8 @@ class _DbMetadataUpdateImpl implements _DbMetadataUpdate {
           if (lud16 != ignore) 10: lud16 as String?,
           if (lud06 != ignore) 11: lud06 as String?,
           if (updatedAt != ignore) 12: updatedAt as int?,
-          if (cleanNip05 != ignore) 13: cleanNip05 as String?,
+          if (refreshedTimestamp != ignore) 13: refreshedTimestamp as int?,
+          if (cleanNip05 != ignore) 14: cleanNip05 as String?,
         }) >
         0;
   }
@@ -332,6 +360,7 @@ sealed class _DbMetadataUpdateAll {
     String? lud16,
     String? lud06,
     int? updatedAt,
+    int? refreshedTimestamp,
     String? cleanNip05,
   });
 }
@@ -355,6 +384,7 @@ class _DbMetadataUpdateAllImpl implements _DbMetadataUpdateAll {
     Object? lud16 = ignore,
     Object? lud06 = ignore,
     Object? updatedAt = ignore,
+    Object? refreshedTimestamp = ignore,
     Object? cleanNip05 = ignore,
   }) {
     return collection.updateProperties(id, {
@@ -369,7 +399,8 @@ class _DbMetadataUpdateAllImpl implements _DbMetadataUpdateAll {
       if (lud16 != ignore) 10: lud16 as String?,
       if (lud06 != ignore) 11: lud06 as String?,
       if (updatedAt != ignore) 12: updatedAt as int?,
-      if (cleanNip05 != ignore) 13: cleanNip05 as String?,
+      if (refreshedTimestamp != ignore) 13: refreshedTimestamp as int?,
+      if (cleanNip05 != ignore) 14: cleanNip05 as String?,
     });
   }
 }
@@ -393,6 +424,7 @@ sealed class _DbMetadataQueryUpdate {
     String? lud16,
     String? lud06,
     int? updatedAt,
+    int? refreshedTimestamp,
     String? cleanNip05,
   });
 }
@@ -416,6 +448,7 @@ class _DbMetadataQueryUpdateImpl implements _DbMetadataQueryUpdate {
     Object? lud16 = ignore,
     Object? lud06 = ignore,
     Object? updatedAt = ignore,
+    Object? refreshedTimestamp = ignore,
     Object? cleanNip05 = ignore,
   }) {
     return query.updateProperties(limit: limit, {
@@ -430,7 +463,8 @@ class _DbMetadataQueryUpdateImpl implements _DbMetadataQueryUpdate {
       if (lud16 != ignore) 10: lud16 as String?,
       if (lud06 != ignore) 11: lud06 as String?,
       if (updatedAt != ignore) 12: updatedAt as int?,
-      if (cleanNip05 != ignore) 13: cleanNip05 as String?,
+      if (refreshedTimestamp != ignore) 13: refreshedTimestamp as int?,
+      if (cleanNip05 != ignore) 14: cleanNip05 as String?,
     });
   }
 }
@@ -461,6 +495,7 @@ class _DbMetadataQueryBuilderUpdateImpl implements _DbMetadataQueryUpdate {
     Object? lud16 = ignore,
     Object? lud06 = ignore,
     Object? updatedAt = ignore,
+    Object? refreshedTimestamp = ignore,
     Object? cleanNip05 = ignore,
   }) {
     final q = query.build();
@@ -477,7 +512,8 @@ class _DbMetadataQueryBuilderUpdateImpl implements _DbMetadataQueryUpdate {
         if (lud16 != ignore) 10: lud16 as String?,
         if (lud06 != ignore) 11: lud06 as String?,
         if (updatedAt != ignore) 12: updatedAt as int?,
-        if (cleanNip05 != ignore) 13: cleanNip05 as String?,
+        if (refreshedTimestamp != ignore) 13: refreshedTimestamp as int?,
+        if (cleanNip05 != ignore) 14: cleanNip05 as String?,
       });
     } finally {
       q.close();
@@ -2637,16 +2673,116 @@ extension DbMetadataQueryFilter
   }
 
   QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
-      cleanNip05IsNull() {
+      refreshedTimestampIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const IsNullCondition(property: 13));
     });
   }
 
   QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
-      cleanNip05IsNotNull() {
+      refreshedTimestampIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
       return query.addFilterCondition(const IsNullCondition(property: 13));
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      refreshedTimestampEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 13,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      refreshedTimestampGreaterThan(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 13,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      refreshedTimestampGreaterThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 13,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      refreshedTimestampLessThan(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 13,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      refreshedTimestampLessThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 13,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      refreshedTimestampBetween(
+    int? lower,
+    int? upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 13,
+          lower: lower,
+          upper: upper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05IsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 14));
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterFilterCondition>
+      cleanNip05IsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 14));
     });
   }
 
@@ -2657,7 +2793,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 13,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2673,7 +2809,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 13,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2689,7 +2825,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 13,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2705,7 +2841,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 13,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2721,7 +2857,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 13,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2737,7 +2873,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 13,
+          property: 14,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -2754,7 +2890,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 13,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2770,7 +2906,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 13,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2783,7 +2919,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 13,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2797,7 +2933,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 13,
+          property: 14,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -2810,7 +2946,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 13,
+          property: 14,
           value: '',
         ),
       );
@@ -2822,7 +2958,7 @@ extension DbMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 13,
+          property: 14,
           value: '',
         ),
       );
@@ -3078,11 +3214,25 @@ extension DbMetadataQuerySortBy
     });
   }
 
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy>
+      sortByRefreshedTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(13);
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy>
+      sortByRefreshedTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(13, sort: Sort.desc);
+    });
+  }
+
   QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> sortByCleanNip05(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        13,
+        14,
         caseSensitive: caseSensitive,
       );
     });
@@ -3092,7 +3242,7 @@ extension DbMetadataQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        13,
+        14,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -3268,17 +3418,31 @@ extension DbMetadataQuerySortThenBy
     });
   }
 
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy>
+      thenByRefreshedTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(13);
+    });
+  }
+
+  QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy>
+      thenByRefreshedTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(13, sort: Sort.desc);
+    });
+  }
+
   QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByCleanNip05(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(13, caseSensitive: caseSensitive);
+      return query.addSortBy(14, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DbMetadata, DbMetadata, QAfterSortBy> thenByCleanNip05Desc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(13, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(14, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 }
@@ -3361,10 +3525,17 @@ extension DbMetadataQueryWhereDistinct
     });
   }
 
+  QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct>
+      distinctByRefreshedTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(13);
+    });
+  }
+
   QueryBuilder<DbMetadata, DbMetadata, QAfterDistinct> distinctByCleanNip05(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(13, caseSensitive: caseSensitive);
+      return query.addDistinctBy(14, caseSensitive: caseSensitive);
     });
   }
 }
@@ -3443,9 +3614,15 @@ extension DbMetadataQueryProperty1
     });
   }
 
-  QueryBuilder<DbMetadata, String?, QAfterProperty> cleanNip05Property() {
+  QueryBuilder<DbMetadata, int?, QAfterProperty> refreshedTimestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(13);
+    });
+  }
+
+  QueryBuilder<DbMetadata, String?, QAfterProperty> cleanNip05Property() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(14);
     });
   }
 }
@@ -3524,9 +3701,16 @@ extension DbMetadataQueryProperty2<R>
     });
   }
 
-  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> cleanNip05Property() {
+  QueryBuilder<DbMetadata, (R, int?), QAfterProperty>
+      refreshedTimestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(13);
+    });
+  }
+
+  QueryBuilder<DbMetadata, (R, String?), QAfterProperty> cleanNip05Property() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(14);
     });
   }
 }
@@ -3606,10 +3790,17 @@ extension DbMetadataQueryProperty3<R1, R2>
     });
   }
 
+  QueryBuilder<DbMetadata, (R1, R2, int?), QOperations>
+      refreshedTimestampProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(13);
+    });
+  }
+
   QueryBuilder<DbMetadata, (R1, R2, String?), QOperations>
       cleanNip05Property() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(13);
+      return query.addProperty(14);
     });
   }
 }

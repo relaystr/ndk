@@ -19,6 +19,7 @@ class DbMetadata extends Metadata {
     super.lud16,
     super.lud06,
     super.updatedAt,
+    super.refreshedTimestamp
   });
 
   static DbMetadata fromMetadata(Metadata metadata) {
@@ -34,6 +35,7 @@ class DbMetadata extends Metadata {
       lud16: metadata.lud16,
       lud06: metadata.lud06,
       updatedAt: metadata.updatedAt,
+      refreshedTimestamp: metadata.refreshedTimestamp
     );
   }
 }

@@ -5,7 +5,7 @@ import 'package:dart_ndk/nips/nip01/helpers.dart';
 
 class Metadata {
 
-  static const int kind = 0;
+  static const int KIND = 0;
 
   late String pubKey;
   String? name;
@@ -18,6 +18,7 @@ class Metadata {
   String? lud16;
   String? lud06;
   int? updatedAt;
+  int? refreshedTimestamp;
 
   Metadata({
     this.pubKey = "",
@@ -31,6 +32,7 @@ class Metadata {
     this.lud16,
     this.lud06,
     this.updatedAt,
+    this.refreshedTimestamp
   });
 
   Metadata.fromJson(Map<String, dynamic> json) {
@@ -89,6 +91,17 @@ class Metadata {
     metadata.updatedAt = event.createdAt;
     return metadata;
   }
+
+  Nip01Event toEvent() {
+    return Nip01Event(
+      pubKey: pubKey,
+        content: jsonEncode(toJson()),
+        kind: KIND,
+        tags: [],
+        createdAt: updatedAt
+    );
+  }
+
   String getName() {
     if (displayName != null && Helpers.isNotBlank(displayName)) {
       return displayName!;
