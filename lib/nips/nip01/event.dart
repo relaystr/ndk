@@ -60,7 +60,7 @@ class Nip01Event {
   List<dynamic> tags; // Modified by proof-of-work
 
   /// Event content.
-  final String content;
+  String content;
 
   /// 64-byte Schnorr signature of [Nip01Event.id].
   String sig = '';
