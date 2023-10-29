@@ -23,6 +23,10 @@ class UserRelayList {
         refreshedTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000);
   }
 
+  Nip65 toNip65() {
+    return Nip65.fromMap(pubKey, relays);
+  }
+
   static UserRelayList fromNip02EventContent(Nip01Event event) {
     return UserRelayList(
         pubKey: event.pubKey,
