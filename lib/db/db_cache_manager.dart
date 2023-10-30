@@ -193,6 +193,10 @@ class DbCacheManager extends CacheManager {
     return isar.dbMetadatas.getAll(pubKeys);
   }
 
+  Iterable<Metadata> searchMetadatas(String search, int limit) {
+    return isar.dbMetadatas.where().splitDisplayNameWordsElementStartsWith(search).or().splitNameWordsElementStartsWith(search).findAll().take(limit);
+  }
+
   @override
   Future<void> removeAllMetadatas() async {
     isar.write((isar) {

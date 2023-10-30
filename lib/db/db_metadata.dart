@@ -7,6 +7,11 @@ part 'db_metadata.g.dart';
 class DbMetadata extends Metadata {
   String get id => pubKey;
 
+  List<String>? get splitDisplayNameWords => displayName!=null? displayName!.trim().toLowerCase().split(" ") : null;
+
+  List<String>? get splitNameWords => name!=null? name!.trim().toLowerCase().split(" ") : null;
+
+
   DbMetadata({
     super.pubKey = "",
     super.name,

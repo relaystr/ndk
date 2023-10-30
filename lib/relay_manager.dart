@@ -307,25 +307,7 @@ class RelayManager {
   // otherwise we risk adding/removing contacts to a list that is out of date and thus loosing contacts other client has added/removed since.
   static const Duration REFRESH_CONTACT_LIST_DURATION = Duration(minutes: 10);
 
-  Future<ContactList> broadcastAddContact(String newContactPubKey,
-      Iterable<String> relays, EventSigner signer) async {
-    ContactList? contactList = await ensureUpToDateContactList(signer);
-    contactList ??= ContactList(pubKey: signer.getPublicKey(), contacts: []);
-    if (!contactList.contacts.contains(newContactPubKey)) {
-      contactList.contacts.add(newContactPubKey);
-      contactList.loadedTimestamp =
-          DateTime
-              .now()
-              .millisecondsSinceEpoch ~/ 1000;
-      await Future.wait([
-        broadcastEvent(contactList.toEvent(), relays, signer),
-        cacheManager.saveContactList(contactList)
-      ]);
-    }
-    return contactList;
-  }
-
-  Future<ContactList?> ensureUpToDateContactList(EventSigner signer) async {
+  Future<ContactList> ensureUpToDateContactListOrEmpty(EventSigner signer) async {
     ContactList? contactList =
     cacheManager.loadContactList(signer.getPublicKey());
     int sometimeAgo = DateTime
@@ -340,23 +322,113 @@ class RelayManager {
       contactList =
       await loadContactList(signer.getPublicKey(), forceRefresh: true);
     }
+    contactList ??= ContactList(pubKey: signer.getPublicKey(), contacts: []);
     return contactList;
   }
 
-  Future<ContactList?> broadcastRemoveContact(String removeContactPubKey,
+  Future<ContactList> broadcastAddContact(String add,
       Iterable<String> relays, EventSigner signer) async {
-    ContactList? contactList = await ensureUpToDateContactList(signer);
+    ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
+    if (!contactList.contacts.contains(add)) {
+      contactList.contacts.add(add);
+      contactList.loadedTimestamp = Helpers.now;
+      contactList.createdAt = Helpers.now;
+      await broadcastEvent(contactList.toEvent(), relays, signer);
+      await cacheManager.saveContactList(contactList);
+    }
+    return contactList;
+  }
+
+  Future<ContactList> broadcastAddFollowedTag(String toAdd,
+      Iterable<String> relays, EventSigner signer) async {
+    ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
+    if (!contactList.followedTags.contains(toAdd)) {
+      contactList.followedTags.add(toAdd);
+      contactList.loadedTimestamp = Helpers.now;
+      contactList.createdAt = Helpers.now;
+      await broadcastEvent(contactList.toEvent(), relays, signer);
+      await cacheManager.saveContactList(contactList);
+    }
+    return contactList;
+  }
+
+  Future<ContactList> broadcastAddFollowedCommunity(String toAdd,
+      Iterable<String> relays, EventSigner signer) async {
+    ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
+    if (!contactList.followedCommunities.contains(toAdd)) {
+      contactList.followedCommunities.add(toAdd);
+      contactList.loadedTimestamp = Helpers.now;
+      contactList.createdAt = Helpers.now;
+      await broadcastEvent(contactList.toEvent(), relays, signer);
+      await cacheManager.saveContactList(contactList);
+    }
+    return contactList;
+  }
+
+  Future<ContactList> broadcastAddFollowedEvent(String toAdd,
+      Iterable<String> relays, EventSigner signer) async {
+    ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
+    if (!contactList.followedEvents.contains(toAdd)) {
+      contactList.followedEvents.add(toAdd);
+      contactList.loadedTimestamp = Helpers.now;
+      contactList.createdAt = Helpers.now;
+      await broadcastEvent(contactList.toEvent(), relays, signer);
+      await cacheManager.saveContactList(contactList);
+    }
+    return contactList;
+  }
+  Future<ContactList?> broadcastRemoveContact(String toRemove,
+      Iterable<String> relays, EventSigner signer) async {
+    ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (contactList != null &&
-        contactList.contacts.contains(removeContactPubKey)) {
-      contactList.contacts.remove(removeContactPubKey);
-      contactList.loadedTimestamp =
-          DateTime
-              .now()
-              .millisecondsSinceEpoch ~/ 1000;
-      await Future.wait([
-        broadcastEvent(contactList.toEvent(), relays, signer),
-        cacheManager.saveContactList(contactList)
-      ]);
+        contactList.contacts.contains(toRemove)) {
+      contactList.contacts.remove(toRemove);
+      contactList.loadedTimestamp = Helpers.now;
+      contactList.createdAt = Helpers.now;
+      await broadcastEvent(contactList.toEvent(), relays, signer);
+      await cacheManager.saveContactList(contactList);
+    }
+    return contactList;
+  }
+
+  Future<ContactList?> broadcastRemoveFollowedTag(String toRemove,
+      Iterable<String> relays, EventSigner signer) async {
+    ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
+    if (contactList != null &&
+        contactList.followedTags.contains(toRemove)) {
+      contactList.followedTags.remove(toRemove);
+      contactList.loadedTimestamp = Helpers.now;
+      contactList.createdAt = Helpers.now;
+      await broadcastEvent(contactList.toEvent(), relays, signer);
+      await cacheManager.saveContactList(contactList);
+    }
+    return contactList;
+  }
+
+  Future<ContactList?> broadcastRemoveFollowedCommunity(String toRemove,
+      Iterable<String> relays, EventSigner signer) async {
+    ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
+    if (contactList != null &&
+        contactList.followedCommunities.contains(toRemove)) {
+      contactList.followedCommunities.remove(toRemove);
+      contactList.loadedTimestamp = Helpers.now;
+      contactList.createdAt = Helpers.now;
+      await broadcastEvent(contactList.toEvent(), relays, signer);
+      await cacheManager.saveContactList(contactList);
+    }
+    return contactList;
+  }
+
+  Future<ContactList?> broadcastRemoveFollowedEvent(String toRemove,
+      Iterable<String> relays, EventSigner signer) async {
+    ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
+    if (contactList != null &&
+        contactList.followedEvents.contains(toRemove)) {
+      contactList.followedEvents.remove(toRemove);
+      contactList.loadedTimestamp = Helpers.now;
+      contactList.createdAt = Helpers.now;
+      await broadcastEvent(contactList.toEvent(), relays, signer);
+      await cacheManager.saveContactList(contactList);
     }
     return contactList;
   }

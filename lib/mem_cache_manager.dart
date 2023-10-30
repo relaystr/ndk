@@ -170,4 +170,10 @@ class MemCacheManager implements CacheManager {
     }
     return result;
   }
+
+  @override
+  Iterable<Metadata> searchMetadatas(String search, int limit) {
+    /// TODO
+    return [];
+  }
 }
