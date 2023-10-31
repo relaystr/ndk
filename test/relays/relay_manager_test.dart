@@ -77,7 +77,7 @@ void main() async {
 
       Filter filter = Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey]);
 
-      Stream<Nip01Event> query = await manager.requestRelays([relay1.url], filter);
+      Stream<Nip01Event> query = (await manager.requestRelays([relay1.url], filter)).stream;
 
       expect(query, emitsInAnyOrder(key1TextNotes.values));
 
@@ -91,7 +91,7 @@ void main() async {
       await relay1.startServer(textNotes: key1TextNotes);
       RelayManager manager = RelayManager();
       await manager.connect(urls: [relay1.url]);
-      Stream<Nip01Event> stream = await manager.requestRelays([relay1.url], Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND]));
+      Stream<Nip01Event> stream = (await manager.requestRelays([relay1.url], Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND]))).stream;
       expect(stream, emitsDone);
       // stream.listen((event) {
       //   fail("should not emit any events, since relay does not sign");
@@ -174,7 +174,7 @@ void main() async {
               relayMinCountPerPubKey: RelayManager.DEFAULT_BEST_RELAYS_MIN_COUNT
           );
 
-      Stream<Nip01Event> query = await manager.query(Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key4.publicKey]), relaySet);
+      Stream<Nip01Event> query = (await manager.query(Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key4.publicKey]), relaySet)).stream;
 
       await for (final event in query.take(4)) {
         expect(event.sources, [relay4.url]);
@@ -212,7 +212,7 @@ void main() async {
         print("  ${relayNames[url]} => has ${pubKeyMappings.length} follows");
       });
       Stream<Nip01Event> query =
-          await manager.query(Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]), relaySet);
+      (await manager.query(Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]), relaySet)).stream;
 
       await for (final event in query) {
         print(event);

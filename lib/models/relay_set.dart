@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/request.dart';
 
 import '../nips/nip01/filter.dart';
 
@@ -40,13 +41,12 @@ class RelaySet {
 
   static const int MAX_AUTHORS_PER_REQUEST = 100;
 
-  List<RelayRequest> splitIntoRequests(Filter filter) {
-    List<RelayRequest> requests = [];
+  void splitIntoRequests(Filter filter, NostrRequest groupRequest) {
     for (var entry in relaysMap.entries) {
       String url = entry.key;
       List<PubkeyMapping> pubKeyMappings = entry.value;
       if (pubKeyMappings.isEmpty) {
-        requests.add(RelayRequest(url, filter));
+        groupRequest.addRequest(url, [filter]);
       } else if (filter.authors != null && filter.authors!.isNotEmpty && direction == RelayDirection.outbox) {
         List<String> pubKeysForRelay = [];
         for (String pubKey in filter.authors!) {
@@ -55,7 +55,7 @@ class RelaySet {
           }
         }
         if (pubKeysForRelay.isNotEmpty) {
-          requests.addAll(sliceFilterAuthors(filter.cloneWithAuthors(pubKeysForRelay), url));
+          groupRequest.addRequest(url, sliceFilterAuthors(filter.cloneWithAuthors(pubKeysForRelay)));
         }
       } else if (filter.pTags != null && filter.pTags!.isNotEmpty && direction == RelayDirection.inbox) {
         List<String> pubKeysForRelay = [];
@@ -65,22 +65,21 @@ class RelaySet {
           }
         }
         if (pubKeysForRelay.isNotEmpty) {
-          requests.addAll(sliceFilterAuthors(filter.cloneWithPTags(pubKeysForRelay), url));
+          groupRequest.addRequest(url, sliceFilterAuthors(filter.cloneWithPTags(pubKeysForRelay)));
         }
       } else if (filter.eTags != null && direction == RelayDirection.inbox) {
-        requests.add(RelayRequest(url, filter));
+        groupRequest.addRequest(url, [filter]);
       } else {
         /// TODO ????
       }
     }
-    return requests;
   }
 
-  static List<RelayRequest> sliceFilterAuthors(Filter filter, String url) {
+  static List<Filter> sliceFilterAuthors(Filter filter) {
     if (filter.authors != null && filter.authors!.length > MAX_AUTHORS_PER_REQUEST) {
-      return filter.authors!.slices(MAX_AUTHORS_PER_REQUEST).map((slice) => RelayRequest(url, filter.cloneWithAuthors(slice))).toList();
+      return filter.authors!.slices(MAX_AUTHORS_PER_REQUEST).map((slice) => filter.cloneWithAuthors(slice)).toList();
     } else {
-      return [RelayRequest(url, filter)];
+      return [filter];
     }
   }
 
@@ -91,13 +90,6 @@ class RelaySet {
       }
     });
   }
-}
-
-class RelayRequest {
-  String url;
-  Filter filter;
-
-  RelayRequest(this.url, this.filter);
 }
 
 class NotCoveredPubKey {

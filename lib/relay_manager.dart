@@ -5,9 +5,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
 import 'dart:io';
-import 'dart:math';
 
-import 'package:async/async.dart' show StreamGroup;
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
@@ -21,8 +19,12 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_info.dart';
+import 'package:dart_ndk/request.dart';
+import 'package:dart_ndk/tag_count_event_filter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
+import 'event_filter.dart';
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
 import 'nips/nip01/bip340_event_verifier.dart';
@@ -62,14 +64,9 @@ class RelayManager {
   /// Global webSocket registry by url
   Map<String, WebSocket> webSockets = {};
 
-  /// Global subscriptions streams by request id
-  final Map<String, StreamController<Nip01Event>> _subscriptions = {};
-  final Set<String> _subscriptionsToClose = {};
+  final Map<String,NostrRequest> nostrRequests = {};
 
-  final Map<String, StreamGroup<Nip01Event>> _subscriptionGroups = {};
-
-  /// Queries close stream flag map by request Id (value true will close stream when receive EOSE, false will keep listening until client closes)
-  final Map<String, bool> _requestQueries = {};
+  List<EventFilter> eventFilters = [TagCountEventFilter(21)];
 
   // ====================================================================================================================
 
@@ -161,11 +158,13 @@ class RelayManager {
 
   void startListeningToSocket(String url) {
     // print("listening on $url...");
-    webSockets[url]!.asBroadcastStream(onCancel: (sub) {
-      // print("onCancel ${sub.");
-    }, onListen: (sub) {
-      // print("onListen $sub");
-    }).listen((message) {
+    webSockets[url]!
+    //     .asBroadcastStream(onCancel: (sub) {
+    //   // print("onCancel ${sub.");
+    // }, onListen: (sub) {
+    //   print("onListen $sub");
+    // })
+        .listen((message) {
       _handleIncommingMessage(message, url);
     }, onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
@@ -201,49 +200,61 @@ class RelayManager {
         .toList();
   }
 
-  Future<Stream<Nip01Event>> subscription(Filter filter, RelaySet relaySet,
-      {int relayMinCountPerPubKey = DEFAULT_BEST_RELAYS_MIN_COUNT, bool splitRequestsByPubKeyMappings = true}) async {
-    return _doSubscriptionOrQuery(filter, relaySet, closeOnEOSE: false, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+  Future<NostrRequest> subscription(Filter filter, RelaySet relaySet,
+      {bool splitRequestsByPubKeyMappings = true}) async {
+    return _doNostrRequest(
+        NostrRequest.subscription(Helpers.getRandomString(10)), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
   }
 
-  Future<Stream<Nip01Event>> query(Filter filter, RelaySet relaySet,
+  Future<NostrRequest> query(Filter filter, RelaySet relaySet,
       {int? idleTimeout, bool splitRequestsByPubKeyMappings = true}) async {
-    return _doSubscriptionOrQuery(filter, relaySet,
-        closeOnEOSE: true, idleTimeout: idleTimeout, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+    return _doNostrRequest(
+        NostrRequest.query(Helpers.getRandomString(10), idleTimeout: idleTimeout, onTimeout: (request) {
+          closeNostrRequest(request);
+        }), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+  }
+  Future<void> closeNostrRequest(NostrRequest request) async {
+    return closeNostrRequestById(request.id);
   }
 
-  Stream<Nip01Event> _doRequest(String url, Filter filter,
-      {bool closeOnEOSE = true,
-        int? idleTimeout,
-        StreamGroup<Nip01Event>? streamGroup}) {
-    if (isWebSocketOpen(url)) {
-      String id = Random().nextInt(4294967296).toString();
-      List<dynamic> request = ["REQ", id, filter.toMap()];
-      final encoded = jsonEncode(request);
-      _requestQueries[id] = closeOnEOSE;
-      _subscriptions[id] = StreamController<Nip01Event>();
-      if (streamGroup != null) {
-        _subscriptionGroups[id] = streamGroup;
-      }
-      // print("Request for relay $url , $encoded (state is: ${webSockets[url]!.readyState})");
+  Future<void> closeNostrRequestById(String id) async {
+    NostrRequest? nostrRequest = nostrRequests[id];
+    if (nostrRequest!=null) {
       try {
-        webSockets[url]!.add(encoded);
+        nostrRequest.streamGroup.close();
       } catch (e) {
         print(e);
       }
-
-      Stream<Nip01Event> stream = _subscriptions[id]!.stream;
-
-      return idleTimeout != null
-          ? stream.timeout(Duration(seconds: idleTimeout), onTimeout: (sink) {
-        // print("TIMED OUT on relay $url for ${jsonEncode(filter.toMap())}");
-        print(
-            "$idleTimeout TIMED OUT on relay $url for kinds ${filter.kinds}");
-        sink.close();
-      })
-          : stream;
+      nostrRequest.requests.forEach((url, request) {
+        if (request.controller!=null) {
+          try {
+            request.controller!.close();
+          } catch (e) {
+            print(e);
+          }
+        }
+        if (isWebSocketOpen(url)) {
+          try {
+            webSockets[url]!.add(jsonEncode(["CLOSE", nostrRequest.id]));
+          } catch (e) {
+            print(e);
+          }
+        }
+      });
+      nostrRequests.remove(id);
     }
-    return const Stream.empty();
+  }
+
+  void _doRequest(String id, RelayRequest request) {
+    if (isWebSocketOpen(request.url)) {
+      try {
+        List<dynamic> list = ["REQ", id];
+        list.addAll(request.filters.map((filter) => filter.toMap()));
+        webSockets[request.url]!.add(jsonEncode(list));
+      } catch (e) {
+        print(e);
+      }
+    }
   }
 
   Future<void> broadcastEvent(Nip01Event event, Iterable<String> relays,
@@ -547,15 +558,15 @@ class RelayManager {
     }
   }
 
-  Future<Nip01Event?> getMetadataEvent(EventSigner signer) async {
+  Future<Nip01Event?> getSingleMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
-    await for (final event in await requestRelays(
+    await for (final event in (await requestRelays(
         bootstrapRelays,
         idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT,
         Filter(
             kinds: [Metadata.KIND],
             authors: [signer.getPublicKey()],
-            limit: 1))) {
+            limit: 1))).stream) {
       if (loaded == null || loaded.createdAt! < event.createdAt!) {
         loaded = event;
       }
@@ -565,7 +576,7 @@ class RelayManager {
 
   Future<Metadata> broadcastMetadata(Metadata metadata,
       Iterable<String> broadcastRelays, EventSigner signer) async {
-    Nip01Event? event = await getMetadataEvent(signer);
+    Nip01Event? event = await getSingleMetadataEvent(signer);
     if (event != null) {
       Map<String, dynamic> map = json.decode(event.content);
       map.addAll(metadata.toJson());
@@ -595,11 +606,12 @@ class RelayManager {
       //nip 20 used to notify clients if an EVENT was successful
       // log("OK: ${eventJson[1]}");
 
+      // TODO handle event broadcasting results
       // used for await on query
-      if (_requestQueries[eventJson[1]] != null &&
-          _requestQueries[eventJson[1]]!) {
-        _subscriptions[eventJson[1]]?.close();
-      }
+      // if (_requestQueries[eventJson[1]] != null &&
+      //     _requestQueries[eventJson[1]]!) {
+      //   _subscriptions[eventJson[1]]?.close();
+      // }
       return;
     }
 
@@ -610,7 +622,15 @@ class RelayManager {
 
     if (eventJson[0] == 'EVENT') {
       Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+      for (var filter in eventFilters) {
+        if (!filter.filter(event)) {
+          return;
+        }
+      }
       var id = eventJson[1];
+      if (id == "69696969") {
+        print("69696969");
+      }
       // check signature is valid
       if (
       // _subscriptions[id] != null
@@ -626,13 +646,15 @@ class RelayManager {
               .codeUnits
               .length);
         }
-        if (_subscriptions[id] != null && !_subscriptions[id]!.isClosed) {
-          _subscriptions[id]!.add(event);
-          // if (_subscriptionsToClose.contains(id)) {
-          //   _subscriptions[id]!.close();
-          //   _subscriptions.remove(id);
-          //   _subscriptionsToClose.remove(id);
-          // }
+        NostrRequest? nostrRequest = nostrRequests[id];
+        if (nostrRequest!=null) {
+          RelayRequest? request = nostrRequest.requests[url];
+          if (nostrRequest.onEvent!=null) {
+            nostrRequest.onEvent!.call(event);
+          }
+          if (request!=null && request.controller!=null) {
+            request.controller!.add(event);
+          }
         }
       } else {
         if (kDebugMode) {
@@ -644,14 +666,25 @@ class RelayManager {
     if (eventJson[0] == 'EOSE') {
       // print("EOSE: ${eventJson[1]}, $url");
       String id = eventJson[1];
-      if (_requestQueries[id] != null && _requestQueries[id]!) {
-        // _subscriptionsToClose.add(id);
-        _requestQueries.remove(id);
-        _subscriptions[id]!.close();
-        _subscriptions.remove(id);
-      }
-      if (_subscriptionGroups[id] != null) {
-        _subscriptionGroups[id]!.close();
+      NostrRequest? nostrRequest = nostrRequests[id];
+      if (nostrRequest!=null) {
+        RelayRequest? request = nostrRequest.requests[url];
+        if (request!=null) {
+          if (request.controller!=null && !request.controller!.isClosed) {
+            request.controller!.close();
+            if (isWebSocketOpen(url)) {
+              try {
+                webSockets[url]!.add(jsonEncode(["CLOSE", nostrRequest.id]));
+              } catch (e) {
+                print(e);
+              }
+            }
+          }
+          nostrRequest.requests.remove(url);
+          if (nostrRequest.requests.isEmpty && !nostrRequest.streamGroup.isClosed) {
+            nostrRequest.streamGroup.close();
+          }
+        }
       }
       return;
     }
@@ -681,13 +714,12 @@ class RelayManager {
     return relay != null && relay.supportsNip(nip);
   }
 
-  Future<Stream<Nip01Event>> _doSubscriptionOrQuery(Filter filter,
+  Future<NostrRequest> _doNostrRequest(NostrRequest nostrRequest, Filter filter,
       RelaySet relaySet,
-      {bool splitRequestsByPubKeyMappings=true, bool closeOnEOSE = true, int? idleTimeout}) async {
-    StreamGroup<Nip01Event> streamGroup = StreamGroup<Nip01Event>();
+      {bool splitRequestsByPubKeyMappings=true}) async {
     List<RelayRequest> requests = [];
     if (splitRequestsByPubKeyMappings) {
-      requests = relaySet.splitIntoRequests(filter);
+      relaySet.splitIntoRequests(filter,nostrRequest);
 
       print(
           "request for ${filter.authors != null
@@ -702,40 +734,46 @@ class RelayManager {
                 .length} bootstrap relays for ${filter.authors != null ? filter
                 .authors!.length : 0} authors with kinds: ${filter.kinds}");
         for (var url in bootstrapRelays) {
-          requests.addAll(RelaySet.sliceFilterAuthors(filter, url));
+          nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
         }
       }
     } else {
       for (var url in relaySet.urls) {
-        requests.addAll(RelaySet.sliceFilterAuthors(filter, url));
+        nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
       }
     }
-    for (RelayRequest request in requests) {
-      streamGroup.add(_doRequest(request.url, request.filter,
-          closeOnEOSE: closeOnEOSE,
-          idleTimeout: idleTimeout,
-          streamGroup: streamGroup));
-    }
-    if (requests.isEmpty) {
-      return const Stream.empty();
-    }
-    return streamGroup.stream;
+    // {
+    //  _doRequest(url, request)
+    //   streamGroup.add(_doRequest(request.url, request.filters,
+    //       closeOnEOSE: closeOnEOSE,
+    //       idleTimeout: idleTimeout,
+    //       streamGroup: streamGroup));
+    // }
+    // if (groupRequest.requests.isEmpty) {
+    //   return groupRequest;
+    // }
+    nostrRequest.requests.forEach((url, request) {
+      _doRequest(nostrRequest.id, request);
+    });
+    nostrRequests[nostrRequest.id] = nostrRequest;
+    return nostrRequest;
   }
 
-  Future<Stream<Nip01Event>> requestRelays(Iterable<String> urls, Filter filter,
+  Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
       {int idleTimeout = DEFAULT_STREAM_IDLE_TIMEOUT}) async {
-    StreamGroup<Nip01Event> streamGroup = StreamGroup<Nip01Event>();
-    List<RelayRequest> requests = [];
+    String id = Helpers.getRandomString(10);
+    NostrRequest nostrRequest = NostrRequest.query(id, idleTimeout: idleTimeout, onTimeout: (request) {
+      closeNostrRequest(request);
+    });
     for (var url in urls) {
-      requests.addAll(RelaySet.sliceFilterAuthors(filter, url));
+      nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
     }
-    for (var request in requests) {
-      streamGroup.add(_doRequest(request.url, request.filter,
-          closeOnEOSE: true,
-          idleTimeout: idleTimeout,
-          streamGroup: streamGroup));
-    }
-    return streamGroup.stream.timeout(Duration(seconds: idleTimeout + 1));
+    nostrRequest.requests.forEach((url, request) {
+      _doRequest(nostrRequest.id, request);
+    });
+
+    nostrRequests[nostrRequest.id] = nostrRequest;
+    return nostrRequest;
   }
 
   RelaySet? getRelaySet(String name, String pubKey) {
@@ -895,12 +933,12 @@ class RelayManager {
             "loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
-        await for (final event in await requestRelays(
+        await for (final event in (await requestRelays(
             idleTimeout: missingPubKeys.length > 1 ? 10 : 2,
             bootstrapRelays,
             Filter(
                 authors: missingPubKeys,
-                kinds: [Nip65.KIND, ContactList.KIND]))) {
+                kinds: [Nip65.KIND, ContactList.KIND]))).stream) {
           switch (event.kind) {
             case Nip65.KIND:
               Nip65 nip65 = Nip65.fromEvent(event);
@@ -983,11 +1021,11 @@ class RelayManager {
     if (missingPubKeys.isNotEmpty) {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
-        await for (final event in await query(
+        await for (final event in (await query(
             idleTimeout: 2,
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
-            relaySet)) {
+            relaySet)).stream) {
           if (metadatas[event.pubKey] == null ||
               metadatas[event.pubKey]!.updatedAt! < event.createdAt!) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
@@ -1012,16 +1050,51 @@ class RelayManager {
     if (contactList == null || forceRefresh) {
       ContactList? loadedContactList;
       try {
-        await for (final event in await requestRelays(
+        Filter filter = Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1);
+        List<dynamic> request = ["REQ", "69696969", filter.toMap()];
+        final encoded = jsonEncode(request);
+        String relay ='wss://relay.damus.io';
+        NostrRequest rr = NostrRequest.query("569298423984982349");
+        rr.addRequest(relay, [filter]);
+        nostrRequests[rr.id] = rr;
+        _doRequest(rr.id, rr.requests!.values.first);
+        rr.onEvent = (event) {
+          print(event);
+        };
+        rr.requests!.values.first.controller!.stream.listen((event) {
+          print(event);
+        });
+
+        var webSocket = await WebSocket.connect(relay);
+        webSocket.listen((event) {
+          print(event);
+        });
+        webSocket.add(encoded);
+        // final wsUrl = Uri.parse(relay);
+        // var channel = WebSocketChannel.connect(wsUrl);
+        // channel.stream.listen((event) {
+        //   print(event);
+        // });
+        // channel.sink.add(encoded);
+
+        // webSockets["wss://relay.damus.io"]!.asBroadcastStream(onListen: (sub) {
+        //   print("onListen");
+        // }).listen((event) {
+        //   print(event);
+        // });
+        // webSockets["wss://relay.damus.io"]!.add(encoded);
+
+        await for (final event in (await requestRelays(
             bootstrapRelays,
             idleTimeout: idleTimeout,
-            Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1))) {
+            Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1))).stream) {
           if (loadedContactList == null ||
               loadedContactList.createdAt < event.createdAt!) {
             loadedContactList = ContactList.fromEvent(event);
           }
         }
       } catch (e) {
+        print(e);
         // probably timeout;
       }
       if (loadedContactList != null &&
@@ -1045,10 +1118,10 @@ class RelayManager {
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
-        await for (final event in await requestRelays(
+        await for (final event in (await requestRelays(
             bootstrapRelays,
             idleTimeout: idleTimeout,
-            Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1))) {
+            Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1))).stream) {
           if (loadedMetadata == null ||
               loadedMetadata.updatedAt == null ||
               loadedMetadata.updatedAt! < event.createdAt!) {
@@ -1189,8 +1262,8 @@ class RelayManager {
     UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
     if (userRelayList == null || forceRefresh) {
       /// todo should also load from nip02
-      await for (final event in await requestRelays(bootstrapRelays.toList(),
-          Filter(authors: [pubKey], kinds: [Nip65.KIND], limit: 1))) {
+      await for (final event in (await requestRelays(bootstrapRelays.toList(),
+          Filter(authors: [pubKey], kinds: [Nip65.KIND], limit: 1))).stream) {
         if (userRelayList == null ||
             userRelayList.createdAt < event.createdAt!) {
           userRelayList = UserRelayList.fromNip65(Nip65.fromEvent(event));

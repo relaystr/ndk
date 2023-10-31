@@ -15,7 +15,7 @@ void main() async {
 
   test('DbContactList', () async {
     DbCacheManager cacheManager = DbCacheManager();
-    cacheManager.init();
+    await cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String contact1 = "contact1";
     String pubKey1 = "pubKey1";
@@ -29,7 +29,7 @@ void main() async {
 
   test('DbUserRelayList', () async {
     DbCacheManager cacheManager = DbCacheManager();
-    cacheManager.init();
+    await cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     DbUserRelayList userRelayList =
@@ -46,7 +46,7 @@ void main() async {
   });
   test('DbRelaySet', () async {
     DbCacheManager cacheManager = DbCacheManager();
-    cacheManager.init();
+    await cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     String pubKey2 = "pubKey2";
@@ -71,7 +71,7 @@ void main() async {
   });
   test('DbMetadata', () async {
     DbCacheManager cacheManager = DbCacheManager();
-    cacheManager.init();
+    await cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     DbMetadata metadata = DbMetadata(

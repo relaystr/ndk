@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:io';
 
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
@@ -30,7 +31,7 @@ class DbCacheManager extends CacheManager {
     isar = Isar.open(
       name: "db_ndk_${kDebugMode?"debug":"release"}",
       inspector: kDebugMode,
-      directory: directory ?? Isar.sqliteInMemory, //Directory.systemTemp.path,
+      directory: directory ?? Directory.systemTemp.path,
       engine: directory == Isar.sqliteInMemory ? IsarEngine.sqlite: IsarEngine.isar,
       schemas: [
         DbUserRelayListSchema,
