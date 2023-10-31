@@ -250,6 +250,8 @@ class RelayManager {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
+        print("CLOSE CODE: ${webSockets[request.url]!.closeCode}");
+
         webSockets[request.url]!.add(jsonEncode(list));
       } catch (e) {
         print(e);
@@ -628,8 +630,8 @@ class RelayManager {
         }
       }
       var id = eventJson[1];
-      if (id == "69696969") {
-        print("69696969");
+      if (id == "569298423984982349") {
+        print("569298423984982349");
       }
       // check signature is valid
       if (
@@ -1051,25 +1053,25 @@ class RelayManager {
       ContactList? loadedContactList;
       try {
         Filter filter = Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1);
-        List<dynamic> request = ["REQ", "69696969", filter.toMap()];
-        final encoded = jsonEncode(request);
+        // List<dynamic> request = ["REQ", "69696969", filter.toMap()];
+        // final encoded = jsonEncode(request);
         String relay ='wss://relay.damus.io';
         NostrRequest rr = NostrRequest.query("569298423984982349");
         rr.addRequest(relay, [filter]);
         nostrRequests[rr.id] = rr;
-        _doRequest(rr.id, rr.requests!.values.first);
         rr.onEvent = (event) {
           print(event);
         };
-        rr.requests!.values.first.controller!.stream.listen((event) {
-          print(event);
-        });
+        _doRequest(rr.id, rr.requests!.values.first);
+        // rr.requests!.values.first.controller!.stream.listen((event) {
+        //   print(event);
+        // });
 
-        var webSocket = await WebSocket.connect(relay);
-        webSocket.listen((event) {
-          print(event);
-        });
-        webSocket.add(encoded);
+        // var webSocket = await WebSocket.connect(relay);
+        // webSocket.listen((event) {
+        //   print(event);
+        // });
+        // webSocket.add(encoded);
         // final wsUrl = Uri.parse(relay);
         // var channel = WebSocketChannel.connect(wsUrl);
         // channel.stream.listen((event) {
