@@ -598,7 +598,7 @@ class RelayManager {
 
   // =====================================================================================
 
-  _handleIncommingMessage(dynamic message, String url) {
+  _handleIncommingMessage(dynamic message, String url) async {
     List<dynamic> eventJson = json.decode(message);
 
     if (eventJson[0] == 'OK') {
@@ -628,39 +628,43 @@ class RelayManager {
       }
       var id = eventJson[1];
       // check signature is valid
-      if (
-      // _subscriptions[id] != null
-      //     &&
-      event.isValid
-      // &&          await eventVerifier.verify(event)
-      ) {
-        event.sources.add(url);
-        if (relays[url] != null) {
-          relays[url]!
-              .incStatsByNewEvent(event, message
-              .toString()
-              .codeUnits
-              .length);
+      if (nostrRequests[id] == null) {
+        if (kDebugMode) {
+          print("RECEIVED EVENT ${id} for unknown request: $event");
         }
-        NostrRequest? nostrRequest = nostrRequests[id];
-        if (nostrRequest!=null) {
-          RelayRequest? request = nostrRequest.requests[url];
-          if (nostrRequest.onEvent!=null) {
-            nostrRequest.onEvent!.call(event);
+        return;
+      }
+      if (!event.isIdValid) {
+        if (kDebugMode) {
+          print("RECEIVED ${id} INVALID EVENT ${event}");
+        }
+        return;
+      }
+      bool validSig = await eventVerifier.verify(event);
+      if (validSig) {
+          event.sources.add(url);
+          if (relays[url] != null) {
+            relays[url]!
+                .incStatsByNewEvent(event, message
+                .toString()
+                .codeUnits
+                .length);
           }
-          if (request!=null && request.controller!=null) {
-            request.controller!.add(event);
+          NostrRequest? nostrRequest = nostrRequests[id];
+          if (nostrRequest != null) {
+            RelayRequest? request = nostrRequest.requests[url];
+            if (nostrRequest.onEvent != null) {
+              nostrRequest.onEvent!.call(event);
+            }
+            if (request != null && request.controller != null) {
+              request.controller!.add(event);
+            }
           }
         } else {
           if (kDebugMode) {
-            print("RECEIVED EVENT ${id} for unknown request: $event");
+            print("INVALID EVENT SIGNATURE: $event");
           }
         }
-      } else {
-        if (kDebugMode) {
-          print("INVALID EVENT SIGNATURE: $event");
-        }
-      }
       return;
     }
     if (eventJson[0] == 'EOSE') {

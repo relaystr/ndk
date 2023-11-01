@@ -85,7 +85,7 @@ class Nip01Event {
     sig = Bip340.sign(id, privateKey);
   }
 
-  bool get isValid {
+  bool get isIdValid {
     // Validate event data
     if (id != _calculateId(pubKey, createdAt!, kind, tags, content)) {
       return false;
