@@ -39,7 +39,7 @@ class RelayInfo {
     if (json["icon"]!=null) {
       icon = json["icon"];
     } else {
-      icon = "${url}/favicon.ico";
+      icon = "$url/favicon.ico";
     }
     final List<dynamic> nips = json["supported_nips"] ?? [];
     final String software = json["software"] ?? "";

@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
@@ -109,7 +108,7 @@ void main() {
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
-        rankingScoringConfig: RelayRankingScoringConfig(),
+        rankingScoringConfig: const RelayRankingScoringConfig(),
       );
 
       expect(result, isA<RelayRankingResult>());
@@ -126,7 +125,7 @@ void main() {
         eventData: exampleEventData,
         connectedRelays: [],
         pubkeyCoverage: 2,
-        rankingScoringConfig: RelayRankingScoringConfig(),
+        rankingScoringConfig: const RelayRankingScoringConfig(),
       );
       expect(result.notCoveredPubkeys.length, equals(1));
       expect(result.notCoveredPubkeys[0].pubkey, equals('unknown'));

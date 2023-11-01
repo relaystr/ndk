@@ -33,7 +33,6 @@ void main() {
       } catch (e) {
         // success
       }
-      ;
     });
 
     test('Get Nip65 for some pubkeys', () async {
