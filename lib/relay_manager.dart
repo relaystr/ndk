@@ -208,7 +208,7 @@ class RelayManager {
       {int? idleTimeout, bool splitRequestsByPubKeyMappings = true}) async {
     return _doNostrRequest(
         NostrRequest.query(Helpers.getRandomString(10), idleTimeout: idleTimeout, onTimeout: (request) {
-          // closeNostrRequest(request);
+          closeNostrRequest(request);
         }), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
   }
   Future<void> closeNostrRequest(NostrRequest request) async {
@@ -1022,7 +1022,7 @@ class RelayManager {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
         await for (final event in (await query(
-            idleTimeout: 2,
+            idleTimeout: 10,
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
             relaySet)).stream) {
