@@ -629,9 +629,9 @@ class RelayManager {
       var id = eventJson[1];
       // check signature is valid
       if (nostrRequests[id] == null) {
-        if (kDebugMode) {
-          print("RECEIVED EVENT ${id} for unknown request: $event");
-        }
+        // if (kDebugMode) {
+        //   print("RECEIVED EVENT ${id} for unknown request: $event");
+        // }
         return;
       }
       if (!event.isIdValid) {
@@ -672,23 +672,23 @@ class RelayManager {
       String id = eventJson[1];
       NostrRequest? nostrRequest = nostrRequests[id];
       if (nostrRequest!=null) {
-        RelayRequest? request = nostrRequest.requests[url];
-        if (request!=null) {
-          if (request.controller!=null && !request.controller!.isClosed) {
-            request.controller!.close();
-            if (isWebSocketOpen(url)) {
-              try {
-                webSockets[url]!.add(jsonEncode(["CLOSE", nostrRequest.id]));
-              } catch (e) {
-                print(e);
-              }
-            }
-          }
-          nostrRequest.requests.remove(url);
-          if (nostrRequest.requests.isEmpty && !nostrRequest.streamGroup.isClosed) {
-            nostrRequest.streamGroup.close();
-          }
-        }
+        // RelayRequest? request = nostrRequest.requests[url];
+        // if (request!=null) {
+        //   if (request.controller!=null && !request.controller!.isClosed) {
+        //     request.controller!.close();
+        //     if (isWebSocketOpen(url)) {
+        //       try {
+        //         webSockets[url]!.add(jsonEncode(["CLOSE", nostrRequest.id]));
+        //       } catch (e) {
+        //         print(e);
+        //       }
+        //     }
+        //   }
+        //   nostrRequest.requests.remove(url);
+        //   if (nostrRequest.requests.isEmpty && !nostrRequest.streamGroup.isClosed) {
+        //     nostrRequest.streamGroup.close();
+        //   }
+        // }
       }
       return;
     }
@@ -1026,7 +1026,7 @@ class RelayManager {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
         await for (final event in (await query(
-            idleTimeout: 10,
+            idleTimeout: 3,
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
             relaySet)).stream) {
