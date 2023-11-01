@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
@@ -22,7 +21,6 @@ import 'package:dart_ndk/relay_info.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:dart_ndk/tag_count_event_filter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'event_filter.dart';
 import 'models/relay_set.dart';
@@ -89,7 +87,7 @@ class RelayManager {
 
   bool isWebSocketOpen(String url) {
     WebSocket? webSocket = webSockets[Relay.clean(url)];
-    return webSocket != null && webSocket.readyState == WebSocket.open;
+    return webSocket != null && webSocket.readyState == WebSocket.open && webSocket.closeCode == null;
   }
 
   bool isWebSocketConnecting(String url) {
@@ -210,7 +208,7 @@ class RelayManager {
       {int? idleTimeout, bool splitRequestsByPubKeyMappings = true}) async {
     return _doNostrRequest(
         NostrRequest.query(Helpers.getRandomString(10), idleTimeout: idleTimeout, onTimeout: (request) {
-          closeNostrRequest(request);
+          // closeNostrRequest(request);
         }), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
   }
   Future<void> closeNostrRequest(NostrRequest request) async {
@@ -250,7 +248,6 @@ class RelayManager {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
-        print("CLOSE CODE: ${webSockets[request.url]!.closeCode}");
 
         webSockets[request.url]!.add(jsonEncode(list));
       } catch (e) {
@@ -630,9 +627,6 @@ class RelayManager {
         }
       }
       var id = eventJson[1];
-      if (id == "569298423984982349") {
-        print("569298423984982349");
-      }
       // check signature is valid
       if (
       // _subscriptions[id] != null
@@ -656,6 +650,10 @@ class RelayManager {
           }
           if (request!=null && request.controller!=null) {
             request.controller!.add(event);
+          }
+        } else {
+          if (kDebugMode) {
+            print("RECEIVED EVENT ${id} for unknown request: $event");
           }
         }
       } else {
@@ -1055,14 +1053,14 @@ class RelayManager {
         Filter filter = Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1);
         // List<dynamic> request = ["REQ", "69696969", filter.toMap()];
         // final encoded = jsonEncode(request);
-        String relay ='wss://relay.damus.io';
-        NostrRequest rr = NostrRequest.query("569298423984982349");
-        rr.addRequest(relay, [filter]);
-        nostrRequests[rr.id] = rr;
-        rr.onEvent = (event) {
-          print(event);
-        };
-        _doRequest(rr.id, rr.requests!.values.first);
+        // String relay ='wss://relay.damus.io';
+        // NostrRequest rr = NostrRequest.query("569298423984982349");
+        // rr.addRequest(relay, [filter]);
+        // nostrRequests[rr.id] = rr;
+        // nostrRequests[rr.id]!.onEvent = (event) {
+        //   print(event);
+        // };
+        // _doRequest(rr.id, rr.requests!.values.first);
         // rr.requests!.values.first.controller!.stream.listen((event) {
         //   print(event);
         // });
