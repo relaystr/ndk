@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 
 import 'models/relay_set.dart';
@@ -15,6 +16,7 @@ class MemCacheManager implements CacheManager {
   Map<String, ContactList> contactLists = {};
   Map<String, Metadata> metadatas = {};
   Map<String, Nip05> nip05s = {};
+  Map<String, Nip01Event> events = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -175,5 +177,41 @@ class MemCacheManager implements CacheManager {
   Iterable<Metadata> searchMetadatas(String search, int limit) {
     /// TODO
     return [];
+  }
+
+  @override
+  Nip01Event? loadEvent(String id) {
+    // TODO: implement loadEvent
+    throw UnimplementedError();
+  }
+
+  @override
+  List<Nip01Event>? loadEvents(List<String> pubKeys, List<int> kinds) {
+    // TODO: implement loadEvents
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> removeAllEvents(String pubKey) {
+    // TODO: implement removeAllEvents
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> removeEvent(String id) {
+    // TODO: implement removeEvent
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> saveEvent(Nip01Event event) {
+    // TODO: implement saveEvent
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> saveEvents(List<Nip01Event> events) {
+    // TODO: implement saveEvents
+    throw UnimplementedError();
   }
 }

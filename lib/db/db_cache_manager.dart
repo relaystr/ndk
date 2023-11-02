@@ -3,10 +3,12 @@ import 'dart:io';
 
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
+import 'package:dart_ndk/db/db_event.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/db/db_nip05.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
@@ -34,6 +36,7 @@ class DbCacheManager extends CacheManager {
       directory: directory ?? Directory.systemTemp.path,
       engine: directory == Isar.sqliteInMemory ? IsarEngine.sqlite: IsarEngine.isar,
       schemas: [
+        DbEventSchema,
         DbUserRelayListSchema,
         DbRelaySetSchema,
         DbContactListSchema,
@@ -250,6 +253,57 @@ class DbCacheManager extends CacheManager {
   Future<void> removeAllNip05s() async {
     isar.write((isar) {
       isar.dbNip05s.clear();
+    });
+  }
+  /************************************************************************************************/
+
+  @override
+  Future<void> removeEvent(String id) async {
+    isar.write((isar) {
+      isar.dbEvents.delete(id);
+    });
+  }
+
+  @override
+  Future<void> saveEvent(Nip01Event event) async {
+    final startTime = DateTime.now();
+    isar.write((isar) {
+      isar.dbEvents.put(DbEvent.fromNip01Event(event));
+    });
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print("SAVED Event took ${duration.inMilliseconds} ms");
+  }
+
+  @override
+  Future<void> saveEvents(List<Nip01Event> events) async {
+    final startTime = DateTime.now();
+    isar.write((isar) {
+      isar.dbEvents.putAll(events.map((event) => DbEvent.fromNip01Event(event)).toList());
+    });
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    print("SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
+  }
+
+  @override
+  List<Nip01Event>? loadEvents(List<String> pubKeys, List<int> kinds) {
+    return isar.dbEvents.where()
+        .optional(kinds!=null && kinds.isNotEmpty, (q) => q.anyOf(kinds, (q, kind) => q.kindEqualTo(kind)))
+        .and()
+        .optional(pubKeys!=null && pubKeys.isNotEmpty, (q) => q.anyOf(pubKeys, (q, pubKey) => q.pubKeyEqualTo(pubKey)))
+        .findAll();
+  }
+
+  @override
+  Nip01Event? loadEvent(String id) {
+    return isar.dbEvents.get(id);
+  }
+
+  @override
+  Future<void> removeAllEvents(String pubKey) async {
+    isar.write((isar) {
+      isar.dbEvents.where().pubKeyEqualTo(pubKey).deleteAll();
     });
   }
 }

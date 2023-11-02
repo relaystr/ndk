@@ -98,7 +98,7 @@ class Metadata {
         content: jsonEncode(toJson()),
         kind: KIND,
         tags: [],
-        createdAt: updatedAt
+        createdAt: updatedAt??0
     );
   }
 

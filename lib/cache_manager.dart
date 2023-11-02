@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 
 import 'models/relay_set.dart';
@@ -6,6 +7,12 @@ import 'nips/nip01/metadata.dart';
 import 'nips/nip05/nip05.dart';
 
 abstract class CacheManager {
+  Future<void> saveEvent(Nip01Event event);
+  Future<void> saveEvents(List<Nip01Event> events);
+  Nip01Event? loadEvent(String id);
+  List<Nip01Event>? loadEvents(List<String> pubKeys, List<int> kinds);
+  Future<void> removeEvent(String id);
+  Future<void> removeAllEvents(String pubKey);
 
   Future<void> saveUserRelayList(UserRelayList userRelayList);
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists);

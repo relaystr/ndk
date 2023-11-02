@@ -21,7 +21,7 @@ class Nip01Event {
     required this.kind,
     required this.tags,
     required this.content,
-    int? createdAt,
+    int createdAt=0,
   }) {
     this.createdAt = (createdAt==null || createdAt==0) ?  DateTime
         .now()
@@ -64,6 +64,8 @@ class Nip01Event {
 
   /// 64-byte Schnorr signature of [Nip01Event.id].
   String sig = '';
+
+  bool? validSig;
 
   /// Relay that an event was received from
   List<String> sources = [];

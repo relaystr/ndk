@@ -1,10 +1,14 @@
 // ignore_for_file: avoid_print
 
+import 'dart:io';
+
 import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
+import 'package:dart_ndk/db/db_event.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -101,5 +105,76 @@ void main() async {
     expect(loaded!.picture, metadata.picture);
     expect(loaded!.updatedAt, metadata.updatedAt);
     expect(loaded!.website, metadata.website);
+  });
+  test('DbEvent', () async {
+    DbCacheManager cacheManager = DbCacheManager();
+    await cacheManager.init();
+    int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    String pubKey1 = "pubKey1";
+    String pubKey2 = "pubKey2";
+    DbEvent event11 = DbEvent(
+        pubKey: pubKey1,
+        content: "content 11",
+        kind: 1,
+        tags: ["tag1","tag2"],
+        createdAt: now,
+        sig: 'signature',
+        validSig: true,
+        sources: ["wss://relay1.com", "wss://relay2.com"]
+    );
+    DbEvent event12 = DbEvent(
+      pubKey: pubKey1,
+      content: "content 12",
+      kind: 2,
+      tags: [],
+      createdAt: now,
+      sig: '',
+      validSig: null,
+      sources: []
+    );
+    DbEvent event21 = DbEvent(
+      pubKey: pubKey2,
+      content: "content 21",
+      kind: 1,
+      tags: [],
+      createdAt: now,
+      sig: '',
+      validSig: null,
+      sources: []
+    );
+    DbEvent event22 = DbEvent(
+        pubKey: pubKey2,
+        content: "content 22",
+        kind: 2,
+        tags: [],
+        createdAt: now,
+        sig: '',
+        validSig: null,
+        sources: []
+    );
+    cacheManager.removeAllEvents(pubKey1);
+    cacheManager.removeAllEvents(pubKey2);
+    await cacheManager.saveEvents([event11, event12, event21, event22]);
+
+    Nip01Event? loadedEvent1 = cacheManager.loadEvent(event11.id) as DbEvent?;
+    expect(loadedEvent1!.id, event11.id);
+    expect(loadedEvent1!.content, event11.content);
+    expect(loadedEvent1!.pubKey, event11.pubKey);
+    expect(loadedEvent1!.kind, event11.kind);
+    expect(loadedEvent1!.createdAt, event11.createdAt);
+    expect(loadedEvent1!.sig, event11.sig);
+    expect(loadedEvent1!.validSig, event11.validSig);
+    expect(loadedEvent1!.tags, event11.tags);
+    expect(loadedEvent1!.sources, event11.sources);
+
+    List<Nip01Event>? loadedEventsKind1 = cacheManager.loadEvents([], [1]);
+    expect(loadedEventsKind1!.length, 2);
+    expect(loadedEventsKind1!.contains(event11), true);
+    expect(loadedEventsKind1!.contains(event21), true);
+
+    List<Nip01Event>? loadedEventsPubkey2 = cacheManager.loadEvents([pubKey2], []);
+    expect(loadedEventsPubkey2!.length, 2);
+    expect(loadedEventsPubkey2!.contains(event21), true);
+    expect(loadedEventsPubkey2!.contains(event22), true);
   });
 }
