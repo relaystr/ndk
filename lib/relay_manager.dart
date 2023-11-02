@@ -176,11 +176,11 @@ class RelayManager {
         webSockets[url]!.close().then(
               (value) {
             print("closed $url. Reconnecting");
-            _reconnectRelay(url);
+            reconnectRelay(url);
           },
         );
       } else {
-        _reconnectRelay(url);
+        reconnectRelay(url);
       }
       // startListeningToSocket(url);
       // if (webSockets[url] != null) {
@@ -869,7 +869,7 @@ class RelayManager {
               relayMinCountPerPubKey)) {
         continue;
       }
-      if (!await _reconnectRelay(url)) {
+      if (!await reconnectRelay(url)) {
         continue;
       }
       if (bestRelays[url] == null) {
@@ -1227,7 +1227,7 @@ class RelayManager {
     final startTime = DateTime.now();
     print("connecting ${urls.length} relays in parallel");
     List<bool> connected = await Future.wait(urls.map((url) {
-      return _reconnectRelay(url, force: true);
+      return reconnectRelay(url, force: true);
     }));
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
@@ -1239,7 +1239,7 @@ class RelayManager {
             .length} FAILED took ${duration.inMilliseconds} ms");
   }
 
-  Future<bool> _reconnectRelay(String url, {bool force = false}) async {
+  Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
     if (relay == null || !isWebSocketOpen(url)) {
       if (relay != null &&
