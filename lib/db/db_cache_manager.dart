@@ -287,7 +287,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  List<Nip01Event>? loadEvents(List<String> pubKeys, List<int> kinds) {
+  List<Nip01Event> loadEvents(List<String> pubKeys, List<int> kinds) {
     return isar.dbEvents.where()
         .optional(kinds!=null && kinds.isNotEmpty, (q) => q.anyOf(kinds, (q, kind) => q.kindEqualTo(kind)))
         .and()

@@ -643,6 +643,7 @@ class RelayManager {
       bool validSig = await eventVerifier.verify(event);
       if (validSig) {
           event.sources.add(url);
+          event.validSig = true;
           if (relays[url] != null) {
             relays[url]!
                 .incStatsByNewEvent(event, message
