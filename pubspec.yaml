@@ -14,6 +14,7 @@ dependencies:
   bip340: ^0.2.0
   bech32: ^0.2.2
   hex: ^0.2.0
+  websocket_universal: ^1.1.1
   crypto: ^3.0.3
   collection: ^1.17.2
   path_provider: ^2.1.1

@@ -42,10 +42,13 @@ class Metadata {
     banner = json['banner'];
     website = json['website'];
     about = json['about'];
-    nip05 = json['nip05'];
+    try {
+      nip05 = json['nip05'];
+    } catch (e) {
+      // sometimes people put maps in here
+    }
     lud16 = json['lud16'];
     lud06 = json['lud06'];
-    updatedAt = json['updated_at'];
   }
 
   String? get cleanNip05 {

@@ -301,9 +301,16 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> removeAllEvents(String pubKey) async {
+  Future<void> removeAllEventsByPubKey(String pubKey) async {
     isar.write((isar) {
       isar.dbEvents.where().pubKeyEqualTo(pubKey).deleteAll();
+    });
+  }
+
+  @override
+  Future<void> removeAllEvents() async {
+    isar.write((isar) {
+      isar.dbEvents.clear();
     });
   }
 }

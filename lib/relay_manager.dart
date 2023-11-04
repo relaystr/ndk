@@ -3,10 +3,8 @@
 import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
-import 'dart:io';
 
 import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/db/db_metadata.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
@@ -21,6 +19,7 @@ import 'package:dart_ndk/relay_info.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:dart_ndk/tag_count_event_filter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:websocket_universal/websocket_universal.dart';
 
 import 'event_filter.dart';
 import 'models/relay_set.dart';
@@ -60,7 +59,7 @@ class RelayManager {
   Map<String, Relay> relays = {};
 
   /// Global webSocket registry by url
-  Map<String, WebSocket> webSockets = {};
+  Map<String, IWebSocketHandler> webSockets = {};
 
   final Map<String,NostrRequest> nostrRequests = {};
 
@@ -86,18 +85,28 @@ class RelayManager {
   }
 
   bool isWebSocketOpen(String url) {
-    WebSocket? webSocket = webSockets[Relay.clean(url)];
-    return webSocket != null && webSocket.readyState == WebSocket.open && webSocket.closeCode == null;
+    var webSocket = webSockets[Relay.clean(url)];
+    return webSocket != null && webSocket.socketState.status == SocketStatus.connected;
   }
 
   bool isWebSocketConnecting(String url) {
-    WebSocket? webSocket = webSockets[Relay.clean(url)];
-    return webSocket != null && webSocket.readyState == WebSocket.connecting;
+    var webSocket = webSockets[Relay.clean(url)];
+    return webSocket != null && webSocket.socketState.status == SocketStatus.connecting;
   }
 
   bool isRelayConnecting(String url) {
     Relay? relay = relays[url];
     return relay != null && relay.connecting;
+  }
+
+  Future<bool> awaitForSocketConnected(String url) async {
+    await for (final state in webSockets[url]!.socketHandlerStateStream) {
+      print('> $url ${state.status}');
+      if (state.status == SocketStatus.connected) {
+        return true;
+      }
+    };
+    return false;
   }
 
   /// Connect a new relay
@@ -117,32 +126,41 @@ class RelayManager {
         relays[url]!.stats.connectionErrors++;
         return false;
       }
-      print("connecting to relay $url");
-      HttpClient httpClient = HttpClient();
-      httpClient.idleTimeout = const Duration(seconds: 3600);
-      webSockets[url] = await WebSocket.connect(url, customClient: httpClient)
-          .timeout(Duration(seconds: connectTimeout))
-          .catchError((error) {
-        return Future<WebSocket>.error(error);
-      });
-      // try {
-      //   webSockets[url]!.done.then((value) {
-      //     print("!!!!!!! $url IS DONE $value");
-      //     webSockets.remove(url);
-      //   },).onError((error, stackTrace) {
-      //     print("error on done $error");
-      //   });
-      //   // print('WebSocket donw');
-      // } catch (error) {
-      //   print('WebScoket done with error $error');
-      // }
+      var connectionOptions = SocketConnectionOptions(
+        timeoutConnectionMs: connectTimeout*1000,
+        skipPingMessages: true,
+        pingRestrictionForce: true,
+      );
+      webSockets[url] = IWebSocketHandler<String, String>.createClient(
+        url,
+        SocketSimpleTextProcessor(),
+        connectionOptions: connectionOptions
+      );
 
-      if (isWebSocketOpen(url)) {
+      // webSockets[url]!.logEventStream.listen((event) {
+      //   if (event.socketLogEventType != SocketLogEventType.fromServerMessage) {
+      //     print("${event.socketLogEventType.value} -> ${event.data}");
+      //   }
+      // });
+
+      startListeningToSocket(url);
+      // webSockets[url]!.socketHandlerStateStream.listen((stateEvent) {
+      //   print('> $url ${stateEvent.status}');
+      // });
+
+      bool connected = await webSockets[url]!.connect();
+
+      // await for (final state in webSockets[url]!.socketHandlerStateStream) {
+      //   print('> $url ${state.status}');
+      //   if (state.status == SocketStatus.connected) {
+      //     break;
+      //   }
+      // };
+
+      if (connected) {
         developer.log("connected to relay: $url");
-        // webSockets[url]!.pingInterval = const Duration(seconds: WEB_SOCKET_PING_INTERVAL_SECONDS);
         relays[url]!.succeededToConnect();
         relays[url]!.stats.connections++;
-        startListeningToSocket(url);
         getRelayInfo(url);
         return true;
       }
@@ -155,16 +173,10 @@ class RelayManager {
   }
 
   void startListeningToSocket(String url) {
-    // print("listening on $url...");
-    webSockets[url]!
-    //     .asBroadcastStream(onCancel: (sub) {
-    //   // print("onCancel ${sub.");
-    // }, onListen: (sub) {
-    //   print("onListen $sub");
-    // })
-        .listen((message) {
+    webSockets[url]!.incomingMessagesStream.listen((message) {
       _handleIncommingMessage(message, url);
-    }, onError: (error) async {
+    }
+    , onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
       print("onError $url on listen $error");
       throw Exception("Error in socket");
@@ -173,20 +185,12 @@ class RelayManager {
       relays[url]!.stats.connectionErrors++;
       if (isWebSocketOpen(url)) {
         print("closing $url webSocket");
-        webSockets[url]!.close().then(
-              (value) {
-            print("closed $url. Reconnecting");
-            reconnectRelay(url);
-          },
-        );
+        webSockets[url]!.close();
+        print("closed $url. Reconnecting");
+        reconnectRelay(url);
       } else {
         reconnectRelay(url);
       }
-      // startListeningToSocket(url);
-      // if (webSockets[url] != null) {
-      //   webSockets[url]!.close();
-      //   webSockets.remove(url);
-      // }
       /// todo: handle this better, should clean subscription stuff
     });
   }
@@ -200,14 +204,14 @@ class RelayManager {
 
   Future<NostrRequest> subscription(Filter filter, RelaySet relaySet,
       {bool splitRequestsByPubKeyMappings = true}) async {
-    return _doNostrRequest(
-        NostrRequest.subscription(Helpers.getRandomString(10)), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+    return doNostrRequest(
+        NostrRequest.subscription(Helpers.getRandomString(10), eventVerifier: eventVerifier), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
   }
 
   Future<NostrRequest> query(Filter filter, RelaySet relaySet,
-      {int? idleTimeout, bool splitRequestsByPubKeyMappings = true}) async {
-    return _doNostrRequest(
-        NostrRequest.query(Helpers.getRandomString(10), idleTimeout: idleTimeout, onTimeout: (request) {
+      {int? idleTimeout, bool splitRequestsByPubKeyMappings = true,}) async {
+    return doNostrRequest(
+        NostrRequest.query(Helpers.getRandomString(10), eventVerifier: eventVerifier, groupIdleTimeout: idleTimeout, onTimeout: (request) {
           closeNostrRequest(request);
         }), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
   }
@@ -218,42 +222,35 @@ class RelayManager {
   Future<void> closeNostrRequestById(String id) async {
     NostrRequest? nostrRequest = nostrRequests[id];
     if (nostrRequest!=null) {
-      try {
-        nostrRequest.streamGroup.close();
-      } catch (e) {
-        print(e);
-      }
-      nostrRequest.requests.forEach((url, request) {
-        if (request.controller!=null) {
-          try {
-            request.controller!.close();
-          } catch (e) {
-            print(e);
-          }
-        }
+      for (var url in nostrRequest.requests.keys) {
         if (isWebSocketOpen(url)) {
           try {
-            webSockets[url]!.add(jsonEncode(["CLOSE", nostrRequest.id]));
+            webSockets[url]!.sendMessage(jsonEncode(["CLOSE", nostrRequest.id]));
           } catch (e) {
             print(e);
           }
         }
-      });
+      }
+      nostrRequest.controller.close();
       nostrRequests.remove(id);
     }
   }
 
-  void _doRequest(String id, RelayRequest request) {
+  bool doRequest(String id, RelayRequest request) {
     if (isWebSocketOpen(request.url)) {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
 
-        webSockets[request.url]!.add(jsonEncode(list));
+        webSockets[request.url]!.sendMessage(jsonEncode(list));
+        return true;
       } catch (e) {
         print(e);
       }
+    } else {
+      print("COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
     }
+    return false;
   }
 
   Future<void> broadcastEvent(Nip01Event event, Iterable<String> relays,
@@ -267,12 +264,9 @@ class RelayManager {
       try {
         print("BROADCASTING to $url : kind: ${event.kind} author: ${event
             .pubKey}");
-        WebSocket? webSocket = webSockets[url];
-        if (webSocket==null) {
-          webSocket = webSockets[url];
-        }
+        IWebSocketHandler? webSocket = webSockets[url];
         if (webSocket!=null) {
-          webSocket!.add(jsonEncode(["EVENT", event.toJson()]));
+          webSocket!.sendMessage(jsonEncode(["EVENT", event.toJson()]));
         }
       } catch (e) {
         print("ERROR BROADCASTING $url -> $e");
@@ -598,19 +592,12 @@ class RelayManager {
 
   // =====================================================================================
 
-  _handleIncommingMessage(dynamic message, String url) async {
+  _handleIncommingMessage(dynamic message, String url) {
     List<dynamic> eventJson = json.decode(message);
 
     if (eventJson[0] == 'OK') {
       //nip 20 used to notify clients if an EVENT was successful
       // log("OK: ${eventJson[1]}");
-
-      // TODO handle event broadcasting results
-      // used for await on query
-      // if (_requestQueries[eventJson[1]] != null &&
-      //     _requestQueries[eventJson[1]]!) {
-      //   _subscriptions[eventJson[1]]?.close();
-      // }
       return;
     }
 
@@ -620,27 +607,29 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'EVENT') {
+      var id = eventJson[1];
+      if (nostrRequests[id] == null) {
+        if (kDebugMode) {
+          Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+          print("RECEIVED EVENT ${id} for unknown request kind: ${event.kind}");
+        }
+        return;
+      }
+
       Nip01Event event = Nip01Event.fromJson(eventJson[2]);
       for (var filter in eventFilters) {
         if (!filter.filter(event)) {
           return;
         }
       }
-      var id = eventJson[1];
       // check signature is valid
-      if (nostrRequests[id] == null) {
-        // if (kDebugMode) {
-        //   print("RECEIVED EVENT ${id} for unknown request: $event");
-        // }
-        return;
-      }
       if (!event.isIdValid) {
         if (kDebugMode) {
           print("RECEIVED ${id} INVALID EVENT ${event}");
         }
         return;
       }
-      bool validSig = await eventVerifier.verify(event);
+      bool validSig = true; //await eventVerifier.verify(event);
       if (validSig) {
           event.sources.add(url);
           event.validSig = true;
@@ -653,12 +642,14 @@ class RelayManager {
           }
           NostrRequest? nostrRequest = nostrRequests[id];
           if (nostrRequest != null) {
-            RelayRequest? request = nostrRequest.requests[url];
-            if (nostrRequest.onEvent != null) {
-              nostrRequest.onEvent!.call(event);
-            }
-            if (request != null && request.controller != null) {
-              request.controller!.add(event);
+            try {
+              // if (nostrRequest.onEvent!=null) {
+              //   nostrRequest.onEvent!(event);
+              // } else {
+                nostrRequest.controller.add(event);
+              // }
+            } catch(e) {
+              print("COULD NOT ADD event ${event} TO CONTROLLER on $url for requests ${nostrRequest.requests}");
             }
           }
         } else {
@@ -669,27 +660,24 @@ class RelayManager {
       return;
     }
     if (eventJson[0] == 'EOSE') {
-      // print("EOSE: ${eventJson[1]}, $url");
       String id = eventJson[1];
       NostrRequest? nostrRequest = nostrRequests[id];
-      if (nostrRequest!=null) {
-        // RelayRequest? request = nostrRequest.requests[url];
-        // if (request!=null) {
-        //   if (request.controller!=null && !request.controller!.isClosed) {
-        //     request.controller!.close();
-        //     if (isWebSocketOpen(url)) {
-        //       try {
-        //         webSockets[url]!.add(jsonEncode(["CLOSE", nostrRequest.id]));
-        //       } catch (e) {
-        //         print(e);
-        //       }
-        //     }
-        //   }
-        //   nostrRequest.requests.remove(url);
-        //   if (nostrRequest.requests.isEmpty && !nostrRequest.streamGroup.isClosed) {
-        //     nostrRequest.streamGroup.close();
-        //   }
-        // }
+      if (nostrRequest!=null && nostrRequest.closeOnEOSE) {
+
+        // print("RECEIVED EOSE from $url, remaining requests from :${nostrRequest.requests.keys} kind:${nostrRequest.requests.values.first.filters.first.kinds}");
+        RelayRequest? request = nostrRequest.requests[url];
+        if (request!=null) {
+          nostrRequest.requests.remove(url);
+          if (isWebSocketOpen(url)) {
+            webSockets[url]!.sendMessage(
+                jsonEncode(["CLOSE", nostrRequest.id]));
+          }
+        }
+        if (nostrRequest.requests.isEmpty &&
+            !nostrRequest.controller.isClosed) {
+          nostrRequest.controller.close();
+          // nostrRequests.remove(id);
+        }
       }
       return;
     }
@@ -719,7 +707,7 @@ class RelayManager {
     return relay != null && relay.supportsNip(nip);
   }
 
-  Future<NostrRequest> _doNostrRequest(NostrRequest nostrRequest, Filter filter,
+  Future<NostrRequest> doNostrRequest(NostrRequest nostrRequest, Filter filter,
       RelaySet relaySet,
       {bool splitRequestsByPubKeyMappings=true}) async {
     List<RelayRequest> requests = [];
@@ -747,37 +735,38 @@ class RelayManager {
         nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
       }
     }
-    // {
-    //  _doRequest(url, request)
-    //   streamGroup.add(_doRequest(request.url, request.filters,
-    //       closeOnEOSE: closeOnEOSE,
-    //       idleTimeout: idleTimeout,
-    //       streamGroup: streamGroup));
-    // }
-    // if (groupRequest.requests.isEmpty) {
-    //   return groupRequest;
-    // }
-    nostrRequest.requests.forEach((url, request) {
-      _doRequest(nostrRequest.id, request);
-    });
     nostrRequests[nostrRequest.id] = nostrRequest;
+    for(MapEntry<String,RelayRequest> entry in nostrRequest.requests.entries) {
+      doRequest(nostrRequest.id, entry.value);
+    }
     return nostrRequest;
   }
 
   Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
-      {int idleTimeout = DEFAULT_STREAM_IDLE_TIMEOUT}) async {
+      {int idleTimeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true}) async {
     String id = Helpers.getRandomString(10);
-    NostrRequest nostrRequest = NostrRequest.query(id, idleTimeout: idleTimeout, onTimeout: (request) {
-      closeNostrRequest(request);
-    });
+    NostrRequest nostrRequest = closeOnEOSE?
+      NostrRequest.query(id, eventVerifier: eventVerifier, groupIdleTimeout: idleTimeout, onTimeout: (request) {
+        closeNostrRequest(request);
+      }) :
+        NostrRequest.subscription(id, eventVerifier: eventVerifier);
+
     for (var url in urls) {
       nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
     }
-    nostrRequest.requests.forEach((url, request) {
-      _doRequest(nostrRequest.id, request);
-    });
-
     nostrRequests[nostrRequest.id] = nostrRequest;
+
+    List<String> notSent = [];
+    for(MapEntry<String,RelayRequest> entry in nostrRequest.requests.entries) {
+      if (!doRequest(nostrRequest.id, entry.value)) {
+        notSent.add(entry.key);
+      }
+    }
+    for (var url in notSent) {
+
+      nostrRequest.requests.remove(url);
+    }
+
     return nostrRequest;
   }
 
@@ -1027,10 +1016,12 @@ class RelayManager {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
         await for (final event in (await query(
-            idleTimeout: 3,
+            idleTimeout: 1,
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
-            relaySet)).stream) {
+            relaySet)).stream.timeout(Duration(seconds: 5), onTimeout: (sink) {
+              print("timeout metadatas.length:${metadatas.length}");
+        })) {
           if (metadatas[event.pubKey] == null ||
               metadatas[event.pubKey]!.updatedAt! < event.createdAt!) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
@@ -1040,11 +1031,13 @@ class RelayManager {
       } catch (e) {
         print(e);
       }
-      await cacheManager.saveMetadatas(metadatas.values
-          .map((metadata) => DbMetadata.fromMetadata(metadata))
-          .toList());
+      if (metadatas.isNotEmpty) {
+        await cacheManager.saveMetadatas(metadatas.values
+            // .map((metadata) => DbMetadata.fromMetadata(metadata))
+            .toList());
+      }
+      print("Loaded ${metadatas.length} user metadatas ");
     }
-    print("Loaded ${metadatas.length} user metadatas ");
     return metadatas.values.toList();
   }
 
@@ -1055,40 +1048,6 @@ class RelayManager {
     if (contactList == null || forceRefresh) {
       ContactList? loadedContactList;
       try {
-        Filter filter = Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1);
-        // List<dynamic> request = ["REQ", "69696969", filter.toMap()];
-        // final encoded = jsonEncode(request);
-        // String relay ='wss://relay.damus.io';
-        // NostrRequest rr = NostrRequest.query("569298423984982349");
-        // rr.addRequest(relay, [filter]);
-        // nostrRequests[rr.id] = rr;
-        // nostrRequests[rr.id]!.onEvent = (event) {
-        //   print(event);
-        // };
-        // _doRequest(rr.id, rr.requests!.values.first);
-        // rr.requests!.values.first.controller!.stream.listen((event) {
-        //   print(event);
-        // });
-
-        // var webSocket = await WebSocket.connect(relay);
-        // webSocket.listen((event) {
-        //   print(event);
-        // });
-        // webSocket.add(encoded);
-        // final wsUrl = Uri.parse(relay);
-        // var channel = WebSocketChannel.connect(wsUrl);
-        // channel.stream.listen((event) {
-        //   print(event);
-        // });
-        // channel.sink.add(encoded);
-
-        // webSockets["wss://relay.damus.io"]!.asBroadcastStream(onListen: (sub) {
-        //   print("onListen");
-        // }).listen((event) {
-        //   print(event);
-        // });
-        // webSockets["wss://relay.damus.io"]!.add(encoded);
-
         await for (final event in (await requestRelays(
             bootstrapRelays,
             idleTimeout: idleTimeout,

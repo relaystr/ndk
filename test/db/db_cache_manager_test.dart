@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:io';
-
 import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_event.dart';
@@ -152,8 +150,8 @@ void main() async {
         validSig: null,
         sources: []
     );
-    cacheManager.removeAllEvents(pubKey1);
-    cacheManager.removeAllEvents(pubKey2);
+    cacheManager.removeAllEventsByPubKey(pubKey1);
+    cacheManager.removeAllEventsByPubKey(pubKey2);
     await cacheManager.saveEvents([event11, event12, event21, event22]);
 
     Nip01Event? loadedEvent1 = cacheManager.loadEvent(event11.id) as DbEvent?;

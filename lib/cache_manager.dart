@@ -12,7 +12,8 @@ abstract class CacheManager {
   Nip01Event? loadEvent(String id);
   List<Nip01Event> loadEvents(List<String> pubKeys, List<int> kinds);
   Future<void> removeEvent(String id);
-  Future<void> removeAllEvents(String pubKey);
+  Future<void> removeAllEventsByPubKey(String pubKey);
+  Future<void> removeAllEvents();
 
   Future<void> saveUserRelayList(UserRelayList userRelayList);
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists);

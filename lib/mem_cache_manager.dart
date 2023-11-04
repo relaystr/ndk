@@ -192,7 +192,13 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> removeAllEvents(String pubKey) {
+  Future<void> removeAllEventsByPubKey(String pubKey) {
+    // TODO: implement removeAllEvents
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> removeAllEvents() {
     // TODO: implement removeAllEvents
     throw UnimplementedError();
   }
