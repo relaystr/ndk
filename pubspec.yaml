@@ -21,7 +21,6 @@ dependencies:
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
 
-#  websocket_universal: ^1.1.1
 #  rinf: ^4.12.2
 #  ffi: ^2.1.0
 #  flutter_rust_bridge: ^1.82.1
