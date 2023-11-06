@@ -676,7 +676,8 @@ class RelayManager {
         }
         if (nostrRequest.requests.isEmpty &&
             !nostrRequest.controller.isClosed) {
-          nostrRequest.controller.close();
+          nostrRequest.shouldClose=true;
+          //nostrRequest.controller.close();
           // nostrRequests.remove(id);
         }
       }

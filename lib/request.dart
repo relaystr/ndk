@@ -23,32 +23,42 @@ class NostrRequest {
   StreamController<Nip01Event> controller = StreamController<Nip01Event>();
   bool closeOnEOSE;
   int? groupIdleTimeout;
+  bool shouldClose=false;
   Function(NostrRequest)? onTimeout;
 
-  Stream<Nip01Event> get stream => 
-    groupIdleTimeout != null ? _stream().timeout(
-        Duration(seconds: groupIdleTimeout!), onTimeout: (sink) {
-      if (onTimeout != null) {
-        onTimeout!.call(this);
-      }
-    }) :
-    _stream();
+  Stream<Nip01Event> get stream => groupIdleTimeout != null
+      ? _stream().timeout(Duration(seconds: groupIdleTimeout!), onTimeout: (sink) {
+          if (onTimeout != null) {
+            onTimeout!.call(this);
+          }
+        })
+      : _stream();
 
   Stream<Nip01Event> _stream() {
-    return controller.stream.transform( StreamTransformer.fromHandlers(handleData: (data, sink) async {
-      sink.add(data);
-      // if (await eventVerifier.verify(data)) {
-      //   controller.add(data);
-      // }
-    },));
+    return controller.stream.transform(StreamTransformer.fromHandlers(handleData: (data, sink) async {
+      // sink.add(data);
+      eventVerifier.verify(data).then((value) {
+            if (value) {
+              try {
+                sink.add(data);
+                if (shouldClose) {
+                  controller.close();
+                }
+              } catch (e) {
+                print(e);
+              }
+            }
+          });
+    }));
   }
-  
-  NostrRequest.query(this.id,
-      {this.closeOnEOSE = true,
-        required this.eventVerifier,
-      this.groupIdleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT + 1,
-      this.onTimeout,
-      });
+
+  NostrRequest.query(
+    this.id, {
+    this.closeOnEOSE = true,
+    required this.eventVerifier,
+    this.groupIdleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT + 1,
+    this.onTimeout,
+  });
 
   NostrRequest.subscription(this.id, {this.closeOnEOSE = false, required this.eventVerifier});
 

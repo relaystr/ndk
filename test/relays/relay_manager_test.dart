@@ -16,22 +16,10 @@ import 'package:flutter_test/flutter_test.dart';
 import '../mocks/mock_relay.dart';
 
 void main() async {
-  MockRelay relay1 = MockRelay(name: "relay 1");
-  MockRelay relay2 = MockRelay(name: "relay 2");
-  MockRelay relay3 = MockRelay(name: "relay 3");
-  MockRelay relay4 = MockRelay(name: "relay 4");
-
   KeyPair key1 = Bip340.generatePrivateKey();
   KeyPair key2 = Bip340.generatePrivateKey();
   KeyPair key3 = Bip340.generatePrivateKey();
   KeyPair key4 = Bip340.generatePrivateKey();
-
-  Map<String, String> relayNames = {
-    relay1.url: relay1.name,
-    relay2.url: relay2.name,
-    relay3.url: relay3.name,
-    relay4.url: relay4.name,
-  };
 
   Map<KeyPair, String> keyNames = {
     key1: "key1",
@@ -58,6 +46,8 @@ void main() async {
 
   group('Relay Manager', () {
     test('Connect to relay', () async {
+
+      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer();
       RelayManager manager = RelayManager();
       await manager
@@ -71,6 +61,8 @@ void main() async {
 
     test('Try to connect to dead relay', () async {
       RelayManager manager = RelayManager();
+
+      MockRelay relay1 = MockRelay(name: "relay 1");
       try {
         await manager.connectRelay(relay1.url);
         fail("should throw exception");
@@ -80,6 +72,7 @@ void main() async {
     });
 
     test('Request text note', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: key1TextNotes);
 
       RelayManager manager = RelayManager();
@@ -107,10 +100,13 @@ void main() async {
         relay1.url
       ], Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND])))
           .stream;
-      expect(stream, emitsDone);
       // stream.listen((event) {
-      //   fail("should not emit any events, since relay does not sign");
+      //   print(event);
       // });
+      // expect(stream, emitsDone);
+      stream.listen((event) {
+        fail("should not emit any events, since relay does not sign");
+      });
       await relay1.stopServer();
     });
   });
@@ -120,6 +116,18 @@ void main() async {
     /// key2 reads and writes to relay 1 & 2, has its notes on both relays
     /// key3 reads and writes to relay 1, has its notes ONLY on relay 1
     /// key4 reads and writes ONLY to relay 4, has its notes ONLY on relay 4
+
+    MockRelay relay1 = MockRelay(name: "relay 1");
+    MockRelay relay2 = MockRelay(name: "relay 2");
+    MockRelay relay3 = MockRelay(name: "relay 3");
+    MockRelay relay4 = MockRelay(name: "relay 4");
+
+    Map<String, String> relayNames = {
+      relay1.url: relay1.name,
+      relay2.url: relay2.name,
+      relay3.url: relay3.name,
+      relay4.url: relay4.name,
+    };
     Nip65 nip65ForKey1 = Nip65.fromMap(key1.publicKey, {
       relay1.url: ReadWriteMarker.readWrite,
       relay2.url: ReadWriteMarker.readWrite,
