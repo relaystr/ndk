@@ -462,7 +462,7 @@ void main() async {
 
   group
     (
-      //skip: true,
+      skip: true,
       "Calculate best relays (external REAL)"
       , () {
 // ================================================================================================
@@ -483,24 +483,9 @@ void main() async {
         ContactList? contactList = await manager.loadContactList(key.publicKey);
 
         expect(contactList != null, true);
-// int j=1;
-// int count=0;
-// String relay = "wss://nostr-pub.wellorder.net";
-// await manager.loadMissingRelayListsFromNip65OrNip02(contactList!.contacts);
-// for (String contact in contactList!.contacts) {
-//   UserRelayList? userRelayList = await manager.getSingleUserRelayList(contact);
-//   if (userRelayList!=null && userRelayList.items.any((element) => Relay.clean(element.url) == relay)) {
-//     print (" checking for $relay among ${userRelayList!.items.length} relays of contact ${contact} found ${count} ... $j/${contactList.contacts.length}");
-//     count++;
-//   } else {
-//     print (" checking for $relay among relays of contact ${contact} DID NOT FOUND ... $j/${contactList.contacts.length}");
-//   }
-//   j++;
-// }
 
         String setName = "feed,$relayMinCountPerPubKey,";
-        RelaySet? bestRelays =
-        null; //await manager.getRelaySet(setName, key.publicKey);
+        RelaySet? bestRelays = null;
         if (bestRelays == null) {
           bestRelays = await manager.calculateRelaySet(
               name: "feed",
@@ -551,6 +536,34 @@ void main() async {
       }
     }
 
+    // test('test fmar.link', () async {
+    //   RelayManager relayManager = RelayManager();
+    //   // String relay = "wss://nostr.fmar.link";
+    //   await relayManager.connect();
+    //   KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32("npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams")[0]);
+    //
+    //   String pubKey = "48e7d9b7813958c13679ac82971211a3be9031015a2248bb041fb74652a1ddd7";
+    //   var filter = Filter(
+    //       kinds: [1],
+    //       authors: [
+    //         pubKey
+    //       ]);
+    //   ContactList? contactList = await relayManager.loadContactList(key.publicKey);
+    //
+    //   expect(contactList != null, true);
+    //
+    //   RelaySet? bestRelays = await relayManager.calculateRelaySet(
+    //         name: "feed",
+    //         ownerPubKey: key.publicKey,
+    //         pubKeys: contactList!.contacts,
+    //         direction: RelayDirection.outbox,
+    //         relayMinCountPerPubKey: 1);
+    //   await for (final event in (await relayManager.subscription(filter, bestRelays)).stream)  {
+    //     print(event);
+    //   }
+    //   // await Future<void>.delayed(const Duration(seconds: 10));
+    // }, timeout: const Timeout.factor(10));
+    //
     test('Leo feed best relays', () async {
       await _calculateBestRelaysForNpubContactsFeed(
           "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
