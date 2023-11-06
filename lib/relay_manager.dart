@@ -710,7 +710,6 @@ class RelayManager {
   Future<NostrRequest> doNostrRequest(NostrRequest nostrRequest, Filter filter,
       RelaySet relaySet,
       {bool splitRequestsByPubKeyMappings=true}) async {
-    List<RelayRequest> requests = [];
     if (splitRequestsByPubKeyMappings) {
       relaySet.splitIntoRequests(filter,nostrRequest);
 
@@ -718,10 +717,10 @@ class RelayManager {
           "request for ${filter.authors != null
               ? filter.authors!.length
               : 0} authors with kinds: ${filter
-              .kinds} made requests to ${requests
+              .kinds} made requests to ${nostrRequest.requests
               .length} relays");
 
-      if (requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
+      if (nostrRequest.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
         print(
             "making fallback requests to ${bootstrapRelays
                 .length} bootstrap relays for ${filter.authors != null ? filter
