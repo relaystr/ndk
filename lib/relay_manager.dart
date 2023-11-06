@@ -130,6 +130,7 @@ class RelayManager {
         timeoutConnectionMs: connectTimeout*1000,
         skipPingMessages: true,
         pingRestrictionForce: true,
+        reconnectionDelay: const Duration(seconds:5),
       );
       webSockets[url] = IWebSocketHandler<String, String>.createClient(
         url,
@@ -144,9 +145,9 @@ class RelayManager {
       // });
 
       startListeningToSocket(url);
-      // webSockets[url]!.socketHandlerStateStream.listen((stateEvent) {
-      //   print('> $url ${stateEvent.status}');
-      // });
+      webSockets[url]!.socketHandlerStateStream.listen((stateEvent) {
+        print('> $url ${stateEvent.status}');
+      });
 
       bool connected = await webSockets[url]!.connect();
 
@@ -1000,7 +1001,7 @@ class RelayManager {
   }
 
   Future<List<Metadata>> loadMissingMetadatas(List<String> pubKeys,
-      RelaySet relaySet, {bool splitRequestsByPubKeyMappings=true}) async {
+      RelaySet relaySet, {bool splitRequestsByPubKeyMappings=true, Function(Metadata)? onLoad}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
       Metadata? userMetadata = cacheManager.loadMetadata(pubKey);
@@ -1015,7 +1016,7 @@ class RelayManager {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
         await for (final event in (await query(
-            idleTimeout: 1,
+            idleTimeout: 10,
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
             relaySet)).stream.timeout(Duration(seconds: 5), onTimeout: (sink) {
@@ -1025,16 +1026,20 @@ class RelayManager {
               metadatas[event.pubKey]!.updatedAt! < event.createdAt!) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
+            await cacheManager.saveMetadata(metadatas[event.pubKey]!);
+            if (onLoad!=null) {
+              onLoad(metadatas[event.pubKey]!);
+            }
           }
         }
       } catch (e) {
         print(e);
       }
-      if (metadatas.isNotEmpty) {
-        await cacheManager.saveMetadatas(metadatas.values
-            // .map((metadata) => DbMetadata.fromMetadata(metadata))
-            .toList());
-      }
+      // if (metadatas.isNotEmpty) {
+      //   await cacheManager.saveMetadatas(metadatas.values
+      //       // .map((metadata) => DbMetadata.fromMetadata(metadata))
+      //       .toList());
+      // }
       print("Loaded ${metadatas.length} user metadatas ");
     }
     return metadatas.values.toList();

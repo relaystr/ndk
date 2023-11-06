@@ -15,6 +15,8 @@ class UserRelayList {
 
   Iterable<String> get urls => relays.keys;
 
+  Iterable<String> get readUrls => relays.entries.where((entry) => entry.value.isRead).map((entry) => entry.key);
+
   static UserRelayList fromNip65(Nip65 nip65) {
     return UserRelayList(
         pubKey: nip65.pubKey,
