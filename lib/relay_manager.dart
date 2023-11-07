@@ -232,12 +232,31 @@ class RelayManager {
           }
         }
       }
-      nostrRequest.controller.close();
+      try {
+        nostrRequest.controller.close();
+      } catch (e) {
+        print(e);
+      }
       nostrRequests.remove(id);
     }
   }
 
   bool doRequest(String id, RelayRequest request) {
+    Map<int,int> kindsMap = {};
+    nostrRequests.forEach((key, request) {
+      late int kind;
+      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+        kind = request.requests.values.first.filters.first.kinds!.first;
+      } else {
+        kind = 696969;
+      }
+      int? count = kindsMap[kind];
+      count ??= 0;
+      count++;
+      kindsMap[kind] = count;
+    });
+    print(
+        "----------------NOSTR REQUESTS: ${nostrRequests.length} || $kindsMap");
     if (isWebSocketOpen(request.url)) {
       try {
         List<dynamic> list = ["REQ", id];
@@ -603,7 +622,7 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'NOTICE') {
-      // log("NOTICE: ${eventJson[1]}");
+      print("NOTICE: ${eventJson[1]}");
       return;
     }
 
@@ -1018,7 +1037,7 @@ class RelayManager {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
         await for (final event in (await query(
-            idleTimeout: 10,
+            idleTimeout: 1,
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
             relaySet)).stream.timeout(Duration(seconds: 5), onTimeout: (sink) {
