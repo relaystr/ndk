@@ -242,13 +242,11 @@ class RelayManager {
   }
 
   bool doRequest(String id, RelayRequest request) {
-    Map<int,int> kindsMap = {};
+    Map<int?,int> kindsMap = {};
     nostrRequests.forEach((key, request) {
-      late int kind;
+      int? kind;
       if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
         kind = request.requests.values.first.filters.first.kinds!.first;
-      } else {
-        kind = 696969;
       }
       int? count = kindsMap[kind];
       count ??= 0;
@@ -622,7 +620,7 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'NOTICE') {
-      print("NOTICE: ${eventJson[1]}");
+      print("NOTICE from $url: ${eventJson[1]}");
       return;
     }
 
@@ -630,8 +628,8 @@ class RelayManager {
       var id = eventJson[1];
       if (nostrRequests[id] == null) {
         if (kDebugMode) {
-          Nip01Event event = Nip01Event.fromJson(eventJson[2]);
-          print("RECEIVED EVENT ${id} for unknown request kind: ${event.kind}");
+          // Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+          // print("RECEIVED EVENT ${id} for unknown request kind: ${event.kind}");
         }
         return;
       }
