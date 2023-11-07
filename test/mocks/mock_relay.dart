@@ -93,7 +93,7 @@ class MockRelay {
       List<KeyPair> keys = textNotes!.keys.where((key) => key.publicKey == author).toList();
       if (keys.isNotEmpty) {
         KeyPair key = keys.first;
-        Nip01Event? textNote = textNotes![key];
+        Nip01Event? textNote = Nip01Event.fromJson(textNotes![key]!.toJson());
         if (textNote != null) {
           List<dynamic> json = [];
           json.add("EVENT");

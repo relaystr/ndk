@@ -212,7 +212,7 @@ class RelayManager {
   Future<NostrRequest> query(Filter filter, RelaySet relaySet,
       {int? idleTimeout, bool splitRequestsByPubKeyMappings = true,}) async {
     return doNostrRequest(
-        NostrRequest.query(Helpers.getRandomString(10), eventVerifier: eventVerifier, groupIdleTimeout: idleTimeout, onTimeout: (request) {
+        NostrRequest.query(Helpers.getRandomString(10), eventVerifier: eventVerifier, timeout: idleTimeout, onTimeout: (request) {
           closeNostrRequest(request);
         }), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
   }
@@ -556,7 +556,7 @@ class RelayManager {
     Nip01Event? loaded;
     await for (final event in (await requestRelays(
         bootstrapRelays,
-        idleTimeout: DEFAULT_STREAM_IDLE_TIMEOUT,
+        timeout: DEFAULT_STREAM_IDLE_TIMEOUT,
         Filter(
             kinds: [Metadata.KIND],
             authors: [signer.getPublicKey()],
@@ -630,8 +630,8 @@ class RelayManager {
         }
         return;
       }
-      bool validSig = true; //await eventVerifier.verify(event);
-      if (validSig) {
+      eventVerifier.verify(event).then((validSig) {
+        if (validSig) {
           event.sources.add(url);
           event.validSig = true;
           if (relays[url] != null) {
@@ -644,11 +644,10 @@ class RelayManager {
           NostrRequest? nostrRequest = nostrRequests[id];
           if (nostrRequest != null) {
             try {
-              // if (nostrRequest.onEvent!=null) {
-              //   nostrRequest.onEvent!(event);
-              // } else {
-                nostrRequest.controller.add(event);
-              // }
+              nostrRequest.controller.add(event);
+              if (nostrRequest.shouldClose) {
+                nostrRequest.controller.close();
+              }
             } catch(e) {
               print("COULD NOT ADD event ${event} TO CONTROLLER on $url for requests ${nostrRequest.requests}");
             }
@@ -658,6 +657,7 @@ class RelayManager {
             print("INVALID EVENT SIGNATURE: $event");
           }
         }
+      });
       return;
     }
     if (eventJson[0] == 'EOSE') {
@@ -677,8 +677,12 @@ class RelayManager {
         if (nostrRequest.requests.isEmpty &&
             !nostrRequest.controller.isClosed) {
           nostrRequest.shouldClose=true;
-          //nostrRequest.controller.close();
-          // nostrRequests.remove(id);
+          Future.delayed(Duration(seconds:nostrRequest.timeout??5), () {
+            if (!nostrRequest.controller.isClosed) {
+              nostrRequest.controller.close();
+            }
+          });
+          nostrRequests.remove(id);
         }
       }
       return;
@@ -698,9 +702,7 @@ class RelayManager {
 
   Relay? getRelay(String url) {
     Relay? r = relays[url];
-    if (r == null) {
-      r = relays[Relay.clean(url)];
-    }
+    r ??= relays[Relay.clean(url)];
     return r;
   }
 
@@ -744,10 +746,10 @@ class RelayManager {
   }
 
   Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
-      {int idleTimeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true}) async {
+      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true}) async {
     String id = Helpers.getRandomString(10);
     NostrRequest nostrRequest = closeOnEOSE?
-      NostrRequest.query(id, eventVerifier: eventVerifier, groupIdleTimeout: idleTimeout, onTimeout: (request) {
+      NostrRequest.query(id, eventVerifier: eventVerifier, timeout: timeout, onTimeout: (request) {
         closeNostrRequest(request);
       }) :
         NostrRequest.subscription(id, eventVerifier: eventVerifier);
@@ -764,7 +766,6 @@ class RelayManager {
       }
     }
     for (var url in notSent) {
-
       nostrRequest.requests.remove(url);
     }
 
@@ -929,7 +930,7 @@ class RelayManager {
       }
       try {
         await for (final event in (await requestRelays(
-            idleTimeout: missingPubKeys.length > 1 ? 10 : 2,
+            timeout: missingPubKeys.length > 1 ? 10 : 2,
             bootstrapRelays,
             Filter(
                 authors: missingPubKeys,
@@ -1055,7 +1056,7 @@ class RelayManager {
       try {
         await for (final event in (await requestRelays(
             bootstrapRelays,
-            idleTimeout: idleTimeout,
+            timeout: idleTimeout,
             Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1))).stream) {
           if (loadedContactList == null ||
               loadedContactList.createdAt < event.createdAt!) {
@@ -1089,7 +1090,7 @@ class RelayManager {
       try {
         await for (final event in (await requestRelays(
             bootstrapRelays,
-            idleTimeout: idleTimeout,
+            timeout: idleTimeout,
             Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1))).stream) {
           if (loadedMetadata == null ||
               loadedMetadata.updatedAt == null ||
