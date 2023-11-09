@@ -1225,7 +1225,7 @@ class RelayManager {
 
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
-    if (relay == null || !isWebSocketOpen(url) || force) {
+    if (relay == null || !isWebSocketOpen(url)) {
       if (relay != null &&
           !force &&
           !relay.wasLastConnectTryLongerThanSeconds(
