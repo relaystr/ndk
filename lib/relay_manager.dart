@@ -210,7 +210,7 @@ class RelayManager {
   }
 
   Future<NostrRequest> query(Filter filter, RelaySet relaySet,
-      {int? idleTimeout, bool splitRequestsByPubKeyMappings = true,}) async {
+      {int idleTimeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool splitRequestsByPubKeyMappings = true,}) async {
     return doNostrRequest(
         NostrRequest.query(Helpers.getRandomString(10), eventVerifier: eventVerifier, timeout: idleTimeout, onTimeout: (request) {
           closeNostrRequest(request);
@@ -1224,7 +1224,7 @@ class RelayManager {
 
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
-    if (relay == null || !isWebSocketOpen(url)) {
+    if (relay == null || !isWebSocketOpen(url) || force) {
       if (relay != null &&
           !force &&
           !relay.wasLastConnectTryLongerThanSeconds(
