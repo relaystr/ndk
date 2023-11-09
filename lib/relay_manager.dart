@@ -621,6 +621,7 @@ class RelayManager {
 
     if (eventJson[0] == 'NOTICE') {
       print("NOTICE from $url: ${eventJson[1]}");
+      reconnectRelay(url,force: true);
       return;
     }
 
