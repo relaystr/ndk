@@ -174,5 +174,13 @@ void main() async {
     expect(loadedEventsPubkey2!.length, 2);
     expect(loadedEventsPubkey2!.contains(event21), true);
     expect(loadedEventsPubkey2!.contains(event22), true);
+
+    List<Nip01Event>? loadedEventsPubkey1AndKind1 = cacheManager.loadEvents([pubKey1], [1]);
+    expect(loadedEventsPubkey1AndKind1!.length, 1);
+    expect(loadedEventsPubkey1AndKind1!.contains(event11), true);
+
+    List<Nip01Event>? loadedEventsPubkey2AndKind2 = cacheManager.loadEvents([pubKey2], [2]);
+    expect(loadedEventsPubkey2AndKind2!.length, 1);
+    expect(loadedEventsPubkey2AndKind2!.contains(event22), true);
   });
 }
