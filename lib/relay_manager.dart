@@ -29,6 +29,7 @@ import 'nips/nip01/event.dart';
 import 'nips/nip01/event_verifier.dart';
 import 'nips/nip01/filter.dart';
 import 'nips/nip01/metadata.dart';
+import 'nips/nip51/nip51.dart';
 import 'nips/nip65/nip65.dart';
 
 class RelayManager {
@@ -555,6 +556,45 @@ class RelayManager {
       return userRelayList;
     }
   }
+
+  Future<Nip51RelaySet> broadcastAddNip51Relay(String relayUrl,
+      String name,
+      Iterable<String> broadcastRelays,
+      EventSigner signer) async {
+    Nip51RelaySet? list = await getSingleNip51RelaySet(signer.getPublicKey(), name, forceRefresh: true);
+    list ??= Nip51RelaySet(
+        name: name,
+          pubKey: signer.getPublicKey(),
+          relays: [],
+          createdAt: Helpers.now);
+    list.relays.add(relayUrl);
+    list.createdAt = Helpers.now;
+    await Future.wait([
+      broadcastEvent(
+          list.toEvent(), broadcastRelays, signer),
+    ]);
+    await cacheManager.saveEvent(list.toEvent());
+    return list;
+  }
+
+  Future<Nip51RelaySet?> broadcastRemoveNip51Relay(String relayUrl,
+      String name,
+      Iterable<String> broadcastRelays,
+      EventSigner signer) async {
+    Nip51RelaySet? list = await getSingleNip51RelaySet(signer.getPublicKey(), name, forceRefresh: true);
+    if (list!=null && list.relays.contains(relayUrl)) {
+      list.relays.remove(relayUrl);
+      list.createdAt = Helpers.now;
+      await Future.wait([
+        broadcastEvent(
+            list.toEvent(), broadcastRelays, signer),
+      ]);
+    }
+    return list;
+  }
+
+
+  //*******************************************************************************************************************************/
 
   Future<Nip01Event?> getSingleMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
@@ -1275,6 +1315,26 @@ class RelayManager {
     }
     return userRelayList;
   }
+
+  Future<Nip51RelaySet?> getSingleNip51RelaySet(String pubKey, String name,
+      {bool forceRefresh = false}) async {
+    List<Nip01Event>? events = cacheManager.loadEvents([pubKey], [Nip51RelaySet.CATEGORIZED_RELAY_SETS]);
+    events.sort((a, b) => b.createdAt.compareTo(a.createdAt),);
+    Nip51RelaySet? relaySet = events!=null && events.isNotEmpty ? Nip51RelaySet.fromEvent(events.first): null;
+    if (events == null || events.isEmpty || forceRefresh) {
+      await for (final event in (await requestRelays(bootstrapRelays.toList(),
+          Filter(authors: [pubKey], kinds: [Nip51RelaySet.CATEGORIZED_RELAY_SETS], dTags: [name], limit: 1))).stream) {
+        if (relaySet == null ||
+            relaySet.createdAt < event.createdAt!) {
+          relaySet = Nip51RelaySet.fromEvent(event);
+          // should it be sync or async is ok?
+          await cacheManager.saveEvent(event);
+        }
+      }
+    }
+    return relaySet;
+  }
+
 
   Future<RelayInfo?> getRelayInfo(String url) async {
     if (relays[url] != null) {
