@@ -8,6 +8,7 @@ import 'nips/nip01/filter.dart';
 
 class RelayRequest {
   String url;
+  bool receivedEOSE=false;
   List<Filter> filters;
 
   RelayRequest(this.url, this.filters);
@@ -23,7 +24,6 @@ class NostrRequest {
   StreamController<Nip01Event> controller = StreamController<Nip01Event>();
   bool closeOnEOSE;
   int? timeout;
-  bool shouldClose=false;
   Function(NostrRequest)? onTimeout;
 
   Stream<Nip01Event> get stream => timeout != null
@@ -43,6 +43,10 @@ class NostrRequest {
   });
 
   NostrRequest.subscription(this.id, {this.closeOnEOSE = false, required this.eventVerifier});
+
+
+  bool get didAllRequestsReceivedEOSE => requests.values.any((element) => !element.receivedEOSE);
+  bool get shouldClose => closeOnEOSE && (requests.isEmpty || didAllRequestsReceivedEOSE);
 
   void addRequest(String url, List<Filter> filters) {
     if (!requests.containsKey(url)) {

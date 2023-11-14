@@ -690,8 +690,9 @@ class RelayManager {
           if (nostrRequest != null) {
             try {
               nostrRequest.controller.add(event);
-              if (nostrRequest.shouldClose) {
+              if (!nostrRequest.controller.isClosed && nostrRequest.shouldClose) {
                 nostrRequest.controller.close();
+                nostrRequests.remove(id);
               }
             } catch(e) {
               print("COULD NOT ADD event ${event} TO CONTROLLER on $url for requests ${nostrRequest.requests}");
@@ -713,22 +714,22 @@ class RelayManager {
         // print("RECEIVED EOSE from $url, remaining requests from :${nostrRequest.requests.keys} kind:${nostrRequest.requests.values.first.filters.first.kinds}");
         RelayRequest? request = nostrRequest.requests[url];
         if (request!=null) {
+          request.receivedEOSE = true;
           nostrRequest.requests.remove(url);
           if (isWebSocketOpen(url)) {
             webSockets[url]!.sendMessage(
                 jsonEncode(["CLOSE", nostrRequest.id]));
           }
         }
-        if (nostrRequest.requests.isEmpty &&
-            !nostrRequest.controller.isClosed) {
-          nostrRequest.shouldClose=true;
-          Future.delayed(Duration(seconds:nostrRequest.timeout??5), () {
-            if (!nostrRequest.controller.isClosed) {
-              nostrRequest.controller.close();
-            }
-          });
-          nostrRequests.remove(id);
-        }
+        // if (nostrRequest.requests.isEmpty &&
+        //     !nostrRequest.controller.isClosed) {
+        //   Future.delayed(Duration(seconds:nostrRequest.timeout??5), () {
+        //     if (!nostrRequest.controller.isClosed) {
+        //       nostrRequest.controller.close();
+        //     }
+        //   });
+        //   nostrRequests.remove(id);
+        // }
       }
       return;
     }
