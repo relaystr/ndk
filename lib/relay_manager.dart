@@ -242,19 +242,6 @@ class RelayManager {
   }
 
   bool doRequest(String id, RelayRequest request) {
-    Map<int?,int> kindsMap = {};
-    nostrRequests.forEach((key, request) {
-      int? kind;
-      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-        kind = request.requests.values.first.filters.first.kinds!.first;
-      }
-      int? count = kindsMap[kind];
-      count ??= 0;
-      count++;
-      kindsMap[kind] = count;
-    });
-    print(
-        "----------------NOSTR REQUESTS: ${nostrRequests.length} || $kindsMap");
     if (isWebSocketOpen(request.url)) {
       try {
         List<dynamic> list = ["REQ", id];
@@ -757,6 +744,19 @@ class RelayManager {
       }
     }
     nostrRequests[nostrRequest.id] = nostrRequest;
+    Map<int?,int> kindsMap = {};
+    nostrRequests.forEach((key, request) {
+      int? kind;
+      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+        kind = request.requests.values.first.filters.first.kinds!.first;
+      }
+      int? count = kindsMap[kind];
+      count ??= 0;
+      count++;
+      kindsMap[kind] = count;
+    });
+    print(
+        "----------------NOSTR REQUESTS: ${nostrRequests.length} || $kindsMap");
     for(MapEntry<String,RelayRequest> entry in nostrRequest.requests.entries) {
       doRequest(nostrRequest.id, entry.value);
     }
@@ -778,6 +778,19 @@ class RelayManager {
     nostrRequests[nostrRequest.id] = nostrRequest;
 
     List<String> notSent = [];
+    Map<int?,int> kindsMap = {};
+    nostrRequests.forEach((key, request) {
+      int? kind;
+      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+        kind = request.requests.values.first.filters.first.kinds!.first;
+      }
+      int? count = kindsMap[kind];
+      count ??= 0;
+      count++;
+      kindsMap[kind] = count;
+    });
+    print(
+        "----------------NOSTR REQUESTS: ${nostrRequests.length} || $kindsMap");
     for(MapEntry<String,RelayRequest> entry in nostrRequest.requests.entries) {
       if (!doRequest(nostrRequest.id, entry.value)) {
         notSent.add(entry.key);
