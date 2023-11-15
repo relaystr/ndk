@@ -45,7 +45,7 @@ class NostrRequest {
   NostrRequest.subscription(this.id, {this.closeOnEOSE = false, required this.eventVerifier});
 
 
-  bool get didAllRequestsReceivedEOSE => requests.values.any((element) => !element.receivedEOSE);
+  bool get didAllRequestsReceivedEOSE => !requests.values.any((element) => !element.receivedEOSE);
   bool get shouldClose => closeOnEOSE && (requests.isEmpty || didAllRequestsReceivedEOSE);
 
   void addRequest(String url, List<Filter> filters) {

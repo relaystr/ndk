@@ -239,6 +239,22 @@ class RelayManager {
         print(e);
       }
       nostrRequests.remove(id);
+
+      /***********************************/
+      Map<int?,int> kindsMap = {};
+      nostrRequests.forEach((key, request) {
+        int? kind;
+        if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+          kind = request.requests.values.first.filters.first.kinds!.first;
+        }
+        int? count = kindsMap[kind];
+        count ??= 0;
+        count++;
+        kindsMap[kind] = count;
+      });
+      print(
+          "----------------NOSTR REQUESTS CLOSE SOME: ${nostrRequests.length} || $kindsMap");
+      /***********************************/
     }
   }
 
@@ -690,10 +706,10 @@ class RelayManager {
           if (nostrRequest != null) {
             try {
               nostrRequest.controller.add(event);
-              if (!nostrRequest.controller.isClosed && nostrRequest.shouldClose) {
-                nostrRequest.controller.close();
-                nostrRequests.remove(id);
-              }
+              // if (!nostrRequest.controller.isClosed && nostrRequest.shouldClose) {
+              //   nostrRequest.controller.close();
+              //   nostrRequests.remove(id);
+              // }
             } catch(e) {
               print("COULD NOT ADD event ${event} TO CONTROLLER on $url for requests ${nostrRequest.requests}");
             }
@@ -721,15 +737,13 @@ class RelayManager {
                 jsonEncode(["CLOSE", nostrRequest.id]));
           }
         }
-        // if (nostrRequest.requests.isEmpty &&
-        //     !nostrRequest.controller.isClosed) {
-        //   Future.delayed(Duration(seconds:nostrRequest.timeout??5), () {
-        //     if (!nostrRequest.controller.isClosed) {
-        //       nostrRequest.controller.close();
-        //     }
-        //   });
-        //   nostrRequests.remove(id);
-        // }
+        if (nostrRequest.requests.isEmpty &&
+            !nostrRequest.controller.isClosed) {
+          Future.delayed(Duration(seconds:nostrRequest.timeout??5), () {
+            closeNostrRequest(nostrRequest);
+          });
+          nostrRequests.remove(id);
+        }
       }
       return;
     }
