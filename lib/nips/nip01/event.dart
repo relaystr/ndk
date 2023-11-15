@@ -129,6 +129,20 @@ class Nip01Event {
     return null;
   }
 
+  String? getDtag() {
+    for (var tag in tags) {
+      if (tag.length > 1) {
+        var key = tag[0];
+        var value = tag[1];
+
+        if (key == "d") {
+          return value as String;
+        }
+      }
+    }
+    return null;
+  }
+
   @override
   String toString() {
     return 'Nip01Event{pubKey: $pubKey, createdAt: $createdAt, kind: $kind, tags: $tags, content: $content, sources: $sources}';

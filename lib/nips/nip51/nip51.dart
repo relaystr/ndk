@@ -52,7 +52,6 @@ class Nip51RelaySet {
       content: "",
       createdAt: createdAt,
     );
-    event.id = id;
     return event;
   }
 }
