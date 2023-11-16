@@ -15,7 +15,7 @@ import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/relay_info.dart';
+import 'package:dart_ndk/nips/nip11/relay_info.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:dart_ndk/tag_count_event_filter.dart';
 import 'package:flutter/foundation.dart';
