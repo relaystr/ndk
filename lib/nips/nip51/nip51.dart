@@ -2,10 +2,9 @@ import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/nips/nip04/nip04.dart';
 
 import '../nip01/event.dart';
-import '../nip04/nip04.dart';
 
 class Nip51RelaySet {
   static const int MUTE = 10000;
@@ -35,8 +34,7 @@ class Nip51RelaySet {
     id = event.id;
     createdAt = event.createdAt!;
     if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
-      var agreement = Nip04.getAgreement(signer.getPrivateKey()!);
-      var json = Nip04.decrypt(event.content, agreement, signer.getPrivateKey()!);
+      var json = Nip04.decrypt(signer.getPrivateKey()!, signer.getPublicKey(), event.content);
       List<dynamic> tags = jsonDecode(json);
       for (var tag in tags) {
         if (tag is! List<dynamic>) continue;
@@ -80,9 +78,8 @@ class Nip51RelaySet {
   }
 
   Nip01Event toPrivateEvent(EventSigner signer) {
-    var agreement = Nip04.getAgreement(signer.getPrivateKey()!);
     String json = jsonEncode( [["d", name]]..addAll(relays.map((entry) => ["r",entry])));
-    var resultStr = Nip04.encrypt(json, agreement, signer.getPrivateKey()!);
+    var resultStr = Nip04.encrypt(signer.getPrivateKey()!, signer.getPublicKey(), json);
     Nip01Event event = Nip01Event(
       pubKey: pubKey,
       kind: CATEGORIZED_RELAY_SETS,

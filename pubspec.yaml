@@ -14,10 +14,12 @@ dependencies:
   bip340: ^0.2.0
   bech32: ^0.2.2
   hex: ^0.2.0
+  kepler: ^1.0.3
   websocket_universal: ^1.1.1
   crypto: ^3.0.3
   collection: ^1.17.2
   path_provider: ^2.1.1
+
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
 
