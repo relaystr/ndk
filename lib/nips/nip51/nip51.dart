@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip04/nip04.dart';
 
 import '../nip01/event.dart';
+import '../nip04/nip04.dart';
 
 class Nip51RelaySet {
   static const int MUTE = 10000;
@@ -34,20 +34,25 @@ class Nip51RelaySet {
     id = event.id;
     createdAt = event.createdAt!;
     if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
-      var json = Nip04.decrypt(signer.getPrivateKey()!, signer.getPublicKey(), event.content);
-      List<dynamic> tags = jsonDecode(json);
-      for (var tag in tags) {
-        if (tag is! List<dynamic>) continue;
-        final length = tag.length;
-        if (length <= 1) continue;
-        final tagName = tag[0];
-        final value = tag[1];
-        if (tagName == "d") {
-          name = value;
-          continue;
+      try {
+        var json = Nip04.decrypt(event.content, Nip04.getAgreement(signer.getPrivateKey()!), signer.getPublicKey());
+        List<dynamic> tags = jsonDecode(json);
+        for (var tag in tags) {
+          if (tag is! List<dynamic>) continue;
+          final length = tag.length;
+          if (length <= 1) continue;
+          final tagName = tag[0];
+          final value = tag[1];
+          if (tagName == "d") {
+            name = value;
+            continue;
+          }
+          if (tagName != "r") continue;
+          relays.add(value);
         }
-        if (tagName != "r") continue;
-        relays.add(value);
+      } catch (e) {
+        name = "<invalid encrypted content>";
+        print(e);
       }
     } else {
       for (var tag in event.tags) {
@@ -79,7 +84,7 @@ class Nip51RelaySet {
 
   Nip01Event toPrivateEvent(EventSigner signer) {
     String json = jsonEncode( [["d", name]]..addAll(relays.map((entry) => ["r",entry])));
-    var resultStr = Nip04.encrypt(signer.getPrivateKey()!, signer.getPublicKey(), json);
+    var resultStr = Nip04.encrypt(json, Nip04.getAgreement(signer.getPrivateKey()!), signer.getPublicKey());
     Nip01Event event = Nip01Event(
       pubKey: pubKey,
       kind: CATEGORIZED_RELAY_SETS,
