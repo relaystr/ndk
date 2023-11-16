@@ -1,6 +1,11 @@
+import 'dart:convert';
+
+import 'package:dart_ndk/nips/nip01/event_signer.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 
 import '../nip01/event.dart';
+import '../nip04/nip04.dart';
 
 class Nip51RelaySet {
   static const int MUTE = 10000;
@@ -25,31 +30,64 @@ class Nip51RelaySet {
 
   Nip51RelaySet({required this.pubKey, required this.name, required this.relays, required this.createdAt});
 
-  Nip51RelaySet.fromEvent(Nip01Event event) {
+  Nip51RelaySet.fromEvent(Nip01Event event, EventSigner? signer) {
     pubKey = event.pubKey;
     id = event.id;
     createdAt = event.createdAt!;
-    for (var tag in event.tags) {
-      if (tag is! List<dynamic>) continue;
-      final length = tag.length;
-      if (length <= 1) continue;
-      final tagName = tag[0];
-      final value = tag[1];
-      if (tagName == "d") {
-        name = value;
-        continue;
+    if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
+      var agreement = Nip04.getAgreement(signer.getPrivateKey()!);
+      var json = Nip04.decrypt(event.content, agreement, signer.getPrivateKey()!);
+      List<dynamic> tags = jsonDecode(json);
+      for (var tag in tags) {
+        if (tag is! List<dynamic>) continue;
+        final length = tag.length;
+        if (length <= 1) continue;
+        final tagName = tag[0];
+        final value = tag[1];
+        if (tagName == "d") {
+          name = value;
+          continue;
+        }
+        if (tagName != "r") continue;
+        relays.add(value);
       }
-      if (tagName != "r") continue;
-      relays.add(value);
+    } else {
+      for (var tag in event.tags) {
+        if (tag is! List<dynamic>) continue;
+        final length = tag.length;
+        if (length <= 1) continue;
+        final tagName = tag[0];
+        final value = tag[1];
+        if (tagName == "d") {
+          name = value;
+          continue;
+        }
+        if (tagName != "r") continue;
+        relays.add(value);
+      }
     }
   }
 
-  Nip01Event toEvent() {
+  Nip01Event toPublicEvent() {
     Nip01Event event = Nip01Event(
       pubKey: pubKey,
       kind: CATEGORIZED_RELAY_SETS,
       tags: [["d", name]]..addAll(relays.map((entry) => ["r",entry])),
       content: "",
+      createdAt: createdAt,
+    );
+    return event;
+  }
+
+  Nip01Event toPrivateEvent(EventSigner signer) {
+    var agreement = Nip04.getAgreement(signer.getPrivateKey()!);
+    String json = jsonEncode( [["d", name]]..addAll(relays.map((entry) => ["r",entry])));
+    var resultStr = Nip04.encrypt(json, agreement, signer.getPrivateKey()!);
+    Nip01Event event = Nip01Event(
+      pubKey: pubKey,
+      kind: CATEGORIZED_RELAY_SETS,
+      tags: [],
+      content: resultStr,
       createdAt: createdAt,
     );
     return event;
