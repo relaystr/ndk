@@ -266,7 +266,7 @@ class RelayManager {
   }
 
   bool doRequest(String id, RelayRequest request) {
-    if (isWebSocketOpen(request.url)) {
+    if (isWebSocketOpen(request.url) && (blockedRelays==null || !blockedRelays.contains(request.url))) {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
@@ -289,7 +289,7 @@ class RelayManager {
   }
 
   Future<void> broadcastSignedEvent(Nip01Event event, String url) async {
-    if (isWebSocketOpen(url)) {
+    if (isWebSocketOpen(url) && (blockedRelays==null || !blockedRelays.contains(url))) {
       try {
         print("BROADCASTING to $url : kind: ${event.kind} author: ${event
             .pubKey}");
