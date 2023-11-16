@@ -2,16 +2,19 @@ class Filter {
   List<String>? ids;
   List<String>? authors;
   List<int>? kinds;
+  String? search;
 
   List<String>? eTags; // event tags
   List<String>? pTags; // pubKey tags
   List<String>? tTags; // # tags
+  List<String>? aTags; // a tags
+  List<String>? dTags; // a tags
 
   int? since;
   int? until;
   int? limit;
 
-  Filter({this.ids, this.authors, this.kinds, this.eTags, this.pTags, this.tTags, this.since, this.until, this.limit});
+  Filter({this.ids, this.authors, this.kinds, this.eTags, this.pTags, this.tTags, this.aTags, this.dTags, this.since, this.until, this.limit});
 
   Filter.fromMap(Map<String, dynamic> map) {
     ids = map['ids'] == null ? null : List<String>.from(map['ids']);
@@ -20,6 +23,9 @@ class Filter {
     eTags = map['#e'] == null ? null : List<String>.from(map['#e']);
     pTags = map['#p'] == null ? null : List<String>.from(map['#p']);
     tTags = map['#t'] == null ? null : List<String>.from(map['#t']);
+    tTags = map['#a'] == null ? null : List<String>.from(map['#a']);
+    tTags = map['#d'] == null ? null : List<String>.from(map['#d']);
+    search = map['search'];
     since = map['since'];
     until = map['until'];
     limit = map['limit'];
@@ -33,8 +39,11 @@ class Filter {
       "#e": eTags,
       "#p": pTags,
       "#t": tTags,
+      "#d": dTags,
+      "#a": aTags,
       "since": since,
       "until": until,
+      "search": search,
       "limit": limit,
     };
     // remove null values

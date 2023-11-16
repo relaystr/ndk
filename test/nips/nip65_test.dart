@@ -8,9 +8,9 @@ void main() {
   group('Nip65', () {
     test('fromEvent', () {
       final event = Nip01Event(
-        publishAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
-        kind: Nip65.kind,
+        kind: Nip65.KIND,
         content: "",
         tags: [
           ['r', 'wss://example.com', 'read'],
@@ -20,7 +20,7 @@ void main() {
         ],
       );
       final nip65 = Nip65.fromEvent(event);
-      expect(nip65.relays, {
+      expect(nip65.relaysMap(), {
         'wss://example.com': ReadWriteMarker.readOnly,
         'wss://example.org': ReadWriteMarker.writeOnly,
         'wss://example.net': ReadWriteMarker.readWrite,
@@ -28,14 +28,15 @@ void main() {
     });
 
     test('toEvent', () {
-      final nip65 = Nip65({
+      String pubKey  = 'pubKey123';
+      final nip65 = Nip65.fromMap(pubKey,{
         'wss://example.com': ReadWriteMarker.readWrite,
         'wss://example.org': ReadWriteMarker.readOnly,
         'wss://example.net': ReadWriteMarker.writeOnly,
       });
-      final myEvent = nip65.toEvent('pubkey123');
-      expect(myEvent.pubKey, equals('pubkey123'));
-      expect(myEvent.kind, equals(Nip65.kind));
+      final myEvent = nip65.toEvent();
+      expect(myEvent.pubKey, equals(pubKey));
+      expect(myEvent.kind, equals(Nip65.KIND));
       expect(
           myEvent.tags,
           equals([

@@ -3,17 +3,27 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import '../nip01/event.dart';
 
 class Nip65 {
-  static const int kind = 10002;
+  static const int KIND = 10002;
 
-  // Pub keys -> markers
-  Map<String, ReadWriteMarker> relays = {};
+  late String pubKey;
+
+  Map<String,ReadWriteMarker> relays = {};
+
+  Nip65.fromMap(this.pubKey, Map<String, ReadWriteMarker> map) {
+    relays = map;
+  } // Pub keys -> markers
 
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-  Nip65(this.relays);
+  // Nip65(this.relays);
+
+  Map<String, ReadWriteMarker> relaysMap() {
+    return relays;
+  }
 
   Nip65.fromEvent(Nip01Event event) {
-    createdAt = event.createdAt;
+    pubKey = event.pubKey;
+    createdAt = event.createdAt!;
     for (var tag in event.tags) {
       if (tag is! List<dynamic>) continue;
       final length = tag.length;
@@ -37,14 +47,13 @@ class Nip65 {
     }
   }
 
-  Nip01Event toEvent(String pubKey) {
+  Nip01Event toEvent() {
     return Nip01Event(
       pubKey: pubKey,
-      kind: Nip65.kind,
+      kind: Nip65.KIND,
       tags: relays.entries.map((entry) {
-        final url = entry.key;
-        final marker = entry.value;
-        List<String> list = ["r", url];
+        ReadWriteMarker marker = entry.value;
+        List<String> list = ["r", entry.key];
         if (marker == ReadWriteMarker.readOnly) {
           list.add("read");
         }
@@ -54,14 +63,14 @@ class Nip65 {
         return list;
       }).toList(),
       content: "",
-      publishAt: createdAt,
+      createdAt: createdAt,
     );
   }
 
   @override
   // coverage:ignore-start
   String toString() {
-    return 'Nip65{relays: $relays}';
+    return 'Nip65{urls: $relays}';
   }
   // coverage:ignore-end
 }

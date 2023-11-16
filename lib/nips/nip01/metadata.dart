@@ -1,10 +1,13 @@
+import 'dart:convert';
+
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 
 class Metadata {
 
-  static const int kind = 0;
+  static const int KIND = 0;
 
-  String? pubKey;
+  late String pubKey;
   String? name;
   String? displayName;
   String? picture;
@@ -15,9 +18,10 @@ class Metadata {
   String? lud16;
   String? lud06;
   int? updatedAt;
+  int? refreshedTimestamp;
 
   Metadata({
-    this.pubKey,
+    this.pubKey = "",
     this.name,
     this.displayName,
     this.picture,
@@ -28,30 +32,43 @@ class Metadata {
     this.lud16,
     this.lud06,
     this.updatedAt,
+    this.refreshedTimestamp
   });
 
   Metadata.fromJson(Map<String, dynamic> json) {
-    pubKey = json['pub_key'];
     name = json['name'];
     displayName = json['display_name'];
     picture = json['picture'];
     banner = json['banner'];
     website = json['website'];
     about = json['about'];
-    nip05 = json['nip05'];
+    try {
+      nip05 = json['nip05'];
+    } catch (e) {
+      // sometimes people put maps in here
+    }
     lud16 = json['lud16'];
     lud06 = json['lud06'];
-    updatedAt = json['updated_at'];
+  }
+
+  String? get cleanNip05 {
+    if (nip05!=null) {
+      if (nip05!.startsWith("_@")) {
+        return nip05!.trim().toLowerCase()!.replaceAll("_@", "@");
+      }
+      return nip05!.trim().toLowerCase();
+    }
+    return null;
   }
 
   Map<String, dynamic> toFullJson() {
     var data = toJson();
-    data['pub_key'] = this.pubKey;
+    data['pub_key'] = pubKey;
     return data;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['name'] = name;
     data['display_name'] = displayName;
     data['picture'] = picture;
@@ -65,6 +82,29 @@ class Metadata {
     return data;
   }
 
+  static Metadata fromEvent(Nip01Event event) {
+    Metadata metadata = Metadata();
+    if (Helpers.isNotBlank(event.content)) {
+      Map<String,dynamic> json = jsonDecode(event.content);
+      if (json!=null) {
+        metadata = Metadata.fromJson(json);
+      }
+    }
+    metadata.pubKey = event.pubKey;
+    metadata.updatedAt = event.createdAt;
+    return metadata;
+  }
+
+  Nip01Event toEvent() {
+    return Nip01Event(
+      pubKey: pubKey,
+        content: jsonEncode(toJson()),
+        kind: KIND,
+        tags: [],
+        createdAt: updatedAt??0
+    );
+  }
+
   String getName() {
     if (displayName != null && Helpers.isNotBlank(displayName)) {
       return displayName!;
@@ -72,17 +112,26 @@ class Metadata {
     if (name != null && Helpers.isNotBlank(name)) {
       return name!;
     }
-    return pubKey!;
+    return pubKey;
   }
 
   bool matchesSearch(String str) {
     str = str.trim().toLowerCase();
-    String d = displayName != null ? displayName!.toLowerCase()! : "";
-    String n = name != null ? name!.toLowerCase()! : "";
+    String d = displayName != null ? displayName!.toLowerCase(): "";
+    String n = name != null ? name!.toLowerCase(): "";
     String str2 = " $str";
     return d.startsWith(str) ||
         d.contains(str2) ||
         n.startsWith(str) ||
         n.contains(str2);
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Metadata && runtimeType == other.runtimeType &&
+              pubKey == other.pubKey;
+
+  @override
+  int get hashCode => pubKey.hashCode;
 }

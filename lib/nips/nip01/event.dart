@@ -5,7 +5,7 @@ import 'package:dart_ndk/nips/nip01/bip340.dart';
 
 class Nip01Event {
 
-  static const int textNoteKind = 1;
+  static const int TEXT_NODE_KIND = 1;
 
   /// Creates a new Nostr event.
   ///
@@ -21,14 +21,12 @@ class Nip01Event {
     required this.kind,
     required this.tags,
     required this.content,
-    int? publishAt,
+    int createdAt=0,
   }) {
-    if (publishAt != null) {
-      createdAt = publishAt;
-    } else {
-      createdAt = _secondsSinceEpoch();
-    }
-    id = _calculateId(pubKey, createdAt, kind, tags, content);
+    this.createdAt = (createdAt==null || createdAt==0) ?  DateTime
+        .now()
+        .millisecondsSinceEpoch ~/ 1000 : createdAt;
+    id = _calculateId(pubKey, this.createdAt!, kind, tags, content);
   }
 
   Nip01Event._(this.id, this.pubKey, this.createdAt, this.kind, this.tags,
@@ -62,10 +60,12 @@ class Nip01Event {
   List<dynamic> tags; // Modified by proof-of-work
 
   /// Event content.
-  final String content;
+  String content;
 
   /// 64-byte Schnorr signature of [Nip01Event.id].
   String sig = '';
+
+  bool? validSig;
 
   /// Relay that an event was received from
   List<String> sources = [];
@@ -87,9 +87,9 @@ class Nip01Event {
     sig = Bip340.sign(id, privateKey);
   }
 
-  bool get isValid {
+  bool get isIdValid {
     // Validate event data
-    if (id != _calculateId(pubKey, createdAt, kind, tags, content)) {
+    if (id != _calculateId(pubKey, createdAt!, kind, tags, content)) {
       return false;
     }
     return true;
@@ -113,6 +113,34 @@ class Nip01Event {
     final bytes = utf8.encode(jsonData);
     final digest = sha256.convert(bytes);
     return digest.toString();
+  }
+
+  String? getEId() {
+    for (var tag in tags) {
+      if (tag.length > 1) {
+        var key = tag[0];
+        var value = tag[1];
+
+        if (key == "e") {
+          return value as String;
+        }
+      }
+    }
+    return null;
+  }
+
+  String? getDtag() {
+    for (var tag in tags) {
+      if (tag.length > 1) {
+        var key = tag[0];
+        var value = tag[1];
+
+        if (key == "d") {
+          return value as String;
+        }
+      }
+    }
+    return null;
   }
 
   @override

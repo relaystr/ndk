@@ -122,4 +122,6 @@ class Helpers {
   static bool isBlank(String? str) {
     return !isNotBlank(str);
   }
+
+  static int get now => DateTime.now().millisecondsSinceEpoch ~/ 1000;
 }
