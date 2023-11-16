@@ -761,10 +761,10 @@ class RelayManager {
         }
         if (nostrRequest.requests.isEmpty &&
             !nostrRequest.controller.isClosed) {
-          Future.delayed(Duration(seconds:nostrRequest.timeout??5), () {
+          Future.delayed(Duration(seconds:(nostrRequest.timeout??5)*10), () {
             closeNostrRequest(nostrRequest);
+            // nostrRequests.remove(id);
           });
-          nostrRequests.remove(id);
         }
       }
       return;

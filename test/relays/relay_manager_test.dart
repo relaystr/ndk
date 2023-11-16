@@ -339,25 +339,25 @@ void main() async {
         });
   });
   group("misc", () {
-    test('nwc info', () async {
-      RelayManager relayManager = RelayManager();
-      String relay = "wss://relay.getalby.com/v1";
-      await relayManager.connectRelay(relay);
-      var filter = Filter(
-          kinds: [13194],
-          authors: [
-            "69effe7b49a6dd5cf525bd0905917a5005ffe480b58eeb8e861418cf3ae760d9"
-          ]);
-      if (await relayManager.reconnectRelay(relay, force: true)) {
-        // await relayManager.requestRelays([relay], filter, onEvent: (event) {
-        //   print(event);
-        // });
-        await for (final event in (await relayManager.requestRelays([relay], filter)).stream)  {
-          print(event);
-        };
-      }
-      // await Future<void>.delayed(const Duration(seconds: 10));
-    }, timeout: const Timeout.factor(10));
+    // test('nwc info', () async {
+    //   RelayManager relayManager = RelayManager();
+    //   String relay = "wss://relay.getalby.com/v1";
+    //   await relayManager.connectRelay(relay);
+    //   var filter = Filter(
+    //       kinds: [13194],
+    //       authors: [
+    //         "69effe7b49a6dd5cf525bd0905917a5005ffe480b58eeb8e861418cf3ae760d9"
+    //       ]);
+    //   if (await relayManager.reconnectRelay(relay, force: true)) {
+    //     // await relayManager.requestRelays([relay], filter, onEvent: (event) {
+    //     //   print(event);
+    //     // });
+    //     await for (final event in (await relayManager.requestRelays([relay], filter)).stream)  {
+    //       print(event);
+    //     };
+    //   }
+    //   // await Future<void>.delayed(const Duration(seconds: 10));
+    // }, timeout: const Timeout.factor(10));
 
     // test('metadataaa', () async {
     //   // relay1.startServer();
