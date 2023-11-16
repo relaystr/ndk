@@ -18,7 +18,15 @@ class Nip04 {
     return agreement;
   }
 
-  static String encrypt(
+  static String encrypt(String priv, String pub, String text) {
+    return encryptWithAgreement(text, getAgreement(priv), pub);
+  }
+
+  static String decrypt(String priv, String pub, String text) {
+    return decryptWithAgreement(text, getAgreement(priv), pub);
+  }
+
+  static String encryptWithAgreement(
       String message, ECDHBasicAgreement agreement, String publicKey) {
     var pubKey = getPubKey(publicKey);
     var agreementD0 = agreement.calculateAgreement(pubKey);
@@ -45,7 +53,7 @@ class Nip04 {
     return base64.encode(result) + "?iv=" + base64.encode(ivData);
   }
 
-  static String decrypt(
+  static String decryptWithAgreement(
       String message, ECDHBasicAgreement agreement, String publicKey) {
     var strs = message.split("?iv=");
     if (strs.length != 2) {

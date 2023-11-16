@@ -35,7 +35,7 @@ class Nip51RelaySet {
     createdAt = event.createdAt!;
     if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
       try {
-        var json = Nip04.decrypt(event.content, Nip04.getAgreement(signer.getPrivateKey()!), signer.getPublicKey());
+        var json = Nip04.decrypt(signer.getPrivateKey()!, signer.getPublicKey(), event.content);
         List<dynamic> tags = jsonDecode(json);
         for (var tag in tags) {
           if (tag is! List<dynamic>) continue;
@@ -84,7 +84,7 @@ class Nip51RelaySet {
 
   Nip01Event toPrivateEvent(EventSigner signer) {
     String json = jsonEncode( [["d", name]]..addAll(relays.map((entry) => ["r",entry])));
-    var resultStr = Nip04.encrypt(json, Nip04.getAgreement(signer.getPrivateKey()!), signer.getPublicKey());
+    var resultStr = Nip04.encrypt(signer.getPrivateKey()!, signer.getPublicKey(), json);
     Nip01Event event = Nip01Event(
       pubKey: pubKey,
       kind: CATEGORIZED_RELAY_SETS,

@@ -28,8 +28,7 @@ void main() {
         ]
       ];
 
-      ECDHBasicAgreement agreement = Nip04.getAgreement(priv);
-      final result = Nip04.decrypt(ciphertext, agreement, pub);
+      final result = Nip04.decrypt(priv, pub, ciphertext);
       final parsedResult = json.decode(result);
 
       expect(parsedResult, desiredResult);
@@ -56,8 +55,7 @@ void main() {
           "VezuSvWak++ASjFMRqBPWS3mK5pZ0vRLL325iuIL4S+r8n9z+DuMau5vMElz1tGC/UqCDmbzE2kwplafaFo/FnIZMdEj4pdxgptyBV1ifZpH3TEF6OMjEtqbYRRqnxgIXsuOSXaerWgpi0pm+raHQPseoELQI/SZ1cvtFqEUCXdXpa5AYaSd+quEuthAEw7V1jP+5TDRCEC8jiLosBVhCtaPpLcrm8HydMYJ2XB6Ixs=?iv=/rtV49RFm0XyFEwG62Eo9A==";
 
       final clearTextString = json.encode(clearTextObj);
-      ECDHBasicAgreement agreement = Nip04.getAgreement(priv);
-      final result = Nip04.encrypt(clearTextString, agreement, pub);
+      final result = Nip04.encrypt(priv, pub, clearTextString);
 
       expect(result.runtimeType, desiredResult.runtimeType);
     });
@@ -66,9 +64,9 @@ void main() {
       KeyPair key1 = Bip340.generatePrivateKey();
       var agreement = Nip04.getAgreement(key1.privateKey!);
       String content = "some content";
-      var encrypted = Nip04.encrypt(content, agreement, key1.publicKey!);
+      var encrypted = Nip04.encryptWithAgreement(content, agreement, key1.publicKey!);
 
-      var decrypted = Nip04.decrypt(encrypted, agreement, key1.publicKey!);
+      var decrypted = Nip04.decryptWithAgreement(encrypted, agreement, key1.publicKey!);
       expect(content, decrypted);
     });
   });
