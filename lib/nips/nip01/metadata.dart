@@ -78,7 +78,6 @@ class Metadata {
     data['nip05'] = nip05;
     data['lud16'] = lud16;
     data['lud06'] = lud06;
-    data['updated_at'] = updatedAt;
     return data;
   }
 
