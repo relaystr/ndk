@@ -4,9 +4,11 @@ import 'package:dart_ndk/db/db_cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_event.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
+import 'package:dart_ndk/db/db_nip05.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -45,6 +47,21 @@ void main() async {
       expect(loadedUserRelayList.items[i].url, userRelayList.items[i].url);
       expect(loadedUserRelayList.items[i].marker, userRelayList.items[i].marker);
     }
+  });
+  test('DbNip05', () async {
+    DbCacheManager cacheManager = DbCacheManager();
+    await cacheManager.init();
+    int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    String pubKey1 = "pubKey1";
+    DbNip05 nip05 =
+    DbNip05(pubKey: pubKey1, nip05: "bla@bla.com", updatedAt: Helpers.now, valid: true);
+    await cacheManager.saveNip05(nip05);
+
+    DbNip05? loadedNip05 = cacheManager.loadNip05(pubKey1) as DbNip05?;
+    expect(loadedNip05!.id, nip05.id);
+    expect(loadedNip05.nip05, nip05.nip05);
+    expect(loadedNip05.updatedAt, nip05.updatedAt);
+    expect(loadedNip05.valid, nip05.valid);
   });
   test('DbRelaySet', () async {
     DbCacheManager cacheManager = DbCacheManager();
