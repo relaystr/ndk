@@ -12,17 +12,17 @@ void main() {
       final event = Nip01Event(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
-        kind: Nip51RelaySet.CATEGORIZED_RELAY_SETS,
+        kind: Nip51List.RELAY_SET,
         content: "",
         tags: [
           ['d', 'test'],
-          ['r', 'wss://example.com'],
-          ['r', 'wss://example.org'],
+          ['relay', 'wss://example.com'],
+          ['relay', 'wss://example.org'],
           ['invalid'],
         ],
       );
-      final nip51RelaySet = Nip51RelaySet.fromEvent(event, null);
-      expect(['wss://example.com','wss://example.org'], nip51RelaySet.relays);
+      final nip51RelaySet = Nip51Set.fromEvent(event, null);
+      expect(['wss://example.com','wss://example.org'], nip51RelaySet!.relays);
 
       Nip01Event toEvent = nip51RelaySet.toPublicEvent();
       event.tags.removeLast();
@@ -36,11 +36,12 @@ void main() {
       KeyPair key1 = Bip340.generatePrivateKey();
       Bip340EventSigner signer = Bip340EventSigner(key1.privateKey, key1.publicKey);
 
-      Nip51RelaySet relaySet = Nip51RelaySet(pubKey: key1.publicKey, name: "test", relays: ['wss://example.com','wss://example.org'], createdAt: Helpers.now);
+      Nip51Set relaySet = Nip51Set(pubKey: key1.publicKey, name: "test", createdAt: Helpers.now);
+      relaySet.relays = ['wss://example.com','wss://example.org'];
       Nip01Event event = relaySet.toPrivateEvent(signer);
-      Nip51RelaySet from = Nip51RelaySet.fromEvent(event, signer);
+      Nip51Set? from = Nip51Set.fromEvent(event, signer);
 
-      expect(relaySet.relays, from.relays);
+      expect(relaySet.relays, from!.relays);
     });
   });
 }

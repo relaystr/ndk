@@ -23,8 +23,8 @@ class Filter {
     eTags = map['#e'] == null ? null : List<String>.from(map['#e']);
     pTags = map['#p'] == null ? null : List<String>.from(map['#p']);
     tTags = map['#t'] == null ? null : List<String>.from(map['#t']);
-    tTags = map['#a'] == null ? null : List<String>.from(map['#a']);
-    tTags = map['#d'] == null ? null : List<String>.from(map['#d']);
+    aTags = map['#a'] == null ? null : List<String>.from(map['#a']);
+    dTags = map['#d'] == null ? null : List<String>.from(map['#d']);
     search = map['search'];
     since = map['since'];
     until = map['until'];

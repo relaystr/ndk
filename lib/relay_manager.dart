@@ -11,15 +11,15 @@ import 'package:dart_ndk/nips/nip01/event_signer.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip09/deletion.dart';
+import 'package:dart_ndk/nips/nip11/relay_info.dart';
 import 'package:dart_ndk/nips/nip25/reactions.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
-import 'package:dart_ndk/nips/nip11/relay_info.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:dart_ndk/tag_count_event_filter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:websocket_universal/websocket_universal.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'event_filter.dart';
 import 'models/relay_set.dart';
@@ -60,7 +60,7 @@ class RelayManager {
   Map<String, Relay> relays = {};
 
   /// Global webSocket registry by url
-  Map<String, IWebSocketHandler> webSockets = {};
+  Map<String, WebSocketChannel> webSockets = {};
 
   final Map<String,NostrRequest> nostrRequests = {};
 
@@ -91,28 +91,29 @@ class RelayManager {
 
   bool isWebSocketOpen(String url) {
     var webSocket = webSockets[Relay.clean(url)];
-    return webSocket != null && webSocket.socketState.status == SocketStatus.connected;
+    // return webSocket != null && webSocket.socketState.status == SocketStatus.connected;
+    return webSocket != null && webSocket.closeCode==null;
   }
 
-  bool isWebSocketConnecting(String url) {
-    var webSocket = webSockets[Relay.clean(url)];
-    return webSocket != null && webSocket.socketState.status == SocketStatus.connecting;
-  }
+  // bool isWebSocketConnecting(String url) {
+  //   var webSocket = webSockets[Relay.clean(url)];
+  //   return webSocket != null && webSocket.socketState.status == SocketStatus.connecting;
+  // }
 
   bool isRelayConnecting(String url) {
     Relay? relay = relays[url];
     return relay != null && relay.connecting;
   }
 
-  Future<bool> awaitForSocketConnected(String url) async {
-    await for (final state in webSockets[url]!.socketHandlerStateStream) {
-      print('> $url ${state.status}');
-      if (state.status == SocketStatus.connected) {
-        return true;
-      }
-    };
-    return false;
-  }
+  // Future<bool> awaitForSocketConnected(String url) async {
+  //   await for (final state in webSockets[url]!.socketHandlerStateStream) {
+  //     print('> $url ${state.status}');
+  //     if (state.status == SocketStatus.connected) {
+  //       return true;
+  //     }
+  //   };
+  //   return false;
+  // }
 
   /// Connect a new relay
   Future<bool> connectRelay(String dirtyUrl,
@@ -134,17 +135,20 @@ class RelayManager {
         relays[url]!.stats.connectionErrors++;
         return false;
       }
-      var connectionOptions = SocketConnectionOptions(
-        timeoutConnectionMs: connectTimeout*1000,
-        skipPingMessages: true,
-        pingRestrictionForce: true,
-        reconnectionDelay: const Duration(seconds:5),
-      );
-      webSockets[url] = IWebSocketHandler<String, String>.createClient(
-        url,
-        SocketSimpleTextProcessor(),
-        connectionOptions: connectionOptions
-      );
+      // var connectionOptions = SocketConnectionOptions(
+      //   timeoutConnectionMs: connectTimeout*1000,
+      //   skipPingMessages: true,
+      //   pingRestrictionForce: true,
+      //   reconnectionDelay: const Duration(seconds:5),
+      // );
+      // webSockets[url] = IWebSocketHandler<String, String>.createClient(
+      //   url,
+      //   SocketSimpleTextProcessor(),
+      //   connectionOptions: connectionOptions
+      // );
+      final wsUrl = Uri.parse(url);
+      webSockets[url] = WebSocketChannel.connect(wsUrl);
+      await webSockets[url]!.ready;
 
       // webSockets[url]!.logEventStream.listen((event) {
       //   if (event.socketLogEventType != SocketLogEventType.fromServerMessage) {
@@ -153,11 +157,11 @@ class RelayManager {
       // });
 
       startListeningToSocket(url);
-      webSockets[url]!.socketHandlerStateStream.listen((stateEvent) {
-        print('> $url ${stateEvent.status}');
-      });
+      // webSockets[url]!.socketHandlerStateStream.listen((stateEvent) {
+      //   print('> $url ${stateEvent.status}');
+      // });
 
-      bool connected = await webSockets[url]!.connect();
+      // bool connected = await webSockets[url]!.connect();
 
       // await for (final state in webSockets[url]!.socketHandlerStateStream) {
       //   print('> $url ${state.status}');
@@ -166,13 +170,13 @@ class RelayManager {
       //   }
       // };
 
-      if (connected) {
+      // if (connected) {
         developer.log("connected to relay: $url");
         relays[url]!.succeededToConnect();
         relays[url]!.stats.connections++;
         getRelayInfo(url);
         return true;
-      }
+      // }
     } catch (e) {
       print("!! could not connect to $url -> $e");
     }
@@ -182,7 +186,7 @@ class RelayManager {
   }
 
   void startListeningToSocket(String url) {
-    webSockets[url]!.incomingMessagesStream.listen((message) {
+    webSockets[url]!.stream.listen((message) {
       _handleIncommingMessage(message, url);
     }
     , onError: (error) async {
@@ -194,7 +198,7 @@ class RelayManager {
       relays[url]!.stats.connectionErrors++;
       if (isWebSocketOpen(url)) {
         print("closing $url webSocket");
-        webSockets[url]!.close();
+        webSockets[url]!.sink.close();
         print("closed $url. Reconnecting");
         reconnectRelay(url);
       } else {
@@ -202,6 +206,26 @@ class RelayManager {
       }
       /// todo: handle this better, should clean subscription stuff
     });
+    // webSockets[url]!.incomingMessagesStream.listen((message) {
+    //   _handleIncommingMessage(message, url);
+    // }
+    // , onError: (error) async {
+    //   /// todo: handle this better, should clean subscription stuff
+    //   print("onError $url on listen $error");
+    //   throw Exception("Error in socket");
+    // }, onDone: () {
+    //   print("onDone $url on listen, trying to reconnect");
+    //   relays[url]!.stats.connectionErrors++;
+    //   if (isWebSocketOpen(url)) {
+    //     print("closing $url webSocket");
+    //     webSockets[url]!.close();
+    //     print("closed $url. Reconnecting");
+    //     reconnectRelay(url);
+    //   } else {
+    //     reconnectRelay(url);
+    //   }
+    //   /// todo: handle this better, should clean subscription stuff
+    // });
   }
 
   List<Relay> getConnectedRelays(Iterable<String> urls) {
@@ -234,7 +258,8 @@ class RelayManager {
       for (var url in nostrRequest.requests.keys) {
         if (isWebSocketOpen(url)) {
           try {
-            webSockets[url]!.sendMessage(jsonEncode(["CLOSE", nostrRequest.id]));
+            // webSockets[url]!.sendMessage(jsonEncode(["CLOSE", nostrRequest.id]));
+            webSockets[url]!.sink.add(jsonEncode(["CLOSE", nostrRequest.id]));
           } catch (e) {
             print(e);
           }
@@ -271,13 +296,17 @@ class RelayManager {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
 
-        webSockets[request.url]!.sendMessage(jsonEncode(list));
+        // webSockets[request.url]!.sendMessage(jsonEncode(list));
+        webSockets[request.url]!.sink.add(jsonEncode(list));
+
         return true;
       } catch (e) {
         print(e);
       }
     } else {
       print("COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
+
+      reconnectRelay(request.url);
     }
     return false;
   }
@@ -293,9 +322,10 @@ class RelayManager {
       try {
         print("BROADCASTING to $url : kind: ${event.kind} author: ${event
             .pubKey}");
-        IWebSocketHandler? webSocket = webSockets[url];
+        var webSocket = webSockets[url];
         if (webSocket!=null) {
-          webSocket!.sendMessage(jsonEncode(["EVENT", event.toJson()]));
+          // webSocket!.sendMessage(jsonEncode(["EVENT", event.toJson()]));
+          webSocket!.sink.add(jsonEncode(["EVENT", event.toJson()]));
         }
       } catch (e) {
         print("ERROR BROADCASTING $url -> $e");
@@ -580,61 +610,130 @@ class RelayManager {
     }
   }
 
-  Future<Nip51RelaySet> broadcastAddNip51Relay(String relayUrl,
+  Future<Nip51Set> broadcastAddNip51SetRelay(String relayUrl,
       String name,
       Iterable<String> broadcastRelays,
       EventSigner signer,
-      {bool private=true}
+      {bool private=false}
       ) async {
     if (private && !signer.canSign()) {
       throw Exception("cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51RelaySet? list = await getSingleNip51RelaySet(name, signer, forceRefresh: true);
-    list ??= Nip51RelaySet(
-        name: name,
+    Nip51Set? list = await getSingleNip51RelaySet(name, signer, forceRefresh: true);
+    list ??= Nip51Set(
+          name: name,
           pubKey: signer.getPublicKey(),
-          relays: [],
           createdAt: Helpers.now);
-    list.relays.add(relayUrl);
+    list.addRelay(relayUrl);
     list.createdAt = Helpers.now;
     Nip01Event event = private? list.toPrivateEvent(signer) : list.toPublicEvent();
+    print(event);
     await Future.wait([
       broadcastEvent(
           event, broadcastRelays, signer),
     ]);
-    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51RelaySet.CATEGORIZED_RELAY_SETS]);
-    events.forEach((event) { if (event.getDtag() == name) {cacheManager.removeEvent(event.id);} });
+    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51List.RELAY_SET]);
+    events = events.where((event) {
+      if (event.getDtag()!=null && event.getDtag() == name) {
+        return true;
+      }
+      return false;
+    }).toList();
+    events.forEach((event) { cacheManager.removeEvent(event.id); });
 
     await cacheManager.saveEvent(event);
     return list;
   }
 
-  Future<Nip51RelaySet?> broadcastRemoveNip51Relay(String relayUrl,
+  Future<Nip51Set?> broadcastRemoveNip51SetRelay(String relayUrl,
       String name,
       Iterable<String> broadcastRelays,
       EventSigner signer,
-      {List<String>? defaultRelaysIfEmpty, bool private=true}) async {
+      {List<String>? defaultRelaysIfEmpty, bool private=false}) async {
     if (private && !signer.canSign()) {
       throw Exception("cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51RelaySet? list = await getSingleNip51RelaySet(name, signer, forceRefresh: true, );
-    if ((list==null || list.relays.isEmpty) && defaultRelaysIfEmpty!=null && defaultRelaysIfEmpty.isNotEmpty) {
-      list = Nip51RelaySet(
+    Nip51Set? relaySet = await getSingleNip51RelaySet(name, signer, forceRefresh: true, );
+    if ((relaySet==null || relaySet.relays==null || relaySet.relays!.isEmpty) && defaultRelaysIfEmpty!=null && defaultRelaysIfEmpty.isNotEmpty) {
+      relaySet = Nip51Set(
           name: name,
           pubKey: signer.getPublicKey(),
-          relays: defaultRelaysIfEmpty,
           createdAt: Helpers.now);
+      relaySet.relays = defaultRelaysIfEmpty;
     }
-    if (list!=null && list.relays.contains(relayUrl)) {
-      list.relays.remove(relayUrl);
+    if (relaySet!=null && relaySet.relays!=null && relaySet.relays!.contains(relayUrl)) {
+      relaySet.relays!.remove(relayUrl);
+      relaySet.createdAt = Helpers.now;
+      Nip01Event event = private? relaySet.toPrivateEvent(signer) : relaySet.toPublicEvent();
+      await Future.wait([
+        broadcastEvent(
+            event, broadcastRelays, signer),
+      ]);
+      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51List.RELAY_SET]);
+      events = events.where((event) {
+        if (event.getDtag()!=null && event.getDtag() == name) {
+          return true;
+        }
+        return false;
+      }).toList();
+      events.forEach((event) { cacheManager.removeEvent(event.id); });
+      await cacheManager.saveEvent(relaySet.toPublicEvent());
+    }
+    return relaySet;
+  }
+
+  Future<Nip51List> broadcastAddNip51ListRelay(int kind, String relayUrl,
+      Iterable<String> broadcastRelays,
+      EventSigner signer,
+      {bool private=false}
+      ) async {
+    if (private && !signer.canSign()) {
+      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+    }
+    Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true);
+    list ??= Nip51List(
+        kind: kind,
+        pubKey: signer.getPublicKey(),
+        createdAt: Helpers.now);
+    list.addRelay(relayUrl);
+    list.createdAt = Helpers.now;
+    Nip01Event event = private? list.toPrivateEvent(signer) : list.toPublicEvent();
+    print(event);
+    await Future.wait([
+      broadcastEvent(
+          event, broadcastRelays, signer),
+    ]);
+    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+    for (var event in events) { cacheManager.removeEvent(event.id); }
+    await cacheManager.saveEvent(event);
+    return list;
+  }
+
+  Future<Nip51List?> broadcastRemoveNip51Relay(int kind, String relayUrl,
+      Iterable<String> broadcastRelays,
+      EventSigner signer,
+      {List<String>? defaultRelaysIfEmpty, bool private=false}) async {
+    if (private && !signer.canSign()) {
+      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+    }
+    Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true, );
+    if ((list==null || list.relays==null || list.relays!.isEmpty) && defaultRelaysIfEmpty!=null && defaultRelaysIfEmpty.isNotEmpty) {
+      list = Nip51List(
+          kind: kind,
+          pubKey: signer.getPublicKey(),
+          createdAt: Helpers.now);
+      list.relays = defaultRelaysIfEmpty;
+    }
+    if (list!=null && list.relays!=null && list.relays!.contains(relayUrl)) {
+      list.relays!.remove(relayUrl);
       list.createdAt = Helpers.now;
       Nip01Event event = private? list.toPrivateEvent(signer) : list.toPublicEvent();
       await Future.wait([
         broadcastEvent(
             event, broadcastRelays, signer),
       ]);
-      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51RelaySet.CATEGORIZED_RELAY_SETS]);
-      events.forEach((event) { if (event.getDtag() == name) {cacheManager.removeEvent(event.id);} });
+      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51List.RELAY_SET]);
+      for (var event in events) { cacheManager.removeEvent(event.id); }
       await cacheManager.saveEvent(list.toPublicEvent());
     }
     return list;
@@ -764,7 +863,9 @@ class RelayManager {
           request.receivedEOSE = true;
           nostrRequest.requests.remove(url);
           if (isWebSocketOpen(url)) {
-            webSockets[url]!.sendMessage(
+            // webSockets[url]!.sendMessage(
+            //     jsonEncode(["CLOSE", nostrRequest.id]));
+            webSockets[url]!.sink.add(
                 jsonEncode(["CLOSE", nostrRequest.id]));
           }
         }
@@ -1365,38 +1466,71 @@ class RelayManager {
     return userRelayList;
   }
 
-  Nip51RelaySet? getCachedNip51RelaySet(String name, EventSigner signer) {
-    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51RelaySet.CATEGORIZED_RELAY_SETS]);
+  Nip51List? getCachedNip51List(int kind, EventSigner signer) {
+    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+    events.sort((a, b) => b.createdAt.compareTo(a.createdAt),);
+    return events!=null && events.isNotEmpty ? Nip51List.fromEvent(events.first, signer): null;
+  }
+
+  Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
+      {bool forceRefresh = false}) async {
+    Nip51List? list = getCachedNip51List(kind, signer);
+    if (list==null || forceRefresh) {
+      Nip51List? refreshedList = null;
+      await for (final event in (await requestRelays(bootstrapRelays.toList(),
+          Filter(
+            authors: [signer.getPublicKey()],
+            kinds: [kind],
+          ), timeout: 5)).stream) {
+        if (refreshedList == null ||
+            refreshedList.createdAt <= event.createdAt!) {
+          refreshedList = Nip51List.fromEvent(event, signer);
+          // TODO should handle list with mixed public/private stuff
+          if (Helpers.isNotBlank(event.content)) {
+            Nip51List? decryptedList = Nip51List.fromEvent(event, signer);
+            if (decryptedList!=null) {
+              refreshedList = decryptedList;
+            }
+          }
+          await cacheManager.saveEvent(event);
+        }
+      }
+      return refreshedList;
+    }
+    return list;
+  }
+
+  Nip51Set? getCachedNip51RelaySet(String name, EventSigner signer) {
+    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag()!=null && event.getDtag() == name) {
         return true;
-      } else if (Helpers.isNotBlank(event.content)) {
-        Nip51RelaySet decryptedRelaySet = Nip51RelaySet.fromEvent(event, signer);
-        if (decryptedRelaySet.name == name) {
-          return true;
-        }
       }
       return false;
     }).toList();
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt),);
-    return events!=null && events.isNotEmpty ? Nip51RelaySet.fromEvent(events.first, signer): null;
+    return events!=null && events.isNotEmpty ? Nip51Set.fromEvent(events.first, signer): null;
   }
 
-  Future<Nip51RelaySet?> getSingleNip51RelaySet(String name, EventSigner signer,
+  Future<Nip51Set?> getSingleNip51RelaySet(String name, EventSigner signer,
       {bool forceRefresh = false}) async {
-    Nip51RelaySet? relaySet = getCachedNip51RelaySet(name, signer);
+    Nip51Set? relaySet = getCachedNip51RelaySet(name, signer);
     if (relaySet==null || forceRefresh) {
-      Nip51RelaySet? newRelaySet = null;
+      Nip51Set? newRelaySet = null;
       await for (final event in (await requestRelays(bootstrapRelays.toList(),
-          Filter(authors: [signer.getPublicKey()], kinds: [Nip51RelaySet.CATEGORIZED_RELAY_SETS]), timeout: 2)).stream) {
+          Filter(
+              authors: [signer.getPublicKey()],
+              kinds: [Nip51List.RELAY_SET],
+              dTags: ["${name}"],
+          ), timeout: 5)).stream) {
         if (newRelaySet == null ||
             newRelaySet.createdAt < event.createdAt!) {
           if (event.getDtag()!=null && event.getDtag() == name) {
-            newRelaySet = Nip51RelaySet.fromEvent(event, signer);
+            newRelaySet = Nip51Set.fromEvent(event, signer);
             await cacheManager.saveEvent(event);
           } else if (Helpers.isNotBlank(event.content)) {
-            Nip51RelaySet decryptedRelaySet = Nip51RelaySet.fromEvent(event, signer);
-            if (decryptedRelaySet.name == name) {
+            Nip51Set? decryptedRelaySet = Nip51Set.fromEvent(event, signer);
+            if (decryptedRelaySet!=null && decryptedRelaySet.name == name) {
               newRelaySet = decryptedRelaySet;
               await cacheManager.saveEvent(event);
             }
@@ -1408,6 +1542,34 @@ class RelayManager {
     return relaySet;
   }
 
+  Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer,
+      {bool forceRefresh = false}) async {
+    Nip51Set? relaySet = null;//getCachedNip51RelaySets(signer);
+    if (relaySet==null || forceRefresh) {
+      Map<String,Nip51Set> newRelaySets = {};
+      await for (final event in (await requestRelays(bootstrapRelays.toList(),
+          Filter(
+            authors: [signer.getPublicKey()],
+            kinds: [kind],
+          ), timeout: 5)).stream) {
+        if (event.getDtag()!=null) {
+          Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
+          if (newRelaySet == null ||
+              newRelaySet.createdAt < event.createdAt!) {
+            if (event.getDtag() != null) {
+              newRelaySet = Nip51Set.fromEvent(event, signer);
+            }
+            if (newRelaySet!=null) {
+              await cacheManager.saveEvent(event);
+              newRelaySets[newRelaySet!.name] = newRelaySet!;
+            }
+          }
+        }
+      }
+      return newRelaySets.values.toList();
+    }
+    return [];
+  }
 
   Future<RelayInfo?> getRelayInfo(String url) async {
     if (relays[url] != null) {
