@@ -70,6 +70,8 @@ class RelayManager {
 
   List<EventFilter> eventFilters = [TagCountEventFilter(21)];
 
+  bool allowReconnectRelays = true;
+
   // ====================================================================================================================
 
   /// This will initialize the manager with bootstrap relays.
@@ -194,15 +196,17 @@ class RelayManager {
       print("onError $url on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
-      print("onDone $url on listen, trying to reconnect");
-      relays[url]!.stats.connectionErrors++;
-      if (isWebSocketOpen(url)) {
-        print("closing $url webSocket");
-        webSockets[url]!.sink.close();
-        print("closed $url. Reconnecting");
-        reconnectRelay(url);
-      } else {
-        reconnectRelay(url);
+      if (allowReconnectRelays) {
+        print("onDone $url on listen, trying to reconnect");
+        relays[url]!.stats.connectionErrors++;
+        if (isWebSocketOpen(url)) {
+          print("closing $url webSocket");
+          webSockets[url]!.sink.close();
+          print("closed $url. Reconnecting");
+          reconnectRelay(url);
+        } else {
+          reconnectRelay(url);
+        }
       }
       /// todo: handle this better, should clean subscription stuff
     });
@@ -1428,7 +1432,7 @@ class RelayManager {
 
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
-    if (relay == null || !isWebSocketOpen(url)) {
+    if (allowReconnectRelays&& (relay == null || !isWebSocketOpen(url))) {
       if (relay != null &&
           !force &&
           !relay.wasLastConnectTryLongerThanSeconds(
