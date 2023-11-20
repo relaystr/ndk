@@ -193,12 +193,12 @@ class RelayManager {
     }
     , onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
+      relays[url]!.stats.connectionErrors++;
       print("onError $url on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
       if (allowReconnectRelays) {
         print("onDone $url on listen, trying to reconnect");
-        relays[url]!.stats.connectionErrors++;
         if (isWebSocketOpen(url)) {
           print("closing $url webSocket");
           webSockets[url]!.sink.close();
