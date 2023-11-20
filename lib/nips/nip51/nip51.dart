@@ -29,7 +29,8 @@ class Nip51List {
   late String pubKey;
   late int kind;
 
-  List<String>? relays;
+  List<String>? publicRelays;
+  List<String>? privateRelays;
 
   late int createdAt;
 
@@ -49,7 +50,18 @@ class Nip51List {
     return "kind $kind";
   }
 
-  Nip51List({required this.pubKey, required this.kind, required this.createdAt, this.relays});
+  List<String> get allRelays {
+    List<String> result = [];
+    if (privateRelays!=null) {
+      result.addAll(privateRelays!);
+    }
+    if (publicRelays!=null) {
+      result.addAll(publicRelays!);
+    }
+    return result;
+  }
+
+  Nip51List({required this.pubKey, required this.kind, required this.createdAt, this.privateRelays, this.publicRelays});
 
   Nip51List.fromEvent(Nip01Event event, EventSigner? signer) {
     pubKey = event.pubKey;
@@ -57,22 +69,22 @@ class Nip51List {
     id = event.id;
     createdAt = event.createdAt;
     if (event.kind == Nip51List.SEARCH_RELAYS || event.kind == Nip51List.BLOCKED_RELAYS) {
-      relays = [];
+      privateRelays = [];
+      publicRelays = [];
     }
     if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
       try {
         var json = Nip04.decrypt(signer.getPrivateKey()!, signer.getPublicKey(), event.content);
         List<dynamic> tags = jsonDecode(json);
-        parseTags(tags);
+        parseTags(tags, private: true);
       } catch (e) {
         print(e);
       }
-    } else {
-      parseTags(event.tags);
     }
+    parseTags(event.tags, private: false);
   }
 
-  void parseTags(List tags) {
+  void parseTags(List tags, {required bool private}) {
     for (var tag in tags) {
       if (tag is! List<dynamic>) continue;
       final length = tag.length;
@@ -80,42 +92,36 @@ class Nip51List {
       final tagName = tag[0];
       final value = tag[1];
       if (tagName == "relay") {
-        if (relays==null) {
-          relays = [];
-        }
-        relays!.add(value);
+        addRelay(value, private);
       }
     }
   }
 
-  Nip01Event toPublicEvent() {
+  Nip01Event toEvent(EventSigner? signer) {
+    String content = "";
+    if (privateRelays!=null && privateRelays!.isNotEmpty && signer!=null) {
+      String json = jsonEncode(privateRelays!.map((entry) => ["relay", entry]).toList());
+      content = Nip04.encrypt(signer.getPrivateKey()!, signer.getPublicKey(), json);
+    }
     Nip01Event event = Nip01Event(
       pubKey: pubKey,
       kind: kind,
       // TODO for other kinds
-      tags: relays!.map((entry) => ["relay",entry]).toList(),
-      content: "",
+      tags: publicRelays!=null ? publicRelays!.map((entry) => ["relay",entry]).toList() : [],
+      content: content,
       createdAt: createdAt,
     );
     return event;
   }
 
-  Nip01Event toPrivateEvent(EventSigner signer) {
-    String json = jsonEncode( relays!.map((entry) => ["r",entry]).toList());
-    var resultStr = Nip04.encrypt(signer.getPrivateKey()!, signer.getPublicKey(), json);
-    Nip01Event event = Nip01Event(
-      pubKey: pubKey,
-      kind: kind,
-      tags: [],
-      content: resultStr,
-      createdAt: createdAt,
-    );
-    return event;
-  }
-
-  void addRelay(String relayUrl) {
-    relays ??= [];
-    relays!.add(relayUrl);
+  void addRelay(String relayUrl, bool private) {
+    if (private) {
+      privateRelays ??= [];
+      privateRelays!.add(relayUrl);
+    } else {
+      publicRelays ??= [];
+      publicRelays!.add(relayUrl);
+    }
   }
 }
 
@@ -144,40 +150,23 @@ class Nip51Set extends Nip51List {
       try {
         var json = Nip04.decrypt(signer.getPrivateKey()!, signer.getPublicKey(), event.content);
         List<dynamic> tags = jsonDecode(json);
-        set.parseTags(tags);
+        set.parseTags(tags, private: true);
         set.parseSetTags(tags);
       } catch (e) {
         set.name = "<invalid encrypted content>";
         print(e);
       }
     } else {
-      set.parseTags(event.tags);
+      set.parseTags(event.tags, private: false);
       set.parseSetTags(event.tags);
     }
     return set;
   }
 
-  Nip01Event toPublicEvent() {
-    Nip01Event event = Nip01Event(
-      pubKey: pubKey,
-      kind: kind,
-      tags: [["d", name]]..addAll(relays!.map((entry) => ["relay",entry])),
-      content: "",
-      createdAt: createdAt,
-    );
-    return event;
-  }
-
-  Nip01Event toPrivateEvent(EventSigner signer) {
-    String json = jsonEncode( [["d", name]]..addAll(relays!.map((entry) => ["relay",entry])));
-    var resultStr = Nip04.encrypt(signer.getPrivateKey()!, signer.getPublicKey(), json);
-    Nip01Event event = Nip01Event(
-      pubKey: pubKey,
-      kind: kind,
-      tags: [["d", name]],
-      content: resultStr,
-      createdAt: createdAt,
-    );
+  @override
+  Nip01Event toEvent(EventSigner? signer) {
+    Nip01Event event = super.toEvent(signer);
+    event.tags = [["d", name], ...event.tags];
     return event;
   }
 
