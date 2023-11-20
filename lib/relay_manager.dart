@@ -506,8 +506,7 @@ class RelayManager {
   static const Duration REFRESH_USER_RELAY_DURATION = Duration(minutes: 10);
 
   Future<UserRelayList?> ensureUpToDateUserRelayList(EventSigner signer) async {
-    UserRelayList? userRelayList =
-    cacheManager.loadUserRelayList(signer.getPublicKey());
+    UserRelayList? userRelayList = cacheManager.loadUserRelayList(signer.getPublicKey());
     int sometimeAgo = DateTime
         .now()
         .subtract(REFRESH_USER_RELAY_DURATION)
@@ -1142,12 +1141,11 @@ class RelayManager {
   }
 
   Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
-      {Function(String stepName, int count, int total)? onProgress}) async {
+      {Function(String stepName, int count, int total)? onProgress, bool forceRefresh = false}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
-      UserRelayList? userRelayList =
-      cacheManager.loadUserRelayList(pubKey); //getUserRelayList(pubKey);
-      if (userRelayList == null) {
+      UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
+      if (userRelayList == null || forceRefresh) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
       }
@@ -1466,16 +1464,18 @@ class RelayManager {
       {bool forceRefresh = false}) async {
     UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
     if (userRelayList == null || forceRefresh) {
-      /// todo should also load from nip02
-      await for (final event in (await requestRelays(bootstrapRelays.toList(),
-          Filter(authors: [pubKey], kinds: [Nip65.KIND], limit: 1))).stream) {
-        if (userRelayList == null ||
-            userRelayList.createdAt < event.createdAt!) {
-          userRelayList = UserRelayList.fromNip65(Nip65.fromEvent(event));
-          // should it be sync or async is ok?
-          await cacheManager.saveUserRelayList(userRelayList);
-        }
-      }
+      await loadMissingRelayListsFromNip65OrNip02([pubKey], forceRefresh: forceRefresh);
+      userRelayList = cacheManager.loadUserRelayList(pubKey);
+    //   /// todo should also load from nip02
+    //   await for (final event in (await requestRelays(bootstrapRelays.toList(),
+    //       Filter(authors: [pubKey], kinds: [Nip65.KIND], limit: 1))).stream) {
+    //     if (userRelayList == null ||
+    //         userRelayList.createdAt < event.createdAt!) {
+    //       userRelayList = UserRelayList.fromNip65(Nip65.fromEvent(event));
+    //       // should it be sync or async is ok?
+    //       await cacheManager.saveUserRelayList(userRelayList);
+    //     }
+    //   }
     }
     return userRelayList;
   }
