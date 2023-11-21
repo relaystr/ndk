@@ -73,6 +73,12 @@ class RelayManager {
 
   bool allowReconnectRelays = true;
 
+  HttpClient httpClient = HttpClient();
+
+  RelayManager() {
+    httpClient.idleTimeout = const Duration(seconds: 3600);
+    httpClient.connectionTimeout = const Duration(seconds: 5);
+  }
   // ====================================================================================================================
 
   /// This will initialize the manager with bootstrap relays.
@@ -136,7 +142,7 @@ class RelayManager {
   //   };
   //   return false;
   // }
-
+  
   /// Connect a new relay
   Future<bool> connectRelay(String dirtyUrl,
       {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
@@ -172,9 +178,6 @@ class RelayManager {
       // webSockets[url] = WebSocketChannel.connect(wsUrl);
       // await webSockets[url]!.ready;
 
-      HttpClient httpClient = HttpClient();
-      httpClient.idleTimeout = const Duration(seconds: 3600);
-      httpClient.connectionTimeout = const Duration(seconds: 2);
       webSockets[url] = await WebSocket.connect(url, customClient: httpClient)
           .timeout(Duration(seconds: connectTimeout))
           .catchError((error) {
