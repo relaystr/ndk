@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
+import 'dart:io';
 
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
@@ -60,7 +61,7 @@ class RelayManager {
   Map<String, Relay> relays = {};
 
   /// Global webSocket registry by url
-  Map<String, WebSocketChannel> webSockets = {};
+  Map<String, WebSocket> webSockets = {};
 
   final Map<String,NostrRequest> nostrRequests = {};
 
@@ -88,13 +89,32 @@ class RelayManager {
     if (bootstrapRelays.isEmpty) {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
-    await Future.wait(urls.map((url) => connectRelay(url)).toList());
+    await Future.wait(urls.map((url) => reconnectRelay(url)).toList());
+  }
+
+  void send(String url, dynamic data) {
+    // webSocket!.sendMessage(jsonEncode(["EVENT", event.toJson()]));
+    webSockets[url]!.add(data);
+  }
+
+  Future<void> closeSocket(url) async {
+    return webSockets[url]?.close().timeout(const Duration(seconds:3), onTimeout: () {
+      print("timeout while trying to close socket $url");
+    });
+  }
+
+  Future<void> closeAllSockets() async {
+    try {
+      await Future.wait(webSockets.keys.map((url) => closeSocket(url)));
+    } catch (e) {
+      print(e);
+    }
   }
 
   bool isWebSocketOpen(String url) {
-    var webSocket = webSockets[Relay.clean(url)];
+    WebSocket? webSocket = webSockets[Relay.clean(url)];
     // return webSocket != null && webSocket.socketState.status == SocketStatus.connected;
-    return webSocket != null && webSocket.closeCode==null;
+    return webSocket != null && webSocket.readyState == WebSocket.open && webSocket.closeCode==null;
   }
 
   // bool isWebSocketConnecting(String url) {
@@ -149,9 +169,17 @@ class RelayManager {
       //   connectionOptions: connectionOptions
       // );
       final wsUrl = Uri.parse(url);
-      webSockets[url] = WebSocketChannel.connect(wsUrl);
-      await webSockets[url]!.ready;
+      // webSockets[url] = WebSocketChannel.connect(wsUrl);
+      // await webSockets[url]!.ready;
 
+      HttpClient httpClient = HttpClient();
+      httpClient.idleTimeout = const Duration(seconds: 3600);
+      httpClient.connectionTimeout = const Duration(seconds: 2);
+      webSockets[url] = await WebSocket.connect(url, customClient: httpClient)
+          .timeout(Duration(seconds: connectTimeout))
+          .catchError((error) {
+        return Future<WebSocket>.error(error);
+      });
       // webSockets[url]!.logEventStream.listen((event) {
       //   if (event.socketLogEventType != SocketLogEventType.fromServerMessage) {
       //     print("${event.socketLogEventType.value} -> ${event.data}");
@@ -189,7 +217,7 @@ class RelayManager {
   }
 
   void startListeningToSocket(String url) {
-    webSockets[url]!.stream.listen((message) {
+    webSockets[url]!.asBroadcastStream().listen((message) {
       _handleIncommingMessage(message, url);
     }
     , onError: (error) async {
@@ -199,10 +227,10 @@ class RelayManager {
       throw Exception("Error in socket");
     }, onDone: () {
       if (allowReconnectRelays) {
-        print("onDone $url on listen, trying to reconnect");
+        print("onDone $url on listen (close: ${webSockets[url]!.closeCode} ${webSockets[url]!.closeReason}), trying to reconnect");
         if (isWebSocketOpen(url)) {
           print("closing $url webSocket");
-          webSockets[url]!.sink.close();
+          webSockets[url]!.close();
           print("closed $url. Reconnecting");
           reconnectRelay(url);
         } else {
@@ -264,7 +292,7 @@ class RelayManager {
         if (isWebSocketOpen(url)) {
           try {
             // webSockets[url]!.sendMessage(jsonEncode(["CLOSE", nostrRequest.id]));
-            webSockets[url]!.sink.add(jsonEncode(["CLOSE", nostrRequest.id]));
+            send(url,jsonEncode(["CLOSE", nostrRequest.id]));
           } catch (e) {
             print(e);
           }
@@ -302,7 +330,7 @@ class RelayManager {
         list.addAll(request.filters.map((filter) => filter.toMap()));
 
         // webSockets[request.url]!.sendMessage(jsonEncode(list));
-        webSockets[request.url]!.sink.add(jsonEncode(list));
+        send(request.url,jsonEncode(list));
 
         return true;
       } catch (e) {
@@ -329,8 +357,7 @@ class RelayManager {
             .pubKey}");
         var webSocket = webSockets[url];
         if (webSocket!=null) {
-          // webSocket!.sendMessage(jsonEncode(["EVENT", event.toJson()]));
-          webSocket!.sink.add(jsonEncode(["EVENT", event.toJson()]));
+          send(url,jsonEncode(["EVENT", event.toJson()]));
         }
       } catch (e) {
         print("ERROR BROADCASTING $url -> $e");
@@ -806,7 +833,7 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'NOTICE') {
-      print("NOTICE from $url: ${eventJson[1]}");
+      print("!!!!!!!!!!!!!!!!!!!!!!! NOTICE from $url: ${eventJson[1]}");
       reconnectRelay(url,force: true);
       return;
     }
@@ -878,8 +905,7 @@ class RelayManager {
           if (isWebSocketOpen(url)) {
             // webSockets[url]!.sendMessage(
             //     jsonEncode(["CLOSE", nostrRequest.id]));
-            webSockets[url]!.sink.add(
-                jsonEncode(["CLOSE", nostrRequest.id]));
+            send(url,jsonEncode(["CLOSE", nostrRequest.id]));
           }
         }
         if (nostrRequest.requests.isEmpty &&
@@ -1440,7 +1466,7 @@ class RelayManager {
 
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
-    if (allowReconnectRelays&& (relay == null || !isWebSocketOpen(url))) {
+    if (allowReconnectRelays && (relay == null || !isWebSocketOpen(url))) {
       if (relay != null &&
           !force &&
           !relay.wasLastConnectTryLongerThanSeconds(
