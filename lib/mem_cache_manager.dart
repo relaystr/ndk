@@ -182,42 +182,37 @@ class MemCacheManager implements CacheManager {
   @override
   Nip01Event? loadEvent(String id) {
     // TODO: implement loadEvent
-    throw UnimplementedError();
+    return null;
   }
 
   @override
   List<Nip01Event> loadEvents(List<String> pubKeys, List<int> kinds) {
-    // TODO: implement loadEvents
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> removeAllEventsByPubKey(String pubKey) {
-    // TODO: implement removeAllEvents
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> removeAllEvents() {
-    // TODO: implement removeAllEvents
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> removeEvent(String id) {
-    // TODO: implement removeEvent
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> saveEvent(Nip01Event event) {
-    // TODO: implement saveEvent
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> saveEvents(List<Nip01Event> events) {
     // TODO: implement saveEvents
-    throw UnimplementedError();
+    return [];
+  }
+
+  @override
+  Future<void> removeAllEventsByPubKey(String pubKey) async {
+    // TODO: implement saveEvents
+  }
+
+  @override
+  Future<void> removeAllEvents() async {
+    // TODO: implement removeAllEvents
+  }
+
+  @override
+  Future<void> removeEvent(String id) async {
+    // TODO: implement removeEvent
+  }
+
+  @override
+  Future<void> saveEvent(Nip01Event event) async {
+    // TODO: implement saveEvent
+  }
+
+  @override
+  Future<void> saveEvents(List<Nip01Event> events) async {
+    // TODO: implement saveEvents
   }
 }

@@ -751,8 +751,8 @@ class RelayManager {
   Future<Nip51List?> broadcastRemoveNip51Relay(int kind, String relayUrl,
       Iterable<String> broadcastRelays,
       EventSigner signer,
-      {List<String>? defaultRelaysIfEmpty, bool private=false}) async {
-    if (private && !signer.canSign()) {
+      {List<String>? defaultRelaysIfEmpty}) async {
+    if (!signer.canSign()) {
       throw Exception("cannot broadcast private nip51 list without a signer that can sign");
     }
     Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true, );
