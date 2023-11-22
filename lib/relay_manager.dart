@@ -657,7 +657,7 @@ class RelayManager {
     list ??= Nip51Set(
           name: name,
           pubKey: signer.getPublicKey(),
-          createdAt: Helpers.now);
+          createdAt: Helpers.now, elements: []);
     list.addRelay(relayUrl, private);
     list.createdAt = Helpers.now;
     Nip01Event event = list.toEvent(signer);
@@ -692,7 +692,7 @@ class RelayManager {
       relaySet = Nip51Set(
           name: name,
           pubKey: signer.getPublicKey(),
-          createdAt: Helpers.now);
+          createdAt: Helpers.now, elements: []);
       relaySet.privateRelays = defaultRelaysIfEmpty;
     }
     if (relaySet!=null && relaySet.allRelays!=null) {
@@ -733,7 +733,9 @@ class RelayManager {
     list ??= Nip51List(
         kind: kind,
         pubKey: signer.getPublicKey(),
-        createdAt: Helpers.now);
+        createdAt: Helpers.now,
+        elements: []
+    );
     list.addRelay(relayUrl, private);
     list.createdAt = Helpers.now;
     Nip01Event event = list.toEvent(signer);
@@ -760,7 +762,9 @@ class RelayManager {
       list = Nip51List(
           kind: kind,
           pubKey: signer.getPublicKey(),
-          createdAt: Helpers.now);
+          createdAt: Helpers.now,
+          elements: []
+      );
       list.privateRelays = defaultRelaysIfEmpty;
     }
     if (list!=null && list.allRelays.isNotEmpty) {

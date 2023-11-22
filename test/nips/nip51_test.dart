@@ -36,7 +36,7 @@ void main() {
       KeyPair key1 = Bip340.generatePrivateKey();
       Bip340EventSigner signer = Bip340EventSigner(key1.privateKey, key1.publicKey);
 
-      Nip51Set relaySet = Nip51Set(pubKey: key1.publicKey, name: "test", createdAt: Helpers.now);
+      Nip51Set relaySet = Nip51Set(pubKey: key1.publicKey, name: "test", createdAt: Helpers.now, elements: []);
       relaySet.privateRelays = ['wss://example.com','wss://example.org'];
       Nip01Event event = relaySet.toEvent(signer);
       Nip51Set? from = Nip51Set.fromEvent(event, signer);
@@ -72,7 +72,7 @@ void main() {
       KeyPair key1 = Bip340.generatePrivateKey();
       Bip340EventSigner signer = Bip340EventSigner(key1.privateKey, key1.publicKey);
 
-      Nip51List relayList = Nip51List(pubKey: key1.publicKey, kind: Nip51List.SEARCH_RELAYS, createdAt: Helpers.now);
+      Nip51List relayList = Nip51List(pubKey: key1.publicKey, kind: Nip51List.SEARCH_RELAYS, createdAt: Helpers.now, elements: []);
       relayList.privateRelays = ['wss://example.com','wss://example.org'];
       Nip01Event event = relayList.toEvent(signer);
       Nip51List? from = Nip51List.fromEvent(event, signer);
