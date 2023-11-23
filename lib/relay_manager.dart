@@ -20,7 +20,6 @@ import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:dart_ndk/tag_count_event_filter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'event_filter.dart';
 import 'models/relay_set.dart';
@@ -696,12 +695,7 @@ class RelayManager {
       relaySet.privateRelays = defaultRelaysIfEmpty;
     }
     if (relaySet!=null && relaySet.allRelays!=null) {
-      if (relaySet.privateRelays!=null && relaySet.privateRelays!.contains(relayUrl)) {
-        relaySet.privateRelays!.remove(relayUrl);
-      }
-      if (relaySet.publicRelays!=null && relaySet.publicRelays!.contains(relayUrl)) {
-        relaySet.publicRelays!.remove(relayUrl);
-      }
+      relaySet.removeRelay(relayUrl);
       relaySet.createdAt = Helpers.now;
       Nip01Event event = relaySet.toEvent(signer);
       await Future.wait([
@@ -768,12 +762,7 @@ class RelayManager {
       list.privateRelays = defaultRelaysIfEmpty;
     }
     if (list!=null && list.allRelays.isNotEmpty) {
-      if  (list.privateRelays!.contains(relayUrl)) {
-        list.privateRelays!.remove(relayUrl);
-      }
-      if  (list.publicRelays!.contains(relayUrl)) {
-        list.publicRelays!.remove(relayUrl);
-      }
+      list.removeRelay(relayUrl);
       list.createdAt = Helpers.now;
       Nip01Event event = list.toEvent(signer);
       await Future.wait([

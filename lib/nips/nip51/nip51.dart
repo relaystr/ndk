@@ -55,10 +55,12 @@ class Nip51List {
   List<String> get privateRelays => relays.where((element) => !element.private).map((e) => e.value).toList();
 
   set privateRelays(List<String> list) {
+    elements.removeWhere((element) => element.tag == RELAY && element.private);
     elements.addAll(list.map((url) => Nip51ListElement(tag: RELAY, value: url, private: true)));
   }
 
   set publicRelays(List<String> list) {
+    elements.removeWhere((element) => element.tag == RELAY && !element.private);
     elements.addAll(list.map((url) => Nip51ListElement(tag: RELAY, value: url, private: false)));
   }
 
@@ -137,6 +139,10 @@ class Nip51List {
 
   void addRelay(String relayUrl, bool private) {
     elements.add(Nip51ListElement(tag: RELAY, value: relayUrl, private: private));
+  }
+
+  void removeRelay(String relayUrl) {
+    elements.removeWhere((element) => element.tag == RELAY && element.value==relayUrl);
   }
 }
 
