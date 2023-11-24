@@ -13,6 +13,7 @@ import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
+import '../event_filter.dart';
 import '../models/relay_set.dart';
 import '../models/user_relay_list.dart';
 import '../nips/nip01/metadata.dart';
@@ -21,6 +22,7 @@ import '../nips/nip05/nip05.dart';
 class DbCacheManager extends CacheManager {
 
   late Isar isar;
+  EventFilter? eventFilter;
 
   Future<void> init({String? directory}) async {
     // await Isar.initialize("./libisar_android_armv7.so");//initializeIsarCore(download: true);
@@ -288,16 +290,18 @@ class DbCacheManager extends CacheManager {
 
   @override
   List<Nip01Event> loadEvents(List<String> pubKeys, List<int> kinds) {
-    return isar.dbEvents.where()
+    List<Nip01Event> events = isar.dbEvents.where()
         .optional(kinds!=null && kinds.isNotEmpty, (q) => q.anyOf(kinds, (q, kind) => q.kindEqualTo(kind)))
         .and()
         .optional(pubKeys!=null && pubKeys.isNotEmpty, (q) => q.anyOf(pubKeys, (q, pubKey) => q.pubKeyEqualTo(pubKey)))
         .findAll();
+    return eventFilter!=null? events.where((event) => eventFilter!.filter(event)).toList() : events;
   }
 
   @override
   Nip01Event? loadEvent(String id) {
-    return isar.dbEvents.get(id);
+    Nip01Event? event = isar.dbEvents.get(id);
+    return eventFilter==null || (event!=null && eventFilter!.filter(event!)) ? event : null;
   }
 
   @override
