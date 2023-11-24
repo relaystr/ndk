@@ -668,7 +668,7 @@ class RelayManager {
       broadcastEvent(
           event, broadcastRelays, signer),
     ]);
-    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51List.RELAY_SET]);
+    List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag()!=null && event.getDtag() == name) {
         return true;
@@ -705,7 +705,7 @@ class RelayManager {
         broadcastEvent(
             event, broadcastRelays, signer),
       ]);
-      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51List.RELAY_SET]);
+      List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
       events = events.where((event) {
         if (event.getDtag()!=null && event.getDtag() == name) {
           return true;
@@ -741,7 +741,7 @@ class RelayManager {
       broadcastEvent(
           event, broadcastRelays, signer),
     ]);
-    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+    List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     for (var event in events) { cacheManager.removeEvent(event.id); }
     await cacheManager.saveEvent(event);
     return list;
@@ -772,7 +772,7 @@ class RelayManager {
         broadcastEvent(
             event, broadcastRelays, signer),
       ]);
-      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+      List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
       for (var event in events) { cacheManager.removeEvent(event.id); }
       await cacheManager.saveEvent(event);
     }
@@ -802,7 +802,7 @@ class RelayManager {
         broadcastEvent(
             event, broadcastRelays, signer),
       ]);
-      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+      List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
       for (var event in events) { cacheManager.removeEvent(event.id); }
       await cacheManager.saveEvent(event);
     }
@@ -832,7 +832,7 @@ class RelayManager {
       broadcastEvent(
           event, broadcastRelays, signer),
     ]);
-    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+    List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     for (var event in events) { cacheManager.removeEvent(event.id); }
     await cacheManager.saveEvent(event);
     return list;
@@ -1564,7 +1564,7 @@ class RelayManager {
   }
 
   Nip51List? getCachedNip51List(int kind, EventSigner signer) {
-    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+    List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt),);
     return events!=null && events.isNotEmpty ? Nip51List.fromEvent(events.first, signer): null;
   }
@@ -1598,7 +1598,7 @@ class RelayManager {
   }
 
   Nip51Set? getCachedNip51RelaySet(String name, EventSigner signer) {
-    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51List.RELAY_SET]);
+    List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag()!=null && event.getDtag() == name) {
         return true;
@@ -1613,7 +1613,7 @@ class RelayManager {
       {bool forceRefresh = false}) async {
     Nip51Set? relaySet = getCachedNip51RelaySet(name, signer);
     if (relaySet==null || forceRefresh) {
-      Nip51Set? newRelaySet = null;
+      Nip51Set? newRelaySet;
       await for (final event in (await requestRelays(bootstrapRelays.toList(),
           Filter(
               authors: [signer.getPublicKey()],

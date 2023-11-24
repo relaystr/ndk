@@ -186,7 +186,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  List<Nip01Event> loadEvents(List<String> pubKeys, List<int> kinds) {
+  List<Nip01Event> loadEvents({List<String>? pubKeys, List<int>? kinds, String? pTag}) {
     // TODO: implement saveEvents
     return [];
   }

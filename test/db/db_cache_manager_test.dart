@@ -182,22 +182,61 @@ void main() async {
     expect(loadedEvent1!.tags, event11.tags);
     expect(loadedEvent1!.sources, event11.sources);
 
-    List<Nip01Event>? loadedEventsKind1 = cacheManager.loadEvents([], [1]);
+    List<Nip01Event>? loadedEventsKind1 = cacheManager.loadEvents(kinds: [1]);
     expect(loadedEventsKind1!.length, 2);
     expect(loadedEventsKind1!.contains(event11), true);
     expect(loadedEventsKind1!.contains(event21), true);
 
-    List<Nip01Event>? loadedEventsPubkey2 = cacheManager.loadEvents([pubKey2], []);
+    List<Nip01Event>? loadedEventsPubkey2 = cacheManager.loadEvents(pubKeys: [pubKey2]);
     expect(loadedEventsPubkey2!.length, 2);
     expect(loadedEventsPubkey2!.contains(event21), true);
     expect(loadedEventsPubkey2!.contains(event22), true);
 
-    List<Nip01Event>? loadedEventsPubkey1AndKind1 = cacheManager.loadEvents([pubKey1], [1]);
+    List<Nip01Event>? loadedEventsPubkey1AndKind1 = cacheManager.loadEvents(pubKeys: [pubKey1], kinds: [1]);
     expect(loadedEventsPubkey1AndKind1!.length, 1);
     expect(loadedEventsPubkey1AndKind1!.contains(event11), true);
 
-    List<Nip01Event>? loadedEventsPubkey2AndKind2 = cacheManager.loadEvents([pubKey2], [2]);
+    List<Nip01Event>? loadedEventsPubkey2AndKind2 = cacheManager.loadEvents(pubKeys: [pubKey2], kinds: [2]);
     expect(loadedEventsPubkey2AndKind2!.length, 1);
     expect(loadedEventsPubkey2AndKind2!.contains(event22), true);
+  });
+  test('DbEvent by pTags', () async {
+    DbCacheManager cacheManager = DbCacheManager();
+    await cacheManager.init();
+    int now = DateTime
+        .now()
+        .millisecondsSinceEpoch ~/ 1000;
+    String pubKey1 = "pubKey1";
+    String pubKey2 = "pubKey2";
+    DbEvent event11 = DbEvent(
+        pubKey: pubKey1,
+        content: "content 11",
+        kind: 1,
+        tags: [["p",pubKey1], ["e","1w18t12ts281y81"],["bla"]],
+        createdAt: now,
+        sig: 'signature',
+        validSig: true,
+        sources: ["wss://relay1.com", "wss://relay2.com"]
+    );
+    DbEvent event12 = DbEvent(
+        pubKey: pubKey2,
+        content: "content 12",
+        kind: 2,
+        tags: [["dupa"],["e","1w18t12ts281y81"],["p",pubKey2]],
+        createdAt: now,
+        sig: '',
+        validSig: null,
+        sources: []
+    );
+    cacheManager.removeAllEventsByPubKey(pubKey1);
+    cacheManager.removeAllEventsByPubKey(pubKey2);
+    await cacheManager.saveEvents([event11, event12]);
+
+    List<Nip01Event>? loadedEventsPubkey1 = cacheManager.loadEvents(pTag:pubKey1);
+    expect(loadedEventsPubkey1!.length, 1);
+    expect(loadedEventsPubkey1!.first.pTags, event11.pTags);
+    List<Nip01Event>? loadedEventsPubkey2 = cacheManager.loadEvents(pTag:pubKey2);
+    expect(loadedEventsPubkey2!.length, 1);
+    expect(loadedEventsPubkey2!.first.pTags, event12.pTags);
   });
 }

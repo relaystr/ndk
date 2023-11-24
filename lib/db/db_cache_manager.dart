@@ -9,6 +9,7 @@ import 'package:dart_ndk/db/db_nip05.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
@@ -288,12 +289,24 @@ class DbCacheManager extends CacheManager {
     print("SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
   }
 
+  // @override
+  // List<Nip01Event> loadEvents(List<String> pubKeys, List<int> kinds) {
+  //   List<Nip01Event> events = isar.dbEvents.where()
+  //       .optional(kinds!=null && kinds.isNotEmpty, (q) => q.anyOf(kinds, (q, kind) => q.kindEqualTo(kind)))
+  //       .and()
+  //       .optional(pubKeys!=null && pubKeys.isNotEmpty, (q) => q.anyOf(pubKeys, (q, pubKey) => q.pubKeyEqualTo(pubKey)))
+  //       .findAll();
+  //   return eventFilter!=null? events.where((event) => eventFilter!.filter(event)).toList() : events;
+  // }
+
   @override
-  List<Nip01Event> loadEvents(List<String> pubKeys, List<int> kinds) {
+  List<Nip01Event> loadEvents({List<String>? pubKeys, List<int>? kinds, String? pTag}) {
     List<Nip01Event> events = isar.dbEvents.where()
-        .optional(kinds!=null && kinds.isNotEmpty, (q) => q.anyOf(kinds, (q, kind) => q.kindEqualTo(kind)))
+        .optional(kinds!=null && kinds.isNotEmpty, (q) => q.anyOf(kinds!, (q, kind) => q.kindEqualTo(kind!)))
         .and()
-        .optional(pubKeys!=null && pubKeys.isNotEmpty, (q) => q.anyOf(pubKeys, (q, pubKey) => q.pubKeyEqualTo(pubKey)))
+        .optional(pubKeys!=null && pubKeys.isNotEmpty, (q) => q.anyOf(pubKeys!, (q, pubKey) => q.pubKeyEqualTo(pubKey!)))
+        .and()
+        .optional(Helpers.isNotBlank(pTag), (q) => q.pTagsElementEqualTo(pTag!))
         .findAll();
     return eventFilter!=null? events.where((event) => eventFilter!.filter(event)).toList() : events;
   }

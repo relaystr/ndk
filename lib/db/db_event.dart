@@ -21,6 +21,23 @@ class DbEvent extends Nip01Event {
   List<dynamic> get tags => super.tags;
 
   @override
+  List<String> get pTags {
+    List<String> pTags = super.tags.where((element) {
+      if (element is List) {
+        List<dynamic> a = element;
+        if (a.isNotEmpty && a.first.toString() == "p") {
+          return true;
+        }
+      }
+      return false;
+    }).map((e) {
+      List<dynamic> list = e as List;
+      return list.length == 2 ? list[1].toString() : "";
+    }).toList();
+    return pTags;
+  }
+
+  @override
   String get content => super.content;
 
   @override
