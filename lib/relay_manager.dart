@@ -785,7 +785,7 @@ class RelayManager {
     if (!signer.canSign()) {
       throw Exception("cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true, );
+    Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true, timeout: 2);
     if (list==null || list.elements!.isEmpty) {
       list = Nip51List(
           kind: kind,
@@ -806,6 +806,35 @@ class RelayManager {
       for (var event in events) { cacheManager.removeEvent(event.id); }
       await cacheManager.saveEvent(event);
     }
+    return list;
+  }
+
+  Future<Nip51List> broadcastAddNip51ListElement(int kind, String tag, String value,
+      Iterable<String> broadcastRelays,
+      EventSigner signer,
+      {bool private=false}
+      ) async {
+    if (private && !signer.canSign()) {
+      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+    }
+    Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true, timeout: 2);
+    list ??= Nip51List(
+        kind: kind,
+        pubKey: signer.getPublicKey(),
+        createdAt: Helpers.now,
+        elements: []
+    );
+    list.addElement(tag, value, private);
+    list.createdAt = Helpers.now;
+    Nip01Event event = list.toEvent(signer);
+    print(event);
+    await Future.wait([
+      broadcastEvent(
+          event, broadcastRelays, signer),
+    ]);
+    List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+    for (var event in events) { cacheManager.removeEvent(event.id); }
+    await cacheManager.saveEvent(event);
     return list;
   }
 
@@ -879,10 +908,8 @@ class RelayManager {
       }
 
       Nip01Event event = Nip01Event.fromJson(eventJson[2]);
-      for (var filter in eventFilters) {
-        if (!filter.filter(event)) {
-          return;
-        }
+      if (!filterEvent(event)) {
+        return;
       }
       // check signature is valid
       if (!event.isIdValid) {
@@ -1543,7 +1570,7 @@ class RelayManager {
   }
 
   Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
-      {bool forceRefresh = false}) async {
+      {bool forceRefresh = false, int timeout = 5}) async {
     Nip51List? list = getCachedNip51List(kind, signer);
     if (list==null || forceRefresh) {
       Nip51List? refreshedList = null;
@@ -1551,7 +1578,7 @@ class RelayManager {
           Filter(
             authors: [signer.getPublicKey()],
             kinds: [kind],
-          ), timeout: 5)).stream) {
+          ), timeout: timeout)).stream) {
         if (refreshedList == null ||
             refreshedList.createdAt <= event.createdAt!) {
           refreshedList = Nip51List.fromEvent(event, signer);
@@ -1647,5 +1674,14 @@ class RelayManager {
       return relays[url]!.info;
     }
     return null;
+  }
+
+  bool filterEvent(Nip01Event event) {
+    for (var filter in eventFilters) {
+      if (!filter.filter(event)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

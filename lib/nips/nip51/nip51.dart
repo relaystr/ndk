@@ -144,6 +144,10 @@ class Nip51List {
     elements.add(Nip51ListElement(tag: RELAY, value: relayUrl, private: private));
   }
 
+  void addElement(String tag, String value, bool private) {
+    elements.add(Nip51ListElement(tag: tag, value: value, private: private));
+  }
+
   void removeRelay(String relayUrl) {
     elements.removeWhere((element) => element.tag == RELAY && element.value==relayUrl);
   }
