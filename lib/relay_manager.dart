@@ -72,11 +72,14 @@ class RelayManager {
 
   bool allowReconnectRelays = true;
 
-  HttpClient httpClient = HttpClient();
+  HttpClient? httpClient;
 
-  RelayManager() {
-    httpClient.idleTimeout = const Duration(seconds: 3600);
-    httpClient.connectionTimeout = const Duration(seconds: 5);
+  RelayManager(bool isWeb) {
+    if (!isWeb) {
+      httpClient = HttpClient();
+      httpClient!.idleTimeout = const Duration(seconds: 3600);
+      httpClient!.connectionTimeout = const Duration(seconds: 5);
+    }
   }
   // ====================================================================================================================
 
@@ -769,12 +772,43 @@ class RelayManager {
         broadcastEvent(
             event, broadcastRelays, signer),
       ]);
-      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [Nip51List.RELAY_SET]);
+      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
       for (var event in events) { cacheManager.removeEvent(event.id); }
       await cacheManager.saveEvent(event);
     }
     return list;
   }
+
+  Future<Nip51List?> broadcastRemoveNip51ListElement(int kind, String tag, String value,
+      Iterable<String> broadcastRelays,
+      EventSigner signer) async {
+    if (!signer.canSign()) {
+      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+    }
+    Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true, );
+    if (list==null || list.elements!.isEmpty) {
+      list = Nip51List(
+          kind: kind,
+          pubKey: signer.getPublicKey(),
+          createdAt: Helpers.now,
+          elements: []
+      );
+    }
+    if (list!=null && list.elements.isNotEmpty) {
+      list.removeElement(tag, value);
+      list.createdAt = Helpers.now;
+      Nip01Event event = list.toEvent(signer);
+      await Future.wait([
+        broadcastEvent(
+            event, broadcastRelays, signer),
+      ]);
+      List<Nip01Event>? events = cacheManager.loadEvents([signer.getPublicKey()], [kind]);
+      for (var event in events) { cacheManager.removeEvent(event.id); }
+      await cacheManager.saveEvent(event);
+    }
+    return list;
+  }
+
 
   //*******************************************************************************************************************************/
 

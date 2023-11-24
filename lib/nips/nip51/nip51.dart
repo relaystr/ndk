@@ -79,6 +79,9 @@ class Nip51List {
     if (kind==Nip51List.BLOCKED_RELAYS) {
       return "Blocked";
     }
+    if (kind==Nip51List.MUTE) {
+      return "Mute";
+    }
     return "kind $kind";
   }
 
@@ -143,6 +146,9 @@ class Nip51List {
 
   void removeRelay(String relayUrl) {
     elements.removeWhere((element) => element.tag == RELAY && element.value==relayUrl);
+  }
+  void removeElement(String tag, String value) {
+    elements.removeWhere((element) => element.tag == tag && element.value==value);
   }
 }
 
