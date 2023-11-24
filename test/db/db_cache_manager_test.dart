@@ -127,6 +127,7 @@ void main() async {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     String pubKey2 = "pubKey2";
+    String pubKey3 = "pubKey3";
     DbEvent event11 = DbEvent(
         pubKey: pubKey1,
         content: "content 11",
@@ -167,39 +168,71 @@ void main() async {
         validSig: null,
         sources: []
     );
+    DbEvent event33 = DbEvent(
+        pubKey: pubKey3,
+        content: "content 33",
+        kind: 3,
+        tags: [],
+        createdAt: now,
+        sig: '',
+        validSig: null,
+        sources: []
+    );
     cacheManager.removeAllEventsByPubKey(pubKey1);
     cacheManager.removeAllEventsByPubKey(pubKey2);
-    await cacheManager.saveEvents([event11, event12, event21, event22]);
+    cacheManager.removeAllEventsByPubKey(pubKey3);
+    await cacheManager.saveEvents([event11, event12, event21, event22, event33]);
 
     Nip01Event? loadedEvent1 = cacheManager.loadEvent(event11.id) as DbEvent?;
     expect(loadedEvent1!.id, event11.id);
-    expect(loadedEvent1!.content, event11.content);
-    expect(loadedEvent1!.pubKey, event11.pubKey);
-    expect(loadedEvent1!.kind, event11.kind);
-    expect(loadedEvent1!.createdAt, event11.createdAt);
-    expect(loadedEvent1!.sig, event11.sig);
-    expect(loadedEvent1!.validSig, event11.validSig);
-    expect(loadedEvent1!.tags, event11.tags);
-    expect(loadedEvent1!.sources, event11.sources);
+    expect(loadedEvent1.content, event11.content);
+    expect(loadedEvent1.pubKey, event11.pubKey);
+    expect(loadedEvent1.kind, event11.kind);
+    expect(loadedEvent1.createdAt, event11.createdAt);
+    expect(loadedEvent1.sig, event11.sig);
+    expect(loadedEvent1.validSig, event11.validSig);
+    expect(loadedEvent1.tags, event11.tags);
+    expect(loadedEvent1.sources, event11.sources);
 
     List<Nip01Event>? loadedEventsKind1 = cacheManager.loadEvents(kinds: [1]);
-    expect(loadedEventsKind1!.length, 2);
-    expect(loadedEventsKind1!.contains(event11), true);
-    expect(loadedEventsKind1!.contains(event21), true);
+    expect(loadedEventsKind1.length, 2);
+    expect(loadedEventsKind1.contains(event11), true);
+    expect(loadedEventsKind1.contains(event21), true);
 
     List<Nip01Event>? loadedEventsPubkey2 = cacheManager.loadEvents(pubKeys: [pubKey2]);
-    expect(loadedEventsPubkey2!.length, 2);
-    expect(loadedEventsPubkey2!.contains(event21), true);
-    expect(loadedEventsPubkey2!.contains(event22), true);
+    expect(loadedEventsPubkey2.length, 2);
+    expect(loadedEventsPubkey2.contains(event21), true);
+    expect(loadedEventsPubkey2.contains(event22), true);
 
     List<Nip01Event>? loadedEventsPubkey1AndKind1 = cacheManager.loadEvents(pubKeys: [pubKey1], kinds: [1]);
-    expect(loadedEventsPubkey1AndKind1!.length, 1);
-    expect(loadedEventsPubkey1AndKind1!.contains(event11), true);
+    expect(loadedEventsPubkey1AndKind1.length, 1);
+    expect(loadedEventsPubkey1AndKind1.contains(event11), true);
 
     List<Nip01Event>? loadedEventsPubkey2AndKind2 = cacheManager.loadEvents(pubKeys: [pubKey2], kinds: [2]);
-    expect(loadedEventsPubkey2AndKind2!.length, 1);
-    expect(loadedEventsPubkey2AndKind2!.contains(event22), true);
+    expect(loadedEventsPubkey2AndKind2.length, 1);
+    expect(loadedEventsPubkey2AndKind2.contains(event22), true);
+
+    List<Nip01Event>? loadedEventsPubkey1AndPubkey2 = cacheManager.loadEvents(pubKeys: [pubKey1,pubKey2]);
+    expect(loadedEventsPubkey1AndPubkey2.length, 4);
+    expect(loadedEventsPubkey1AndPubkey2.contains(event11), true);
+    expect(loadedEventsPubkey1AndPubkey2.contains(event12), true);
+    expect(loadedEventsPubkey1AndPubkey2.contains(event21), true);
+    expect(loadedEventsPubkey1AndPubkey2.contains(event22), true);
+
+    List<Nip01Event>? loadedEventsKind1AndKind2 = cacheManager.loadEvents(kinds: [1,2]);
+    expect(loadedEventsKind1AndKind2.length, 4);
+    expect(loadedEventsKind1AndKind2.contains(event11), true);
+    expect(loadedEventsKind1AndKind2.contains(event12), true);
+    expect(loadedEventsKind1AndKind2.contains(event21), true);
+    expect(loadedEventsKind1AndKind2.contains(event22), true);
+
+    List<Nip01Event>? loadedEventsKind1AndKind3 = cacheManager.loadEvents(kinds: [1,3]);
+    expect(loadedEventsKind1AndKind3.length, 3);
+    expect(loadedEventsKind1AndKind3.contains(event11), true);
+    expect(loadedEventsKind1AndKind3.contains(event21), true);
+    expect(loadedEventsKind1AndKind3.contains(event33), true);
   });
+
   test('DbEvent by pTags', () async {
     DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
