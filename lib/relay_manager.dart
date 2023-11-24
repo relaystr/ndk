@@ -74,8 +74,8 @@ class RelayManager {
 
   HttpClient? httpClient;
 
-  RelayManager(bool isWeb) {
-    if (!isWeb) {
+  RelayManager({bool? isWeb}) {
+    if (isWeb==null || !isWeb) {
       httpClient = HttpClient();
       httpClient!.idleTimeout = const Duration(seconds: 3600);
       httpClient!.connectionTimeout = const Duration(seconds: 5);
