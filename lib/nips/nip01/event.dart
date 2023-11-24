@@ -129,6 +129,21 @@ class Nip01Event {
     return null;
   }
 
+  List<String> get tTags {
+    List<String> tTags = [];
+    for (var tag in tags) {
+      if (tag.length > 1) {
+        var key = tag[0];
+        var value = tag[1];
+
+        if (key == "t") {
+          tTags.add(value.toString().trim().toLowerCase());
+        }
+      }
+    }
+    return tTags;
+  }
+
   String? getDtag() {
     for (var tag in tags) {
       if (tag.length > 1) {
