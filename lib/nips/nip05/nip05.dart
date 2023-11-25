@@ -29,17 +29,15 @@ class Nip05 {
 
       var response = await http.get(uri);
 
-      if (response.body != null) {
-        final data = jsonDecode(
-            utf8.decode(response.bodyBytes)) as Map;
-        if (data["names"] != null) {
-          var dataPubkey = data["names"][name];
-          if (dataPubkey != null && dataPubkey == pubkey) {
-            return true;
-          }
+      final data = jsonDecode(
+          utf8.decode(response.bodyBytes)) as Map;
+      if (data["names"] != null) {
+        var dataPubkey = data["names"][name];
+        if (dataPubkey != null && dataPubkey == pubkey) {
+          return true;
         }
       }
-    } catch (e) {
+        } catch (e) {
       if (kDebugMode) {
         print(e);
       }

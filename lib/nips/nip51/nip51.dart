@@ -184,7 +184,7 @@ class Nip51Set extends Nip51List {
     if (name==null || event.kind!=Nip51List.RELAY_SET) {
       return null;
     }
-    Nip51Set set = Nip51Set(pubKey: event.pubKey, name: name!, createdAt: event.createdAt, elements: []);
+    Nip51Set set = Nip51Set(pubKey: event.pubKey, name: name, createdAt: event.createdAt, elements: []);
     set.id = event.id;
     if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
       try {

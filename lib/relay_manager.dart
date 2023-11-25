@@ -176,7 +176,7 @@ class RelayManager {
       //   SocketSimpleTextProcessor(),
       //   connectionOptions: connectionOptions
       // );
-      final wsUrl = Uri.parse(url);
+      // final wsUrl = Uri.parse(url);
       // webSockets[url] = WebSocketChannel.connect(wsUrl);
       // await webSockets[url]!.ready;
 
@@ -329,7 +329,7 @@ class RelayManager {
   }
 
   bool doRequest(String id, RelayRequest request) {
-    if (isWebSocketOpen(request.url) && (blockedRelays==null || !blockedRelays.contains(request.url))) {
+    if (isWebSocketOpen(request.url) && (!blockedRelays.contains(request.url))) {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
@@ -356,7 +356,7 @@ class RelayManager {
   }
 
   Future<void> broadcastSignedEvent(Nip01Event event, String url) async {
-    if (isWebSocketOpen(url) && (blockedRelays==null || !blockedRelays.contains(url))) {
+    if (isWebSocketOpen(url) && (!blockedRelays.contains(url))) {
       try {
         print("BROADCASTING to $url : kind: ${event.kind} author: ${event
             .pubKey}");
@@ -480,8 +480,7 @@ class RelayManager {
   Future<ContactList?> broadcastRemoveContact(String toRemove,
       Iterable<String> relays, EventSigner signer) async {
     ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
-    if (contactList != null &&
-        contactList.contacts.contains(toRemove)) {
+    if (contactList.contacts.contains(toRemove)) {
       contactList.contacts.remove(toRemove);
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
@@ -494,8 +493,7 @@ class RelayManager {
   Future<ContactList?> broadcastRemoveFollowedTag(String toRemove,
       Iterable<String> relays, EventSigner signer) async {
     ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
-    if (contactList != null &&
-        contactList.followedTags.contains(toRemove)) {
+    if (contactList.followedTags.contains(toRemove)) {
       contactList.followedTags.remove(toRemove);
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
@@ -508,8 +506,7 @@ class RelayManager {
   Future<ContactList?> broadcastRemoveFollowedCommunity(String toRemove,
       Iterable<String> relays, EventSigner signer) async {
     ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
-    if (contactList != null &&
-        contactList.followedCommunities.contains(toRemove)) {
+    if (contactList.followedCommunities.contains(toRemove)) {
       contactList.followedCommunities.remove(toRemove);
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
@@ -522,8 +519,7 @@ class RelayManager {
   Future<ContactList?> broadcastRemoveFollowedEvent(String toRemove,
       Iterable<String> relays, EventSigner signer) async {
     ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
-    if (contactList != null &&
-        contactList.followedEvents.contains(toRemove)) {
+    if (contactList.followedEvents.contains(toRemove)) {
       contactList.followedEvents.remove(toRemove);
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
@@ -545,8 +541,7 @@ class RelayManager {
         .millisecondsSinceEpoch ~/
         1000;
     bool refresh = userRelayList == null ||
-        userRelayList.refreshedTimestamp == null ||
-        userRelayList.refreshedTimestamp! < sometimeAgo;
+        userRelayList.refreshedTimestamp< sometimeAgo;
     if (refresh) {
       userRelayList = await getSingleUserRelayList(signer.getPublicKey(),
           forceRefresh: true);
@@ -595,7 +590,7 @@ class RelayManager {
           createdAt: now,
           refreshedTimestamp: now);
     }
-    if (userRelayList != null && userRelayList.relays.keys.contains(relayUrl)) {
+    if (userRelayList.relays.keys.contains(relayUrl)) {
       userRelayList.relays.remove(relayUrl);
       userRelayList.refreshedTimestamp = Helpers.now;
       await Future.wait([
@@ -623,28 +618,26 @@ class RelayManager {
           createdAt: now,
           refreshedTimestamp: now);
     }
-    if (userRelayList   != null) {
-      String? url = null;
-      if (userRelayList.relays.keys.contains(relayUrl)) {
-        url = relayUrl;
-      } else {
-        String? cleanUrl = Relay.clean(relayUrl);
-        if (cleanUrl != null && userRelayList.relays.keys.contains(cleanUrl)) {
-          url = cleanUrl;
-        } else if (userRelayList.relays.keys.contains(relayUrl + "/")) {
-          url = relayUrl + "/";
-        }
+    String? url = null;
+    if (userRelayList.relays.keys.contains(relayUrl)) {
+      url = relayUrl;
+    } else {
+      String? cleanUrl = Relay.clean(relayUrl);
+      if (cleanUrl != null && userRelayList.relays.keys.contains(cleanUrl)) {
+        url = cleanUrl;
+      } else if (userRelayList.relays.keys.contains(relayUrl + "/")) {
+        url = relayUrl + "/";
       }
-      if (url != null) {
-        userRelayList.relays[url] = marker;
-        userRelayList.refreshedTimestamp = Helpers.now;
-        await broadcastEvent(
-            userRelayList.toNip65().toEvent(), broadcastRelays, signer);
-        await cacheManager.saveUserRelayList(userRelayList);
-      }
-      return userRelayList;
     }
-  }
+    if (url != null) {
+      userRelayList.relays[url] = marker;
+      userRelayList.refreshedTimestamp = Helpers.now;
+      await broadcastEvent(
+          userRelayList.toNip65().toEvent(), broadcastRelays, signer);
+      await cacheManager.saveUserRelayList(userRelayList);
+    }
+    return userRelayList;
+    }
 
   Future<Nip51Set> broadcastAddNip51SetRelay(String relayUrl,
       String name,
@@ -690,14 +683,14 @@ class RelayManager {
       throw Exception("cannot broadcast private nip51 list without a signer that can sign");
     }
     Nip51Set? relaySet = await getSingleNip51RelaySet(name, signer, forceRefresh: true, );
-    if ((relaySet==null || relaySet.allRelays==null || relaySet.allRelays!.isEmpty) && defaultRelaysIfEmpty!=null && defaultRelaysIfEmpty.isNotEmpty) {
+    if ((relaySet==null || relaySet.allRelays.isEmpty) && defaultRelaysIfEmpty!=null && defaultRelaysIfEmpty.isNotEmpty) {
       relaySet = Nip51Set(
           name: name,
           pubKey: signer.getPublicKey(),
           createdAt: Helpers.now, elements: []);
       relaySet.privateRelays = defaultRelaysIfEmpty;
     }
-    if (relaySet!=null && relaySet.allRelays!=null) {
+    if (relaySet!=null) {
       relaySet.removeRelay(relayUrl);
       relaySet.createdAt = Helpers.now;
       Nip01Event event = relaySet.toEvent(signer);
@@ -755,7 +748,7 @@ class RelayManager {
       throw Exception("cannot broadcast private nip51 list without a signer that can sign");
     }
     Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true, );
-    if ((list==null || list.allRelays!.isEmpty) && defaultRelaysIfEmpty!=null && defaultRelaysIfEmpty.isNotEmpty) {
+    if ((list==null || list.allRelays.isEmpty) && defaultRelaysIfEmpty!=null && defaultRelaysIfEmpty.isNotEmpty) {
       list = Nip51List(
           kind: kind,
           pubKey: signer.getPublicKey(),
@@ -786,7 +779,7 @@ class RelayManager {
       throw Exception("cannot broadcast private nip51 list without a signer that can sign");
     }
     Nip51List? list = await getSingleNip51List(kind, signer, forceRefresh: true, timeout: 2);
-    if (list==null || list.elements!.isEmpty) {
+    if (list==null || list.elements.isEmpty) {
       list = Nip51List(
           kind: kind,
           pubKey: signer.getPublicKey(),
@@ -794,7 +787,7 @@ class RelayManager {
           elements: []
       );
     }
-    if (list!=null && list.elements.isNotEmpty) {
+    if (list.elements.isNotEmpty) {
       list.removeElement(tag, value);
       list.createdAt = Helpers.now;
       Nip01Event event = list.toEvent(signer);
@@ -850,7 +843,7 @@ class RelayManager {
             kinds: [Metadata.KIND],
             authors: [signer.getPublicKey()],
             limit: 1))).stream) {
-      if (loaded == null || loaded.createdAt! < event.createdAt!) {
+      if (loaded == null || loaded.createdAt< event.createdAt) {
         loaded = event;
       }
     }
@@ -1257,7 +1250,7 @@ class RelayManager {
               if (nip65.relays.isNotEmpty) {
                 UserRelayList fromNip65 = UserRelayList.fromNip65(nip65);
                 if (fromNip65s[event.pubKey] == null ||
-                    fromNip65s[event.pubKey]!.createdAt < event.createdAt!) {
+                    fromNip65s[event.pubKey]!.createdAt < event.createdAt) {
                   fromNip65s[event.pubKey] = fromNip65;
                 }
                 if (onProgress != null) {
@@ -1273,7 +1266,7 @@ class RelayManager {
               if (event.content.isNotEmpty) {
                 if (fromNip02Contacts[event.pubKey] == null ||
                     fromNip02Contacts[event.pubKey]!.createdAt <
-                        event.createdAt!) {
+                        event.createdAt) {
                   fromNip02Contacts[event.pubKey] =
                       UserRelayList.fromNip02EventContent(event);
                 }
@@ -1341,7 +1334,7 @@ class RelayManager {
               print("timeout metadatas.length:${metadatas.length}");
         })) {
           if (metadatas[event.pubKey] == null ||
-              metadatas[event.pubKey]!.updatedAt! < event.createdAt!) {
+              metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
             await cacheManager.saveMetadata(metadatas[event.pubKey]!);
@@ -1375,7 +1368,7 @@ class RelayManager {
             timeout: idleTimeout,
             Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1))).stream) {
           if (loadedContactList == null ||
-              loadedContactList.createdAt < event.createdAt!) {
+              loadedContactList.createdAt < event.createdAt) {
             loadedContactList = ContactList.fromEvent(event);
           }
         }
@@ -1410,7 +1403,7 @@ class RelayManager {
             Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1))).stream) {
           if (loadedMetadata == null ||
               loadedMetadata.updatedAt == null ||
-              loadedMetadata.updatedAt! < event.createdAt!) {
+              loadedMetadata.updatedAt! < event.createdAt) {
             loadedMetadata = Metadata.fromEvent(event);
           }
         }
@@ -1566,7 +1559,7 @@ class RelayManager {
   Nip51List? getCachedNip51List(int kind, EventSigner signer) {
     List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt),);
-    return events!=null && events.isNotEmpty ? Nip51List.fromEvent(events.first, signer): null;
+    return events.isNotEmpty ? Nip51List.fromEvent(events.first, signer): null;
   }
 
   Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
@@ -1580,15 +1573,13 @@ class RelayManager {
             kinds: [kind],
           ), timeout: timeout)).stream) {
         if (refreshedList == null ||
-            refreshedList.createdAt <= event.createdAt!) {
+            refreshedList.createdAt <= event.createdAt) {
           refreshedList = Nip51List.fromEvent(event, signer);
           // TODO should handle list with mixed public/private stuff
           if (Helpers.isNotBlank(event.content)) {
             Nip51List? decryptedList = Nip51List.fromEvent(event, signer);
-            if (decryptedList!=null) {
-              refreshedList = decryptedList;
-            }
-          }
+            refreshedList = decryptedList;
+                    }
           await cacheManager.saveEvent(event);
         }
       }
@@ -1606,7 +1597,7 @@ class RelayManager {
       return false;
     }).toList();
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt),);
-    return events!=null && events.isNotEmpty ? Nip51Set.fromEvent(events.first, signer): null;
+    return events.isNotEmpty ? Nip51Set.fromEvent(events.first, signer): null;
   }
 
   Future<Nip51Set?> getSingleNip51RelaySet(String name, EventSigner signer,
@@ -1621,7 +1612,7 @@ class RelayManager {
               dTags: ["${name}"],
           ), timeout: 5)).stream) {
         if (newRelaySet == null ||
-            newRelaySet.createdAt < event.createdAt!) {
+            newRelaySet.createdAt < event.createdAt) {
           if (event.getDtag()!=null && event.getDtag() == name) {
             newRelaySet = Nip51Set.fromEvent(event, signer);
             await cacheManager.saveEvent(event);
@@ -1652,13 +1643,13 @@ class RelayManager {
         if (event.getDtag()!=null) {
           Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
           if (newRelaySet == null ||
-              newRelaySet.createdAt < event.createdAt!) {
+              newRelaySet.createdAt < event.createdAt) {
             if (event.getDtag() != null) {
               newRelaySet = Nip51Set.fromEvent(event, signer);
             }
             if (newRelaySet!=null) {
               await cacheManager.saveEvent(event);
-              newRelaySets[newRelaySet!.name] = newRelaySet!;
+              newRelaySets[newRelaySet.name] = newRelaySet;
             }
           }
         }

@@ -52,6 +52,7 @@ class DbCacheManager extends CacheManager {
     // });
   }
 
+  @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
     final startTime = DateTime.now();
     isar.write((isar) {
@@ -59,17 +60,22 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
+    }
   }
 
+  @override
   UserRelayList? loadUserRelayList(String pubKey) {
     return isar.dbUserRelayLists.get(pubKey);
   }
 
+  @override
   RelaySet? loadRelaySet(String name, String pubKey) {
     return isar.dbRelaySets.get(RelaySet.buildId(name, pubKey));
   }
 
+  @override
   Future<void> saveRelaySet(RelaySet relaySet) async {
     final startTime = DateTime.now();
     isar.write((isar) {
@@ -77,9 +83,12 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
+    }
   }
 
+  @override
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
     final startTime = DateTime.now();
     isar.write((isar) {
@@ -87,7 +96,9 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${userRelayLists.length } UserRelayLists took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED ${userRelayLists.length } UserRelayLists took ${duration.inMilliseconds} ms");
+    }
   }
 
   @override
@@ -103,18 +114,22 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
+    }
   }
 
   @override
-  Future<void> saveContactLists(List<ContactList> list) async {
+  Future<void> saveContactLists(List<ContactList> contactLists) async {
     final startTime = DateTime.now();
     isar.write((isar) {
-      isar.dbContactLists.putAll(list.map((e) => DbContactList.fromContactList(e)).toList());
+      isar.dbContactLists.putAll(contactLists.map((e) => DbContactList.fromContactList(e)).toList());
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${list.length} ContactLists took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED ${contactLists.length} ContactLists took ${duration.inMilliseconds} ms");
+    }
   }
 
   @override
@@ -164,7 +179,7 @@ class DbCacheManager extends CacheManager {
     });
   }
   
-  /************************************************************************************************/
+  /// *********************************************************************************************
 
   @override
   Future<void> removeMetadata(String pubKey) async {
@@ -181,7 +196,9 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED Metadata took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED Metadata took ${duration.inMilliseconds} ms");
+    }
   }
 
   @override
@@ -192,7 +209,9 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
+    }
   }
 
   @override
@@ -200,6 +219,7 @@ class DbCacheManager extends CacheManager {
     return isar.dbMetadatas.getAll(pubKeys);
   }
 
+  @override
   Iterable<Metadata> searchMetadatas(String search, int limit) {
     return isar.dbMetadatas.where().splitDisplayNameWordsElementStartsWith(search).or().splitNameWordsElementStartsWith(search).findAll().take(limit);
   }
@@ -211,7 +231,7 @@ class DbCacheManager extends CacheManager {
     });
   }
 
-  /************************************************************************************************/
+  /// *********************************************************************************************
 
   @override
   Future<void> removeNip05(String pubKey) async {
@@ -228,7 +248,9 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED Nip05 took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED Nip05 took ${duration.inMilliseconds} ms");
+    }
   }
 
   @override
@@ -239,7 +261,9 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
+    }
   }
 
   @override
@@ -258,7 +282,7 @@ class DbCacheManager extends CacheManager {
       isar.dbNip05s.clear();
     });
   }
-  /************************************************************************************************/
+  /// *********************************************************************************************
 
   @override
   Future<void> removeEvent(String id) async {
@@ -275,7 +299,9 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED Event took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED Event took ${duration.inMilliseconds} ms");
+    }
   }
 
   @override
@@ -286,7 +312,9 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    print("SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
+    if (kDebugMode) {
+      print("SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
+    }
   }
 
   // @override
@@ -302,9 +330,9 @@ class DbCacheManager extends CacheManager {
   @override
   List<Nip01Event> loadEvents({List<String>? pubKeys, List<int>? kinds, String? pTag}) {
     List<Nip01Event> events = isar.dbEvents.where()
-        .optional(kinds!=null && kinds.isNotEmpty, (q) => q.anyOf(kinds!, (q, kind) => q.kindEqualTo(kind!)))
+        .optional(kinds!=null && kinds.isNotEmpty, (q) => q.anyOf(kinds!, (q, kind) => q.kindEqualTo(kind)))
         .and()
-        .optional(pubKeys!=null && pubKeys.isNotEmpty, (q) => q.anyOf(pubKeys!, (q, pubKey) => q.pubKeyEqualTo(pubKey!)))
+        .optional(pubKeys!=null && pubKeys.isNotEmpty, (q) => q.anyOf(pubKeys!, (q, pubKey) => q.pubKeyEqualTo(pubKey)))
         .and()
         .optional(Helpers.isNotBlank(pTag), (q) => q.pTagsElementEqualTo(pTag!))
         .findAll();
@@ -314,7 +342,7 @@ class DbCacheManager extends CacheManager {
   @override
   Nip01Event? loadEvent(String id) {
     Nip01Event? event = isar.dbEvents.get(id);
-    return eventFilter==null || (event!=null && eventFilter!.filter(event!)) ? event : null;
+    return eventFilter==null || (event!=null && eventFilter!.filter(event)) ? event : null;
   }
 
   @override

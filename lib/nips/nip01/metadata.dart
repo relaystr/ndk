@@ -4,7 +4,6 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 
 class Metadata {
-
   static const int KIND = 0;
 
   late String pubKey;
@@ -20,20 +19,19 @@ class Metadata {
   int? updatedAt;
   int? refreshedTimestamp;
 
-  Metadata({
-    this.pubKey = "",
-    this.name,
-    this.displayName,
-    this.picture,
-    this.banner,
-    this.website,
-    this.about,
-    this.nip05,
-    this.lud16,
-    this.lud06,
-    this.updatedAt,
-    this.refreshedTimestamp
-  });
+  Metadata(
+      {this.pubKey = "",
+      this.name,
+      this.displayName,
+      this.picture,
+      this.banner,
+      this.website,
+      this.about,
+      this.nip05,
+      this.lud16,
+      this.lud06,
+      this.updatedAt,
+      this.refreshedTimestamp});
 
   Metadata.fromJson(Map<String, dynamic> json) {
     name = json['name'];
@@ -52,9 +50,9 @@ class Metadata {
   }
 
   String? get cleanNip05 {
-    if (nip05!=null) {
+    if (nip05 != null) {
       if (nip05!.startsWith("_@")) {
-        return nip05!.trim().toLowerCase()!.replaceAll("_@", "@");
+        return nip05!.trim().toLowerCase().replaceAll("_@", "@");
       }
       return nip05!.trim().toLowerCase();
     }
@@ -84,10 +82,8 @@ class Metadata {
   static Metadata fromEvent(Nip01Event event) {
     Metadata metadata = Metadata();
     if (Helpers.isNotBlank(event.content)) {
-      Map<String,dynamic> json = jsonDecode(event.content);
-      if (json!=null) {
-        metadata = Metadata.fromJson(json);
-      }
+      Map<String, dynamic> json = jsonDecode(event.content);
+      metadata = Metadata.fromJson(json);
     }
     metadata.pubKey = event.pubKey;
     metadata.updatedAt = event.createdAt;
@@ -96,12 +92,11 @@ class Metadata {
 
   Nip01Event toEvent() {
     return Nip01Event(
-      pubKey: pubKey,
+        pubKey: pubKey,
         content: jsonEncode(toJson()),
         kind: KIND,
         tags: [],
-        createdAt: updatedAt??0
-    );
+        createdAt: updatedAt ?? 0);
   }
 
   String getName() {
@@ -116,8 +111,8 @@ class Metadata {
 
   bool matchesSearch(String str) {
     str = str.trim().toLowerCase();
-    String d = displayName != null ? displayName!.toLowerCase(): "";
-    String n = name != null ? name!.toLowerCase(): "";
+    String d = displayName != null ? displayName!.toLowerCase() : "";
+    String n = name != null ? name!.toLowerCase() : "";
     String str2 = " $str";
     return d.startsWith(str) ||
         d.contains(str2) ||
@@ -128,8 +123,9 @@ class Metadata {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is Metadata && runtimeType == other.runtimeType &&
-              pubKey == other.pubKey;
+      other is Metadata &&
+          runtimeType == other.runtimeType &&
+          pubKey == other.pubKey;
 
   @override
   int get hashCode => pubKey.hashCode;

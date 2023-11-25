@@ -77,6 +77,6 @@ void main() {
       Nip01Event event = relayList.toEvent(signer);
       Nip51List? from = Nip51List.fromEvent(event, signer);
 
-      expect(relayList.privateRelays, from!.privateRelays);
+      expect(relayList.privateRelays, from.privateRelays);
     });
   });}

@@ -94,18 +94,16 @@ class MockRelay {
       if (keys.isNotEmpty) {
         KeyPair key = keys.first;
         Nip01Event? textNote = Nip01Event.fromJson(textNotes![key]!.toJson());
-        if (textNote != null) {
-          List<dynamic> json = [];
-          json.add("EVENT");
-          json.add(requestId);
+        List<dynamic> json = [];
+        json.add("EVENT");
+        json.add(requestId);
 
-          if (signEvents) {
-            textNote.sign(key.privateKey!);
-          }
-          json.add(textNote.toJson());
-          webSocket!.add(jsonEncode(json));
+        if (signEvents) {
+          textNote.sign(key.privateKey!);
         }
-      }
+        json.add(textNote.toJson());
+        webSocket!.add(jsonEncode(json));
+            }
     }
   }
 

@@ -33,7 +33,7 @@ class UserRelayList {
     return UserRelayList(
         pubKey: event.pubKey,
         relays: ContactList.relaysFromContent(event),
-        createdAt: event.createdAt!,
+        createdAt: event.createdAt,
         refreshedTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000);
   }
 }

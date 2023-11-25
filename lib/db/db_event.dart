@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_overrides
+
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:isar/isar.dart';
 

@@ -45,7 +45,7 @@ class MemCacheManager implements CacheManager {
     userRelayLists.remove(pubKey);
   }
 
-  /*****************************************************************************/
+  /// **************************************************************************
 
   @override
   Future<void> saveNip05(Nip05 nip05) async {
@@ -85,7 +85,7 @@ class MemCacheManager implements CacheManager {
     nip05s.remove(pubKey);
   }
 
-  /*****************************************************************************/
+  /// **************************************************************************
   
   @override
   RelaySet? loadRelaySet(String name, String pubKey) {
@@ -104,13 +104,13 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveContactList(ContactList contactList) async {
-    this.contactLists[contactList.pubKey] = contactList;
+    contactLists[contactList.pubKey] = contactList;
   }
 
   @override
   Future<void> saveContactLists(List<ContactList> list) async {
     for (var contactList in list) {
-      this.contactLists[contactList.pubKey] = contactList;
+      contactLists[contactList.pubKey] = contactList;
     }
   }
 

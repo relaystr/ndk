@@ -23,10 +23,10 @@ class Nip01Event {
     required this.content,
     int createdAt=0,
   }) {
-    this.createdAt = (createdAt==null || createdAt==0) ?  DateTime
+    this.createdAt = (createdAt==0) ?  DateTime
         .now()
         .millisecondsSinceEpoch ~/ 1000 : createdAt;
-    id = _calculateId(pubKey, this.createdAt!, kind, tags, content);
+    id = _calculateId(pubKey, this.createdAt, kind, tags, content);
   }
 
   Nip01Event._(this.id, this.pubKey, this.createdAt, this.kind, this.tags,
@@ -89,7 +89,7 @@ class Nip01Event {
 
   bool get isIdValid {
     // Validate event data
-    if (id != _calculateId(pubKey, createdAt!, kind, tags, content)) {
+    if (id != _calculateId(pubKey, createdAt, kind, tags, content)) {
       return false;
     }
     return true;

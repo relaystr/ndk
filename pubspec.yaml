@@ -1,6 +1,6 @@
 name: dart_ndk
 description: Dart Nostr Development Kit
-version: 0.0.1
+version: 0.1.0-dev1
 homepage: https://github.com/relaystr/dart_ndk
 
 environment:
@@ -15,10 +15,12 @@ dependencies:
   bech32: ^0.2.2
   hex: ^0.2.0
 #  websocket_universal: ^1.1.1
-  web_socket_channel: 2.4.0
+  web_socket_channel: ^2.4.0
   crypto: ^3.0.3
   collection: ^1.17.2
   path_provider: ^2.1.1
+  convert: ^3.1.1
+  pointycastle: ^3.7.3
 
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14

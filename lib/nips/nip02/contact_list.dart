@@ -26,7 +26,7 @@ class ContactList {
 
   ContactList.fromEvent(Nip01Event event) {
     pubKey = event.pubKey;
-    createdAt = event.createdAt!;
+    createdAt = event.createdAt;
     loadedTimestamp = DateTime.now().millisecondsSinceEpoch ~/1000;
     for (var tag in event.tags) {
       if (tag is! List<dynamic>) continue;

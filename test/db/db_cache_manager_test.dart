@@ -20,7 +20,7 @@ void main() async {
   test('DbContactList', () async {
     DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
-    int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    // int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String contact1 = "contact1";
     String pubKey1 = "pubKey1";
     DbContactList userContacts = DbContactList(pubKey: pubKey1, contacts: [contact1]);
@@ -51,7 +51,7 @@ void main() async {
   test('DbNip05', () async {
     DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
-    int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    // int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     DbNip05 nip05 =
     DbNip05(pubKey: pubKey1, nip05: "bla@bla.com", updatedAt: Helpers.now, valid: true);
@@ -66,7 +66,7 @@ void main() async {
   test('DbRelaySet', () async {
     DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
-    int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    // int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     String pubKey2 = "pubKey2";
     DbRelaySet relaySet = DbRelaySet(
@@ -110,16 +110,16 @@ void main() async {
 
     DbMetadata? loaded = cacheManager.loadMetadata(pubKey1) as DbMetadata?;
     expect(loaded!.id, metadata.id);
-    expect(loaded!.pubKey, metadata.pubKey);
-    expect(loaded!.name, metadata.name);
-    expect(loaded!.about, metadata.about);
-    expect(loaded!.displayName, metadata.displayName);
-    expect(loaded!.lud06, metadata.lud06);
-    expect(loaded!.lud16, metadata.lud16);
-    expect(loaded!.nip05, metadata.nip05);
-    expect(loaded!.picture, metadata.picture);
-    expect(loaded!.updatedAt, metadata.updatedAt);
-    expect(loaded!.website, metadata.website);
+    expect(loaded.pubKey, metadata.pubKey);
+    expect(loaded.name, metadata.name);
+    expect(loaded.about, metadata.about);
+    expect(loaded.displayName, metadata.displayName);
+    expect(loaded.lud06, metadata.lud06);
+    expect(loaded.lud16, metadata.lud16);
+    expect(loaded.nip05, metadata.nip05);
+    expect(loaded.picture, metadata.picture);
+    expect(loaded.updatedAt, metadata.updatedAt);
+    expect(loaded.website, metadata.website);
   });
   test('DbEvent', () async {
     DbCacheManager cacheManager = DbCacheManager();
@@ -266,10 +266,10 @@ void main() async {
     await cacheManager.saveEvents([event11, event12]);
 
     List<Nip01Event>? loadedEventsPubkey1 = cacheManager.loadEvents(pTag:pubKey1);
-    expect(loadedEventsPubkey1!.length, 1);
-    expect(loadedEventsPubkey1!.first.pTags, event11.pTags);
+    expect(loadedEventsPubkey1.length, 1);
+    expect(loadedEventsPubkey1.first.pTags, event11.pTags);
     List<Nip01Event>? loadedEventsPubkey2 = cacheManager.loadEvents(pTag:pubKey2);
-    expect(loadedEventsPubkey2!.length, 1);
-    expect(loadedEventsPubkey2!.first.pTags, event12.pTags);
+    expect(loadedEventsPubkey2.length, 1);
+    expect(loadedEventsPubkey2.first.pTags, event12.pTags);
   });
 }

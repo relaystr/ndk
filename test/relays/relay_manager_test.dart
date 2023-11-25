@@ -100,6 +100,7 @@ void main() async {
         relay1.url
       ], Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND]), timeout: 2))
           .stream;
+      // ignore: unused_local_variable
       await for (final event in stream) {
         fail("should not emit any events, since relay does not sign");
       }

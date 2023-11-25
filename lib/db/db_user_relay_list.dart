@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_overrides
+
 import 'package:dart_ndk/models/user_relay_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:isar/isar.dart';
@@ -9,10 +11,13 @@ class DbUserRelayList extends UserRelayList {
 
   String get id => pubKey;
 
+  @override
   String get pubKey => super.pubKey;
 
+  @override
   int get createdAt => super.createdAt;
 
+  @override
   int get refreshedTimestamp => super.refreshedTimestamp;
 
   List<DbRelayListItem> get items =>

@@ -4,7 +4,6 @@ import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pointycastle/export.dart';
 
 void main() {
   group('Nip04', () {
@@ -64,9 +63,9 @@ void main() {
       KeyPair key1 = Bip340.generatePrivateKey();
       var agreement = Nip04.getAgreement(key1.privateKey!);
       String content = "some content";
-      var encrypted = Nip04.encryptWithAgreement(content, agreement, key1.publicKey!);
+      var encrypted = Nip04.encryptWithAgreement(content, agreement, key1.publicKey);
 
-      var decrypted = Nip04.decryptWithAgreement(encrypted, agreement, key1.publicKey!);
+      var decrypted = Nip04.decryptWithAgreement(encrypted, agreement, key1.publicKey);
       expect(content, decrypted);
     });
   });
