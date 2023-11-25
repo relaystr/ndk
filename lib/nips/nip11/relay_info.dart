@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class RelayInfo {
@@ -38,7 +39,7 @@ class RelayInfo {
     if (json["icon"]!=null) {
       icon = json["icon"];
     } else {
-      icon = "${url}${url.endsWith("/")?"":"/"}favicon.ico";
+      icon = "$url${url.endsWith("/")?"":"/"}favicon.ico";
     }
     final List<dynamic> nips = json["supported_nips"] ?? [];
     final String software = json["software"] ?? "";
@@ -57,7 +58,9 @@ class RelayInfo {
           utf8.decode(response.bodyBytes)) as Map;
       return RelayInfo.fromJson(decodedResponse, uri.toString());
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
       return null;
     }
   }

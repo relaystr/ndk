@@ -54,5 +54,3 @@ dependencies:
         }
 
 ```
-
-## Additional information

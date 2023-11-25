@@ -618,15 +618,15 @@ class RelayManager {
           createdAt: now,
           refreshedTimestamp: now);
     }
-    String? url = null;
+    String? url;
     if (userRelayList.relays.keys.contains(relayUrl)) {
       url = relayUrl;
     } else {
       String? cleanUrl = Relay.clean(relayUrl);
       if (cleanUrl != null && userRelayList.relays.keys.contains(cleanUrl)) {
         url = cleanUrl;
-      } else if (userRelayList.relays.keys.contains(relayUrl + "/")) {
-        url = relayUrl + "/";
+      } else if (userRelayList.relays.keys.contains("$relayUrl/")) {
+        url = "$relayUrl/";
       }
     }
     if (url != null) {
@@ -668,7 +668,7 @@ class RelayManager {
       }
       return false;
     }).toList();
-    events.forEach((event) { cacheManager.removeEvent(event.id); });
+    for (var event in events) { cacheManager.removeEvent(event.id); }
 
     await cacheManager.saveEvent(event);
     return list;
@@ -705,7 +705,7 @@ class RelayManager {
         }
         return false;
       }).toList();
-      events.forEach((event) { cacheManager.removeEvent(event.id); });
+      for (var event in events) { cacheManager.removeEvent(event.id); }
       await cacheManager.saveEvent(event);
     }
     return relaySet;
@@ -907,7 +907,7 @@ class RelayManager {
       // check signature is valid
       if (!event.isIdValid) {
         if (kDebugMode) {
-          print("RECEIVED ${id} INVALID EVENT ${event}");
+          print("RECEIVED $id INVALID EVENT $event");
         }
         return;
       }
@@ -931,7 +931,7 @@ class RelayManager {
               //   nostrRequests.remove(id);
               // }
             } catch(e) {
-              print("COULD NOT ADD event ${event} TO CONTROLLER on $url for requests ${nostrRequest.requests}");
+              print("COULD NOT ADD event $event TO CONTROLLER on $url for requests ${nostrRequest.requests}");
             }
           }
         } else {
@@ -1158,9 +1158,9 @@ class RelayManager {
           minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
     }
     Map<String, int> notCoveredPubkeys = {};
-    pubKeys.forEach((pubKey) {
+    for (var pubKey in pubKeys) {
       notCoveredPubkeys[pubKey] = relayMinCountPerPubKey;
-    });
+    }
     for (String url in pubKeysByRelayUrl.keys) {
       if (blockedRelays.contains(Relay.clean(url))) {
         continue;
@@ -1330,7 +1330,7 @@ class RelayManager {
             idleTimeout: 1,
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
-            relaySet)).stream.timeout(Duration(seconds: 5), onTimeout: (sink) {
+            relaySet)).stream.timeout(const Duration(seconds: 5), onTimeout: (sink) {
               print("timeout metadatas.length:${metadatas.length}");
         })) {
           if (metadatas[event.pubKey] == null ||
@@ -1566,7 +1566,7 @@ class RelayManager {
       {bool forceRefresh = false, int timeout = 5}) async {
     Nip51List? list = getCachedNip51List(kind, signer);
     if (list==null || forceRefresh) {
-      Nip51List? refreshedList = null;
+      Nip51List? refreshedList;
       await for (final event in (await requestRelays(bootstrapRelays.toList(),
           Filter(
             authors: [signer.getPublicKey()],
@@ -1609,7 +1609,7 @@ class RelayManager {
           Filter(
               authors: [signer.getPublicKey()],
               kinds: [Nip51List.RELAY_SET],
-              dTags: ["${name}"],
+              dTags: [name],
           ), timeout: 5)).stream) {
         if (newRelaySet == null ||
             newRelaySet.createdAt < event.createdAt) {
@@ -1632,7 +1632,7 @@ class RelayManager {
 
   Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer,
       {bool forceRefresh = false}) async {
-    Nip51Set? relaySet = null;//getCachedNip51RelaySets(signer);
+    Nip51Set? relaySet;//getCachedNip51RelaySets(signer);
     if (relaySet==null || forceRefresh) {
       Map<String,Nip51Set> newRelaySets = {};
       await for (final event in (await requestRelays(bootstrapRelays.toList(),

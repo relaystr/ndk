@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 
 import 'package:dart_ndk/dart_ndk.dart';
@@ -11,6 +13,7 @@ import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../mocks/mock_relay.dart';
@@ -231,12 +234,18 @@ void main() async {
           relayMinCountPerPubKey: 1,
           onProgress: (stepName, count, total) {
             if (count % 100 == 0 || (total - count) < 10) {
-              print("[PROGRESS] $stepName: $count/$total");
+              if (kDebugMode) {
+                print("[PROGRESS] $stepName: $count/$total");
+              }
             }
           });
-      print("BEST ${relaySet.relaysMap.length} RELAYS:");
+      if (kDebugMode) {
+        print("BEST ${relaySet.relaysMap.length} RELAYS:");
+      }
       relaySet.relaysMap.forEach((url, pubKeyMappings) {
-        print("  ${relayNames[url]} => has ${pubKeyMappings.length} follows");
+        if (kDebugMode) {
+          print("  ${relayNames[url]} => has ${pubKeyMappings.length} follows");
+        }
       });
       Stream<Nip01Event> query = (await manager.query(
           Filter(kinds: [
@@ -291,7 +300,7 @@ void main() async {
               });
           print("BEST ${relaySet.relaysMap.length} RELAYS:");
           relaySet.relaysMap.forEach((url, pubKeyMappings) {
-            print("  ${url} => has ${pubKeyMappings.length} follows");
+            print("  $url => has ${pubKeyMappings.length} follows");
           });
 
           expect(relaySet.urls.contains(relay1.url), true);
@@ -328,7 +337,7 @@ void main() async {
               });
           print("BEST ${relaySet.relaysMap.length} RELAYS:");
           relaySet.relaysMap.forEach((url, pubKeyMappings) {
-            print("  ${url} => has ${pubKeyMappings.length} follows");
+            print("  $url => has ${pubKeyMappings.length} follows");
           });
 
           expect(relaySet.urls.contains(relay1.url), true);
@@ -490,7 +499,7 @@ void main() async {
         expect(contactList != null, true);
 
         String setName = "feed,$relayMinCountPerPubKey,";
-        RelaySet? bestRelays = null;
+        RelaySet? bestRelays;
         if (bestRelays == null) {
           bestRelays = await manager.calculateRelaySet(
               name: "feed",
@@ -508,35 +517,45 @@ void main() async {
           await manager.saveRelaySet(bestRelays);
         } else {
           final startTime = DateTime.now();
-          print("connecting ${bestRelays.relaysMap.length} relays");
+          if (kDebugMode) {
+            print("connecting ${bestRelays.relaysMap.length} relays");
+          }
           List<bool> connected = await Future.wait(
               bestRelays.urls.map((url) => manager.connectRelay(url)));
           final endTime = DateTime.now();
           final duration = endTime.difference(startTime);
-          print(
+          if (kDebugMode) {
+            print(
               "CONNECTED ${connected
                   .where((element) => element)
                   .length} , ${connected
                   .where((element) => !element)
                   .length} FAILED took ${duration.inMilliseconds} ms");
+          }
         }
-        print(
+        if (kDebugMode) {
+          print(
             "BEST ${bestRelays.relaysMap
                 .length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
+        }
         bestRelays.relaysMap.forEach((url, pubKeyMappings) {
-          print(
-              "  ${url} ${pubKeyMappings.length} follows ${pubKeyMappings
+          if (kDebugMode) {
+            print(
+              "  $url ${pubKeyMappings.length} follows ${pubKeyMappings
                   .length <= 2 ? pubKeyMappings : ""}");
+          }
         });
 
         if (Helpers.isNotBlank(expectedRelayUrl)) {
           expect(bestRelays.urls.contains(expectedRelayUrl), true);
         }
         final t1 = DateTime.now();
-        print(
+        if (kDebugMode) {
+          print(
             "===== run #$i, time took ${t1
                 .difference(t0)
                 .inMilliseconds} ms");
+        }
         i++;
       }
     }

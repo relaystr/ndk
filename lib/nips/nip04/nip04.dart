@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pointycastle/export.dart';
 
 class Nip04 {
@@ -50,7 +50,7 @@ class Nip04 {
 
     var result = cipherCbc.process(Uint8List.fromList(utf8.encode(message)));
 
-    return base64.encode(result) + "?iv=" + base64.encode(ivData);
+    return "${base64.encode(result)}?iv=${base64.encode(ivData)}";
   }
 
   static String decryptWithAgreement(
@@ -93,7 +93,9 @@ class Nip04 {
     try {
       y = liftX(x);
     } on Error {
-      print("error in handle pubKey");
+      if (kDebugMode) {
+        print("error in handle pubKey");
+      }
     }
     ECPoint endPoint = secp256k1.curve.createPoint(x, y!);
     return ECPublicKey(endPoint, secp256k1);
@@ -107,12 +109,12 @@ class Nip04 {
   // liftX returns Y for this X
   static BigInt liftX(BigInt x) {
     if (x >= curveP) {
-      throw new Error();
+      throw Error();
     }
     var ySq = (x.modPow(BigInt.from(3), curveP) + BigInt.from(7)) % curveP;
     var y = ySq.modPow((curveP + BigInt.one) ~/ BigInt.from(4), curveP);
     if (y.modPow(BigInt.two, curveP) != ySq) {
-      throw new Error();
+      throw Error();
     }
     return y % BigInt.two == BigInt.zero /* even */ ? y : curveP - y;
   }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:flutter/foundation.dart';
 
 import '../nip01/event.dart';
 
@@ -85,11 +86,15 @@ class ContactList {
                 }
                 continue;
               } catch (e) {
-                print(
+                if (kDebugMode) {
+                  print(
                     "Could not parse relay ${entry.key} , entry : ${entry.value}");
+                }
               }
-              print(
+              if (kDebugMode) {
+                print(
                   "Could not parse relay ${entry.key} , content : ${event.content}");
+              }
             }
           }
         }
