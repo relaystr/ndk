@@ -129,34 +129,27 @@ class Nip01Event {
     return null;
   }
 
-  List<String> get tTags {
-    List<String> tTags = [];
-    for (var tag in tags) {
-      if (tag.length > 1) {
-        var key = tag[0];
-        var value = tag[1];
+  static List<String> getTags(List<dynamic> list, String tag) {
+    List<String> tags = [];
+    for (var e in list) {
+      if (e.length > 1) {
+        var key = e[0];
+        var value = e[1];
 
-        if (key == "t") {
-          tTags.add(value.toString().trim().toLowerCase());
+        if (key == tag) {
+          tags.add(value.toString().trim().toLowerCase());
         }
       }
     }
-    return tTags;
+    return tags;
+  }
+
+  List<String> get tTags {
+    return getTags(tags,"t");
   }
 
   List<String> get pTags {
-    List<String> pTags = [];
-    for (var tag in tags) {
-      if (tag.length > 1) {
-        var key = tag[0];
-        var value = tag[1];
-
-        if (key == "p") {
-          pTags.add(value.toString().trim().toLowerCase());
-        }
-      }
-    }
-    return pTags;
+    return getTags(tags,"p");
   }
 
   String? getDtag() {
