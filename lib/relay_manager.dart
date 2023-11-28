@@ -1155,7 +1155,9 @@ class RelayManager {
     Map<String, Set<String>> minimumRelaysCoverageByPubkey = {};
     Map<String, List<PubkeyMapping>> bestRelays = {};
     if (onProgress != null) {
-      print("Calculating best relays...");
+      if (kDebugMode) {
+        print("Calculating best relays...");
+      }
       onProgress.call("Calculating best relays",
           minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
     }
@@ -1173,7 +1175,11 @@ class RelayManager {
               relayMinCountPerPubKey)) {
         continue;
       }
-      if (!await reconnectRelay(url)) {
+      bool connectable = await reconnectRelay(url);
+      if (kDebugMode) {
+        print("tried to reconnect to ${url} = $connectable");
+      }
+      if (!connectable) {
         continue;
       }
       if (bestRelays[url] == null) {
@@ -1188,6 +1194,9 @@ class RelayManager {
         }
         relays.add(url);
         if (!bestRelays[url]!.contains(pubKey)) {
+          if (kDebugMode) {
+            print("Adding $url to bestRelays since $pubKey was needed");
+          }
           bestRelays[url]!.add(pubKey);
           int count =
               notCoveredPubkeys[pubKey.pubKey] ?? relayMinCountPerPubKey;
@@ -1242,7 +1251,7 @@ class RelayManager {
       try {
         await for (final event in (await requestRelays(
             timeout: missingPubKeys.length > 1 ? 10 : 3,
-            ["wss://relay.damus.io"],
+            bootstrapRelays,
             Filter(
                 authors: missingPubKeys,
                 kinds: [Nip65.KIND, ContactList.KIND]))).stream) {
@@ -1517,18 +1526,19 @@ class RelayManager {
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
     if (allowReconnectRelays) {
-      if (relay != null &&
-          !force &&
-          !relay.wasLastConnectTryLongerThanSeconds(
-              FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS)) {
-        // don't try too often
-        return false;
-      }
       WebSocketChannel? webSocket = webSockets[Relay.clean(url)];
       if (webSocket!=null) {
         await webSocket.ready;
       }
       if (!isWebSocketOpen(url)) {
+        if (relay != null &&
+            !force &&
+            !relay.wasLastConnectTryLongerThanSeconds(
+                FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS)) {
+          // don't try too often
+          return false;
+        }
+
         if (await connectRelay(url)) {
           // could not connect
           return false;

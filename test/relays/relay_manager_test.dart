@@ -138,10 +138,8 @@ void main() async {
       relay1.url: ReadWriteMarker.readWrite,
       relay2.url: ReadWriteMarker.readWrite,
     });
-    Nip65 nip65ForKey3 =
-    Nip65.fromMap(key3.publicKey, {relay1.url: ReadWriteMarker.readWrite});
-    Nip65 nip65ForKey4 =
-    Nip65.fromMap(key4.publicKey, {relay4.url: ReadWriteMarker.readWrite});
+    Nip65 nip65ForKey3 = Nip65.fromMap(key3.publicKey, {relay1.url: ReadWriteMarker.readWrite});
+    Nip65 nip65ForKey4 = Nip65.fromMap(key4.publicKey, {relay4.url: ReadWriteMarker.readWrite});
 
     Map<KeyPair, Nip65> nip65s = {
       key1: nip65ForKey1,
@@ -154,7 +152,7 @@ void main() async {
       // r1 -> k1, k2, k3
       // r2 -> k1, k2
       // r3 -> k1
-      // r4 -> k4
+      // r4 -> k1,k4
       await Future.wait([
         relay1.startServer(
             nip65s: nip65s,
