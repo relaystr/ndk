@@ -69,7 +69,7 @@ class RelayManager {
 
   int get blockedRelaysCount => blockedRelays.length;
 
-  List<EventFilter> eventFilters = [TagCountEventFilter(21)];
+  List<EventFilter> eventFilters = [];
 
   bool allowReconnectRelays = true;
 
@@ -98,7 +98,7 @@ class RelayManager {
     if (bootstrapRelays.isEmpty) {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
-    await Future.wait(urls.map((url) => reconnectRelay(url)).toList());
+    await Future.wait(urls.map((url) => reconnectRelay(url, force: true)).toList());
   }
 
   void send(String url, dynamic data) {
@@ -146,7 +146,7 @@ class RelayManager {
   //   };
   //   return false;
   // }
-  
+
   /// Connect a new relay
   Future<bool> connectRelay(String dirtyUrl,
       {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
@@ -208,11 +208,11 @@ class RelayManager {
       // };
 
       // if (connected) {
-        developer.log("connected to relay: $url");
-        relays[url]!.succeededToConnect();
-        relays[url]!.stats.connections++;
-        getRelayInfo(url);
-        return true;
+      developer.log("connected to relay: $url");
+      relays[url]!.succeededToConnect();
+      relays[url]!.stats.connections++;
+      getRelayInfo(url);
+      return true;
       // }
     } catch (e) {
       print("!! could not connect to $url -> $e");
@@ -227,25 +227,25 @@ class RelayManager {
     webSockets[url]!.stream.asBroadcastStream().listen((message) {
       _handleIncommingMessage(message, url);
     }
-    , onError: (error) async {
-      /// todo: handle this better, should clean subscription stuff
-      relays[url]!.stats.connectionErrors++;
-      print("onError $url on listen $error");
-      throw Exception("Error in socket");
-    }, onDone: () {
-      if (allowReconnectRelays) {
-        print("onDone $url on listen (close: ${webSockets[url]!.closeCode} ${webSockets[url]!.closeReason}), trying to reconnect");
-        if (isWebSocketOpen(url)) {
-          print("closing $url webSocket");
-          webSockets[url]!.sink.close();
-          print("closed $url. Reconnecting");
-          reconnectRelay(url);
-        } else {
-          reconnectRelay(url);
-        }
-      }
-      /// todo: handle this better, should clean subscription stuff
-    });
+        , onError: (error) async {
+          /// todo: handle this better, should clean subscription stuff
+          relays[url]!.stats.connectionErrors++;
+          print("onError $url on listen $error");
+          throw Exception("Error in socket");
+        }, onDone: () {
+          if (allowReconnectRelays) {
+            print("onDone $url on listen (close: ${webSockets[url]!.closeCode} ${webSockets[url]!.closeReason}), trying to reconnect");
+            if (isWebSocketOpen(url)) {
+              print("closing $url webSocket");
+              webSockets[url]!.sink.close();
+              print("closed $url. Reconnecting");
+              reconnectRelay(url);
+            } else {
+              reconnectRelay(url);
+            }
+          }
+          /// todo: handle this better, should clean subscription stuff
+        });
     // webSockets[url]!.incomingMessagesStream.listen((message) {
     //   _handleIncommingMessage(message, url);
     // }
@@ -639,7 +639,7 @@ class RelayManager {
       await cacheManager.saveUserRelayList(userRelayList);
     }
     return userRelayList;
-    }
+  }
 
   Future<Nip51Set> broadcastAddNip51SetRelay(String relayUrl,
       String name,
@@ -652,9 +652,9 @@ class RelayManager {
     }
     Nip51Set? list = await getSingleNip51RelaySet(name, signer, forceRefresh: true);
     list ??= Nip51Set(
-          name: name,
-          pubKey: signer.getPublicKey(),
-          createdAt: Helpers.now, elements: []);
+        name: name,
+        pubKey: signer.getPublicKey(),
+        createdAt: Helpers.now, elements: []);
     list.addRelay(relayUrl, private);
     list.createdAt = Helpers.now;
     Nip01Event event = list.toEvent(signer);
@@ -1045,10 +1045,10 @@ class RelayManager {
       {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true}) async {
     String id = Helpers.getRandomString(10);
     NostrRequest nostrRequest = closeOnEOSE?
-      NostrRequest.query(id, eventVerifier: eventVerifier, timeout: timeout, onTimeout: (request) {
-        closeNostrRequest(request);
-      }) :
-        NostrRequest.subscription(id, eventVerifier: eventVerifier);
+    NostrRequest.query(id, eventVerifier: eventVerifier, timeout: timeout, onTimeout: (request) {
+      closeNostrRequest(request);
+    }) :
+    NostrRequest.subscription(id, eventVerifier: eventVerifier);
 
     for (var url in urls) {
       nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
@@ -1241,8 +1241,8 @@ class RelayManager {
       }
       try {
         await for (final event in (await requestRelays(
-            timeout: missingPubKeys.length > 1 ? 10 : 2,
-            bootstrapRelays,
+            timeout: missingPubKeys.length > 1 ? 10 : 3,
+            ["wss://relay.damus.io"],
             Filter(
                 authors: missingPubKeys,
                 kinds: [Nip65.KIND, ContactList.KIND]))).stream) {
@@ -1261,7 +1261,6 @@ class RelayManager {
                       missingPubKeys.length);
                 }
               }
-              break;
             case ContactList.KIND:
               ContactList contactList = ContactList.fromEvent(event);
               contactLists.add(contactList);
@@ -1278,7 +1277,6 @@ class RelayManager {
                       missingPubKeys.length);
                 }
               }
-              break;
           }
         }
       } catch (e) {
@@ -1333,7 +1331,7 @@ class RelayManager {
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
             relaySet)).stream.timeout(const Duration(seconds: 5), onTimeout: (sink) {
-              print("timeout metadatas.length:${metadatas.length}");
+          print("timeout metadatas.length:${metadatas.length}");
         })) {
           if (metadatas[event.pubKey] == null ||
               metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
@@ -1518,7 +1516,7 @@ class RelayManager {
 
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
-    if (allowReconnectRelays && (relay == null || !isWebSocketOpen(url))) {
+    if (allowReconnectRelays) {
       if (relay != null &&
           !force &&
           !relay.wasLastConnectTryLongerThanSeconds(
@@ -1526,13 +1524,19 @@ class RelayManager {
         // don't try too often
         return false;
       }
-      if (!await connectRelay(url)) {
-        // could not connect
-        return false;
+      WebSocketChannel? webSocket = webSockets[Relay.clean(url)];
+      if (webSocket!=null) {
+        await webSocket.ready;
       }
       if (!isWebSocketOpen(url)) {
-        // web socket is not open
-        return false;
+        if (await connectRelay(url)) {
+          // could not connect
+          return false;
+        }
+        if (!isWebSocketOpen(url)) {
+          // web socket is not open
+          return false;
+        }
       }
     }
     return true;
@@ -1544,16 +1548,6 @@ class RelayManager {
     if (userRelayList == null || forceRefresh) {
       await loadMissingRelayListsFromNip65OrNip02([pubKey], forceRefresh: forceRefresh);
       userRelayList = cacheManager.loadUserRelayList(pubKey);
-    //   /// todo should also load from nip02
-    //   await for (final event in (await requestRelays(bootstrapRelays.toList(),
-    //       Filter(authors: [pubKey], kinds: [Nip65.KIND], limit: 1))).stream) {
-    //     if (userRelayList == null ||
-    //         userRelayList.createdAt < event.createdAt!) {
-    //       userRelayList = UserRelayList.fromNip65(Nip65.fromEvent(event));
-    //       // should it be sync or async is ok?
-    //       await cacheManager.saveUserRelayList(userRelayList);
-    //     }
-    //   }
     }
     return userRelayList;
   }
@@ -1581,7 +1575,7 @@ class RelayManager {
           if (Helpers.isNotBlank(event.content)) {
             Nip51List? decryptedList = Nip51List.fromEvent(event, signer);
             refreshedList = decryptedList;
-                    }
+          }
           await cacheManager.saveEvent(event);
         }
       }
@@ -1609,9 +1603,9 @@ class RelayManager {
       Nip51Set? newRelaySet;
       await for (final event in (await requestRelays(bootstrapRelays.toList(),
           Filter(
-              authors: [signer.getPublicKey()],
-              kinds: [Nip51List.RELAY_SET],
-              dTags: [name],
+            authors: [signer.getPublicKey()],
+            kinds: [Nip51List.RELAY_SET],
+            dTags: [name],
           ), timeout: 5)).stream) {
         if (newRelaySet == null ||
             newRelaySet.createdAt < event.createdAt) {
