@@ -18,6 +18,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/request.dart';
+import 'package:dart_ndk/tag_count_event_filter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
