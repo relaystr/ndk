@@ -18,7 +18,6 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/request.dart';
-import 'package:dart_ndk/tag_count_event_filter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -1177,7 +1176,7 @@ class RelayManager {
       }
       bool connectable = await reconnectRelay(url);
       if (kDebugMode) {
-        print("tried to reconnect to ${url} = $connectable");
+        print("tried to reconnect to $url = $connectable");
       }
       if (!connectable) {
         continue;
