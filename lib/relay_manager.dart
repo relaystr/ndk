@@ -1539,7 +1539,7 @@ class RelayManager {
           return false;
         }
 
-        if (await connectRelay(url)) {
+        if (!await connectRelay(url)) {
           // could not connect
           return false;
         }
