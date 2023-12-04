@@ -36,6 +36,8 @@ class DbCacheManager extends CacheManager {
     isar = Isar.open(
       name: "db_ndk_${kDebugMode?"debug":"release"}",
       inspector: kDebugMode,
+      maxSizeMiB: 1024,
+      compactOnLaunch: const CompactCondition(minRatio: 2.0, minBytes: 100 * 1024 * 1024, minFileSize: 256 * 1024 * 1024),
       directory: directory ?? Directory.systemTemp.path,
       engine: directory == Isar.sqliteInMemory ? IsarEngine.sqlite: IsarEngine.isar,
       schemas: [
