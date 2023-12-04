@@ -1194,9 +1194,9 @@ class RelayManager {
         }
         relays.add(url);
         if (!bestRelays[url]!.contains(pubKey)) {
-          if (kDebugMode) {
-            print("Adding $url to bestRelays since $pubKey was needed");
-          }
+          // if (kDebugMode) {
+          //   print("Adding $url to bestRelays since $pubKey was needed");
+          // }
           bestRelays[url]!.add(pubKey);
           int count =
               notCoveredPubkeys[pubKey.pubKey] ?? relayMinCountPerPubKey;
