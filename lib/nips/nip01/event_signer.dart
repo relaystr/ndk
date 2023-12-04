@@ -6,7 +6,9 @@ abstract class EventSigner {
 
   String getPublicKey();
 
-  Future<void> decrypt(String msg);
+  Future<String?> decrypt(String msg, String destPubKey);
+
+  Future<String?> encrypt(String msg, String destPubKey);
 
   bool canSign();
 

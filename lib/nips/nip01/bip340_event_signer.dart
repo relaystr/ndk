@@ -23,9 +23,11 @@ class Bip340EventSigner implements EventSigner {
     return publicKey;
   }
 
-  @override
-  Future<void> decrypt(String msg) {
-    // TODO: implement decrypt
+  Future<String?> decrypt(String msg, String destPubKey) async {
+    throw UnimplementedError();
+  }
+
+  Future<String?> encrypt(String msg, String destPubKey) async {
     throw UnimplementedError();
   }
 
