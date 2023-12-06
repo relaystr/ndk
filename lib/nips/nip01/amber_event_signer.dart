@@ -44,6 +44,6 @@ class AmberEventSigner implements EventSigner {
 
   @override
   String? getPrivateKey() {
-    throw UnimplementedError();
+    return null;
   }
 }
