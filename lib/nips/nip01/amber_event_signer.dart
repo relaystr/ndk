@@ -14,10 +14,9 @@ class AmberEventSigner implements EventSigner {
 
   @override
   Future<void> sign(Nip01Event event) async {
-    Map<dynamic, dynamic> signedEvent = await amber.signEvent(npub: publicKey, event: jsonEncode(event.toJson()));
-    if (signedEvent!=null) {
-      Nip01Event signed = Nip01Event.fromJson(signedEvent);
-      event.sig = signed.sig;
+    Map<dynamic, dynamic> map = await amber.signEvent(npub: publicKey, event: jsonEncode(event.toJson()));
+    if (map!=null) {
+      event.sig = map['signature'];
     }
   }
 
@@ -41,10 +40,5 @@ class AmberEventSigner implements EventSigner {
   @override
   bool canSign() {
     return publicKey.isNotEmpty;
-  }
-
-  @override
-  String? getPrivateKey() {
-    return null;
   }
 }
