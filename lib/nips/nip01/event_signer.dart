@@ -12,5 +12,4 @@ abstract class EventSigner {
 
   bool canSign();
 
-  String? getPrivateKey();
 }

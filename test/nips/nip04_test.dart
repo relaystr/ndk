@@ -1,17 +1,20 @@
 import 'dart:convert';
 
 import 'package:dart_ndk/nips/nip01/bip340.dart';
+import 'package:dart_ndk/nips/nip01/bip340_event_signer.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/nips/nip04/nip04.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Nip04', () {
-    test('decrypt', () {
+    test('decrypt', () async {
       const priv =
           "fb505c65d4df950f5d28c9e4d285ee12ffaf315deef1fc24e3c7cd1e7e35f2b1";
       const pub =
           "b1a5c93edcc8d586566fde53a20bdb50049a97b15483cb763854e57016e0fa3d";
+
+      Bip340EventSigner signer = Bip340EventSigner(priv, pub);
 
       const ciphertext =
           "VezuSvWak++ASjFMRqBPWS3mK5pZ0vRLL325iuIL4S+r8n9z+DuMau5vMElz1tGC/UqCDmbzE2kwplafaFo/FnIZMdEj4pdxgptyBV1ifZpH3TEF6OMjEtqbYRRqnxgIXsuOSXaerWgpi0pm+raHQPseoELQI/SZ1cvtFqEUCXdXpa5AYaSd+quEuthAEw7V1jP+5TDRCEC8jiLosBVhCtaPpLcrm8HydMYJ2XB6Ixs=?iv=/rtV49RFm0XyFEwG62Eo9A==";
@@ -27,17 +30,19 @@ void main() {
         ]
       ];
 
-      final result = Nip04.decrypt(priv, pub, ciphertext);
-      final parsedResult = json.decode(result);
+      final result = await signer.decrypt(ciphertext, pub);
+      final parsedResult = json.decode(result!);
 
       expect(parsedResult, desiredResult);
     });
 
-    test('encrypt only type', () {
+    test('encrypt only type', () async {
       const priv =
           "fb505c65d4df950f5d28c9e4d285ee12ffaf315deef1fc24e3c7cd1e7e35f2b1";
       const pub =
           "b1a5c93edcc8d586566fde53a20bdb50049a97b15483cb763854e57016e0fa3d";
+
+      Bip340EventSigner signer = Bip340EventSigner(priv, pub);
 
       const clearTextObj = [
         [
@@ -54,7 +59,7 @@ void main() {
           "VezuSvWak++ASjFMRqBPWS3mK5pZ0vRLL325iuIL4S+r8n9z+DuMau5vMElz1tGC/UqCDmbzE2kwplafaFo/FnIZMdEj4pdxgptyBV1ifZpH3TEF6OMjEtqbYRRqnxgIXsuOSXaerWgpi0pm+raHQPseoELQI/SZ1cvtFqEUCXdXpa5AYaSd+quEuthAEw7V1jP+5TDRCEC8jiLosBVhCtaPpLcrm8HydMYJ2XB6Ixs=?iv=/rtV49RFm0XyFEwG62Eo9A==";
 
       final clearTextString = json.encode(clearTextObj);
-      final result = Nip04.encrypt(priv, pub, clearTextString);
+      final result = await signer.encrypt(clearTextString, pub);
 
       expect(result.runtimeType, desiredResult.runtimeType);
     });
