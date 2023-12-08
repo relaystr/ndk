@@ -1569,8 +1569,8 @@ class RelayManager {
 
   Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
       {bool forceRefresh = false, int timeout = 5}) async {
-    Nip51List? list = await getCachedNip51List(kind, signer);
-    if (list==null || forceRefresh) {
+    Nip51List? list = !forceRefresh? await getCachedNip51List(kind, signer) : null;
+    if (list==null) {
       Nip51List? refreshedList;
       await for (final event in (await requestRelays(bootstrapRelays.toList(),
           Filter(
@@ -1580,10 +1580,10 @@ class RelayManager {
         if (refreshedList == null ||
             refreshedList.createdAt <= event.createdAt) {
           refreshedList = await Nip51List.fromEvent(event, signer);
-          if (Helpers.isNotBlank(event.content)) {
-            Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
-            refreshedList = decryptedList;
-          }
+          // if (Helpers.isNotBlank(event.content)) {
+          //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
+          //   refreshedList = decryptedList;
+          // }
           await cacheManager.saveEvent(event);
         }
       }
