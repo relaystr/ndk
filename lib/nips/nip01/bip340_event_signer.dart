@@ -24,11 +24,11 @@ class Bip340EventSigner implements EventSigner {
     return publicKey;
   }
 
-  Future<String?> decrypt(String msg, String destPubKey) async {
+  Future<String?> decrypt(String msg, String destPubKey, { String? id }) async {
     return Nip04.decrypt(privateKey!, destPubKey, msg);
   }
 
-  Future<String?> encrypt(String msg, String destPubKey) async {
+  Future<String?> encrypt(String msg, String destPubKey, { String? id }) async {
     return Nip04.encrypt(privateKey!, destPubKey, msg);
   }
 

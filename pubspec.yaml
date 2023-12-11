@@ -25,7 +25,7 @@ dependencies:
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
 
-  amberflutter: ^0.0.7
+  amberflutter: ^0.0.8
 
 #  rinf: ^4.12.2
 #  ffi: ^2.1.0

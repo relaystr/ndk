@@ -16,7 +16,7 @@ class AmberEventSigner implements EventSigner {
   @override
   Future<void> sign(Nip01Event event) async {
     final npub = publicKey.startsWith('npub') ? publicKey : Nip19.encodePubKey(publicKey);
-    Map<dynamic, dynamic> map = await amber.signEvent(npub: npub, event: jsonEncode(event.toJson()));
+    Map<dynamic, dynamic> map = await amber.signEvent(currentUser: npub, eventJson: jsonEncode(event.toJson()), id: event.id);
     if (map!=null) {
       event.sig = map['signature'];
     }
@@ -28,16 +28,16 @@ class AmberEventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey) async {
+  Future<String?> decrypt(String msg, String destPubKey, { String? id }) async {
     final npub = publicKey.startsWith('npub') ? publicKey : Nip19.encodePubKey(publicKey);
-    Map<dynamic, dynamic> map = await amber.nip04Decrypt( ciphertext: msg, npub: npub, pubkey: destPubKey);
+    Map<dynamic, dynamic> map = await amber.nip04Decrypt( ciphertext: msg, currentUser: npub, pubKey: destPubKey, id: id);
     return map['signature'];
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey) async {
+  Future<String?> encrypt(String msg, String destPubKey, { String? id }) async {
     final npub = publicKey.startsWith('npub') ? publicKey : Nip19.encodePubKey(publicKey);
-    Map<dynamic, dynamic> map = await amber.nip04Encrypt( plaintext: msg, npub: npub, pubkey: destPubKey);
+    Map<dynamic, dynamic> map = await amber.nip04Encrypt( plaintext: msg, currentUser: npub, pubKey: destPubKey, id: id);
     return map['signature'];
   }
 
