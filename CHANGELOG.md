@@ -1,4 +1,4 @@
-## 0.1.0-dev5
+## 0.1.0-dev6
 * acinq sec256k1 event verifier (native android)
 
 ## 0.1.0-dev5
