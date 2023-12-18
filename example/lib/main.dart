@@ -1,36 +1,28 @@
-import 'dart:convert';
-
-import 'package:amberflutter/amberflutter.dart';
-import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/nips/nip01/acinq_event_verifier.dart';
-import 'package:dart_ndk/nips/nip01/bip340_event_verifier.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:flutter/material.dart';
+import 'package:amberflutter/amberflutter.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dart NDK DEMO',
+      title: 'Dart NDK Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -38,22 +30,18 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final amber = Amberflutter();
-  AcinqSecp256k1EventVerifier acinqSecp256k1EventVerifier = AcinqSecp256k1EventVerifier();
-  Bip340EventVerifier bip340eventVerifier = Bip340EventVerifier();
-
   String _npub = '';
   String _pubkeyHex = '';
   String _text = '';
-  int? verifyAcinqTime;
-  int? verifyBip340Time;
-
   String _cipherText = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dartk NDK Demo'),
+        title: const Text(
+          'Dart NDK Demo',
+        ),
       ),
       body: Center(
         child: Column(
@@ -61,102 +49,102 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             FilledButton(
               onPressed: () {
-                amber.getPublicKey().then((value) {
-                  _npub = value ?? '';
+                amber.getPublicKey(
+                  permissions: [
+                    const Permission(
+                      type: "nip04_encrypt",
+                    ),
+                    const Permission(
+                      type: "nip04_decrypt",
+                    ),
+                  ],
+                ).then((value) {
+                  _npub = value['signature'] ?? '';
 //                  _pubkeyHex = Nip19.decodePubkey(_npub);
                   setState(() {
-                    //                  _text = value ?? '';
+                    _text = '$value';
                   });
                 });
               },
-              child: const Text('Get Public Key from Amber'),
+              child: const Text('Get Public Key'),
             ),
             FilledButton(
               onPressed: () {
                 final eventJson = jsonEncode({
+                  'id': '',
+                  // 'pubkey': Nip19.decodePubkey(_npub),
                   'kind': 1,
                   'content': 'Hello from Amber Flutter!',
-                  'created_at': DateTime.now().millisecondsSinceEpoch / 1000,
+                  'created_at': (DateTime.now().millisecondsSinceEpoch / 1000).round(),
+                  'tags': [],
+                  'sig': '',
                 });
 
-                amber.signEvent(_npub, eventJson).then((value) {
+                amber
+                    .signEvent(
+                  currentUser: _npub,
+                  eventJson: eventJson,
+                )
+                    .then((value) {
                   setState(() {
-                    _text = value ?? '';
+                    _text = '$value';
                   });
                 });
               },
               child: const Text('Sign Event'),
             ),
             FilledButton(
-              onPressed: () async {
-                final eventJson = jsonEncode({
-                  'kind': 2,
-                  'content': 'Hello from Amber Flutter!!!!!!!!',
-                  'created_at': DateTime.now().millisecondsSinceEpoch / 1000,
-                });
-                amber.signEvent(_npub, eventJson).then((value) async {
-                  Nip01Event event = Nip01Event.fromJson(jsonDecode(value!));
-                  final startTime = DateTime.now();
-                  bool? validSig = await acinqSecp256k1EventVerifier.verify(event);
-                  final endTime = DateTime.now();
-                  final duration = endTime.difference(startTime);
-                  setState(() {
-                    verifyAcinqTime = duration.inMilliseconds;
-                    _text = '$_text -> ${validSig != null && validSig! ? "✅" : "❌"}';
-                  });
-                });
-              },
-              child: Text('Verify with fr.acinq.secp256k1 ${verifyAcinqTime??""}'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                final eventJson = jsonEncode({
-                  'kind': 2,
-                  'content': 'Hello from Amber Flutter!!!!!!!!',
-                  'created_at': DateTime.now().millisecondsSinceEpoch / 1000,
-                });
-                amber.signEvent(_npub, eventJson).then((value) async {
-                  Nip01Event event = Nip01Event.fromJson(jsonDecode(value!));
-                  final startTime = DateTime.now();
-                  bool validSig = await bip340eventVerifier.verify(event);
-                  final endTime = DateTime.now();
-                  final duration = endTime.difference(startTime);
-                  setState(() {
-                    verifyBip340Time = duration.inMilliseconds;
-                    _text = '$_text -> ${validSig != null && validSig! ? "✅" : "❌"}';
-                  });
-                });
-              },
-              child: Text('Verify with Bip340 ${verifyBip340Time??""}'),
-            ),
-            FilledButton(
               onPressed: () {
                 amber
                     .nip04Encrypt(
-                  "Hello from Amber Flutter, Nip 04!",
-                  _npub,
-                  _pubkeyHex,
+                  plaintext: "Hello from Amber Flutter, Nip 04!",
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
                 )
                     .then((value) {
-                  _cipherText = value ?? '';
+                  _cipherText = value['signature'] ?? '';
                   setState(() {
-                    _text = value ?? '';
+                    _text = '$value';
                   });
                 });
               },
               child: const Text('Nip 04 Encrypt'),
             ),
             FilledButton(
-              onPressed: () {
+              onPressed: () async {
                 amber
                     .nip04Decrypt(
-                  _cipherText,
-                  _npub,
-                  _pubkeyHex,
+                  ciphertext: _cipherText,
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
                 )
                     .then((value) {
                   setState(() {
-                    _text = value ?? '';
+                    _text = '$value 1';
+                  });
+                });
+                // ;
+                amber
+                    .nip04Decrypt(
+                  ciphertext: _cipherText,
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
+                )
+                    .then((value) {
+                  setState(() {
+                    _text = '$value 2';
+                  });
+                });
+                //   ,
+                amber
+                    .nip04Decrypt(
+                  ciphertext: _cipherText,
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
+                )
+                    .then((value) {
+                  setState(() {
+                    _text = '$value 3';
                   });
                 });
               },
@@ -166,14 +154,14 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 amber
                     .nip44Encrypt(
-                  "Hello from Amber Flutter, Nip 44!",
-                  _npub,
-                  _pubkeyHex,
+                  plaintext: "Hello from Amber Flutter, Nip 44!",
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
                 )
                     .then((value) {
-                  _cipherText = value ?? '';
+                  _cipherText = value['signature'] ?? '';
                   setState(() {
-                    _text = value ?? '';
+                    _text = '$value';
                   });
                 });
               },
@@ -183,13 +171,13 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 amber
                     .nip44Decrypt(
-                  _cipherText,
-                  _npub,
-                  _pubkeyHex,
+                  ciphertext: _cipherText,
+                  currentUser: _npub,
+                  pubKey: _pubkeyHex,
                 )
                     .then((value) {
                   setState(() {
-                    _text = value ?? '';
+                    _text = '$value';
                   });
                 });
               },

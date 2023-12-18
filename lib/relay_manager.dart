@@ -25,7 +25,6 @@ import 'event_filter.dart';
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
 import 'nips/nip01/acinq_event_verifier.dart';
-import 'nips/nip01/bip340_event_verifier.dart';
 import 'nips/nip01/event.dart';
 import 'nips/nip01/event_verifier.dart';
 import 'nips/nip01/filter.dart';

@@ -1,4 +1,4 @@
-name: example
+name: dart_ndk_example
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  amberflutter: ^0.0.5
+  amberflutter: ^0.0.8
 
   dart_ndk:
     path: ../
