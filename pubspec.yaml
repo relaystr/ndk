@@ -21,6 +21,7 @@ dependencies:
   path_provider: ^2.1.1
   convert: ^3.1.1
   pointycastle: ^3.7.3
+  plugin_platform_interface: ^2.1.7
 
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
