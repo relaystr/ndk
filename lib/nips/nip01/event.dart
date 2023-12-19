@@ -32,7 +32,7 @@ class Nip01Event {
   Nip01Event._(this.id, this.pubKey, this.createdAt, this.kind, this.tags,
       this.content, this.sig);
 
-  factory Nip01Event.fromJson(Map<String, dynamic> data) {
+  factory Nip01Event.fromJson(Map<dynamic, dynamic> data) {
     final id = data['id'] as String;
     final pubKey = data['pubkey'] as String;
     final createdAt = data['created_at'] as int;

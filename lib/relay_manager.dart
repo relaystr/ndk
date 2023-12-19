@@ -656,7 +656,7 @@ class RelayManager {
         createdAt: Helpers.now, elements: []);
     list.addRelay(relayUrl, private);
     list.createdAt = Helpers.now;
-    Nip01Event event = list.toEvent(signer);
+    Nip01Event event = await list.toEvent(signer);
     print(event);
     await Future.wait([
       broadcastEvent(
@@ -694,7 +694,7 @@ class RelayManager {
     if (relaySet!=null) {
       relaySet.removeRelay(relayUrl);
       relaySet.createdAt = Helpers.now;
-      Nip01Event event = relaySet.toEvent(signer);
+      Nip01Event event = await relaySet.toEvent(signer);
       await Future.wait([
         broadcastEvent(
             event, broadcastRelays, signer),
@@ -729,7 +729,7 @@ class RelayManager {
     );
     list.addRelay(relayUrl, private);
     list.createdAt = Helpers.now;
-    Nip01Event event = list.toEvent(signer);
+    Nip01Event event = await list.toEvent(signer);
     print(event);
     await Future.wait([
       broadcastEvent(
@@ -761,7 +761,7 @@ class RelayManager {
     if (list!=null && list.allRelays.isNotEmpty) {
       list.removeRelay(relayUrl);
       list.createdAt = Helpers.now;
-      Nip01Event event = list.toEvent(signer);
+      Nip01Event event = await list.toEvent(signer);
       await Future.wait([
         broadcastEvent(
             event, broadcastRelays, signer),
@@ -791,7 +791,7 @@ class RelayManager {
     if (list.elements.isNotEmpty) {
       list.removeElement(tag, value);
       list.createdAt = Helpers.now;
-      Nip01Event event = list.toEvent(signer);
+      Nip01Event event = await list.toEvent(signer);
       await Future.wait([
         broadcastEvent(
             event, broadcastRelays, signer),
@@ -820,7 +820,7 @@ class RelayManager {
     );
     list.addElement(tag, value, private);
     list.createdAt = Helpers.now;
-    Nip01Event event = list.toEvent(signer);
+    Nip01Event event = await list.toEvent(signer);
     print(event);
     await Future.wait([
       broadcastEvent(
@@ -1561,16 +1561,16 @@ class RelayManager {
     return userRelayList;
   }
 
-  Nip51List? getCachedNip51List(int kind, EventSigner signer) {
+  Future<Nip51List?> getCachedNip51List(int kind, EventSigner signer) async {
     List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt),);
-    return events.isNotEmpty ? Nip51List.fromEvent(events.first, signer): null;
+    return events.isNotEmpty ? await Nip51List.fromEvent(events.first, signer): null;
   }
 
   Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
       {bool forceRefresh = false, int timeout = 5}) async {
-    Nip51List? list = getCachedNip51List(kind, signer);
-    if (list==null || forceRefresh) {
+    Nip51List? list = !forceRefresh? await getCachedNip51List(kind, signer) : null;
+    if (list==null) {
       Nip51List? refreshedList;
       await for (final event in (await requestRelays(bootstrapRelays.toList(),
           Filter(
@@ -1579,12 +1579,11 @@ class RelayManager {
           ), timeout: timeout)).stream) {
         if (refreshedList == null ||
             refreshedList.createdAt <= event.createdAt) {
-          refreshedList = Nip51List.fromEvent(event, signer);
-          // TODO should handle list with mixed public/private stuff
-          if (Helpers.isNotBlank(event.content)) {
-            Nip51List? decryptedList = Nip51List.fromEvent(event, signer);
-            refreshedList = decryptedList;
-          }
+          refreshedList = await Nip51List.fromEvent(event, signer);
+          // if (Helpers.isNotBlank(event.content)) {
+          //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
+          //   refreshedList = decryptedList;
+          // }
           await cacheManager.saveEvent(event);
         }
       }
@@ -1593,7 +1592,7 @@ class RelayManager {
     return list;
   }
 
-  Nip51Set? getCachedNip51RelaySet(String name, EventSigner signer) {
+  Future<Nip51Set?> getCachedNip51RelaySet(String name, EventSigner signer) async {
     List<Nip01Event>? events = cacheManager.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag()!=null && event.getDtag() == name) {
@@ -1602,12 +1601,12 @@ class RelayManager {
       return false;
     }).toList();
     events.sort((a, b) => b.createdAt.compareTo(a.createdAt),);
-    return events.isNotEmpty ? Nip51Set.fromEvent(events.first, signer): null;
+    return events.isNotEmpty ? await Nip51Set.fromEvent(events.first, signer): null;
   }
 
   Future<Nip51Set?> getSingleNip51RelaySet(String name, EventSigner signer,
       {bool forceRefresh = false}) async {
-    Nip51Set? relaySet = getCachedNip51RelaySet(name, signer);
+    Nip51Set? relaySet = await getCachedNip51RelaySet(name, signer);
     if (relaySet==null || forceRefresh) {
       Nip51Set? newRelaySet;
       await for (final event in (await requestRelays(bootstrapRelays.toList(),
@@ -1619,10 +1618,10 @@ class RelayManager {
         if (newRelaySet == null ||
             newRelaySet.createdAt < event.createdAt) {
           if (event.getDtag()!=null && event.getDtag() == name) {
-            newRelaySet = Nip51Set.fromEvent(event, signer);
+            newRelaySet = await Nip51Set.fromEvent(event, signer);
             await cacheManager.saveEvent(event);
           } else if (Helpers.isNotBlank(event.content)) {
-            Nip51Set? decryptedRelaySet = Nip51Set.fromEvent(event, signer);
+            Nip51Set? decryptedRelaySet = await Nip51Set.fromEvent(event, signer);
             if (decryptedRelaySet!=null && decryptedRelaySet.name == name) {
               newRelaySet = decryptedRelaySet;
               await cacheManager.saveEvent(event);
@@ -1650,7 +1649,7 @@ class RelayManager {
           if (newRelaySet == null ||
               newRelaySet.createdAt < event.createdAt) {
             if (event.getDtag() != null) {
-              newRelaySet = Nip51Set.fromEvent(event, signer);
+              newRelaySet = await Nip51Set.fromEvent(event, signer);
             }
             if (newRelaySet!=null) {
               await cacheManager.saveEvent(event);

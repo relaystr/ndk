@@ -4,8 +4,8 @@ version: 0.1.0-dev6
 homepage: https://github.com/relaystr/dart_ndk
 
 environment:
-  sdk: '>=3.1.0 <4.0.0'
-  flutter: ">=1.20.0"
+  sdk: '>=3.2.1 <4.0.0'
+  flutter: ">=1.17.0"
 
 dependencies:
   flutter:
@@ -25,6 +25,8 @@ dependencies:
 
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
+
+  amberflutter: ^0.0.8
 
 #  rinf: ^4.12.2
 #  ffi: ^2.1.0
