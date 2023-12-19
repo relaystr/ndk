@@ -27,22 +27,20 @@ class NativeImpl implements Native {
       NativeImpl(module as ExternalLibrary);
   NativeImpl.raw(this._platform);
   Future<String> helloWorld(
-      {required Object event,
-      required String pubKey,
+      {required String pubKey,
       required String message,
       required String sig,
       dynamic hint}) {
-    var arg0 = _platform.api2wire_DartOpaque(event);
-    var arg1 = _platform.api2wire_String(pubKey);
-    var arg2 = _platform.api2wire_String(message);
-    var arg3 = _platform.api2wire_String(sig);
+    var arg0 = _platform.api2wire_String(pubKey);
+    var arg1 = _platform.api2wire_String(message);
+    var arg2 = _platform.api2wire_String(sig);
     return _platform.executeNormal(FlutterRustBridgeTask(
       callFfi: (port_) =>
-          _platform.inner.wire_hello_world(port_, arg0, arg1, arg2, arg3),
+          _platform.inner.wire_hello_world(port_, arg0, arg1, arg2),
       parseSuccessData: _wire2api_String,
       parseErrorData: _wire2api_FrbAnyhowException,
       constMeta: kHelloWorldConstMeta,
-      argValues: [event, pubKey, message, sig],
+      argValues: [pubKey, message, sig],
       hint: hint,
     ));
   }
@@ -50,7 +48,7 @@ class NativeImpl implements Native {
   FlutterRustBridgeTaskConstMeta get kHelloWorldConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "hello_world",
-        argNames: ["event", "pubKey", "message", "sig"],
+        argNames: ["pubKey", "message", "sig"],
       );
 
   void dispose() {
@@ -90,14 +88,6 @@ class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
 // Section: api2wire
 
   @protected
-  wire_DartOpaque api2wire_DartOpaque(Object raw) {
-    inner.dartApi.initApi();
-    final ptr = inner.new_DartOpaque();
-    _api_fill_to_wire_DartOpaque(raw, ptr);
-    return ptr;
-  }
-
-  @protected
   ffi.Pointer<wire_uint_8_list> api2wire_String(String raw) {
     return api2wire_uint_8_list(utf8.encoder.convert(raw));
   }
@@ -111,11 +101,6 @@ class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
 // Section: finalizer
 
 // Section: api_fill_to_wire
-
-  void _api_fill_to_wire_DartOpaque(Object apiObj, wire_DartOpaque wireObj) {
-    wireObj.handle = inner.new_dart_opaque(apiObj);
-    wireObj.port = dropPort;
-  }
 }
 
 // ignore_for_file: camel_case_types, non_constant_identifier_names, avoid_positional_boolean_parameters, annotate_overrides, constant_identifier_names
@@ -216,14 +201,12 @@ class NativeWire implements FlutterRustBridgeWireBase {
 
   void wire_hello_world(
     int port_,
-    wire_DartOpaque event,
     ffi.Pointer<wire_uint_8_list> pub_key,
     ffi.Pointer<wire_uint_8_list> message,
     ffi.Pointer<wire_uint_8_list> sig,
   ) {
     return _wire_hello_world(
       port_,
-      event,
       pub_key,
       message,
       sig,
@@ -234,22 +217,12 @@ class NativeWire implements FlutterRustBridgeWireBase {
       ffi.NativeFunction<
           ffi.Void Function(
               ffi.Int64,
-              wire_DartOpaque,
               ffi.Pointer<wire_uint_8_list>,
               ffi.Pointer<wire_uint_8_list>,
               ffi.Pointer<wire_uint_8_list>)>>('wire_hello_world');
   late final _wire_hello_world = _wire_hello_worldPtr.asFunction<
-      void Function(int, wire_DartOpaque, ffi.Pointer<wire_uint_8_list>,
+      void Function(int, ffi.Pointer<wire_uint_8_list>,
           ffi.Pointer<wire_uint_8_list>, ffi.Pointer<wire_uint_8_list>)>();
-
-  wire_DartOpaque new_DartOpaque() {
-    return _new_DartOpaque();
-  }
-
-  late final _new_DartOpaquePtr =
-      _lookup<ffi.NativeFunction<wire_DartOpaque Function()>>('new_DartOpaque');
-  late final _new_DartOpaque =
-      _new_DartOpaquePtr.asFunction<wire_DartOpaque Function()>();
 
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
     int len,
@@ -282,14 +255,6 @@ class NativeWire implements FlutterRustBridgeWireBase {
 }
 
 final class _Dart_Handle extends ffi.Opaque {}
-
-final class wire_DartOpaque extends ffi.Struct {
-  @ffi.Int64()
-  external int port;
-
-  @ffi.UintPtr()
-  external int handle;
-}
 
 final class wire_uint_8_list extends ffi.Struct {
   external ffi.Pointer<ffi.Uint8> ptr;

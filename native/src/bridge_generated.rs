@@ -24,7 +24,6 @@ use std::sync::Arc;
 
 fn wire_hello_world_impl(
     port_: MessagePort,
-    event: impl Wire2Api<DartOpaque> + UnwindSafe,
     pub_key: impl Wire2Api<String> + UnwindSafe,
     message: impl Wire2Api<String> + UnwindSafe,
     sig: impl Wire2Api<String> + UnwindSafe,
@@ -36,11 +35,10 @@ fn wire_hello_world_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_event = event.wire2api();
             let api_pub_key = pub_key.wire2api();
             let api_message = message.wire2api();
             let api_sig = sig.wire2api();
-            move |task_callback| hello_world(api_event, api_pub_key, api_message, api_sig)
+            move |task_callback| hello_world(api_pub_key, api_message, api_sig)
         },
     )
 }

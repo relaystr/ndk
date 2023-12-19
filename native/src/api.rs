@@ -1,17 +1,15 @@
 use std::str::FromStr;
 
-use flutter_rust_bridge::DartOpaque;
 use nostr_sdk::prelude::*;
 
-//static BATTERY_REPORT_STREAM: RwLock<Option<StreamSink<String>>> = RwLock::new(None);
 
 pub fn hello_world(pub_key:String, message:String, sig:String) -> anyhow::Result<String> {
-  let my_keys: Keys = Keys::generate();
-  // let event_id = EventId::from_bech32("note1z3lwphdc7gdf6n0y4vaaa0x7ck778kg638lk0nqv2yd343qda78sf69t6r")?;
-  let public_key = XOnlyPublicKey::from_str(&pub_key)?;
+  // let my_keys: Keys = Keys::generate();
+  // // let event_id = EventId::from_bech32("note1z3lwphdc7gdf6n0y4vaaa0x7ck778kg638lk0nqv2yd343qda78sf69t6r")?;
+  // let public_key = XOnlyPublicKey::from_str(&pub_key)?;
 
-  event.into()
-  let mut event: Event = EventBuilder::new_text_note(event_id, public_key, "🧡").to_event(&my_keys)?;
+  // event.into()
+  // let mut event: Event = EventBuilder::new_text_note(event_id, public_key, "🧡").to_event(&my_keys)?;
 
   // let my_keys2: Keys = Keys::generate();
   // let event_id2 = EventId::from_bech32("note1z3lwphdc7gdf6n0y4vaaa0x7ck778kg638lk0nqv2yd343qda78sf69t6r")?;

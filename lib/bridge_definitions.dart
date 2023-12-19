@@ -10,8 +10,7 @@ import 'package:uuid/uuid.dart';
 
 abstract class Native {
   Future<String> helloWorld(
-      {required Object event,
-      required String pubKey,
+      {required String pubKey,
       required String message,
       required String sig,
       dynamic hint});

@@ -50,7 +50,7 @@ void main() async {
 
   group('Relay Manager', () {
     test('Connect to relay', () async {
-      print("RUST SAYS:${await api.helloWorld()}");
+      print("RUST SAYS:${await api.helloWorld(pubKey: "pubKey", sig: "sig", message: "message")}");
 
       MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer();
