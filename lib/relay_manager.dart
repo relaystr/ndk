@@ -24,7 +24,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'event_filter.dart';
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
-import 'nips/nip01/bip340_event_verifier.dart';
+import 'nips/nip01/acinq_event_verifier.dart';
 import 'nips/nip01/event.dart';
 import 'nips/nip01/event_verifier.dart';
 import 'nips/nip01/filter.dart';
@@ -54,7 +54,7 @@ class RelayManager {
 
   CacheManager cacheManager = MemCacheManager();
 
-  EventVerifier eventVerifier = Bip340EventVerifier();
+  EventVerifier eventVerifier = AcinqSecp256k1EventVerifier();
 
   /// Global relay registry by url
   Map<String, Relay> relays = {};
