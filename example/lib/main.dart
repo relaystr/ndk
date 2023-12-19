@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip19/nip19.dart';
 import 'package:flutter/material.dart';
 import 'package:amberflutter/amberflutter.dart';
 import 'dart:convert';
@@ -60,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ).then((value) {
                   _npub = value['signature'] ?? '';
-//                  _pubkeyHex = Nip19.decodePubkey(_npub);
+                 _pubkeyHex = Nip19.decode(_npub);
                   setState(() {
                     _text = '$value';
                   });
@@ -72,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 final eventJson = jsonEncode({
                   'id': '',
-                  // 'pubkey': Nip19.decodePubkey(_npub),
+                  'pubkey': Nip19.decode(_npub),
                   'kind': 1,
                   'content': 'Hello from Amber Flutter!',
                   'created_at': (DateTime.now().millisecondsSinceEpoch / 1000).round(),
