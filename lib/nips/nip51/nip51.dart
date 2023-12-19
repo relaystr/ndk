@@ -97,6 +97,8 @@ class Nip51List {
     Nip51List list = Nip51List(pubKey: event.pubKey, kind: event.kind, createdAt: event.createdAt, elements: []);
     list.id = event.id;
 
+    list.parseTags(event.tags, private: false);
+
     if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
       try {
         var json = await signer.decrypt(event.content, signer.getPublicKey());
@@ -108,7 +110,6 @@ class Nip51List {
         }
       }
     }
-    list.parseTags(event.tags, private: false);
     return list;
   }
 

@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.annotation.NonNull
 import com.google.gson.Gson
+import android.content.Context
+
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -18,37 +20,30 @@ import fr.acinq.secp256k1.Secp256k1
 
 class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     PluginRegistry.ActivityResultListener {
-    /// The MethodChannel that will the communication between Flutter and native Android
-    ///
-    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-    /// when the Flutter Engine is detached from the Activity
-    private lateinit var _channel: MethodChannel
+    private lateinit var _channel : MethodChannel
+    private lateinit var _context : Context
     private var _activity: Activity? = null
     private lateinit var _result: MethodChannel.Result
+
+    private val _intentRequestCode = 0
 
     private val secp256k1 = Secp256k1.get()
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         _channel = MethodChannel(flutterPluginBinding.binaryMessenger, "dart_ndk")
         _channel.setMethodCallHandler(this)
+        _context = flutterPluginBinding.applicationContext
     }
-
-    fun verifySignature(
-        call: MethodCall, result: MethodChannel.Result
-    ) {
-        var sig = call.argument<ByteArray>("signature");
-        var hash = call.argument<ByteArray>("hash");
-        var pubKey = call.argument<ByteArray>("pubKey");
-
-        result.success(secp256k1.verifySchnorr(sig!!, hash!!, pubKey!!));
-    }
-
     override fun onMethodCall(call: MethodCall, result: Result) {
         _result = result
 
         when (call.method) {
             "verifySignature" -> {
-                verifySignature(call, result);
+                var sig = call.argument<ByteArray>("signature");
+                var hash = call.argument<ByteArray>("hash");
+                var pubKey = call.argument<ByteArray>("pubKey");
+
+                _result.success(secp256k1.verifySchnorr(sig!!, hash!!, pubKey!!));
             }
 
             else -> {
@@ -59,27 +54,8 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?): Boolean {
-        if (resultCode != Activity.RESULT_OK) {
-            _result.error("error","user rejected request","")
-            return false
-        }
-        return true
+        return false;
     }
-
-
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        if (requestCode == REQUEST_CODE) {
-//            if (resultCode == Activity.RESULT_OK) {
-//                // Handle the result from the other app here
-//                val resultData = data?.getStringExtra("signature")
-//                // Send the result back to Flutter
-//                myResult.success(resultData)
-//            } else {
-//                myResult.success(null)
-//            }
-//        }
-//    }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         _channel.setMethodCallHandler(null)
@@ -102,4 +78,40 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     override fun onDetachedFromActivityForConfigChanges() {
         _activity = null
     }
+
+//
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?): Boolean {
+//        if (resultCode != Activity.RESULT_OK) {
+//            _result.error("error","user rejected request","")
+//            return false
+//        }
+//        return true
+//    }
+//
+//
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?): Boolean {
+//        if (requestCode == _intentRequestCode) {
+//            if (resultCode == Activity.RESULT_OK && intent != null) {
+//                if (intent.hasExtra("signature")) {
+//                    val resultData = intent?.getStringExtra("signature")
+//                    // Send the result back to Flutter
+//                    _result.success(resultData)
+//                    return true
+//                }
+//            }
+//        }
+//
+//        return false
+////        if (requestCode == REQUEST_CODE) {
+////            if (resultCode == Activity.RESULT_OK) {
+////                // Handle the result from the other app here
+////                val resultData = data?.getStringExtra("signature")
+////                // Send the result back to Flutter
+////                myResult.success(resultData)
+////            } else {
+////                myResult.success(null)
+////            }
+////        }
+//    }
 }

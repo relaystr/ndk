@@ -1,3 +1,5 @@
+import 'package:dart_ndk/nips/nip01/acinq_event_verifier.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip19/nip19.dart';
 import 'package:flutter/material.dart';
 import 'package:amberflutter/amberflutter.dart';
@@ -93,6 +95,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 });
               },
               child: const Text('Sign Event'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final eventJson = jsonEncode({
+                  'id': '',
+                  'pubkey': Nip19.decode(_npub),
+                  'kind': 1,
+                  'content': 'Hello from Amber Flutter!',
+                  'created_at': (DateTime.now().millisecondsSinceEpoch / 1000).round(),
+                  'tags': [],
+                  'sig': '',
+                });
+
+                var value = await amber
+                    .signEvent(
+                  currentUser: _npub,
+                  eventJson: eventJson,
+                );
+                AcinqSecp256k1EventVerifier eventVerifier = AcinqSecp256k1EventVerifier();
+                eventVerifier.verify(Nip01Event.fromJson(json.decode(value['event']))).then((valid) {
+                  setState(() {
+                    _text = '${valid?"✅ Valid":"❌ Invalid"}';
+                  });
+                });
+              },
+              child: const Text('Verify signature'),
             ),
             FilledButton(
               onPressed: () {
