@@ -5,7 +5,6 @@ import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter/foundation.dart';
 
 import '../nip01/event.dart';
-import '../nip04/nip04.dart';
 
 class Nip51List {
   static const int MUTE = 10000;
@@ -90,27 +89,28 @@ class Nip51List {
 
   Nip51List({required this.pubKey, required this.kind, required this.createdAt, required this.elements});
 
-  Nip51List.fromEvent(Nip01Event event, EventSigner? signer) {
-    pubKey = event.pubKey;
-    kind = event.kind;
-    id = event.id;
-    createdAt = event.createdAt;
+  static Future<Nip51List> fromEvent(Nip01Event event, EventSigner? signer) async {
     // if (event.kind == Nip51List.SEARCH_RELAYS || event.kind == Nip51List.BLOCKED_RELAYS) {
     //   privateRelays = [];
     //   publicRelays = [];
     // }
+    Nip51List list = Nip51List(pubKey: event.pubKey, kind: event.kind, createdAt: event.createdAt, elements: []);
+    list.id = event.id;
+
+    list.parseTags(event.tags, private: false);
+
     if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
       try {
-        var json = Nip04.decrypt(signer.getPrivateKey()!, signer.getPublicKey(), event.content);
-        List<dynamic> tags = jsonDecode(json);
-        parseTags(tags, private: true);
+        var json = await signer.decrypt(event.content, signer.getPublicKey());
+        List<dynamic> tags = jsonDecode(json??'');
+        list.parseTags(tags, private: true);
       } catch (e) {
         if (kDebugMode) {
           print(e);
         }
       }
     }
-    parseTags(event.tags, private: false);
+    return list;
   }
 
   void parseTags(List tags, {required bool private}) {
@@ -126,12 +126,12 @@ class Nip51List {
     }
   }
 
-  Nip01Event toEvent(EventSigner? signer) {
+  Future<Nip01Event> toEvent(EventSigner? signer) async {
     String content = "";
     List<Nip51ListElement> privateElements = elements.where((element) => element.private).toList();
     if (privateElements.isNotEmpty && signer!=null) {
       String json = jsonEncode(privateElements.map((element) => [element.tag, element.value]).toList());
-      content = Nip04.encrypt(signer.getPrivateKey()!, signer.getPublicKey(), json);
+      content = await signer.encrypt(json, signer.getPublicKey())??'';
     }
     Nip01Event event = Nip01Event(
       pubKey: pubKey,
@@ -182,7 +182,7 @@ class Nip51Set extends Nip51List {
   Nip51Set({required String pubKey, required this.name, required int createdAt, required List<Nip51ListElement> elements, this.title})
       : super(pubKey: pubKey, kind: Nip51List.RELAY_SET, elements: elements, createdAt: createdAt);
 
-  static Nip51Set? fromEvent(Nip01Event event, EventSigner? signer) {
+  static Future<Nip51Set?> fromEvent(Nip01Event event, EventSigner? signer) async {
     String? name = event.getDtag();
     if (name==null || event.kind!=Nip51List.RELAY_SET) {
       return null;
@@ -191,8 +191,8 @@ class Nip51Set extends Nip51List {
     set.id = event.id;
     if (Helpers.isNotBlank(event.content) && signer!=null && signer.canSign()) {
       try {
-        var json = Nip04.decrypt(signer.getPrivateKey()!, signer.getPublicKey(), event.content);
-        List<dynamic> tags = jsonDecode(json);
+        var json = await signer.decrypt(event.content, signer.getPublicKey());
+        List<dynamic> tags = jsonDecode(json??'');
         set.parseTags(tags, private: true);
         set.parseSetTags(tags);
       } catch (e) {
@@ -209,8 +209,8 @@ class Nip51Set extends Nip51List {
   }
 
   @override
-  Nip01Event toEvent(EventSigner? signer) {
-    Nip01Event event = super.toEvent(signer);
+  Future<Nip01Event> toEvent(EventSigner? signer) async {
+    Nip01Event event = await super.toEvent(signer);
     List<dynamic> tags = [["d", name]];
     if (Helpers.isNotBlank(image)) {
       tags.add(["description",description]);

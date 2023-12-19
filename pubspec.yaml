@@ -1,10 +1,10 @@
 name: dart_ndk
 description: Dart Nostr Development Kit
-version: 0.1.0-dev4
+version: 0.1.0-dev7
 homepage: https://github.com/relaystr/dart_ndk
 
 environment:
-  sdk: '>=3.1.0 <4.0.0'
+  sdk: '>=3.2.1 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
@@ -21,12 +21,15 @@ dependencies:
   path_provider: ^2.1.1
   convert: ^3.1.1
   pointycastle: ^3.7.3
+  plugin_platform_interface: ^2.1.7
 
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
   ffi: ^2.1.0
   flutter_rust_bridge: ^1.82.4
   freezed_annotation: ^2.4.1
+
+  amberflutter: ^0.0.8
 
 #  rinf: ^4.12.2
 #  ffi: ^2.1.0
@@ -57,6 +60,12 @@ flutter:
   #
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
+
+  plugin:
+    platforms:
+      android:
+        package: relaystr.dart_ndk
+        pluginClass: DartNdkPlugin
 
   # To add custom fonts to your package, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

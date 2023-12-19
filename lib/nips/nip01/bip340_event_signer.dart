@@ -1,6 +1,7 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 
+import '../nip04/nip04.dart';
 import 'bip340.dart';
 import 'event_signer.dart';
 
@@ -23,10 +24,12 @@ class Bip340EventSigner implements EventSigner {
     return publicKey;
   }
 
-  @override
-  Future<void> decrypt(String msg) {
-    // TODO: implement decrypt
-    throw UnimplementedError();
+  Future<String?> decrypt(String msg, String destPubKey, { String? id }) async {
+    return Nip04.decrypt(privateKey!, destPubKey, msg);
+  }
+
+  Future<String?> encrypt(String msg, String destPubKey, { String? id }) async {
+    return Nip04.encrypt(privateKey!, destPubKey, msg);
   }
 
   @override
