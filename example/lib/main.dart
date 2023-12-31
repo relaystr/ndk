@@ -1,11 +1,17 @@
+import 'dart:convert';
+
+import 'package:amberflutter/amberflutter.dart';
 import 'package:dart_ndk/nips/nip01/acinq_event_verifier.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip19/nip19.dart';
 import 'package:flutter/material.dart';
-import 'package:amberflutter/amberflutter.dart';
-import 'dart:convert';
 
-void main() {
+late bool amberAvailable;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  var amber = Amberflutter();
+  amberAvailable = await amber.isAppInstalled();
   runApp(const MyApp());
 }
 
@@ -47,11 +53,12 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: Center(
-        child: Column(
+        child: !amberAvailable?
+        const Text("Amber not available") : Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             FilledButton(
-              onPressed: () {
+              onPressed: () async {
                 amber.getPublicKey(
                   permissions: [
                     const Permission(
@@ -63,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ).then((value) {
                   _npub = value['signature'] ?? '';
-                 _pubkeyHex = Nip19.decode(_npub);
+                  _pubkeyHex = Nip19.decode(_npub);
                   setState(() {
                     _text = '$value';
                   });

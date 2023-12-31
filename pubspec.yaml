@@ -1,6 +1,6 @@
 name: dart_ndk
 description: Dart Nostr Development Kit
-version: 0.1.0-dev7
+version: 0.1.0-dev8use
 homepage: https://github.com/relaystr/dart_ndk
 
 environment:
@@ -26,7 +26,10 @@ dependencies:
   isar: ^4.0.0-dev.14
   isar_flutter_libs: ^4.0.0-dev.14
 
-  amberflutter: ^0.0.8
+  amberflutter: #^0.0.8
+    git:
+#      url: https://github.com/greenart7c3/amberflutter
+      url:  https://github.com/frnandu/amberflutter
 
 #  rinf: ^4.12.2
 #  ffi: ^2.1.0

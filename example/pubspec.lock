@@ -10,12 +10,13 @@ packages:
     source: hosted
     version: "64.0.0"
   amberflutter:
-    dependency: "direct main"
+    dependency: transitive
     description:
-      name: amberflutter
-      sha256: "6f8976345fb8e6598f07150f4b63ac16c85e0b21d5d5aeced3c62daacc5a168c"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "79d11d020cc942a4060448ae97d93bab22019844"
+      url: "https://github.com/frnandu/amberflutter"
+    source: git
     version: "0.0.8"
   analyzer:
     dependency: transitive

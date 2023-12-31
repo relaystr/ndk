@@ -31,8 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  amberflutter: ^0.0.8
-
   dart_ndk:
     path: ../
 
