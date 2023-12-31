@@ -1,3 +1,6 @@
+## 0.1.0-dev8
+* use fork of amberflutter for isAppInstalled method
+
 ## 0.1.0-dev6
 * amber event signer
 
