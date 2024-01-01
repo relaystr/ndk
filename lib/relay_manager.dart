@@ -1041,11 +1041,14 @@ class RelayManager {
   }
 
   Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
-      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true}) async {
+      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true, Function()? onTimeout}) async {
     String id = Helpers.getRandomString(10);
     NostrRequest nostrRequest = closeOnEOSE?
     NostrRequest.query(id, eventVerifier: eventVerifier, timeout: timeout, onTimeout: (request) {
       closeNostrRequest(request);
+      if (onTimeout!=null) {
+        onTimeout();
+      }
     }) :
     NostrRequest.subscription(id, eventVerifier: eventVerifier);
 
