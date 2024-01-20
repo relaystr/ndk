@@ -36,7 +36,7 @@ Add the following to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  dart_nostr: any
+  dart_ndk: any
 ```
 
 ## Usage
