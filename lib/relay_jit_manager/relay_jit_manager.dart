@@ -17,7 +17,22 @@ class RelayJitManager {
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
-  handleRequest(NostrRequest request, {desiredCoverage = 2}) {}
+  handleRequest(NostrRequest request, {desiredCoverage = 2}) {
+    Map<String, RelayRequest> subRequests = request.requests;
+
+    // if pubkey match, split and send out the splitted (only that pubkey) request; decrease desiredCoverage for pubkey
+    // add the original request id to subscriptionHolder
+
+    // continue search
+
+    //
+    // for not covered pubkeys look for relays in nip65 data, while boosting already connected relays
+    //
+
+    // case=> if no relay is found, blast the request to all connected relays
+
+    // case=> good relay found add to connected, and send out the request
+  }
 
   doesRelayCoverPubkey(
       RelayJit relay, String pubkey, ReadWriteMarker direction) {
