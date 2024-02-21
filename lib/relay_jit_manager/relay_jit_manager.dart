@@ -25,11 +25,9 @@ class RelayJitManager {
       if (assignedPubkey.pubkey == pubkey) {
         switch (direction) {
           case ReadWriteMarker.readOnly:
-            return assignedPubkey.direction == ReadWriteMarker.readOnly ||
-                assignedPubkey.direction == ReadWriteMarker.readWrite;
+            return assignedPubkey.direction.isRead;
           case ReadWriteMarker.writeOnly:
-            return assignedPubkey.direction == ReadWriteMarker.writeOnly ||
-                assignedPubkey.direction == ReadWriteMarker.readWrite;
+            return assignedPubkey.direction.isWrite;
           case ReadWriteMarker.readWrite:
             return assignedPubkey.direction == ReadWriteMarker.readWrite;
           default:
