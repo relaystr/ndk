@@ -1,7 +1,8 @@
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
-import 'package:dart_ndk/request.dart';
+import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
 List<Relay> SEED_RELAYs = [
   Relay('wss://relay.camelus.app'),
@@ -17,9 +18,7 @@ class RelayJitManager {
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
-  handleRequest(NostrRequest request, {desiredCoverage = 2}) {
-    Map<String, RelayRequest> subRequests = request.requests;
-
+  handleRequest(NostrRequestJit request, {desiredCoverage = 2}) {
     // if pubkey match, split and send out the splitted (only that pubkey) request; decrease desiredCoverage for pubkey
     // add the original request id to subscriptionHolder
 
@@ -32,6 +31,15 @@ class RelayJitManager {
     // case=> if no relay is found, blast the request to all connected relays
 
     // case=> good relay found add to connected, and send out the request
+  }
+
+  handleEventPublish(Nip01Event nostrEvent) {
+    throw UnimplementedError();
+  }
+
+  // close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
+  handleCloseSubscription(String id) {
+    throw UnimplementedError();
   }
 
   doesRelayCoverPubkey(
