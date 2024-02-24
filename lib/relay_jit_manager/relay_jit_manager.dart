@@ -18,7 +18,32 @@ class RelayJitManager {
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
-  handleRequest(NostrRequestJit request, {desiredCoverage = 2}) {
+  handleRequest(NostrRequestJit request,
+      {desiredCoverage = 2, closeOnEOSE = true}) {
+    /// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
+    /// user can provide multiple filters
+    for (var filter in request.filters) {
+      // filter different types of filters/requests because each requires a different strategy
+
+      if ((filter.authors != null && filter.authors!.isNotEmpty) ||
+          (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty)) {
+        List<String> combindedPubkeys = [...?filter.authors, ...?filter.pTags];
+
+        for (var connectedRelay in connectedRelays) {}
+        continue;
+      }
+
+      if (filter.search != null) {
+        throw UnimplementedError("search filter not implemented yet");
+      }
+
+      if (filter.ids != null) {
+        throw UnimplementedError("ids filter not implemented yet");
+      }
+
+      throw UnimplementedError("filter not implemented yet");
+    }
+
     // if pubkey match, split and send out the splitted (only that pubkey) request; decrease desiredCoverage for pubkey
     // add the original request id to subscriptionHolder
 
