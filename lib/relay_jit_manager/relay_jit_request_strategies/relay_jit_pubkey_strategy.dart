@@ -3,6 +3,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
+import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_strategies_shared.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
 /// Strategy Description:
@@ -52,7 +53,24 @@ class RelayJitPubkeyStrategy {
           coveragePubkey.missingCoverage--;
         }
       }
-      // create splitRequest && send out the request
+
+      connectedRelay.touched++;
+      if (coveredPubkeysForRelay.isEmpty) {
+        continue;
+      }
+      connectedRelay.touchUseful++;
+
+      /// create splitFilter that only contains the pubkeys for the relay
+      Filter splitFilter;
+      if (filter.authors != null && filter.authors!.isNotEmpty) {
+        splitFilter = filter.cloneWithAuthors(coveredPubkeysForRelay);
+      } else if (filter.pTags != null && filter.pTags!.isNotEmpty) {
+        splitFilter = filter.cloneWithPTags(coveredPubkeysForRelay);
+      } else {
+        throw Exception("filter does not contain authors or pTags");
+      }
+
+      // send out the request
       // link the request id to the relay
     }
   }
