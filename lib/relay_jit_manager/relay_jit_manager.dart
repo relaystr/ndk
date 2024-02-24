@@ -2,6 +2,7 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
+import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
 List<Relay> SEED_RELAYs = [
@@ -27,9 +28,8 @@ class RelayJitManager {
 
       if ((filter.authors != null && filter.authors!.isNotEmpty) ||
           (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty)) {
-        List<String> combindedPubkeys = [...?filter.authors, ...?filter.pTags];
-
-        for (var connectedRelay in connectedRelays) {}
+        RelayJitPubkeyStrategy.handleRequest(
+            request, filter, connectedRelays, desiredCoverage, closeOnEOSE);
         continue;
       }
 
@@ -41,21 +41,9 @@ class RelayJitManager {
         throw UnimplementedError("ids filter not implemented yet");
       }
 
-      throw UnimplementedError("filter not implemented yet");
+      throw UnimplementedError(
+          "filter not implemented yet - strategy not found - blast to all connected relays");
     }
-
-    // if pubkey match, split and send out the splitted (only that pubkey) request; decrease desiredCoverage for pubkey
-    // add the original request id to subscriptionHolder
-
-    // continue search
-
-    //
-    // for not covered pubkeys look for relays in nip65 data, while boosting already connected relays
-    //
-
-    // case=> if no relay is found, blast the request to all connected relays
-
-    // case=> good relay found add to connected, and send out the request
   }
 
   handleEventPublish(Nip01Event nostrEvent) {
