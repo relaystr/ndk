@@ -26,10 +26,29 @@ class RelayJitManager {
     for (var filter in request.filters) {
       // filter different types of filters/requests because each requires a different strategy
 
-      if ((filter.authors != null && filter.authors!.isNotEmpty) ||
-          (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty)) {
+      if ((filter.authors != null && filter.authors!.isNotEmpty)) {
         RelayJitPubkeyStrategy.handleRequest(
-            request, filter, connectedRelays, desiredCoverage, closeOnEOSE);
+          originalRequest: request,
+          filter: filter,
+          connectedRelays: connectedRelays,
+          desiredCoverage: desiredCoverage,
+          closeOnEOSE: closeOnEOSE,
+          direction: ReadWriteMarker
+              .writeOnly, // the author should write on the persons write relays
+        );
+        continue;
+      }
+
+      if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
+        RelayJitPubkeyStrategy.handleRequest(
+          originalRequest: request,
+          filter: filter,
+          connectedRelays: connectedRelays,
+          desiredCoverage: desiredCoverage,
+          closeOnEOSE: closeOnEOSE,
+          direction: ReadWriteMarker
+              .readOnly, // others should mention on the persons read relays
+        );
         continue;
       }
 
@@ -55,7 +74,7 @@ class RelayJitManager {
     throw UnimplementedError();
   }
 
-  doesRelayCoverPubkey(
+  static doesRelayCoverPubkey(
       RelayJit relay, String pubkey, ReadWriteMarker direction) {
     for (RelayJitAssignedPubkey assignedPubkey in relay.assignedPubkeys) {
       if (assignedPubkey.pubkey == pubkey) {

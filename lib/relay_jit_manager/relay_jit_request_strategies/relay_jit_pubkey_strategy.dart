@@ -1,5 +1,8 @@
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
+import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
 /// Strategy Description:
@@ -20,10 +23,45 @@ import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 ///
 
 class RelayJitPubkeyStrategy {
-  static handleRequest(NostrRequestJit originalRequest, Filter filter,
-      List<Relay> connectedRelays, int desiredCoverage, bool closeOnEOSE) {
-    List<String> combindedPubkeys = [...?filter.authors, ...?filter.pTags];
+  static handleRequest(
+      {required NostrRequestJit originalRequest,
+      required Filter filter,
+      required List<RelayJit> connectedRelays,
+      required int desiredCoverage,
+      required bool closeOnEOSE,
+      required ReadWriteMarker direction}) {
+    List<String> combindedPubkeys = [
+      ...?filter.authors,
+      ...?filter.pTags
+    ]; // not perfect but probably fine, request got split earlier
 
-    for (var connectedRelay in connectedRelays) {}
+    // init coveragePubkeys
+    List<CoveragePubkey> coveragePubkeys = [];
+    for (var pubkey in combindedPubkeys) {
+      coveragePubkeys
+          .add(CoveragePubkey(pubkey, desiredCoverage, desiredCoverage));
+    }
+
+    for (var connectedRelay in connectedRelays) {
+      var coveredPubkeysForRelay = <String>[];
+
+      for (var coveragePubkey in coveragePubkeys) {
+        if (RelayJitManager.doesRelayCoverPubkey(
+            connectedRelay, coveragePubkey.pubkey, direction)) {
+          coveredPubkeysForRelay.add(coveragePubkey.pubkey);
+          coveragePubkey.missingCoverage--;
+        }
+      }
+      // create splitRequest && send out the request
+      // link the request id to the relay
+    }
   }
+}
+
+class CoveragePubkey {
+  final String pubkey;
+  int desiredCoverage;
+  int missingCoverage;
+
+  CoveragePubkey(this.pubkey, this.desiredCoverage, this.missingCoverage);
 }
