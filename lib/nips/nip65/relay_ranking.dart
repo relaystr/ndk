@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 
@@ -25,7 +27,8 @@ RelayRankingResult rankRelays({
 
   for (var event in eventData) {
     // not interested in this pubkey
-    if (!searchingPubkeys.contains(event.pubKey)) {
+    if (searchingPubkeys.any((element) => element.pubkey == event.pubKey) ==
+        false) {
       continue;
     }
 
@@ -39,7 +42,7 @@ RelayRankingResult rankRelays({
       }
 
       // check if relay is already in relayHits
-      if (!relayHits.containsKey(relay)) {
+      if (relayHits.containsKey(relay)) {
         relayHits[relay]!.hitPubkeys.add(event.pubKey);
         relayHits[relay]!.score += foundBoost;
       } else {
