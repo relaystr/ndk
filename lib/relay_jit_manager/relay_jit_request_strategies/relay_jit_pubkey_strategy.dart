@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
@@ -71,6 +72,12 @@ class RelayJitPubkeyStrategy {
       }
 
       // send out the request
+      connectedRelay.send(ClientMsg(
+        ClientMsgType.REQ,
+        id: originalRequest.id,
+        filters: [splitFilter],
+      ));
+
       // link the request id to the relay
     }
   }

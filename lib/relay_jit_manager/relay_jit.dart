@@ -1,3 +1,4 @@
+import 'package:dart_ndk/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 
@@ -17,6 +18,12 @@ class RelayJit extends Relay {
   int touchUseful = 0;
 
   double get relayUsefulness => touchUseful / touched;
+
+  send(ClientMsg msg) {
+    dynamic msgToSend = msg.toJson();
+
+    throw Exception("Sending - websocket not implemented yet");
+  }
 }
 
 class RelayJitAssignedPubkey {
