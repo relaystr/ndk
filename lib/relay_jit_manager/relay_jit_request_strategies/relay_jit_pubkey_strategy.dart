@@ -71,16 +71,43 @@ class RelayJitPubkeyStrategy {
         throw Exception("filter does not contain authors or pTags");
       }
 
-      // send out the request
-      connectedRelay.send(ClientMsg(
-        ClientMsgType.REQ,
-        id: originalRequest.id,
-        filters: [splitFilter],
-      ));
-
-      // link the request id to the relay
+      _sendRequestToSocket(connectedRelay, originalRequest, [splitFilter]);
     }
+
+    // look in nip65 data for not covered pubkeys
   }
+}
+
+void _sendRequestToSocket(RelayJit connectedRelay,
+    NostrRequestJit originalRequest, List<Filter> filters) {
+  if (connectedRelay.hasActiveSubscription(originalRequest.id)) {
+    // modify the existing subscription
+
+    // add the filters to the existing subscription
+    // to concat the filters is probably not the best way to do it but should be fine
+    connectedRelay.activeSubscriptions[originalRequest.id]!.filters
+        .addAll(filters);
+
+    // send out the updated request
+    connectedRelay.send(ClientMsg(
+      ClientMsgType.REQ,
+      id: originalRequest.id,
+      filters: connectedRelay.activeSubscriptions[originalRequest.id]!.filters,
+    ));
+
+    return;
+  }
+  // create a new subscription
+  // send out the request
+  connectedRelay.send(ClientMsg(
+    ClientMsgType.REQ,
+    id: originalRequest.id,
+    filters: filters,
+  ));
+
+  // link the request id to the relay
+  connectedRelay.activeSubscriptions[originalRequest.id] =
+      RelayActiveSubscription(originalRequest.id, filters, originalRequest);
 }
 
 class CoveragePubkey {
