@@ -72,10 +72,17 @@ class RelayJitPubkeyStrategy {
       }
 
       _sendRequestToSocket(connectedRelay, originalRequest, [splitFilter]);
+
+      // clear out fully covered pubkeys
+      _removeFullyCoveredPubkeys(coveragePubkeys);
     }
 
     // look in nip65 data for not covered pubkeys
   }
+}
+
+_removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
+  coveragePubkeys.removeWhere((element) => element.missingCoverage == 0);
 }
 
 void _sendRequestToSocket(RelayJit connectedRelay,
