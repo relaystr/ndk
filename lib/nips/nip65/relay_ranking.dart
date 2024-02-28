@@ -60,6 +60,32 @@ RelayRankingResult rankRelays({
 
   // assemble result
   //todo:
+
+  List<RelayRanking> ranking = [];
+  List<CoveragePubkey> notCoveredPubkeys = [];
+
+  for (var relayHit in relayHits.entries) {
+    if (relayHit.value.score > 0) {
+      ranking.add(RelayRanking(
+        relayUrl: relayHit.key,
+        score: relayHit.value.score,
+        coveredPubkeys: relayHit.value.hitPubkeys
+            .map((e) => CoveragePubkey(e, 1, 1))
+            .toList(),
+      ));
+    }
+  }
+
+  for (var pubkey in searchingPubkeys) {
+    if (!ranking.any((element) => element.coveredPubkeys.contains(pubkey))) {
+      notCoveredPubkeys.add(pubkey);
+    }
+  }
+
+  return RelayRankingResult(
+    ranking: ranking,
+    notCoveredPubkeys: notCoveredPubkeys,
+  );
 }
 
 class TestRelayHit {
