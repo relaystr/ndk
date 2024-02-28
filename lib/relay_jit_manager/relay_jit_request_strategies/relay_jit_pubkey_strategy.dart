@@ -75,7 +75,14 @@ class RelayJitPubkeyStrategy {
       _removeFullyCoveredPubkeys(coveragePubkeys);
     }
 
+    if (coveragePubkeys.isEmpty) {
+      // we are done
+      return;
+    }
+
+    //todo:
     // look in nip65 data for not covered pubkeys
+    throw UnimplementedError("look in nip65 not implemented yet");
   }
 }
 
