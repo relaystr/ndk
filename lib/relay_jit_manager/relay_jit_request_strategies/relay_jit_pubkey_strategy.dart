@@ -1,10 +1,8 @@
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
-import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_strategies_shared.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
 /// Strategy Description:
@@ -87,6 +85,7 @@ _removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
 
 void _sendRequestToSocket(RelayJit connectedRelay,
     NostrRequestJit originalRequest, List<Filter> filters) {
+  // check if the subscription already exists and if its need to be modified
   if (connectedRelay.hasActiveSubscription(originalRequest.id)) {
     // modify the existing subscription
 
