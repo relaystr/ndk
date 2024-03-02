@@ -1,20 +1,31 @@
+import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
+import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
-List<Relay> SEED_RELAYs = [
-  Relay('wss://relay.camelus.app'),
-  Relay('wss://relay.snort.social'),
-  Relay('wss://relay.damus.io'),
-  Relay('wss://nostr.lu.ke'),
-  Relay('wss://relay.mostr.pub')
-];
-
 class RelayJitManager {
   List<RelayJit> connectedRelays = [];
+  late CacheManager cacheManager;
+
+  RelayJitManager({
+    List<String> seedRelays = RelayJitConfig.SEED_RELAYS,
+    CacheManager? cacheManager,
+  }) {
+    this.cacheManager = cacheManager ?? MemCacheManager();
+
+    // init seed relays
+    for (var seedRelay in seedRelays) {
+      var relay = RelayJit(seedRelay);
+      //todo: connect relay
+      //connectedRelays.add(RelayJit(seedRelay));
+      throw UnimplementedError(
+          "Init seed relays, connect relay not implemented yet");
+    }
+  }
 
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
