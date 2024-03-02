@@ -71,8 +71,6 @@ RelayRankingResult rankRelays({
   }
 
   // assemble result
-  //todo:
-
   List<RelayRanking> ranking = [];
   List<CoveragePubkey> notCoveredPubkeys = [];
 
@@ -83,6 +81,7 @@ RelayRankingResult rankRelays({
     }
   }
 
+  // populate ranking
   for (var relayHit in relayHits.entries) {
     if (relayHit.value.score > 0) {
       ranking.add(

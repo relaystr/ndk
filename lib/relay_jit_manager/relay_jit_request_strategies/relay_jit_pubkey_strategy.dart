@@ -1,6 +1,7 @@
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/nips/nip65/relay_ranking.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
@@ -80,7 +81,14 @@ class RelayJitPubkeyStrategy {
       return;
     }
 
-    //todo:
+    //todo: resolve not covered pubkeys
+    // by finding the best relays to connect and send out the request
+    RelayRankingResult relayRanking = rankRelays(
+      direction: direction,
+      searchingPubkeys: coveragePubkeys,
+      eventData: [], // insert nip65 data somehow here, dependency injection?
+    );
+
     // look in nip65 data for not covered pubkeys
     throw UnimplementedError("look in nip65 not implemented yet");
   }
