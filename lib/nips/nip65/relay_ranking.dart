@@ -40,7 +40,7 @@ RelayRankingResult rankRelays({
         continue;
       }
       // check for direction
-      if (event.relays[relay] != direction) {
+      if (!event.relays[relay]!.isPartialMatch(direction)) {
         continue;
       }
       // check if a new relay is needed
