@@ -72,15 +72,15 @@ getRandomTags() {
   final tags = [
     [
       'r',
-      'wss://relay${getRandomString(3)}.${getRandomReadWrite()}',
+      'wss://relay-${getRandomString(3)}.${getRandomReadWrite()}',
       getRandomReadWrite()
     ],
     [
       'r',
-      'wss://relay${getRandomString(3)}.${getRandomReadWrite()}',
+      'wss://relay-${getRandomString(3)}.${getRandomReadWrite()}',
       getRandomReadWrite()
     ],
-    ['r', 'wss://relay${getRandomString(3)}.${getRandomReadWrite()}'],
+    ['r', 'wss://relay-${getRandomString(3)}.${getRandomReadWrite()}'],
   ];
   return tags;
 }

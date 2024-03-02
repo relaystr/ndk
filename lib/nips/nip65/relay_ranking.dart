@@ -16,12 +16,15 @@ RelayRankingResult rankRelays({
   // on found value
   int foundBoost = 1,
   // boost value
-  int boost = 2,
-  // ignore value
-  int ignore = -2,
+  int boost = 10,
 }) {
   // string is the relay url
   Map<String, TestRelayHit> relayHits = {};
+
+  // string is the pubkey
+  Map<String, CoveragePubkey> searchingPubkeysMap = {
+    for (var e in searchingPubkeys) e.pubkey: e,
+  };
 
   // count for each event data (pubkey)
 
@@ -40,6 +43,10 @@ RelayRankingResult rankRelays({
       if (event.relays[relay] != direction) {
         continue;
       }
+      // check if a new relay is needed
+      if (searchingPubkeysMap[event.pubKey]!.missingCoverage <= 0) {
+        continue;
+      }
 
       // check if relay is already in relayHits
       if (relayHits.containsKey(relay)) {
@@ -51,6 +58,8 @@ RelayRankingResult rankRelays({
           hitPubkeys: [event.pubKey],
         );
       }
+      // decrease missing coverage
+      searchingPubkeysMap[event.pubKey]!.missingCoverage -= 1;
     }
   }
 
@@ -67,21 +76,25 @@ RelayRankingResult rankRelays({
   List<RelayRanking> ranking = [];
   List<CoveragePubkey> notCoveredPubkeys = [];
 
-  for (var relayHit in relayHits.entries) {
-    if (relayHit.value.score > 0) {
-      ranking.add(RelayRanking(
-        relayUrl: relayHit.key,
-        score: relayHit.value.score,
-        coveredPubkeys: relayHit.value.hitPubkeys
-            .map((e) => CoveragePubkey(e, 1, 1))
-            .toList(),
-      ));
+  // not covered pubkeys
+  for (var pubkey in searchingPubkeysMap.entries) {
+    if (pubkey.value.missingCoverage > 0) {
+      notCoveredPubkeys.add(pubkey.value);
     }
   }
 
-  for (var pubkey in searchingPubkeys) {
-    if (!ranking.any((element) => element.coveredPubkeys.contains(pubkey))) {
-      notCoveredPubkeys.add(pubkey);
+  for (var relayHit in relayHits.entries) {
+    if (relayHit.value.score > 0) {
+      ranking.add(
+        RelayRanking(
+          relayUrl: relayHit.key,
+          score: relayHit.value.score,
+          coveredPubkeys: searchingPubkeys
+              .where((element) =>
+                  relayHit.value.hitPubkeys.contains(element.pubkey))
+              .toList(),
+        ),
+      );
     }
   }
 
