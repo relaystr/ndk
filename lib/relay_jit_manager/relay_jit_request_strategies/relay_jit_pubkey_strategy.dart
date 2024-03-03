@@ -1,5 +1,8 @@
+import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/nips/nip65/relay_ranking.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
@@ -28,6 +31,9 @@ class RelayJitPubkeyStrategy {
       {required NostrRequestJit originalRequest,
       required Filter filter,
       required List<RelayJit> connectedRelays,
+
+      /// used to get the nip65 data if its necessary to look for not covered pubkeys
+      required CacheManager cacheManager,
       required int desiredCoverage,
       required bool closeOnEOSE,
       required ReadWriteMarker direction}) {
@@ -82,15 +88,31 @@ class RelayJitPubkeyStrategy {
     }
 
     //todo: resolve not covered pubkeys
+
+    List<Nip65> nip65Data = _getNip65Data(
+        coveragePubkeys.map((e) => e.pubkey).toList(), cacheManager);
+
     // by finding the best relays to connect and send out the request
     RelayRankingResult relayRanking = rankRelays(
       direction: direction,
       searchingPubkeys: coveragePubkeys,
-      eventData: [], // insert nip65 data somehow here, dependency injection?
+      eventData: nip65Data,
     );
 
     // look in nip65 data for not covered pubkeys
     throw UnimplementedError("look in nip65 not implemented yet");
+  }
+
+  static List<Nip65> _getNip65Data(
+      List<String> pubkeys, CacheManager cacheManager) {
+    List<Nip01Event> events =
+        cacheManager.loadEvents(kinds: [Nip65.KIND], pubKeys: pubkeys);
+
+    List<Nip65> nip65Data = [];
+    for (var event in events) {
+      nip65Data.add(Nip65.fromEvent(event));
+    }
+    return nip65Data;
   }
 }
 

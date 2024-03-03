@@ -1,6 +1,7 @@
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
@@ -40,6 +41,7 @@ class RelayJitManager {
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
         RelayJitPubkeyStrategy.handleRequest(
           originalRequest: request,
+          cacheManager: cacheManager,
           filter: filter,
           connectedRelays: connectedRelays,
           desiredCoverage: desiredCoverage,
@@ -53,6 +55,7 @@ class RelayJitManager {
       if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
         RelayJitPubkeyStrategy.handleRequest(
           originalRequest: request,
+          cacheManager: cacheManager,
           filter: filter,
           connectedRelays: connectedRelays,
           desiredCoverage: desiredCoverage,
