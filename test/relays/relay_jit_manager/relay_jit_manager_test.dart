@@ -1,6 +1,4 @@
 // ignore_for_file: avoid_print
-import 'dart:async';
-import 'dart:ffi';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
@@ -60,13 +58,13 @@ void main() async {
     relayJitManager.connectedRelays.add(relayUnassigend);
     test('test readOnly relay', () {
       // check
-      final resultRequestRo = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestRo = RelayJitManager.doesRelayCoverPubkey(
           relayReadOnly, key1.publicKey, ReadWriteMarker.readOnly);
 
-      final resultRequestWo = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestWo = RelayJitManager.doesRelayCoverPubkey(
           relayReadOnly, key1.publicKey, ReadWriteMarker.writeOnly);
 
-      final resultRequestRW = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestRW = RelayJitManager.doesRelayCoverPubkey(
           relayReadOnly, key1.publicKey, ReadWriteMarker.readWrite);
 
       expect(resultRequestRo, true);
@@ -76,13 +74,13 @@ void main() async {
 
     test('test writeOnly relay', () {
       // check
-      final resultRequestRo = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestRo = RelayJitManager.doesRelayCoverPubkey(
           relayWriteOnly, key1.publicKey, ReadWriteMarker.readOnly);
 
-      final resultRequestWo = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestWo = RelayJitManager.doesRelayCoverPubkey(
           relayWriteOnly, key1.publicKey, ReadWriteMarker.writeOnly);
 
-      final resultRequestRW = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestRW = RelayJitManager.doesRelayCoverPubkey(
           relayWriteOnly, key1.publicKey, ReadWriteMarker.readWrite);
 
       expect(resultRequestRo, false);
@@ -92,13 +90,13 @@ void main() async {
 
     test('test readWrite relay', () {
       // check
-      final resultRequestRo = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestRo = RelayJitManager.doesRelayCoverPubkey(
           relayReadWrite, key1.publicKey, ReadWriteMarker.readOnly);
 
-      final resultRequestWo = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestWo = RelayJitManager.doesRelayCoverPubkey(
           relayReadWrite, key1.publicKey, ReadWriteMarker.writeOnly);
 
-      final resultRequestRW = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestRW = RelayJitManager.doesRelayCoverPubkey(
           relayReadWrite, key1.publicKey, ReadWriteMarker.readWrite);
 
       expect(resultRequestRo, true);
@@ -107,13 +105,13 @@ void main() async {
     });
     test('relay without assignments', () {
       // check
-      final resultRequestRo = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestRo = RelayJitManager.doesRelayCoverPubkey(
           relayUnassigend, key1.publicKey, ReadWriteMarker.readOnly);
 
-      final resultRequestWo = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestWo = RelayJitManager.doesRelayCoverPubkey(
           relayUnassigend, key1.publicKey, ReadWriteMarker.writeOnly);
 
-      final resultRequestRW = relayJitManager.doesRelayCoverPubkey(
+      final resultRequestRW = RelayJitManager.doesRelayCoverPubkey(
           relayUnassigend, key1.publicKey, ReadWriteMarker.readWrite);
 
       expect(resultRequestRo, false);
