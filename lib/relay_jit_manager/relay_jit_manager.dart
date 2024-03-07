@@ -21,10 +21,8 @@ class RelayJitManager {
     // init seed relays
     for (var seedRelay in seedRelays) {
       var relay = RelayJit(seedRelay);
-      //todo: connect relay
-      //connectedRelays.add(RelayJit(seedRelay));
-      throw UnimplementedError(
-          "Init seed relays, connect relay not implemented yet");
+      relay.connect();
+      connectedRelays.add(RelayJit(seedRelay));
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class RelayJit extends Relay {
   RelayJit(String url) : super(url);
@@ -20,6 +21,25 @@ class RelayJit extends Relay {
   int touchUseful = 0;
 
   double get relayUsefulness => touchUseful / touched;
+
+  WebSocketChannel? _channel;
+
+  Future<bool> connect() {
+    String? cleanUrl = Relay.cleanUrl(url);
+    if (cleanUrl == null) {
+      throw Exception("Invalid url");
+    }
+    _channel = WebSocketChannel.connect(Uri.parse(cleanUrl));
+    return isReady();
+  }
+
+  Future<bool> isReady() async {
+    if (_channel == null) {
+      return false;
+    }
+    await _channel!.ready;
+    return _channel!.closeCode == null;
+  }
 
   send(ClientMsg msg) {
     dynamic msgToSend = msg.toJson();
