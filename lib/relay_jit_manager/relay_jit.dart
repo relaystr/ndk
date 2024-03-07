@@ -33,6 +33,13 @@ class RelayJit extends Relay {
     return isReady();
   }
 
+  Future<dynamic> disconnect() {
+    if (_channel == null) {
+      return Future.value(false);
+    }
+    return _channel!.sink.close();
+  }
+
   Future<bool> isReady() async {
     if (_channel == null) {
       return false;
