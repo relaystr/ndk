@@ -99,28 +99,35 @@ class RelayJitPubkeyStrategy {
     // connect to the new found relays and send out the request
     // todo: improve and move to a function
     for (var relayCandidate in relayRanking.ranking) {
-      //todo: check if the relay is already connected
-      // if yes add the relation and send out the request
+      if (relayCandidate.score <= 0) {
+        continue;
+      }
+      // check if the relayCandidate is already connected
+      bool alreadyConnected = false;
+      for (var connectedRelay in connectedRelays) {
+        if (connectedRelay.url == relayCandidate.relayUrl) {
+          alreadyConnected = true;
+          break;
+        }
+      }
 
-      if (relayCandidate.score > 0) {
+      if (!alreadyConnected) {
         RelayJit newRelay = RelayJit(relayCandidate.relayUrl);
         newRelay.connect().then((success) => {
               if (success)
                 {
                   // add the pubkeys to the relay
-                  for (var coveragePubkey in relayCandidate.coveredPubkeys)
-                    {
-                      newRelay.assignedPubkeys.add(
-                        RelayJitAssignedPubkey(
-                            coveragePubkey.pubkey, direction),
-                      ),
-                    },
+                  newRelay.addPubkeysToAssignedPubkeys(
+                      relayCandidate.coveredPubkeys
+                          .map((e) => e.pubkey)
+                          .toList(),
+                      direction),
 
                   // add the relay to the connected relays
                   connectedRelays.add(newRelay),
 
                   // send out the request
-                  _sendRequestToSocket(connectedRelays.last, originalRequest, [
+                  _sendRequestToSocket(newRelay, originalRequest, [
                     _splitFilter(
                         filter,
                         relayCandidate.coveredPubkeys
@@ -129,6 +136,19 @@ class RelayJitPubkeyStrategy {
                   ])
                 }
             });
+      }
+
+      if (alreadyConnected) {
+        RelayJit connectedRelay = connectedRelays
+            .firstWhere((element) => element.url == relayCandidate.relayUrl);
+
+        connectedRelay.addPubkeysToAssignedPubkeys(
+            relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
+            direction);
+        _sendRequestToSocket(connectedRelay, originalRequest, [
+          _splitFilter(filter,
+              relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList())
+        ]);
       }
     }
 

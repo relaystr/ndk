@@ -139,6 +139,13 @@ class RelayJit extends Relay {
   bool hasActiveSubscription(String id) {
     return activeSubscriptions.containsKey(id);
   }
+
+  void addPubkeysToAssignedPubkeys(
+      List<String> pubkeys, ReadWriteMarker direction) {
+    for (var pubkey in pubkeys) {
+      assignedPubkeys.add(RelayJitAssignedPubkey(pubkey, direction));
+    }
+  }
 }
 
 class RelayJitAssignedPubkey {
