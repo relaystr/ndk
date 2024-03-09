@@ -48,11 +48,14 @@ class RelayJit extends Relay {
     return _channel!.closeCode == null;
   }
 
-  send(ClientMsg msg) {
-    dynamic msgToSend = msg.toJson();
+  send(ClientMsg msg) async {
+    bool rdy = await isReady();
+    if (!rdy) {
+      throw Exception("Websocket not ready, unable to send message");
+    }
 
-    //todo: implement sending
-    throw Exception("Sending - websocket not implemented yet");
+    dynamic msgToSend = msg.toJson();
+    _channel!.sink.add(msgToSend);
   }
 
   // check if active relay subscriptions does already exist
