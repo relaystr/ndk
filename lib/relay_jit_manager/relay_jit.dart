@@ -11,7 +11,7 @@ import 'package:logger/logger.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 var logger = Logger(
-  printer: PrettyPrinter(),
+  printer: PrettyPrinter(methodCount: 0),
 );
 
 class RelayJit extends Relay {
@@ -135,7 +135,8 @@ class RelayJit extends Relay {
     }
 
     dynamic msgToSend = msg.toJson();
-    _channel!.sink.add(msgToSend);
+    String encodedMsg = jsonEncode(msgToSend);
+    _channel!.sink.add(encodedMsg);
     logger.i("send message to $url: $msgToSend");
   }
 
