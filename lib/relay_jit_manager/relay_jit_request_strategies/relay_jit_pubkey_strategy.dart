@@ -7,6 +7,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/nips/nip65/relay_ranking.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
+import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
 /// Strategy Description:
@@ -98,6 +99,9 @@ class RelayJitPubkeyStrategy {
     // connect to the new found relays and send out the request
     // todo: improve and move to a function
     for (var relayCandidate in relayRanking.ranking) {
+      //todo: check if the relay is already connected
+      // if yes add the relation and send out the request
+
       if (relayCandidate.score > 0) {
         RelayJit newRelay = RelayJit(relayCandidate.relayUrl);
         newRelay.connect().then((success) => {
@@ -127,6 +131,19 @@ class RelayJitPubkeyStrategy {
             });
       }
     }
+
+    Filter notFoundFilter = _splitFilter(
+        filter,
+        relayRanking.notCoveredPubkeys
+            .map((e) => e.pubkey)
+            .toList()); // split the filter
+    //  send out not found request to all connected relays
+    RelayJitBlastAllStrategy.handleRequest(
+      originalRequest: originalRequest,
+      filter: notFoundFilter,
+      connectedRelays: connectedRelays,
+      closeOnEOSE: closeOnEOSE,
+    );
   }
 
   static List<Nip65> _getNip65Data(

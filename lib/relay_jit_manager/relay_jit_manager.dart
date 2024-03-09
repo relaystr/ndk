@@ -5,6 +5,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
+import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
@@ -82,8 +83,13 @@ class RelayJitManager {
         throw UnimplementedError("ids filter not implemented yet");
       }
 
-      throw UnimplementedError(
-          "filter not implemented yet - strategy not found - blast to all connected relays");
+      /// unknown filter strategy, blast to all connected relays
+      RelayJitBlastAllStrategy.handleRequest(
+        originalRequest: request,
+        filter: filter,
+        connectedRelays: connectedRelays,
+        closeOnEOSE: closeOnEOSE,
+      );
     }
   }
 
