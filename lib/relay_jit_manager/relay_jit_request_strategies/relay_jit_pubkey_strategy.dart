@@ -68,14 +68,7 @@ class RelayJitPubkeyStrategy {
       connectedRelay.touchUseful++;
 
       /// create splitFilter that only contains the pubkeys for the relay
-      Filter splitFilter;
-      if (filter.authors != null && filter.authors!.isNotEmpty) {
-        splitFilter = filter.cloneWithAuthors(coveredPubkeysForRelay);
-      } else if (filter.pTags != null && filter.pTags!.isNotEmpty) {
-        splitFilter = filter.cloneWithPTags(coveredPubkeysForRelay);
-      } else {
-        throw Exception("filter does not contain authors or pTags");
-      }
+      Filter splitFilter = _splitFilter(filter, coveredPubkeysForRelay);
 
       _sendRequestToSocket(connectedRelay, originalRequest, [splitFilter]);
 
@@ -88,7 +81,7 @@ class RelayJitPubkeyStrategy {
       return;
     }
 
-    //todo: resolve not covered pubkeys
+    /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
     List<Nip65> nip65Data = _getNip65Data(
         coveragePubkeys.map((e) => e.pubkey).toList(), cacheManager);
@@ -101,6 +94,39 @@ class RelayJitPubkeyStrategy {
       boostRelays: connectedRelays.map((e) => e.url).toList(),
       ignoreRelays: ignoreRelays,
     );
+
+    // connect to the new found relays and send out the request
+    // todo: improve and move to a function
+    for (var relayCandidate in relayRanking.ranking) {
+      if (relayCandidate.score > 0) {
+        RelayJit newRelay = RelayJit(relayCandidate.relayUrl);
+        newRelay.connect().then((success) => {
+              if (success)
+                {
+                  // add the pubkeys to the relay
+                  for (var coveragePubkey in relayCandidate.coveredPubkeys)
+                    {
+                      newRelay.assignedPubkeys.add(
+                        RelayJitAssignedPubkey(
+                            coveragePubkey.pubkey, direction),
+                      ),
+                    },
+
+                  // add the relay to the connected relays
+                  connectedRelays.add(newRelay),
+
+                  // send out the request
+                  _sendRequestToSocket(connectedRelays.last, originalRequest, [
+                    _splitFilter(
+                        filter,
+                        relayCandidate.coveredPubkeys
+                            .map((e) => e.pubkey)
+                            .toList())
+                  ])
+                }
+            });
+      }
+    }
   }
 
   static List<Nip65> _getNip65Data(
@@ -151,6 +177,16 @@ void _sendRequestToSocket(RelayJit connectedRelay,
   // link the request id to the relay
   connectedRelay.activeSubscriptions[originalRequest.id] =
       RelayActiveSubscription(originalRequest.id, filters, originalRequest);
+}
+
+Filter _splitFilter(Filter filter, List<String> pubkeysToInclude) {
+  if (filter.authors != null && filter.authors!.isNotEmpty) {
+    return filter.cloneWithAuthors(pubkeysToInclude);
+  } else if (filter.pTags != null && filter.pTags!.isNotEmpty) {
+    return filter.cloneWithPTags(pubkeysToInclude);
+  } else {
+    throw Exception("filter does not contain authors or pTags");
+  }
 }
 
 class CoveragePubkey {
