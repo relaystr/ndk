@@ -55,6 +55,7 @@ class RelayJit extends Relay {
     }
 
     _listen();
+    logger.i("Relay connected: $url");
     return true;
   }
 

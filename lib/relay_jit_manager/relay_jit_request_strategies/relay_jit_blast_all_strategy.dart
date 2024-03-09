@@ -15,13 +15,12 @@ class RelayJitBlastAllStrategy {
     required bool closeOnEOSE,
   }) {
     for (var connectedRelay in connectedRelays) {
-      connectedRelay.send(
-        ClientMsg(
-          ClientMsgType.REQ,
-          id: originalRequest.id,
-          filters: [filter],
-        ),
+      var clientMsg = ClientMsg(
+        ClientMsgType.REQ,
+        id: originalRequest.id,
+        filters: [filter],
       );
+      connectedRelay.send(clientMsg);
     }
   }
 }

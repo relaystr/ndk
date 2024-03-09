@@ -43,8 +43,6 @@ class RelayJitManager {
     closeOnEOSE = true,
     List<String> ignoreRelays = const [],
   }) {
-    logger.d("handleRequest: $request");
-
     //clean ignore relays
     List<String> cleanIgnoreRelays = _cleanRelayUrls(ignoreRelays);
 
