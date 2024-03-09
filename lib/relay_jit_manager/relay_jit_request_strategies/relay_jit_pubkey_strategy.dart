@@ -36,7 +36,8 @@ class RelayJitPubkeyStrategy {
       required CacheManager cacheManager,
       required int desiredCoverage,
       required bool closeOnEOSE,
-      required ReadWriteMarker direction}) {
+      required ReadWriteMarker direction,
+      required List<String> ignoreRelays}) {
     List<String> combindedPubkeys = [
       ...?filter.authors,
       ...?filter.pTags
@@ -88,7 +89,7 @@ class RelayJitPubkeyStrategy {
     }
 
     //todo: resolve not covered pubkeys
-
+    // look in nip65 data for not covered pubkeys
     List<Nip65> nip65Data = _getNip65Data(
         coveragePubkeys.map((e) => e.pubkey).toList(), cacheManager);
 
@@ -97,10 +98,9 @@ class RelayJitPubkeyStrategy {
       direction: direction,
       searchingPubkeys: coveragePubkeys,
       eventData: nip65Data,
+      boostRelays: connectedRelays.map((e) => e.url).toList(),
+      ignoreRelays: ignoreRelays,
     );
-
-    // look in nip65 data for not covered pubkeys
-    throw UnimplementedError("look in nip65 not implemented yet");
   }
 
   static List<Nip65> _getNip65Data(

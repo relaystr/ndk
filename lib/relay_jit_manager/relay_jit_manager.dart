@@ -1,8 +1,8 @@
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
@@ -21,16 +21,24 @@ class RelayJitManager {
     // init seed relays
     for (var seedRelay in seedRelays) {
       var relay = RelayJit(seedRelay);
-      relay.connect();
-      connectedRelays.add(RelayJit(seedRelay));
+      relay.connect().then((success) => {
+            if (success) {connectedRelays.add(relay)}
+          });
     }
   }
 
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
-  handleRequest(NostrRequestJit request,
-      {desiredCoverage = 2, closeOnEOSE = true}) {
+  handleRequest(
+    NostrRequestJit request, {
+    desiredCoverage = 2,
+    closeOnEOSE = true,
+    List<String> ignoreRelays = const [],
+  }) {
+    //clean ignore relays
+    List<String> cleanIgnoreRelays = _cleanRelayUrls(ignoreRelays);
+
     /// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
     /// user can provide multiple filters
     for (var filter in request.filters) {
@@ -46,6 +54,7 @@ class RelayJitManager {
           closeOnEOSE: closeOnEOSE,
           direction: ReadWriteMarker
               .writeOnly, // the author should write on the persons write relays
+          ignoreRelays: cleanIgnoreRelays,
         );
         continue;
       }
@@ -60,6 +69,7 @@ class RelayJitManager {
           closeOnEOSE: closeOnEOSE,
           direction: ReadWriteMarker
               .readOnly, // others should mention on the persons read relays
+          ignoreRelays: cleanIgnoreRelays,
         );
         continue;
       }
@@ -87,7 +97,10 @@ class RelayJitManager {
   }
 
   static doesRelayCoverPubkey(
-      RelayJit relay, String pubkey, ReadWriteMarker direction) {
+    RelayJit relay,
+    String pubkey,
+    ReadWriteMarker direction,
+  ) {
     for (RelayJitAssignedPubkey assignedPubkey in relay.assignedPubkeys) {
       if (assignedPubkey.pubkey == pubkey) {
         switch (direction) {
@@ -103,5 +116,17 @@ class RelayJitManager {
       }
     }
     return false;
+  }
+
+  _cleanRelayUrls(List<String> urls) {
+    List<String> cleanUrls = [];
+    for (var url in urls) {
+      String? cleanUrl = Relay.cleanUrl(url);
+      if (cleanUrl == null) {
+        continue;
+      }
+      cleanUrls.add(cleanUrl);
+    }
+    return cleanUrls;
   }
 }
