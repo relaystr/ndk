@@ -4,10 +4,13 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_verifier.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
+import 'package:logging/logging.dart';
 
 ///
 ///! currently a partial copy of request.dart, need to discuss how to resolve this
 ///
+
+final log = Logger('NostrRequestJit');
 
 class NostrRequestJit {
   String id;
@@ -49,4 +52,19 @@ class NostrRequestJit {
     required this.filters,
     this.closeOnEOSE = false,
   });
+
+  /// verify event and add to response stream
+  void onMessage(Nip01Event event) async {
+    // verify event
+    bool validSig = await eventVerifier.verify(event);
+
+    if (!validSig) {
+      log.warning("🔑⛔ Invalid signature on event: $event");
+      return;
+    }
+    event.validSig = validSig;
+
+    // add to response stream
+    responseController.add(event);
+  }
 }

@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
+import 'package:logging/logging.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+final log = Logger('RelayJit');
 
 class RelayJit extends Relay {
   RelayJit(String url) : super(url);
@@ -25,12 +31,72 @@ class RelayJit extends Relay {
   WebSocketChannel? _channel;
 
   Future<bool> connect() {
+    if (_channel != null) {
+      log.warning("Relay already connected");
+      return Future.value(true);
+    }
+
     String? cleanUrl = Relay.cleanUrl(url);
     if (cleanUrl == null) {
       throw Exception("Invalid url");
     }
     _channel = WebSocketChannel.connect(Uri.parse(cleanUrl));
+    _listen();
     return isReady();
+  }
+
+  _listen() {
+    _channel!.stream.listen((event) {
+      log.info("Received message on $url: $event");
+      if (event is! String) {
+        log.warning("Received message is not a string: $event");
+        return;
+      }
+      List<dynamic> eventJson = jsonDecode(event);
+
+      if (eventJson[0] == 'EVENT') {
+        return;
+      }
+
+      switch (eventJson[0]) {
+        case 'EVENT':
+          _handleIncomingEvent(eventJson);
+          break;
+        case 'OK':
+          //["OK", <event_id>, <true|false>, <message>]
+          log.info("OK received: $eventJson");
+          log.severe("OK not implemented! ");
+          break;
+        case 'EOSE':
+          //["EOSE", <subscription_id>]
+          log.info("EOSE received, $eventJson");
+          log.severe("EOSE not implemented!");
+          break;
+
+        case 'CLOSED':
+          //["CLOSED", <subscription_id>, <message>]
+          log.info("CLOSED received: $eventJson");
+          log.severe("EOSE not implemented!");
+          break;
+
+        case 'NOTICE':
+          //["NOTICE", <message>]
+          log.info("NOTICE received: $eventJson");
+          log.severe("NOTICE not implemented!");
+          break;
+
+        default:
+          log.warning("Unknown message type: ${eventJson[0]}: $eventJson");
+      }
+    });
+  }
+
+  void _handleIncomingEvent(List<dynamic> eventJson) {
+    Nip01Event msg = Nip01Event.fromJson(eventJson[2]);
+    String msgId = eventJson[1];
+    if (activeSubscriptions.containsKey(msgId)) {
+      activeSubscriptions[msgId]!.originalRequest.onMessage(msg);
+    }
   }
 
   Future<dynamic> disconnect() {
@@ -56,6 +122,7 @@ class RelayJit extends Relay {
 
     dynamic msgToSend = msg.toJson();
     _channel!.sink.add(msgToSend);
+    log.info("send message to $url: $msgToSend");
   }
 
   // check if active relay subscriptions does already exist
