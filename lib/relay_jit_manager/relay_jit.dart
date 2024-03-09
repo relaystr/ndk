@@ -30,7 +30,8 @@ class RelayJit extends Relay {
 
   WebSocketChannel? _channel;
 
-  Future<bool> connect() {
+  /// returns true if the connection was successful
+  Future<bool> connect() async {
     if (_channel != null) {
       log.warning("Relay already connected");
       return Future.value(true);
@@ -38,11 +39,20 @@ class RelayJit extends Relay {
 
     String? cleanUrl = Relay.cleanUrl(url);
     if (cleanUrl == null) {
-      throw Exception("Invalid url");
+      log.warning("invalid url $url => $cleanUrl");
+      return false;
     }
     _channel = WebSocketChannel.connect(Uri.parse(cleanUrl));
+
+    // ready check
+    bool r = await isReady();
+    if (!r) {
+      log.warning("Relay not ready");
+      return false;
+    }
+
     _listen();
-    return isReady();
+    return true;
   }
 
   _listen() {
