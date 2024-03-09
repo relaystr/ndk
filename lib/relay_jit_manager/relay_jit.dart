@@ -6,10 +6,13 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
-import 'package:logging/logging.dart';
+import 'package:logger/logger.dart';
+
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-final log = Logger('RelayJit');
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
 
 class RelayJit extends Relay {
   RelayJit(String url) : super(url);
@@ -33,13 +36,13 @@ class RelayJit extends Relay {
   /// returns true if the connection was successful
   Future<bool> connect() async {
     if (_channel != null) {
-      log.warning("Relay already connected");
+      logger.w("Relay already connected");
       return Future.value(true);
     }
 
     String? cleanUrl = Relay.cleanUrl(url);
     if (cleanUrl == null) {
-      log.warning("invalid url $url => $cleanUrl");
+      logger.w("invalid url $url => $cleanUrl");
       return false;
     }
     _channel = WebSocketChannel.connect(Uri.parse(cleanUrl));
@@ -47,7 +50,7 @@ class RelayJit extends Relay {
     // ready check
     bool r = await isReady();
     if (!r) {
-      log.warning("Relay not ready");
+      logger.w("Relay not ready");
       return false;
     }
 
@@ -57,9 +60,9 @@ class RelayJit extends Relay {
 
   _listen() {
     _channel!.stream.listen((event) {
-      log.info("Received message on $url: $event");
+      logger.i("Received message on $url: $event");
       if (event is! String) {
-        log.warning("Received message is not a string: $event");
+        logger.w("Received message is not a string: $event");
         return;
       }
       List<dynamic> eventJson = jsonDecode(event);
@@ -74,29 +77,29 @@ class RelayJit extends Relay {
           break;
         case 'OK':
           //["OK", <event_id>, <true|false>, <message>]
-          log.info("OK received: $eventJson");
-          log.severe("OK not implemented! ");
+          logger.i("OK received: $eventJson");
+          logger.f("OK not implemented! ");
           break;
         case 'EOSE':
           //["EOSE", <subscription_id>]
-          log.info("EOSE received, $eventJson");
-          log.severe("EOSE not implemented!");
+          logger.i("EOSE received, $eventJson");
+          logger.f("EOSE not implemented!");
           break;
 
         case 'CLOSED':
           //["CLOSED", <subscription_id>, <message>]
-          log.info("CLOSED received: $eventJson");
-          log.severe("EOSE not implemented!");
+          logger.i("CLOSED received: $eventJson");
+          logger.f("EOSE not implemented!");
           break;
 
         case 'NOTICE':
           //["NOTICE", <message>]
-          log.info("NOTICE received: $eventJson");
-          log.severe("NOTICE not implemented!");
+          logger.i("NOTICE received: $eventJson");
+          logger.f("NOTICE not implemented!");
           break;
 
         default:
-          log.warning("Unknown message type: ${eventJson[0]}: $eventJson");
+          logger.w("Unknown message type: ${eventJson[0]}: $eventJson");
       }
     });
   }
@@ -132,7 +135,7 @@ class RelayJit extends Relay {
 
     dynamic msgToSend = msg.toJson();
     _channel!.sink.add(msgToSend);
-    log.info("send message to $url: $msgToSend");
+    logger.i("send message to $url: $msgToSend");
   }
 
   // check if active relay subscriptions does already exist

@@ -4,13 +4,15 @@ import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_verifier.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
-import 'package:logging/logging.dart';
+import 'package:logger/logger.dart';
 
 ///
 ///! currently a partial copy of request.dart, need to discuss how to resolve this
 ///
 
-final log = Logger('NostrRequestJit');
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
 
 class NostrRequestJit {
   String id;
@@ -59,7 +61,7 @@ class NostrRequestJit {
     bool validSig = await eventVerifier.verify(event);
 
     if (!validSig) {
-      log.warning("🔑⛔ Invalid signature on event: $event");
+      logger.w("🔑⛔ Invalid signature on event: $event");
       return;
     }
     event.validSig = validSig;

@@ -8,6 +8,12 @@ import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
+import 'package:logger/logger.dart';
+import 'dart:developer' as developer;
+
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
 
 class RelayJitManager {
   List<RelayJit> connectedRelays = [];
@@ -31,12 +37,14 @@ class RelayJitManager {
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
-  handleRequest(
+  void handleRequest(
     NostrRequestJit request, {
     desiredCoverage = 2,
     closeOnEOSE = true,
     List<String> ignoreRelays = const [],
   }) {
+    logger.d("handleRequest: $request");
+
     //clean ignore relays
     List<String> cleanIgnoreRelays = _cleanRelayUrls(ignoreRelays);
 
