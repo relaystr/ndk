@@ -13,13 +13,13 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 class ClientMsg {
   String type;
   String? id;
-  List<Filter>? filters = [];
+  List<Filter> filters;
   Nip01Event? event;
 
   ClientMsg(
     this.type, {
     this.id,
-    required List<Filter> filters,
+    required this.filters,
   }) {
     // verify based on type
     if (type == ClientMsgType.EVENT) {
