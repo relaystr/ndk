@@ -103,16 +103,15 @@ class RelayJitPubkeyStrategy {
         continue;
       }
       // check if the relayCandidate is already connected
-      bool alreadyConnected = false;
-      for (var connectedRelay in connectedRelays) {
-        if (connectedRelay.url == relayCandidate.relayUrl) {
-          alreadyConnected = true;
-          break;
-        }
-      }
+      bool alreadyConnected = connectedRelays
+          .any((element) => element.url == relayCandidate.relayUrl);
 
       if (!alreadyConnected) {
         RelayJit newRelay = RelayJit(relayCandidate.relayUrl);
+
+        // add the relay to the connected relays
+        connectedRelays.add(newRelay);
+
         newRelay.connect().then((success) => {
               if (success)
                 {
@@ -123,9 +122,6 @@ class RelayJitPubkeyStrategy {
                           .toList(),
                       direction),
 
-                  // add the relay to the connected relays
-                  connectedRelays.add(newRelay),
-
                   // send out the request
                   _sendRequestToSocket(newRelay, originalRequest, [
                     _splitFilter(
@@ -134,8 +130,12 @@ class RelayJitPubkeyStrategy {
                             .map((e) => e.pubkey)
                             .toList())
                   ])
-                }
+                },
+              if (!success) {connectedRelays.remove(newRelay)}
             });
+
+        // add the relay to the connected relays
+        connectedRelays.add(newRelay);
       }
 
       if (alreadyConnected) {

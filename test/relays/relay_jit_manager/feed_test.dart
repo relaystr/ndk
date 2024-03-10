@@ -1,9 +1,13 @@
+import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/bip340_event_verifier.dart';
+import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_verifier.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,7 +20,9 @@ void main() async {
     () {
       _calculateBestRelaysForNpubContactsFeed(String npub,
           {int relayMinCountPerPubKey = 2}) async {
-        RelayJitManager relayJitManager = RelayJitManager();
+        CacheManager cacheManager = MemCacheManager();
+        RelayJitManager relayJitManager =
+            RelayJitManager(cacheManager: cacheManager);
         // wait for the relays to connect
         await Future.delayed(Duration(seconds: 2));
 
@@ -38,10 +44,96 @@ void main() async {
         );
 
         contactsRequest.responseStream.listen((event) {
-          developer.log("event: $event");
+          var contactList = ContactList.fromEvent(event);
+          cacheManager.saveContactList(contactList);
         });
 
-        await Future.delayed(Duration(seconds: 10));
+        await Future.delayed(Duration(seconds: 5));
+
+        ContactList? myContactList =
+            cacheManager.loadContactList(key.publicKey);
+        expect(myContactList, isNotNull);
+
+        // get nip65 data
+        NostrRequestJit nip65Request = NostrRequestJit.query(
+          "nip65",
+          filters: [
+            Filter(authors: myContactList!.contacts, kinds: [Nip65.KIND]),
+          ],
+          eventVerifier: eventVerifier,
+        );
+
+        relayJitManager.handleRequest(
+          nip65Request,
+          desiredCoverage: relayMinCountPerPubKey,
+        );
+
+        nip65Request.responseStream.listen((event) {
+          cacheManager.saveEvent(event);
+        });
+
+        await Future.delayed(Duration(seconds: 5));
+        var nip65Data = cacheManager.loadEvents(
+          pubKeys: myContactList.contacts,
+          kinds: [Nip65.KIND],
+        );
+
+        developer.log('##################################################');
+
+        NostrRequestJit feedRequest = NostrRequestJit.subscription(
+          "feed-test",
+          filters: [
+            Filter(
+              authors: myContactList.contacts,
+              kinds: [Nip01Event.TEXT_NODE_KIND],
+              since:
+                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
+            ),
+          ],
+          eventVerifier: eventVerifier,
+        );
+
+        relayJitManager.handleRequest(
+          feedRequest,
+          desiredCoverage: relayMinCountPerPubKey,
+        );
+
+        NostrRequestJit feedRequest2 = NostrRequestJit.subscription(
+          "feed-test2",
+          filters: [
+            Filter(
+              authors: myContactList.contacts,
+              kinds: [Nip01Event.TEXT_NODE_KIND],
+              since:
+                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
+            ),
+          ],
+          eventVerifier: eventVerifier,
+        );
+
+        relayJitManager.handleRequest(
+          feedRequest2,
+          desiredCoverage: relayMinCountPerPubKey,
+        );
+
+        List<Nip01Event> events = [];
+        feedRequest2.responseStream.listen((event) {
+          events.add(event);
+        });
+
+        await Future.delayed(Duration(seconds: 5));
+        //developer.log("FEED: ${events.toString()}");
+
+        developer.log('##################################################');
+        developer.log(
+            "Relay: {relay.url} - {relay.assignedPubkeys.length} - {relay.relayUsefulness}");
+        for (var relay in relayJitManager.connectedRelays) {
+          developer.log(
+              "Relay: ${relay.url} - ${relay.assignedPubkeys.length} - ${relay.relayUsefulness.toString()}");
+        }
+        developer
+            .log('relays count: ${relayJitManager.connectedRelays.length}');
+        developer.log('##################################################');
       }
 
       test('Leo feed best relays', () async {
