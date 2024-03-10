@@ -15,6 +15,12 @@ class RelayJitBlastAllStrategy {
     required bool closeOnEOSE,
   }) {
     for (var connectedRelay in connectedRelays) {
+      // todo: do not overwrite the subscription if it already exists
+      // link the request id to the relay
+      connectedRelay.activeSubscriptions[originalRequest.id] =
+          RelayActiveSubscription(
+              originalRequest.id, [filter], originalRequest);
+
       var clientMsg = ClientMsg(
         ClientMsgType.REQ,
         id: originalRequest.id,

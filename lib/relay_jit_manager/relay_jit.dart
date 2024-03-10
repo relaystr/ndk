@@ -68,10 +68,6 @@ class RelayJit extends Relay {
       }
       List<dynamic> eventJson = jsonDecode(event);
 
-      if (eventJson[0] == 'EVENT') {
-        return;
-      }
-
       switch (eventJson[0]) {
         case 'EVENT':
           _handleIncomingEvent(eventJson);
@@ -108,7 +104,7 @@ class RelayJit extends Relay {
   void _handleIncomingEvent(List<dynamic> eventJson) {
     Nip01Event msg = Nip01Event.fromJson(eventJson[2]);
     String msgId = eventJson[1];
-    if (activeSubscriptions.containsKey(msgId)) {
+    if (hasActiveSubscription(msgId)) {
       activeSubscriptions[msgId]!.originalRequest.onMessage(msg);
     }
   }

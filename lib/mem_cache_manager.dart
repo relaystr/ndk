@@ -10,7 +10,6 @@ import 'nips/nip01/metadata.dart';
 import 'nips/nip05/nip05.dart';
 
 class MemCacheManager implements CacheManager {
-
   Map<String, UserRelayList> userRelayLists = {};
   Map<String, RelaySet> relaySets = {};
   Map<String, ContactList> contactLists = {};
@@ -56,12 +55,13 @@ class MemCacheManager implements CacheManager {
   Nip05? loadNip05(String pubKey) {
     return nip05s[pubKey];
   }
+
   @override
   List<Nip05?> loadNip05s(List<String> pubKeys) {
     List<Nip05> result = [];
-    for(String pubKey in pubKeys) {
+    for (String pubKey in pubKeys) {
       Nip05? nip05 = nip05s[pubKey];
-      if (nip05!=null) {
+      if (nip05 != null) {
         result.add(nip05);
       }
     }
@@ -86,10 +86,10 @@ class MemCacheManager implements CacheManager {
   }
 
   /// **************************************************************************
-  
+
   @override
   RelaySet? loadRelaySet(String name, String pubKey) {
-    return relaySets[RelaySet.buildId(name,pubKey)];
+    return relaySets[RelaySet.buildId(name, pubKey)];
   }
 
   @override
@@ -164,9 +164,9 @@ class MemCacheManager implements CacheManager {
   @override
   List<Metadata?> loadMetadatas(List<String> pubKeys) {
     List<Metadata> result = [];
-    for(String pubKey in pubKeys) {
+    for (String pubKey in pubKeys) {
       Metadata? metadata = metadatas[pubKey];
-      if (metadata!=null) {
+      if (metadata != null) {
         result.add(metadata);
       }
     }
@@ -186,7 +186,8 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  List<Nip01Event> loadEvents({List<String>? pubKeys, List<int>? kinds, String? pTag}) {
+  List<Nip01Event> loadEvents(
+      {List<String>? pubKeys, List<int>? kinds, String? pTag}) {
     // TODO: implement saveEvents
     return [];
   }

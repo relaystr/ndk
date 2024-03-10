@@ -211,6 +211,7 @@ void _sendRequestToSocket(RelayJit connectedRelay,
     filters: filters,
   ));
 
+  // todo: do not overwrite the subscription if it already exists
   // link the request id to the relay
   connectedRelay.activeSubscriptions[originalRequest.id] =
       RelayActiveSubscription(originalRequest.id, filters, originalRequest);
