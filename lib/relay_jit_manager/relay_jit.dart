@@ -24,7 +24,7 @@ class RelayJit extends Relay {
   Map<String, RelayActiveSubscription> activeSubscriptions = {};
 
   /// gets incremented on every touch => search if it has a pubkey assigned
-  int touched = 0;
+  int touched = 1;
 
   /// gets incremented when there is a pubkey match
   int touchUseful = 0;
@@ -120,7 +120,14 @@ class RelayJit extends Relay {
     if (_channel == null) {
       return false;
     }
-    await _channel!.ready;
+    try {
+      // usually connection errors are thrown here
+      await _channel!.ready;
+    } catch (e) {
+      logger.e("Error on ready check: $e");
+      return false;
+    }
+
     return _channel!.closeCode == null;
   }
 
