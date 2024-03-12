@@ -45,7 +45,6 @@ class RelayManager {
     "wss://relay.damus.io",
     "wss://nos.lol",
     "wss://nostr.wine",
-    "wss://nostr-pub.wellorder.net",
     "wss://offchain.pub",
     "wss://relay.mostr.pub"
   ];
