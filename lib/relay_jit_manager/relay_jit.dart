@@ -14,8 +14,19 @@ var logger = Logger(
   printer: PrettyPrinter(methodCount: 0),
 );
 
+///
+/// url is a unique identifier for the relay
+/// therefore it gets cleaned (e.g. remove / at the end wss://myrelay.com/ => wss://myrelay.com)
+/// throws an exception if the url is invalid
+///
 class RelayJit extends Relay {
-  RelayJit(String url) : super(url);
+  RelayJit(String url) : super(url) {
+    String? cleanUrl = Relay.cleanUrl(url);
+    if (cleanUrl == null) {
+      throw Exception("invalid url $url => $cleanUrl");
+    }
+    super.url = cleanUrl;
+  }
 
   /// used to lookup if this relay is suitable for a given request
   List<RelayJitAssignedPubkey> assignedPubkeys = [];
@@ -39,13 +50,9 @@ class RelayJit extends Relay {
       logger.w("Relay already connected");
       return Future.value(true);
     }
+    tryingToConnect();
 
-    String? cleanUrl = Relay.cleanUrl(url);
-    if (cleanUrl == null) {
-      logger.w("invalid url $url => $cleanUrl");
-      return false;
-    }
-    _channel = WebSocketChannel.connect(Uri.parse(cleanUrl));
+    _channel = WebSocketChannel.connect(Uri.parse(url));
 
     // ready check
     bool r = await isReady();
