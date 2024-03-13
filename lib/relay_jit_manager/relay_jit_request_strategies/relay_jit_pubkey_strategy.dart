@@ -133,9 +133,6 @@ class RelayJitPubkeyStrategy {
                 },
               if (!success) {connectedRelays.remove(newRelay)}
             });
-
-        // add the relay to the connected relays
-        connectedRelays.add(newRelay);
       }
 
       if (alreadyConnected) {
