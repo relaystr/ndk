@@ -56,6 +56,7 @@ class RelayJitPubkeyStrategy {
           .add(CoveragePubkey(pubkey, desiredCoverage, desiredCoverage));
     }
 
+    // look for connected relays that cover the pubkey
     for (var connectedRelay in connectedRelays) {
       var coveredPubkeysForRelay = <String>[];
 
@@ -84,9 +85,46 @@ class RelayJitPubkeyStrategy {
 
     if (coveragePubkeys.isEmpty) {
       // we are done
+      // all pubkeys are covered by already connected relays
       return;
     }
 
+    _findRelaysForUnresolvedPubkeys(
+      originalRequest: originalRequest,
+      filter: filter,
+      coveragePubkeys: coveragePubkeys,
+      connectedRelays: connectedRelays,
+      cacheManager: cacheManager,
+      desiredCoverage: desiredCoverage,
+      direction: direction,
+      ignoreRelays: ignoreRelays,
+    );
+
+    Filter notFoundFilter = _splitFilter(filter,
+        coveragePubkeys.map((e) => e.pubkey).toList()); // split the filter
+    //  send out not found request to all connected relays
+    RelayJitBlastAllStrategy.handleRequest(
+      originalRequest: originalRequest,
+      filter: notFoundFilter,
+      connectedRelays: connectedRelays,
+      closeOnEOSE: closeOnEOSE,
+    );
+  }
+
+  // looks in nip65 data for not covered pubkeys
+  // the result is relay candidates
+  // connects to these candidates and sends out the request
+  // todo: _removeFullyCoveredPubkeys(coveragePubkeys);
+  static _findRelaysForUnresolvedPubkeys({
+    required NostrRequestJit originalRequest,
+    required Filter filter,
+    required List<CoveragePubkey> coveragePubkeys,
+    required List<RelayJit> connectedRelays,
+    required CacheManager cacheManager,
+    required int desiredCoverage,
+    required ReadWriteMarker direction,
+    required List<String> ignoreRelays,
+  }) {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
     List<Nip65> nip65Data = _getNip65Data(
@@ -102,7 +140,6 @@ class RelayJitPubkeyStrategy {
     );
 
     // connect to the new found relays and send out the request
-    // todo: improve and move to a function
     for (var relayCandidate in relayRanking.ranking) {
       if (relayCandidate.score <= 0) {
         continue;
@@ -174,19 +211,6 @@ class RelayJitPubkeyStrategy {
         ]);
       }
     }
-
-    Filter notFoundFilter = _splitFilter(
-        filter,
-        relayRanking.notCoveredPubkeys
-            .map((e) => e.pubkey)
-            .toList()); // split the filter
-    //  send out not found request to all connected relays
-    RelayJitBlastAllStrategy.handleRequest(
-      originalRequest: originalRequest,
-      filter: notFoundFilter,
-      connectedRelays: connectedRelays,
-      closeOnEOSE: closeOnEOSE,
-    );
   }
 
   static List<Nip65> _getNip65Data(
