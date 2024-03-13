@@ -28,7 +28,7 @@ class RelayJitManager {
     // init seed relays
     for (var seedRelay in seedRelays) {
       var relay = RelayJit(seedRelay);
-      relay.connect().then((success) => {
+      relay.connect(connectionSource: ConnectionSource.SEED).then((success) => {
             if (success) {connectedRelays.add(relay)}
           });
     }

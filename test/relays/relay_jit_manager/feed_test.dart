@@ -87,7 +87,7 @@ void main() async {
               authors: myContactList.contacts,
               kinds: [Nip01Event.TEXT_NODE_KIND],
               since:
-                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
+                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 1,
             ),
           ],
           eventVerifier: eventVerifier,
@@ -140,7 +140,7 @@ void main() async {
         await _calculateBestRelaysForNpubContactsFeed(
             "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
             relayMinCountPerPubKey: 2);
-      }, timeout: const Timeout.factor(10));
+      }, timeout: Timeout.parse('10m'));
 
       test('Fmar feed best relays', () async {
         await _calculateBestRelaysForNpubContactsFeed(

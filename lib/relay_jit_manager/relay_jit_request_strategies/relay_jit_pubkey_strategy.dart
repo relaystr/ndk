@@ -117,46 +117,48 @@ class RelayJitPubkeyStrategy {
         // add the relay to the connected relays
         connectedRelays.add(newRelay);
 
-        newRelay.connect().then((success) => {
-              if (success)
-                {
-                  // add the pubkeys to the relay
-                  newRelay.addPubkeysToAssignedPubkeys(
-                      relayCandidate.coveredPubkeys
-                          .map((e) => e.pubkey)
-                          .toList(),
-                      direction),
+        newRelay
+            .connect(connectionSource: ConnectionSource.PUBKEY_STRATEGY)
+            .then((success) => {
+                  if (success)
+                    {
+                      // add the pubkeys to the relay
+                      newRelay.addPubkeysToAssignedPubkeys(
+                          relayCandidate.coveredPubkeys
+                              .map((e) => e.pubkey)
+                              .toList(),
+                          direction),
 
-                  // send out the request
-                  _sendRequestToSocket(newRelay, originalRequest, [
-                    _splitFilter(
-                        filter,
-                        relayCandidate.coveredPubkeys
-                            .map((e) => e.pubkey)
-                            .toList())
-                  ])
-                },
-              if (!success)
-                {
-                  connectedRelays.remove(newRelay),
-                  // todo: reconnection handling
-                  // logger.w(
-                  //     "Failed to connect to relay: ${newRelay.url} | retrying..."),
-                  // handleRequest(
-                  //     originalRequest: originalRequest,
-                  //     filter: _splitFilter(
-                  //         filter,
-                  //         relayCandidate.coveredPubkeys
-                  //             .map((e) => e.pubkey)
-                  //             .toList()),
-                  //     connectedRelays: connectedRelays,
-                  //     cacheManager: cacheManager,
-                  //     desiredCoverage: desiredCoverage,
-                  //     closeOnEOSE: closeOnEOSE,
-                  //     direction: direction,
-                  //     ignoreRelays: [...ignoreRelays, relayCandidate.relayUrl])
-                }
-            });
+                      // send out the request
+                      _sendRequestToSocket(newRelay, originalRequest, [
+                        _splitFilter(
+                            filter,
+                            relayCandidate.coveredPubkeys
+                                .map((e) => e.pubkey)
+                                .toList())
+                      ])
+                    },
+                  if (!success)
+                    {
+                      connectedRelays.remove(newRelay),
+                      // todo: reconnection handling
+                      // logger.w(
+                      //     "Failed to connect to relay: ${newRelay.url} | retrying..."),
+                      // handleRequest(
+                      //     originalRequest: originalRequest,
+                      //     filter: _splitFilter(
+                      //         filter,
+                      //         relayCandidate.coveredPubkeys
+                      //             .map((e) => e.pubkey)
+                      //             .toList()),
+                      //     connectedRelays: connectedRelays,
+                      //     cacheManager: cacheManager,
+                      //     desiredCoverage: desiredCoverage,
+                      //     closeOnEOSE: closeOnEOSE,
+                      //     direction: direction,
+                      //     ignoreRelays: [...ignoreRelays, relayCandidate.relayUrl])
+                    }
+                });
       }
 
       if (alreadyConnected) {

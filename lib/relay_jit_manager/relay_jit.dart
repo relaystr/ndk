@@ -44,12 +44,15 @@ class RelayJit extends Relay {
 
   WebSocketChannel? _channel;
 
+  ConnectionSource connectionSource = ConnectionSource.UNKNOWN;
+
   /// returns true if the connection was successful
-  Future<bool> connect() async {
+  Future<bool> connect({required ConnectionSource connectionSource}) async {
     if (_channel != null) {
       logger.w("Relay already connected");
       return Future.value(true);
     }
+    this.connectionSource = connectionSource;
     tryingToConnect();
 
     _channel = WebSocketChannel.connect(Uri.parse(url));
@@ -58,11 +61,13 @@ class RelayJit extends Relay {
     bool r = await isReady();
     if (!r) {
       logger.w("Relay not ready");
+      failedToConnect();
       return false;
     }
 
     _listen();
     logger.i("Relay connected: $url");
+    succeededToConnect();
     return true;
   }
 
@@ -176,4 +181,10 @@ class RelayActiveSubscription {
   List<Filter> filters; // list of split filters
 
   RelayActiveSubscription(this.id, this.filters, this.originalRequest);
+}
+
+enum ConnectionSource {
+  UNKNOWN,
+  SEED,
+  PUBKEY_STRATEGY,
 }
