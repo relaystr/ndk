@@ -9,6 +9,11 @@ import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
+import 'package:logger/logger.dart';
+
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
 
 /// Strategy Description:
 ///
@@ -131,7 +136,26 @@ class RelayJitPubkeyStrategy {
                             .toList())
                   ])
                 },
-              if (!success) {connectedRelays.remove(newRelay)}
+              if (!success)
+                {
+                  connectedRelays.remove(newRelay),
+                  // todo: reconnection handling
+                  // logger.w(
+                  //     "Failed to connect to relay: ${newRelay.url} | retrying..."),
+                  // handleRequest(
+                  //     originalRequest: originalRequest,
+                  //     filter: _splitFilter(
+                  //         filter,
+                  //         relayCandidate.coveredPubkeys
+                  //             .map((e) => e.pubkey)
+                  //             .toList()),
+                  //     connectedRelays: connectedRelays,
+                  //     cacheManager: cacheManager,
+                  //     desiredCoverage: desiredCoverage,
+                  //     closeOnEOSE: closeOnEOSE,
+                  //     direction: direction,
+                  //     ignoreRelays: [...ignoreRelays, relayCandidate.relayUrl])
+                }
             });
       }
 
