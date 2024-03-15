@@ -34,9 +34,10 @@ void main() async {
   Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-  group('connect to relay', () {
+  group('connection tests', () {
+    MockRelay relay1 = MockRelay(name: "relay 1");
+    MockRelay relay2 = MockRelay(name: "relay 2");
     test('Connect to relay', () async {
-      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer();
 
       RelayJit relayJit = RelayJit(relay1.url);
@@ -47,6 +48,14 @@ void main() async {
 
       //await Future.delayed(Duration(seconds: 5));
       await relay1.stopServer();
+    });
+
+    test('Try to connect to dead relay', () async {
+      RelayJit relayJit = RelayJit(relay2.url);
+      var result =
+          await relayJit.connect(connectionSource: ConnectionSource.UNKNOWN);
+
+      expect(result, false);
     });
   });
 }
