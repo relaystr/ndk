@@ -29,7 +29,10 @@ class RelayJitManager {
     CacheManager? cacheManager,
   }) {
     this.cacheManager = cacheManager ?? MemCacheManager();
+    _connectSeedRelays(seedRelays);
+  }
 
+  _connectSeedRelays(List<String> seedRelays) async {
     List<Future> futures = [];
     // init seed relays
     for (var seedRelay in seedRelays) {
