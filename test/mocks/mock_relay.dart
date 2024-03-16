@@ -22,9 +22,18 @@ class MockRelay {
 
   String get url => "ws://localhost:$port";
 
-  MockRelay({required this.name, this.nip65s, this.signEvents = true}) {
-    port = startPort;
-    startPort++;
+  MockRelay({
+    required this.name,
+    this.nip65s,
+    this.signEvents = true,
+    int? explicitPort,
+  }) {
+    if (explicitPort != null) {
+      port = explicitPort;
+    } else {
+      port = startPort;
+      startPort++;
+    }
   }
 
   Future<void> startServer(

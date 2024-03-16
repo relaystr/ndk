@@ -44,13 +44,13 @@ void main() async {
   Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-  MockRelay relay1 = MockRelay(name: "relay 1");
-  MockRelay relay2 = MockRelay(name: "relay 2");
+  MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5001);
+  MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 5002);
 
-  MockRelay relay21 = MockRelay(name: "relay 1");
-  MockRelay relay22 = MockRelay(name: "relay 2");
-  MockRelay relay23 = MockRelay(name: "relay 3");
-  MockRelay relay24 = MockRelay(name: "relay 4");
+  MockRelay relay21 = MockRelay(name: "relay 1", explicitPort: 5003);
+  MockRelay relay22 = MockRelay(name: "relay 2", explicitPort: 5004);
+  MockRelay relay23 = MockRelay(name: "relay 3", explicitPort: 5005);
+  MockRelay relay24 = MockRelay(name: "relay 4", explicitPort: 5006);
 
   group('connection tests', () {
     test('Connect to relay', () async {
