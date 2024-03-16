@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
@@ -19,19 +21,30 @@ class RelayJitManager {
   List<RelayJit> connectedRelays = [];
   late CacheManager cacheManager;
 
+  final Completer<void> _seedRelaysCompleter = Completer<void>();
+  get seedRelaysConnected => _seedRelaysCompleter.future;
+
   RelayJitManager({
     List<String> seedRelays = RelayJitConfig.SEED_RELAYS,
     CacheManager? cacheManager,
   }) {
     this.cacheManager = cacheManager ?? MemCacheManager();
 
+    List<Future> futures = [];
     // init seed relays
     for (var seedRelay in seedRelays) {
       var relay = RelayJit(seedRelay);
-      relay.connect(connectionSource: ConnectionSource.SEED).then((success) => {
-            if (success) {connectedRelays.add(relay)}
-          });
+      var future = relay
+          .connect(connectionSource: ConnectionSource.SEED)
+          .then((success) => {
+                if (success) {connectedRelays.add(relay)}
+              });
+      futures.add(future);
     }
+    // wait for all futures to complete
+    Future.wait(futures).whenComplete(() {
+      _seedRelaysCompleter.complete();
+    });
   }
 
   /// If you request anything from the nostr network put it here and
@@ -42,7 +55,9 @@ class RelayJitManager {
     desiredCoverage = 2,
     closeOnEOSE = true,
     List<String> ignoreRelays = const [],
-  }) {
+  }) async {
+    await seedRelaysConnected;
+
     //clean ignore relays
     List<String> cleanIgnoreRelays = _cleanRelayUrls(ignoreRelays);
 
@@ -99,12 +114,14 @@ class RelayJitManager {
     }
   }
 
-  handleEventPublish(Nip01Event nostrEvent) {
+  handleEventPublish(Nip01Event nostrEvent) async {
+    await seedRelaysConnected;
     throw UnimplementedError();
   }
 
   // close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
-  handleCloseSubscription(String id) {
+  handleCloseSubscription(String id) async {
+    await seedRelaysConnected;
     throw UnimplementedError();
   }
 

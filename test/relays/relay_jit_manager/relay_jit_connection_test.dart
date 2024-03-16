@@ -135,11 +135,10 @@ void main() async {
       ]);
     }
 
-    test('query events from key that writes only on one relay', () async {
+    test('query events from one seed relay', () async {
       await startServers();
 
       CacheManager cacheManager = MemCacheManager();
-      //todo: relay manager seed relays rdy check
       RelayJitManager manager = RelayJitManager(
         seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
         cacheManager: cacheManager,
