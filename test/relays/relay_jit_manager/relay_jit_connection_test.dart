@@ -200,7 +200,7 @@ void main() async {
         log(event.toString());
       });
 
-      // todo: expect
+      // todo: expect, debug filter conjunction
 
       await Future.delayed(const Duration(seconds: 5));
     });

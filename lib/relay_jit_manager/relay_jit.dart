@@ -11,7 +11,7 @@ import 'package:logger/logger.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 var logger = Logger(
-  printer: PrettyPrinter(methodCount: 0),
+  printer: PrettyPrinter(methodCount: 0, printEmojis: false),
 );
 
 ///
@@ -66,14 +66,14 @@ class RelayJit extends Relay {
     }
 
     _listen();
-    logger.i("Relay connected: $url");
+    logger.i("🔗 Relay connected: $url");
     succeededToConnect();
     return true;
   }
 
   _listen() {
     _channel!.stream.listen((event) {
-      logger.i("Received message on $url: $event");
+      logger.i("📥 Received message on $url: $event");
       if (event is! String) {
         logger.w("Received message is not a string: $event");
         return;
@@ -91,7 +91,7 @@ class RelayJit extends Relay {
           break;
         case 'EOSE':
           //["EOSE", <subscription_id>]
-          logger.i("EOSE received, $eventJson");
+          logger.i("⏹ EOSE received, $eventJson");
           logger.f("EOSE not implemented!");
           break;
 
@@ -152,7 +152,7 @@ class RelayJit extends Relay {
     dynamic msgToSend = msg.toJson();
     String encodedMsg = jsonEncode(msgToSend);
     _channel!.sink.add(encodedMsg);
-    logger.i("send message to $url: $msgToSend");
+    logger.i("🔼 send message to $url: $msgToSend");
   }
 
   // check if active relay subscriptions does already exist
