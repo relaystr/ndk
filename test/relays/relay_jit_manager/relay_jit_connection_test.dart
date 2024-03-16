@@ -13,6 +13,7 @@ import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
+import 'package:dart_ndk/request.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
@@ -154,19 +155,54 @@ void main() async {
           ]);
       manager.handleRequest(request);
 
+      //todo: implement EOSE
       request.responseStream.listen((event) {
+        expectAsync1((event) {
+          expect(event, key4TextNotes[key4]);
+        })(event);
+      });
+
+      await Future.delayed(const Duration(seconds: 1));
+
+      await stopServers();
+    });
+
+    test('query with inbox/outbox', () async {
+      await startServers();
+      CacheManager cacheManager = MemCacheManager();
+      RelayJitManager manager = RelayJitManager(
+        seedRelays: [],
+        cacheManager: cacheManager,
+      );
+      EventVerifier eventVerifier = MockEventVerifier();
+
+      // save nip65 data
+      await cacheManager
+          .saveEvents(nip65s.values.map((e) => e.toEvent()).toList());
+
+      NostrRequestJit myquery = NostrRequestJit.query(
+        "id",
+        eventVerifier: eventVerifier,
+        filters: [
+          Filter(kinds: [
+            Nip01Event.TEXT_NODE_KIND
+          ], authors: [
+            key1.publicKey,
+            key2.publicKey,
+            key3.publicKey,
+            key4.publicKey,
+          ]),
+        ],
+      );
+      manager.handleRequest(myquery, closeOnEOSE: true, desiredCoverage: 1);
+
+      myquery.responseStream.listen((event) {
         log(event.toString());
       });
 
-      //await for (final event in query.take(4)) {
-      //  expect(event.sources, [relay4.url]);
-      //  expect(event, key4TextNotes[key4]);
-      //  // print(event);
-      //}
+      // todo: expect
 
       await Future.delayed(const Duration(seconds: 5));
-
-      await stopServers();
     });
   });
 }
