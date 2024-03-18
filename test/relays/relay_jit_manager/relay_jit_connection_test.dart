@@ -194,15 +194,24 @@ void main() async {
           ]),
         ],
       );
-      manager.handleRequest(myquery, closeOnEOSE: true, desiredCoverage: 1);
+      manager.handleRequest(
+        myquery,
+        closeOnEOSE: true,
+        desiredCoverage: 1,
+      );
 
+      List<Nip01Event> responses = [];
       myquery.responseStream.listen((event) {
-        log(event.toString());
+        responses.add(event);
       });
+      await Future.delayed(const Duration(seconds: 2));
 
-      // todo: expect, debug filter conjunction
-
-      await Future.delayed(const Duration(seconds: 5));
+      expect(responses.length, 4);
+      // expect that all responses are there
+      expect(responses.contains(key1TextNotes[key1]), true);
+      expect(responses.contains(key2TextNotes[key2]), true);
+      expect(responses.contains(key3TextNotes[key3]), true);
+      expect(responses.contains(key4TextNotes[key4]), true);
     });
   });
 }
