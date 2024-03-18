@@ -11,7 +11,12 @@ import 'package:logger/logger.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 var logger = Logger(
-  printer: PrettyPrinter(methodCount: 0, printEmojis: false),
+  printer: PrettyPrinter(
+    methodCount: 0,
+    printEmojis: false,
+    printTime: false,
+    //noBoxingByDefault: true,
+  ),
 );
 
 ///

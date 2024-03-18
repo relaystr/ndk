@@ -2,6 +2,7 @@ import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/nips/nip65/relay_ranking.dart';
@@ -100,6 +101,13 @@ class RelayJitPubkeyStrategy {
       ignoreRelays: ignoreRelays,
     );
 
+    _removeFullyCoveredPubkeys(coveragePubkeys);
+
+    if (coveragePubkeys.isEmpty) {
+      // we are done
+      return;
+    }
+
     Filter notFoundFilter = _splitFilter(filter,
         coveragePubkeys.map((e) => e.pubkey).toList()); // split the filter
     //  send out not found request to all connected relays
@@ -114,8 +122,7 @@ class RelayJitPubkeyStrategy {
   // looks in nip65 data for not covered pubkeys
   // the result is relay candidates
   // connects to these candidates and sends out the request
-  // todo: _removeFullyCoveredPubkeys(coveragePubkeys);
-  static _findRelaysForUnresolvedPubkeys({
+  static void _findRelaysForUnresolvedPubkeys({
     required NostrRequestJit originalRequest,
     required Filter filter,
     required List<CoveragePubkey> coveragePubkeys,
@@ -138,6 +145,10 @@ class RelayJitPubkeyStrategy {
       boostRelays: connectedRelays.map((e) => e.url).toList(),
       ignoreRelays: ignoreRelays,
     );
+
+    // update coveragePubkeys to the not found ones
+    // this is need so early on so the not found pubkeys can be blasted to all connected relays
+    coveragePubkeys = relayRanking.notCoveredPubkeys;
 
     // connect to the new found relays and send out the request
     for (var relayCandidate in relayRanking.ranking) {
