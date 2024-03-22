@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/logger/logger.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
@@ -10,14 +11,10 @@ import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
-import 'package:logger/logger.dart';
+
 import 'dart:developer' as developer;
 
-var logger = Logger(
-  printer: PrettyPrinter(),
-);
-
-class RelayJitManager {
+class RelayJitManager with Logger {
   List<RelayJit> connectedRelays = [];
   late CacheManager cacheManager;
 
@@ -123,6 +120,7 @@ class RelayJitManager {
   }
 
   // close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
+  //todo: this could be moved to the request object
   handleCloseSubscription(String id) async {
     await seedRelaysConnected;
     throw UnimplementedError();

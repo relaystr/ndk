@@ -1,4 +1,5 @@
 import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/logger/logger.dart';
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
@@ -10,11 +11,6 @@ import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
-import 'package:logger/logger.dart';
-
-var logger = Logger(
-  printer: PrettyPrinter(),
-);
 
 /// Strategy Description:
 ///
@@ -33,18 +29,19 @@ var logger = Logger(
 /// 7.) case=> good relay found add to connected, and send out the request
 ///
 
-class RelayJitPubkeyStrategy {
-  static handleRequest(
-      {required NostrRequestJit originalRequest,
-      required Filter filter,
-      required List<RelayJit> connectedRelays,
+class RelayJitPubkeyStrategy with Logger {
+  static handleRequest({
+    required NostrRequestJit originalRequest,
+    required Filter filter,
+    required List<RelayJit> connectedRelays,
 
-      /// used to get the nip65 data if its necessary to look for not covered pubkeys
-      required CacheManager cacheManager,
-      required int desiredCoverage,
-      required bool closeOnEOSE,
-      required ReadWriteMarker direction,
-      required List<String> ignoreRelays}) {
+    /// used to get the nip65 data if its necessary to look for not covered pubkeys
+    required CacheManager cacheManager,
+    required int desiredCoverage,
+    required bool closeOnEOSE,
+    required ReadWriteMarker direction,
+    required List<String> ignoreRelays,
+  }) {
     List<String> combindedPubkeys = [
       ...?filter.authors,
       ...?filter.pTags
@@ -99,6 +96,7 @@ class RelayJitPubkeyStrategy {
       desiredCoverage: desiredCoverage,
       direction: direction,
       ignoreRelays: ignoreRelays,
+      closeOnEOSE: closeOnEOSE,
     );
 
     _removeFullyCoveredPubkeys(coveragePubkeys);
@@ -131,6 +129,7 @@ class RelayJitPubkeyStrategy {
     required int desiredCoverage,
     required ReadWriteMarker direction,
     required List<String> ignoreRelays,
+    required bool closeOnEOSE,
   }) {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
@@ -188,23 +187,18 @@ class RelayJitPubkeyStrategy {
                     },
                   if (!success)
                     {
-                      connectedRelays.remove(newRelay),
-                      // todo: reconnection handling
-                      // logger.w(
-                      //     "Failed to connect to relay: ${newRelay.url} | retrying..."),
-                      // handleRequest(
-                      //     originalRequest: originalRequest,
-                      //     filter: _splitFilter(
-                      //         filter,
-                      //         relayCandidate.coveredPubkeys
-                      //             .map((e) => e.pubkey)
-                      //             .toList()),
-                      //     connectedRelays: connectedRelays,
-                      //     cacheManager: cacheManager,
-                      //     desiredCoverage: desiredCoverage,
-                      //     closeOnEOSE: closeOnEOSE,
-                      //     direction: direction,
-                      //     ignoreRelays: [...ignoreRelays, relayCandidate.relayUrl])
+                      Logger.log.w(
+                          "Could not connect to relay: ${newRelay.url} - errorHandling"),
+                      _connectionErrorHandling(
+                          errorRelay: newRelay,
+                          originalRequest: originalRequest,
+                          filter: filter,
+                          connectedRelays: connectedRelays,
+                          cacheManager: cacheManager,
+                          desiredCoverage: desiredCoverage,
+                          direction: direction,
+                          ignoreRelays: ignoreRelays,
+                          closeOnEOSE: closeOnEOSE),
                     }
                 });
       }
@@ -234,6 +228,41 @@ class RelayJitPubkeyStrategy {
       nip65Data.add(Nip65.fromEvent(event));
     }
     return nip65Data;
+  }
+
+  // adds the relay to ignoreRelays and retries the request for assigned pubkeys to this relay
+  static void _connectionErrorHandling({
+    required RelayJit errorRelay,
+    required NostrRequestJit originalRequest,
+    required Filter filter,
+    required List<RelayJit> connectedRelays,
+    required CacheManager cacheManager,
+    required int desiredCoverage,
+    required bool closeOnEOSE,
+    required ReadWriteMarker direction,
+    required List<String> ignoreRelays,
+  }) {
+    // cleanup
+    connectedRelays.remove(errorRelay);
+
+    // add to ignoreRelays
+    ignoreRelays.add(errorRelay.url);
+
+    List<CoveragePubkey> unresolvedPubkeysOfRelay = errorRelay.assignedPubkeys
+        .map((e) => CoveragePubkey(e.pubkey, 1, 1))
+        .toList();
+
+    _findRelaysForUnresolvedPubkeys(
+      originalRequest: originalRequest,
+      filter: filter,
+      coveragePubkeys: unresolvedPubkeysOfRelay,
+      connectedRelays: connectedRelays,
+      cacheManager: cacheManager,
+      desiredCoverage: desiredCoverage,
+      direction: direction,
+      ignoreRelays: ignoreRelays,
+      closeOnEOSE: closeOnEOSE,
+    );
   }
 }
 

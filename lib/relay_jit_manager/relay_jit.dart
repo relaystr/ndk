@@ -1,30 +1,21 @@
 import 'dart:convert';
 
+import 'package:dart_ndk/logger/logger.dart';
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
-import 'package:logger/logger.dart';
 
 import 'package:web_socket_channel/web_socket_channel.dart';
-
-var logger = Logger(
-  printer: PrettyPrinter(
-    methodCount: 0,
-    printEmojis: false,
-    printTime: false,
-    //noBoxingByDefault: true,
-  ),
-);
 
 ///
 /// url is a unique identifier for the relay
 /// therefore it gets cleaned (e.g. remove / at the end wss://myrelay.com/ => wss://myrelay.com)
 /// throws an exception if the url is invalid
 ///
-class RelayJit extends Relay {
+class RelayJit extends Relay with Logger {
   RelayJit(String url) : super(url) {
     String? cleanUrl = Relay.cleanUrl(url);
     if (cleanUrl == null) {
@@ -54,7 +45,7 @@ class RelayJit extends Relay {
   /// returns true if the connection was successful
   Future<bool> connect({required ConnectionSource connectionSource}) async {
     if (_channel != null) {
-      logger.w("Relay already connected");
+      Logger.log.w("Relay already connected");
       return Future.value(true);
     }
     this.connectionSource = connectionSource;
@@ -65,22 +56,22 @@ class RelayJit extends Relay {
     // ready check
     bool r = await isReady();
     if (!r) {
-      logger.w("Relay not ready");
+      Logger.log.w("Relay not ready");
       failedToConnect();
       return false;
     }
 
     _listen();
-    logger.i("🔗 Relay connected: $url");
+    Logger.log.i("🔗 Relay connected: $url");
     succeededToConnect();
     return true;
   }
 
   _listen() {
     _channel!.stream.listen((event) {
-      logger.i("📥 Received message on $url: $event");
+      Logger.log.i("📥 Received message on $url: $event");
       if (event is! String) {
-        logger.w("Received message is not a string: $event");
+        Logger.log.w("Received message is not a string: $event");
         return;
       }
       List<dynamic> eventJson = jsonDecode(event);
@@ -91,29 +82,29 @@ class RelayJit extends Relay {
           break;
         case 'OK':
           //["OK", <event_id>, <true|false>, <message>]
-          logger.i("OK received: $eventJson");
-          logger.f("OK not implemented! ");
+          Logger.log.i("OK received: $eventJson");
+          Logger.log.f("OK not implemented! ");
           break;
         case 'EOSE':
           //["EOSE", <subscription_id>]
-          logger.i("⏹ EOSE received, $eventJson");
-          logger.f("EOSE not implemented!");
+          Logger.log.i("⏹ EOSE received, $eventJson");
+          Logger.log.f("EOSE not implemented!");
           break;
 
         case 'CLOSED':
           //["CLOSED", <subscription_id>, <message>]
-          logger.i("CLOSED received: $eventJson");
-          logger.f("EOSE not implemented!");
+          Logger.log.i("CLOSED received: $eventJson");
+          Logger.log.f("EOSE not implemented!");
           break;
 
         case 'NOTICE':
           //["NOTICE", <message>]
-          logger.i("NOTICE received: $eventJson");
-          logger.f("NOTICE not implemented!");
+          Logger.log.i("NOTICE received: $eventJson");
+          Logger.log.f("NOTICE not implemented!");
           break;
 
         default:
-          logger.w("Unknown message type: ${eventJson[0]}: $eventJson");
+          Logger.log.w("Unknown message type: ${eventJson[0]}: $eventJson");
       }
     });
   }
@@ -141,7 +132,7 @@ class RelayJit extends Relay {
       // usually connection errors are thrown here
       await _channel!.ready;
     } catch (e) {
-      logger.e("Error on ready check: $e");
+      Logger.log.e("Error on ready check: $e");
       return false;
     }
 
@@ -157,7 +148,7 @@ class RelayJit extends Relay {
     dynamic msgToSend = msg.toJson();
     String encodedMsg = jsonEncode(msgToSend);
     _channel!.sink.add(encodedMsg);
-    logger.i("🔼 send message to $url: $msgToSend");
+    Logger.log.i("🔼 send message to $url: $msgToSend");
   }
 
   // check if active relay subscriptions does already exist

@@ -1,20 +1,16 @@
 import 'dart:async';
 
+import 'package:dart_ndk/logger/logger.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_verifier.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
-import 'package:logger/logger.dart';
 
 ///
 ///! currently a partial copy of request.dart, need to discuss how to resolve this
 ///
 
-var logger = Logger(
-  printer: PrettyPrinter(),
-);
-
-class NostrRequestJit {
+class NostrRequestJit with Logger {
   String id;
   EventVerifier eventVerifier;
 
@@ -61,7 +57,7 @@ class NostrRequestJit {
     bool validSig = await eventVerifier.verify(event);
 
     if (!validSig) {
-      logger.w("🔑⛔ Invalid signature on event: $event");
+      Logger.log.w("🔑⛔ Invalid signature on event: $event");
       return;
     }
     event.validSig = validSig;
