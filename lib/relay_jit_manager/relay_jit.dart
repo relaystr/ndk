@@ -7,6 +7,7 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
+import 'package:http/http.dart';
 
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -88,7 +89,7 @@ class RelayJit extends Relay with Logger {
         case 'EOSE':
           //["EOSE", <subscription_id>]
           Logger.log.t("⏹ EOSE received, $eventJson");
-          Logger.log.f("EOSE not implemented!");
+          _handleIncomingEose(eventJson);
           break;
 
         case 'CLOSED':
@@ -117,6 +118,28 @@ class RelayJit extends Relay with Logger {
     }
   }
 
+  void _handleIncomingEose(List<dynamic> eventJson) {
+    String eoseId = eventJson[1];
+    if (!hasActiveSubscription(eoseId)) {
+      return;
+    }
+    RelayActiveSubscription sub = activeSubscriptions[eoseId]!;
+    if (!sub.originalRequest.closeOnEOSE) {
+      return;
+    }
+
+    closeSubscription(eoseId);
+  }
+
+  Future<void> closeSubscription(String id) async {
+    if (!hasActiveSubscription(id)) {
+      return;
+    }
+    activeSubscriptions.remove(id);
+    ClientMsg closeMsg = ClientMsg("CLOSE", id: id, filters: []);
+    await send(closeMsg);
+  }
+
   Future<dynamic> disconnect() {
     if (_channel == null) {
       return Future.value(false);
@@ -139,7 +162,7 @@ class RelayJit extends Relay with Logger {
     return _channel!.closeCode == null;
   }
 
-  send(ClientMsg msg) async {
+  Future<void> send(ClientMsg msg) async {
     bool rdy = await isReady();
     if (!rdy) {
       throw Exception("Websocket not ready, unable to send message");

@@ -44,6 +44,7 @@ class NostrRequestJit with Logger {
     this.timeout = RelayJitConfig.DEFAULT_STREAM_IDLE_TIMEOUT,
     this.onTimeout,
   });
+
   NostrRequestJit.subscription(
     this.id, {
     required this.eventVerifier,
