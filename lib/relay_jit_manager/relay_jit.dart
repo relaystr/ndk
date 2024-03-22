@@ -62,14 +62,14 @@ class RelayJit extends Relay with Logger {
     }
 
     _listen();
-    Logger.log.i("🔗 Relay connected: $url");
+    Logger.log.d("🔗 Relay connected: $url");
     succeededToConnect();
     return true;
   }
 
   _listen() {
     _channel!.stream.listen((event) {
-      Logger.log.i("📥 Received message on $url: $event");
+      Logger.log.t("📥 Received message on $url: $event");
       if (event is! String) {
         Logger.log.w("Received message is not a string: $event");
         return;
@@ -87,14 +87,14 @@ class RelayJit extends Relay with Logger {
           break;
         case 'EOSE':
           //["EOSE", <subscription_id>]
-          Logger.log.i("⏹ EOSE received, $eventJson");
+          Logger.log.t("⏹ EOSE received, $eventJson");
           Logger.log.f("EOSE not implemented!");
           break;
 
         case 'CLOSED':
           //["CLOSED", <subscription_id>, <message>]
           Logger.log.i("CLOSED received: $eventJson");
-          Logger.log.f("EOSE not implemented!");
+          Logger.log.f("CLOSED not implemented!");
           break;
 
         case 'NOTICE':
@@ -148,7 +148,7 @@ class RelayJit extends Relay with Logger {
     dynamic msgToSend = msg.toJson();
     String encodedMsg = jsonEncode(msgToSend);
     _channel!.sink.add(encodedMsg);
-    Logger.log.i("🔼 send message to $url: $msgToSend");
+    Logger.log.t("🔼 send message to $url: $msgToSend");
   }
 
   // check if active relay subscriptions does already exist

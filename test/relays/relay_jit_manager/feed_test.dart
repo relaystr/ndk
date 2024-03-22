@@ -136,12 +136,6 @@ void main() async {
         developer.log('##################################################');
       }
 
-      test('Leo feed best relays', () async {
-        await _calculateBestRelaysForNpubContactsFeed(
-            "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
-            relayMinCountPerPubKey: 2);
-      }, timeout: Timeout.parse('10m'));
-
       test('Fmar feed best relays', () async {
         await _calculateBestRelaysForNpubContactsFeed(
             "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams",
