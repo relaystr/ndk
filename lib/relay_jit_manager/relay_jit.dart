@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_ndk/logger/logger.dart';
@@ -7,7 +8,6 @@ import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
-import 'package:http/http.dart';
 
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -124,6 +124,7 @@ class RelayJit extends Relay with Logger {
       return;
     }
     RelayActiveSubscription sub = activeSubscriptions[eoseId]!;
+    sub.onEose();
     if (!sub.originalRequest.closeOnEOSE) {
       return;
     }
@@ -198,6 +199,16 @@ class RelayActiveSubscription {
   final String id; // id of the original request
   final NostrRequestJit originalRequest;
   List<Filter> filters; // list of split filters
+
+  bool get closeOnEose => originalRequest.closeOnEOSE;
+  final Completer<void> _eoseReceived = Completer();
+
+  /// completes when EOSE is received
+  Future<void> get eoseReceived => _eoseReceived.future;
+
+  void onEose() {
+    _eoseReceived.complete();
+  }
 
   RelayActiveSubscription(this.id, this.filters, this.originalRequest);
 }
