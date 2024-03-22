@@ -1,21 +1,23 @@
-import 'package:logger/logger.dart' as my_logger;
+import 'package:logger/logger.dart' as lib_logger;
 
 mixin class Logger {
-  static var myPrinter = my_logger.PrettyPrinter(
+  static const _defaultLogLevel = lib_logger.Level.debug;
+
+  static final _myPrinter = lib_logger.PrettyPrinter(
     methodCount: 0,
     printEmojis: false,
     printTime: false,
     //noBoxingByDefault: true,
   );
 
-  static my_logger.Logger log = my_logger.Logger(
-    printer: myPrinter,
-    level: my_logger.Level.debug,
+  static lib_logger.Logger log = lib_logger.Logger(
+    printer: _myPrinter,
+    level: _defaultLogLevel,
   );
 
-  static setLogLevel(my_logger.Level level) {
-    log = my_logger.Logger(
-      printer: myPrinter,
+  static setLogLevel(lib_logger.Level level) {
+    log = lib_logger.Logger(
+      printer: _myPrinter,
       level: level,
     );
   }
