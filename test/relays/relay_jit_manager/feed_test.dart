@@ -30,17 +30,15 @@ void main() async {
 
         EventVerifier eventVerifier = Bip340EventVerifier();
 
-        NostrRequestJit contactsRequest = NostrRequestJit.query(
-          "contacts",
-          filters: [
-            Filter(authors: [key.publicKey], kinds: [ContactList.KIND]),
-          ],
-          eventVerifier: eventVerifier,
-        );
+        NostrRequestJit contactsRequest = NostrRequestJit.query("contacts",
+            filters: [
+              Filter(authors: [key.publicKey], kinds: [ContactList.KIND]),
+            ],
+            eventVerifier: eventVerifier,
+            desiredCoverage: relayMinCountPerPubKey);
 
         relayJitManager.handleRequest(
           contactsRequest,
-          desiredCoverage: relayMinCountPerPubKey,
         );
 
         contactsRequest.responseStream.listen((event) {
@@ -55,17 +53,15 @@ void main() async {
         expect(myContactList, isNotNull);
 
         // get nip65 data
-        NostrRequestJit nip65Request = NostrRequestJit.query(
-          "nip65",
-          filters: [
-            Filter(authors: myContactList!.contacts, kinds: [Nip65.KIND]),
-          ],
-          eventVerifier: eventVerifier,
-        );
+        NostrRequestJit nip65Request = NostrRequestJit.query("nip65",
+            filters: [
+              Filter(authors: myContactList!.contacts, kinds: [Nip65.KIND]),
+            ],
+            eventVerifier: eventVerifier,
+            desiredCoverage: relayMinCountPerPubKey);
 
         relayJitManager.handleRequest(
           nip65Request,
-          desiredCoverage: relayMinCountPerPubKey,
         );
 
         nip65Request.responseStream.listen((event) {
@@ -80,40 +76,37 @@ void main() async {
 
         developer.log('##################################################');
 
-        NostrRequestJit feedRequest = NostrRequestJit.subscription(
-          "feed-test",
-          filters: [
-            Filter(
-              authors: myContactList.contacts,
-              kinds: [Nip01Event.TEXT_NODE_KIND],
-              since:
-                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 1,
-            ),
-          ],
-          eventVerifier: eventVerifier,
-        );
+        NostrRequestJit feedRequest = NostrRequestJit.subscription("feed-test",
+            filters: [
+              Filter(
+                authors: myContactList.contacts,
+                kinds: [Nip01Event.TEXT_NODE_KIND],
+                since: (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
+                    60 * 60 * 1,
+              ),
+            ],
+            eventVerifier: eventVerifier,
+            desiredCoverage: relayMinCountPerPubKey);
 
         relayJitManager.handleRequest(
           feedRequest,
-          desiredCoverage: relayMinCountPerPubKey,
         );
 
-        NostrRequestJit feedRequest2 = NostrRequestJit.subscription(
-          "feed-test2",
-          filters: [
-            Filter(
-              authors: myContactList.contacts,
-              kinds: [Nip01Event.TEXT_NODE_KIND],
-              since:
-                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
-            ),
-          ],
-          eventVerifier: eventVerifier,
-        );
+        NostrRequestJit feedRequest2 =
+            NostrRequestJit.subscription("feed-test2",
+                filters: [
+                  Filter(
+                    authors: myContactList.contacts,
+                    kinds: [Nip01Event.TEXT_NODE_KIND],
+                    since: (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
+                        60 * 60 * 4,
+                  ),
+                ],
+                eventVerifier: eventVerifier,
+                desiredCoverage: relayMinCountPerPubKey);
 
         relayJitManager.handleRequest(
           feedRequest2,
-          desiredCoverage: relayMinCountPerPubKey,
         );
 
         List<Nip01Event> events = [];

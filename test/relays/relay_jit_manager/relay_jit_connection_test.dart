@@ -193,11 +193,10 @@ void main() async {
             key4.publicKey,
           ]),
         ],
+        desiredCoverage: 1,
       );
       manager.handleRequest(
         myquery,
-        closeOnEOSE: true,
-        desiredCoverage: 1,
       );
 
       List<Nip01Event> responses = [];
