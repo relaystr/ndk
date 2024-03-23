@@ -52,8 +52,6 @@ class RelayJitManager with Logger {
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
   void handleRequest(
     NostrRequestJit request, {
-    desiredCoverage = 2,
-    closeOnEOSE = true,
     List<String> ignoreRelays = const [],
   }) async {
     await seedRelaysConnected;
@@ -72,8 +70,8 @@ class RelayJitManager with Logger {
           cacheManager: cacheManager,
           filter: filter,
           connectedRelays: connectedRelays,
-          desiredCoverage: desiredCoverage,
-          closeOnEOSE: closeOnEOSE,
+          desiredCoverage: request.desiredCoverage,
+          closeOnEOSE: request.closeOnEOSE,
           direction: ReadWriteMarker
               .writeOnly, // the author should write on the persons write relays
           ignoreRelays: cleanIgnoreRelays,
@@ -87,8 +85,8 @@ class RelayJitManager with Logger {
           cacheManager: cacheManager,
           filter: filter,
           connectedRelays: connectedRelays,
-          desiredCoverage: desiredCoverage,
-          closeOnEOSE: closeOnEOSE,
+          desiredCoverage: request.desiredCoverage,
+          closeOnEOSE: request.closeOnEOSE,
           direction: ReadWriteMarker
               .readOnly, // others should mention on the persons read relays
           ignoreRelays: cleanIgnoreRelays,
@@ -109,7 +107,7 @@ class RelayJitManager with Logger {
         originalRequest: request,
         filter: filter,
         connectedRelays: connectedRelays,
-        closeOnEOSE: closeOnEOSE,
+        closeOnEOSE: request.closeOnEOSE,
       );
     }
   }

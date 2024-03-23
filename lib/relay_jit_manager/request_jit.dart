@@ -4,6 +4,7 @@ import 'package:dart_ndk/logger/logger.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/event_verifier.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
 
 ///
@@ -25,6 +26,8 @@ class NostrRequestJit with Logger {
   ///
   int? timeout;
 
+  int desiredCoverage;
+
   Function(NostrRequestJit)? onTimeout;
 
   Stream<Nip01Event> get responseStream => timeout != null
@@ -42,6 +45,7 @@ class NostrRequestJit with Logger {
     required this.filters,
     this.closeOnEOSE = true,
     this.timeout = RelayJitConfig.DEFAULT_STREAM_IDLE_TIMEOUT,
+    this.desiredCoverage = 2,
     this.onTimeout,
   });
 
@@ -50,6 +54,7 @@ class NostrRequestJit with Logger {
     required this.eventVerifier,
     required this.filters,
     this.closeOnEOSE = false,
+    this.desiredCoverage = 2,
   });
 
   /// verify event and add to response stream
