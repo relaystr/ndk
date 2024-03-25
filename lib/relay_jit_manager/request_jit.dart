@@ -20,24 +20,48 @@ class NostrRequestJit with Logger {
   StreamController<Nip01Event> responseController =
       StreamController<Nip01Event>();
 
+  Stream<Nip01Event> get _responseStream =>
+      responseController.stream.asBroadcastStream();
+
   /// If true, the request will be closed when all requests received EOSE
   bool closeOnEOSE;
 
   ///
   int? timeout;
 
-  int desiredCoverage;
+  final int desiredCoverage;
+
+  // string is the relay url
+  Map<String, RelayJit> _activeRelaySubscriptions = {};
 
   Function(NostrRequestJit)? onTimeout;
 
   Stream<Nip01Event> get responseStream => timeout != null
-      ? responseController.stream.timeout(Duration(seconds: timeout!),
-          onTimeout: (sink) {
+      ? _responseStream.timeout(Duration(seconds: timeout!), onTimeout: (sink) {
           if (onTimeout != null) {
             onTimeout!.call(this);
           }
         })
-      : responseController.stream;
+      : _responseStream;
+
+  Future<List<Nip01Event>> get responseList async {
+    if (!closeOnEOSE) {
+      throw Exception("Cannot get responseList for a subscription");
+    }
+
+    if (timeout != null) {
+      return _responseStream
+          .timeout(Duration(seconds: timeout!), onTimeout: (sink) {
+            if (onTimeout != null) {
+              onTimeout!.call(this);
+            }
+          })
+          .asBroadcastStream()
+          .toList();
+    }
+
+    return responseController.stream.asBroadcastStream().toList();
+  }
 
   NostrRequestJit.query(
     this.id, {
@@ -70,5 +94,18 @@ class NostrRequestJit with Logger {
 
     // add to response stream
     responseController.add(event);
+  }
+
+  void onEoseReceivedFromRelay(RelayJit relay) async {
+    // check if all subscriptions received EOSE (async) at the current time
+
+    for (var sub in _activeRelaySubscriptions.values) {
+      await sub.activeSubscriptions[id]?.eoseReceived;
+    }
+    responseController.close();
+  }
+
+  void addRelayActiveSubscription(RelayJit relay) {
+    _activeRelaySubscriptions[relay.url] = relay;
   }
 }

@@ -125,6 +125,8 @@ class RelayJit extends Relay with Logger {
     }
     RelayActiveSubscription sub = activeSubscriptions[eoseId]!;
     sub.onEose();
+    // channel back so the request can be closed
+    sub.originalRequest.onEoseReceivedFromRelay(this);
     if (!sub.originalRequest.closeOnEOSE) {
       return;
     }
@@ -166,13 +168,14 @@ class RelayJit extends Relay with Logger {
   Future<void> send(ClientMsg msg) async {
     bool rdy = await isReady();
     if (!rdy) {
-      throw Exception("Websocket not ready, unable to send message");
+      throw Exception("Websocket not ready, unable to send message $url");
     }
 
     dynamic msgToSend = msg.toJson();
     String encodedMsg = jsonEncode(msgToSend);
     _channel!.sink.add(encodedMsg);
     Logger.log.t("🔼 send message to $url: $msgToSend");
+    // link relay to request
   }
 
   // check if active relay subscriptions does already exist
@@ -207,6 +210,9 @@ class RelayActiveSubscription {
   Future<void> get eoseReceived => _eoseReceived.future;
 
   void onEose() {
+    if (_eoseReceived.isCompleted) {
+      return;
+    }
     _eoseReceived.complete();
   }
 

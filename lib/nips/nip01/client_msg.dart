@@ -75,6 +75,11 @@ class ClientMsg {
         throw Exception("COUNT is not implemented yet");
     }
   }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }
 
 class ClientMsgType {

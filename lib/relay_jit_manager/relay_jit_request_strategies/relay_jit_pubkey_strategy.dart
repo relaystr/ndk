@@ -291,17 +291,21 @@ void _sendRequestToSocket(RelayJit connectedRelay,
     return;
   }
   // create a new subscription
+
+  // todo: do not overwrite the subscription if it already exists
+  // link the request id to the relay
+  connectedRelay.activeSubscriptions[originalRequest.id] =
+      RelayActiveSubscription(originalRequest.id, filters, originalRequest);
+
+  // link back
+  originalRequest.addRelayActiveSubscription(connectedRelay);
+
   // send out the request
   connectedRelay.send(ClientMsg(
     ClientMsgType.REQ,
     id: originalRequest.id,
     filters: filters,
   ));
-
-  // todo: do not overwrite the subscription if it already exists
-  // link the request id to the relay
-  connectedRelay.activeSubscriptions[originalRequest.id] =
-      RelayActiveSubscription(originalRequest.id, filters, originalRequest);
 }
 
 Filter _splitFilter(Filter filter, List<String> pubkeysToInclude) {

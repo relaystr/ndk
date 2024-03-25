@@ -20,6 +20,8 @@ class RelayJitBlastAllStrategy {
       connectedRelay.activeSubscriptions[originalRequest.id] =
           RelayActiveSubscription(
               originalRequest.id, [filter], originalRequest);
+      // link back
+      originalRequest.addRelayActiveSubscription(connectedRelay);
 
       var clientMsg = ClientMsg(
         ClientMsgType.REQ,

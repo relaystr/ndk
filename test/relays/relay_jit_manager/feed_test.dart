@@ -41,12 +41,12 @@ void main() async {
           contactsRequest,
         );
 
-        contactsRequest.responseStream.listen((event) {
-          var contactList = ContactList.fromEvent(event);
-          cacheManager.saveContactList(contactList);
-        });
+        var responseList = await contactsRequest.responseList;
 
-        await Future.delayed(Duration(seconds: 5));
+        List<ContactList> contactLists =
+            responseList.map((event) => ContactList.fromEvent(event)).toList();
+
+        cacheManager.saveContactLists(contactLists);
 
         ContactList? myContactList =
             cacheManager.loadContactList(key.publicKey);
@@ -64,11 +64,9 @@ void main() async {
           nip65Request,
         );
 
-        nip65Request.responseStream.listen((event) {
-          cacheManager.saveEvent(event);
-        });
+        var nip65events = await nip65Request.responseList;
+        cacheManager.saveEvents(nip65events);
 
-        await Future.delayed(Duration(seconds: 5));
         var nip65Data = cacheManager.loadEvents(
           pubKeys: myContactList.contacts,
           kinds: [Nip65.KIND],
@@ -91,6 +89,8 @@ void main() async {
         relayJitManager.handleRequest(
           feedRequest,
         );
+
+        await Future.delayed(Duration(seconds: 5));
 
         NostrRequestJit feedRequest2 =
             NostrRequestJit.subscription("feed-test2",
@@ -128,6 +128,12 @@ void main() async {
             .log('relays count: ${relayJitManager.connectedRelays.length}');
         developer.log('##################################################');
       }
+
+      test('Leo feed best relays', () async {
+        await _calculateBestRelaysForNpubContactsFeed(
+            "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
+            relayMinCountPerPubKey: 2);
+      }, timeout: const Timeout.factor(10));
 
       test('Fmar feed best relays', () async {
         await _calculateBestRelaysForNpubContactsFeed(
