@@ -114,6 +114,7 @@ class RelayJit extends Relay with Logger {
     Nip01Event msg = Nip01Event.fromJson(eventJson[2]);
     String msgId = eventJson[1];
     if (hasActiveSubscription(msgId)) {
+      msg.sources.add(url);
       activeSubscriptions[msgId]!.originalRequest.onMessage(msg);
     }
   }
