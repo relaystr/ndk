@@ -67,14 +67,14 @@ class RelayManager {
 
   bool allowReconnectRelays = true;
 
-  HttpClient? httpClient;
+  // HttpClient? httpClient;
 
-  RelayManager({bool? isWeb}) {
-    if (isWeb==null || !isWeb) {
-      httpClient = HttpClient();
-      httpClient!.idleTimeout = const Duration(seconds: 3600);
-      httpClient!.connectionTimeout = const Duration(seconds: 5);
-    }
+  RelayManager(/*{bool? isWeb}*/) {
+    // if (isWeb==null || !isWeb) {
+    //   httpClient = HttpClient();
+    //   httpClient!.idleTimeout = const Duration(seconds: 3600);
+    //   httpClient!.connectionTimeout = const Duration(seconds: 5);
+    // }
   }
   // ====================================================================================================================
 
