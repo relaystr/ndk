@@ -429,6 +429,109 @@ class RelayManager {
     Relay? relay = relays[Relay.clean(url)];
     return relay != null && relay.supportsNip(nip);
   }
+  // =====================================================================================
+
+  Future<NostrRequest> doNostrRequest(NostrRequest nostrRequest, Filter filter,
+      RelaySet relaySet,
+      {bool splitRequestsByPubKeyMappings=true}) async {
+    if (splitRequestsByPubKeyMappings) {
+      relaySet.splitIntoRequests(filter,nostrRequest);
+
+      print(
+          "request for ${filter.authors != null
+              ? filter.authors!.length
+              : 0} authors with kinds: ${filter
+              .kinds} made requests to ${nostrRequest.requests
+              .length} relays");
+
+      if (nostrRequest.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
+        print(
+            "making fallback requests to ${bootstrapRelays
+                .length} bootstrap relays for ${filter.authors != null ? filter
+                .authors!.length : 0} authors with kinds: ${filter.kinds}");
+        for (var url in bootstrapRelays) {
+          nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+        }
+      }
+    } else {
+      for (var url in relaySet.urls) {
+        nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+      }
+    }
+    nostrRequests[nostrRequest.id] = nostrRequest;
+    Map<int?,int> kindsMap = {};
+    nostrRequests.forEach((key, request) {
+      int? kind;
+      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+        kind = request.requests.values.first.filters.first.kinds!.first;
+      }
+      int? count = kindsMap[kind];
+      count ??= 0;
+      count++;
+      kindsMap[kind] = count;
+    });
+    print(
+        "----------------NOSTR REQUESTS: ${nostrRequests.length} || $kindsMap");
+    for(MapEntry<String,RelayRequest> entry in nostrRequest.requests.entries) {
+      doRelayRequest(nostrRequest.id, entry.value);
+    }
+    return nostrRequest;
+  }
+
+  Future<NostrRequest> subscription(Filter filter, RelaySet relaySet,
+      {bool splitRequestsByPubKeyMappings = true}) async {
+    return doNostrRequest(
+        NostrRequest.subscription(Helpers.getRandomString(10)), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+  }
+
+  Future<NostrRequest> query(Filter filter, RelaySet relaySet,
+      {int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT, bool splitRequestsByPubKeyMappings = true,}) async {
+    return doNostrRequest(
+        NostrRequest.query(Helpers.getRandomString(10), timeout: idleTimeout, onTimeout: (request) {
+          closeNostrRequest(request);
+        }), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+  }
+  Future<void> closeNostrRequest(NostrRequest request) async {
+    return closeNostrRequestById(request.id);
+  }
+
+  Future<void> closeNostrRequestById(String id) async {
+    NostrRequest? nostrRequest = nostrRequests[id];
+    if (nostrRequest!=null) {
+      for (var url in nostrRequest.requests.keys) {
+        if (isWebSocketOpen(url)) {
+          try {
+            // webSockets[url]!.sendMessage(jsonEncode(["CLOSE", nostrRequest.id]));
+            send(url,jsonEncode(["CLOSE", nostrRequest.id]));
+          } catch (e) {
+            print(e);
+          }
+        }
+      }
+      try {
+        nostrRequest.controller.close();
+      } catch (e) {
+        print(e);
+      }
+      nostrRequests.remove(id);
+
+      /***********************************/
+      Map<int?,int> kindsMap = {};
+      nostrRequests.forEach((key, request) {
+        int? kind;
+        if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+          kind = request.requests.values.first.filters.first.kinds!.first;
+        }
+        int? count = kindsMap[kind];
+        count ??= 0;
+        count++;
+        kindsMap[kind] = count;
+      });
+      print(
+          "----------------NOSTR REQUESTS CLOSE SOME: ${nostrRequests.length} || $kindsMap");
+      /***********************************/
+    }
+  }
 
   Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
       {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true, Function()? onTimeout}) async {

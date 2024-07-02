@@ -36,69 +36,12 @@ import 'nips/nip65/nip65.dart';
 class Nostr {
   CacheManager cacheManager = MemCacheManager();
 
-  final Map<String,NostrRequest> nostrRequests = {};
-
   late RelayManager relayManager;
 
   Nostr({RelayManager? relayManager}) {
     this.relayManager = relayManager ?? RelayManager();
   }
   // ====================================================================================================================
-
-  Future<NostrRequest> subscription(Filter filter, RelaySet relaySet,
-      {bool splitRequestsByPubKeyMappings = true}) async {
-    return doNostrRequest(
-        NostrRequest.subscription(Helpers.getRandomString(10)), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
-  }
-
-  Future<NostrRequest> query(Filter filter, RelaySet relaySet,
-      {int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT, bool splitRequestsByPubKeyMappings = true,}) async {
-    return doNostrRequest(
-        NostrRequest.query(Helpers.getRandomString(10), timeout: idleTimeout, onTimeout: (request) {
-          closeNostrRequest(request);
-        }), filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
-  }
-  Future<void> closeNostrRequest(NostrRequest request) async {
-    return closeNostrRequestById(request.id);
-  }
-
-  Future<void> closeNostrRequestById(String id) async {
-    NostrRequest? nostrRequest = nostrRequests[id];
-    if (nostrRequest!=null) {
-      for (var url in nostrRequest.requests.keys) {
-        if (relayManager.isWebSocketOpen(url)) {
-          try {
-            // webSockets[url]!.sendMessage(jsonEncode(["CLOSE", nostrRequest.id]));
-            relayManager.send(url,jsonEncode(["CLOSE", nostrRequest.id]));
-          } catch (e) {
-            print(e);
-          }
-        }
-      }
-      try {
-        nostrRequest.controller.close();
-      } catch (e) {
-        print(e);
-      }
-      nostrRequests.remove(id);
-
-      /***********************************/
-      Map<int?,int> kindsMap = {};
-      nostrRequests.forEach((key, request) {
-        int? kind;
-        if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-          kind = request.requests.values.first.filters.first.kinds!.first;
-        }
-        int? count = kindsMap[kind];
-        count ??= 0;
-        count++;
-        kindsMap[kind] = count;
-      });
-      print(
-          "----------------NOSTR REQUESTS CLOSE SOME: ${nostrRequests.length} || $kindsMap");
-      /***********************************/
-    }
-  }
 
   Future<Nip01Event> broadcastReaction(String eventId, Iterable<String> relays,
       EventSigner signer,
@@ -566,7 +509,7 @@ class Nostr {
 
   Future<Nip01Event?> getSingleMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
-    await for (final event in (await requestRelays(
+    await for (final event in (await relayManager.requestRelays(
         relayManager.bootstrapRelays,
         timeout: RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
         Filter(
@@ -603,98 +546,6 @@ class Nostr {
     return metadata;
   }
 
-  // =====================================================================================
-
-  Future<NostrRequest> doNostrRequest(NostrRequest nostrRequest, Filter filter,
-      RelaySet relaySet,
-      {bool splitRequestsByPubKeyMappings=true}) async {
-    if (splitRequestsByPubKeyMappings) {
-      relaySet.splitIntoRequests(filter,nostrRequest);
-
-      print(
-          "request for ${filter.authors != null
-              ? filter.authors!.length
-              : 0} authors with kinds: ${filter
-              .kinds} made requests to ${nostrRequest.requests
-              .length} relays");
-
-      if (nostrRequest.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
-        print(
-            "making fallback requests to ${relayManager.bootstrapRelays
-                .length} bootstrap relays for ${filter.authors != null ? filter
-                .authors!.length : 0} authors with kinds: ${filter.kinds}");
-        for (var url in relayManager.bootstrapRelays) {
-          nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
-        }
-      }
-    } else {
-      for (var url in relaySet.urls) {
-        nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
-      }
-    }
-    nostrRequests[nostrRequest.id] = nostrRequest;
-    Map<int?,int> kindsMap = {};
-    nostrRequests.forEach((key, request) {
-      int? kind;
-      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-        kind = request.requests.values.first.filters.first.kinds!.first;
-      }
-      int? count = kindsMap[kind];
-      count ??= 0;
-      count++;
-      kindsMap[kind] = count;
-    });
-    print(
-        "----------------NOSTR REQUESTS: ${nostrRequests.length} || $kindsMap");
-    for(MapEntry<String,RelayRequest> entry in nostrRequest.requests.entries) {
-      relayManager.doRelayRequest(nostrRequest.id, entry.value);
-    }
-    return nostrRequest;
-  }
-
-  Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
-      {int timeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true, Function()? onTimeout}) async {
-    String id = Helpers.getRandomString(10);
-    NostrRequest nostrRequest = closeOnEOSE?
-    NostrRequest.query(id, timeout: timeout, onTimeout: (request) {
-      closeNostrRequest(request);
-      if (onTimeout!=null) {
-        onTimeout();
-      }
-    }) :
-    NostrRequest.subscription(id);
-
-    for (var url in urls) {
-      nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
-    }
-    nostrRequests[nostrRequest.id] = nostrRequest;
-
-    List<String> notSent = [];
-    Map<int?,int> kindsMap = {};
-    nostrRequests.forEach((key, request) {
-      int? kind;
-      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-        kind = request.requests.values.first.filters.first.kinds!.first;
-      }
-      int? count = kindsMap[kind];
-      count ??= 0;
-      count++;
-      kindsMap[kind] = count;
-    });
-    print(
-        "----------------NOSTR REQUESTS: ${nostrRequests.length} || $kindsMap");
-    for(MapEntry<String,RelayRequest> entry in nostrRequest.requests.entries) {
-      if (!relayManager.doRelayRequest(nostrRequest.id, entry.value)) {
-        notSent.add(entry.key);
-      }
-    }
-    for (var url in notSent) {
-      nostrRequest.requests.remove(url);
-    }
-
-    return nostrRequest;
-  }
-
   Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
       {Function(String stepName, int count, int total)? onProgress, bool forceRefresh = false}) async {
     List<String> missingPubKeys = [];
@@ -717,7 +568,7 @@ class Nostr {
             "loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
-        await for (final event in (await requestRelays(
+        await for (final event in (await relayManager.requestRelays(
             timeout: missingPubKeys.length > 1 ? 10 : 3,
             relayManager.bootstrapRelays,
             Filter(
@@ -803,7 +654,7 @@ class Nostr {
     if (missingPubKeys.isNotEmpty) {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
-        await for (final event in (await query(
+        await for (final event in (await relayManager.query(
             idleTimeout: 1,
             splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
             Filter(authors: missingPubKeys, kinds: [Metadata.KIND]),
@@ -840,7 +691,7 @@ class Nostr {
     if (contactList == null || forceRefresh) {
       ContactList? loadedContactList;
       try {
-        await for (final event in (await requestRelays(
+        await for (final event in (await relayManager.requestRelays(
             relayManager.bootstrapRelays,
             timeout: idleTimeout,
             Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1))).stream) {
@@ -874,7 +725,7 @@ class Nostr {
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
-        await for (final event in (await requestRelays(
+        await for (final event in (await relayManager.requestRelays(
             relayManager.bootstrapRelays,
             timeout: idleTimeout,
             Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1))).stream) {
@@ -921,7 +772,7 @@ class Nostr {
     Nip51List? list = !forceRefresh? await getCachedNip51List(kind, signer) : null;
     if (list==null) {
       Nip51List? refreshedList;
-      await for (final event in (await requestRelays(relayManager.bootstrapRelays.toList(),
+      await for (final event in (await relayManager.requestRelays(relayManager.bootstrapRelays.toList(),
           Filter(
             authors: [signer.getPublicKey()],
             kinds: [kind],
@@ -958,7 +809,7 @@ class Nostr {
     Nip51Set? relaySet = await getCachedNip51RelaySet(name, signer);
     if (relaySet==null || forceRefresh) {
       Nip51Set? newRelaySet;
-      await for (final event in (await requestRelays(relayManager.bootstrapRelays.toList(),
+      await for (final event in (await relayManager.requestRelays(relayManager.bootstrapRelays.toList(),
           Filter(
             authors: [signer.getPublicKey()],
             kinds: [Nip51List.RELAY_SET],
@@ -988,7 +839,7 @@ class Nostr {
     Nip51Set? relaySet;//getCachedNip51RelaySets(signer);
     if (relaySet==null || forceRefresh) {
       Map<String,Nip51Set> newRelaySets = {};
-      await for (final event in (await requestRelays(relayManager.bootstrapRelays.toList(),
+      await for (final event in (await relayManager.requestRelays(relayManager.bootstrapRelays.toList(),
           Filter(
             authors: [signer.getPublicKey()],
             kinds: [kind],
