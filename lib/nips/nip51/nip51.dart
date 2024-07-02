@@ -84,6 +84,7 @@ class Nip51List {
     }
     return "kind $kind";
   }
+  // coverage:ignore-end
 
   List<String> get allRelays => relays.map((e) => e.value).toList();
 
@@ -178,6 +179,7 @@ class Nip51Set extends Nip51List {
   String toString() {
     return 'Nip51Set { $name}';
   }
+  // coverage:ignore-end
 
   Nip51Set({required String pubKey, required this.name, required int createdAt, required List<Nip51ListElement> elements, this.title})
       : super(pubKey: pubKey, kind: Nip51List.RELAY_SET, elements: elements, createdAt: createdAt);
