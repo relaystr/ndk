@@ -87,3 +87,13 @@ more details on https://mikedilger.com/gossip-model/
 - [ ] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
 - [ ] Zaps (private, public, anon, non-zap) ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
 - [ ] Badges ([NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md))
+
+
+
+# common terminology
+|term| explanation| simmilar to|
+|--|--|--|
+| **broadcastEvent**| push event to nostr network/relays |postEvent, publishEvent
+|**JIT**|Just In Time, e.g. as it happens| -
+|**query**|get data once and close the request| get request
+|**subscription**|stream of events as they come in | stream of data
