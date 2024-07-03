@@ -57,6 +57,7 @@ dependencies:
 - threading, you can do this on your own if you move dart_ndk or only the event_verifier into its own thread
 - easy way to get latest contact(or any) list / stream
 - easy way to get metadata or publish your own
+- support for request overrides (you have to close and reopen requests)
 
 
 
