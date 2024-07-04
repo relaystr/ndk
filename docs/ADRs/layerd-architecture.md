@@ -14,7 +14,7 @@ Updated on 26-06-2024
 
 - Reviewer(s): frnandu
 
-- final decision made by:
+- final decision made by: frnandu, leo-lox
 
 ## Context and Problem Statement
 
@@ -82,4 +82,9 @@ none so far
 
 ## Final Notes
 
-This is filled after the discussion is over, and we want to add any remarks about the future of this decision.
+Proposal Accepted.
+Going forward after merging of 
+https://github.com/relaystr/dart_ndk/tree/relay_jit_ranking
+https://github.com/relaystr/dart_ndk/tree/split-relay-manager
+https://github.com/relaystr/dart_ndk
+completed 

@@ -57,7 +57,7 @@ class RelayManager {
   /// Global webSocket registry by url
   Map<String, WebSocketChannel> webSockets = {};
 
-  final Map<String,NostrRequest> nostrRequests = {};
+  final Map<String, NostrRequest> nostrRequests = {};
 
   List<String> blockedRelays = [];
 
@@ -84,7 +84,7 @@ class RelayManager {
       {Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS}) async {
     bootstrapRelays = [];
     for (String url in urls) {
-      String? clean = Relay.clean(url);
+      String? clean = Relay.cleanUrl(url);
       if (clean != null) {
         bootstrapRelays.add(clean);
       }
@@ -92,7 +92,8 @@ class RelayManager {
     if (bootstrapRelays.isEmpty) {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
-    await Future.wait(urls.map((url) => reconnectRelay(url, force: true)).toList());
+    await Future.wait(
+        urls.map((url) => reconnectRelay(url, force: true)).toList());
   }
 
   void send(String url, dynamic data) {
@@ -101,7 +102,8 @@ class RelayManager {
   }
 
   Future<void> closeSocket(url) async {
-    return webSockets[url]?.sink.close().timeout(const Duration(seconds:3), onTimeout: () {
+    return webSockets[url]?.sink.close().timeout(const Duration(seconds: 3),
+        onTimeout: () {
       print("timeout while trying to close socket $url");
     });
   }
@@ -115,10 +117,10 @@ class RelayManager {
   }
 
   bool isWebSocketOpen(String url) {
-    WebSocketChannel? webSocket = webSockets[Relay.clean(url)];
+    WebSocketChannel? webSocket = webSockets[Relay.cleanUrl(url)];
     // return webSocket != null && webSocket.socketState.status == SocketStatus.connected;
     //&& webSocket.ready== WebSocket.open
-    return webSocket != null  && webSocket.closeCode==null;
+    return webSocket != null && webSocket.closeCode == null;
   }
 
   // bool isWebSocketConnecting(String url) {
@@ -144,7 +146,7 @@ class RelayManager {
   /// Connect a new relay
   Future<bool> connectRelay(String dirtyUrl,
       {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
-    String? url = Relay.clean(dirtyUrl);
+    String? url = Relay.cleanUrl(dirtyUrl);
     if (url == null) {
       return false;
     }
@@ -220,26 +222,27 @@ class RelayManager {
   void startListeningToSocket(String url) {
     webSockets[url]!.stream.asBroadcastStream().listen((message) {
       _handleIncommingMessage(message, url);
-    }
-        , onError: (error) async {
-          /// todo: handle this better, should clean subscription stuff
-          relays[url]!.stats.connectionErrors++;
-          print("onError $url on listen $error");
-          throw Exception("Error in socket");
-        }, onDone: () {
-          if (allowReconnectRelays) {
-            print("onDone $url on listen (close: ${webSockets[url]!.closeCode} ${webSockets[url]!.closeReason}), trying to reconnect");
-            if (isWebSocketOpen(url)) {
-              print("closing $url webSocket");
-              webSockets[url]!.sink.close();
-              print("closed $url. Reconnecting");
-              reconnectRelay(url);
-            } else {
-              reconnectRelay(url);
-            }
-          }
-          /// todo: handle this better, should clean subscription stuff
-        });
+    }, onError: (error) async {
+      /// todo: handle this better, should clean subscription stuff
+      relays[url]!.stats.connectionErrors++;
+      print("onError $url on listen $error");
+      throw Exception("Error in socket");
+    }, onDone: () {
+      if (allowReconnectRelays) {
+        print(
+            "onDone $url on listen (close: ${webSockets[url]!.closeCode} ${webSockets[url]!.closeReason}), trying to reconnect");
+        if (isWebSocketOpen(url)) {
+          print("closing $url webSocket");
+          webSockets[url]!.sink.close();
+          print("closed $url. Reconnecting");
+          reconnectRelay(url);
+        } else {
+          reconnectRelay(url);
+        }
+      }
+
+      /// todo: handle this better, should clean subscription stuff
+    });
     // webSockets[url]!.incomingMessagesStream.listen((message) {
     //   _handleIncommingMessage(message, url);
     // }
@@ -276,22 +279,23 @@ class RelayManager {
         list.addAll(request.filters.map((filter) => filter.toMap()));
 
         // webSockets[request.url]!.sendMessage(jsonEncode(list));
-        send(request.url,jsonEncode(list));
+        send(request.url, jsonEncode(list));
 
         return true;
       } catch (e) {
         print(e);
       }
     } else {
-      print("COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
+      print(
+          "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
 
       reconnectRelay(request.url);
     }
     return false;
   }
 
-  Future<void> broadcastEvent(Nip01Event event, Iterable<String> relays,
-      EventSigner signer) async {
+  Future<void> broadcastEvent(
+      Nip01Event event, Iterable<String> relays, EventSigner signer) async {
     await signer.sign(event);
     await Future.wait(relays.map((url) => broadcastSignedEvent(event, url)));
   }
@@ -299,11 +303,11 @@ class RelayManager {
   Future<void> broadcastSignedEvent(Nip01Event event, String url) async {
     if (isWebSocketOpen(url) && (!blockedRelays.contains(url))) {
       try {
-        print("BROADCASTING to $url : kind: ${event.kind} author: ${event
-            .pubKey}");
+        print(
+            "BROADCASTING to $url : kind: ${event.kind} author: ${event.pubKey}");
         var webSocket = webSockets[url];
-        if (webSocket!=null) {
-          send(url,jsonEncode(["EVENT", event.toJson()]));
+        if (webSocket != null) {
+          send(url, jsonEncode(["EVENT", event.toJson()]));
         }
       } catch (e) {
         print("ERROR BROADCASTING $url -> $e");
@@ -324,7 +328,7 @@ class RelayManager {
 
     if (eventJson[0] == 'NOTICE') {
       print("!!!!!!!!!!!!!!!!!!!!!!! NOTICE from $url: ${eventJson[1]}");
-      reconnectRelay(url,force: true);
+      reconnectRelay(url, force: true);
       return;
     }
 
@@ -355,10 +359,7 @@ class RelayManager {
           event.validSig = true;
           if (relays[url] != null) {
             relays[url]!
-                .incStatsByNewEvent(event, message
-                .toString()
-                .codeUnits
-                .length);
+                .incStatsByNewEvent(event, message.toString().codeUnits.length);
           }
           NostrRequest? nostrRequest = nostrRequests[id];
           if (nostrRequest != null) {
@@ -368,8 +369,9 @@ class RelayManager {
               //   nostrRequest.controller.close();
               //   nostrRequests.remove(id);
               // }
-            } catch(e) {
-              print("COULD NOT ADD event $event TO CONTROLLER on $url for requests ${nostrRequest.requests}");
+            } catch (e) {
+              print(
+                  "COULD NOT ADD event $event TO CONTROLLER on $url for requests ${nostrRequest.requests}");
             }
           }
         } else {
@@ -383,22 +385,22 @@ class RelayManager {
     if (eventJson[0] == 'EOSE') {
       String id = eventJson[1];
       NostrRequest? nostrRequest = nostrRequests[id];
-      if (nostrRequest!=null && nostrRequest.closeOnEOSE) {
-
+      if (nostrRequest != null && nostrRequest.closeOnEOSE) {
         // print("RECEIVED EOSE from $url, remaining requests from :${nostrRequest.requests.keys} kind:${nostrRequest.requests.values.first.filters.first.kinds}");
         RelayRequest? request = nostrRequest.requests[url];
-        if (request!=null) {
+        if (request != null) {
           request.receivedEOSE = true;
           nostrRequest.requests.remove(url);
           if (isWebSocketOpen(url)) {
             // webSockets[url]!.sendMessage(
             //     jsonEncode(["CLOSE", nostrRequest.id]));
-            send(url,jsonEncode(["CLOSE", nostrRequest.id]));
+            send(url, jsonEncode(["CLOSE", nostrRequest.id]));
           }
         }
         if (nostrRequest.requests.isEmpty &&
             !nostrRequest.controller.isClosed) {
-          Future.delayed(Duration(seconds:(nostrRequest.timeout??5)*10), () {
+          Future.delayed(Duration(seconds: (nostrRequest.timeout ?? 5) * 10),
+              () {
             closeNostrRequest(nostrRequest);
             // nostrRequests.remove(id);
           });
@@ -421,34 +423,28 @@ class RelayManager {
 
   Relay? getRelay(String url) {
     Relay? r = relays[url];
-    r ??= relays[Relay.clean(url)];
+    r ??= relays[Relay.cleanUrl(url)];
     return r;
   }
 
   bool _doesRelaySupportNip(String url, int nip) {
-    Relay? relay = relays[Relay.clean(url)];
+    Relay? relay = relays[Relay.cleanUrl(url)];
     return relay != null && relay.supportsNip(nip);
   }
   // =====================================================================================
 
-  Future<NostrRequest> doNostrRequest(NostrRequest nostrRequest, Filter filter,
-      RelaySet relaySet,
-      {bool splitRequestsByPubKeyMappings=true}) async {
+  Future<NostrRequest> doNostrRequest(
+      NostrRequest nostrRequest, Filter filter, RelaySet relaySet,
+      {bool splitRequestsByPubKeyMappings = true}) async {
     if (splitRequestsByPubKeyMappings) {
-      relaySet.splitIntoRequests(filter,nostrRequest);
+      relaySet.splitIntoRequests(filter, nostrRequest);
 
       print(
-          "request for ${filter.authors != null
-              ? filter.authors!.length
-              : 0} authors with kinds: ${filter
-              .kinds} made requests to ${nostrRequest.requests
-              .length} relays");
+          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${nostrRequest.requests.length} relays");
 
       if (nostrRequest.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
         print(
-            "making fallback requests to ${bootstrapRelays
-                .length} bootstrap relays for ${filter.authors != null ? filter
-                .authors!.length : 0} authors with kinds: ${filter.kinds}");
+            "making fallback requests to ${bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
         for (var url in bootstrapRelays) {
           nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
         }
@@ -459,10 +455,12 @@ class RelayManager {
       }
     }
     nostrRequests[nostrRequest.id] = nostrRequest;
-    Map<int?,int> kindsMap = {};
+    Map<int?, int> kindsMap = {};
     nostrRequests.forEach((key, request) {
       int? kind;
-      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+      if (request.requests.isNotEmpty &&
+          request.requests.values.first.filters.first.kinds != null &&
+          request.requests.values.first.filters.first.kinds!.isNotEmpty) {
         kind = request.requests.values.first.filters.first.kinds!.first;
       }
       int? count = kindsMap[kind];
@@ -534,7 +532,9 @@ class RelayManager {
   }
 
   Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
-      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true, Function()? onTimeout}) async {
+      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
+      bool closeOnEOSE = true,
+      Function()? onTimeout}) async {
     String id = Helpers.getRandomString(10);
     NostrRequest nostrRequest = closeOnEOSE?
     NostrRequest.query(id, timeout: timeout, onTimeout: (request) {
@@ -551,10 +551,12 @@ class RelayManager {
     nostrRequests[nostrRequest.id] = nostrRequest;
 
     List<String> notSent = [];
-    Map<int?,int> kindsMap = {};
+    Map<int?, int> kindsMap = {};
     nostrRequests.forEach((key, request) {
       int? kind;
-      if (request.requests.isNotEmpty && request.requests.values.first.filters.first.kinds!=null && request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+      if (request.requests.isNotEmpty &&
+          request.requests.values.first.filters.first.kinds != null &&
+          request.requests.values.first.filters.first.kinds!.isNotEmpty) {
         kind = request.requests.values.first.filters.first.kinds!.first;
       }
       int? count = kindsMap[kind];
@@ -577,12 +579,13 @@ class RelayManager {
   }
 
   /// relay -> list of pubKey mappings
-  Future<RelaySet> calculateRelaySet({required String name,
-    required String ownerPubKey,
-    required List<String> pubKeys,
-    required RelayDirection direction,
-    required int relayMinCountPerPubKey,
-    Function(String, int, int)? onProgress}) async {
+  Future<RelaySet> calculateRelaySet(
+      {required String name,
+      required String ownerPubKey,
+      required List<String> pubKeys,
+      required RelayDirection direction,
+      required int relayMinCountPerPubKey,
+      Function(String, int, int)? onProgress}) async {
     RelaySet byScore = await _relaysByPopularity(
         name: name,
         ownerPubKey: ownerPubKey,
@@ -611,8 +614,7 @@ class RelayManager {
     for (var relay in relays.keys) {
       if (isWebSocketOpen(relay)) {
         map[relay] = pubKeys
-            .map((pubKey) =>
-            PubkeyMapping(
+            .map((pubKey) => PubkeyMapping(
                 pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite))
             .toList();
       }
@@ -627,17 +629,18 @@ class RelayManager {
   ///   - check if relay is connected or can connect
   ///   - for each pubKey mapped for given relay check if you already have minimum amount of relay coverage (use auxiliary map to remember this)
   ///     - if not add this relay to list of best relays
-  Future<RelaySet> _relaysByPopularity({required String name,
-    required String ownerPubKey,
-    required List<String> pubKeys,
-    required RelayDirection direction,
-    required int relayMinCountPerPubKey,
-    Function(String stepName, int count, int total)? onProgress}) async {
+  Future<RelaySet> _relaysByPopularity(
+      {required String name,
+      required String ownerPubKey,
+      required List<String> pubKeys,
+      required RelayDirection direction,
+      required int relayMinCountPerPubKey,
+      Function(String stepName, int count, int total)? onProgress}) async {
     await loadMissingRelayListsFromNip65OrNip02(pubKeys,
         onProgress: onProgress);
 
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl =
-    await _buildPubKeysMapFromRelayLists(pubKeys, direction);
+        await _buildPubKeysMapFromRelayLists(pubKeys, direction);
 
     Map<String, Set<String>> minimumRelaysCoverageByPubkey = {};
     Map<String, List<PubkeyMapping>> bestRelays = {};
@@ -653,11 +656,11 @@ class RelayManager {
       notCoveredPubkeys[pubKey] = relayMinCountPerPubKey;
     }
     for (String url in pubKeysByRelayUrl.keys) {
-      if (blockedRelays.contains(Relay.clean(url))) {
+      if (blockedRelays.contains(Relay.cleanUrl(url))) {
         continue;
       }
       if (!pubKeysByRelayUrl[url]!.any((pub_key) =>
-      minimumRelaysCoverageByPubkey[pub_key.pubKey] == null ||
+          minimumRelaysCoverageByPubkey[pub_key.pubKey] == null ||
           minimumRelaysCoverageByPubkey[pub_key.pubKey]!.length <
               relayMinCountPerPubKey)) {
         continue;
@@ -710,12 +713,13 @@ class RelayManager {
         notCoveredPubkeys: notCoveredPubkeys.entries
             .map(
               (entry) => NotCoveredPubKey(entry.key, entry.value),
-        )
+            )
             .toList());
   }
 
   Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
-      {Function(String stepName, int count, int total)? onProgress, bool forceRefresh = false}) async {
+      {Function(String stepName, int count, int total)? onProgress,
+      bool forceRefresh = false}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
       UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
@@ -737,11 +741,12 @@ class RelayManager {
       }
       try {
         await for (final event in (await requestRelays(
-            timeout: missingPubKeys.length > 1 ? 10 : 3,
-            bootstrapRelays,
-            Filter(
-                authors: missingPubKeys,
-                kinds: [Nip65.KIND, ContactList.KIND]))).stream) {
+                timeout: missingPubKeys.length > 1 ? 10 : 3,
+                bootstrapRelays,
+                Filter(
+                    authors: missingPubKeys,
+                    kinds: [Nip65.KIND, ContactList.KIND])))
+            .stream) {
           switch (event.kind) {
             case Nip65.KIND:
               Nip65 nip65 = Nip65.fromEvent(event);
@@ -792,7 +797,7 @@ class RelayManager {
       List<ContactList> contactListsSave = [];
       for (ContactList contactList in contactLists) {
         ContactList? existing =
-        cacheManager.loadContactList(contactList.pubKey);
+            cacheManager.loadContactList(contactList.pubKey);
         if (existing == null || existing.createdAt < contactList.createdAt) {
           contactListsSave.add(contactList);
         }
@@ -822,9 +827,7 @@ class RelayManager {
               pubKey, direction, entry.key, entry.value, pubKeysByRelayUrl);
         }
       } else {
-        int now = DateTime
-            .now()
-            .millisecondsSinceEpoch ~/ 1000;
+        int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
         await cacheManager.saveUserRelayList(UserRelayList(
             pubKey: pubKey,
             relays: {},
@@ -833,38 +836,37 @@ class RelayManager {
       }
     }
     print(
-        "Have lists of relays for $foundCount/${pubKeys
-            .length} pubKeys ${foundCount < pubKeys.length ? "(missing ${pubKeys
-            .length - foundCount})" : ""}");
+        "Have lists of relays for $foundCount/${pubKeys.length} pubKeys ${foundCount < pubKeys.length ? "(missing ${pubKeys.length - foundCount})" : ""}");
 
     /// sort by pubKeys count for each relay descending
     List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =
-    pubKeysByRelayUrl.entries.toList()
+        pubKeysByRelayUrl.entries.toList()
 
-    /// todo: use more stuff to improve sorting
-      ..sort((a, b) {
-        int rr = b.value.length.compareTo(a.value.length);
-        if (rr == 0) {
-          // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
-          bool aC = isWebSocketOpen(a.key);
-          bool bC = isWebSocketOpen(b.key);
-          if (aC != bC) {
-            return aC ? -1 : 1;
-          }
-          return 0;
-        }
-        return rr;
-      });
+          /// todo: use more stuff to improve sorting
+          ..sort((a, b) {
+            int rr = b.value.length.compareTo(a.value.length);
+            if (rr == 0) {
+              // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
+              bool aC = isWebSocketOpen(a.key);
+              bool bC = isWebSocketOpen(b.key);
+              if (aC != bC) {
+                return aC ? -1 : 1;
+              }
+              return 0;
+            }
+            return rr;
+          });
 
     return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
   }
 
-  _handleRelayUrlForPubKey(String pubKey,
+  _handleRelayUrlForPubKey(
+      String pubKey,
       RelayDirection direction,
       String url,
       ReadWriteMarker marker,
       Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl) {
-    String? cleanUrl = Relay.clean(url);
+    String? cleanUrl = Relay.cleanUrl(url);
     if (cleanUrl != null) {
       if (direction.matchesMarker(marker)) {
         Set<PubkeyMapping>? set = pubKeysByRelayUrl[cleanUrl];
@@ -891,18 +893,14 @@ class RelayManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     print(
-        "CONNECTED ${connected
-            .where((element) => element)
-            .length} , ${connected
-            .where((element) => !element)
-            .length} FAILED took ${duration.inMilliseconds} ms");
+        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
   }
 
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
     if (allowReconnectRelays) {
-      WebSocketChannel? webSocket = webSockets[Relay.clean(url)];
-      if (webSocket!=null) {
+      WebSocketChannel? webSocket = webSockets[Relay.cleanUrl(url)];
+      if (webSocket != null) {
         await webSocket.ready;
       }
       if (!isWebSocketOpen(url)) {
