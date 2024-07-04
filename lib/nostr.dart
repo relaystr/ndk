@@ -295,7 +295,7 @@ class Nostr {
     if (userRelayList.relays.keys.contains(relayUrl)) {
       url = relayUrl;
     } else {
-      String? cleanUrl = Relay.clean(relayUrl);
+      String? cleanUrl = Relay.cleanUrl(relayUrl);
       if (cleanUrl != null && userRelayList.relays.keys.contains(cleanUrl)) {
         url = cleanUrl;
       } else if (userRelayList.relays.keys.contains("$relayUrl/")) {
