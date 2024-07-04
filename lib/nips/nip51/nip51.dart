@@ -97,7 +97,6 @@ class Nip51List {
     }
     return "kind $kind";
   }
-  // coverage:ignore-end
 
   List<String> get allRelays => relays.map((e) => e.value).toList();
 
