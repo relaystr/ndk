@@ -1,5 +1,5 @@
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
+import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 

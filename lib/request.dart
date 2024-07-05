@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 
-import 'nips/nip01/filter.dart';
+import 'domain_layer/entities/filter.dart';
 
 class RelayRequest {
   String url;

@@ -28,7 +28,7 @@ import 'models/user_relay_list.dart';
 import 'data_layer/repositories/verifiers/acinq_event_verifier.dart';
 import 'domain_layer/entities/nip_01_event.dart';
 import 'domain_layer/repositories/event_verifier_repository.dart';
-import 'nips/nip01/filter.dart';
+import 'domain_layer/entities/filter.dart';
 import 'nips/nip01/metadata.dart';
 import 'nips/nip51/nip51.dart';
 import 'nips/nip65/nip65.dart';
