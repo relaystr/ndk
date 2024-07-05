@@ -7,7 +7,7 @@ import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
 import 'domain_layer/entities/metadata.dart';
-import 'nips/nip05/nip05.dart';
+import 'shared/nips/nip05/nip05.dart';
 
 class MemCacheManager implements CacheManager {
   Map<String, UserRelayList> userRelayLists = {};

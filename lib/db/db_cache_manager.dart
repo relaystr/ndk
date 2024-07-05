@@ -9,7 +9,7 @@ import 'package:dart_ndk/db/db_nip05.dart';
 import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
@@ -18,7 +18,7 @@ import '../event_filter.dart';
 import '../models/relay_set.dart';
 import '../models/user_relay_list.dart';
 import '../domain_layer/entities/metadata.dart';
-import '../nips/nip05/nip05.dart';
+import '../shared/nips/nip05/nip05.dart';
 
 class DbCacheManager extends CacheManager {
   late Isar isar;

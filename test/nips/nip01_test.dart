@@ -1,5 +1,5 @@
 import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/nips/nip01/bip340.dart';
+import 'package:dart_ndk/shared/nips/nip01/bip340.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter/services.dart';

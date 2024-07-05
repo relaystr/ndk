@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 
 /// maps the direction for a pubkey read, write, both
 class PubkeyMapping {
@@ -26,7 +26,11 @@ class PubkeyMapping {
   // coverage:ignore-end
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PubkeyMapping && runtimeType == other.runtimeType && pubKey == other.pubKey;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PubkeyMapping &&
+          runtimeType == other.runtimeType &&
+          pubKey == other.pubKey;
 
   @override
   int get hashCode => pubKey.hashCode;

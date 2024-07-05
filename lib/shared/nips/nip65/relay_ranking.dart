@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:dart_ndk/domain_layer/entities/nip_65.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 

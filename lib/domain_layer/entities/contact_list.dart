@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 import 'package:flutter/foundation.dart';
 
 import 'nip_01_event.dart';

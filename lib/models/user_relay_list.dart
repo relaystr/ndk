@@ -1,6 +1,6 @@
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 
 import '../domain_layer/entities/nip_65.dart';
 

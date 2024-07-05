@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 
-import '../../../nips/nip19/nip19.dart';
+import '../../../shared/nips/nip19/nip19.dart';
 import '../../../domain_layer/repositories/event_signer_repository.dart';
 import '../../data_sources/amber_flutter.dart';
 

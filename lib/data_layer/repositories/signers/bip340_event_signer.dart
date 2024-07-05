@@ -1,8 +1,8 @@
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/nips/nip01/helpers.dart';
+import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 
-import '../../../nips/nip04/nip04.dart';
-import '../../../nips/nip01/bip340.dart';
+import '../../../shared/nips/nip04/nip04.dart';
+import '../../../shared/nips/nip01/bip340.dart';
 import '../../../domain_layer/repositories/event_signer_repository.dart';
 
 class Bip340EventSignerRepositoryImpl implements EventSignerRepository {
