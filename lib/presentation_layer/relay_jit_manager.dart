@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/logger/logger.dart';
+import 'package:dart_ndk/shared/logger/logger.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
