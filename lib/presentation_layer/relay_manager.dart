@@ -19,15 +19,15 @@ import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'config/bootstrap_relays.dart';
-import 'event_filter.dart';
-import 'models/relay_set.dart';
-import 'models/user_relay_list.dart';
-import 'nips/nip01/acinq_event_verifier.dart';
-import 'nips/nip01/event.dart';
-import 'nips/nip01/event_verifier.dart';
-import 'nips/nip01/filter.dart';
-import 'nips/nip65/nip65.dart';
+import '../config/bootstrap_relays.dart';
+import '../event_filter.dart';
+import '../models/relay_set.dart';
+import '../models/user_relay_list.dart';
+import '../nips/nip01/acinq_event_verifier.dart';
+import '../nips/nip01/event.dart';
+import '../nips/nip01/event_verifier.dart';
+import '../nips/nip01/filter.dart';
+import '../nips/nip65/nip65.dart';
 
 class RelayManager {
   static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;
