@@ -3,7 +3,7 @@ import 'package:dart_ndk/data_layer/repositories/signers/bip340_event_signer.dar
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
-import 'package:dart_ndk/nips/nip51/nip51.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_51_list.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
