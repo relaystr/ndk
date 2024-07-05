@@ -4,7 +4,7 @@ import 'package:dart_ndk/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/nips/nip65/nip65.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_65.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/nips/nip65/relay_ranking.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';

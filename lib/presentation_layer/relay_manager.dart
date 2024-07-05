@@ -27,7 +27,7 @@ import '../data_layer/repositories/verifiers/acinq_event_verifier.dart';
 import '../domain_layer/entities/nip_01_event.dart';
 import '../domain_layer/repositories/event_verifier_repository.dart';
 import '../domain_layer/entities/filter.dart';
-import '../nips/nip65/nip65.dart';
+import '../domain_layer/entities/nip_65.dart';
 
 class RelayManager {
   static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;

@@ -31,7 +31,7 @@ import 'domain_layer/repositories/event_verifier_repository.dart';
 import 'domain_layer/entities/filter.dart';
 import 'domain_layer/entities/metadata.dart';
 import 'domain_layer/entities/nip_51_list.dart';
-import 'nips/nip65/nip65.dart';
+import 'domain_layer/entities/nip_65.dart';
 
 class Nostr {
   CacheManager cacheManager = MemCacheManager();

@@ -1,7 +1,7 @@
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 
-import '../../domain_layer/entities/nip_01_event.dart';
+import 'nip_01_event.dart';
 
 class Nip65 {
   static const int KIND = 10002;
