@@ -17,7 +17,7 @@ import 'package:isar/isar.dart';
 import '../event_filter.dart';
 import '../models/relay_set.dart';
 import '../models/user_relay_list.dart';
-import '../nips/nip01/metadata.dart';
+import '../domain_layer/entities/metadata.dart';
 import '../nips/nip05/nip05.dart';
 
 class DbCacheManager extends CacheManager {

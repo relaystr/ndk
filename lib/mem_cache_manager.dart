@@ -6,7 +6,7 @@ import 'package:dart_ndk/nips/nip02/contact_list.dart';
 
 import 'models/relay_set.dart';
 import 'models/user_relay_list.dart';
-import 'nips/nip01/metadata.dart';
+import 'domain_layer/entities/metadata.dart';
 import 'nips/nip05/nip05.dart';
 
 class MemCacheManager implements CacheManager {
