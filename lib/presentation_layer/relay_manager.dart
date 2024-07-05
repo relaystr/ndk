@@ -11,7 +11,7 @@ import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
-import 'package:dart_ndk/nips/nip11/relay_info.dart';
+import 'package:dart_ndk/domain_layer/entities/relay_info.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/relay.dart';
