@@ -4,7 +4,7 @@ import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../domain_layer/entities/nip_01_event.dart';
+import 'nip_01_event.dart';
 
 class ContactList {
   static const int KIND = 3;

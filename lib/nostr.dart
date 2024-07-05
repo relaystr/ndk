@@ -11,7 +11,7 @@ import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 import 'package:dart_ndk/nips/nip09/deletion.dart';
 import 'package:dart_ndk/nips/nip11/relay_info.dart';
 import 'package:dart_ndk/nips/nip25/reactions.dart';

@@ -1,7 +1,7 @@
 import 'package:dart_ndk/event_filter.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 
-import 'nips/nip02/contact_list.dart';
+import 'domain_layer/entities/contact_list.dart';
 import 'nips/nip65/nip65.dart';
 
 class PTagCountEventFilter extends EventFilter {

@@ -10,7 +10,7 @@ import 'package:dart_ndk/db/db_relay_set.dart';
 import 'package:dart_ndk/db/db_user_relay_list.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
-import 'package:dart_ndk/nips/nip02/contact_list.dart';
+import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
