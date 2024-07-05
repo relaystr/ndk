@@ -1,16 +1,15 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 
-import '../nip04/nip04.dart';
-import 'bip340.dart';
-import 'event_signer.dart';
+import '../../../nips/nip04/nip04.dart';
+import '../../../nips/nip01/bip340.dart';
+import '../../../domain_layer/repositories/event_signer_repository.dart';
 
-class Bip340EventSigner implements EventSigner {
-
+class Bip340EventSignerRepositoryImpl implements EventSignerRepository {
   String? privateKey;
   String publicKey;
 
-  Bip340EventSigner(this.privateKey, this.publicKey);
+  Bip340EventSignerRepositoryImpl(this.privateKey, this.publicKey);
 
   @override
   Future<void> sign(Nip01Event event) async {
@@ -24,11 +23,11 @@ class Bip340EventSigner implements EventSigner {
     return publicKey;
   }
 
-  Future<String?> decrypt(String msg, String destPubKey, { String? id }) async {
+  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
     return Nip04.decrypt(privateKey!, destPubKey, msg);
   }
 
-  Future<String?> encrypt(String msg, String destPubKey, { String? id }) async {
+  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
     return Nip04.encrypt(privateKey!, destPubKey, msg);
   }
 

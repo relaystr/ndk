@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/nips/nip01/event_signer.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:flutter/foundation.dart';
 
@@ -107,7 +107,7 @@ class Nip51List {
       required this.elements});
 
   static Future<Nip51List> fromEvent(
-      Nip01Event event, EventSigner? signer) async {
+      Nip01Event event, EventSignerRepository? signer) async {
     // if (event.kind == Nip51List.SEARCH_RELAYS || event.kind == Nip51List.BLOCKED_RELAYS) {
     //   privateRelays = [];
     //   publicRelays = [];
@@ -151,7 +151,7 @@ class Nip51List {
     }
   }
 
-  Future<Nip01Event> toEvent(EventSigner? signer) async {
+  Future<Nip01Event> toEvent(EventSignerRepository? signer) async {
     String content = "";
     List<Nip51ListElement> privateElements =
         elements.where((element) => element.private).toList();
@@ -229,7 +229,7 @@ class Nip51Set extends Nip51List {
             createdAt: createdAt);
 
   static Future<Nip51Set?> fromEvent(
-      Nip01Event event, EventSigner? signer) async {
+      Nip01Event event, EventSignerRepository? signer) async {
     String? name = event.getDtag();
     if (name == null || event.kind != Nip51List.RELAY_SET) {
       return null;
@@ -262,7 +262,7 @@ class Nip51Set extends Nip51List {
   }
 
   @override
-  Future<Nip01Event> toEvent(EventSigner? signer) async {
+  Future<Nip01Event> toEvent(EventSignerRepository? signer) async {
     Nip01Event event = await super.toEvent(signer);
     List<dynamic> tags = [
       ["d", name]

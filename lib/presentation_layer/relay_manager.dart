@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
-import 'package:dart_ndk/nips/nip01/event_signer.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip11/relay_info.dart';
@@ -23,9 +23,9 @@ import '../config/bootstrap_relays.dart';
 import '../event_filter.dart';
 import '../models/relay_set.dart';
 import '../models/user_relay_list.dart';
-import '../nips/nip01/acinq_event_verifier.dart';
+import '../data_layer/repositories/verifiers/acinq_event_verifier.dart';
 import '../nips/nip01/event.dart';
-import '../nips/nip01/event_verifier.dart';
+import '../domain_layer/repositories/event_verifier_repository.dart';
 import '../nips/nip01/filter.dart';
 import '../nips/nip65/nip65.dart';
 
@@ -40,7 +40,8 @@ class RelayManager {
 
   CacheManager cacheManager = MemCacheManager();
 
-  EventVerifier eventVerifier = AcinqSecp256k1EventVerifier();
+  EventVerifierRepository eventVerifier =
+      AcinqSecp256k1EventVerifierRepositoryImpl();
 
   /// Global relay registry by url
   Map<String, Relay> relays = {};
@@ -286,8 +287,8 @@ class RelayManager {
     return false;
   }
 
-  Future<void> broadcastEvent(
-      Nip01Event event, Iterable<String> relays, EventSigner signer) async {
+  Future<void> broadcastEvent(Nip01Event event, Iterable<String> relays,
+      EventSignerRepository signer) async {
     await signer.sign(event);
     await Future.wait(relays.map((url) => broadcastSignedEvent(event, url)));
   }

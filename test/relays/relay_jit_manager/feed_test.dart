@@ -1,8 +1,8 @@
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
-import 'package:dart_ndk/nips/nip01/bip340_event_verifier.dart';
+import 'package:dart_ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event_verifier.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
@@ -28,7 +28,8 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        EventVerifier eventVerifier = Bip340EventVerifier();
+        EventVerifierRepository eventVerifier =
+            Bip340EventVerifierRepositoryImpl();
 
         NostrRequestJit contactsRequest = NostrRequestJit.query("contacts",
             filters: [

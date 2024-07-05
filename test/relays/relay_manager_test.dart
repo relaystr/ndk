@@ -6,7 +6,7 @@ import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/models/relay_set.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event_verifier.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
@@ -225,7 +225,7 @@ void main() async {
       RelayJitManager manager = RelayJitManager(
         seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       );
-      EventVerifier eventVerifier = MockEventVerifier();
+      EventVerifierRepository eventVerifier = MockEventVerifier();
 
       NostrRequestJit myquery = NostrRequestJit.query(
         "test",
@@ -315,7 +315,7 @@ void main() async {
       RelayJitManager manager = RelayJitManager(
         seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       );
-      EventVerifier eventVerifier = MockEventVerifier();
+      EventVerifierRepository eventVerifier = MockEventVerifier();
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed

@@ -1,7 +1,7 @@
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event_verifier.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
 
-class MockEventVerifier implements EventVerifier {
+class MockEventVerifier implements EventVerifierRepository {
   bool _result = true;
 
   /// If [result] is false, [verify] will always return false. Default is true.

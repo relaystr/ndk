@@ -3,9 +3,9 @@ import 'dart:developer';
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/nips/nip01/bip340.dart';
-import 'package:dart_ndk/nips/nip01/bip340_event_verifier.dart';
+import 'package:dart_ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/event_verifier.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';
@@ -146,7 +146,7 @@ void main() async {
         cacheManager: cacheManager,
       );
 
-      EventVerifier eventVerifier = MockEventVerifier();
+      EventVerifierRepository eventVerifier = MockEventVerifier();
       NostrRequestJit request = NostrRequestJit.query("debug-get-events",
           eventVerifier: eventVerifier,
           filters: [
@@ -174,7 +174,7 @@ void main() async {
         seedRelays: [],
         cacheManager: cacheManager,
       );
-      EventVerifier eventVerifier = MockEventVerifier();
+      EventVerifierRepository eventVerifier = MockEventVerifier();
 
       // save nip65 data
       await cacheManager
