@@ -1,6 +1,6 @@
 import 'package:dart_ndk/nips/nip01/bip340.dart';
 import 'package:dart_ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/nips/nip01/helpers.dart';
 import 'package:dart_ndk/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/nips/nip51/nip51.dart';

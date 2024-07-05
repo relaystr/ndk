@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
 
@@ -11,16 +11,24 @@ class UserRelayList {
 
   Map<String, ReadWriteMarker> relays;
 
-  UserRelayList({required this.pubKey, required this.relays, required this.createdAt, required this.refreshedTimestamp});
+  UserRelayList(
+      {required this.pubKey,
+      required this.relays,
+      required this.createdAt,
+      required this.refreshedTimestamp});
 
   Iterable<String> get urls => relays.keys;
 
-  Iterable<String> get readUrls => relays.entries.where((entry) => entry.value.isRead).map((entry) => entry.key);
+  Iterable<String> get readUrls => relays.entries
+      .where((entry) => entry.value.isRead)
+      .map((entry) => entry.key);
 
   static UserRelayList fromNip65(Nip65 nip65) {
     return UserRelayList(
         pubKey: nip65.pubKey,
-        relays: {for (var entry in nip65.relays.entries) entry.key: entry.value},
+        relays: {
+          for (var entry in nip65.relays.entries) entry.key: entry.value
+        },
         createdAt: nip65.createdAt,
         refreshedTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000);
   }

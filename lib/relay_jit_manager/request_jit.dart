@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ndk/logger/logger.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';

@@ -1,7 +1,7 @@
 import 'dart:core';
 
 import 'package:dart_ndk/cache_manager.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 
 import 'models/relay_set.dart';

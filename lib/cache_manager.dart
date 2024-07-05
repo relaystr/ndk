@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/nips/nip02/contact_list.dart';
 
 import 'models/relay_set.dart';
@@ -10,7 +10,8 @@ abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Nip01Event? loadEvent(String id);
-  List<Nip01Event> loadEvents({List<String> pubKeys, List<int> kinds, String? pTag});
+  List<Nip01Event> loadEvents(
+      {List<String> pubKeys, List<int> kinds, String? pTag});
   Future<void> removeEvent(String id);
   Future<void> removeAllEventsByPubKey(String pubKey);
   Future<void> removeAllEvents();
@@ -46,5 +47,4 @@ abstract class CacheManager {
   List<Nip05?> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
-
 }

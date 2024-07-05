@@ -1,7 +1,7 @@
 import 'package:dart_ndk/cache_manager.dart';
 import 'package:dart_ndk/logger/logger.dart';
 import 'package:dart_ndk/nips/nip01/client_msg.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip01/filter.dart';
 import 'package:dart_ndk/nips/nip65/nip65.dart';

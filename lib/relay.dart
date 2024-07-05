@@ -1,4 +1,4 @@
-import 'package:dart_ndk/nips/nip01/event.dart';
+import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/nips/nip11/relay_info.dart';
 import 'package:dart_ndk/relay_stats.dart';
 
