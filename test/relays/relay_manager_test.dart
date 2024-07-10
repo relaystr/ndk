@@ -14,7 +14,7 @@ import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_65.dart';
 import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/nostr.dart';
-import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write.dart';
 import 'package:dart_ndk/presentation_layer/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 import 'package:flutter/foundation.dart';

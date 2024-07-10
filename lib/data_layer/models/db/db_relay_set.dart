@@ -1,11 +1,11 @@
 // ignore_for_file: unnecessary_overrides
 
-import 'package:dart_ndk/read_write.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write.dart';
 import 'package:isar/isar.dart';
 
-import '../domain_layer/entities/pubkey_mapping.dart';
-import '../domain_layer/entities/relay_set.dart';
-import '../shared/nips/nip65/read_write_marker.dart';
+import '../../../domain_layer/entities/pubkey_mapping.dart';
+import '../../../domain_layer/entities/relay_set.dart';
+import '../../../shared/nips/nip65/read_write_marker.dart';
 
 part 'db_relay_set.g.dart';
 

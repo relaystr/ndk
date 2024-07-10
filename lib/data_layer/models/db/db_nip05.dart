@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 
-import '../shared/nips/nip05/nip05.dart';
+import '../../../shared/nips/nip05/nip05.dart';
 
 part 'db_nip05.g.dart';
 
