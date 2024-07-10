@@ -1,12 +1,12 @@
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 
-import 'models/relay_set.dart';
-import 'models/user_relay_list.dart';
-import 'domain_layer/entities/metadata.dart';
-import 'shared/nips/nip05/nip05.dart';
+import '../../models/relay_set.dart';
+import '../../models/user_relay_list.dart';
+import '../entities/metadata.dart';
+import '../../shared/nips/nip05/nip05.dart';
 
-abstract class CacheManager {
+abstract class CacheManagerRepository {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Nip01Event? loadEvent(String id);

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/shared/logger/logger.dart';
 import 'package:dart_ndk/mem_cache_manager.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
@@ -16,14 +16,14 @@ import 'dart:developer' as developer;
 
 class RelayJitManager with Logger {
   List<RelayJit> connectedRelays = [];
-  late CacheManager cacheManager;
+  late CacheManagerRepository cacheManager;
 
   final Completer<void> _seedRelaysCompleter = Completer<void>();
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
   RelayJitManager({
     List<String> seedRelays = RelayJitConfig.SEED_RELAYS,
-    CacheManager? cacheManager,
+    CacheManagerRepository? cacheManager,
   }) {
     this.cacheManager = cacheManager ?? MemCacheManager();
     _connectSeedRelays(seedRelays);

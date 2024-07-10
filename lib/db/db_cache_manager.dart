@@ -1,7 +1,7 @@
 import 'dart:core';
 import 'dart:io';
 
-import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_event.dart';
 import 'package:dart_ndk/db/db_metadata.dart';
@@ -20,7 +20,7 @@ import '../models/user_relay_list.dart';
 import '../domain_layer/entities/metadata.dart';
 import '../shared/nips/nip05/nip05.dart';
 
-class DbCacheManager extends CacheManager {
+class DbCacheManager extends CacheManagerRepository {
   late Isar isar;
   EventFilter? eventFilter;
 

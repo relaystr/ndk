@@ -1,4 +1,4 @@
-import 'package:dart_ndk/cache_manager.dart';
+import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/shared/logger/logger.dart';
 import 'package:dart_ndk/shared/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
@@ -36,7 +36,7 @@ class RelayJitPubkeyStrategy with Logger {
     required List<RelayJit> connectedRelays,
 
     /// used to get the nip65 data if its necessary to look for not covered pubkeys
-    required CacheManager cacheManager,
+    required CacheManagerRepository cacheManager,
     required int desiredCoverage,
     required bool closeOnEOSE,
     required ReadWriteMarker direction,
@@ -125,7 +125,7 @@ class RelayJitPubkeyStrategy with Logger {
     required Filter filter,
     required List<CoveragePubkey> coveragePubkeys,
     required List<RelayJit> connectedRelays,
-    required CacheManager cacheManager,
+    required CacheManagerRepository cacheManager,
     required int desiredCoverage,
     required ReadWriteMarker direction,
     required List<String> ignoreRelays,
@@ -219,7 +219,7 @@ class RelayJitPubkeyStrategy with Logger {
   }
 
   static List<Nip65> _getNip65Data(
-      List<String> pubkeys, CacheManager cacheManager) {
+      List<String> pubkeys, CacheManagerRepository cacheManager) {
     List<Nip01Event> events =
         cacheManager.loadEvents(kinds: [Nip65.KIND], pubKeys: pubkeys);
 
@@ -236,7 +236,7 @@ class RelayJitPubkeyStrategy with Logger {
     required NostrRequestJit originalRequest,
     required Filter filter,
     required List<RelayJit> connectedRelays,
-    required CacheManager cacheManager,
+    required CacheManagerRepository cacheManager,
     required int desiredCoverage,
     required bool closeOnEOSE,
     required ReadWriteMarker direction,
