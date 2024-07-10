@@ -1,8 +1,8 @@
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 
-import '../../models/relay_set.dart';
-import '../../models/user_relay_list.dart';
+import '../entities/relay_set.dart';
+import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
 import '../../shared/nips/nip05/nip05.dart';
 

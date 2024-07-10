@@ -1,9 +1,9 @@
 import 'package:collection/collection.dart';
-import 'package:dart_ndk/models/pubkey_mapping.dart';
+import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:dart_ndk/read_write.dart';
 import 'package:dart_ndk/request.dart';
 
-import '../domain_layer/entities/filter.dart';
+import 'filter.dart';
 
 class RelaySet {
   String get id => buildId(name, pubKey);

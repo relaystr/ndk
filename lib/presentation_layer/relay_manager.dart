@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
-import 'package:dart_ndk/models/pubkey_mapping.dart';
+import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
@@ -21,8 +21,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../config/bootstrap_relays.dart';
 import '../event_filter.dart';
-import '../models/relay_set.dart';
-import '../models/user_relay_list.dart';
+import '../domain_layer/entities/relay_set.dart';
+import '../domain_layer/entities/user_relay_list.dart';
 import '../data_layer/repositories/verifiers/acinq_event_verifier.dart';
 import '../domain_layer/entities/nip_01_event.dart';
 import '../domain_layer/repositories/event_verifier_repository.dart';
