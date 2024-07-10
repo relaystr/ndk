@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
 
-import 'package:dart_ndk/data_layer/repositories/db_cache_manager.dart';
+import 'package:dart_ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
 import 'package:dart_ndk/db/db_contact_list.dart';
 import 'package:dart_ndk/db/db_event.dart';
 import 'package:dart_ndk/db/db_metadata.dart';

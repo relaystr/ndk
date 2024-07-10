@@ -6,7 +6,7 @@ import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:dart_ndk/data_layer/repositories/mem_cache_manager.dart';
+import 'package:dart_ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
