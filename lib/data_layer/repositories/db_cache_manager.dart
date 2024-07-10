@@ -14,13 +14,13 @@ import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
-import '../event_filter.dart';
-import '../models/relay_set.dart';
-import '../models/user_relay_list.dart';
-import '../domain_layer/entities/metadata.dart';
-import '../shared/nips/nip05/nip05.dart';
+import '../../event_filter.dart';
+import '../../models/relay_set.dart';
+import '../../models/user_relay_list.dart';
+import '../../domain_layer/entities/metadata.dart';
+import '../../shared/nips/nip05/nip05.dart';
 
-class DbCacheManager extends CacheManagerRepository {
+class DbCacheManagerRepositoryImpl extends CacheManagerRepository {
   late Isar isar;
   EventFilter? eventFilter;
 

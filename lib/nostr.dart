@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/mem_cache_manager.dart';
+import 'package:dart_ndk/data_layer/repositories/mem_cache_manager.dart';
 import 'package:dart_ndk/models/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
@@ -34,7 +34,7 @@ import 'domain_layer/entities/nip_51_list.dart';
 import 'domain_layer/entities/nip_65.dart';
 
 class Nostr {
-  CacheManagerRepository cacheManager = MemCacheManager();
+  CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
 
   late RelayManager relayManager;
 

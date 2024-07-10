@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/shared/logger/logger.dart';
-import 'package:dart_ndk/mem_cache_manager.dart';
+import 'package:dart_ndk/data_layer/repositories/mem_cache_manager.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
@@ -25,7 +25,7 @@ class RelayJitManager with Logger {
     List<String> seedRelays = RelayJitConfig.SEED_RELAYS,
     CacheManagerRepository? cacheManager,
   }) {
-    this.cacheManager = cacheManager ?? MemCacheManager();
+    this.cacheManager = cacheManager ?? MemCacheManagerRepositoryImpl();
     _connectSeedRelays(seedRelays);
   }
 

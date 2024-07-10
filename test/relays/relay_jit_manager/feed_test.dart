@@ -1,5 +1,5 @@
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:dart_ndk/mem_cache_manager.dart';
+import 'package:dart_ndk/data_layer/repositories/mem_cache_manager.dart';
 import 'package:dart_ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
@@ -20,7 +20,7 @@ void main() async {
     () {
       _calculateBestRelaysForNpubContactsFeed(String npub,
           {int relayMinCountPerPubKey = 2}) async {
-        CacheManagerRepository cacheManager = MemCacheManager();
+        CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
         RelayJitManager relayJitManager =
             RelayJitManager(cacheManager: cacheManager);
         // wait for the relays to connect

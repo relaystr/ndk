@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:dart_ndk/mem_cache_manager.dart';
+import 'package:dart_ndk/data_layer/repositories/mem_cache_manager.dart';
 import 'package:dart_ndk/shared/nips/nip01/bip340.dart';
 import 'package:dart_ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
@@ -140,7 +140,7 @@ void main() async {
     test('query events from one seed relay', () async {
       await startServers();
 
-      CacheManagerRepository cacheManager = MemCacheManager();
+      CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
       RelayJitManager manager = RelayJitManager(
         seedRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
         cacheManager: cacheManager,
@@ -169,7 +169,7 @@ void main() async {
 
     test('query with inbox/outbox', () async {
       await startServers();
-      CacheManagerRepository cacheManager = MemCacheManager();
+      CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
       RelayJitManager manager = RelayJitManager(
         seedRelays: [],
         cacheManager: cacheManager,
