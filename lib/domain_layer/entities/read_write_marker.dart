@@ -1,3 +1,4 @@
+/// nip65 read/write marker
 enum ReadWriteMarker {
   readOnly,
   writeOnly,

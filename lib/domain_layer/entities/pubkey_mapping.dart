@@ -1,4 +1,4 @@
-import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
+import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 
 /// maps the direction for a pubkey read, write, both
 class PubkeyMapping {
