@@ -8,7 +8,7 @@ import 'package:dart_ndk/domain_layer/entities/nip_65.dart';
 import 'package:dart_ndk/shared/nips/nip65/read_write_marker.dart';
 import 'package:dart_ndk/shared/nips/nip65/relay_ranking.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
-import 'package:dart_ndk/presentation_layer/relay_jit_manager.dart';
+import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 

@@ -1,4 +1,5 @@
 library dart_ndk;
 
-export "presentation_layer/relay_manager.dart";
-export "presentation_layer/relay_jit_manager.dart";
+//! todo: expose via presentation layer
+export "domain_layer/usecases/relay_manager.dart";
+export "domain_layer/usecases/relay_jit_manager.dart";
