@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:dart_ndk/config/request_defaults.dart';
 import 'package:dart_ndk/shared/logger/logger.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
-import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
 
 ///
 ///! currently a partial copy of request.dart, need to discuss how to resolve this
@@ -68,7 +68,7 @@ class NostrRequestJit with Logger {
     required this.eventVerifier,
     required this.filters,
     this.closeOnEOSE = true,
-    this.timeout = RelayJitConfig.DEFAULT_STREAM_IDLE_TIMEOUT,
+    this.timeout = RequestDefaults.DEFAULT_STREAM_IDLE_TIMEOUT,
     this.desiredCoverage = 2,
     this.onTimeout,
   });

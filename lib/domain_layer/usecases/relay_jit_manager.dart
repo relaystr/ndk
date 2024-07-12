@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dart_ndk/config/bootstrap_relays.dart';
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/shared/logger/logger.dart';
 import 'package:dart_ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
@@ -7,7 +8,6 @@ import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
-import 'package:dart_ndk/relay_jit_manager/relay_jit_config.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
@@ -22,7 +22,7 @@ class RelayJitManager with Logger {
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
   RelayJitManager({
-    List<String> seedRelays = RelayJitConfig.SEED_RELAYS,
+    List<String> seedRelays = DEFAULT_BOOTSTRAP_RELAYS,
     CacheManagerRepository? cacheManager,
   }) {
     this.cacheManager = cacheManager ?? MemCacheManagerRepositoryImpl();
