@@ -16,6 +16,7 @@ class Example {
       filters: imposterFilter,
     );
 
-    var myResponse = await globalNDKobj.requestNostrEvent(myRequest).toList();
+    final myResponse = await globalNDKobj.requestNostrEvent(myRequest);
+    final stream = myResponse.stream;
   }
 }
