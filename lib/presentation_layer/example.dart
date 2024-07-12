@@ -14,7 +14,6 @@ class Example {
     var myRequest = RequestConfig.query(
       "myrequest",
       filters: imposterFilter,
-      eventVerifier: eventVerifier,
     );
 
     var myResponse = await globalNDKobj.requestNostrEvent(myRequest).toList();
