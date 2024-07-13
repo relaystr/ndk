@@ -1,6 +1,7 @@
 import 'package:dart_ndk/presentation_layer/request_state.dart';
 import 'package:dart_ndk/presentation_layer/request_config.dart';
 
+import 'init.dart';
 import 'request_response.dart';
 
 // some global obj that schuld be kept in memory by lib user
@@ -8,7 +9,8 @@ class OurApi {
   // placeholder
   dynamic someConfig;
 
-  // init http client
+  // global initialization use to access rdy repositories
+  final Initialization _initialization = Initialization();
 
   // init db
 
