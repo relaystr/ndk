@@ -1,6 +1,8 @@
+///
 /// exports all entities, intended usage:
 /// import 'package:dart_ndk/entities.dart' as ndk_entities;
 ///
+
 export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/filter.dart';
 export 'domain_layer/entities/metadata.dart';

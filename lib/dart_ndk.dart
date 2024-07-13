@@ -13,6 +13,9 @@ export 'presentation_layer/ndk_request.dart';
 /**
  * common entities
  * 
+ * to access all entities use 
+ * import 'package:dart_ndk/entities.dart' as ndk_entities;
+ * 
  */
 export 'domain_layer/entities/nip_01_event.dart';
 export 'domain_layer/entities/filter.dart';
@@ -32,7 +35,7 @@ export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
 export 'data_layer/repositories/signers/amber_event_signer.dart';
 export 'data_layer/repositories/signers/bip340_event_signer.dart';
 
-// cache
+/// cache
 export 'domain_layer/repositories/cache_manager.dart';
 export 'data_layer/repositories/cache_manager/mem_cache_manager.dart';
 export 'data_layer/repositories/cache_manager/db_cache_manager.dart';
