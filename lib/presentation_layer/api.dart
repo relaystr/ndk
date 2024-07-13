@@ -1,5 +1,5 @@
 import 'package:dart_ndk/presentation_layer/request_state.dart';
-import 'package:dart_ndk/presentation_layer/request_config.dart';
+import 'package:dart_ndk/presentation_layer/ndk_request.dart';
 
 import 'init.dart';
 import 'request_response.dart';
@@ -21,7 +21,7 @@ class OurApi {
   OurApi(this.someConfig);
 
   /// ! this is just an example
-  RequestResponse requestNostrEvent(RequestConfig config) {
+  RequestResponse requestNostrEvent(NdkRequest config) {
     RequestState state = RequestState(config);
 
     final responseStream = state.stream;

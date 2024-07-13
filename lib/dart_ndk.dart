@@ -5,13 +5,19 @@ library dart_ndk;
  * 
  */
 
-// todo:
+export 'presentation_layer/ndk_config.dart';
+export 'presentation_layer/ndk_request.dart';
+
+// todo refine api and export
 
 /**
  * common entities
  * 
  */
+export 'domain_layer/entities/nip_01_event.dart';
 export 'domain_layer/entities/filter.dart';
+export 'domain_layer/entities/nip_51_list.dart';
+export 'domain_layer/entities/contact_list.dart';
 
 /**
  *  export classes that need to be injected

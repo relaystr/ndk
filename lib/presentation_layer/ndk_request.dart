@@ -4,8 +4,10 @@ import '../domain_layer/entities/filter.dart';
 
 /// proposal for a request_config used by the user
 ///
+///? before request_config
+///
 
-class RequestConfig {
+class NdkRequest {
   /// nostr id
   String id;
   bool closeOnEOSE;
@@ -14,7 +16,7 @@ class RequestConfig {
   final int desiredCoverage;
   List<Filter> filters;
 
-  RequestConfig.query(
+  NdkRequest.query(
     this.id, {
     required this.filters,
     this.desiredCoverage = 2,
@@ -23,7 +25,7 @@ class RequestConfig {
     this.onTimeout,
   });
 
-  RequestConfig.subscription(
+  NdkRequest.subscription(
     this.id, {
     required this.filters,
     this.desiredCoverage = 2,

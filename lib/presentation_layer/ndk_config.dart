@@ -1,7 +1,7 @@
 import '../domain_layer/repositories/event_verifier_repository.dart';
 
-class GlobalConfig {
+class NdkConfig {
   EventVerifier eventVerifier;
 
-  GlobalConfig(this.eventVerifier);
+  NdkConfig(this.eventVerifier);
 }

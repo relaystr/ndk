@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/presentation_layer/request_config.dart';
+import 'package:dart_ndk/presentation_layer/ndk_request.dart';
 
 class RequestState {
   StreamController<Nip01Event> controller = StreamController<Nip01Event>();
 
   Stream<Nip01Event> get stream => controller.stream;
 
-  RequestConfig requestConfig;
+  NdkRequest requestConfig;
 
   //! our requests tracking obj
   Map<String, dynamic> requests = {};

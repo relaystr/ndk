@@ -1,7 +1,7 @@
 import 'package:dart_ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
 import 'package:dart_ndk/presentation_layer/api.dart';
-import 'package:dart_ndk/presentation_layer/request_config.dart';
+import 'package:dart_ndk/presentation_layer/ndk_request.dart';
 
 //? how a user might use the api
 class Example {
@@ -11,7 +11,7 @@ class Example {
   main() async {
     dynamic imposterFilter = {"pretend this is a valid filter", "some data"};
 
-    var myRequest = RequestConfig.query(
+    var myRequest = NdkRequest.query(
       "myrequest",
       filters: imposterFilter,
     );
