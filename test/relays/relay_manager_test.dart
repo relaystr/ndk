@@ -225,7 +225,7 @@ void main() async {
       RelayJitManager manager = RelayJitManager(
         seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       );
-      EventVerifierRepository eventVerifier = MockEventVerifier();
+      EventVerifier eventVerifier = MockEventVerifier();
 
       NostrRequestJit myquery = NostrRequestJit.query(
         "test",
@@ -315,7 +315,7 @@ void main() async {
       RelayJitManager manager = RelayJitManager(
         seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       );
-      EventVerifierRepository eventVerifier = MockEventVerifier();
+      EventVerifier eventVerifier = MockEventVerifier();
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed

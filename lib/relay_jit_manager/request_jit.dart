@@ -13,7 +13,7 @@ import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 
 class NostrRequestJit with Logger {
   String id;
-  EventVerifierRepository eventVerifier;
+  EventVerifier eventVerifier;
 
   List<Filter> filters;
 

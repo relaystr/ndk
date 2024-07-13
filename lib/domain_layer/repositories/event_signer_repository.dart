@@ -1,6 +1,6 @@
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 
-abstract class EventSignerRepository {
+abstract class EventSigner {
   Future<void> sign(Nip01Event event);
 
   String getPublicKey();

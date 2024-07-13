@@ -6,12 +6,12 @@ import '../../../shared/nips/nip19/nip19.dart';
 import '../../../domain_layer/repositories/event_signer_repository.dart';
 import '../../data_sources/amber_flutter.dart';
 
-class AmberEventSignerRepositoryImpl implements EventSignerRepository {
+class AmberEventSigner implements EventSigner {
   final AmberFlutterDS amberFlutterDS;
 
   final String publicKey;
 
-  AmberEventSignerRepositoryImpl(this.publicKey, this.amberFlutterDS);
+  AmberEventSigner(this.publicKey, this.amberFlutterDS);
 
   @override
   Future<void> sign(Nip01Event event) async {

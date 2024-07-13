@@ -6,7 +6,7 @@ import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
 import '../../shared/nips/nip05/nip05.dart';
 
-abstract class CacheManagerRepository {
+abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Nip01Event? loadEvent(String id);

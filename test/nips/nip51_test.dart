@@ -35,8 +35,8 @@ void main() {
     });
     test('fromEvent private', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
-      Bip340EventSignerRepositoryImpl signer =
-          Bip340EventSignerRepositoryImpl(key1.privateKey, key1.publicKey);
+      Bip340EventSigner signer =
+          Bip340EventSigner(key1.privateKey, key1.publicKey);
 
       Nip51Set relaySet = Nip51Set(
           pubKey: key1.publicKey,
@@ -77,8 +77,8 @@ void main() {
     });
     test('fromEvent private', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
-      Bip340EventSignerRepositoryImpl signer =
-          Bip340EventSignerRepositoryImpl(key1.privateKey, key1.publicKey);
+      Bip340EventSigner signer =
+          Bip340EventSigner(key1.privateKey, key1.publicKey);
 
       Nip51List relayList = Nip51List(
           pubKey: key1.publicKey,

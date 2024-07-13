@@ -20,7 +20,7 @@ void main() async {
     () {
       _calculateBestRelaysForNpubContactsFeed(String npub,
           {int relayMinCountPerPubKey = 2}) async {
-        CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
+        CacheManager cacheManager = MemCacheManager();
         RelayJitManager relayJitManager =
             RelayJitManager(cacheManager: cacheManager);
         // wait for the relays to connect
@@ -28,8 +28,7 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        EventVerifierRepository eventVerifier =
-            Bip340EventVerifierRepositoryImpl();
+        EventVerifier eventVerifier = Bip340EventVerifier();
 
         NostrRequestJit contactsRequest = NostrRequestJit.query("contacts",
             filters: [

@@ -36,7 +36,7 @@ class RelayJitPubkeyStrategy with Logger {
     required List<RelayJit> connectedRelays,
 
     /// used to get the nip65 data if its necessary to look for not covered pubkeys
-    required CacheManagerRepository cacheManager,
+    required CacheManager cacheManager,
     required int desiredCoverage,
     required bool closeOnEOSE,
     required ReadWriteMarker direction,
@@ -125,7 +125,7 @@ class RelayJitPubkeyStrategy with Logger {
     required Filter filter,
     required List<CoveragePubkey> coveragePubkeys,
     required List<RelayJit> connectedRelays,
-    required CacheManagerRepository cacheManager,
+    required CacheManager cacheManager,
     required int desiredCoverage,
     required ReadWriteMarker direction,
     required List<String> ignoreRelays,
@@ -219,7 +219,7 @@ class RelayJitPubkeyStrategy with Logger {
   }
 
   static List<Nip65> _getNip65Data(
-      List<String> pubkeys, CacheManagerRepository cacheManager) {
+      List<String> pubkeys, CacheManager cacheManager) {
     List<Nip01Event> events =
         cacheManager.loadEvents(kinds: [Nip65.KIND], pubKeys: pubkeys);
 
@@ -236,7 +236,7 @@ class RelayJitPubkeyStrategy with Logger {
     required NostrRequestJit originalRequest,
     required Filter filter,
     required List<RelayJit> connectedRelays,
-    required CacheManagerRepository cacheManager,
+    required CacheManager cacheManager,
     required int desiredCoverage,
     required bool closeOnEOSE,
     required ReadWriteMarker direction,

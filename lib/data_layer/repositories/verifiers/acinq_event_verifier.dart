@@ -7,8 +7,7 @@ import 'package:flutter/services.dart';
 
 import '../../../dart_ndk_platform_interface.dart';
 
-class AcinqSecp256k1EventVerifierRepositoryImpl
-    extends Bip340EventVerifierRepositoryImpl {
+class AcinqSecp256k1EventVerifier extends Bip340EventVerifier {
   static const platform = MethodChannel('flutter.native/helper');
 
   @override

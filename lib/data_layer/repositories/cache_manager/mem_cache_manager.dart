@@ -9,7 +9,7 @@ import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
 import '../../../shared/nips/nip05/nip05.dart';
 
-class MemCacheManagerRepositoryImpl implements CacheManagerRepository {
+class MemCacheManager implements CacheManager {
   Map<String, UserRelayList> userRelayLists = {};
   Map<String, RelaySet> relaySets = {};
   Map<String, ContactList> contactLists = {};

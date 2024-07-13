@@ -6,7 +6,7 @@ import 'package:dart_ndk/presentation_layer/request_config.dart';
 //? how a user might use the api
 class Example {
   OurApi globalNDKobj = OurApi({"some": "config"});
-  EventVerifierRepository eventVerifier = Bip340EventVerifierRepositoryImpl();
+  EventVerifier eventVerifier = Bip340EventVerifier();
 
   main() async {
     dynamic imposterFilter = {"pretend this is a valid filter", "some data"};

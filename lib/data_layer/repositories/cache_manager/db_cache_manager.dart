@@ -19,11 +19,11 @@ import '../../../domain_layer/entities/metadata.dart';
 import '../../../shared/nips/nip05/nip05.dart';
 import '../../data_sources/isar_db.dart';
 
-class DbCacheManagerRepositoryImpl extends CacheManagerRepository {
+class DbCacheManager extends CacheManager {
   IsarDbDs isar_ds;
   EventFilter? eventFilter;
 
-  DbCacheManagerRepositoryImpl(this.isar_ds);
+  DbCacheManager(this.isar_ds);
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {

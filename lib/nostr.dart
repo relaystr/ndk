@@ -34,7 +34,7 @@ import 'domain_layer/entities/nip_51_list.dart';
 import 'domain_layer/entities/nip_65.dart';
 
 class Nostr {
-  CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
+  CacheManager cacheManager = MemCacheManager();
 
   late RelayManager relayManager;
 
@@ -44,7 +44,7 @@ class Nostr {
   // ====================================================================================================================
 
   Future<Nip01Event> broadcastReaction(
-      String eventId, Iterable<String> relays, EventSignerRepository signer,
+      String eventId, Iterable<String> relays, EventSigner signer,
       {String reaction = "+"}) async {
     Nip01Event event = Nip01Event(
         pubKey: signer.getPublicKey(),
@@ -58,8 +58,8 @@ class Nostr {
     return event;
   }
 
-  Future<Nip01Event> broadcastDeletion(String eventId, Iterable<String> relays,
-      EventSignerRepository signer) async {
+  Future<Nip01Event> broadcastDeletion(
+      String eventId, Iterable<String> relays, EventSigner signer) async {
     Nip01Event event = Nip01Event(
         pubKey: signer.getPublicKey(),
         kind: Deletion.KIND,
@@ -77,7 +77,7 @@ class Nostr {
   static const Duration REFRESH_CONTACT_LIST_DURATION = Duration(minutes: 10);
 
   Future<ContactList> ensureUpToDateContactListOrEmpty(
-      EventSignerRepository signer) async {
+      EventSigner signer) async {
     ContactList? contactList =
         cacheManager.loadContactList(signer.getPublicKey());
     int sometimeAgo = DateTime.now()
@@ -96,7 +96,7 @@ class Nostr {
   }
 
   Future<ContactList> broadcastAddContact(
-      String add, Iterable<String> relays, EventSignerRepository signer) async {
+      String add, Iterable<String> relays, EventSigner signer) async {
     ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (!contactList.contacts.contains(add)) {
       contactList.contacts.add(add);
@@ -108,8 +108,8 @@ class Nostr {
     return contactList;
   }
 
-  Future<ContactList> broadcastAddFollowedTag(String toAdd,
-      Iterable<String> relays, EventSignerRepository signer) async {
+  Future<ContactList> broadcastAddFollowedTag(
+      String toAdd, Iterable<String> relays, EventSigner signer) async {
     ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (!contactList.followedTags.contains(toAdd)) {
       contactList.followedTags.add(toAdd);
@@ -121,8 +121,8 @@ class Nostr {
     return contactList;
   }
 
-  Future<ContactList> broadcastAddFollowedCommunity(String toAdd,
-      Iterable<String> relays, EventSignerRepository signer) async {
+  Future<ContactList> broadcastAddFollowedCommunity(
+      String toAdd, Iterable<String> relays, EventSigner signer) async {
     ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (!contactList.followedCommunities.contains(toAdd)) {
       contactList.followedCommunities.add(toAdd);
@@ -134,8 +134,8 @@ class Nostr {
     return contactList;
   }
 
-  Future<ContactList> broadcastAddFollowedEvent(String toAdd,
-      Iterable<String> relays, EventSignerRepository signer) async {
+  Future<ContactList> broadcastAddFollowedEvent(
+      String toAdd, Iterable<String> relays, EventSigner signer) async {
     ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (!contactList.followedEvents.contains(toAdd)) {
       contactList.followedEvents.add(toAdd);
@@ -147,8 +147,8 @@ class Nostr {
     return contactList;
   }
 
-  Future<ContactList?> broadcastRemoveContact(String toRemove,
-      Iterable<String> relays, EventSignerRepository signer) async {
+  Future<ContactList?> broadcastRemoveContact(
+      String toRemove, Iterable<String> relays, EventSigner signer) async {
     ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (contactList.contacts.contains(toRemove)) {
       contactList.contacts.remove(toRemove);
@@ -160,8 +160,8 @@ class Nostr {
     return contactList;
   }
 
-  Future<ContactList?> broadcastRemoveFollowedTag(String toRemove,
-      Iterable<String> relays, EventSignerRepository signer) async {
+  Future<ContactList?> broadcastRemoveFollowedTag(
+      String toRemove, Iterable<String> relays, EventSigner signer) async {
     ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (contactList.followedTags.contains(toRemove)) {
       contactList.followedTags.remove(toRemove);
@@ -173,8 +173,8 @@ class Nostr {
     return contactList;
   }
 
-  Future<ContactList?> broadcastRemoveFollowedCommunity(String toRemove,
-      Iterable<String> relays, EventSignerRepository signer) async {
+  Future<ContactList?> broadcastRemoveFollowedCommunity(
+      String toRemove, Iterable<String> relays, EventSigner signer) async {
     ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (contactList.followedCommunities.contains(toRemove)) {
       contactList.followedCommunities.remove(toRemove);
@@ -186,8 +186,8 @@ class Nostr {
     return contactList;
   }
 
-  Future<ContactList?> broadcastRemoveFollowedEvent(String toRemove,
-      Iterable<String> relays, EventSignerRepository signer) async {
+  Future<ContactList?> broadcastRemoveFollowedEvent(
+      String toRemove, Iterable<String> relays, EventSigner signer) async {
     ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
     if (contactList.followedEvents.contains(toRemove)) {
       contactList.followedEvents.remove(toRemove);
@@ -203,8 +203,7 @@ class Nostr {
   // otherwise we risk adding/removing relays to a list that is out of date and thus loosing relays other client has added/removed since.
   static const Duration REFRESH_USER_RELAY_DURATION = Duration(minutes: 10);
 
-  Future<UserRelayList?> ensureUpToDateUserRelayList(
-      EventSignerRepository signer) async {
+  Future<UserRelayList?> ensureUpToDateUserRelayList(EventSigner signer) async {
     UserRelayList? userRelayList =
         cacheManager.loadUserRelayList(signer.getPublicKey());
     int sometimeAgo = DateTime.now()
@@ -224,7 +223,7 @@ class Nostr {
       String relayUrl,
       ReadWriteMarker marker,
       Iterable<String> broadcastRelays,
-      EventSignerRepository signer) async {
+      EventSigner signer) async {
     UserRelayList? userRelayList = await ensureUpToDateUserRelayList(signer);
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -246,7 +245,7 @@ class Nostr {
   }
 
   Future<UserRelayList?> broadcastRemoveNip65Relay(String relayUrl,
-      Iterable<String> broadcastRelays, EventSignerRepository signer) async {
+      Iterable<String> broadcastRelays, EventSigner signer) async {
     UserRelayList? userRelayList = await ensureUpToDateUserRelayList(signer);
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -274,7 +273,7 @@ class Nostr {
       String relayUrl,
       ReadWriteMarker marker,
       Iterable<String> broadcastRelays,
-      EventSignerRepository signer) async {
+      EventSigner signer) async {
     UserRelayList? userRelayList = await ensureUpToDateUserRelayList(signer);
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -308,7 +307,7 @@ class Nostr {
   }
 
   Future<Nip51Set> broadcastAddNip51SetRelay(String relayUrl, String name,
-      Iterable<String> broadcastRelays, EventSignerRepository signer,
+      Iterable<String> broadcastRelays, EventSigner signer,
       {bool private = false}) async {
     if (private && !signer.canSign()) {
       throw Exception(
@@ -345,7 +344,7 @@ class Nostr {
   }
 
   Future<Nip51Set?> broadcastRemoveNip51SetRelay(String relayUrl, String name,
-      Iterable<String> broadcastRelays, EventSignerRepository signer,
+      Iterable<String> broadcastRelays, EventSigner signer,
       {List<String>? defaultRelaysIfEmpty, bool private = false}) async {
     if (private && !signer.canSign()) {
       throw Exception(
@@ -390,7 +389,7 @@ class Nostr {
   }
 
   Future<Nip51List> broadcastAddNip51ListRelay(int kind, String relayUrl,
-      Iterable<String> broadcastRelays, EventSignerRepository signer,
+      Iterable<String> broadcastRelays, EventSigner signer,
       {bool private = false}) async {
     if (private && !signer.canSign()) {
       throw Exception(
@@ -420,7 +419,7 @@ class Nostr {
   }
 
   Future<Nip51List?> broadcastRemoveNip51Relay(int kind, String relayUrl,
-      Iterable<String> broadcastRelays, EventSignerRepository signer,
+      Iterable<String> broadcastRelays, EventSigner signer,
       {List<String>? defaultRelaysIfEmpty}) async {
     if (!signer.canSign()) {
       throw Exception(
@@ -463,7 +462,7 @@ class Nostr {
       String tag,
       String value,
       Iterable<String> broadcastRelays,
-      EventSignerRepository signer) async {
+      EventSigner signer) async {
     if (!signer.canSign()) {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
@@ -494,12 +493,8 @@ class Nostr {
     return list;
   }
 
-  Future<Nip51List> broadcastAddNip51ListElement(
-      int kind,
-      String tag,
-      String value,
-      Iterable<String> broadcastRelays,
-      EventSignerRepository signer,
+  Future<Nip51List> broadcastAddNip51ListElement(int kind, String tag,
+      String value, Iterable<String> broadcastRelays, EventSigner signer,
       {bool private = false}) async {
     if (private && !signer.canSign()) {
       throw Exception(
@@ -530,8 +525,7 @@ class Nostr {
 
   //*******************************************************************************************************************************/
 
-  Future<Nip01Event?> getSingleMetadataEvent(
-      EventSignerRepository signer) async {
+  Future<Nip01Event?> getSingleMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
     await for (final event in (await relayManager.requestRelays(
             relayManager.bootstrapRelays,
@@ -549,7 +543,7 @@ class Nostr {
   }
 
   Future<Metadata> broadcastMetadata(Metadata metadata,
-      Iterable<String> broadcastRelays, EventSignerRepository signer) async {
+      Iterable<String> broadcastRelays, EventSigner signer) async {
     Nip01Event? event = await getSingleMetadataEvent(signer);
     if (event != null) {
       Map<String, dynamic> map = json.decode(event.content);
@@ -795,8 +789,7 @@ class Nostr {
     return userRelayList;
   }
 
-  Future<Nip51List?> getCachedNip51List(
-      int kind, EventSignerRepository signer) async {
+  Future<Nip51List?> getCachedNip51List(int kind, EventSigner signer) async {
     List<Nip01Event>? events = cacheManager
         .loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     events.sort(
@@ -807,7 +800,7 @@ class Nostr {
         : null;
   }
 
-  Future<Nip51List?> getSingleNip51List(int kind, EventSignerRepository signer,
+  Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
       {bool forceRefresh = false, int timeout = 5}) async {
     Nip51List? list =
         !forceRefresh ? await getCachedNip51List(kind, signer) : null;
@@ -837,7 +830,7 @@ class Nostr {
   }
 
   Future<Nip51Set?> getCachedNip51RelaySet(
-      String name, EventSignerRepository signer) async {
+      String name, EventSigner signer) async {
     List<Nip01Event>? events = cacheManager.loadEvents(
         pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
@@ -854,8 +847,7 @@ class Nostr {
         : null;
   }
 
-  Future<Nip51Set?> getSingleNip51RelaySet(
-      String name, EventSignerRepository signer,
+  Future<Nip51Set?> getSingleNip51RelaySet(String name, EventSigner signer,
       {bool forceRefresh = false}) async {
     Nip51Set? relaySet = await getCachedNip51RelaySet(name, signer);
     if (relaySet == null || forceRefresh) {
@@ -888,8 +880,7 @@ class Nostr {
     return relaySet;
   }
 
-  Future<List<Nip51Set>?> getNip51RelaySets(
-      int kind, EventSignerRepository signer,
+  Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer,
       {bool forceRefresh = false}) async {
     Nip51Set? relaySet; //getCachedNip51RelaySets(signer);
     if (relaySet == null || forceRefresh) {

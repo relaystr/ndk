@@ -140,13 +140,13 @@ void main() async {
     test('query events from one seed relay', () async {
       await startServers();
 
-      CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
+      CacheManager cacheManager = MemCacheManager();
       RelayJitManager manager = RelayJitManager(
         seedRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
         cacheManager: cacheManager,
       );
 
-      EventVerifierRepository eventVerifier = MockEventVerifier();
+      EventVerifier eventVerifier = MockEventVerifier();
       NostrRequestJit request = NostrRequestJit.query("debug-get-events",
           eventVerifier: eventVerifier,
           filters: [
@@ -169,12 +169,12 @@ void main() async {
 
     test('query with inbox/outbox', () async {
       await startServers();
-      CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
+      CacheManager cacheManager = MemCacheManager();
       RelayJitManager manager = RelayJitManager(
         seedRelays: [],
         cacheManager: cacheManager,
       );
-      EventVerifierRepository eventVerifier = MockEventVerifier();
+      EventVerifier eventVerifier = MockEventVerifier();
 
       // save nip65 data
       await cacheManager

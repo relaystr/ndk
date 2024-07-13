@@ -5,11 +5,11 @@ import '../../../shared/nips/nip04/nip04.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 import '../../../domain_layer/repositories/event_signer_repository.dart';
 
-class Bip340EventSignerRepositoryImpl implements EventSignerRepository {
+class Bip340EventSigner implements EventSigner {
   String? privateKey;
   String publicKey;
 
-  Bip340EventSignerRepositoryImpl(this.privateKey, this.publicKey);
+  Bip340EventSigner(this.privateKey, this.publicKey);
 
   @override
   Future<void> sign(Nip01Event event) async {

@@ -19,7 +19,7 @@ void main() async {
       "./libisar.so"); //initializeIsarCore(download: true);
 
   test('DbContactList', () async {
-    DbCacheManagerRepositoryImpl cacheManager = DbCacheManagerRepositoryImpl();
+    DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
     // int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String contact1 = "contact1";
@@ -35,7 +35,7 @@ void main() async {
   });
 
   test('DbUserRelayList', () async {
-    DbCacheManagerRepositoryImpl cacheManager = DbCacheManagerRepositoryImpl();
+    DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
@@ -57,7 +57,7 @@ void main() async {
     }
   });
   test('DbNip05', () async {
-    DbCacheManagerRepositoryImpl cacheManager = DbCacheManagerRepositoryImpl();
+    DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
     // int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
@@ -75,7 +75,7 @@ void main() async {
     expect(loadedNip05.valid, nip05.valid);
   });
   test('DbRelaySet', () async {
-    DbCacheManagerRepositoryImpl cacheManager = DbCacheManagerRepositoryImpl();
+    DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
     // int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
@@ -108,7 +108,7 @@ void main() async {
     }
   });
   test('DbMetadata', () async {
-    DbCacheManagerRepositoryImpl cacheManager = DbCacheManagerRepositoryImpl();
+    DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
@@ -140,7 +140,7 @@ void main() async {
     expect(loaded.website, metadata.website);
   });
   test('DbEvent', () async {
-    DbCacheManagerRepositoryImpl cacheManager = DbCacheManagerRepositoryImpl();
+    DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
@@ -254,7 +254,7 @@ void main() async {
   });
 
   test('DbEvent by pTags', () async {
-    DbCacheManagerRepositoryImpl cacheManager = DbCacheManagerRepositoryImpl();
+    DbCacheManager cacheManager = DbCacheManager();
     await cacheManager.init();
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";

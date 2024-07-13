@@ -16,16 +16,16 @@ import 'dart:developer' as developer;
 
 class RelayJitManager with Logger {
   List<RelayJit> connectedRelays = [];
-  late CacheManagerRepository cacheManager;
+  late CacheManager cacheManager;
 
   final Completer<void> _seedRelaysCompleter = Completer<void>();
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
   RelayJitManager({
     List<String> seedRelays = DEFAULT_BOOTSTRAP_RELAYS,
-    CacheManagerRepository? cacheManager,
+    CacheManager? cacheManager,
   }) {
-    this.cacheManager = cacheManager ?? MemCacheManagerRepositoryImpl();
+    this.cacheManager = cacheManager ?? MemCacheManager();
     _connectSeedRelays(seedRelays);
   }
 

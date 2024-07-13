@@ -38,10 +38,9 @@ class RelayManager {
 
   List<String> bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
 
-  CacheManagerRepository cacheManager = MemCacheManagerRepositoryImpl();
+  CacheManager cacheManager = MemCacheManager();
 
-  EventVerifierRepository eventVerifier =
-      AcinqSecp256k1EventVerifierRepositoryImpl();
+  EventVerifier eventVerifier = AcinqSecp256k1EventVerifier();
 
   /// Global relay registry by url
   Map<String, Relay> relays = {};
@@ -287,8 +286,8 @@ class RelayManager {
     return false;
   }
 
-  Future<void> broadcastEvent(Nip01Event event, Iterable<String> relays,
-      EventSignerRepository signer) async {
+  Future<void> broadcastEvent(
+      Nip01Event event, Iterable<String> relays, EventSigner signer) async {
     await signer.sign(event);
     await Future.wait(relays.map((url) => broadcastSignedEvent(event, url)));
   }
