@@ -175,7 +175,7 @@ class RelayJit extends Relay with Logger {
     dynamic msgToSend = msg.toJson();
     String encodedMsg = jsonEncode(msgToSend);
     _channel!.sink.add(encodedMsg);
-    Logger.log.t("🔼 send message to $url: $msgToSend");
+    Logger.log.d("🔼 send message to $url: $msgToSend");
     // link relay to request
   }
 

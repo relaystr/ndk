@@ -2,31 +2,33 @@ import 'package:dart_ndk/presentation_layer/request_state.dart';
 import 'package:dart_ndk/presentation_layer/ndk_request.dart';
 
 import 'init.dart';
+import 'ndk_config.dart';
 import 'request_response.dart';
 
 // some global obj that schuld be kept in memory by lib user
 class OurApi {
   // placeholder
-  dynamic someConfig;
+  NdkConfig ndkConfig;
 
   // global initialization use to access rdy repositories
   final Initialization _initialization = Initialization();
 
-  // init db
-
-  // global state
-
-  // map of active request states
-
-  OurApi(this.someConfig);
+  OurApi(this.ndkConfig);
 
   /// ! this is just an example
   RequestResponse requestNostrEvent(NdkRequest config) {
     RequestState state = RequestState(config);
 
     final responseStream = state.stream;
+
+    final response = RequestResponse(responseStream);
+
+    // todo caching middleware
+
+    // todo engine impl for unresolved?
+
     // calls uncase with config
-    return RequestResponse(responseStream);
+    return response;
   }
 
   /// ! this is just an example
