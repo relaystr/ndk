@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:crypto/crypto.dart';
-import 'package:dart_ndk/presentation_layer/request_state.dart';
 
 import '../domain_layer/entities/filter.dart';
 import 'global_state.dart';
+import 'request_state.dart';
 
 class ConcurrencyCheck {
   GlobalState globalState;
