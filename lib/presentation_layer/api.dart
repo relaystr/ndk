@@ -1,3 +1,4 @@
+import 'package:dart_ndk/presentation_layer/concurrency_check.dart';
 import 'package:dart_ndk/presentation_layer/request_state.dart';
 import 'package:dart_ndk/presentation_layer/ndk_request.dart';
 
@@ -17,11 +18,19 @@ class OurApi {
 
   /// ! this is just an example
   RequestResponse requestNostrEvent(NdkRequest config) {
-    RequestState state = RequestState(config);
+    RequestState requestState = RequestState(config);
 
-    final responseStream = state.stream;
+    final responseStream = requestState.stream;
 
     final response = RequestResponse(responseStream);
+
+    final concurrency = ConcurrencyCheck(_initialization.globalState);
+
+    // concurrency check - check if request is inFlight
+    final streamWasReplaced = concurrency.check(requestState);
+    if (streamWasReplaced) {
+      return response;
+    }
 
     // todo caching middleware
 
