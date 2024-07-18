@@ -1,10 +1,12 @@
-import 'package:dart_ndk/presentation_layer/concurrency_check.dart';
-import 'package:dart_ndk/presentation_layer/request_state.dart';
-import 'package:dart_ndk/presentation_layer/ndk_request.dart';
-
+import '../domain_layer/repositories/event_signer_repository.dart';
+import '../domain_layer/repositories/event_verifier_repository.dart';
+import 'concurrency_check.dart';
+import 'global_state.dart';
 import 'init.dart';
 import 'ndk_config.dart';
+import 'ndk_request.dart';
 import 'request_response.dart';
+import 'request_state.dart';
 
 // some global obj that schuld be kept in memory by lib user
 class OurApi {
@@ -13,6 +15,8 @@ class OurApi {
 
   // global initialization use to access rdy repositories
   final Initialization _initialization = Initialization();
+
+  final globalState = GlobalState();
 
   OurApi(this.ndkConfig);
 
@@ -24,7 +28,7 @@ class OurApi {
 
     final response = RequestResponse(responseStream);
 
-    final concurrency = ConcurrencyCheck(_initialization.globalState);
+    final concurrency = ConcurrencyCheck(globalState);
 
     // concurrency check - check if request is inFlight
     final streamWasReplaced = concurrency.check(requestState);
@@ -46,5 +50,15 @@ class OurApi {
   Future<dynamic> broadcastEvent(dynamic event, dynamic broadcastConfig) {
     // calls uncase with config
     throw UnimplementedError();
+  }
+
+  /// hot swap EventVerifier
+  changeEventVerifier(EventVerifier newEventVerifier) {
+    ndkConfig.eventVerifier = newEventVerifier;
+  }
+
+  /// hot swap EventSigner
+  changeEventSigner(EventSigner newEventSigner) {
+    ndkConfig.eventSigner = newEventSigner;
   }
 }

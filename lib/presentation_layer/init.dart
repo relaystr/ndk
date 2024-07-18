@@ -13,8 +13,6 @@ class Initialization {
 
   /// state obj
 
-  final globalState = GlobalState();
-
   final relayManger = RelayManager();
   final relayJitManager = RelayJitManager();
 }

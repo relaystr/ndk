@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:dart_ndk/dart_ndk.dart';
-
-import 'ndk_request.dart';
+import '../domain_layer/entities/nip_01_event.dart';
 
 class RequestResponse {
   final Stream<Nip01Event> stream;
