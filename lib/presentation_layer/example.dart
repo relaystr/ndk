@@ -16,6 +16,7 @@ class Example {
   );
 
   main() async {
+    //! advanced usecase
     dynamic imposterFilter = {"pretend this is a valid filter", "some data"};
 
     var myRequest = NdkRequest.query(

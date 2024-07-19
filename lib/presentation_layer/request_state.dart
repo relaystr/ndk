@@ -10,6 +10,8 @@ class RequestState {
 
   NdkRequest requestConfig;
 
+  get id => requestConfig.id;
+
   //! our requests tracking obj
   Map<String, dynamic> requests = {};
 
