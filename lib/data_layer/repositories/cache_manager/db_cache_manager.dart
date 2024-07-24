@@ -24,7 +24,7 @@ class DbCacheManager extends CacheManager {
   EventFilter? eventFilter;
 
   DbCacheManager({IsarDbDs? isar_ds, String? dbDir}) {
-    isar_ds = isar_ds ?? IsarDbDs();
+    this.isar_ds = isar_ds ?? IsarDbDs();
   }
 
   Future<void> init({String? directory}) async {
