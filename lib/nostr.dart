@@ -34,12 +34,13 @@ import 'domain_layer/entities/nip_51_list.dart';
 import 'domain_layer/entities/nip_65.dart';
 
 class Nostr {
-  CacheManager cacheManager = MemCacheManager();
+  late CacheManager cacheManager;
 
   late RelayManager relayManager;
 
-  Nostr({RelayManager? relayManager}) {
-    this.relayManager = relayManager ?? RelayManager();
+  Nostr({RelayManager? relayManager, CacheManager? cacheManager}) {
+    this.cacheManager = cacheManager ?? MemCacheManager();
+    this.relayManager = relayManager ?? RelayManager(cacheManager: cacheManager);
   }
   // ====================================================================================================================
 
