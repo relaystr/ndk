@@ -6,7 +6,7 @@ import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
 import 'package:dart_ndk/shared/nips/nip01/bip340.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_verifier.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 import 'package:dart_ndk/shared/nips/nip01/key_pair.dart';

@@ -1,7 +1,7 @@
 import 'package:dart_ndk/dart_ndk.dart';
 
 import '../domain_layer/repositories/cache_manager.dart';
-import '../domain_layer/repositories/event_verifier_repository.dart';
+import '../domain_layer/repositories/event_verifier.dart';
 
 class NdkConfig {
   EventVerifier eventVerifier;

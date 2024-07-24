@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:dart_ndk/data_layer/data_sources/websocket.dart';
 
-import '../../domain_layer/repositories/nostr_transport_repository.dart';
+import '../../domain_layer/repositories/nostr_transport.dart';
 
-class NostrTransportRepositoryImpl implements NostrTransportRepository {
+class NostrTransportRepositoryImpl implements NostrTransport {
   WebsocketDS websocketDS;
 
   NostrTransportRepositoryImpl(this.websocketDS) {

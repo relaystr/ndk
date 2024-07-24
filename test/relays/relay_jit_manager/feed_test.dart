@@ -2,7 +2,7 @@ import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import 'package:dart_ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/repositories/event_verifier_repository.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_verifier.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 import 'package:dart_ndk/shared/nips/nip01/key_pair.dart';

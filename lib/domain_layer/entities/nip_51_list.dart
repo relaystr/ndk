@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:dart_ndk/domain_layer/repositories/event_signer_repository.dart';
+import 'package:dart_ndk/domain_layer/repositories/event_signer.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 import 'package:flutter/foundation.dart';
 

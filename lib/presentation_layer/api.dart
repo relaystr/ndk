@@ -1,5 +1,5 @@
-import '../domain_layer/repositories/event_signer_repository.dart';
-import '../domain_layer/repositories/event_verifier_repository.dart';
+import '../domain_layer/repositories/event_signer.dart';
+import '../domain_layer/repositories/event_verifier.dart';
 import 'concurrency_check.dart';
 import 'global_state.dart';
 import 'init.dart';

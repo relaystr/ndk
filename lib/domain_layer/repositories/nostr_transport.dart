@@ -1,6 +1,6 @@
 import 'dart:async';
 
-abstract class NostrTransportRepository {
+abstract class NostrTransport {
   late Future<void> ready;
   Future<void> close();
   void send(dynamic data);

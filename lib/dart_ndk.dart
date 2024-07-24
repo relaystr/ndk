@@ -28,8 +28,8 @@ export 'domain_layer/entities/contact_list.dart';
  */
 
 /// signers / verifiers
-export 'domain_layer/repositories/event_verifier_repository.dart';
-export 'domain_layer/repositories/event_signer_repository.dart';
+export 'domain_layer/repositories/event_verifier.dart';
+export 'domain_layer/repositories/event_signer.dart';
 export 'data_layer/repositories/verifiers/acinq_event_verifier.dart';
 export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
 export 'data_layer/repositories/signers/amber_event_signer.dart';
