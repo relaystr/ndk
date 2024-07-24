@@ -20,10 +20,16 @@ import '../../../shared/nips/nip05/nip05.dart';
 import '../../data_sources/isar_db.dart';
 
 class DbCacheManager extends CacheManager {
-  IsarDbDs isar_ds;
+  late IsarDbDs isar_ds;
   EventFilter? eventFilter;
 
-  DbCacheManager(this.isar_ds);
+  DbCacheManager({IsarDbDs? isar_ds, String? dbDir}) {
+    isar_ds = isar_ds ?? IsarDbDs();
+  }
+
+  Future<void> init({String? directory}) async {
+    await isar_ds.init(directory: directory);
+  }
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {

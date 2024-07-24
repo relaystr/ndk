@@ -11,9 +11,9 @@ import '../models/db/db_relay_set.dart';
 import '../models/db/db_user_relay_list.dart';
 
 class IsarDbDs {
-  Isar isar;
+  late Isar isar;
 
-  IsarDbDs(this.isar);
+  IsarDbDs();
 
   Future<void> init({String? directory}) async {
     // await Isar.initialize("./libisar_android_armv7.so");//initializeIsarCore(download: true);
