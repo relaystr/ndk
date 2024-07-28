@@ -14,3 +14,15 @@ String? cleanRelayUrl(String adr) {
   }
   return adr;
 }
+
+List<String> cleanRelayUrls(List<String> urls) {
+  final List<String> cleanUrls = [];
+  for (var url in urls) {
+    String? cleanUrl = cleanRelayUrl(url);
+    if (cleanUrl == null) {
+      continue;
+    }
+    cleanUrls.add(cleanUrl);
+  }
+  return cleanUrls;
+}
