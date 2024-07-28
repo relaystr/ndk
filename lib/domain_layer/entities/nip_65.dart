@@ -1,6 +1,7 @@
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/domain_layer/entities/relay.dart';
 
+import '../../shared/helpers/relay_helper.dart';
 import 'nip_01_event.dart';
 
 class Nip65 {
@@ -32,7 +33,7 @@ class Nip65 {
       final name = tag[0];
 
       // clean the url so it can be used as a unique identifier
-      var cleanUrl = Relay.cleanUrl(tag[1]);
+      var cleanUrl = cleanRelayUrl(tag[1]);
       if (cleanUrl == null) continue;
 
       final url = cleanUrl;

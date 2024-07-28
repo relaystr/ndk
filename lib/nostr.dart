@@ -32,6 +32,7 @@ import 'domain_layer/entities/filter.dart';
 import 'domain_layer/entities/metadata.dart';
 import 'domain_layer/entities/nip_51_list.dart';
 import 'domain_layer/entities/nip_65.dart';
+import 'shared/helpers/relay_helper.dart';
 
 class Nostr {
   late CacheManager cacheManager;
@@ -291,7 +292,7 @@ class Nostr {
     if (userRelayList.relays.keys.contains(relayUrl)) {
       url = relayUrl;
     } else {
-      String? cleanUrl = Relay.cleanUrl(relayUrl);
+      String? cleanUrl = cleanRelayUrl(relayUrl);
       if (cleanUrl != null && userRelayList.relays.keys.contains(cleanUrl)) {
         url = cleanUrl;
       } else if (userRelayList.relays.keys.contains("$relayUrl/")) {

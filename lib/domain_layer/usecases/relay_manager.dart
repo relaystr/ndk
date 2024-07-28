@@ -21,6 +21,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../config/bootstrap_relays.dart';
 import '../../event_filter.dart';
+import '../../shared/helpers/relay_helper.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 import '../../data_layer/repositories/verifiers/acinq_event_verifier.dart';
@@ -79,7 +80,7 @@ class RelayManager {
       {Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS}) async {
     bootstrapRelays = [];
     for (String url in urls) {
-      String? clean = Relay.cleanUrl(url);
+      String? clean = cleanRelayUrl(url);
       if (clean != null) {
         bootstrapRelays.add(clean);
       }
@@ -112,7 +113,7 @@ class RelayManager {
   }
 
   bool isWebSocketOpen(String url) {
-    WebSocketChannel? webSocket = webSockets[Relay.cleanUrl(url)];
+    WebSocketChannel? webSocket = webSockets[cleanRelayUrl(url)];
     // return webSocket != null && webSocket.socketState.status == SocketStatus.connected;
     //&& webSocket.ready== WebSocket.open
     return webSocket != null && webSocket.closeCode == null;
@@ -141,7 +142,7 @@ class RelayManager {
   /// Connect a new relay
   Future<bool> connectRelay(String dirtyUrl,
       {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
-    String? url = Relay.cleanUrl(dirtyUrl);
+    String? url = cleanRelayUrl(dirtyUrl);
     if (url == null) {
       return false;
     }
@@ -419,12 +420,12 @@ class RelayManager {
 
   Relay? getRelay(String url) {
     Relay? r = relays[url];
-    r ??= relays[Relay.cleanUrl(url)];
+    r ??= relays[cleanRelayUrl(url)];
     return r;
   }
 
   bool _doesRelaySupportNip(String url, int nip) {
-    Relay? relay = relays[Relay.cleanUrl(url)];
+    Relay? relay = relays[cleanRelayUrl(url)];
     return relay != null && relay.supportsNip(nip);
   }
   // =====================================================================================
@@ -670,7 +671,7 @@ class RelayManager {
       notCoveredPubkeys[pubKey] = relayMinCountPerPubKey;
     }
     for (String url in pubKeysByRelayUrl.keys) {
-      if (blockedRelays.contains(Relay.cleanUrl(url))) {
+      if (blockedRelays.contains(cleanRelayUrl(url))) {
         continue;
       }
       if (!pubKeysByRelayUrl[url]!.any((pub_key) =>
@@ -880,7 +881,7 @@ class RelayManager {
       String url,
       ReadWriteMarker marker,
       Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl) {
-    String? cleanUrl = Relay.cleanUrl(url);
+    String? cleanUrl = cleanRelayUrl(url);
     if (cleanUrl != null) {
       if (direction.matchesMarker(marker)) {
         Set<PubkeyMapping>? set = pubKeysByRelayUrl[cleanUrl];
@@ -913,7 +914,7 @@ class RelayManager {
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
     Relay? relay = getRelay(url);
     if (allowReconnectRelays) {
-      WebSocketChannel? webSocket = webSockets[Relay.cleanUrl(url)];
+      WebSocketChannel? webSocket = webSockets[cleanRelayUrl(url)];
       if (webSocket != null) {
         await webSocket.ready;
       }
