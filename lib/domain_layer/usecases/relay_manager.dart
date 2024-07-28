@@ -14,7 +14,7 @@ import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
 import 'package:dart_ndk/domain_layer/entities/relay_info.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write.dart';
-import 'package:dart_ndk/relay.dart';
+import 'package:dart_ndk/domain_layer/entities/relay.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
