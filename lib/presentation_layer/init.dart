@@ -20,12 +20,12 @@ class Initialization {
 
   final relayManger = RelayManager();
 
-  final JitEngine relayJitManager;
+  final JitEngine jitEngine;
 
   Initialization({
     required this.ndkConfig,
     required this.globalState,
-  }) : relayJitManager = JitEngine(
+  }) : jitEngine = JitEngine(
           eventVerifier: ndkConfig.eventVerifier,
           eventSigner: ndkConfig.eventSigner,
           cache: ndkConfig.cache,

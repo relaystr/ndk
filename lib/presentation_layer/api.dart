@@ -43,7 +43,7 @@ class OurApi {
 
     // todo engine impl for unresolved?
 
-    _initialization.relayJitManager.handleRequest(requestState);
+    _initialization.jitEngine.handleRequest(requestState);
 
     // calls uncase with config
     return response;
