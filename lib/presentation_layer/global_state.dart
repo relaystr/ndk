@@ -1,5 +1,5 @@
 import '../domain_layer/entities/relay.dart';
-import '../relay_jit_manager/relay_jit.dart';
+import '../domain_layer/usecases/relay_jit_manager/relay_jit.dart';
 import 'request_state.dart';
 
 class GlobalState {

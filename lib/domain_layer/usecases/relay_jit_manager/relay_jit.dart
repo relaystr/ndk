@@ -7,11 +7,11 @@ import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/domain_layer/entities/relay.dart';
-import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
+import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/request_jit.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../domain_layer/entities/connection_source.dart';
-import '../shared/helpers/relay_helper.dart';
+import '../../entities/connection_source.dart';
+import '../../../shared/helpers/relay_helper.dart';
 
 ///
 /// url is a unique identifier for the relay
