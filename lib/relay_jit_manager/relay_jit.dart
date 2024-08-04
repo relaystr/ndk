@@ -8,8 +8,9 @@ import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/domain_layer/entities/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
-
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+import '../shared/helpers/relay_helper.dart';
 
 ///
 /// url is a unique identifier for the relay
@@ -18,7 +19,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 ///
 class RelayJit extends Relay with Logger {
   RelayJit(String url) : super(url) {
-    String? cleanUrl = Relay.cleanUrl(url);
+    String? cleanUrl = cleanRelayUrl(url);
     if (cleanUrl == null) {
       throw Exception("invalid url $url => $cleanUrl");
     }
