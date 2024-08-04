@@ -1,7 +1,9 @@
 import 'package:dart_ndk/shared/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
-import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/request_jit.dart';
+
+import '../../../../presentation_layer/request_state.dart';
+import '../../relay_jit_manager.dart';
 
 /// Strategy Description:
 ///
@@ -9,7 +11,7 @@ import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/request_jit.dar
 ///
 class RelayJitBlastAllStrategy {
   static handleRequest({
-    required NostrRequestJit originalRequest,
+    required RequestState requestState,
     required Filter filter,
     required List<RelayJit> connectedRelays,
     required bool closeOnEOSE,
@@ -17,15 +19,15 @@ class RelayJitBlastAllStrategy {
     for (var connectedRelay in connectedRelays) {
       // todo: do not overwrite the subscription if it already exists
       // link the request id to the relay
-      connectedRelay.activeSubscriptions[originalRequest.id] =
-          RelayActiveSubscription(
-              originalRequest.id, [filter], originalRequest);
+      connectedRelay.activeSubscriptions[requestState.id] =
+          RelayActiveSubscription(requestState.id, [filter], requestState);
+
       // link back
-      originalRequest.addRelayActiveSubscription(connectedRelay);
+      RelayJitManager.addRelayActiveSubscription(connectedRelay, requestState);
 
       var clientMsg = ClientMsg(
         ClientMsgType.REQ,
-        id: originalRequest.id,
+        id: requestState.id,
         filters: [filter],
       );
       connectedRelay.send(clientMsg);

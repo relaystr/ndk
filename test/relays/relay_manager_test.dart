@@ -222,7 +222,7 @@ void main() async {
 
     // ================================================================================================
     test('query events from key that writes only on one relay (JIT)', () async {
-      RelayJitManager manager = RelayJitManager(
+      JitEngine manager = JitEngine(
         seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       );
       EventVerifier eventVerifier = MockEventVerifier();
@@ -312,7 +312,7 @@ void main() async {
     // ================================================================================================
     test(skip: true, 'query all keys and do not use redundant relays (JIT)',
         () async {
-      RelayJitManager manager = RelayJitManager(
+      JitEngine manager = JitEngine(
         seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       );
       EventVerifier eventVerifier = MockEventVerifier();

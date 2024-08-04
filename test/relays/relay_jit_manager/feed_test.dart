@@ -21,8 +21,7 @@ void main() async {
       _calculateBestRelaysForNpubContactsFeed(String npub,
           {int relayMinCountPerPubKey = 2}) async {
         CacheManager cacheManager = MemCacheManager();
-        RelayJitManager relayJitManager =
-            RelayJitManager(cacheManager: cacheManager);
+        JitEngine relayJitManager = JitEngine(cacheManager: cacheManager);
         // wait for the relays to connect
         await Future.delayed(Duration(seconds: 2));
 

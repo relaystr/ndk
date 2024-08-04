@@ -11,14 +11,17 @@ import 'request_state.dart';
 // some global obj that schuld be kept in memory by lib user
 class OurApi {
   // placeholder
-  NdkConfig ndkConfig;
+  final NdkConfig ndkConfig;
+  static final GlobalState globalState = GlobalState();
 
   // global initialization use to access rdy repositories
-  final Initialization _initialization = Initialization();
+  final Initialization _initialization;
 
-  final globalState = GlobalState();
-
-  OurApi(this.ndkConfig);
+  OurApi(this.ndkConfig)
+      : _initialization = Initialization(
+          ndkConfig: ndkConfig,
+          globalState: globalState,
+        );
 
   /// ! this is just an example
   RequestResponse requestNostrEvent(NdkRequest config) {
@@ -39,6 +42,8 @@ class OurApi {
     // todo caching middleware
 
     // todo engine impl for unresolved?
+
+    _initialization.relayJitManager.handleRequest(requestState);
 
     // calls uncase with config
     return response;

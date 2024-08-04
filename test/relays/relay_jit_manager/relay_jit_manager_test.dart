@@ -36,7 +36,7 @@ void main() async {
 
   group('check doesRelayCoverPubkey()', () {
     // setup
-    RelayJitManager relayJitManager = RelayJitManager();
+    JitEngine relayJitManager = JitEngine();
 
     RelayJit relayReadOnly = RelayJit('wss://relay.camelus.app');
     relayReadOnly.assignedPubkeys
@@ -58,13 +58,13 @@ void main() async {
     relayJitManager.connectedRelays.add(relayUnassigend);
     test('test readOnly relay', () {
       // check
-      final resultRequestRo = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestRo = JitEngine.doesRelayCoverPubkey(
           relayReadOnly, key1.publicKey, ReadWriteMarker.readOnly);
 
-      final resultRequestWo = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestWo = JitEngine.doesRelayCoverPubkey(
           relayReadOnly, key1.publicKey, ReadWriteMarker.writeOnly);
 
-      final resultRequestRW = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestRW = JitEngine.doesRelayCoverPubkey(
           relayReadOnly, key1.publicKey, ReadWriteMarker.readWrite);
 
       expect(resultRequestRo, true);
@@ -74,13 +74,13 @@ void main() async {
 
     test('test writeOnly relay', () {
       // check
-      final resultRequestRo = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestRo = JitEngine.doesRelayCoverPubkey(
           relayWriteOnly, key1.publicKey, ReadWriteMarker.readOnly);
 
-      final resultRequestWo = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestWo = JitEngine.doesRelayCoverPubkey(
           relayWriteOnly, key1.publicKey, ReadWriteMarker.writeOnly);
 
-      final resultRequestRW = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestRW = JitEngine.doesRelayCoverPubkey(
           relayWriteOnly, key1.publicKey, ReadWriteMarker.readWrite);
 
       expect(resultRequestRo, false);
@@ -90,13 +90,13 @@ void main() async {
 
     test('test readWrite relay', () {
       // check
-      final resultRequestRo = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestRo = JitEngine.doesRelayCoverPubkey(
           relayReadWrite, key1.publicKey, ReadWriteMarker.readOnly);
 
-      final resultRequestWo = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestWo = JitEngine.doesRelayCoverPubkey(
           relayReadWrite, key1.publicKey, ReadWriteMarker.writeOnly);
 
-      final resultRequestRW = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestRW = JitEngine.doesRelayCoverPubkey(
           relayReadWrite, key1.publicKey, ReadWriteMarker.readWrite);
 
       expect(resultRequestRo, true);
@@ -105,13 +105,13 @@ void main() async {
     });
     test('relay without assignments', () {
       // check
-      final resultRequestRo = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestRo = JitEngine.doesRelayCoverPubkey(
           relayUnassigend, key1.publicKey, ReadWriteMarker.readOnly);
 
-      final resultRequestWo = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestWo = JitEngine.doesRelayCoverPubkey(
           relayUnassigend, key1.publicKey, ReadWriteMarker.writeOnly);
 
-      final resultRequestRW = RelayJitManager.doesRelayCoverPubkey(
+      final resultRequestRW = JitEngine.doesRelayCoverPubkey(
           relayUnassigend, key1.publicKey, ReadWriteMarker.readWrite);
 
       expect(resultRequestRo, false);

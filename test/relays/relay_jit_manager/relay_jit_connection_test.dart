@@ -141,7 +141,7 @@ void main() async {
       await startServers();
 
       CacheManager cacheManager = MemCacheManager();
-      RelayJitManager manager = RelayJitManager(
+      JitEngine manager = JitEngine(
         seedRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
         cacheManager: cacheManager,
       );
@@ -170,7 +170,7 @@ void main() async {
     test('query with inbox/outbox', () async {
       await startServers();
       CacheManager cacheManager = MemCacheManager();
-      RelayJitManager manager = RelayJitManager(
+      JitEngine manager = JitEngine(
         seedRelays: [],
         cacheManager: cacheManager,
       );

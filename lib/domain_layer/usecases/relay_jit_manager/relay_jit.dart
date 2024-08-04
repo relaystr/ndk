@@ -7,11 +7,12 @@ import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/domain_layer/entities/relay.dart';
-import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/request_jit.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../../presentation_layer/request_state.dart';
 import '../../entities/connection_source.dart';
 import '../../../shared/helpers/relay_helper.dart';
+import '../relay_jit_manager.dart';
 
 ///
 /// url is a unique identifier for the relay
@@ -19,14 +20,6 @@ import '../../../shared/helpers/relay_helper.dart';
 /// throws an exception if the url is invalid
 ///
 class RelayJit extends Relay with Logger {
-  RelayJit(String url) : super(url) {
-    String? cleanUrl = cleanRelayUrl(url);
-    if (cleanUrl == null) {
-      throw Exception("invalid url $url => $cleanUrl");
-    }
-    super.url = cleanUrl;
-  }
-
   /// used to lookup if this relay is suitable for a given request
   List<RelayJitAssignedPubkey> assignedPubkeys = [];
 
@@ -44,6 +37,19 @@ class RelayJit extends Relay with Logger {
   WebSocketChannel? _channel;
 
   ConnectionSource connectionSource = ConnectionSource.UNKNOWN;
+
+  Function(Nip01Event, RequestState) onMessage;
+
+  RelayJit({
+    required String url,
+    required this.onMessage,
+  }) : super(url) {
+    String? cleanUrl = cleanRelayUrl(url);
+    if (cleanUrl == null) {
+      throw Exception("invalid url $url => $cleanUrl");
+    }
+    super.url = cleanUrl;
+  }
 
   /// returns true if the connection was successful
   Future<bool> connect({required ConnectionSource connectionSource}) async {
@@ -117,7 +123,8 @@ class RelayJit extends Relay with Logger {
     String msgId = eventJson[1];
     if (hasActiveSubscription(msgId)) {
       msg.sources.add(url);
-      activeSubscriptions[msgId]!.originalRequest.onMessage(msg);
+
+      onMessage(msg, activeSubscriptions[msgId]!.requestState);
     }
   }
 
@@ -128,9 +135,11 @@ class RelayJit extends Relay with Logger {
     }
     RelayActiveSubscription sub = activeSubscriptions[eoseId]!;
     sub.onEose();
+
+    final requestState = activeSubscriptions[eoseId]!.requestState;
     // channel back so the request can be closed
-    sub.originalRequest.onEoseReceivedFromRelay(this);
-    if (!sub.originalRequest.closeOnEOSE) {
+    RelayJitManager.onEoseReceivedFromRelay(requestState);
+    if (!sub.requestState.requestConfig.closeOnEOSE) {
       return;
     }
 
@@ -203,10 +212,10 @@ class RelayJitAssignedPubkey {
 
 class RelayActiveSubscription {
   final String id; // id of the original request
-  final NostrRequestJit originalRequest;
+  final RequestState requestState;
   List<Filter> filters; // list of split filters
 
-  bool get closeOnEose => originalRequest.closeOnEOSE;
+  bool get closeOnEose => requestState.requestConfig.closeOnEOSE;
   final Completer<void> _eoseReceived = Completer();
 
   /// completes when EOSE is received
@@ -219,5 +228,5 @@ class RelayActiveSubscription {
     _eoseReceived.complete();
   }
 
-  RelayActiveSubscription(this.id, this.filters, this.originalRequest);
+  RelayActiveSubscription(this.id, this.filters, this.requestState);
 }
