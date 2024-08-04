@@ -7,7 +7,7 @@ import 'package:dart_ndk/domain_layer/entities/nip_65.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/shared/nips/nip65/relay_ranking.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
-import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager.dart';
+import 'package:dart_ndk/domain_layer/usecases/jit_engine.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 
 import '../../../../presentation_layer/request_state.dart';
@@ -66,7 +66,7 @@ class RelayJitPubkeyStrategy with Logger {
       var coveredPubkeysForRelay = <String>[];
 
       for (var coveragePubkey in coveragePubkeys) {
-        if (RelayJitManager.doesRelayCoverPubkey(
+        if (JitEngine.doesRelayCoverPubkey(
             connectedRelay, coveragePubkey.pubkey, direction)) {
           coveredPubkeysForRelay.add(coveragePubkey.pubkey);
           coveragePubkey.missingCoverage--;
@@ -315,7 +315,7 @@ void _sendRequestToSocket(
   );
 
   // link back
-  RelayJitManager.addRelayActiveSubscription(connectedRelay, requestState);
+  JitEngine.addRelayActiveSubscription(connectedRelay, requestState);
 
   // send out the request
   connectedRelay.send(ClientMsg(

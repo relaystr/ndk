@@ -12,7 +12,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../../presentation_layer/request_state.dart';
 import '../../entities/connection_source.dart';
 import '../../../shared/helpers/relay_helper.dart';
-import '../relay_jit_manager.dart';
+import '../jit_engine.dart';
 
 ///
 /// url is a unique identifier for the relay
@@ -138,7 +138,7 @@ class RelayJit extends Relay with Logger {
 
     final requestState = activeSubscriptions[eoseId]!.requestState;
     // channel back so the request can be closed
-    RelayJitManager.onEoseReceivedFromRelay(requestState);
+    JitEngine.onEoseReceivedFromRelay(requestState);
     if (!sub.requestState.requestConfig.closeOnEOSE) {
       return;
     }

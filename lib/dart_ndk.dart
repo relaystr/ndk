@@ -46,4 +46,4 @@ export 'data_layer/repositories/cache_manager/db_cache_manager.dart';
  */
 
 export "domain_layer/usecases/relay_manager.dart";
-export "domain_layer/usecases/relay_jit_manager.dart";
+export "domain_layer/usecases/jit_engine.dart";

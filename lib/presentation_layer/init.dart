@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 
 import '../data_layer/data_sources/http_request.dart';
-import '../domain_layer/usecases/relay_jit_manager.dart';
+import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import 'global_state.dart';
 import 'ndk_config.dart';
@@ -20,12 +20,12 @@ class Initialization {
 
   final relayManger = RelayManager();
 
-  final RelayJitManager relayJitManager;
+  final JitEngine relayJitManager;
 
   Initialization({
     required this.ndkConfig,
     required this.globalState,
-  }) : relayJitManager = RelayJitManager(
+  }) : relayJitManager = JitEngine(
           eventVerifier: ndkConfig.eventVerifier,
           eventSigner: ndkConfig.eventSigner,
           cache: ndkConfig.cache,

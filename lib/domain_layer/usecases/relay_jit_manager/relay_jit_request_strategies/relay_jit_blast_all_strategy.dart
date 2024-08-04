@@ -3,7 +3,7 @@ import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
 
 import '../../../../presentation_layer/request_state.dart';
-import '../../relay_jit_manager.dart';
+import '../../jit_engine.dart';
 
 /// Strategy Description:
 ///
@@ -23,7 +23,7 @@ class RelayJitBlastAllStrategy {
           RelayActiveSubscription(requestState.id, [filter], requestState);
 
       // link back
-      RelayJitManager.addRelayActiveSubscription(connectedRelay, requestState);
+      JitEngine.addRelayActiveSubscription(connectedRelay, requestState);
 
       var clientMsg = ClientMsg(
         ClientMsgType.REQ,

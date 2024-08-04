@@ -11,7 +11,6 @@ import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
-import 'package:http/http.dart';
 
 import 'dart:developer' as developer;
 
@@ -20,7 +19,7 @@ import '../entities/connection_source.dart';
 import '../repositories/event_signer.dart';
 import '../repositories/event_verifier.dart';
 
-class RelayJitManager with Logger {
+class JitEngine with Logger {
   EventVerifier eventVerifier;
   EventSigner eventSigner;
   CacheManager cache;
@@ -32,7 +31,7 @@ class RelayJitManager with Logger {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
-  RelayJitManager({
+  JitEngine({
     required this.eventVerifier,
     required this.eventSigner,
     required this.cache,

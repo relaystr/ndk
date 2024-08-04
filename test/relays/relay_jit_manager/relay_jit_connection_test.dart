@@ -11,7 +11,7 @@ import 'package:dart_ndk/shared/nips/nip01/key_pair.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_65.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
-import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager.dart';
+import 'package:dart_ndk/domain_layer/usecases/jit_engine.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/request_jit.dart';
 import 'package:dart_ndk/request.dart';
 import 'package:flutter_test/flutter_test.dart';
