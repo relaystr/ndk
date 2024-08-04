@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:dart_ndk/config/bootstrap_relays.dart';
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:dart_ndk/presentation_layer/global_state.dart';
+
 import 'package:dart_ndk/shared/logger/logger.dart';
-import 'package:dart_ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
+
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:dart_ndk/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
@@ -14,19 +14,25 @@ import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
 import 'dart:developer' as developer;
 
+import '../../shared/helpers/relay_helper.dart';
+import '../entities/connection_source.dart';
+
 class RelayJitManager with Logger {
-  List<RelayJit> connectedRelays = [];
-  late CacheManager cacheManager;
+  // List<RelayJit> connectedRelays = [];
+
+  GlobalState globalState;
+  CacheManager cacheManager;
+  List<String> seedRelays;
 
   final Completer<void> _seedRelaysCompleter = Completer<void>();
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
   RelayJitManager({
-    List<String> seedRelays = DEFAULT_BOOTSTRAP_RELAYS,
-    CacheManager? cacheManager,
+    required this.seedRelays,
+    required this.cacheManager,
+    required this.globalState,
   }) {
-    this.cacheManager = cacheManager ?? MemCacheManager();
-    _connectSeedRelays(seedRelays);
+    _connectSeedRelays(cleanRelayUrls(seedRelays));
   }
 
   _connectSeedRelays(List<String> seedRelays) async {
@@ -37,7 +43,7 @@ class RelayJitManager with Logger {
       var future = relay
           .connect(connectionSource: ConnectionSource.SEED)
           .then((success) => {
-                if (success) {connectedRelays.add(relay)}
+                if (success) {globalState.connectedRelays.add(relay)}
               });
       futures.add(future);
     }
@@ -57,7 +63,7 @@ class RelayJitManager with Logger {
     await seedRelaysConnected;
 
     //clean ignore relays
-    List<String> cleanIgnoreRelays = _cleanRelayUrls(ignoreRelays);
+    List<String> cleanIgnoreRelays = cleanRelayUrls(ignoreRelays);
 
     /// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
     /// user can provide multiple filters
@@ -69,7 +75,7 @@ class RelayJitManager with Logger {
           originalRequest: request,
           cacheManager: cacheManager,
           filter: filter,
-          connectedRelays: connectedRelays,
+          connectedRelays: this.globalState.connectedRelays,
           desiredCoverage: request.desiredCoverage,
           closeOnEOSE: request.closeOnEOSE,
           direction: ReadWriteMarker
@@ -84,7 +90,7 @@ class RelayJitManager with Logger {
           originalRequest: request,
           cacheManager: cacheManager,
           filter: filter,
-          connectedRelays: connectedRelays,
+          connectedRelays: this.globalState.connectedRelays,
           desiredCoverage: request.desiredCoverage,
           closeOnEOSE: request.closeOnEOSE,
           direction: ReadWriteMarker
@@ -106,7 +112,7 @@ class RelayJitManager with Logger {
       RelayJitBlastAllStrategy.handleRequest(
         originalRequest: request,
         filter: filter,
-        connectedRelays: connectedRelays,
+        connectedRelays: this.globalState.connectedRelays,
         closeOnEOSE: request.closeOnEOSE,
       );
     }
@@ -144,17 +150,5 @@ class RelayJitManager with Logger {
       }
     }
     return false;
-  }
-
-  _cleanRelayUrls(List<String> urls) {
-    List<String> cleanUrls = [];
-    for (var url in urls) {
-      String? cleanUrl = Relay.cleanUrl(url);
-      if (cleanUrl == null) {
-        continue;
-      }
-      cleanUrls.add(cleanUrl);
-    }
-    return cleanUrls;
   }
 }

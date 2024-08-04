@@ -10,6 +10,7 @@ import 'package:dart_ndk/domain_layer/entities/relay.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../domain_layer/entities/connection_source.dart';
 import '../shared/helpers/relay_helper.dart';
 
 ///
@@ -219,10 +220,4 @@ class RelayActiveSubscription {
   }
 
   RelayActiveSubscription(this.id, this.filters, this.originalRequest);
-}
-
-enum ConnectionSource {
-  UNKNOWN,
-  SEED,
-  PUBKEY_STRATEGY,
 }

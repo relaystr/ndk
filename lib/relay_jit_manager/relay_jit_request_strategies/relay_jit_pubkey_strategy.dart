@@ -12,6 +12,8 @@ import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager.dart';
 import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:dart_ndk/relay_jit_manager/request_jit.dart';
 
+import '../../domain_layer/entities/connection_source.dart';
+
 /// Strategy Description:
 ///
 /// 1.) look for connected relays that cover the pubkey
