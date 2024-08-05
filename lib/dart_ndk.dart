@@ -5,6 +5,7 @@ library dart_ndk;
  * 
  */
 
+export 'presentation_layer/api.dart';
 export 'presentation_layer/ndk_config.dart';
 export 'presentation_layer/ndk_request.dart';
 
