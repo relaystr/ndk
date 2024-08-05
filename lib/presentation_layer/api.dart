@@ -43,7 +43,18 @@ class OurApi {
 
     // todo engine impl for unresolved?
 
-    _initialization.jitEngine.handleRequest(requestState);
+    switch (ndkConfig.engine) {
+      case NdkEngine.LISTS:
+        throw UnimplementedError("Lists engine not yet implemented");
+        break;
+
+      case NdkEngine.JIT:
+        _initialization.jitEngine.handleRequest(requestState);
+        break;
+
+      default:
+        throw UnimplementedError("Unknown engine");
+    }
 
     // calls uncase with config
     return response;
