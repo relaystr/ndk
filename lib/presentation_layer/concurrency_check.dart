@@ -29,8 +29,8 @@ class ConcurrencyCheck {
     }
 
     // add already running stream to duplicate request
-    requestState.controller
-        .addStream(globalState.inFlightRequests[hash]!.stream);
+    requestState.controller.addStream(
+        globalState.inFlightRequests[hash]!.stream.asBroadcastStream());
 
     return true;
   }
