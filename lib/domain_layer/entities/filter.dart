@@ -63,6 +63,10 @@ class Filter {
     return body;
   }
 
+  Map<String, dynamic> toJson() => toMap();
+
+  factory Filter.fromJson(Map<String, dynamic> json) => Filter.fromMap(json);
+
   @override
   String toString() {
     return toMap().toString();
