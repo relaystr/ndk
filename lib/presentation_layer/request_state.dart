@@ -5,7 +5,8 @@ import '../domain_layer/usecases/relay_jit_manager/relay_jit.dart';
 import 'ndk_request.dart';
 
 class RequestState {
-  StreamController<Nip01Event> controller = StreamController<Nip01Event>();
+  StreamController<Nip01Event> controller =
+      StreamController<Nip01Event>.broadcast();
 
   Stream<Nip01Event> get stream => controller.stream;
 
