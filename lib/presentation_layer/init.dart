@@ -18,14 +18,24 @@ class Initialization {
 
   /// state obj
 
-  final relayManger = RelayManager();
+  RelayManager? relayManager;
 
-  final JitEngine jitEngine;
+  JitEngine? jitEngine;
 
   Initialization({
     required this.ndkConfig,
     required this.globalState,
-  }) : jitEngine = JitEngine(
+  }) {
+    switch (ndkConfig.engine) {
+      case NdkEngine.LISTS:
+        relayManager = RelayManager(
+          cacheManager: ndkConfig.cache,
+          eventVerifier: ndkConfig.eventVerifier,
+          bootstrapRelays: ndkConfig.bootstrapRelays,
+          globalState: globalState,
+        );
+      case NdkEngine.JIT:
+        jitEngine = JitEngine(
           eventVerifier: ndkConfig.eventVerifier,
           eventSigner: ndkConfig.eventSigner,
           cache: ndkConfig.cache,
@@ -33,4 +43,8 @@ class Initialization {
           seedRelays: ndkConfig.bootstrapRelays,
           globalState: globalState,
         );
-}
+        break;
+      default:
+        throw UnimplementedError("Unknown engine");
+    }
+  }

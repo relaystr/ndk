@@ -7,5 +7,6 @@ class GlobalState {
   final Map<String, RequestState> inFlightRequests = {};
 
   /// used by RelayJitManager
+  // TODO this class should not hold anything JIT specific
   List<RelayJit> connectedRelays = [];
 }

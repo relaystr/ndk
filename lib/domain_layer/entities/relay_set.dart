@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write.dart';
-import 'package:dart_ndk/request.dart';
 
+import '../../presentation_layer/request_state.dart';
 import 'filter.dart';
 
 class RelaySet {
@@ -40,7 +40,7 @@ class RelaySet {
 
   static const int MAX_AUTHORS_PER_REQUEST = 100;
 
-  void splitIntoRequests(Filter filter, NostrRequest groupRequest) {
+  void splitIntoRequests(Filter filter, RequestState groupRequest) {
     for (var entry in relaysMap.entries) {
       String url = entry.key;
       List<PubkeyMapping> pubKeyMappings = entry.value;

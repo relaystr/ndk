@@ -1,4 +1,5 @@
 import 'package:dart_ndk/config/request_defaults.dart';
+import 'package:dart_ndk/presentation_layer/request_state.dart';
 
 import '../domain_layer/entities/filter.dart';
 
@@ -12,7 +13,7 @@ class NdkRequest {
   String id;
   bool closeOnEOSE;
   int? timeout;
-  Function()? onTimeout;
+  Function(RequestState)? onTimeout;
   final int desiredCoverage;
   List<Filter> filters;
 

@@ -66,7 +66,7 @@ class JitEngine with Logger {
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
-  void handleRequest(
+  Future<void> handleRequest(
     RequestState requestState,
   ) async {
     await seedRelaysConnected;

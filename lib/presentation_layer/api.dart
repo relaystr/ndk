@@ -24,8 +24,8 @@ class OurApi {
         );
 
   /// ! this is just an example
-  RequestResponse requestNostrEvent(NdkRequest config) {
-    RequestState requestState = RequestState(config);
+  Future<RequestResponse> requestNostrEvent(NdkRequest request) async {
+    RequestState requestState = RequestState(request);
 
     final responseStream = requestState.stream;
 
@@ -45,11 +45,11 @@ class OurApi {
 
     switch (ndkConfig.engine) {
       case NdkEngine.LISTS:
-        throw UnimplementedError("Lists engine not yet implemented");
+        await _initialization.relayManager!.handleRequest(requestState);
         break;
 
       case NdkEngine.JIT:
-        _initialization.jitEngine.handleRequest(requestState);
+        await _initialization.jitEngine!.handleRequest(requestState);
         break;
 
       default:

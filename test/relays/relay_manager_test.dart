@@ -563,7 +563,7 @@ void main() async {
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
         ContactList? contactList =
-            await Nostr(relayManager: manager).loadContactList(key.publicKey);
+            await NostrOld(relayManager: manager).loadContactList(key.publicKey);
 
         expect(contactList != null, true);
 
