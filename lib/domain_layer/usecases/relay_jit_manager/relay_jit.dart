@@ -139,7 +139,7 @@ class RelayJit extends Relay with Logger {
     final requestState = activeSubscriptions[eoseId]!.requestState;
     // channel back so the request can be closed
     JitEngine.onEoseReceivedFromRelay(requestState);
-    if (!sub.requestState.requestConfig.closeOnEOSE) {
+    if (!sub.requestState.request.closeOnEOSE) {
       return;
     }
 
@@ -215,7 +215,7 @@ class RelayActiveSubscription {
   final RequestState requestState;
   List<Filter> filters; // list of split filters
 
-  bool get closeOnEose => requestState.requestConfig.closeOnEOSE;
+  bool get closeOnEose => requestState.request.closeOnEOSE;
   final Completer<void> _eoseReceived = Completer();
 
   /// completes when EOSE is received

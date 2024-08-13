@@ -71,7 +71,7 @@ class JitEngine with Logger {
   ) async {
     await seedRelaysConnected;
 
-    final ndkRequest = requestState.requestConfig;
+    final ndkRequest = requestState.request;
 
     //clean ignore relays
     List<String> cleanIgnoreRelays = cleanRelayUrls(ignoreRelays);
@@ -126,7 +126,7 @@ class JitEngine with Logger {
         requestState: requestState,
         filter: filter,
         connectedRelays: this.globalState.connectedRelays,
-        closeOnEOSE: requestState.requestConfig.closeOnEOSE,
+        closeOnEOSE: requestState.request.closeOnEOSE,
       );
     }
   }

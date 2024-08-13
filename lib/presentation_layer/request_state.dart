@@ -17,18 +17,18 @@ class RequestState {
   StreamController<Nip01Event> controller =
       StreamController<Nip01Event>.broadcast();
 
-  Stream<Nip01Event> get stream => requestConfig.timeout != null
-      ? controller.stream.timeout(Duration(seconds: requestConfig.timeout!),
+  Stream<Nip01Event> get stream => request.timeout != null
+      ? controller.stream.timeout(Duration(seconds: request.timeout!),
       onTimeout: (sink) {
-        if (requestConfig.onTimeout != null) {
-          requestConfig.onTimeout!.call(this);
+        if (request.onTimeout != null) {
+          request.onTimeout!.call(this);
         }
       })
       : controller.stream;
 
-  NdkRequest requestConfig;
+  NdkRequest request;
 
-  get id => requestConfig.id;
+  get id => request.id;
 
   //! our requests tracking obj
   Map<String, RelayRequestState> requests = {};
@@ -37,13 +37,13 @@ class RequestState {
   // TODO this class should not hold anything JIT specific
   Map<String, RelayJit> activeRelaySubscriptions = {};
 
-  RequestState(this.requestConfig);
+  RequestState(this.request);
 
   bool get didAllRequestsReceivedEOSE =>
       !requests.values.any((element) => !element.receivedEOSE);
 
   bool get shouldClose =>
-      requestConfig.closeOnEOSE && (requests.isEmpty || didAllRequestsReceivedEOSE);
+      request.closeOnEOSE && (requests.isEmpty || didAllRequestsReceivedEOSE);
 
   void addRequest(String url, List<Filter> filters) {
     if (!requests.containsKey(url)) {

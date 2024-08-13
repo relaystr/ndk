@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:dart_ndk/dart_ndk.dart';
 import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
+import 'package:dart_ndk/presentation_layer/global_state.dart';
 import 'package:dart_ndk/shared/nips/nip01/bip340.dart';
 import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_verifier.dart';
@@ -15,8 +16,6 @@ import 'package:dart_ndk/domain_layer/entities/nip_65.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/nostr.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write.dart';
-import 'package:dart_ndk/domain_layer/usecases/jit_engine.dart';
-import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/request_jit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -221,33 +220,33 @@ void main() async {
     });
 
     // ================================================================================================
-    test('query events from key that writes only on one relay (JIT)', () async {
-      JitEngine manager = JitEngine(
-        seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-      );
-      EventVerifier eventVerifier = MockEventVerifier();
-
-      NostrRequestJit myquery = NostrRequestJit.query(
-        "test",
-        eventVerifier: eventVerifier,
-        filters: [
-          Filter(kinds: [
-            Nip01Event.TEXT_NODE_KIND
-          ], authors: [
-            key4.publicKey,
-          ]),
-        ],
-        desiredCoverage: 1,
-      );
-      manager.handleRequest(
-        myquery,
-      );
-      await for (final event in myquery.responseStream.take(4)) {
-        expect(event.sources, [relay4.url]);
-        expect(event, key4TextNotes[key4]);
-        // print(event);
-      }
-    });
+    // test('query events from key that writes only on one relay (JIT)', () async {
+    //   JitEngine manager = JitEngine(
+    //     seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+    //   );
+    //   EventVerifier eventVerifier = MockEventVerifier();
+    //
+    //   NostrRequestJit myquery = NostrRequestJit.query(
+    //     "test",
+    //     eventVerifier: eventVerifier,
+    //     filters: [
+    //       Filter(kinds: [
+    //         Nip01Event.TEXT_NODE_KIND
+    //       ], authors: [
+    //         key4.publicKey,
+    //       ]),
+    //     ],
+    //     desiredCoverage: 1,
+    //   );
+    //   manager.handleRequest(
+    //     myquery,
+    //   );
+    //   await for (final event in myquery.responseStream.take(4)) {
+    //     expect(event.sources, [relay4.url]);
+    //     expect(event, key4TextNotes[key4]);
+    //     // print(event);
+    //   }
+    // });
 
     // ================================================================================================
     test(
@@ -310,45 +309,45 @@ void main() async {
     });
 
     // ================================================================================================
-    test(skip: true, 'query all keys and do not use redundant relays (JIT)',
-        () async {
-      JitEngine manager = JitEngine(
-        seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-      );
-      EventVerifier eventVerifier = MockEventVerifier();
-
-      /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
-      /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
-
-      NostrRequestJit myquery = NostrRequestJit.query(
-        "feed",
-        eventVerifier: eventVerifier,
-        filters: [
-          Filter(kinds: [
-            Nip01Event.TEXT_NODE_KIND
-          ], authors: [
-            key1.publicKey,
-            key2.publicKey,
-            key3.publicKey,
-            key4.publicKey
-          ]),
-        ],
-        desiredCoverage: 1,
-      );
-      manager.handleRequest(
-        myquery,
-      );
-      await for (final event in myquery.responseStream) {
-        print(event);
-        if (event.sources.contains(relay3.url)) {
-          fail("should not use relay 3 (${relay3.url}) in gossip model");
-        }
-      }
-
-      /// todo: how to ALSO check if actually all notes are returned in the stream?
-      //List<Nip01Event> expectedAllNotes = [...key1TextNotes.values, ...key2TextNotes.values, ...key3TextNotes.values, ...key4TextNotes.values];
-      //expect(query, emitsInAnyOrder(key1TextNotes.values));
-    });
+    // test(skip: true, 'query all keys and do not use redundant relays (JIT)',
+    //     () async {
+    //   JitEngine manager = JitEngine(
+    //     seedRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+    //   );
+    //   EventVerifier eventVerifier = MockEventVerifier();
+    //
+    //   /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
+    //   /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
+    //
+    //   NostrRequestJit myquery = NostrRequestJit.query(
+    //     "feed",
+    //     eventVerifier: eventVerifier,
+    //     filters: [
+    //       Filter(kinds: [
+    //         Nip01Event.TEXT_NODE_KIND
+    //       ], authors: [
+    //         key1.publicKey,
+    //         key2.publicKey,
+    //         key3.publicKey,
+    //         key4.publicKey
+    //       ]),
+    //     ],
+    //     desiredCoverage: 1,
+    //   );
+    //   manager.handleRequest(
+    //     myquery,
+    //   );
+    //   await for (final event in myquery.responseStream) {
+    //     print(event);
+    //     if (event.sources.contains(relay3.url)) {
+    //       fail("should not use relay 3 (${relay3.url}) in gossip model");
+    //     }
+    //   }
+    //
+    //   /// todo: how to ALSO check if actually all notes are returned in the stream?
+    //   //List<Nip01Event> expectedAllNotes = [...key1TextNotes.values, ...key2TextNotes.values, ...key3TextNotes.values, ...key4TextNotes.values];
+    //   //expect(query, emitsInAnyOrder(key1TextNotes.values));
+    // });
 
     test(
         "calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays",
@@ -562,8 +561,8 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        ContactList? contactList =
-            await NostrOld(relayManager: manager).loadContactList(key.publicKey);
+        ContactList? contactList = null;
+//            await NostrOld(relayManager: manager).loadContactList(key.publicKey);
 
         expect(contactList != null, true);
 

@@ -11,6 +11,7 @@ import 'package:dart_ndk/data_layer/repositories/cache_manager/mem_cache_manager
 import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_signer.dart';
 import 'package:dart_ndk/presentation_layer/global_state.dart';
+import 'package:dart_ndk/presentation_layer/request_response.dart';
 import 'package:dart_ndk/presentation_layer/request_state.dart';
 import 'package:dart_ndk/shared/logger/logger.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
@@ -73,10 +74,11 @@ class RelayManager {
   //   //   httpClient!.connectionTimeout = const Duration(seconds: 5);
   //   // }
   // }
-  RelayManager({CacheManager? cacheManager, EventVerifier? eventVerifier, List<String>? bootstrapRelays, required this.globalState}) {
+  RelayManager({CacheManager? cacheManager, EventVerifier? eventVerifier, List<String>? bootstrapRelays, GlobalState? globalState}) {
     this.cacheManager = cacheManager ?? MemCacheManager();
     this.eventVerifier = eventVerifier ?? AcinqSecp256k1EventVerifier();
     this.bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS;
+    this.globalState = globalState?? GlobalState();
     connect(urls: this.bootstrapRelays);
   }
 
@@ -97,7 +99,9 @@ class RelayManager {
     }
     await Future.wait(
         urls.map((url) => reconnectRelay(url, force: true)).toList()).whenComplete(() {
-      _seedRelaysCompleter.complete();
+          if (!_seedRelaysCompleter.isCompleted) {
+            _seedRelaysCompleter.complete();
+          }
     });
   }
 
@@ -395,7 +399,7 @@ class RelayManager {
     if (eventJson[0] == 'EOSE') {
       String id = eventJson[1];
       RequestState? nostrRequest = globalState.inFlightRequests[id];
-      if (nostrRequest != null && nostrRequest.requestConfig.closeOnEOSE) {
+      if (nostrRequest != null && nostrRequest.request.closeOnEOSE) {
         // print("RECEIVED EOSE from $url, remaining requests from :${nostrRequest.requests.keys} kind:${nostrRequest.requests.values.first.filters.first.kinds}");
         RelayRequestState? request = nostrRequest.requests[url];
         if (request != null) {
@@ -409,7 +413,7 @@ class RelayManager {
         }
         if (nostrRequest.requests.isEmpty &&
             !nostrRequest.controller.isClosed) {
-          Future.delayed(Duration(seconds: (nostrRequest.requestConfig.timeout ?? 5) * 10),
+          Future.delayed(Duration(seconds: (nostrRequest.request.timeout ?? 5) * 10),
                   () {
                 closeNostrRequest(nostrRequest);
                 // globalState.inFlightRequests.remove(id);
@@ -498,21 +502,20 @@ class RelayManager {
   //       splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
   // }
   //
-  // Future<NostrRequest> query(
-  //   Filter filter,
-  //   RelaySet relaySet, {
-  //   int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
-  //   bool splitRequestsByPubKeyMappings = true,
-  // }) async {
-  //   return doNostrRequest(
-  //       NostrRequest.query(Helpers.getRandomString(10), timeout: idleTimeout,
-  //           onTimeout: (request) {
-  //         closeNostrRequest(request);
-  //       }),
-  //       filter,
-  //       relaySet,
-  //       splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
-  // }
+
+  Future<RequestResponse> query(
+    Filter filter,
+    RelaySet relaySet, {
+    int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
+    bool splitRequestsByPubKeyMappings = true,
+  }) async {
+    RequestState state = RequestState(NdkRequest.query(Helpers.getRandomString(10), filters: [filter], timeout: idleTimeout,             onTimeout: (request) {
+      closeNostrRequest(request);
+    }));
+    RequestResponse response = RequestResponse(state.stream);
+    await doNostrRequest(state, filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+    return response;
+  }
 
   Future<void> closeNostrRequest(RequestState request) async {
     return closeNostrRequestById(request.id);
@@ -560,7 +563,7 @@ class RelayManager {
 
   Future<void> handleRequest(RequestState requestState) async {
     String id = Helpers.getRandomString(10);
-    requestState.requestConfig.id = id;
+    requestState.request.id = id;
     // requestState.requestConfig.onTimeout
     // NostrRequest nostrRequest = requestState.requestConfig.closeOnEOSE
     //     ? NostrRequest.query(id, timeout: requestState.requestConfig.timeout, onTimeout: (request) {
@@ -575,7 +578,7 @@ class RelayManager {
     await seedRelaysConnected;
 
     for (var url in relays.keys) {
-      requestState.addRequest(url, RelaySet.sliceFilterAuthors(requestState.requestConfig.filters.first));
+      requestState.addRequest(url, RelaySet.sliceFilterAuthors(requestState.request.filters.first));
     }
     globalState.inFlightRequests[requestState.id] = requestState;
 
@@ -1022,5 +1025,12 @@ class RelayManager {
       }
     }
     return true;
+  }
+
+  Future<RequestResponse> requestRelays(List<String> list, Filter filter, { int? timeout}) async {
+    RequestState state = RequestState(NdkRequest.query("-", filters: [filter], timeout: timeout));
+    RequestResponse response = RequestResponse(state.stream);
+    await handleRequest(state);
+    return response;
   }
 }
