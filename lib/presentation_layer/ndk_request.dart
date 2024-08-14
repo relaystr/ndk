@@ -2,6 +2,7 @@ import 'package:dart_ndk/config/request_defaults.dart';
 import 'package:dart_ndk/presentation_layer/request_state.dart';
 
 import '../domain_layer/entities/filter.dart';
+import '../domain_layer/entities/relay_set.dart';
 
 /// proposal for a request_config used by the user
 ///
@@ -16,6 +17,7 @@ class NdkRequest {
   Function(RequestState)? onTimeout;
   final int desiredCoverage;
   List<Filter> filters;
+  RelaySet? relaySet;
 
   NdkRequest.query(
     this.id, {
