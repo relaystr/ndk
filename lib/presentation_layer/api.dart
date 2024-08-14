@@ -40,8 +40,11 @@ class OurApi {
     }
 
     // todo caching middleware
+    // caching schuld write to response stream and keep track on what is unresolved to send the split filters to the engine
 
     // todo engine impl for unresolved?
+
+    // use another response writer just for the engine to be able to distinct in caching-save step
 
     switch (ndkConfig.engine) {
       case NdkEngine.LISTS:
@@ -56,7 +59,9 @@ class OurApi {
         throw UnimplementedError("Unknown engine");
     }
 
-    // calls uncase with config
+    // todo:
+    // save network responses in db and then write to response stream if not already in db (useful to not write duplicates)
+
     return response;
   }
 
