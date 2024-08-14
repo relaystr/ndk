@@ -79,8 +79,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: key1TextNotes);
 
-      RelayManager manager = RelayManager();
-      await manager.connect(urls: [relay1.url]);
+      RelayManager manager = RelayManager(bootstrapRelays: [relay1.url]);
 
       Filter filter =
           Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey]);
@@ -98,8 +97,7 @@ void main() async {
     test('verify signatures of events', () async {
       MockRelay relay1 = MockRelay(name: "relay 1", signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
-      RelayManager manager = RelayManager();
-      await manager.connect(urls: [relay1.url]);
+      RelayManager manager = RelayManager(bootstrapRelays: [relay1.url]);
       Stream<Nip01Event> stream = (await manager.requestRelays([
         relay1.url
       ], Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND]),
@@ -194,9 +192,7 @@ void main() async {
 
     // ================================================================================================
     test('query events from key that writes only on one relay', () async {
-      RelayManager manager = RelayManager();
-      await manager
-          .connect(urls: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      RelayManager manager = RelayManager(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       RelaySet relaySet = await manager.calculateRelaySet(
           name: "test",
@@ -252,9 +248,7 @@ void main() async {
     test(
         // skip: 'WiP',
         'query all keys and do not use redundant relays', () async {
-      RelayManager manager = RelayManager();
-      await manager
-          .connect(urls: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      RelayManager manager = RelayManager(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
@@ -352,9 +346,7 @@ void main() async {
     test(
         "calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays",
         () async {
-      RelayManager manager = RelayManager();
-      await manager
-          .connect(urls: [relay1.url, relay2.url, relay3.url, relay4.url]);
+        RelayManager manager = RelayManager(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       // relayMinCountPerPubKey: 1
       RelaySet relaySet = await manager.calculateRelaySet(
@@ -388,9 +380,7 @@ void main() async {
     test(
         "calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays",
         () async {
-      RelayManager manager = RelayManager();
-      await manager
-          .connect(urls: [relay1.url, relay2.url, relay3.url, relay4.url]);
+      RelayManager manager = RelayManager(bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url]);
 
       RelaySet relaySet = await manager.calculateRelaySet(
           name: "feed",
