@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 
 import '../data_layer/data_sources/http_request.dart';
+import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import 'global_state.dart';
@@ -18,9 +19,13 @@ class Initialization {
 
   /// state obj
 
+  /// use cases
+
   RelayManager? relayManager;
 
   JitEngine? jitEngine;
+
+  late CacheWrite cacheWrite;
 
   Initialization({
     required this.ndkConfig,
@@ -47,5 +52,7 @@ class Initialization {
       default:
         throw UnimplementedError("Unknown engine");
     }
+
+    cacheWrite = CacheWrite(ndkConfig.cache);
   }
 }

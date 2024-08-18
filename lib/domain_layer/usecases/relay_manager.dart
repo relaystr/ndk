@@ -64,7 +64,6 @@ class RelayManager {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
-
   // HttpClient? httpClient;
 
   // RelayManager(/*{bool? isWeb}*/) {
@@ -74,11 +73,15 @@ class RelayManager {
   //   //   httpClient!.connectionTimeout = const Duration(seconds: 5);
   //   // }
   // }
-  RelayManager({CacheManager? cacheManager, EventVerifier? eventVerifier, List<String>? bootstrapRelays, GlobalState? globalState}) {
+  RelayManager(
+      {CacheManager? cacheManager,
+      EventVerifier? eventVerifier,
+      List<String>? bootstrapRelays,
+      GlobalState? globalState}) {
     this.cacheManager = cacheManager ?? MemCacheManager();
     this.eventVerifier = eventVerifier ?? AcinqSecp256k1EventVerifier();
     this.bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS;
-    this.globalState = globalState?? GlobalState();
+    this.globalState = globalState ?? GlobalState();
     connect(urls: this.bootstrapRelays);
   }
 
@@ -86,7 +89,8 @@ class RelayManager {
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
-  Future<void> connect({Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS}) async {
+  Future<void> connect(
+      {Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS}) async {
     bootstrapRelays = [];
     for (String url in urls) {
       String? clean = cleanRelayUrl(url);
@@ -98,10 +102,11 @@ class RelayManager {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
     await Future.wait(
-        urls.map((url) => reconnectRelay(url, force: true)).toList()).whenComplete(() {
-          if (!_seedRelaysCompleter.isCompleted) {
-            _seedRelaysCompleter.complete();
-          }
+            urls.map((url) => reconnectRelay(url, force: true)).toList())
+        .whenComplete(() {
+      if (!_seedRelaysCompleter.isCompleted) {
+        _seedRelaysCompleter.complete();
+      }
     });
   }
 
@@ -109,14 +114,13 @@ class RelayManager {
     // webSocket!.sendMessage(jsonEncode(["EVENT", event.toJson()]));
     webSockets[url]!.sink.add(data);
     Logger.log.d("🔼 send message to $url: $data");
-
   }
 
   Future<void> closeSocket(url) async {
     return webSockets[url]?.sink.close().timeout(const Duration(seconds: 3),
         onTimeout: () {
-          print("timeout while trying to close socket $url");
-        });
+      print("timeout while trying to close socket $url");
+    });
   }
 
   Future<void> closeAllSockets() async {
@@ -306,7 +310,8 @@ class RelayManager {
     return false;
   }
 
-  Future<void> broadcastEvent(Nip01Event event, Iterable<String> relays, EventSigner signer) async {
+  Future<void> broadcastEvent(
+      Nip01Event event, Iterable<String> relays, EventSigner signer) async {
     await signer.sign(event);
     await Future.wait(relays.map((url) => broadcastSignedEvent(event, url)));
   }
@@ -370,15 +375,12 @@ class RelayManager {
           event.validSig = true;
           if (relays[url] != null) {
             relays[url]!
-                .incStatsByNewEvent(event, message
-                .toString()
-                .codeUnits
-                .length);
+                .incStatsByNewEvent(event, message.toString().codeUnits.length);
           }
           RequestState? nostrRequest = globalState.inFlightRequests[id];
           if (nostrRequest != null) {
             try {
-              nostrRequest.controller.add(event);
+              nostrRequest.networkController.add(event);
               // if (!nostrRequest.controller.isClosed && nostrRequest.shouldClose) {
               //   nostrRequest.controller.close();
               //   globalState.inFlightRequests.remove(id);
@@ -413,11 +415,11 @@ class RelayManager {
         }
         if (nostrRequest.requests.isEmpty &&
             !nostrRequest.controller.isClosed) {
-          Future.delayed(Duration(seconds: (nostrRequest.request.timeout ?? 5) * 10),
-                  () {
-                closeNostrRequest(nostrRequest);
-                // globalState.inFlightRequests.remove(id);
-              });
+          Future.delayed(
+              Duration(seconds: (nostrRequest.request.timeout ?? 5) * 10), () {
+            closeNostrRequest(nostrRequest);
+            // globalState.inFlightRequests.remove(id);
+          });
         }
       }
       return;
@@ -448,20 +450,18 @@ class RelayManager {
 
   // =====================================================================================
 
-  Future<void> doNostrRequest(RequestState requestState, Filter filter, RelaySet relaySet,
+  Future<void> doNostrRequest(
+      RequestState requestState, Filter filter, RelaySet relaySet,
       {bool splitRequestsByPubKeyMappings = true}) async {
     if (splitRequestsByPubKeyMappings) {
       relaySet.splitIntoRequests(filter, requestState);
 
       print(
-          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${requestState.requests
-              .length} relays");
+          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${requestState.requests.length} relays");
 
       if (requestState.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
         print(
-            "making fallback requests to ${bootstrapRelays.length} bootstrap relays for ${filter.authors != null
-                ? filter.authors!.length
-                : 0} authors with kinds: ${filter.kinds}");
+            "making fallback requests to ${bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
         for (var url in bootstrapRelays) {
           requestState.addRequest(url, RelaySet.sliceFilterAuthors(filter));
         }
@@ -488,7 +488,7 @@ class RelayManager {
     print(
         "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
     for (MapEntry<String, RelayRequestState> entry
-    in requestState.requests.entries) {
+        in requestState.requests.entries) {
       doRelayRequest(requestState.id, entry.value);
     }
   }
@@ -509,11 +509,15 @@ class RelayManager {
     int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
     bool splitRequestsByPubKeyMappings = true,
   }) async {
-    RequestState state = RequestState(NdkRequest.query(Helpers.getRandomString(10), filters: [filter], timeout: idleTimeout,             onTimeout: (request) {
+    RequestState state = RequestState(NdkRequest.query(
+        Helpers.getRandomString(10),
+        filters: [filter],
+        timeout: idleTimeout, onTimeout: (request) {
       closeNostrRequest(request);
     }));
     RequestResponse response = RequestResponse(state.stream);
-    await doNostrRequest(state, filter, relaySet, splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+    await doNostrRequest(state, filter, relaySet,
+        splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
     return response;
   }
 
@@ -578,7 +582,8 @@ class RelayManager {
     await seedRelaysConnected;
 
     for (var url in relays.keys) {
-      requestState.addRequest(url, RelaySet.sliceFilterAuthors(requestState.request.filters.first));
+      requestState.addRequest(
+          url, RelaySet.sliceFilterAuthors(requestState.request.filters.first));
     }
     globalState.inFlightRequests[requestState.id] = requestState;
 
@@ -599,7 +604,7 @@ class RelayManager {
     print(
         "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
     for (MapEntry<String, RelayRequestState> entry
-    in requestState.requests.entries) {
+        in requestState.requests.entries) {
       if (!doRelayRequest(requestState.id, entry.value)) {
         notSent.add(entry.key);
       }
@@ -608,7 +613,6 @@ class RelayManager {
       requestState.requests.remove(url);
     }
   }
-
 
   // Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
   //     {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
@@ -661,12 +665,13 @@ class RelayManager {
   // }
 
   /// relay -> list of pubKey mappings
-  Future<RelaySet> calculateRelaySet({required String name,
-    required String ownerPubKey,
-    required List<String> pubKeys,
-    required RelayDirection direction,
-    required int relayMinCountPerPubKey,
-    Function(String, int, int)? onProgress}) async {
+  Future<RelaySet> calculateRelaySet(
+      {required String name,
+      required String ownerPubKey,
+      required List<String> pubKeys,
+      required RelayDirection direction,
+      required int relayMinCountPerPubKey,
+      Function(String, int, int)? onProgress}) async {
     RelaySet byScore = await _relaysByPopularity(
         name: name,
         ownerPubKey: ownerPubKey,
@@ -695,8 +700,7 @@ class RelayManager {
     for (var relay in relays.keys) {
       if (isWebSocketOpen(relay)) {
         map[relay] = pubKeys
-            .map((pubKey) =>
-            PubkeyMapping(
+            .map((pubKey) => PubkeyMapping(
                 pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite))
             .toList();
       }
@@ -711,16 +715,17 @@ class RelayManager {
   ///   - check if relay is connected or can connect
   ///   - for each pubKey mapped for given relay check if you already have minimum amount of relay coverage (use auxiliary map to remember this)
   ///     - if not add this relay to list of best relays
-  Future<RelaySet> _relaysByPopularity({required String name,
-    required String ownerPubKey,
-    required List<String> pubKeys,
-    required RelayDirection direction,
-    required int relayMinCountPerPubKey,
-    Function(String stepName, int count, int total)? onProgress}) async {
+  Future<RelaySet> _relaysByPopularity(
+      {required String name,
+      required String ownerPubKey,
+      required List<String> pubKeys,
+      required RelayDirection direction,
+      required int relayMinCountPerPubKey,
+      Function(String stepName, int count, int total)? onProgress}) async {
     await loadMissingRelayListsFromNip65OrNip02(pubKeys,
         onProgress: onProgress);
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl =
-    await _buildPubKeysMapFromRelayLists(pubKeys, direction);
+        await _buildPubKeysMapFromRelayLists(pubKeys, direction);
 
     Map<String, Set<String>> minimumRelaysCoverageByPubkey = {};
     Map<String, List<PubkeyMapping>> bestRelays = {};
@@ -740,7 +745,7 @@ class RelayManager {
         continue;
       }
       if (!pubKeysByRelayUrl[url]!.any((pub_key) =>
-      minimumRelaysCoverageByPubkey[pub_key.pubKey] == null ||
+          minimumRelaysCoverageByPubkey[pub_key.pubKey] == null ||
           minimumRelaysCoverageByPubkey[pub_key.pubKey]!.length <
               relayMinCountPerPubKey)) {
         continue;
@@ -793,13 +798,13 @@ class RelayManager {
         notCoveredPubkeys: notCoveredPubkeys.entries
             .map(
               (entry) => NotCoveredPubKey(entry.key, entry.value),
-        )
+            )
             .toList());
   }
 
   Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
       {Function(String stepName, int count, int total)? onProgress,
-        bool forceRefresh = false}) async {
+      bool forceRefresh = false}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
       UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
@@ -820,10 +825,12 @@ class RelayManager {
             "loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
-        RequestState requestState = RequestState(NdkRequest.query("TODO WTF?", filters: [Filter(
-            authors: missingPubKeys,
-            kinds: [Nip65.KIND, ContactList.KIND])
-        ],
+        RequestState requestState = RequestState(NdkRequest.query("TODO WTF?",
+            filters: [
+              Filter(
+                  authors: missingPubKeys,
+                  kinds: [Nip65.KIND, ContactList.KIND])
+            ],
             timeout: missingPubKeys.length > 1 ? 10 : 3));
 
         await handleRequest(requestState);
@@ -878,7 +885,7 @@ class RelayManager {
       List<ContactList> contactListsSave = [];
       for (ContactList contactList in contactLists) {
         ContactList? existing =
-        cacheManager.loadContactList(contactList.pubKey);
+            cacheManager.loadContactList(contactList.pubKey);
         if (existing == null || existing.createdAt < contactList.createdAt) {
           contactListsSave.add(contactList);
         }
@@ -893,7 +900,8 @@ class RelayManager {
     print("Loaded ${found.length} relay lists");
   }
 
-  _buildPubKeysMapFromRelayLists(List<String> pubKeys, RelayDirection direction) async {
+  _buildPubKeysMapFromRelayLists(
+      List<String> pubKeys, RelayDirection direction) async {
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
     int foundCount = 0;
     for (String pubKey in pubKeys) {
@@ -907,9 +915,7 @@ class RelayManager {
               pubKey, direction, entry.key, entry.value, pubKeysByRelayUrl);
         }
       } else {
-        int now = DateTime
-            .now()
-            .millisecondsSinceEpoch ~/ 1000;
+        int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
         await cacheManager.saveUserRelayList(UserRelayList(
             pubKey: pubKey,
             relays: {},
@@ -922,27 +928,28 @@ class RelayManager {
 
     /// sort by pubKeys count for each relay descending
     List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =
-    pubKeysByRelayUrl.entries.toList()
+        pubKeysByRelayUrl.entries.toList()
 
-    /// todo: use more stuff to improve sorting
-      ..sort((a, b) {
-        int rr = b.value.length.compareTo(a.value.length);
-        if (rr == 0) {
-          // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
-          bool aC = isWebSocketOpen(a.key);
-          bool bC = isWebSocketOpen(b.key);
-          if (aC != bC) {
-            return aC ? -1 : 1;
-          }
-          return 0;
-        }
-        return rr;
-      });
+          /// todo: use more stuff to improve sorting
+          ..sort((a, b) {
+            int rr = b.value.length.compareTo(a.value.length);
+            if (rr == 0) {
+              // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
+              bool aC = isWebSocketOpen(a.key);
+              bool bC = isWebSocketOpen(b.key);
+              if (aC != bC) {
+                return aC ? -1 : 1;
+              }
+              return 0;
+            }
+            return rr;
+          });
 
     return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
   }
 
-  _handleRelayUrlForPubKey(String pubKey,
+  _handleRelayUrlForPubKey(
+      String pubKey,
       RelayDirection direction,
       String url,
       ReadWriteMarker marker,
@@ -974,11 +981,7 @@ class RelayManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     print(
-        "CONNECTED ${connected
-            .where((element) => element)
-            .length} , ${connected
-            .where((element) => !element)
-            .length} FAILED took ${duration.inMilliseconds} ms");
+        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED took ${duration.inMilliseconds} ms");
   }
 
   Future<bool> reconnectRelay(String url, {bool force = false}) async {
@@ -1027,8 +1030,10 @@ class RelayManager {
     return true;
   }
 
-  Future<RequestResponse> requestRelays(List<String> list, Filter filter, { int? timeout}) async {
-    RequestState state = RequestState(NdkRequest.query("-", filters: [filter], timeout: timeout));
+  Future<RequestResponse> requestRelays(List<String> list, Filter filter,
+      {int? timeout}) async {
+    RequestState state = RequestState(
+        NdkRequest.query("-", filters: [filter], timeout: timeout));
     RequestResponse response = RequestResponse(state.stream);
     await handleRequest(state);
     return response;

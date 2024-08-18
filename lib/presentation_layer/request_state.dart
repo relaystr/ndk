@@ -17,13 +17,17 @@ class RequestState {
   StreamController<Nip01Event> controller =
       StreamController<Nip01Event>.broadcast();
 
+  /// [networkController] used by engines to write their response
+  StreamController<Nip01Event> networkController =
+      StreamController<Nip01Event>.broadcast();
+
   Stream<Nip01Event> get stream => request.timeout != null
       ? controller.stream.timeout(Duration(seconds: request.timeout!),
-      onTimeout: (sink) {
-        if (request.onTimeout != null) {
-          request.onTimeout!.call(this);
-        }
-      })
+          onTimeout: (sink) {
+          if (request.onTimeout != null) {
+            request.onTimeout!.call(this);
+          }
+        })
       : controller.stream;
 
   NdkRequest request;

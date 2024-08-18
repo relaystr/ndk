@@ -177,7 +177,7 @@ class JitEngine with Logger {
     event.validSig = validSig;
 
     // add to response stream
-    requestState.controller.add(event);
+    requestState.networkController.add(event);
   }
 
   static void onEoseReceivedFromRelay(RequestState requestState) async {
