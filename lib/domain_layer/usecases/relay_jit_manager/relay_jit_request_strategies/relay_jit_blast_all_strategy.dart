@@ -2,7 +2,7 @@ import 'package:dart_ndk/shared/nips/nip01/client_msg.dart';
 import 'package:dart_ndk/domain_layer/entities/filter.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
 
-import '../../../../presentation_layer/request_state.dart';
+import '../../../entities/request_state.dart';
 import '../../jit_engine.dart';
 
 /// Strategy Description:
