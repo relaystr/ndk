@@ -78,7 +78,7 @@ class JitEngine with Logger {
 
     /// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
     /// user can provide multiple filters
-    for (var filter in ndkRequest.filters) {
+    for (var filter in requestState.unresolvedFilters) {
       // filter different types of filters/requests because each requires a different strategy
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {

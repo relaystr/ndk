@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 
 import '../data_layer/data_sources/http_request.dart';
+import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/relay_manager.dart';
@@ -26,6 +27,8 @@ class Initialization {
   JitEngine? jitEngine;
 
   late CacheWrite cacheWrite;
+
+  late CacheRead cacheRead;
 
   Initialization({
     required this.ndkConfig,
@@ -54,5 +57,6 @@ class Initialization {
     }
 
     cacheWrite = CacheWrite(ndkConfig.cache);
+    cacheRead = CacheRead(ndkConfig.cache);
   }
 }

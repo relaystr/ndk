@@ -30,8 +30,6 @@ class RequestState {
         })
       : controller.stream;
 
-  NdkRequest request;
-
   get id => request.id;
 
   //! our requests tracking obj
@@ -41,7 +39,13 @@ class RequestState {
   // TODO this class should not hold anything JIT specific
   Map<String, RelayJit> activeRelaySubscriptions = {};
 
-  RequestState(this.request);
+  NdkRequest request;
+
+  /// this is the working filter obj, gets initialized with user provided filters.
+  /// Then on each step (cache, network) resolved filters get removed/updated
+  final List<Filter> unresolvedFilters;
+
+  RequestState(this.request) : unresolvedFilters = request.filters;
 
   bool get didAllRequestsReceivedEOSE =>
       !requests.values.any((element) => !element.receivedEOSE);

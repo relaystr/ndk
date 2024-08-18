@@ -41,9 +41,14 @@ class OurApi {
 
     // todo caching middleware
     // caching schuld write to response stream and keep track on what is unresolved to send the split filters to the engine
+    _initialization.cacheRead
+        .resolveUnresolvedFilters(requestState: requestState);
+
+    /// handle request)
 
     switch (ndkConfig.engine) {
       case NdkEngine.LISTS:
+        //todo: discuss/implement use of unresolvedFilters
         await _initialization.relayManager!.handleRequest(requestState);
         break;
 
