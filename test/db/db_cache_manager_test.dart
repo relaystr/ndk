@@ -1,16 +1,16 @@
 // ignore_for_file: avoid_print
 
-import 'package:dart_ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
-import 'package:dart_ndk/data_layer/models/db/db_contact_list.dart';
-import 'package:dart_ndk/data_layer/models/db/db_event.dart';
-import 'package:dart_ndk/data_layer/models/db/db_metadata.dart';
-import 'package:dart_ndk/data_layer/models/db/db_nip05.dart';
-import 'package:dart_ndk/data_layer/models/db/db_relay_set.dart';
-import 'package:dart_ndk/data_layer/models/db/db_user_relay_list.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
+import 'package:ndk/data_layer/models/db/db_contact_list.dart';
+import 'package:ndk/data_layer/models/db/db_event.dart';
+import 'package:ndk/data_layer/models/db/db_metadata.dart';
+import 'package:ndk/data_layer/models/db/db_nip05.dart';
+import 'package:ndk/data_layer/models/db/db_relay_set.dart';
+import 'package:ndk/data_layer/models/db/db_user_relay_list.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart' as isar;
 

@@ -1,3 +1,4 @@
+import '../domain_layer/entities/filter.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import 'concurrency_check.dart';
@@ -9,7 +10,7 @@ import 'request_response.dart';
 import '../domain_layer/entities/request_state.dart';
 
 // some global obj that schuld be kept in memory by lib user
-class OurApi {
+class Ndk {
   // placeholder
   final NdkConfig ndkConfig;
   static final GlobalState globalState = GlobalState();
@@ -17,11 +18,19 @@ class OurApi {
   // global initialization use to access rdy repositories
   final Initialization _initialization;
 
-  OurApi(this.ndkConfig)
+  Ndk(this.ndkConfig)
       : _initialization = Initialization(
           ndkConfig: ndkConfig,
           globalState: globalState,
         );
+
+  query(List<Filter> filters) {
+
+  }
+
+  subscription(List<Filter> filters) {
+
+  }
 
   /// ! this is just an example
   Future<RequestResponse> requestNostrEvent(NdkRequest request) async {

@@ -1,6 +1,6 @@
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 
 import 'nip_65.dart';
 

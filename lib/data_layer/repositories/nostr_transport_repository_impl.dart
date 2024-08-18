@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dart_ndk/data_layer/data_sources/websocket.dart';
+import 'package:ndk/data_layer/data_sources/websocket.dart';
 
 import '../../domain_layer/repositories/nostr_transport.dart';
 

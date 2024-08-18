@@ -31,7 +31,7 @@ class CacheRead {
 
       // write found events to response stream
       for (final event in foundEvents) {
-        requestState.networkController.add(event);
+        requestState.controller.add(event);
       }
     }
   }

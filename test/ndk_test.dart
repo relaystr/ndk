@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print
 
-import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/shared/nips/nip01/bip340.dart';
-import 'package:dart_ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'mocks/mock_event_verifier.dart';
@@ -42,7 +42,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: key1TextNotes);
 
-      OurApi nostr = OurApi(
+      Ndk ndk = Ndk(
         NdkConfig(
             eventVerifier: MockEventVerifier(),
             eventSigner: Bip340EventSigner(key1.privateKey, key1.publicKey),
@@ -51,7 +51,7 @@ void main() async {
             bootstrapRelays: [relay1.url]),
       );
 
-      final response = await nostr.requestNostrEvent(
+      final response = await ndk.requestNostrEvent(
           NdkRequest.query("random-id", filters: [
             Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey])
           ]));

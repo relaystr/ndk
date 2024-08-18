@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:dart_ndk/shared/logger/logger.dart';
-import 'package:dart_ndk/shared/nips/nip01/client_msg.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:dart_ndk/domain_layer/entities/relay.dart';
+import 'package:ndk/shared/logger/logger.dart';
+import 'package:ndk/shared/nips/nip01/client_msg.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../entities/request_state.dart';

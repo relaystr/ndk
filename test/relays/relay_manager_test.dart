@@ -2,20 +2,20 @@
 
 import 'dart:async';
 
-import 'package:dart_ndk/dart_ndk.dart';
-import 'package:dart_ndk/domain_layer/entities/relay_set.dart';
-import 'package:dart_ndk/presentation_layer/global_state.dart';
-import 'package:dart_ndk/shared/nips/nip01/bip340.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/repositories/event_verifier.dart';
-import 'package:dart_ndk/domain_layer/entities/filter.dart';
-import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
-import 'package:dart_ndk/shared/nips/nip01/key_pair.dart';
-import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_65.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:dart_ndk/nostr.dart';
-import 'package:dart_ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
+import 'package:ndk/presentation_layer/global_state.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/repositories/event_verifier.dart';
+import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
+import 'package:ndk/domain_layer/entities/nip_65.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/old_nostr.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 

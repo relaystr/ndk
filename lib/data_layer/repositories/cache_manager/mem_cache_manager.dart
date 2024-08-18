@@ -1,8 +1,8 @@
 import 'dart:core';
 
-import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:dart_ndk/domain_layer/entities/contact_list.dart';
+import 'package:ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
 
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';

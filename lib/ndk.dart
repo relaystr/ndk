@@ -1,11 +1,11 @@
-library dart_ndk;
+library ndk;
 
 /**
  * presentation layer
  * 
  */
 
-export 'presentation_layer/api.dart';
+export 'presentation_layer/ndk.dart';
 export 'presentation_layer/ndk_config.dart';
 export 'presentation_layer/ndk_request.dart';
 
@@ -15,7 +15,7 @@ export 'presentation_layer/ndk_request.dart';
  * common entities
  * 
  * to access all entities use 
- * import 'package:dart_ndk/entities.dart' as ndk_entities;
+ * import 'package:ndk/entities.dart' as ndk_entities;
  * 
  */
 export 'domain_layer/entities/nip_01_event.dart';

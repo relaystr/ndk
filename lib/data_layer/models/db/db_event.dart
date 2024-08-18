@@ -1,6 +1,6 @@
 // ignore_for_file: unnecessary_overrides
 
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:isar/isar.dart';
 
 part 'db_event.g.dart';

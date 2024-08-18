@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:dart_ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
-import 'package:dart_ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 

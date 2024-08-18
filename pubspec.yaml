@@ -1,6 +1,6 @@
-name: dart_ndk
-description: Dart Nostr Development Kit
-version: 0.1.0-dev8
+name: ndk
+description: Nostr Development Kit
+version: 0.1.0
 homepage: https://github.com/relaystr/dart_ndk
 
 environment:
