@@ -12,7 +12,7 @@ import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/repositories/event_signer.dart';
 import 'package:dart_ndk/presentation_layer/global_state.dart';
 import 'package:dart_ndk/presentation_layer/request_response.dart';
-import 'package:dart_ndk/presentation_layer/request_state.dart';
+import 'package:dart_ndk/domain_layer/entities/request_state.dart';
 import 'package:dart_ndk/shared/logger/logger.dart';
 import 'package:dart_ndk/shared/nips/nip01/helpers.dart';
 import 'package:dart_ndk/domain_layer/entities/contact_list.dart';

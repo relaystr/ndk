@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:dart_ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:dart_ndk/domain_layer/entities/read_write.dart';
 
-import '../../presentation_layer/request_state.dart';
+import 'request_state.dart';
 import 'filter.dart';
 
 class RelaySet {

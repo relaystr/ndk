@@ -3,7 +3,7 @@ import 'package:crypto/crypto.dart';
 
 import '../domain_layer/entities/filter.dart';
 import 'global_state.dart';
-import 'request_state.dart';
+import '../domain_layer/entities/request_state.dart';
 
 class ConcurrencyCheck {
   GlobalState globalState;

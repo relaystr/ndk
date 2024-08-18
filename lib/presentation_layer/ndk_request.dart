@@ -1,5 +1,5 @@
 import 'package:dart_ndk/config/request_defaults.dart';
-import 'package:dart_ndk/presentation_layer/request_state.dart';
+import 'package:dart_ndk/domain_layer/entities/request_state.dart';
 
 import '../domain_layer/entities/filter.dart';
 import '../domain_layer/entities/relay_set.dart';

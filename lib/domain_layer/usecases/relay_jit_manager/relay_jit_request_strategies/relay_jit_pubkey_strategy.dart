@@ -10,7 +10,7 @@ import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart'
 import 'package:dart_ndk/domain_layer/usecases/jit_engine.dart';
 import 'package:dart_ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 
-import '../../../../presentation_layer/request_state.dart';
+import '../../../entities/request_state.dart';
 import '../../../entities/connection_source.dart';
 
 /// Strategy Description:

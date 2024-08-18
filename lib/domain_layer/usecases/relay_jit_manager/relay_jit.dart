@@ -9,7 +9,7 @@ import 'package:dart_ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:dart_ndk/domain_layer/entities/relay.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../../presentation_layer/request_state.dart';
+import '../../entities/request_state.dart';
 import '../../entities/connection_source.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../jit_engine.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:dart_ndk/presentation_layer/global_state.dart';
-import 'package:dart_ndk/presentation_layer/request_state.dart';
+import 'package:dart_ndk/domain_layer/entities/request_state.dart';
 
 import 'package:dart_ndk/shared/logger/logger.dart';
 

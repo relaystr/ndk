@@ -6,7 +6,7 @@ import 'init.dart';
 import 'ndk_config.dart';
 import 'ndk_request.dart';
 import 'request_response.dart';
-import 'request_state.dart';
+import '../domain_layer/entities/request_state.dart';
 
 // some global obj that schuld be kept in memory by lib user
 class OurApi {
@@ -33,7 +33,7 @@ class OurApi {
 
     final concurrency = ConcurrencyCheck(globalState);
 
-    // concurrency check - check if request is inFlight
+    /// concurrency check - check if request is inFlight
     final streamWasReplaced = concurrency.check(requestState);
     if (streamWasReplaced) {
       return response;
