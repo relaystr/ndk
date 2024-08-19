@@ -470,28 +470,33 @@ class RelayManager {
 
   // =====================================================================================
 
-  Future<void> doNostrRequest(
-      RequestState requestState, Filter filter, RelaySet relaySet,
+  Future<void> doNostrRequestWithRelaySet(
+      RequestState state,
       {bool splitRequestsByPubKeyMappings = true}) async {
+    if (state.unresolvedFilters.isEmpty || state.request.relaySet==null) {
+      return;
+    }
+    // TODO support more than 1 filter
+    RelaySet relaySet = state.request.relaySet!;
+    Filter filter = state.unresolvedFilters.first;
     if (splitRequestsByPubKeyMappings) {
-      relaySet.splitIntoRequests(filter, requestState);
-
+      relaySet.splitIntoRequests(filter, state);
       print(
-          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${requestState.requests.length} relays");
+          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${state.requests.length} relays");
 
-      if (requestState.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
+      if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
         print(
             "making fallback requests to ${bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
         for (var url in bootstrapRelays) {
-          requestState.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+          state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
         }
       }
     } else {
       for (var url in relaySet.urls) {
-        requestState.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+        state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
       }
     }
-    globalState.inFlightRequests[requestState.id] = requestState;
+    globalState.inFlightRequests[state.id] = state;
     Map<int?, int> kindsMap = {};
     globalState.inFlightRequests.forEach((key, request) {
       int? kind;
@@ -508,8 +513,8 @@ class RelayManager {
     print(
         "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
     for (MapEntry<String, RelayRequestState> entry
-        in requestState.requests.entries) {
-      doRelayRequest(requestState.id, entry.value);
+        in state.requests.entries) {
+      doRelayRequest(state.id, entry.value);
     }
   }
 
@@ -523,23 +528,23 @@ class RelayManager {
   // }
   //
 
-  Future<RequestResponse> query(
-    Filter filter,
-    RelaySet relaySet, {
-    int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
-    bool splitRequestsByPubKeyMappings = true,
-  }) async {
-    RequestState state = RequestState(NdkRequest.query(
-        Helpers.getRandomString(10),
-        filters: [filter],
-        timeout: idleTimeout, onTimeout: (request) {
-      closeNostrRequest(request);
-    }));
-    RequestResponse response = RequestResponse(state.stream);
-    await doNostrRequest(state, filter, relaySet,
-        splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
-    return response;
-  }
+  // Future<RequestResponse> query(
+  //   Filter filter,
+  //   RelaySet relaySet, {
+  //   int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
+  //   bool splitRequestsByPubKeyMappings = true,
+  // }) async {
+  //   RequestState state = RequestState(NdkRequest.query(
+  //       Helpers.getRandomString(10),
+  //       filters: [filter],
+  //       timeout: idleTimeout, onTimeout: (request) {
+  //     closeNostrRequest(request);
+  //   }));
+  //   RequestResponse response = RequestResponse(state.stream);
+  //   await doNostrRequest(state, filter, relaySet,
+  //       splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings);
+  //   return response;
+  // }
 
   Future<void> closeNostrRequest(RequestState state) async {
     return closeNostrRequestById(state.id);
@@ -585,9 +590,38 @@ class RelayManager {
     }
   }
 
-  Future<void> handleRequest(RequestState requestState) async {
-    String id = Helpers.getRandomString(10);
-    requestState.request.id = id;
+  Future<Stream<Nip01Event>> query(
+      Filter filter,
+      RelaySet? relaySet, {
+      int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
+      bool splitRequestsByPubKeyMappings = true,
+    }) async {
+      RequestState state = RequestState(NdkRequest.query(
+          Helpers.getRandomString(10),
+          filters: [filter],
+          relaySet: relaySet,
+          timeout: idleTimeout, onTimeout: (request) {
+        closeNostrRequest(request);
+      }));
+    await _doQuery(state);
+    return state.stream;
+  }
+
+  Future<void> _doQuery(RequestState state) async{
+    handleRequest(state);
+    state.networkController.stream.listen((event) {
+      state.controller.add(event);
+    }, onDone: () {
+      state.controller.close();
+    }, onError:  (error) {
+      Logger.log.e("⛔ $error ");
+    });
+  }
+
+
+  Future<void> handleRequest(RequestState state) async {
+//    String id = Helpers.getRandomString(10);
+  //  requestState.request.id = id;
     // requestState.requestConfig.onTimeout
     // NostrRequest nostrRequest = requestState.requestConfig.closeOnEOSE
     //     ? NostrRequest.query(id, timeout: requestState.requestConfig.timeout, onTimeout: (request) {
@@ -601,11 +635,14 @@ class RelayManager {
     // );
     await seedRelaysConnected;
 
-    for (var url in relays.keys) {
-      requestState.addRequest(
-          url, RelaySet.sliceFilterAuthors(requestState.request.filters.first));
+    if (state.request.relaySet!=null) {
+      return await doNostrRequestWithRelaySet(state);
     }
-    globalState.inFlightRequests[requestState.id] = requestState;
+    for (var url in relays.keys) {
+      state.addRequest(
+          url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+    }
+    globalState.inFlightRequests[state.id] = state;
 
     List<String> notSent = [];
     Map<int?, int> kindsMap = {};
@@ -624,13 +661,13 @@ class RelayManager {
     print(
         "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
     for (MapEntry<String, RelayRequestState> entry
-        in requestState.requests.entries) {
-      if (!doRelayRequest(requestState.id, entry.value)) {
+        in state.requests.entries) {
+      if (!doRelayRequest(state.id, entry.value)) {
         notSent.add(entry.key);
       }
     }
     for (var url in notSent) {
-      requestState.requests.remove(url);
+      state.requests.remove(url);
     }
   }
 
@@ -853,7 +890,7 @@ class RelayManager {
             ],
             timeout: missingPubKeys.length > 1 ? 10 : 3));
 
-        await handleRequest(requestState);
+        await _doQuery(requestState);
         await for (final event in (requestState.stream)) {
           switch (event.kind) {
             case Nip65.KIND:
@@ -1050,12 +1087,12 @@ class RelayManager {
     return true;
   }
 
-  Future<RequestResponse> requestRelays(List<String> list, Filter filter,
-      {int? timeout}) async {
-    RequestState state = RequestState(
-        NdkRequest.query("-", filters: [filter], timeout: timeout));
-    RequestResponse response = RequestResponse(state.stream);
-    await handleRequest(state);
-    return response;
-  }
+  // Future<RequestResponse> requestRelays(List<String> list, Filter filter,
+  //     {int? timeout}) async {
+  //   RequestState state = RequestState(
+  //       NdkRequest.query("-", filters: [filter], timeout: timeout));
+  //   RequestResponse response = RequestResponse(state.stream);
+  //   await _doQuery(state);
+  //   return response;
+  // }
 }
