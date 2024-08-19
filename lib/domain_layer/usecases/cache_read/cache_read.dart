@@ -1,3 +1,4 @@
+import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/request_state.dart';
 import '../../repositories/cache_manager.dart';
@@ -31,6 +32,7 @@ class CacheRead {
 
       // write found events to response stream
       for (final event in foundEvents) {
+        Logger.log.d("☑ found event in cache $event ");
         requestState.controller.add(event);
       }
     }

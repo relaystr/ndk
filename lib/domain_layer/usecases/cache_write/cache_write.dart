@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
+import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/cache_manager.dart';
 
@@ -25,8 +26,13 @@ class CacheWrite {
         // todo: allow cache manager structure to save metadata about event, relay rcv from
         return;
       }
+      Logger.log.d("⛁ got event from network $event ");
       cacheManager.saveEvent(event);
       responseController.add(event);
+    }, onDone: () {
+      responseController.close();
+    }, onError:  (error) {
+      Logger.log.e("⛔ $error ");
     });
   }
 }
