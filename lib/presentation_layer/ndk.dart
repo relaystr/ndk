@@ -1,6 +1,7 @@
 import '../domain_layer/entities/filter.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
+import '../shared/logger/logger.dart';
 import '../shared/nips/nip01/helpers.dart';
 import 'concurrency_check.dart';
 import 'global_state.dart';
@@ -35,33 +36,35 @@ class Ndk {
 
   /// ! this is just an example
   RequestResponse requestNostrEvent(NdkRequest request) {
-    RequestState requestState = RequestState(request);
+    RequestState state = RequestState(request);
 
-    final response = RequestResponse(requestState.stream);
+    final response = RequestResponse(state.stream);
 
     final concurrency = ConcurrencyCheck(globalState);
 
     /// concurrency check - check if request is inFlight
-    final streamWasReplaced = concurrency.check(requestState);
+    final streamWasReplaced = request.cacheRead && concurrency.check(state);
     if (streamWasReplaced) {
       return response;
     }
 
     // todo caching middleware
     // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
-    _initialization.cacheRead
-        .resolveUnresolvedFilters(requestState: requestState);
+    if (request.cacheRead) {
+      _initialization.cacheRead
+          .resolveUnresolvedFilters(requestState: state);
+    }
 
     /// handle request)
 
     switch (ndkConfig.engine) {
       case NdkEngine.LISTS:
         //todo: discuss/implement use of unresolvedFilters
-        _initialization.relayManager!.handleRequest(requestState);
+        _initialization.relayManager!.handleRequest(state);
         break;
 
       case NdkEngine.JIT:
-        _initialization.jitEngine!.handleRequest(requestState);
+        _initialization.jitEngine!.handleRequest(state);
         break;
 
       default:
@@ -70,10 +73,20 @@ class Ndk {
 
     /// cache network response
     // todo: discuss use of networkController.add() in engines, its something to keep in mind and therefore bad
-    _initialization.cacheWrite.saveNetworkResponse(
-      networkController: requestState.networkController,
-      responseController: requestState.controller,
-    );
+    if (request.cacheWrite) {
+      _initialization.cacheWrite.saveNetworkResponse(
+        networkController: state.networkController,
+        responseController: state.controller,
+      );
+    } else {
+      state.networkController.stream.listen((event) {
+        state.controller.add(event);
+      }, onDone: () {
+        state.controller.close();
+      }, onError:  (error) {
+        Logger.log.e("⛔ $error ");
+      });
+    }
 
     return response;
   }

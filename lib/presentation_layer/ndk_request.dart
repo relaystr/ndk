@@ -18,12 +18,16 @@ class NdkRequest {
   final int desiredCoverage;
   List<Filter> filters;
   RelaySet? relaySet;
+  bool cacheRead;
+  bool cacheWrite;
 
   NdkRequest.query(
     this.id, {
     required this.filters,
     this.desiredCoverage = 2,
     this.closeOnEOSE = true,
+    this.cacheRead = true,
+    this.cacheWrite = true,
     this.timeout = RequestDefaults.DEFAULT_STREAM_IDLE_TIMEOUT + 1,
     this.onTimeout,
   });
@@ -33,5 +37,7 @@ class NdkRequest {
     required this.filters,
     this.desiredCoverage = 2,
     this.closeOnEOSE = false,
+    this.cacheRead = true,
+    this.cacheWrite = true,
   });
 }
