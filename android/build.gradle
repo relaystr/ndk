@@ -27,7 +27,7 @@ apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace 'relastr.dart_ndk'
+        namespace 'relastr.ndk'
     }
 
     compileSdkVersion 33

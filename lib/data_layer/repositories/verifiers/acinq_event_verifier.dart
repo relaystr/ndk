@@ -5,7 +5,7 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../../../dart_ndk_platform_interface.dart';
+import '../../../ndk_platform_interface.dart';
 
 class AcinqSecp256k1EventVerifier extends Bip340EventVerifier {
   static const platform = MethodChannel('flutter.native/helper');
@@ -19,7 +19,7 @@ class AcinqSecp256k1EventVerifier extends Bip340EventVerifier {
     if (Platform.isAndroid) {
       bool? result;
       try {
-        result = await DartNdkPlatform.instance
+        result = await NdkPlatform.instance
             .verifySignature(event.sig, event.id, event.pubKey);
       } catch (e) {
         if (kDebugMode) {

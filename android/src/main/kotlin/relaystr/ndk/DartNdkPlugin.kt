@@ -1,4 +1,4 @@
-package relaystr.dart_ndk
+package relaystr.ndk
 
 import android.app.Activity
 import android.content.Intent
@@ -30,7 +30,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private val secp256k1 = Secp256k1.get()
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        _channel = MethodChannel(flutterPluginBinding.binaryMessenger, "dart_ndk")
+        _channel = MethodChannel(flutterPluginBinding.binaryMessenger, "ndk")
         _channel.setMethodCallHandler(this)
         _context = flutterPluginBinding.applicationContext
     }

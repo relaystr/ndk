@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 
-import 'dart_ndk_platform_interface.dart';
+import 'ndk_platform_interface.dart';
 
-/// An implementation of [DartNdkPlatform] that uses method channels.
-class MethodChannelDartNdk extends DartNdkPlatform {
+/// An implementation of [NdkPlatform] that uses method channels.
+class MethodChannelDartNdk extends NdkPlatform {
   /// The method channel used to interact with the native platform.
   @visibleForTesting
-  final methodChannel = const MethodChannel('dart_ndk');
+  final methodChannel = const MethodChannel('ndk');
 
   @override
   Future<String?> getPublicKey() async {
