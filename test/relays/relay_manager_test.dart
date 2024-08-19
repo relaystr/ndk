@@ -498,7 +498,7 @@ void main() async {
     // }, timeout: const Timeout.factor(10));
   });
 
-  group(skip: false, "Calculate best relays (external REAL)", () {
+  group(skip: true, "Calculate best relays (external REAL)", () {
 // ================================================================================================
 // REAL EXTERNAL RELAYS FOR SOME NPUBS
 // ================================================================================================

@@ -744,42 +744,6 @@ class NostrOld {
   //   }
   //   return contactList;
   // }
-  //
-  // Future<Metadata?> getSingleMetadata(String pubKey,
-  //     {bool forceRefresh = false,
-  //     int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT}) async {
-  //   Metadata? metadata = cacheManager.loadMetadata(pubKey);
-  //   if (metadata == null || forceRefresh) {
-  //     Metadata? loadedMetadata;
-  //     try {
-  //       await for (final event in (await relayManager.requestRelays(
-  //               relayManager.bootstrapRelays,
-  //               timeout: idleTimeout,
-  //               Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)))
-  //           .stream) {
-  //         if (loadedMetadata == null ||
-  //             loadedMetadata.updatedAt == null ||
-  //             loadedMetadata.updatedAt! < event.createdAt) {
-  //           loadedMetadata = Metadata.fromEvent(event);
-  //         }
-  //       }
-  //     } catch (e) {
-  //       // probably timeout;
-  //     }
-  //     if (loadedMetadata != null &&
-  //         (metadata == null ||
-  //             loadedMetadata.updatedAt == null ||
-  //             metadata.updatedAt == null ||
-  //             loadedMetadata.updatedAt! < metadata.updatedAt! ||
-  //             forceRefresh)) {
-  //       loadedMetadata.refreshedTimestamp = Helpers.now;
-  //       await cacheManager.saveMetadata(loadedMetadata);
-  //       metadata = loadedMetadata;
-  //     }
-  //   }
-  //   return metadata;
-  // }
-  //
   // Future<UserRelayList?> getSingleUserRelayList(String pubKey,
   //     {bool forceRefresh = false}) async {
   //   UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
