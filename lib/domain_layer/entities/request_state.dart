@@ -9,13 +9,14 @@ class RelayRequestState {
   String url;
   bool receivedEOSE = false;
   List<Filter> filters;
+  List<String> eventIdsToBeVerified = [];
 
   RelayRequestState(this.url, this.filters);
 }
 
 class RequestState {
   StreamController<Nip01Event> controller =
-      StreamController<Nip01Event>.broadcast();
+      StreamController<Nip01Event>();
 
   /// [networkController] used by engines to write their response
   StreamController<Nip01Event> networkController =

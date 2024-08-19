@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:ndk/ndk.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,7 +39,7 @@ void main() async {
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
   group('Nostr', () {
-    test('simple request engine LISTS', timeout: const Timeout(Duration(seconds: 3)), () async {
+    test('query simple note LISTS', timeout: const Timeout(Duration(seconds: 3)), () async {
       MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: key1TextNotes);
 
@@ -51,12 +52,29 @@ void main() async {
             bootstrapRelays: [relay1.url]),
       );
 
-      final response = await ndk.requestNostrEvent(
-          NdkRequest.query("random-id", filters: [
-            Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey])
-          ]));
+      RequestResponse response = ndk.query(filters: [
+            Filter(
+                kinds: [Nip01Event.TEXT_NODE_KIND],
+                authors: [key1.publicKey])
+          ]);
 
-      expect(response.stream, emitsInAnyOrder(key1TextNotes.values));
+      await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
+
+      // await for (final event in response.stream) {
+      //   print(event);
+      // }
+
+      RequestResponse response2 = ndk.query( filters: [
+            Filter(
+                kinds: [Nip01Event.TEXT_NODE_KIND],
+                authors: [key1.publicKey, key2.publicKey])
+          ]);
+
+      await expectLater(response2.stream, emitsInAnyOrder(key1TextNotes.values));
+
+      // await for (final event in response2.stream) {
+      //   print(event);
+      // }
 
       await relay1.stopServer();
     });

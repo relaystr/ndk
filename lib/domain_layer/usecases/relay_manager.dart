@@ -369,58 +369,78 @@ class RelayManager {
         }
         return;
       }
-      eventVerifier.verify(event).then((validSig) {
-        if (validSig) {
-          event.sources.add(url);
-          event.validSig = true;
-          if (relays[url] != null) {
-            relays[url]!
-                .incStatsByNewEvent(event, message.toString().codeUnits.length);
-          }
-          RequestState? nostrRequest = globalState.inFlightRequests[id];
-          if (nostrRequest != null) {
-            try {
-              nostrRequest.networkController.add(event);
-              // if (!nostrRequest.controller.isClosed && nostrRequest.shouldClose) {
-              //   nostrRequest.controller.close();
-              //   globalState.inFlightRequests.remove(id);
-              // }
-            } catch (e) {
-              print(
-                  "COULD NOT ADD event $event TO CONTROLLER on $url for requests ${nostrRequest.requests}");
+      RequestState? state = globalState.inFlightRequests[id];
+      if (state != null) {
+        RelayRequestState? request = state.requests[url];
+        if (request != null) {
+          request.eventIdsToBeVerified.add(event.id);
+          eventVerifier.verify(event).then((validSig) {
+            if (validSig) {
+              event.sources.add(url);
+              event.validSig = true;
+              if (relays[url] != null) {
+                relays[url]!
+                    .incStatsByNewEvent(event, message
+                    .toString()
+                    .codeUnits
+                    .length);
+              }
+              try {
+                state.networkController.add(event);
+                // if (!nostrRequest.controller.isClosed && nostrRequest.shouldClose) {
+                //   nostrRequest.controller.close();
+                //   globalState.inFlightRequests.remove(id);
+                // }
+              } catch (e) {
+                print(
+                    "COULD NOT ADD event $event TO CONTROLLER on $url for requests ${state.requests}");
+              }
+            } else {
+              if (kDebugMode) {
+                print("INVALID EVENT SIGNATURE: $event");
+              }
             }
-          }
-        } else {
-          if (kDebugMode) {
-            print("INVALID EVENT SIGNATURE: $event");
-          }
+            request.eventIdsToBeVerified.remove(event.id);
+            if (request.receivedEOSE && request.eventIdsToBeVerified.isEmpty) {
+              state.requests.remove(url);
+              if (state.shouldClose) {
+                closeNostrRequest(state);
+              }
+            }
+          });
         }
-      });
+      }
       return;
     }
     if (eventJson[0] == 'EOSE') {
       String id = eventJson[1];
-      RequestState? nostrRequest = globalState.inFlightRequests[id];
-      if (nostrRequest != null && nostrRequest.request.closeOnEOSE) {
-        // print("RECEIVED EOSE from $url, remaining requests from :${nostrRequest.requests.keys} kind:${nostrRequest.requests.values.first.filters.first.kinds}");
-        RelayRequestState? request = nostrRequest.requests[url];
+      RequestState? state = globalState.inFlightRequests[id];
+      if (state != null && state.request.closeOnEOSE) {
+        Logger.log.d(" ⛁ received EOSE from $url, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+        RelayRequestState? request = state.requests[url];
         if (request != null) {
           request.receivedEOSE = true;
-          nostrRequest.requests.remove(url);
+          // nostrRequest.requests.remove(url);
+          if (request.eventIdsToBeVerified.isEmpty) {
+            state.requests.remove(url);
+            if (state.shouldClose) {
+              closeNostrRequest(state);
+            }
+          }
           if (isWebSocketOpen(url)) {
             // webSockets[url]!.sendMessage(
             //     jsonEncode(["CLOSE", nostrRequest.id]));
-            send(url, jsonEncode(["CLOSE", nostrRequest.id]));
+            send(url, jsonEncode(["CLOSE", state.id]));
           }
         }
-        if (nostrRequest.requests.isEmpty &&
-            !nostrRequest.controller.isClosed) {
-          Future.delayed(
-              Duration(seconds: (nostrRequest.request.timeout ?? 5) * 10), () {
-            closeNostrRequest(nostrRequest);
-            // globalState.inFlightRequests.remove(id);
-          });
-        }
+        // if (state.requests.isEmpty &&
+        //     !state.networkController.isClosed) {
+        //   Future.delayed(
+        //       Duration(seconds: (state.request.timeout ?? 3) * 2), () {
+        //     closeNostrRequest(state);
+        //     // globalState.inFlightRequests.remove(id);
+        //   });
+        // }
       }
       return;
     }
@@ -521,25 +541,25 @@ class RelayManager {
     return response;
   }
 
-  Future<void> closeNostrRequest(RequestState request) async {
-    return closeNostrRequestById(request.id);
+  Future<void> closeNostrRequest(RequestState state) async {
+    return closeNostrRequestById(state.id);
   }
 
   Future<void> closeNostrRequestById(String id) async {
-    RequestState? nostrRequest = globalState.inFlightRequests[id];
-    if (nostrRequest != null) {
-      for (var url in nostrRequest.requests.keys) {
+    RequestState? state = globalState.inFlightRequests[id];
+    if (state != null) {
+      for (var url in state.requests.keys) {
         if (isWebSocketOpen(url)) {
           try {
             // webSockets[url]!.sendMessage(jsonEncode(["CLOSE", nostrRequest.id]));
-            send(url, jsonEncode(["CLOSE", nostrRequest.id]));
+            send(url, jsonEncode(["CLOSE", state.id]));
           } catch (e) {
             print(e);
           }
         }
       }
       try {
-        nostrRequest.controller.close();
+        state.networkController.close();
       } catch (e) {
         print(e);
       }
