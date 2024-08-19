@@ -24,16 +24,12 @@ class Ndk {
           globalState: globalState,
         );
 
-  query(List<Filter> filters) {
+  query(List<Filter> filters) {}
 
-  }
-
-  subscription(List<Filter> filters) {
-
-  }
+  subscription(List<Filter> filters) {}
 
   /// ! this is just an example
-  Future<RequestResponse> requestNostrEvent(NdkRequest request) async {
+  RequestResponse requestNostrEvent(NdkRequest request) {
     RequestState requestState = RequestState(request);
 
     final responseStream = requestState.stream;
@@ -58,11 +54,11 @@ class Ndk {
     switch (ndkConfig.engine) {
       case NdkEngine.LISTS:
         //todo: discuss/implement use of unresolvedFilters
-        await _initialization.relayManager!.handleRequest(requestState);
+        _initialization.relayManager!.handleRequest(requestState);
         break;
 
       case NdkEngine.JIT:
-        await _initialization.jitEngine!.handleRequest(requestState);
+        _initialization.jitEngine!.handleRequest(requestState);
         break;
 
       default:
