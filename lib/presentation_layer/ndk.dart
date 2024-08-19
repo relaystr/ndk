@@ -1,6 +1,7 @@
 import '../domain_layer/entities/filter.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
+import '../shared/nips/nip01/helpers.dart';
 import 'concurrency_check.dart';
 import 'global_state.dart';
 import 'init.dart';
@@ -24,17 +25,19 @@ class Ndk {
           globalState: globalState,
         );
 
-  query(List<Filter> filters) {}
+  RequestResponse query({required List<Filter> filters}) {
+    return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10), filters: filters));
+  }
 
-  subscription(List<Filter> filters) {}
+  subscription({required List<Filter> filters, String? id}) {
+    return requestNostrEvent(NdkRequest.subscription(id ?? Helpers.getRandomString(10), filters: filters));
+  }
 
   /// ! this is just an example
   RequestResponse requestNostrEvent(NdkRequest request) {
     RequestState requestState = RequestState(request);
 
-    final responseStream = requestState.stream;
-
-    final response = RequestResponse(responseStream);
+    final response = RequestResponse(requestState.stream);
 
     final concurrency = ConcurrencyCheck(globalState);
 
@@ -45,7 +48,7 @@ class Ndk {
     }
 
     // todo caching middleware
-    // caching schuld write to response stream and keep track on what is unresolved to send the split filters to the engine
+    // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
     _initialization.cacheRead
         .resolveUnresolvedFilters(requestState: requestState);
 
