@@ -33,6 +33,8 @@ class RequestState {
 
   get id => request.id;
 
+  get isSubscription => !request.closeOnEOSE;
+
   //! our requests tracking obj
   Map<String, RelayRequestState> requests = {};
 

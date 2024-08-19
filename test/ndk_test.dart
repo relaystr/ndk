@@ -38,7 +38,7 @@ void main() async {
   Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-  group('Nostr', () {
+  group('Ndk', () {
     test('query simple note LISTS', timeout: const Timeout(Duration(seconds: 3)), () async {
       MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: key1TextNotes);
