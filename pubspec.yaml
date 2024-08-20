@@ -4,21 +4,21 @@ version: 0.1.0
 homepage: https://github.com/relaystr/dart_ndk
 
 environment:
-  sdk: '>=3.2.1 <4.0.0'
+  sdk: '>=3.4.0 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.1.0
+  http: ^1.2.2
   bip340: ^0.2.0
   bech32: ^0.2.2
   hex: ^0.2.0
 #  websocket_universal: ^1.1.1
-  web_socket_channel: ^2.4.0
-  crypto: ^3.0.3
-  collection: ^1.17.2
-  path_provider: ^2.1.1
+  web_socket_channel: ^3.0.1
+  crypto: ^3.0.5
+  collection: ^1.18.0
+  path_provider: ^2.1.4
   convert: ^3.1.1
   pointycastle: ^3.7.3
   plugin_platform_interface: ^2.1.7
@@ -27,7 +27,7 @@ dependencies:
   isar_flutter_libs: ^4.0.0-dev.14
 
   amberflutter: ^0.0.9
-  logger: ^2.1.0
+  logger: ^2.4.0
   rxdart: ^0.28.0
 
 #    git:
@@ -41,9 +41,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.3
+  flutter_lints: ^4.0.0
 #  ffigen: ^9.0.1
-  build_runner: ^2.4.6
+  build_runner: ^2.4.12
 #  freezed: ^2.4.5
 
 # For information on the generic Dart part of this file, see the

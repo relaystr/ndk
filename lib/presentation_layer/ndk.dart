@@ -35,7 +35,7 @@ class Ndk {
     return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10), filters: filters));
   }
 
-  subscription({required List<Filter> filters, String? id}) {
+  RequestResponse subscription({required List<Filter> filters, String? id}) {
     return requestNostrEvent(NdkRequest.subscription(id ?? Helpers.getRandomString(10), filters: filters));
   }
 
