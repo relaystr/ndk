@@ -10,6 +10,7 @@ import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/presentation_layer/request_response.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -75,9 +76,9 @@ void main() async {
 
       Filter filter = Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey]);
 
-      Stream<Nip01Event> query = (await manager.query(filter, null));
+      NdkResponse query = (await manager.query(filter, null));
 
-      await expectLater(query, emitsInAnyOrder(key1TextNotes.values));
+      await expectLater(query.stream, emitsInAnyOrder(key1TextNotes.values));
 
       await relay1.stopServer();
     });
@@ -88,10 +89,10 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1", signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
       RelayManager manager = RelayManager(bootstrapRelays: [relay1.url]);
-      Stream<Nip01Event> stream =
+      NdkResponse response =
           (await manager.query(Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND]), null, idleTimeout: 2));
       // ignore: unused_local_variable
-      await for (final event in stream) {
+      await for (final event in response.stream) {
         fail("should not emit any events, since relay does not sign");
       }
       await relay1.stopServer();
@@ -196,10 +197,10 @@ void main() async {
           direction: RelayDirection.outbox,
           relayMinCountPerPubKey: RelayManager.DEFAULT_BEST_RELAYS_MIN_COUNT);
 
-      Stream<Nip01Event> query =
+      NdkResponse query =
         await manager.query(Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key4.publicKey]), relaySet);
 
-      await for (final event in query.take(4)) {
+      await for (final event in query.stream.take(4)) {
         await expectLater(event.sources, [relay4.url]);
         await expectLater(event, key4TextNotes[key4]);
         // print(event);
@@ -264,10 +265,10 @@ void main() async {
           print("  ${relayNames[url]} => has ${pubKeyMappings.length} follows");
         }
       });
-      Stream<Nip01Event> query =
+      NdkResponse query =
           await manager.query(Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]), relaySet);
 
-      await for (final event in query) {
+      await for (final event in query.stream) {
         print(event);
         if (event.sources.contains(relay3.url)) {
           fail("should not use relay 3 (${relay3.url}) in gossip model");
