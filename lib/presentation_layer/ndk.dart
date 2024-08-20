@@ -46,8 +46,8 @@ class Ndk {
     return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite));
   }
 
-  NdkResponse subscription({required List<Filter> filters, String? id, RelaySet? relaySet}) {
-    return requestNostrEvent(NdkRequest.subscription(id ?? Helpers.getRandomString(10), filters: filters, relaySet: relaySet));
+  NdkResponse subscription({required List<Filter> filters, String? id, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true}) {
+    return requestNostrEvent(NdkRequest.subscription(id ?? Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite));
   }
 
   Future<void> closeSubscription(String subscriptionId) async {

@@ -4,5 +4,5 @@ const List<String> DEFAULT_BOOTSTRAP_RELAYS = [
   "wss://nos.lol",
   "wss://nostr.wine",
   "wss://offchain.pub",
-  "wss://relay.mostr.pub"
+  // "wss://relay.mostr.pub"
 ];

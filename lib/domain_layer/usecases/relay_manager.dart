@@ -879,7 +879,7 @@ class RelayManager {
             "loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
-        RequestState requestState = RequestState(NdkRequest.query("TODO WTF?",
+        RequestState requestState = RequestState(NdkRequest.query(Helpers.getRandomString(10),
             filters: [
               Filter(
                   authors: missingPubKeys,
