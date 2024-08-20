@@ -293,10 +293,7 @@ class RelayManager {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
-
-        // webSockets[request.url]!.sendMessage(jsonEncode(list));
         send(request.url, jsonEncode(list));
-
         return true;
       } catch (e) {
         print(e);
@@ -590,7 +587,8 @@ class RelayManager {
     }
   }
 
-  Future<Stream<Nip01Event>> query(
+  @Deprecated("use Ndk methods")
+  Future<NdkResponse> query(
       Filter filter,
       RelaySet? relaySet, {
       int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
@@ -604,7 +602,7 @@ class RelayManager {
         closeNostrRequest(request);
       }));
     await _doQuery(state);
-    return state.stream;
+    return NdkResponse(state.id, state.stream);
   }
 
   Future<void> _doQuery(RequestState state) async{
@@ -671,55 +669,54 @@ class RelayManager {
     }
   }
 
-  // Future<NostrRequest> requestRelays(Iterable<String> urls, Filter filter,
-  //     {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
-  //     bool closeOnEOSE = true,
-  //     Function()? onTimeout}) async {
-  //   String id = Helpers.getRandomString(10);
-  //   NostrRequest nostrRequest = closeOnEOSE
-  //       ? NostrRequest.query(id, timeout: timeout, onTimeout: (request) {
-  //           closeNostrRequest(request);
-  //           if (onTimeout != null) {
-  //             onTimeout();
-  //           }
-  //         })
-  //       : NostrRequest.subscription(
-  //           id,
-  //         );
-  //
-  //   for (var url in urls) {
-  //     nostrRequest.addRequest(url, RelaySet.sliceFilterAuthors(filter));
-  //   }
-  //   globalState.inFlightRequests[nostrRequest.id] = nostrRequest;
-  //
-  //   List<String> notSent = [];
-  //   Map<int?, int> kindsMap = {};
-  //   globalState.inFlightRequests.forEach((key, request) {
-  //     int? kind;
-  //     if (request.requests.isNotEmpty &&
-  //         request.requests.values.first.filters.first.kinds != null &&
-  //         request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-  //       kind = request.requests.values.first.filters.first.kinds!.first;
-  //     }
-  //     int? count = kindsMap[kind];
-  //     count ??= 0;
-  //     count++;
-  //     kindsMap[kind] = count;
-  //   });
-  //   print(
-  //       "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
-  //   for (MapEntry<String, RelayRequest> entry
-  //       in nostrRequest.requests.entries) {
-  //     if (!doRelayRequest(nostrRequest.id, entry.value)) {
-  //       notSent.add(entry.key);
-  //     }
-  //   }
-  //   for (var url in notSent) {
-  //     nostrRequest.requests.remove(url);
-  //   }
-  //
-  //   return nostrRequest;
-  // }
+  Future<NdkResponse> requestRelays(Iterable<String> urls, Filter filter,
+      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
+      bool closeOnEOSE = true,
+      Function()? onTimeout}) async {
+    String id = Helpers.getRandomString(10);
+    RequestState state = RequestState(closeOnEOSE
+        ? NdkRequest.query(id, filters: [filter], timeout: timeout, onTimeout: (request) {
+            closeNostrRequest(request);
+            if (onTimeout != null) {
+              onTimeout();
+            }
+          }) : NdkRequest.subscription(
+            id, filters: [],
+          ));
+
+    for (var url in urls) {
+      state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+    }
+    globalState.inFlightRequests[state.id] = state;
+
+    List<String> notSent = [];
+    Map<int?, int> kindsMap = {};
+    globalState.inFlightRequests.forEach((key, request) {
+      int? kind;
+      if (request.requests.isNotEmpty &&
+          request.requests.values.first.filters.first.kinds != null &&
+          request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+        kind = request.requests.values.first.filters.first.kinds!.first;
+      }
+      int? count = kindsMap[kind];
+      count ??= 0;
+      count++;
+      kindsMap[kind] = count;
+    });
+    print(
+        "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
+    for (MapEntry<String, RelayRequestState> entry
+        in state.requests.entries) {
+      if (!doRelayRequest(state.id, entry.value)) {
+        notSent.add(entry.key);
+      }
+    }
+    for (var url in notSent) {
+      state.requests.remove(url);
+    }
+
+    return NdkResponse(state.id, state.stream);
+  }
 
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet(
