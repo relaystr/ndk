@@ -52,7 +52,7 @@ void main() async {
             bootstrapRelays: [relay1.url]),
       );
 
-      RequestResponse response = ndk.query(filters: [
+      NdkResponse response = ndk.query(filters: [
             Filter(
                 kinds: [Nip01Event.TEXT_NODE_KIND],
                 authors: [key1.publicKey])
@@ -64,7 +64,7 @@ void main() async {
       //   print(event);
       // }
 
-      RequestResponse response2 = ndk.query( filters: [
+      NdkResponse response2 = ndk.query( filters: [
             Filter(
                 kinds: [Nip01Event.TEXT_NODE_KIND],
                 authors: [key1.publicKey, key2.publicKey])
