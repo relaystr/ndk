@@ -6,7 +6,7 @@ import '../domain_layer/repositories/event_verifier.dart';
 class NdkConfig {
   EventVerifier eventVerifier;
 
-  EventSigner eventSigner;
+  EventSigner? eventSigner;
 
   /// db to cache nostr data
   CacheManager cache;
@@ -22,7 +22,7 @@ class NdkConfig {
 
   NdkConfig({
     required this.eventVerifier,
-    required this.eventSigner,
+    this.eventSigner,
     required this.cache,
     this.engine = NdkEngine.LISTS,
     this.ignoreRelays = const [],

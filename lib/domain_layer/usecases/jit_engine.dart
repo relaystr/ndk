@@ -21,7 +21,7 @@ import '../repositories/event_verifier.dart';
 
 class JitEngine with Logger {
   EventVerifier eventVerifier;
-  EventSigner eventSigner;
+  EventSigner? eventSigner;
   CacheManager cache;
   List<String> ignoreRelays;
   List<String> seedRelays;
@@ -33,7 +33,7 @@ class JitEngine with Logger {
 
   JitEngine({
     required this.eventVerifier,
-    required this.eventSigner,
+    this.eventSigner,
     required this.cache,
     required this.ignoreRelays,
     required this.seedRelays,
