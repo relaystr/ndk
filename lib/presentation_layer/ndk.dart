@@ -67,10 +67,10 @@ class Ndk {
     final concurrency = ConcurrencyCheck(globalState);
 
     /// concurrency check - check if request is inFlight
-    final streamWasReplaced = request.cacheRead && concurrency.check(state);
-    if (streamWasReplaced) {
-      return response;
-    }
+    // final streamWasReplaced = request.cacheRead && concurrency.check(state);
+    // if (streamWasReplaced) {
+    //   return response;
+    // }
 
     // todo caching middleware
     // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
