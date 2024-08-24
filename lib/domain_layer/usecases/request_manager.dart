@@ -146,13 +146,20 @@ class RequestManager {
     if (state.request.relaySet!=null) {
       return await doNostrRequestWithRelaySet(state);
     }
-    for (var url in relayManager.relays.keys) {
-      state.addRequest(
-          url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+    if (state.request.relays!=null && state.request.relays!.isNotEmpty) {
+      for (var url in state.request.relays!) {
+        state.addRequest(
+            url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+      }
+    } else {
+      for (var url in relayManager.relays.keys) {
+        state.addRequest(
+            url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+      }
     }
     globalState.inFlightRequests[state.id] = state;
 
-    List<String> notSent = [];
+    /**********************************************************/
     Map<int?, int> kindsMap = {};
     globalState.inFlightRequests.forEach((key, request) {
       int? kind;
@@ -168,6 +175,9 @@ class RequestManager {
     });
     print(
         "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
+    /**********************************************************/
+
+    List<String> notSent = [];
     for (MapEntry<String, RelayRequestState> entry
         in state.requests.entries) {
       if (!doRelayRequest(state.id, entry.value)) {

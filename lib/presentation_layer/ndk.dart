@@ -42,16 +42,20 @@ class Ndk {
           globalState: globalState,
         );
 
-  NdkResponse query({required List<Filter> filters, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true}) {
-    return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite));
+  NdkResponse query({required List<Filter> filters, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true, relays}) {
+    return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite, relays: relays));
   }
 
-  NdkResponse subscription({required List<Filter> filters, String? id, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true}) {
-    return requestNostrEvent(NdkRequest.subscription(id ?? Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite));
+  NdkResponse subscription({required List<Filter> filters, String? id, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true, relays}) {
+    return requestNostrEvent(NdkRequest.subscription(id ?? Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite, relays: relays));
   }
 
   Future<void> closeSubscription(String subscriptionId) async {
     await _initialization.relayManager.closeNostrRequestById(subscriptionId);
+  }
+
+  RelayManager relayManager() {
+    return _initialization.relayManager;
   }
 
   /// ! this is just an example
@@ -848,5 +852,9 @@ class Ndk {
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await broadcastEvent(event, relays);
     return event;
+  }
+
+  List<String> blockedRelays() {
+    return _initialization.relayManager.blockedRelays;
   }
 }
