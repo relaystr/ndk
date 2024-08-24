@@ -4,10 +4,10 @@ import 'package:ndk/data_layer/data_sources/websocket.dart';
 
 import '../../domain_layer/repositories/nostr_transport.dart';
 
-class NostrTransportRepositoryImpl implements NostrTransport {
+class WebSocketNostrTransport implements NostrTransport {
   WebsocketDS websocketDS;
 
-  NostrTransportRepositoryImpl(this.websocketDS) {
+  WebSocketNostrTransport(this.websocketDS) {
     ready = websocketDS.ready();
   }
 
@@ -28,5 +28,20 @@ class NostrTransportRepositoryImpl implements NostrTransport {
   @override
   void send(data) {
     websocketDS.send(data);
+  }
+
+  @override
+  bool isOpen() {
+    return websocketDS.isOpen();
+  }
+
+  @override
+  int? closeCode() {
+    return websocketDS.closeCode();
+  }
+
+  @override
+  String? closeReason() {
+    return websocketDS.closeReason();
   }
 }

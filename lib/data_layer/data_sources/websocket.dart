@@ -27,4 +27,16 @@ class WebsocketDS {
   Future<void> close() {
     return webSocketChannel.sink.close();
   }
+
+  bool isOpen() {
+    return webSocketChannel.closeCode == null;
+  }
+
+  int? closeCode() {
+    return webSocketChannel.closeCode;
+  }
+
+  String? closeReason() {
+    return webSocketChannel.closeReason;
+  }
 }

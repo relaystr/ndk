@@ -2,6 +2,7 @@ import 'dart:async';
 
 abstract class NostrTransport {
   late Future<void> ready;
+  bool isOpen();
   Future<void> close();
   void send(dynamic data);
   StreamSubscription listen(
@@ -9,4 +10,7 @@ abstract class NostrTransport {
     Function? onError,
     void Function()? onDone,
   });
+
+  int? closeCode();
+  String? closeReason();
 }
