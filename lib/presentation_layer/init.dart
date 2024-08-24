@@ -5,6 +5,7 @@ import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/relay_manager.dart';
+import '../domain_layer/usecases/request_manager.dart';
 import 'global_state.dart';
 import 'ndk_config.dart';
 
@@ -22,9 +23,11 @@ class Initialization {
 
   /// use cases
 
-  RelayManager? relayManager;
+  RequestManager? requestManager;
 
   JitEngine? jitEngine;
+
+  late RelayManager relayManager;
 
   late CacheWrite cacheWrite;
 
@@ -34,13 +37,18 @@ class Initialization {
     required this.ndkConfig,
     required this.globalState,
   }) {
+    relayManager = RelayManager(
+      eventVerifier: ndkConfig.eventVerifier,
+      bootstrapRelays: ndkConfig.bootstrapRelays,
+      globalState: globalState
+    );
     switch (ndkConfig.engine) {
       case NdkEngine.LISTS:
-        relayManager = RelayManager(
+        requestManager = RequestManager(
           cacheManager: ndkConfig.cache,
           eventVerifier: ndkConfig.eventVerifier,
-          bootstrapRelays: ndkConfig.bootstrapRelays,
           globalState: globalState,
+          relayManager: relayManager,
         );
       case NdkEngine.JIT:
         jitEngine = JitEngine(

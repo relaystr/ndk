@@ -60,10 +60,6 @@ void main() async {
 
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
 
-      // await for (final event in response.stream) {
-      //   print(event);
-      // }
-
       NdkResponse response2 = ndk.query( filters: [
             Filter(
                 kinds: [Nip01Event.TEXT_NODE_KIND],
@@ -71,11 +67,7 @@ void main() async {
           ]);
 
       await expectLater(response2.stream, emitsInAnyOrder(key1TextNotes.values));
-
-      // await for (final event in response2.stream) {
-      //   print(event);
-      // }
-
+      
       await relay1.stopServer();
     });
   });

@@ -51,18 +51,7 @@ class Ndk {
   }
 
   Future<void> closeSubscription(String subscriptionId) async {
-    switch (config.engine) {
-      case NdkEngine.LISTS:
-        await _initialization.relayManager!.closeNostrRequestById(subscriptionId);
-        break;
-
-      case NdkEngine.JIT:
-        await _initialization.jitEngine!.handleCloseSubscription(subscriptionId);
-        break;
-
-      default:
-        throw UnimplementedError("Unknown engine");
-    }
+    await _initialization.relayManager.closeNostrRequestById(subscriptionId);
   }
 
   /// ! this is just an example
@@ -90,7 +79,7 @@ class Ndk {
     switch (config.engine) {
       case NdkEngine.LISTS:
         //todo: discuss/implement use of unresolvedFilters
-        _initialization.relayManager!.handleRequest(state);
+        _initialization.requestManager!.handleRequest(state);
         break;
 
       case NdkEngine.JIT:
@@ -128,10 +117,10 @@ class Ndk {
       required RelayDirection direction,
       required int relayMinCountPerPubKey,
       Function(String, int, int)? onProgress}) async {
-    if (_initialization.relayManager == null) {
+    if (_initialization.requestManager == null) {
       throw UnimplementedError("this engine doesn't support calculation of relay sets");
     }
-    return await _initialization.relayManager!
+    return await _initialization.requestManager!
         .calculateRelaySet(name: name, ownerPubKey: ownerPubKey, pubKeys: pubKeys, direction: direction, relayMinCountPerPubKey: relayMinCountPerPubKey);
   }
 
@@ -463,19 +452,7 @@ class Ndk {
     if (signer == null) {
       throw Exception("event signer required for broadcasting signed events");
     }
-    switch (config.engine) {
-      case NdkEngine.LISTS:
-        await _initialization.relayManager?.broadcastEvent(event, relays, signer);
-        break;
-
-      case NdkEngine.JIT:
-        // TODO
-        //await _initialization.jitEngine?.broadcastEvent(contactList.toEvent(), relays, signer);
-        break;
-
-      default:
-        throw UnimplementedError("Unknown engine");
-    }
+    await _initialization.relayManager.broadcastEvent(event, relays, signer);
   }
 
   /// ! this is just an example
