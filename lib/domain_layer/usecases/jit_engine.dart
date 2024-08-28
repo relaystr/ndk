@@ -186,7 +186,7 @@ class JitEngine with Logger {
     for (var sub in requestState.activeRelaySubscriptions.values) {
       await sub.activeSubscriptions[requestState.id]?.eoseReceived;
     }
-    requestState.controller.close();
+    requestState.networkController.close();
   }
 
   /// addRelayActiveSubscription to request
