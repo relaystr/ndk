@@ -1,7 +1,7 @@
 import 'package:ndk/ndk.dart';
 import 'package:ndk/presentation_layer/request_response.dart';
 
-void main(List<String> arguments) {
+void main(List<String> arguments) async {
   Ndk ndk = Ndk(NdkConfig(
     eventVerifier: Bip340EventVerifier(),
     cache: MemCacheManager(),
@@ -9,7 +9,8 @@ void main(List<String> arguments) {
   NdkResponse response = ndk.requests.query(filters: [
     Filter(kinds: [Nip01Event.TEXT_NODE_KIND], limit: 10)
   ]);
-  response.stream.listen((event) {
-    print(event);
-  });
+
+  await for (final event in response.stream) {
+      print(event);
+  }
 }
