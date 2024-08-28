@@ -7,8 +7,8 @@ import '../domain_layer/usecases/contact_lists.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
-import '../domain_layer/usecases/requests.dart';
-import 'global_state.dart';
+import '../domain_layer/usecases/requests/requests.dart';
+import '../domain_layer/entities/global_state.dart';
 import 'ndk_config.dart';
 
 class Initialization {

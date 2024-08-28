@@ -11,8 +11,8 @@ import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/usecases/relay_sets_engine.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/presentation_layer/global_state.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk/domain_layer/entities/request_response.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -387,12 +387,12 @@ void main() async {
     test(
         "calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays",
         () async {
-          GlobalState globalState = GlobalState();
-          RelaySetsEngine manager = RelaySetsEngine(
-              globalState: globalState,
-              relayManager: RelayManager(
-                  bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-                  globalState: globalState));
+      GlobalState globalState = GlobalState();
+      RelaySetsEngine manager = RelaySetsEngine(
+          globalState: globalState,
+          relayManager: RelayManager(
+              bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+              globalState: globalState));
 
       RelaySet relaySet = await manager.calculateRelaySet(
           name: "feed",
@@ -568,7 +568,8 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        ContactList? contactList = await ndk.contactLists.getContactList(key.publicKey);
+        ContactList? contactList =
+            await ndk.contactLists.getContactList(key.publicKey);
 
         expect(contactList != null, true);
 

@@ -1,8 +1,8 @@
 import 'package:ndk/config/request_defaults.dart';
 
-import '../domain_layer/entities/filter.dart';
-import '../domain_layer/entities/relay_set.dart';
-import '../domain_layer/entities/request_state.dart';
+import 'filter.dart';
+import 'relay_set.dart';
+import 'request_state.dart';
 
 /// proposal for a request_config used by the user
 ///

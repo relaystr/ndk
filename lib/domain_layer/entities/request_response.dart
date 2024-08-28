@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../domain_layer/entities/nip_01_event.dart';
+import 'nip_01_event.dart';
 
 class NdkResponse {
   String requestId;

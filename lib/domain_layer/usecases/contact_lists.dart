@@ -1,6 +1,6 @@
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
-import 'package:ndk/domain_layer/usecases/requests.dart';
+import 'package:ndk/domain_layer/usecases/requests/requests.dart';
 
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/helpers.dart';
@@ -118,8 +118,7 @@ class ContactLists {
       Iterable<String> relays,
       EventSigner signer,
       List<String> Function(ContactList) collectionAccessor) async {
-    ContactList? contactList =
-        await ensureUpToDateContactListOrEmpty(signer);
+    ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
     List<String> collection = collectionAccessor(contactList);
     if (collection.contains(toRemove)) {
       collection.remove(toRemove);

@@ -10,12 +10,12 @@ import 'package:ndk/domain_layer/entities/read_write.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
-import 'package:ndk/presentation_layer/global_state.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
+import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk/domain_layer/entities/request_response.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 
-import '../../presentation_layer/ndk_request.dart';
+import '../entities/ndk_request.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../entities/filter.dart';
 import '../entities/nip_65.dart';
@@ -33,8 +33,8 @@ class RelaySetsEngine {
   late CacheManager cacheManager;
 
   RelaySetsEngine(
-      { required this.relayManager,
-        CacheManager? cacheManager,
+      {required this.relayManager,
+      CacheManager? cacheManager,
       EventVerifier? eventVerifier,
       GlobalState? globalState}) {
     this.cacheManager = cacheManager ?? MemCacheManager();
@@ -65,10 +65,9 @@ class RelaySetsEngine {
 
   // =====================================================================================
 
-  Future<void> doNostrRequestWithRelaySet(
-      RequestState state,
+  Future<void> doNostrRequestWithRelaySet(RequestState state,
       {bool splitRequestsByPubKeyMappings = true}) async {
-    if (state.unresolvedFilters.isEmpty || state.request.relaySet==null) {
+    if (state.unresolvedFilters.isEmpty || state.request.relaySet == null) {
       return;
     }
     // TODO support more than 1 filter
@@ -107,34 +106,32 @@ class RelaySetsEngine {
     });
     print(
         "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
-    for (MapEntry<String, RelayRequestState> entry
-        in state.requests.entries) {
+    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
     }
   }
 
   Future<NdkResponse> query(
-      Filter filter,
-      RelaySet? relaySet, {
-      int idleTimeout = RelaySetsEngine.DEFAULT_STREAM_IDLE_TIMEOUT,
-      bool splitRequestsByPubKeyMappings = true,
-    }) async {
-      RequestState state = RequestState(NdkRequest.query(
-          Helpers.getRandomString(10),
-          filters: [filter],
-          relaySet: relaySet
-      ));
+    Filter filter,
+    RelaySet? relaySet, {
+    int idleTimeout = RelaySetsEngine.DEFAULT_STREAM_IDLE_TIMEOUT,
+    bool splitRequestsByPubKeyMappings = true,
+  }) async {
+    RequestState state = RequestState(NdkRequest.query(
+        Helpers.getRandomString(10),
+        filters: [filter],
+        relaySet: relaySet));
     await _doQuery(state);
     return NdkResponse(state.id, state.stream);
   }
 
-  Future<void> _doQuery(RequestState state) async{
+  Future<void> _doQuery(RequestState state) async {
     handleRequest(state);
     state.networkController.stream.listen((event) {
       state.controller.add(event);
     }, onDone: () {
       state.controller.close();
-    }, onError:  (error) {
+    }, onError: (error) {
       Logger.log.e("⛔ $error ");
     });
   }
@@ -142,10 +139,10 @@ class RelaySetsEngine {
   Future<void> handleRequest(RequestState state) async {
     await relayManager.seedRelaysConnected;
 
-    if (state.request.relaySet!=null) {
+    if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
     }
-    if (state.request.relays!=null && state.request.relays!.isNotEmpty) {
+    if (state.request.relays != null && state.request.relays!.isNotEmpty) {
       for (var url in state.request.relays!) {
         state.addRequest(
             url, RelaySet.sliceFilterAuthors(state.request.filters.first));
@@ -177,8 +174,7 @@ class RelaySetsEngine {
     /**********************************************************/
 
     List<String> notSent = [];
-    for (MapEntry<String, RelayRequestState> entry
-        in state.requests.entries) {
+    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       if (!doRelayRequest(state.id, entry.value)) {
         notSent.add(entry.key);
       }
@@ -194,8 +190,10 @@ class RelaySetsEngine {
       Function()? onTimeout}) async {
     String id = Helpers.getRandomString(10);
     RequestState state = RequestState(closeOnEOSE
-        ? NdkRequest.query(id, filters: [filter]) : NdkRequest.subscription(
-            id, filters: [],
+        ? NdkRequest.query(id, filters: [filter])
+        : NdkRequest.subscription(
+            id,
+            filters: [],
           ));
 
     for (var url in urls) {
@@ -219,8 +217,7 @@ class RelaySetsEngine {
     });
     print(
         "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
-    for (MapEntry<String, RelayRequestState> entry
-        in state.requests.entries) {
+    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       if (!doRelayRequest(state.id, entry.value)) {
         notSent.add(entry.key);
       }
@@ -376,13 +373,14 @@ class RelaySetsEngine {
             "loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
-        RequestState requestState = RequestState(NdkRequest.query(Helpers.getRandomString(10),
-            filters: [
-              Filter(
-                  authors: missingPubKeys,
-                  kinds: [Nip65.KIND, ContactList.KIND])
-            ],
-            timeout: missingPubKeys.length > 1 ? 10 : 3));
+        RequestState requestState =
+            RequestState(NdkRequest.query(Helpers.getRandomString(10),
+                filters: [
+                  Filter(
+                      authors: missingPubKeys,
+                      kinds: [Nip65.KIND, ContactList.KIND])
+                ],
+                timeout: missingPubKeys.length > 1 ? 10 : 3));
 
         await _doQuery(requestState);
         await for (final event in (requestState.stream)) {

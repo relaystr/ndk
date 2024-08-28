@@ -1,4 +1,4 @@
-  // ignore_for_file: avoid_print
+// ignore_for_file: avoid_print
 
 import 'dart:async';
 import 'dart:convert';
@@ -13,7 +13,7 @@ import 'package:ndk/domain_layer/entities/relay.dart';
 import 'package:ndk/domain_layer/entities/relay_info.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
-import 'package:ndk/presentation_layer/global_state.dart';
+import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -297,7 +297,8 @@ class RelayManager {
     return;
   }
 
-  void closeIfAllEventsVerified(RelayRequestState request, RequestState state, String url) {
+  void closeIfAllEventsVerified(
+      RelayRequestState request, RequestState state, String url) {
     if (request.receivedEOSE && request.eventIdsToBeVerified.isEmpty) {
       state.requests.remove(url);
       if (state.shouldClose) {
@@ -312,7 +313,7 @@ class RelayManager {
       Logger.log.d("RECEIVED EVENT ${id} for unknown request");
       return;
     }
-    
+
     Nip01Event event = Nip01Event.fromJson(eventJson[2]);
     if (!filterEvent(event)) {
       return;
@@ -386,7 +387,8 @@ class RelayManager {
     }));
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d("CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED, took ${duration.inMilliseconds} ms");
+    Logger.log.d(
+        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED, took ${duration.inMilliseconds} ms");
   }
 
   Future<bool> reconnectRelay(String url, {bool force = false}) async {

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'filter.dart';
 import 'nip_01_event.dart';
 import '../usecases/relay_jit_manager/relay_jit.dart';
-import '../../presentation_layer/ndk_request.dart';
+import 'ndk_request.dart';
 
 class RelayRequestState {
   String url;
@@ -15,8 +15,7 @@ class RelayRequestState {
 }
 
 class RequestState {
-  StreamController<Nip01Event> controller =
-      StreamController<Nip01Event>();
+  StreamController<Nip01Event> controller = StreamController<Nip01Event>();
 
   /// [networkController] used by engines to write their response
   StreamController<Nip01Event> networkController =

@@ -1,7 +1,4 @@
-
 import 'dart:convert';
-
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 
 import '../domain_layer/entities/contact_list.dart';
 import '../domain_layer/entities/filter.dart';
@@ -12,17 +9,18 @@ import '../domain_layer/entities/nip_65.dart';
 import '../domain_layer/entities/read_write.dart';
 import '../domain_layer/entities/read_write_marker.dart';
 import '../domain_layer/entities/relay_set.dart';
+import '../domain_layer/entities/user_relay_list.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../domain_layer/usecases/contact_lists.dart';
 import '../domain_layer/usecases/relay_manager.dart';
-import '../domain_layer/usecases/requests.dart';
+import '../domain_layer/usecases/requests/requests.dart';
 import '../shared/helpers/relay_helper.dart';
 import '../shared/logger/logger.dart';
 import '../shared/nips/nip01/helpers.dart';
 import '../shared/nips/nip09/deletion.dart';
 import '../shared/nips/nip25/reactions.dart';
-import 'global_state.dart';
+import '../domain_layer/entities/global_state.dart';
 import 'init.dart';
 import 'ndk_config.dart';
 
@@ -45,7 +43,6 @@ class Ndk {
   RelayManager get relays => _initialization.relayManager;
   ContactLists get contactLists => _initialization.contactLists;
 
-
   Future<void> closeSubscription(String subscriptionId) async {
     await _initialization.relayManager.closeNostrRequestById(subscriptionId);
   }
@@ -63,14 +60,21 @@ class Ndk {
       required int relayMinCountPerPubKey,
       Function(String, int, int)? onProgress}) async {
     if (_initialization.relaySetsEngine == null) {
-      throw UnimplementedError("this engine doesn't support calculation of relay sets");
+      throw UnimplementedError(
+          "this engine doesn't support calculation of relay sets");
     }
-    return await _initialization.relaySetsEngine!
-        .calculateRelaySet(name: name, ownerPubKey: ownerPubKey, pubKeys: pubKeys, direction: direction, relayMinCountPerPubKey: relayMinCountPerPubKey);
+    return await _initialization.relaySetsEngine!.calculateRelaySet(
+        name: name,
+        ownerPubKey: ownerPubKey,
+        pubKeys: pubKeys,
+        direction: direction,
+        relayMinCountPerPubKey: relayMinCountPerPubKey);
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
-  Future<Metadata?> getSingleMetadata(String pubKey, {bool forceRefresh = false, int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT}) async {
+  Future<Metadata?> getSingleMetadata(String pubKey,
+      {bool forceRefresh = false,
+      int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT}) async {
     Metadata? metadata = config.cache.loadMetadata(pubKey);
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
@@ -78,7 +82,9 @@ class Ndk {
         await for (final event in requests.query(filters: [
           Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
         ]).stream) {
-          if (loadedMetadata == null || loadedMetadata.updatedAt == null || loadedMetadata.updatedAt! < event.createdAt) {
+          if (loadedMetadata == null ||
+              loadedMetadata.updatedAt == null ||
+              loadedMetadata.updatedAt! < event.createdAt) {
             loadedMetadata = Metadata.fromEvent(event);
           }
         }
@@ -100,8 +106,10 @@ class Ndk {
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
-  Future<List<Metadata>> loadMissingMetadatas(List<String> pubKeys, RelaySet relaySet,
-      {bool splitRequestsByPubKeyMappings = true, Function(Metadata)? onLoad}) async {
+  Future<List<Metadata>> loadMissingMetadatas(
+      List<String> pubKeys, RelaySet relaySet,
+      {bool splitRequestsByPubKeyMappings = true,
+      Function(Metadata)? onLoad}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
       Metadata? userMetadata = config.cache.loadMetadata(pubKey);
@@ -126,7 +134,8 @@ class Ndk {
             .timeout(const Duration(seconds: 5), onTimeout: (sink) {
           print("timeout metadatas.length:${metadatas.length}");
         })) {
-          if (metadatas[event.pubKey] == null || metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
+          if (metadatas[event.pubKey] == null ||
+              metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
             await config.cache.saveMetadata(metadatas[event.pubKey]!);
@@ -144,7 +153,8 @@ class Ndk {
   }
 
   Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
-      {Function(String stepName, int count, int total)? onProgress, bool forceRefresh = false}) async {
+      {Function(String stepName, int count, int total)? onProgress,
+      bool forceRefresh = false}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
       UserRelayList? userRelayList = config.cache.loadUserRelayList(pubKey);
@@ -161,13 +171,16 @@ class Ndk {
     if (missingPubKeys.isNotEmpty) {
       print("loading missing relay lists ${missingPubKeys.length}");
       if (onProgress != null) {
-        onProgress.call("loading missing relay lists", 0, missingPubKeys.length);
+        onProgress.call(
+            "loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
         await for (final event in (await requests.query(
 //                timeout: missingPubKeys.length > 1 ? 10 : 3,
                 filters: [
-              Filter(authors: missingPubKeys, kinds: [Nip65.KIND, ContactList.KIND])
+              Filter(
+                  authors: missingPubKeys,
+                  kinds: [Nip65.KIND, ContactList.KIND])
             ]))
             .stream) {
           switch (event.kind) {
@@ -175,24 +188,30 @@ class Ndk {
               Nip65 nip65 = Nip65.fromEvent(event);
               if (nip65.relays.isNotEmpty) {
                 UserRelayList fromNip65 = UserRelayList.fromNip65(nip65);
-                if (fromNip65s[event.pubKey] == null || fromNip65s[event.pubKey]!.createdAt < event.createdAt) {
+                if (fromNip65s[event.pubKey] == null ||
+                    fromNip65s[event.pubKey]!.createdAt < event.createdAt) {
                   fromNip65s[event.pubKey] = fromNip65;
                 }
                 if (onProgress != null) {
                   found.add(event.pubKey);
-                  onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
+                  onProgress.call("loading missing relay lists", found.length,
+                      missingPubKeys.length);
                 }
               }
             case ContactList.KIND:
               ContactList contactList = ContactList.fromEvent(event);
               contactLists.add(contactList);
               if (event.content.isNotEmpty) {
-                if (fromNip02Contacts[event.pubKey] == null || fromNip02Contacts[event.pubKey]!.createdAt < event.createdAt) {
-                  fromNip02Contacts[event.pubKey] = UserRelayList.fromNip02EventContent(event);
+                if (fromNip02Contacts[event.pubKey] == null ||
+                    fromNip02Contacts[event.pubKey]!.createdAt <
+                        event.createdAt) {
+                  fromNip02Contacts[event.pubKey] =
+                      UserRelayList.fromNip02EventContent(event);
                 }
                 if (onProgress != null) {
                   found.add(event.pubKey);
-                  onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
+                  onProgress.call("loading missing relay lists", found.length,
+                      missingPubKeys.length);
                 }
               }
           }
@@ -213,7 +232,8 @@ class Ndk {
       // also save to cache any fresher contact list
       List<ContactList> contactListsSave = [];
       for (ContactList contactList in contactLists) {
-        ContactList? existing = config.cache.loadContactList(contactList.pubKey);
+        ContactList? existing =
+            config.cache.loadContactList(contactList.pubKey);
         if (existing == null || existing.createdAt < contactList.createdAt) {
           contactListsSave.add(contactList);
         }
@@ -221,31 +241,39 @@ class Ndk {
       await config.cache.saveContactLists(contactListsSave);
 
       if (onProgress != null) {
-        onProgress.call("loading missing relay lists", found.length, missingPubKeys.length);
+        onProgress.call(
+            "loading missing relay lists", found.length, missingPubKeys.length);
       }
     }
     Logger.log.d("Loaded ${found.length} relay lists ");
   }
 
-  Future<UserRelayList?> getSingleUserRelayList(String pubKey, {bool forceRefresh = false}) async {
+  Future<UserRelayList?> getSingleUserRelayList(String pubKey,
+      {bool forceRefresh = false}) async {
     UserRelayList? userRelayList = config.cache.loadUserRelayList(pubKey);
     if (userRelayList == null || forceRefresh) {
-      await loadMissingRelayListsFromNip65OrNip02([pubKey], forceRefresh: forceRefresh);
+      await loadMissingRelayListsFromNip65OrNip02([pubKey],
+          forceRefresh: forceRefresh);
       userRelayList = config.cache.loadUserRelayList(pubKey);
     }
     return userRelayList;
   }
 
   Future<Nip51List?> getCachedNip51List(int kind, EventSigner signer) async {
-    List<Nip01Event>? events = config.cache.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
+    List<Nip01Event>? events = config.cache
+        .loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     events.sort(
       (a, b) => b.createdAt.compareTo(a.createdAt),
     );
-    return events.isNotEmpty ? await Nip51List.fromEvent(events.first, signer) : null;
+    return events.isNotEmpty
+        ? await Nip51List.fromEvent(events.first, signer)
+        : null;
   }
 
-  Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer, {bool forceRefresh = false, int timeout = 5}) async {
-    Nip51List? list = !forceRefresh ? await getCachedNip51List(kind, signer) : null;
+  Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
+      {bool forceRefresh = false, int timeout = 5}) async {
+    Nip51List? list =
+        !forceRefresh ? await getCachedNip51List(kind, signer) : null;
     if (list == null) {
       Nip51List? refreshedList;
       await for (final event in requests.query(
@@ -256,7 +284,8 @@ class Ndk {
           )
         ],
       ).stream) {
-        if (refreshedList == null || refreshedList.createdAt <= event.createdAt) {
+        if (refreshedList == null ||
+            refreshedList.createdAt <= event.createdAt) {
           refreshedList = await Nip51List.fromEvent(event, signer);
           // if (Helpers.isNotBlank(event.content)) {
           //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
@@ -270,8 +299,10 @@ class Ndk {
     return list;
   }
 
-  Future<Nip51Set?> getCachedNip51RelaySet(String name, EventSigner signer) async {
-    List<Nip01Event>? events = config.cache.loadEvents(pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
+  Future<Nip51Set?> getCachedNip51RelaySet(
+      String name, EventSigner signer) async {
+    List<Nip01Event>? events = config.cache.loadEvents(
+        pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
         return true;
@@ -281,10 +312,13 @@ class Ndk {
     events.sort(
       (a, b) => b.createdAt.compareTo(a.createdAt),
     );
-    return events.isNotEmpty ? await Nip51Set.fromEvent(events.first, signer) : null;
+    return events.isNotEmpty
+        ? await Nip51Set.fromEvent(events.first, signer)
+        : null;
   }
 
-  Future<Nip51Set?> getSingleNip51RelaySet(String name, EventSigner signer, {bool forceRefresh = false}) async {
+  Future<Nip51Set?> getSingleNip51RelaySet(String name, EventSigner signer,
+      {bool forceRefresh = false}) async {
     Nip51Set? relaySet = await getCachedNip51RelaySet(name, signer);
     if (relaySet == null || forceRefresh) {
       Nip51Set? newRelaySet;
@@ -294,14 +328,14 @@ class Ndk {
           kinds: [Nip51List.RELAY_SET],
           dTags: [name],
         )
-      ], cacheRead: !forceRefresh)
-          .stream) {
+      ], cacheRead: !forceRefresh).stream) {
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
           if (event.getDtag() != null && event.getDtag() == name) {
             newRelaySet = await Nip51Set.fromEvent(event, signer);
             await config.cache.saveEvent(event);
           } else if (Helpers.isNotBlank(event.content)) {
-            Nip51Set? decryptedRelaySet = await Nip51Set.fromEvent(event, signer);
+            Nip51Set? decryptedRelaySet =
+                await Nip51Set.fromEvent(event, signer);
             if (decryptedRelaySet != null && decryptedRelaySet.name == name) {
               newRelaySet = decryptedRelaySet;
               await config.cache.saveEvent(event);
@@ -314,7 +348,8 @@ class Ndk {
     return relaySet;
   }
 
-  Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer, {bool forceRefresh = false}) async {
+  Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer,
+      {bool forceRefresh = false}) async {
     Nip51Set? relaySet; //getCachedNip51RelaySets(signer);
     if (relaySet == null || forceRefresh) {
       Map<String, Nip51Set> newRelaySets = {};
@@ -323,8 +358,7 @@ class Ndk {
           authors: [signer.getPublicKey()],
           kinds: [kind],
         )
-      ], cacheRead: !forceRefresh)
-          .stream) {
+      ], cacheRead: !forceRefresh).stream) {
         if (event.getDtag() != null) {
           Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
           if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
@@ -377,7 +411,8 @@ class Ndk {
 
   /// *******************************************************************************************************************
 
-  Future<Metadata> broadcastMetadata(Metadata metadata, Iterable<String> broadcastRelays) async {
+  Future<Metadata> broadcastMetadata(
+      Metadata metadata, Iterable<String> broadcastRelays) async {
     if (config.eventSigner == null) {
       throw Exception("event signer required for broadcasting signed events");
     }
@@ -385,7 +420,12 @@ class Ndk {
     if (event != null) {
       Map<String, dynamic> map = json.decode(event.content);
       map.addAll(metadata.toJson());
-      event = Nip01Event(pubKey: event.pubKey, kind: event.kind, tags: event.tags, content: json.encode(map), createdAt: Helpers.now);
+      event = Nip01Event(
+          pubKey: event.pubKey,
+          kind: event.kind,
+          tags: event.tags,
+          content: json.encode(map),
+          createdAt: Helpers.now);
     } else {
       event = metadata.toEvent();
     }
@@ -407,63 +447,88 @@ class Ndk {
   static const Duration REFRESH_USER_RELAY_DURATION = Duration(minutes: 10);
 
   Future<UserRelayList?> ensureUpToDateUserRelayList(EventSigner signer) async {
-    UserRelayList? userRelayList = config.cache.loadUserRelayList(signer.getPublicKey());
-    int sometimeAgo = DateTime.now().subtract(REFRESH_USER_RELAY_DURATION).millisecondsSinceEpoch ~/ 1000;
-    bool refresh = userRelayList == null || userRelayList.refreshedTimestamp < sometimeAgo;
+    UserRelayList? userRelayList =
+        config.cache.loadUserRelayList(signer.getPublicKey());
+    int sometimeAgo = DateTime.now()
+            .subtract(REFRESH_USER_RELAY_DURATION)
+            .millisecondsSinceEpoch ~/
+        1000;
+    bool refresh =
+        userRelayList == null || userRelayList.refreshedTimestamp < sometimeAgo;
     if (refresh) {
-      userRelayList = await getSingleUserRelayList(signer.getPublicKey(), forceRefresh: true);
+      userRelayList = await getSingleUserRelayList(signer.getPublicKey(),
+          forceRefresh: true);
     }
     return userRelayList;
   }
 
-  Future<UserRelayList> broadcastAddNip65Relay(String relayUrl, ReadWriteMarker marker, Iterable<String> broadcastRelays) async {
+  Future<UserRelayList> broadcastAddNip65Relay(String relayUrl,
+      ReadWriteMarker marker, Iterable<String> broadcastRelays) async {
     if (config.eventSigner == null) {
       throw Exception("event signer required for broadcasting signed events");
     }
-    UserRelayList? userRelayList = await ensureUpToDateUserRelayList(config.eventSigner!);
+    UserRelayList? userRelayList =
+        await ensureUpToDateUserRelayList(config.eventSigner!);
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       userRelayList = UserRelayList(
           pubKey: config.eventSigner!.getPublicKey(),
-          relays: {for (String url in broadcastRelays) url: ReadWriteMarker.readWrite},
+          relays: {
+            for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
+          },
           createdAt: now,
           refreshedTimestamp: now);
     }
     userRelayList.relays[relayUrl] = marker;
-    await Future.wait(
-        [broadcastEvent(userRelayList.toNip65().toEvent(), broadcastRelays), config.cache.saveUserRelayList(userRelayList)]);
+    await Future.wait([
+      broadcastEvent(userRelayList.toNip65().toEvent(), broadcastRelays),
+      config.cache.saveUserRelayList(userRelayList)
+    ]);
     return userRelayList;
   }
 
-  Future<UserRelayList?> broadcastRemoveNip65Relay(String relayUrl, Iterable<String> broadcastRelays) async {
+  Future<UserRelayList?> broadcastRemoveNip65Relay(
+      String relayUrl, Iterable<String> broadcastRelays) async {
     if (config.eventSigner == null) {
       throw Exception("event signer required for broadcasting signed events");
     }
-    UserRelayList? userRelayList = await ensureUpToDateUserRelayList(config.eventSigner!);
-    if (userRelayList == null) {
-      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      userRelayList = UserRelayList(
-          pubKey: config.eventSigner!.getPublicKey(), relays: {for (String url in broadcastRelays) url: ReadWriteMarker.readWrite}, createdAt: now, refreshedTimestamp: now);
-    }
-    if (userRelayList.relays.keys.contains(relayUrl)) {
-      userRelayList.relays.remove(relayUrl);
-      userRelayList.refreshedTimestamp = Helpers.now;
-      await Future.wait(
-          [broadcastEvent(userRelayList.toNip65().toEvent(), broadcastRelays), config.cache.saveUserRelayList(userRelayList)]);
-    }
-    return userRelayList;
-  }
-
-  Future<UserRelayList?> broadcastUpdateNip65RelayMarker(String relayUrl, ReadWriteMarker marker, Iterable<String> broadcastRelays) async {
-    if (config.eventSigner == null) {
-      throw Exception("event signer required for broadcasting signed events");
-    }
-    UserRelayList? userRelayList = await ensureUpToDateUserRelayList(config.eventSigner!);
+    UserRelayList? userRelayList =
+        await ensureUpToDateUserRelayList(config.eventSigner!);
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       userRelayList = UserRelayList(
           pubKey: config.eventSigner!.getPublicKey(),
-          relays: {for (String url in broadcastRelays) url: ReadWriteMarker.readWrite},
+          relays: {
+            for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
+          },
+          createdAt: now,
+          refreshedTimestamp: now);
+    }
+    if (userRelayList.relays.keys.contains(relayUrl)) {
+      userRelayList.relays.remove(relayUrl);
+      userRelayList.refreshedTimestamp = Helpers.now;
+      await Future.wait([
+        broadcastEvent(userRelayList.toNip65().toEvent(), broadcastRelays),
+        config.cache.saveUserRelayList(userRelayList)
+      ]);
+    }
+    return userRelayList;
+  }
+
+  Future<UserRelayList?> broadcastUpdateNip65RelayMarker(String relayUrl,
+      ReadWriteMarker marker, Iterable<String> broadcastRelays) async {
+    if (config.eventSigner == null) {
+      throw Exception("event signer required for broadcasting signed events");
+    }
+    UserRelayList? userRelayList =
+        await ensureUpToDateUserRelayList(config.eventSigner!);
+    if (userRelayList == null) {
+      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      userRelayList = UserRelayList(
+          pubKey: config.eventSigner!.getPublicKey(),
+          relays: {
+            for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
+          },
           createdAt: now,
           refreshedTimestamp: now);
     }
@@ -489,12 +554,21 @@ class Ndk {
 
   /// *************************************************************************************************
 
-  Future<Nip51Set> broadcastAddNip51SetRelay(String relayUrl, String name, Iterable<String> broadcastRelays, {bool private = false}) async {
-    if (config.eventSigner == null || private && !config.eventSigner!.canSign()) {
-      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+  Future<Nip51Set> broadcastAddNip51SetRelay(
+      String relayUrl, String name, Iterable<String> broadcastRelays,
+      {bool private = false}) async {
+    if (config.eventSigner == null ||
+        private && !config.eventSigner!.canSign()) {
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51Set? list = await getSingleNip51RelaySet(name, config.eventSigner!, forceRefresh: true);
-    list ??= Nip51Set(name: name, pubKey: config.eventSigner!.getPublicKey(), createdAt: Helpers.now, elements: []);
+    Nip51Set? list = await getSingleNip51RelaySet(name, config.eventSigner!,
+        forceRefresh: true);
+    list ??= Nip51Set(
+        name: name,
+        pubKey: config.eventSigner!.getPublicKey(),
+        createdAt: Helpers.now,
+        elements: []);
     list.addRelay(relayUrl, private);
     list.createdAt = Helpers.now;
     Nip01Event event = await list.toEvent(config.eventSigner!);
@@ -502,7 +576,9 @@ class Ndk {
     await Future.wait([
       broadcastEvent(event, broadcastRelays),
     ]);
-    List<Nip01Event>? events = config.cache.loadEvents(pubKeys: [config.eventSigner!.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
+    List<Nip01Event>? events = config.cache.loadEvents(
+        pubKeys: [config.eventSigner!.getPublicKey()],
+        kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
         return true;
@@ -517,18 +593,27 @@ class Ndk {
     return list;
   }
 
-  Future<Nip51Set?> broadcastRemoveNip51SetRelay(String relayUrl, String name, Iterable<String> broadcastRelays,
+  Future<Nip51Set?> broadcastRemoveNip51SetRelay(
+      String relayUrl, String name, Iterable<String> broadcastRelays,
       {List<String>? defaultRelaysIfEmpty, bool private = false}) async {
-    if (config.eventSigner == null || private && !config.eventSigner!.canSign()) {
-      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+    if (config.eventSigner == null ||
+        private && !config.eventSigner!.canSign()) {
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
     }
     Nip51Set? relaySet = await getSingleNip51RelaySet(
       name,
       config.eventSigner!,
       forceRefresh: true,
     );
-    if ((relaySet == null || relaySet.allRelays.isEmpty) && defaultRelaysIfEmpty != null && defaultRelaysIfEmpty.isNotEmpty) {
-      relaySet = Nip51Set(name: name, pubKey: config.eventSigner!.getPublicKey(), createdAt: Helpers.now, elements: []);
+    if ((relaySet == null || relaySet.allRelays.isEmpty) &&
+        defaultRelaysIfEmpty != null &&
+        defaultRelaysIfEmpty.isNotEmpty) {
+      relaySet = Nip51Set(
+          name: name,
+          pubKey: config.eventSigner!.getPublicKey(),
+          createdAt: Helpers.now,
+          elements: []);
       relaySet.privateRelays = defaultRelaysIfEmpty;
     }
     if (relaySet != null) {
@@ -538,7 +623,9 @@ class Ndk {
       await Future.wait([
         broadcastEvent(event, broadcastRelays),
       ]);
-      List<Nip01Event>? events = config.cache.loadEvents(pubKeys: [config.eventSigner!.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
+      List<Nip01Event>? events = config.cache.loadEvents(
+          pubKeys: [config.eventSigner!.getPublicKey()],
+          kinds: [Nip51List.RELAY_SET]);
       events = events.where((event) {
         if (event.getDtag() != null && event.getDtag() == name) {
           return true;
@@ -553,12 +640,21 @@ class Ndk {
     return relaySet;
   }
 
-  Future<Nip51List> broadcastAddNip51ListRelay(int kind, String relayUrl, Iterable<String> broadcastRelays, {bool private = false}) async {
-    if (config.eventSigner == null || private && !config.eventSigner!.canSign()) {
-      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+  Future<Nip51List> broadcastAddNip51ListRelay(
+      int kind, String relayUrl, Iterable<String> broadcastRelays,
+      {bool private = false}) async {
+    if (config.eventSigner == null ||
+        private && !config.eventSigner!.canSign()) {
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51List? list = await getSingleNip51List(kind, config.eventSigner!, forceRefresh: true);
-    list ??= Nip51List(kind: kind, pubKey: config.eventSigner!.getPublicKey(), createdAt: Helpers.now, elements: []);
+    Nip51List? list =
+        await getSingleNip51List(kind, config.eventSigner!, forceRefresh: true);
+    list ??= Nip51List(
+        kind: kind,
+        pubKey: config.eventSigner!.getPublicKey(),
+        createdAt: Helpers.now,
+        elements: []);
     list.addRelay(relayUrl, private);
     list.createdAt = Helpers.now;
     Nip01Event event = await list.toEvent(config.eventSigner!);
@@ -566,7 +662,8 @@ class Ndk {
     await Future.wait([
       broadcastEvent(event, broadcastRelays),
     ]);
-    List<Nip01Event>? events = config.cache.loadEvents(pubKeys: [config.eventSigner!.getPublicKey()], kinds: [kind]);
+    List<Nip01Event>? events = config.cache.loadEvents(
+        pubKeys: [config.eventSigner!.getPublicKey()], kinds: [kind]);
     for (var event in events) {
       config.cache.removeEvent(event.id);
     }
@@ -574,17 +671,26 @@ class Ndk {
     return list;
   }
 
-  Future<Nip51List?> broadcastRemoveNip51Relay(int kind, String relayUrl, Iterable<String> broadcastRelays, {List<String>? defaultRelaysIfEmpty}) async {
+  Future<Nip51List?> broadcastRemoveNip51Relay(
+      int kind, String relayUrl, Iterable<String> broadcastRelays,
+      {List<String>? defaultRelaysIfEmpty}) async {
     if (config.eventSigner == null || !config.eventSigner!.canSign()) {
-      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
     }
     Nip51List? list = await getSingleNip51List(
       kind,
       config.eventSigner!,
       forceRefresh: true,
     );
-    if ((list == null || list.allRelays.isEmpty) && defaultRelaysIfEmpty != null && defaultRelaysIfEmpty.isNotEmpty) {
-      list = Nip51List(kind: kind, pubKey: config.eventSigner!.getPublicKey(), createdAt: Helpers.now, elements: []);
+    if ((list == null || list.allRelays.isEmpty) &&
+        defaultRelaysIfEmpty != null &&
+        defaultRelaysIfEmpty.isNotEmpty) {
+      list = Nip51List(
+          kind: kind,
+          pubKey: config.eventSigner!.getPublicKey(),
+          createdAt: Helpers.now,
+          elements: []);
       list.privateRelays = defaultRelaysIfEmpty;
     }
     if (list != null && list.allRelays.isNotEmpty) {
@@ -594,7 +700,8 @@ class Ndk {
       await Future.wait([
         broadcastEvent(event, broadcastRelays),
       ]);
-      List<Nip01Event>? events = config.cache.loadEvents(pubKeys: [config.eventSigner!.getPublicKey()], kinds: [kind]);
+      List<Nip01Event>? events = config.cache.loadEvents(
+          pubKeys: [config.eventSigner!.getPublicKey()], kinds: [kind]);
       for (var event in events) {
         config.cache.removeEvent(event.id);
       }
@@ -603,13 +710,20 @@ class Ndk {
     return list;
   }
 
-  Future<Nip51List?> broadcastRemoveNip51ListElement(int kind, String tag, String value, Iterable<String> broadcastRelays) async {
+  Future<Nip51List?> broadcastRemoveNip51ListElement(int kind, String tag,
+      String value, Iterable<String> broadcastRelays) async {
     if (config.eventSigner == null || !config.eventSigner!.canSign()) {
-      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51List? list = await getSingleNip51List(kind, config.eventSigner!, forceRefresh: true, timeout: 2);
+    Nip51List? list = await getSingleNip51List(kind, config.eventSigner!,
+        forceRefresh: true, timeout: 2);
     if (list == null || list.elements.isEmpty) {
-      list = Nip51List(kind: kind, pubKey: config.eventSigner!.getPublicKey(), createdAt: Helpers.now, elements: []);
+      list = Nip51List(
+          kind: kind,
+          pubKey: config.eventSigner!.getPublicKey(),
+          createdAt: Helpers.now,
+          elements: []);
     }
     if (list.elements.isNotEmpty) {
       list.removeElement(tag, value);
@@ -618,7 +732,8 @@ class Ndk {
       await Future.wait([
         broadcastEvent(event, broadcastRelays),
       ]);
-      List<Nip01Event>? events = config.cache.loadEvents(pubKeys: [config.eventSigner!.getPublicKey()], kinds: [kind]);
+      List<Nip01Event>? events = config.cache.loadEvents(
+          pubKeys: [config.eventSigner!.getPublicKey()], kinds: [kind]);
       for (var event in events) {
         config.cache.removeEvent(event.id);
       }
@@ -627,12 +742,21 @@ class Ndk {
     return list;
   }
 
-  Future<Nip51List> broadcastAddNip51ListElement(int kind, String tag, String value, Iterable<String> broadcastRelays, {bool private = false}) async {
-    if (config.eventSigner == null || private && !config.eventSigner!.canSign()) {
-      throw Exception("cannot broadcast private nip51 list without a signer that can sign");
+  Future<Nip51List> broadcastAddNip51ListElement(
+      int kind, String tag, String value, Iterable<String> broadcastRelays,
+      {bool private = false}) async {
+    if (config.eventSigner == null ||
+        private && !config.eventSigner!.canSign()) {
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51List? list = await getSingleNip51List(kind, config.eventSigner!, forceRefresh: true, timeout: 2);
-    list ??= Nip51List(kind: kind, pubKey: config.eventSigner!.getPublicKey(), createdAt: Helpers.now, elements: []);
+    Nip51List? list = await getSingleNip51List(kind, config.eventSigner!,
+        forceRefresh: true, timeout: 2);
+    list ??= Nip51List(
+        kind: kind,
+        pubKey: config.eventSigner!.getPublicKey(),
+        createdAt: Helpers.now,
+        elements: []);
     list.addElement(tag, value, private);
     list.createdAt = Helpers.now;
     Nip01Event event = await list.toEvent(config.eventSigner!);
@@ -640,7 +764,8 @@ class Ndk {
     await Future.wait([
       broadcastEvent(event, broadcastRelays),
     ]);
-    List<Nip01Event>? events = config.cache.loadEvents(pubKeys: [config.eventSigner!.getPublicKey()], kinds: [kind]);
+    List<Nip01Event>? events = config.cache.loadEvents(
+        pubKeys: [config.eventSigner!.getPublicKey()], kinds: [kind]);
     for (var event in events) {
       config.cache.removeEvent(event.id);
     }
@@ -650,7 +775,8 @@ class Ndk {
 
   /// *************************************************************************************************
 
-  Future<Nip01Event> broadcastReaction(String eventId, Iterable<String> relays, {String reaction = "+"}) async {
+  Future<Nip01Event> broadcastReaction(String eventId, Iterable<String> relays,
+      {String reaction = "+"}) async {
     if (config.eventSigner == null) {
       throw Exception("event signer required for broadcasting signed events");
     }
@@ -666,7 +792,8 @@ class Ndk {
     return event;
   }
 
-  Future<Nip01Event> broadcastDeletion(String eventId, Iterable<String> relays, EventSigner signer) async {
+  Future<Nip01Event> broadcastDeletion(
+      String eventId, Iterable<String> relays, EventSigner signer) async {
     if (config.eventSigner == null) {
       throw Exception("event signer required for broadcasting signed events");
     }
@@ -686,10 +813,11 @@ class Ndk {
     return _initialization.relayManager.blockedRelays;
   }
 
-  Future<void> broadcastEvent(Nip01Event event, Iterable<String> broadcastRelays) async {
-    if (config.eventSigner!=null && config.eventSigner!.canSign()) {
-      return await _initialization.relayManager.broadcastEvent(
-          event, broadcastRelays, config.eventSigner!);
+  Future<void> broadcastEvent(
+      Nip01Event event, Iterable<String> broadcastRelays) async {
+    if (config.eventSigner != null && config.eventSigner!.canSign()) {
+      return await _initialization.relayManager
+          .broadcastEvent(event, broadcastRelays, config.eventSigner!);
     }
     throw Exception("event signer required for broadcasting signed events");
   }

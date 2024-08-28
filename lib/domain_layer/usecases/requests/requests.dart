@@ -1,17 +1,16 @@
-import 'package:ndk/domain_layer/usecases/cache_read/cache_read.dart';
-import 'package:ndk/domain_layer/usecases/cache_write/cache_write.dart';
-import 'package:ndk/domain_layer/usecases/jit_engine.dart';
-import 'package:ndk/domain_layer/usecases/relay_sets_engine.dart';
-import 'package:ndk/presentation_layer/global_state.dart';
-
-import '../../presentation_layer/concurrency_check.dart';
-import '../../presentation_layer/ndk_request.dart';
-import '../../presentation_layer/request_response.dart';
-import '../../shared/logger/logger.dart';
-import '../../shared/nips/nip01/helpers.dart';
-import '../entities/filter.dart';
-import '../entities/relay_set.dart';
-import '../entities/request_state.dart';
+import 'concurrency_check.dart';
+import '../../entities/global_state.dart';
+import '../../entities/ndk_request.dart';
+import '../../entities/request_response.dart';
+import '../../entities/filter.dart';
+import '../../entities/relay_set.dart';
+import '../../entities/request_state.dart';
+import '../../../shared/logger/logger.dart';
+import '../../../shared/nips/nip01/helpers.dart';
+import '../cache_read/cache_read.dart';
+import '../cache_write/cache_write.dart';
+import '../jit_engine.dart';
+import '../relay_sets_engine.dart';
 
 class Requests {
   static const int DEFAULT_QUERY_TIMEOUT = 5;
@@ -22,18 +21,43 @@ class Requests {
   RelaySetsEngine? requestManager;
   JitEngine? jitEngine;
 
-  Requests({required this.globalState, required this.cacheRead, required this.cacheWrite,
-      this.requestManager, this.jitEngine});
+  Requests({
+    required this.globalState,
+    required this.cacheRead,
+    required this.cacheWrite,
+    this.requestManager,
+    this.jitEngine,
+  });
 
-
-  NdkResponse query({required List<Filter> filters, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true, relays}) {
-    return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite, relays: relays));
+  NdkResponse query(
+      {required List<Filter> filters,
+      RelaySet? relaySet,
+      bool cacheRead = true,
+      bool cacheWrite = true,
+      relays}) {
+    return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10),
+        filters: filters,
+        relaySet: relaySet,
+        cacheRead: cacheRead,
+        cacheWrite: cacheWrite,
+        relays: relays));
   }
 
-  NdkResponse subscription({required List<Filter> filters, String? id, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true, relays}) {
-    return requestNostrEvent(NdkRequest.subscription(id ?? Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite, relays: relays));
+  NdkResponse subscription(
+      {required List<Filter> filters,
+      String? id,
+      RelaySet? relaySet,
+      bool cacheRead = true,
+      bool cacheWrite = true,
+      relays}) {
+    return requestNostrEvent(NdkRequest.subscription(
+        id ?? Helpers.getRandomString(10),
+        filters: filters,
+        relaySet: relaySet,
+        cacheRead: cacheRead,
+        cacheWrite: cacheWrite,
+        relays: relays));
   }
-
 
   /// ! this is just an example
   NdkResponse requestNostrEvent(NdkRequest request) {
@@ -57,9 +81,9 @@ class Requests {
 
     /// handle request)
 
-    if (requestManager!=null) {
+    if (requestManager != null) {
       requestManager!.handleRequest(state);
-    } else if (jitEngine!=null) {
+    } else if (jitEngine != null) {
       jitEngine!.handleRequest(state);
     } else {
       throw UnimplementedError("Unknown engine");
@@ -84,6 +108,4 @@ class Requests {
 
     return response;
   }
-
-
 }
