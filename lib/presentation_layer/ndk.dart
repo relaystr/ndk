@@ -14,7 +14,9 @@ import '../domain_layer/entities/read_write_marker.dart';
 import '../domain_layer/entities/relay_set.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
+import '../domain_layer/usecases/contact_lists.dart';
 import '../domain_layer/usecases/relay_manager.dart';
+import '../domain_layer/usecases/requests.dart';
 import '../shared/helpers/relay_helper.dart';
 import '../shared/logger/logger.dart';
 import '../shared/nips/nip01/helpers.dart';
@@ -39,9 +41,9 @@ class Ndk {
           globalState: globalState,
         );
 
-  get requests => _initialization.requests;
-  get relays => _initialization.relayManager;
-  get contactLists => _initialization.contactLists;
+  Requests get requests => _initialization.requests;
+  RelayManager get relays => _initialization.relayManager;
+  ContactLists get contactLists => _initialization.contactLists;
 
 
   Future<void> closeSubscription(String subscriptionId) async {
@@ -687,7 +689,7 @@ class Ndk {
   Future<void> broadcastEvent(Nip01Event event, Iterable<String> broadcastRelays) async {
     if (config.eventSigner!=null && config.eventSigner!.canSign()) {
       return await _initialization.relayManager.broadcastEvent(
-          event, relays, config.eventSigner!);
+          event, broadcastRelays, config.eventSigner!);
     }
     throw Exception("event signer required for broadcasting signed events");
   }

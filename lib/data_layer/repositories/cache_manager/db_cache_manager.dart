@@ -1,21 +1,22 @@
 import 'dart:core';
-import 'package:ndk/domain_layer/repositories/cache_manager.dart';
+
+import 'package:isar/isar.dart';
 import 'package:ndk/data_layer/models/db/db_contact_list.dart';
 import 'package:ndk/data_layer/models/db/db_event.dart';
 import 'package:ndk/data_layer/models/db/db_metadata.dart';
 import 'package:ndk/data_layer/models/db/db_nip05.dart';
 import 'package:ndk/data_layer/models/db/db_relay_set.dart';
 import 'package:ndk/data_layer/models/db/db_user_relay_list.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/domain_layer/entities/contact_list.dart';
-import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 
-import '../../../event_filter.dart';
+import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
-import '../../../domain_layer/entities/metadata.dart';
+import '../../../event_filter.dart';
+import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip05/nip05.dart';
 import '../../data_sources/isar_db.dart';
 
@@ -40,10 +41,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print(
+    Logger.log.d(
           "SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
-    }
   }
 
   @override
@@ -64,10 +63,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print(
+    Logger.log.d(
           "SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
-    }
   }
 
   @override
@@ -82,10 +79,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print(
+    Logger.log.d(
           "SAVED ${userRelayLists.length} UserRelayLists took ${duration.inMilliseconds} ms");
-    }
   }
 
   @override
@@ -101,10 +96,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print(
+    Logger.log.d(
           "SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
-    }
   }
 
   @override
@@ -116,10 +109,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print(
+    Logger.log.d(
           "SAVED ${contactLists.length} ContactLists took ${duration.inMilliseconds} ms");
-    }
   }
 
   @override
@@ -186,9 +177,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print("SAVED Metadata took ${duration.inMilliseconds} ms");
-    }
+    Logger.log.d(
+      "SAVED Metadata took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -201,10 +191,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print(
+    Logger.log.d(
           "SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
-    }
   }
 
   @override
@@ -247,9 +235,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print("SAVED Nip05 took ${duration.inMilliseconds} ms");
-    }
+    Logger.log.d(
+      "SAVED Nip05 took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -261,10 +248,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print(
+    Logger.log.d(
           "SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
-    }
   }
 
   @override
@@ -301,9 +286,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print("SAVED Event took ${duration.inMilliseconds} ms");
-    }
+    Logger.log.d(
+      "SAVED Event took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -315,9 +299,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    if (kDebugMode) {
-      print("SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
-    }
+    Logger.log.d(
+      "SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
   }
 
   // @override

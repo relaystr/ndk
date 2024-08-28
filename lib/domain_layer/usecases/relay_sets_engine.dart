@@ -3,7 +3,6 @@
 import 'dart:convert';
 import 'dart:core';
 
-import 'package:flutter/foundation.dart';
 import 'package:ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
@@ -286,9 +285,7 @@ class RelaySetsEngine {
     Map<String, Set<String>> minimumRelaysCoverageByPubkey = {};
     Map<String, List<PubkeyMapping>> bestRelays = {};
     if (onProgress != null) {
-      if (kDebugMode) {
-        print("Calculating best relays...");
-      }
+      Logger.log.d("Calculating best relays...");
       onProgress.call("Calculating best relays",
           minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
     }
@@ -307,9 +304,7 @@ class RelaySetsEngine {
         continue;
       }
       bool connectable = await relayManager.reconnectRelay(url);
-      if (kDebugMode) {
-        print("tried to reconnect to $url = $connectable");
-      }
+      Logger.log.d("tried to reconnect to $url = $connectable");
       if (!connectable) {
         continue;
       }

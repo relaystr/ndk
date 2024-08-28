@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
 import '../models/db/db_contact_list.dart';
@@ -15,7 +14,7 @@ class IsarDbDs {
 
   IsarDbDs();
 
-  Future<void> init({String? directory}) async {
+  Future<void> init({String? directory, bool debug=false}) async {
     // await Isar.initialize("./libisar_android_armv7.so");//initializeIsarCore(download: true);
 
     // final dir = await getApplicationDocumentsDirectory();
@@ -24,8 +23,8 @@ class IsarDbDs {
       await Isar.initialize();
     }
     isar = Isar.open(
-      name: "db_ndk_${kDebugMode ? "debug" : "release"}",
-      inspector: kDebugMode,
+      name: "db_ndk_${debug ? "debug" : "release"}",
+      inspector: debug,
       maxSizeMiB: 1024,
       compactOnLaunch: const CompactCondition(
           minRatio: 2.0,

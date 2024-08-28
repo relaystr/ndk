@@ -31,9 +31,9 @@ export 'domain_layer/entities/contact_list.dart';
 /// signers / verifiers
 export 'domain_layer/repositories/event_verifier.dart';
 export 'domain_layer/repositories/event_signer.dart';
-export 'data_layer/repositories/verifiers/acinq_event_verifier.dart';
+// export 'data_layer/repositories/verifiers/acinq_event_verifier.dart';
 export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
-export 'data_layer/repositories/signers/amber_event_signer.dart';
+// export 'data_layer/repositories/signers/amber_event_signer.dart';
 export 'data_layer/repositories/signers/bip340_event_signer.dart';
 
 /// cache
@@ -48,3 +48,6 @@ export 'data_layer/repositories/cache_manager/db_cache_manager.dart';
 
 export "domain_layer/usecases/relay_manager.dart";
 export "domain_layer/usecases/jit_engine.dart";
+export "domain_layer/usecases/requests.dart";
+export "domain_layer/usecases/contact_lists.dart";
+

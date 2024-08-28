@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:flutter/foundation.dart';
 import 'package:pointycastle/export.dart';
+
+import '../../logger/logger.dart';
 
 class Nip04 {
   static var secp256k1 = ECDomainParameters("secp256k1");
@@ -93,9 +95,7 @@ class Nip04 {
     try {
       y = liftX(x);
     } on Error {
-      if (kDebugMode) {
-        print("error in handle pubKey");
-      }
+      Logger.log.d("error in handle pubKey");
     }
     ECPoint endPoint = secp256k1.curve.createPoint(x, y!);
     return ECPublicKey(endPoint, secp256k1);

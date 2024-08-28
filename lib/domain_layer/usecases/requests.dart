@@ -22,7 +22,6 @@ class Requests {
   RelaySetsEngine? requestManager;
   JitEngine? jitEngine;
 
-
   Requests({required this.globalState, required this.cacheRead, required this.cacheWrite,
       this.requestManager, this.jitEngine});
 

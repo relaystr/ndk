@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
 
+import 'package:ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import 'package:ndk/data_layer/repositories/websocket_nostr_transport.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
@@ -18,7 +19,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../config/bootstrap_relays.dart';
 import '../../data_layer/data_sources/websocket.dart';
-import '../../data_layer/repositories/verifiers/acinq_event_verifier.dart';
 import '../../event_filter.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../entities/nip_01_event.dart';
@@ -59,7 +59,7 @@ class RelayManager {
     List<String>? bootstrapRelays,
     GlobalState? globalState,
   }) {
-    this.eventVerifier = eventVerifier ?? AcinqSecp256k1EventVerifier();
+    this.eventVerifier = eventVerifier ?? Bip340EventVerifier();
     this.bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS;
     this.globalState = globalState ?? GlobalState();
     connect(urls: this.bootstrapRelays);

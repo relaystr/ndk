@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:bech32/bech32.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hex/hex.dart';
 
 class Helpers {
@@ -52,10 +51,10 @@ class Helpers {
     return ["", ""];
   }
 
-  static Future<List<String>> decodeBech32Thread(String bech32String) {
-    var result = compute(decodeBech32, bech32String);
-    return result;
-  }
+  // static Future<List<String>> decodeBech32Thread(String bech32String) {
+  //   var result = compute(decodeBech32, bech32String);
+  //   return result;
+  // }
 
   /// reads tags from a nostr event and returns a list of pubkeys
   static List<String> getPubkeysFromTags(tag) {

@@ -1,7 +1,8 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
+import '../../shared/logger/logger.dart';
 
 class RelayInfo {
 
@@ -58,9 +59,7 @@ class RelayInfo {
           utf8.decode(response.bodyBytes)) as Map;
       return RelayInfo.fromJson(decodedResponse, uri.toString());
     } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
+      Logger.log.d(e);
       return null;
     }
   }

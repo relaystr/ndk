@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
-import 'package:flutter/foundation.dart';
 
+import '../../shared/logger/logger.dart';
 import 'nip_01_event.dart';
 
 class Nip51List {
@@ -129,9 +129,7 @@ class Nip51List {
         List<dynamic> tags = jsonDecode(json ?? '');
         list.parseTags(tags, private: true);
       } catch (e) {
-        if (kDebugMode) {
-          print(e);
-        }
+        Logger.log.d(e);
       }
     }
     return list;
@@ -250,9 +248,7 @@ class Nip51Set extends Nip51List {
         set.parseSetTags(tags);
       } catch (e) {
         set.name = "<invalid encrypted content>";
-        if (kDebugMode) {
-          print(e);
-        }
+        Logger.log.d(e);
       }
     } else {
       set.parseTags(event.tags, private: false);
