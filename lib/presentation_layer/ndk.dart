@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
@@ -19,13 +20,9 @@ import '../shared/logger/logger.dart';
 import '../shared/nips/nip01/helpers.dart';
 import '../shared/nips/nip09/deletion.dart';
 import '../shared/nips/nip25/reactions.dart';
-import 'concurrency_check.dart';
 import 'global_state.dart';
 import 'init.dart';
 import 'ndk_config.dart';
-import 'ndk_request.dart';
-import 'request_response.dart';
-import '../domain_layer/entities/request_state.dart';
 
 // some global obj that schuld be kept in memory by lib user
 class Ndk {
@@ -38,80 +35,22 @@ class Ndk {
 
   Ndk(this.config)
       : _initialization = Initialization(
-          ndkConfig: config,
+          config: config,
           globalState: globalState,
         );
 
-  NdkResponse query({required List<Filter> filters, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true, relays}) {
-    return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite, relays: relays));
-  }
+  get requests => _initialization.requests;
+  get relays => _initialization.relayManager;
+  get contactLists => _initialization.contactLists;
 
-  NdkResponse subscription({required List<Filter> filters, String? id, RelaySet? relaySet, bool cacheRead = true, bool cacheWrite = true, relays}) {
-    return requestNostrEvent(NdkRequest.subscription(id ?? Helpers.getRandomString(10), filters: filters, relaySet: relaySet, cacheRead: cacheRead, cacheWrite: cacheWrite, relays: relays));
-  }
 
   Future<void> closeSubscription(String subscriptionId) async {
     await _initialization.relayManager.closeNostrRequestById(subscriptionId);
   }
 
+  @Deprecated("use relays getter")
   RelayManager relayManager() {
-    return _initialization.relayManager;
-  }
-
-  /// ! this is just an example
-  NdkResponse requestNostrEvent(NdkRequest request) {
-    RequestState state = RequestState(request);
-
-    final response = NdkResponse(state.id, state.stream);
-
-    final concurrency = ConcurrencyCheck(globalState);
-
-    /// concurrency check - check if request is inFlight
-    // final streamWasReplaced = request.cacheRead && concurrency.check(state);
-    // if (streamWasReplaced) {
-    //   return response;
-    // }
-
-    // todo caching middleware
-    // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
-    if (request.cacheRead) {
-      _initialization.cacheRead.resolveUnresolvedFilters(requestState: state);
-    }
-
-    /// handle request)
-
-    switch (config.engine) {
-      case NdkEngine.LISTS:
-        //todo: discuss/implement use of unresolvedFilters
-        _initialization.requestManager!.handleRequest(state);
-        break;
-
-      case NdkEngine.JIT:
-        _initialization.jitEngine!.handleRequest(state);
-        break;
-
-      default:
-        throw UnimplementedError("Unknown engine");
-    }
-
-    /// cache network response
-    // todo: discuss use of networkController.add() in engines, its something to keep in mind and therefore bad
-    if (request.cacheWrite) {
-      _initialization.cacheWrite.saveNetworkResponse(
-        networkController: state.networkController,
-        responseController: state.controller,
-      );
-    } else {
-      state.networkController.stream.listen((event) {
-        state.controller.add(event);
-      }, onDone: () {
-        state.controller.close();
-      }, onError: (error) {
-        Logger.log.e("⛔ $error ");
-      });
-    }
-
-    return response;
+    return relays;
   }
 
   Future<RelaySet> calculateRelaySet(
@@ -121,36 +60,11 @@ class Ndk {
       required RelayDirection direction,
       required int relayMinCountPerPubKey,
       Function(String, int, int)? onProgress}) async {
-    if (_initialization.requestManager == null) {
+    if (_initialization.relaySetsEngine == null) {
       throw UnimplementedError("this engine doesn't support calculation of relay sets");
     }
-    return await _initialization.requestManager!
+    return await _initialization.relaySetsEngine!
         .calculateRelaySet(name: name, ownerPubKey: ownerPubKey, pubKeys: pubKeys, direction: direction, relayMinCountPerPubKey: relayMinCountPerPubKey);
-  }
-
-  Future<ContactList?> getContactList(String pubKey, {bool forceRefresh = false, int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT}) async {
-    ContactList? contactList = config.cache.loadContactList(pubKey);
-    if (contactList == null || forceRefresh) {
-      ContactList? loadedContactList;
-      try {
-        await for (final event in query(filters: [
-          Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1)
-        ]).stream) {
-          if (loadedContactList == null || loadedContactList.createdAt < event.createdAt) {
-            loadedContactList = ContactList.fromEvent(event);
-          }
-        }
-      } catch (e) {
-        print(e);
-        // probably timeout;
-      }
-      if (loadedContactList != null && (contactList == null || contactList.createdAt < loadedContactList.createdAt)) {
-        loadedContactList.loadedTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        await config.cache.saveContactList(loadedContactList);
-        contactList = loadedContactList;
-      }
-    }
-    return contactList;
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
@@ -159,7 +73,7 @@ class Ndk {
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
-        await for (final event in query(filters: [
+        await for (final event in requests.query(filters: [
           Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
         ]).stream) {
           if (loadedMetadata == null || loadedMetadata.updatedAt == null || loadedMetadata.updatedAt! < event.createdAt) {
@@ -199,7 +113,7 @@ class Ndk {
     if (missingPubKeys.isNotEmpty) {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
-        await for (final event in (await query(
+        await for (final event in (await requests.query(
                 // idleTimeout: 1,
                 // splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
                 filters: [
@@ -248,7 +162,7 @@ class Ndk {
         onProgress.call("loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
-        await for (final event in (await query(
+        await for (final event in (await requests.query(
 //                timeout: missingPubKeys.length > 1 ? 10 : 3,
                 filters: [
               Filter(authors: missingPubKeys, kinds: [Nip65.KIND, ContactList.KIND])
@@ -332,7 +246,7 @@ class Ndk {
     Nip51List? list = !forceRefresh ? await getCachedNip51List(kind, signer) : null;
     if (list == null) {
       Nip51List? refreshedList;
-      await for (final event in query(
+      await for (final event in requests.query(
         filters: [
           Filter(
             authors: [signer.getPublicKey()],
@@ -372,7 +286,7 @@ class Ndk {
     Nip51Set? relaySet = await getCachedNip51RelaySet(name, signer);
     if (relaySet == null || forceRefresh) {
       Nip51Set? newRelaySet;
-      await for (final event in query(filters: [
+      await for (final event in requests.query(filters: [
         Filter(
           authors: [signer.getPublicKey()],
           kinds: [Nip51List.RELAY_SET],
@@ -402,7 +316,7 @@ class Ndk {
     Nip51Set? relaySet; //getCachedNip51RelaySets(signer);
     if (relaySet == null || forceRefresh) {
       Map<String, Nip51Set> newRelaySets = {};
-      await for (final event in query(filters: [
+      await for (final event in requests.query(filters: [
         Filter(
           authors: [signer.getPublicKey()],
           kinds: [kind],
@@ -429,7 +343,7 @@ class Ndk {
 
   Future<Nip01Event?> getSingleMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
-    await for (final event in query(filters: [
+    await for (final event in requests.query(filters: [
       Filter(kinds: [Metadata.KIND], authors: [signer.getPublicKey()], limit: 1)
     ]).stream) {
       if (loaded == null || loaded.createdAt < event.createdAt) {
@@ -450,14 +364,6 @@ class Ndk {
   }
 
   /// **********************************************************************************************************
-
-  Future<void> broadcastEvent(Nip01Event event, Iterable<String> relays, {EventSigner? signer}) async {
-    signer ??= config.eventSigner;
-    if (signer == null) {
-      throw Exception("event signer required for broadcasting signed events");
-    }
-    await _initialization.relayManager.broadcastEvent(event, relays, signer);
-  }
 
   /// ! this is just an example
   /// event is event to publish
@@ -491,86 +397,6 @@ class Ndk {
   }
 
   /// *******************************************************************************************************************
-
-  // if cached contact list is older that now minus this duration that we should go refresh it,
-  // otherwise we risk adding/removing contacts to a list that is out of date and thus loosing contacts other client has added/removed since.
-  static const Duration REFRESH_CONTACT_LIST_DURATION = Duration(minutes: 10);
-
-  Future<ContactList> ensureUpToDateContactListOrEmpty(EventSigner signer) async {
-    ContactList? contactList = config.cache.loadContactList(signer.getPublicKey());
-    int sometimeAgo = DateTime.now().subtract(REFRESH_CONTACT_LIST_DURATION).millisecondsSinceEpoch ~/ 1000;
-    bool refresh = contactList == null || contactList.loadedTimestamp == null || contactList.loadedTimestamp! < sometimeAgo;
-    if (refresh) {
-      contactList = await getContactList(signer.getPublicKey(), forceRefresh: true);
-    }
-    contactList ??= ContactList(pubKey: signer.getPublicKey(), contacts: []);
-    return contactList;
-  }
-
-  Future<ContactList> broadcastAddContactInCollection(String toAdd, Iterable<String> relays, List<String> Function(ContactList) collectionAccessor) async {
-    if (config.eventSigner == null) {
-      throw Exception("event signer required for broadcasting signed events");
-    }
-    ContactList contactList = await ensureUpToDateContactListOrEmpty(config.eventSigner!);
-    List<String> collection = collectionAccessor(contactList);
-    if (!collection.contains(toAdd)) {
-      collection.add(toAdd);
-      contactList.loadedTimestamp = Helpers.now;
-      contactList.createdAt = Helpers.now;
-      await broadcastEvent(contactList.toEvent(), relays);
-      await config.cache.saveContactList(contactList);
-    }
-    return contactList;
-  }
-
-  Future<ContactList> broadcastAddContact(String add, Iterable<String> relays) async {
-    return broadcastAddContactInCollection(add, relays, (list) => list.contacts);
-  }
-
-  Future<ContactList> broadcastAddFollowedTag(String add, Iterable<String> relays) async {
-    return broadcastAddContactInCollection(add, relays, (list) => list.followedTags);
-  }
-
-  Future<ContactList> broadcastAddFollowedCommunity(String toAdd, Iterable<String> relays) async {
-    return broadcastAddContactInCollection(toAdd, relays, (list) => list.followedCommunities);
-  }
-
-  Future<ContactList> broadcastAddFollowedEvent(String toAdd, Iterable<String> relays, EventSigner signer) async {
-    return broadcastAddContactInCollection(toAdd, relays, (list) => list.followedEvents);
-  }
-
-  Future<ContactList?> broadcastRemoveContactInCollection(
-      String toRemove, Iterable<String> relays, List<String> Function(ContactList) collectionAccessor) async {
-    if (config.eventSigner == null) {
-      throw Exception("event signer required for broadcasting signed events");
-    }
-    ContactList? contactList = await ensureUpToDateContactListOrEmpty(config.eventSigner!);
-    List<String> collection = collectionAccessor(contactList);
-    if (collection.contains(toRemove)) {
-      collection.remove(toRemove);
-      contactList.loadedTimestamp = Helpers.now;
-      contactList.createdAt = Helpers.now;
-      await broadcastEvent(contactList.toEvent(), relays);
-      await config.cache.saveContactList(contactList);
-    }
-    return contactList;
-  }
-
-  Future<ContactList?> broadcastRemoveContact(String toRemove, Iterable<String> relays) async {
-    return broadcastRemoveContactInCollection(toRemove, relays, (list) => list.contacts);
-  }
-
-  Future<ContactList?> broadcastRemoveFollowedTag(String toRemove, Iterable<String> relays) async {
-    return broadcastRemoveContactInCollection(toRemove, relays, (list) => list.followedTags);
-  }
-
-  Future<ContactList?> broadcastRemoveFollowedCommunity(String toRemove, Iterable<String> relays) async {
-    return broadcastRemoveContactInCollection(toRemove, relays, (list) => list.followedCommunities);
-  }
-
-  Future<ContactList?> broadcastRemoveFollowedEvent(String toRemove, Iterable<String> relays) async {
-    return broadcastRemoveContactInCollection(toRemove, relays, (list) => list.followedEvents);
-  }
 
   /// *************************************************************************************************
 
@@ -856,5 +682,13 @@ class Ndk {
 
   List<String> blockedRelays() {
     return _initialization.relayManager.blockedRelays;
+  }
+
+  Future<void> broadcastEvent(Nip01Event event, Iterable<String> broadcastRelays) async {
+    if (config.eventSigner!=null && config.eventSigner!.canSign()) {
+      return await _initialization.relayManager.broadcastEvent(
+          event, relays, config.eventSigner!);
+    }
+    throw Exception("event signer required for broadcasting signed events");
   }
 }

@@ -48,11 +48,11 @@ void main() async {
             eventVerifier: MockEventVerifier(),
             eventSigner: Bip340EventSigner(key1.privateKey, key1.publicKey),
             cache: MemCacheManager(),
-            engine: NdkEngine.LISTS,
+            engine: NdkEngine.RELAY_SETS,
             bootstrapRelays: [relay1.url]),
       );
 
-      NdkResponse response = ndk.query(filters: [
+      NdkResponse response = ndk.requests.query(filters: [
             Filter(
                 kinds: [Nip01Event.TEXT_NODE_KIND],
                 authors: [key1.publicKey])
@@ -60,7 +60,7 @@ void main() async {
 
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
 
-      NdkResponse response2 = ndk.query( filters: [
+      NdkResponse response2 = ndk.requests.query( filters: [
             Filter(
                 kinds: [Nip01Event.TEXT_NODE_KIND],
                 authors: [key1.publicKey, key2.publicKey])

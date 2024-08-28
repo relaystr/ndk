@@ -9,7 +9,7 @@ import 'package:ndk/domain_layer/entities/read_write.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:ndk/domain_layer/usecases/request_manager.dart';
+import 'package:ndk/domain_layer/usecases/relay_sets_engine.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/presentation_layer/global_state.dart';
 import 'package:ndk/presentation_layer/request_response.dart';
@@ -53,7 +53,7 @@ void main() async {
       await relay1.startServer(textNotes: key1TextNotes);
 
       GlobalState globalState = GlobalState();
-      RequestManager manager = RequestManager(
+      RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
               bootstrapRelays: [relay1.url], globalState: globalState));
@@ -75,7 +75,7 @@ void main() async {
       await relay1.startServer(textNotes: key1TextNotes);
       GlobalState globalState = GlobalState();
 
-      RequestManager manager = RequestManager(
+      RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
               bootstrapRelays: [relay1.url], globalState: globalState));
@@ -173,7 +173,7 @@ void main() async {
     // ================================================================================================
     test('loadMissingRelayListsFromNip65OrNip02', () async {
       GlobalState globalState = GlobalState();
-      RequestManager manager = RequestManager(
+      RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
               bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
@@ -189,7 +189,7 @@ void main() async {
     // ================================================================================================
     test('query events from key that writes only on one relay', () async {
       GlobalState globalState = GlobalState();
-      RequestManager manager = RequestManager(
+      RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
               bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
@@ -247,7 +247,7 @@ void main() async {
         // skip: 'WiP',
         'query all keys and do not use redundant relays', () async {
       GlobalState globalState = GlobalState();
-      RequestManager manager = RequestManager(
+      RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
               bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
@@ -349,7 +349,7 @@ void main() async {
         "calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays",
         () async {
       GlobalState globalState = GlobalState();
-      RequestManager manager = RequestManager(
+      RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
               bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
@@ -388,7 +388,7 @@ void main() async {
         "calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays",
         () async {
           GlobalState globalState = GlobalState();
-          RequestManager manager = RequestManager(
+          RelaySetsEngine manager = RelaySetsEngine(
               globalState: globalState,
               relayManager: RelayManager(
                   bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
@@ -559,7 +559,7 @@ void main() async {
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(key1.privateKey, key1.publicKey),
         cache: MemCacheManager(),
-        engine: NdkEngine.LISTS,
+        engine: NdkEngine.RELAY_SETS,
       ));
 
       int i = 1;
@@ -568,7 +568,7 @@ void main() async {
 
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        ContactList? contactList = await ndk.getContactList(key.publicKey);
+        ContactList? contactList = await ndk.contactLists.getContactList(key.publicKey);
 
         expect(contactList != null, true);
 

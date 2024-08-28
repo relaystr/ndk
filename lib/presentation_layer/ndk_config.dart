@@ -24,11 +24,11 @@ class NdkConfig {
     required this.eventVerifier,
     this.eventSigner,
     required this.cache,
-    this.engine = NdkEngine.LISTS,
+    this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
   });
 }
 
 // ignore: constant_identifier_names
-enum NdkEngine { LISTS, JIT }
+enum NdkEngine { RELAY_SETS, JIT }

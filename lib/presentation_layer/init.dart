@@ -3,14 +3,16 @@ import 'package:http/http.dart' as http;
 import '../data_layer/data_sources/http_request.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
+import '../domain_layer/usecases/contact_lists.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/relay_manager.dart';
-import '../domain_layer/usecases/request_manager.dart';
+import '../domain_layer/usecases/relay_sets_engine.dart';
+import '../domain_layer/usecases/requests.dart';
 import 'global_state.dart';
 import 'ndk_config.dart';
 
 class Initialization {
-  final NdkConfig ndkConfig;
+  final NdkConfig config;
   final GlobalState globalState;
 
   /// data sources
@@ -22,49 +24,57 @@ class Initialization {
   /// state obj
 
   /// use cases
+  late RelayManager relayManager;
+  late CacheWrite cacheWrite;
+  late CacheRead cacheRead;
+  late Requests requests;
+  late ContactLists contactLists;
 
-  RequestManager? requestManager;
-
+  RelaySetsEngine? relaySetsEngine;
   JitEngine? jitEngine;
 
-  late RelayManager relayManager;
-
-  late CacheWrite cacheWrite;
-
-  late CacheRead cacheRead;
-
   Initialization({
-    required this.ndkConfig,
+    required this.config,
     required this.globalState,
   }) {
     relayManager = RelayManager(
-      eventVerifier: ndkConfig.eventVerifier,
-      bootstrapRelays: ndkConfig.bootstrapRelays,
-      globalState: globalState
-    );
-    switch (ndkConfig.engine) {
-      case NdkEngine.LISTS:
-        requestManager = RequestManager(
-          cacheManager: ndkConfig.cache,
-          eventVerifier: ndkConfig.eventVerifier,
+        eventVerifier: config.eventVerifier,
+        bootstrapRelays: config.bootstrapRelays,
+        globalState: globalState);
+    switch (config.engine) {
+      case NdkEngine.RELAY_SETS:
+        relaySetsEngine = RelaySetsEngine(
+          cacheManager: config.cache,
+          eventVerifier: config.eventVerifier,
           globalState: globalState,
           relayManager: relayManager,
         );
       case NdkEngine.JIT:
         jitEngine = JitEngine(
-          eventVerifier: ndkConfig.eventVerifier,
-          eventSigner: ndkConfig.eventSigner,
-          cache: ndkConfig.cache,
-          ignoreRelays: ndkConfig.ignoreRelays,
-          seedRelays: ndkConfig.bootstrapRelays,
+          eventVerifier: config.eventVerifier,
+          eventSigner: config.eventSigner,
+          cache: config.cache,
+          ignoreRelays: config.ignoreRelays,
+          seedRelays: config.bootstrapRelays,
           globalState: globalState,
         );
         break;
       default:
         throw UnimplementedError("Unknown engine");
     }
+    cacheWrite = CacheWrite(config.cache);
+    cacheRead = CacheRead(config.cache);
 
-    cacheWrite = CacheWrite(ndkConfig.cache);
-    cacheRead = CacheRead(ndkConfig.cache);
+    requests = Requests(
+        globalState: globalState,
+        cacheRead: cacheRead,
+        cacheWrite: cacheWrite,
+        requestManager: relaySetsEngine,
+        jitEngine: jitEngine);
+
+    contactLists = ContactLists(
+        requests: requests,
+        cacheManager: config.cache,
+        relayManager: relayManager);
   }
 }

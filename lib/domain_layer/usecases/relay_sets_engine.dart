@@ -25,7 +25,7 @@ import '../entities/request_state.dart';
 import '../entities/user_relay_list.dart';
 import '../repositories/event_verifier.dart';
 
-class RequestManager {
+class RelaySetsEngine {
   static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
 
   late GlobalState globalState;
@@ -33,7 +33,7 @@ class RequestManager {
   RelayManager relayManager;
   late CacheManager cacheManager;
 
-  RequestManager(
+  RelaySetsEngine(
       { required this.relayManager,
         CacheManager? cacheManager,
       EventVerifier? eventVerifier,
@@ -117,7 +117,7 @@ class RequestManager {
   Future<NdkResponse> query(
       Filter filter,
       RelaySet? relaySet, {
-      int idleTimeout = RequestManager.DEFAULT_STREAM_IDLE_TIMEOUT,
+      int idleTimeout = RelaySetsEngine.DEFAULT_STREAM_IDLE_TIMEOUT,
       bool splitRequestsByPubKeyMappings = true,
     }) async {
       RequestState state = RequestState(NdkRequest.query(
