@@ -59,7 +59,6 @@ class Requests {
         relays: relays));
   }
 
-  /// ! this is just an example
   NdkResponse requestNostrEvent(NdkRequest request) {
     RequestState state = RequestState(request);
 
