@@ -262,11 +262,14 @@ class RelayManager {
 
     if (eventJson[0] == 'NOTICE') {
       Logger.log.d("! NOTICE from $url: ${eventJson[1]}");
-      reconnectRelay(url, force: true);
+      // reconnectRelay(url, force: true);
     } else if (eventJson[0] == 'EVENT') {
       handleIncomingEvent(eventJson, url, message);
     } else if (eventJson[0] == 'EOSE') {
       handleEOSE(eventJson, url);
+    } else if (eventJson[0] == 'CLOSED') {
+      Logger.log.d("! CLOSED subscription id: ${eventJson[1]} msg: ${eventJson[2]}");
+      globalState.inFlightRequests.remove(eventJson[1]);
     }
     // TODO
     // if (eventJson[0] == 'AUTH') {
