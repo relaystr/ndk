@@ -43,10 +43,6 @@ class Ndk {
   RelayManager get relays => _initialization.relayManager;
   Follows get follows => _initialization.follows;
 
-  Future<void> closeSubscription(String subscriptionId) async {
-    await _initialization.relayManager.closeNostrRequestById(subscriptionId);
-  }
-
   Future<RelaySet> calculateRelaySet(
       {required String name,
       required String ownerPubKey,
