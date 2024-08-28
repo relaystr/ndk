@@ -41,7 +41,7 @@ class Ndk {
 
   Requests get requests => _initialization.requests;
   RelayManager get relays => _initialization.relayManager;
-  Follows get contactLists => _initialization.follows;
+  Follows get follows => _initialization.follows;
 
   Future<void> closeSubscription(String subscriptionId) async {
     await _initialization.relayManager.closeNostrRequestById(subscriptionId);
