@@ -814,7 +814,7 @@ class Ndk {
   }
 
   Future<void> broadcastEvent(
-      Nip01Event event, Iterable<String> broadcastRelays) async {
+      Nip01Event event, Iterable<String> broadcastRelays, {EventSigner? signer}) async {
     if (config.eventSigner != null && config.eventSigner!.canSign()) {
       return await _initialization.relayManager
           .broadcastEvent(event, broadcastRelays, config.eventSigner!);
