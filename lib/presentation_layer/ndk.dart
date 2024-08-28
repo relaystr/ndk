@@ -47,11 +47,6 @@ class Ndk {
     await _initialization.relayManager.closeNostrRequestById(subscriptionId);
   }
 
-  @Deprecated("use relays getter")
-  RelayManager relayManager() {
-    return relays;
-  }
-
   Future<RelaySet> calculateRelaySet(
       {required String name,
       required String ownerPubKey,
