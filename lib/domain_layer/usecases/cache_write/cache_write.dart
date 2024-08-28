@@ -19,7 +19,7 @@ class CacheWrite {
     required StreamController<Nip01Event> networkController,
     required StreamController<Nip01Event> responseController,
   }) {
-    networkController.stream.listen((event) {
+    networkController.stream.listen((event) async {
       final foundElement = cacheManager.loadEvent(event.id);
       if (foundElement != null) {
         // already in db
@@ -27,11 +27,11 @@ class CacheWrite {
         return;
       }
       Logger.log.d("⛁ got event from network $event ");
-      cacheManager.saveEvent(event);
+      await cacheManager.saveEvent(event);
       responseController.add(event);
     }, onDone: () {
       responseController.close();
-    }, onError:  (error) {
+    }, onError: (error) {
       Logger.log.e("⛔ $error ");
     });
   }
