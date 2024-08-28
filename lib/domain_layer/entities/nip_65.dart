@@ -1,5 +1,4 @@
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/relay.dart';
 
 import '../../shared/helpers/relay_helper.dart';
 import 'nip_01_event.dart';

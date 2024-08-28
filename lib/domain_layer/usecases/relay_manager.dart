@@ -310,7 +310,7 @@ class RelayManager {
   void handleIncomingEvent(List<dynamic> eventJson, String url, message) {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
-      Logger.log.d("RECEIVED EVENT ${id} for unknown request");
+      Logger.log.d("RECEIVED EVENT $id for unknown request");
       return;
     }
 

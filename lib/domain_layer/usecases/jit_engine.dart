@@ -11,7 +11,6 @@ import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 
-import 'dart:developer' as developer;
 
 import '../../shared/helpers/relay_helper.dart';
 import '../entities/connection_source.dart';

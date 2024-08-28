@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:rxdart/rxdart.dart';
 
 import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';

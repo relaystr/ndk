@@ -5,7 +5,6 @@ import '../../entities/request_response.dart';
 import '../../entities/filter.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/request_state.dart';
-import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../cache_read/cache_read.dart';
 import '../cache_write/cache_write.dart';

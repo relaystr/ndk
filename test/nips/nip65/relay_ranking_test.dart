@@ -1,8 +1,6 @@
 import 'dart:math';
 
-import 'dart:developer' as developer;
 
-import 'package:collection/collection.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';

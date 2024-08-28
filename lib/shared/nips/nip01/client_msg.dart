@@ -29,7 +29,7 @@ class ClientMsg {
     }
 
     if (type == ClientMsgType.REQ) {
-      if (filters == null || filters!.isEmpty) {
+      if (filters == null || filters.isEmpty) {
         throw Exception("filters are required for type REQ");
       }
       if (id == null) {
@@ -53,7 +53,7 @@ class ClientMsg {
 
   _reqToJson() {
     List<dynamic> json = [type, id];
-    for (var filter in filters!) {
+    for (var filter in filters) {
       json.add(filter.toMap());
     }
     return json;
