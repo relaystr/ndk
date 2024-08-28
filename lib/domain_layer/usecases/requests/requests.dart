@@ -70,43 +70,33 @@ class Requests {
 
     final concurrency = ConcurrencyCheck(_globalState);
 
-    /// concurrency check - check if request is inFlight
-    // final streamWasReplaced = request.cacheRead && concurrency.check(state);
-    // if (streamWasReplaced) {
-    //   return response;
-    // }
+    /// cache network response
+    //? async stuff happening here - needed up here because .broadcast() does not buffer
 
-    // todo caching middleware
+    _cacheWrite.saveNetworkResponse(
+      writeToCache: request.cacheWrite,
+      networkController: state.networkController,
+      responseController: state.controller,
+    );
+
+    /// concurrency check - check if request is inFlight
+    final streamWasReplaced = request.cacheRead && concurrency.check(state);
+    if (streamWasReplaced) {
+      return response;
+    }
+
     // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
     if (request.cacheRead) {
       _cacheRead.resolveUnresolvedFilters(requestState: state);
     }
 
-    /// handle request)
-
+    /// handle request
     if (_requestManager != null) {
-      _requestManager!.handleRequest(state);
+      _requestManager.handleRequest(state);
     } else if (_jitEngine != null) {
-      _jitEngine!.handleRequest(state);
+      _jitEngine.handleRequest(state);
     } else {
       throw UnimplementedError("Unknown engine");
-    }
-
-    /// cache network response
-    // todo: discuss use of networkController.add() in engines, its something to keep in mind and therefore bad
-    if (request.cacheWrite) {
-      _cacheWrite.saveNetworkResponse(
-        networkController: state.networkController,
-        responseController: state.controller,
-      );
-    } else {
-      state.networkController.stream.listen((event) {
-        state.controller.add(event);
-      }, onDone: () {
-        state.controller.close();
-      }, onError: (error) {
-        Logger.log.e("⛔ $error ");
-      });
     }
 
     return response;

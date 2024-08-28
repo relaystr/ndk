@@ -16,10 +16,11 @@ class CacheWrite {
   /// [networkController] input controller,
   /// [responseController] output controller, where the result is written to
   saveNetworkResponse({
+    required bool writeToCache,
     required StreamController<Nip01Event> networkController,
     required StreamController<Nip01Event> responseController,
   }) {
-    networkController.stream.listen((event) async {
+    networkController.stream.listen((event) {
       final foundElement = cacheManager.loadEvent(event.id);
       if (foundElement != null) {
         // already in db
@@ -27,7 +28,12 @@ class CacheWrite {
         return;
       }
       Logger.log.d("⛁ got event from network $event ");
-      await cacheManager.saveEvent(event);
+
+      if (writeToCache) {
+        //todo: currently working on
+        //cacheManager.saveEvent(event);
+      }
+
       responseController.add(event);
     }, onDone: () {
       responseController.close();

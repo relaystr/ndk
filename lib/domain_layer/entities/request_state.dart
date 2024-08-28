@@ -15,11 +15,12 @@ class RelayRequestState {
 }
 
 class RequestState {
-  StreamController<Nip01Event> controller = StreamController<Nip01Event>();
+  StreamController<Nip01Event> controller =
+      StreamController<Nip01Event>.broadcast();
 
   /// [networkController] used by engines to write their response
   StreamController<Nip01Event> networkController =
-      StreamController<Nip01Event>.broadcast();
+      StreamController<Nip01Event>();
 
   Stream<Nip01Event> get stream => request.timeout != null
       ? controller.stream.timeout(Duration(seconds: request.timeout!),

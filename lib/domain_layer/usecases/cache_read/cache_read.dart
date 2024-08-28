@@ -27,7 +27,7 @@ class CacheRead {
         // remove found authors from unresolved filter if it's not a subscription
         if (!requestState.isSubscription) {
           filter.authors!.removeWhere(
-                (author) => foundEvents.any((event) => event.pubKey == author),
+            (author) => foundEvents.any((event) => event.pubKey == author),
           );
         }
       }
