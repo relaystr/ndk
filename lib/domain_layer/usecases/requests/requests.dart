@@ -15,19 +15,23 @@ import '../relay_sets_engine.dart';
 class Requests {
   static const int DEFAULT_QUERY_TIMEOUT = 5;
 
-  GlobalState globalState;
-  CacheRead cacheRead;
-  CacheWrite cacheWrite;
-  RelaySetsEngine? requestManager;
-  JitEngine? jitEngine;
+  final GlobalState _globalState;
+  final CacheRead _cacheRead;
+  final CacheWrite _cacheWrite;
+  final RelaySetsEngine? _requestManager;
+  final JitEngine? _jitEngine;
 
   Requests({
-    required this.globalState,
-    required this.cacheRead,
-    required this.cacheWrite,
-    this.requestManager,
-    this.jitEngine,
-  });
+    required GlobalState globalState,
+    required CacheRead cacheRead,
+    required CacheWrite cacheWrite,
+    RelaySetsEngine? requestManager,
+    JitEngine? jitEngine,
+  })  : _jitEngine = jitEngine,
+        _requestManager = requestManager,
+        _cacheWrite = cacheWrite,
+        _cacheRead = cacheRead,
+        _globalState = globalState;
 
   NdkResponse query(
       {required List<Filter> filters,
@@ -64,26 +68,26 @@ class Requests {
 
     final response = NdkResponse(state.id, state.stream);
 
-    final concurrency = ConcurrencyCheck(globalState);
+    final concurrency = ConcurrencyCheck(_globalState);
 
     /// concurrency check - check if request is inFlight
-    // final streamWasReplaced = request.cacheRead && concurrency.check(state);
-    // if (streamWasReplaced) {
-    //   return response;
-    // }
+    final streamWasReplaced = request.cacheRead && concurrency.check(state);
+    if (streamWasReplaced) {
+      return response;
+    }
 
     // todo caching middleware
     // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
     if (request.cacheRead) {
-      cacheRead.resolveUnresolvedFilters(requestState: state);
+      _cacheRead.resolveUnresolvedFilters(requestState: state);
     }
 
     /// handle request)
 
-    if (requestManager != null) {
-      requestManager!.handleRequest(state);
-    } else if (jitEngine != null) {
-      jitEngine!.handleRequest(state);
+    if (_requestManager != null) {
+      _requestManager!.handleRequest(state);
+    } else if (_jitEngine != null) {
+      _jitEngine!.handleRequest(state);
     } else {
       throw UnimplementedError("Unknown engine");
     }
@@ -91,7 +95,7 @@ class Requests {
     /// cache network response
     // todo: discuss use of networkController.add() in engines, its something to keep in mind and therefore bad
     if (request.cacheWrite) {
-      cacheWrite.saveNetworkResponse(
+      _cacheWrite.saveNetworkResponse(
         networkController: state.networkController,
         responseController: state.controller,
       );
