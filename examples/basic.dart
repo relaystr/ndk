@@ -1,5 +1,4 @@
 import 'package:ndk/ndk.dart';
-import 'package:ndk/presentation_layer/request_response.dart';
 
 void main(List<String> arguments) async {
   Ndk ndk = Ndk(NdkConfig(
@@ -11,6 +10,6 @@ void main(List<String> arguments) async {
   ]);
 
   await for (final event in response.stream) {
-      print(event);
+    print(event);
   }
 }

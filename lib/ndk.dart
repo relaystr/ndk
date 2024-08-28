@@ -8,6 +8,7 @@ library ndk;
 export 'presentation_layer/ndk.dart';
 export 'presentation_layer/ndk_config.dart';
 export 'presentation_layer/ndk_request.dart';
+export 'presentation_layer/request_response.dart';
 
 // todo refine api and export
 
@@ -50,4 +51,3 @@ export "domain_layer/usecases/relay_manager.dart";
 export "domain_layer/usecases/jit_engine.dart";
 export "domain_layer/usecases/requests.dart";
 export "domain_layer/usecases/contact_lists.dart";
-
