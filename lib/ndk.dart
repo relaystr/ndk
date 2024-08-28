@@ -23,6 +23,10 @@ export 'domain_layer/entities/nip_01_event.dart';
 export 'domain_layer/entities/filter.dart';
 export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/contact_list.dart';
+export 'domain_layer/entities/read_write.dart';
+export 'domain_layer/entities/relay.dart';
+export 'domain_layer/entities/relay_set.dart';
+export 'domain_layer/entities/metadata.dart';
 
 /**
  *  export classes that need to be injected
@@ -50,4 +54,4 @@ export 'data_layer/repositories/cache_manager/db_cache_manager.dart';
 export "domain_layer/usecases/relay_manager.dart";
 export "domain_layer/usecases/jit_engine.dart";
 export "domain_layer/usecases/requests/requests.dart";
-export "domain_layer/usecases/contact_lists.dart";
+export "domain_layer/usecases/follows/follows.dart";

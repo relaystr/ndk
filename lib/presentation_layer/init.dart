@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../data_layer/data_sources/http_request.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
-import '../domain_layer/usecases/contact_lists.dart';
+import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
@@ -28,7 +28,7 @@ class Initialization {
   late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
-  late ContactLists contactLists;
+  late Follows follows;
 
   RelaySetsEngine? relaySetsEngine;
   JitEngine? jitEngine;
@@ -72,7 +72,7 @@ class Initialization {
         requestManager: relaySetsEngine,
         jitEngine: jitEngine);
 
-    contactLists = ContactLists(
+    follows = Follows(
         requests: requests,
         cacheManager: config.cache,
         relayManager: relayManager);

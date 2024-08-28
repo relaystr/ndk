@@ -12,7 +12,7 @@ import '../domain_layer/entities/relay_set.dart';
 import '../domain_layer/entities/user_relay_list.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
-import '../domain_layer/usecases/contact_lists.dart';
+import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../shared/helpers/relay_helper.dart';
@@ -41,7 +41,7 @@ class Ndk {
 
   Requests get requests => _initialization.requests;
   RelayManager get relays => _initialization.relayManager;
-  ContactLists get contactLists => _initialization.contactLists;
+  Follows get contactLists => _initialization.follows;
 
   Future<void> closeSubscription(String subscriptionId) async {
     await _initialization.relayManager.closeNostrRequestById(subscriptionId);
