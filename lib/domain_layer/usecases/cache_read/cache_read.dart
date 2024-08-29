@@ -9,7 +9,7 @@ class CacheRead {
   CacheRead(this.cacheManager);
 
   /// find matching events in cache return them and remove/update unresolved filters
-  resolveUnresolvedFilters({
+  Future<void> resolveUnresolvedFilters({
     required RequestState requestState,
   }) async {
     final unresolved = requestState.unresolvedFilters;
