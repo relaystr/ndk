@@ -13,7 +13,9 @@ class NdkRequest {
   final int desiredCoverage;
   List<Filter> filters;
   RelaySet? relaySet;
-  List<String>? relays;
+
+  /// when specified only these relays are used and inbox/outbox get ignored
+  List<String>? explicitRelays;
   bool cacheRead;
   bool cacheWrite;
 
@@ -23,7 +25,7 @@ class NdkRequest {
     this.desiredCoverage = 2,
     this.closeOnEOSE = true,
     this.relaySet,
-    this.relays,
+    this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
     this.timeout = RequestDefaults.DEFAULT_STREAM_IDLE_TIMEOUT + 1,
@@ -36,7 +38,7 @@ class NdkRequest {
     this.desiredCoverage = 2,
     this.closeOnEOSE = false,
     this.relaySet,
-    this.relays,
+    this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
   });

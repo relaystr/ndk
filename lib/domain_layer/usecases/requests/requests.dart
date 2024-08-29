@@ -34,12 +34,13 @@ class Requests {
 
   /// low level nostr query
   /// [id] is automatically provided
+  /// [explicitRelays] when specified only these relays are used. No inbox/outbox
   NdkResponse query({
     required List<Filter> filters,
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    List<String>? relays,
+    List<String>? explicitRelays,
   }) {
     return requestNostrEvent(NdkRequest.query(
       Helpers.getRandomString(10),
@@ -47,19 +48,20 @@ class Requests {
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
-      relays: relays,
+      explicitRelays: explicitRelays,
     ));
   }
 
   /// low level nostr subscription
   /// [id] is automatically provided but can be changed
+  /// [explicitRelays] when specified only these relays are used. No inbox/outbox
   NdkResponse subscription({
     required List<Filter> filters,
     String? id,
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    List<String>? relays,
+    List<String>? explicitRelays,
   }) {
     return requestNostrEvent(NdkRequest.subscription(
       id ?? Helpers.getRandomString(10),
@@ -67,7 +69,7 @@ class Requests {
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
-      relays: relays,
+      explicitRelays: explicitRelays,
     ));
   }
 

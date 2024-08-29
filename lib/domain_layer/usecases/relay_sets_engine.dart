@@ -142,8 +142,9 @@ class RelaySetsEngine {
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
     }
-    if (state.request.relays != null && state.request.relays!.isNotEmpty) {
-      for (var url in state.request.relays!) {
+    if (state.request.explicitRelays != null &&
+        state.request.explicitRelays!.isNotEmpty) {
+      for (var url in state.request.explicitRelays!) {
         state.addRequest(
             url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
