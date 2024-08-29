@@ -238,6 +238,10 @@ class RelayManager {
       for (var url in state.requests.keys) {
         if (isWebSocketOpen(url)) {
           try {
+            Relay? relay = getRelay(url);
+            if (relay!=null) {
+              relay.stats.activeRequests--;
+            }
             send(url, jsonEncode(["CLOSE", state.id]));
           } catch (e) {
             print(e);

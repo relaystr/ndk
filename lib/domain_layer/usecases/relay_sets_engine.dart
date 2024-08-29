@@ -19,6 +19,7 @@ import '../entities/ndk_request.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../entities/filter.dart';
 import '../entities/nip_65.dart';
+import '../entities/relay.dart';
 import '../entities/relay_set.dart';
 import '../entities/request_state.dart';
 import '../entities/user_relay_list.dart';
@@ -49,7 +50,11 @@ class RelaySetsEngine {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
-        relayManager.send(request.url, jsonEncode(list));
+        Relay? relay = relayManager.getRelay(request.url);
+        if (relay!=null) {
+          relay.stats.activeRequests++;
+          relayManager.send(request.url, jsonEncode(list));
+        }
         return true;
       } catch (e) {
         print(e);
