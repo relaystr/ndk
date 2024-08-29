@@ -276,7 +276,7 @@ class RelayManager {
     } else if (eventJson[0] == 'EOSE') {
       handleEOSE(eventJson, url);
     } else if (eventJson[0] == 'CLOSED') {
-      Logger.log.d("! CLOSED subscription id: ${eventJson[1]} msg: ${eventJson[2]}");
+      Logger.log.d("! CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson[2]}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
     // TODO
@@ -298,7 +298,7 @@ class RelayManager {
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null && state.request.closeOnEOSE) {
       Logger.log.d(
-          " ⛁ received EOSE from $url, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+          " ⛁ received EOSE from $url for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
       RelayRequestState? request = state.requests[url];
       if (request != null) {
         request.receivedEOSE = true;
@@ -322,6 +322,7 @@ class RelayManager {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
       Logger.log.d("RECEIVED EVENT $id for unknown request");
+      send(url, jsonEncode(["CLOSE", id]));
       return;
     }
 
