@@ -92,7 +92,7 @@ class RelayManager {
 
   void send(String url, dynamic data) {
     transports[url]!.send(data);
-    Logger.log.d("🔼 send message to $url: $data");
+    Logger.log.d("send message to $url: $data");
   }
 
   Future<void> closeTransport(url) async {
@@ -212,8 +212,8 @@ class RelayManager {
   Future<void> broadcastSignedEvent(Nip01Event event, String url) async {
     if (isWebSocketOpen(url) && (!blockedRelays.contains(url))) {
       try {
-        print(
-            "BROADCASTING to $url : kind: ${event.kind} author: ${event.pubKey}");
+        Logger.log.i(
+            "🛈 BROADCASTING to $url : kind: ${event.kind} author: ${event.pubKey}");
         var webSocket = transports[url];
         if (webSocket != null) {
           send(url, jsonEncode(["EVENT", event.toJson()]));
@@ -269,14 +269,14 @@ class RelayManager {
     }
 
     if (eventJson[0] == 'NOTICE') {
-      Logger.log.d("! NOTICE from $url: ${eventJson[1]}");
+      Logger.log.w("NOTICE from $url: ${eventJson[1]}");
       // reconnectRelay(url, force: true);
     } else if (eventJson[0] == 'EVENT') {
       handleIncomingEvent(eventJson, url, message);
     } else if (eventJson[0] == 'EOSE') {
       handleEOSE(eventJson, url);
     } else if (eventJson[0] == 'CLOSED') {
-      Logger.log.d("! CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson[2]}");
+      Logger.log.w(" CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson[2]}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
     // TODO
@@ -297,8 +297,8 @@ class RelayManager {
     String id = eventJson[1];
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null && state.request.closeOnEOSE) {
-      Logger.log.d(
-          " ⛁ received EOSE from $url for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+      Logger.log.t(
+          "⛁ received EOSE from $url for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
       RelayRequestState? request = state.requests[url];
       if (request != null) {
         request.receivedEOSE = true;
@@ -321,7 +321,7 @@ class RelayManager {
   void handleIncomingEvent(List<dynamic> eventJson, String url, message) {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
-      Logger.log.d("RECEIVED EVENT $id for unknown request");
+      Logger.log.w("RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
       send(url, jsonEncode(["CLOSE", id]));
       return;
     }
@@ -332,7 +332,7 @@ class RelayManager {
     }
     // check signature is valid
     if (!event.isIdValid) {
-      Logger.log.d("RECEIVED $id INVALID EVENT $event");
+      Logger.log.e("RECEIVED $id INVALID EVENT $event");
       return;
     }
     RequestState? state = globalState.inFlightRequests[id];
@@ -350,7 +350,7 @@ class RelayManager {
             }
             state.networkController.add(event);
           } else {
-            Logger.log.d("INVALID EVENT SIGNATURE: $event");
+            Logger.log.f("INVALID EVENT SIGNATURE: $event");
           }
           request.eventIdsToBeVerified.remove(event.id);
           closeIfAllEventsVerified(request, state, url);

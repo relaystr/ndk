@@ -117,9 +117,10 @@ class Ndk {
         await for (final event in (await requests.query(
                 // idleTimeout: 1,
                 // splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
+                idPrefix: "missing-metadatas-",
                 filters: [
-              Filter(authors: missingPubKeys, kinds: [Metadata.KIND])
-            ],
+                  Filter(authors: missingPubKeys, kinds: [Metadata.KIND])
+                ],
                 relaySet: relaySet))
             .stream
             .timeout(const Duration(seconds: 5), onTimeout: (sink) {
@@ -805,7 +806,8 @@ class Ndk {
   }
 
   Future<void> broadcastEvent(
-      Nip01Event event, Iterable<String> broadcastRelays, {EventSigner? signer}) async {
+      Nip01Event event, Iterable<String> broadcastRelays,
+      {EventSigner? signer}) async {
     if (config.eventSigner != null && config.eventSigner!.canSign()) {
       return await _initialization.relayManager
           .broadcastEvent(event, broadcastRelays, config.eventSigner!);

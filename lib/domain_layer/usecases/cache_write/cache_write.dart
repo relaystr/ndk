@@ -25,7 +25,7 @@ class CacheWrite {
         // todo: allow cache manager structure to save metadata about event, relay rcv from
         return;
       }
-      Logger.log.d("⛁ got event from network $event ");
+      Logger.log.t("⛁ got event from network $event ");
 
       if (writeToCache) {
         await cacheManager.saveEvent(event);

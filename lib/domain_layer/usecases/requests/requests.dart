@@ -58,14 +58,15 @@ class Requests {
   /// [explicitRelays] when specified only these relays are used. No inbox/outbox
   NdkResponse subscription({
     required List<Filter> filters,
+    String idPrefix = '',
     String? id,
     RelaySet? relaySet,
-    bool cacheRead = true,
-    bool cacheWrite = true,
+    bool cacheRead = false,
+    bool cacheWrite = false,
     Iterable<String>? explicitRelays,
   }) {
     return requestNostrEvent(NdkRequest.subscription(
-      id ?? Helpers.getRandomString(10),
+      "$idPrefix${id?? Helpers.getRandomString(10)}",
       filters: filters,
       relaySet: relaySet,
       cacheRead: cacheRead,
