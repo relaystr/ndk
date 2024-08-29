@@ -40,7 +40,7 @@ class Requests {
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    List<String>? explicitRelays,
+    Iterable<String>? explicitRelays,
   }) {
     return requestNostrEvent(NdkRequest.query(
       Helpers.getRandomString(10),
@@ -61,7 +61,7 @@ class Requests {
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    List<String>? explicitRelays,
+    Iterable<String>? explicitRelays,
   }) {
     return requestNostrEvent(NdkRequest.subscription(
       id ?? Helpers.getRandomString(10),

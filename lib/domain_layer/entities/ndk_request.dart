@@ -15,7 +15,7 @@ class NdkRequest {
   RelaySet? relaySet;
 
   /// when specified only these relays are used and inbox/outbox get ignored
-  List<String>? explicitRelays;
+  Iterable<String>? explicitRelays;
   bool cacheRead;
   bool cacheWrite;
 
