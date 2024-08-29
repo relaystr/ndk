@@ -69,8 +69,9 @@ class Requests {
 
     final concurrency = ConcurrencyCheck(_globalState);
 
-    /// cache network response
+    /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
+      /// cache network response
       await _cacheWrite.saveNetworkResponse(
         writeToCache: request.cacheWrite,
         networkController: state.networkController,
