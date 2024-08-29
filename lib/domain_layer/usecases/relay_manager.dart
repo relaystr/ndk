@@ -224,15 +224,15 @@ class RelayManager {
     }
   }
 
-  Future<void> closeNostrRequest(RequestState state) async {
+  void closeNostrRequest(RequestState state) {
     return closeNostrRequestById(state.id);
   }
 
-  Future<void> closeSubscription(String subscriptionId) async {
-    return await closeNostrRequestById(subscriptionId);
+  void closeSubscription(String subscriptionId) {
+    return closeNostrRequestById(subscriptionId);
   }
 
-  Future<void> closeNostrRequestById(String id) async {
+  void closeNostrRequestById(String id) {
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
       for (var url in state.requests.keys) {
