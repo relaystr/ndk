@@ -32,36 +32,47 @@ class Requests {
         _cacheRead = cacheRead,
         _globalState = globalState;
 
-  NdkResponse query(
-      {required List<Filter> filters,
-      RelaySet? relaySet,
-      bool cacheRead = true,
-      bool cacheWrite = true,
-      relays}) {
-    return requestNostrEvent(NdkRequest.query(Helpers.getRandomString(10),
-        filters: filters,
-        relaySet: relaySet,
-        cacheRead: cacheRead,
-        cacheWrite: cacheWrite,
-        relays: relays));
+  /// low level nostr query
+  /// [id] is automatically provided
+  NdkResponse query({
+    required List<Filter> filters,
+    RelaySet? relaySet,
+    bool cacheRead = true,
+    bool cacheWrite = true,
+    List<String>? relays,
+  }) {
+    return requestNostrEvent(NdkRequest.query(
+      Helpers.getRandomString(10),
+      filters: filters,
+      relaySet: relaySet,
+      cacheRead: cacheRead,
+      cacheWrite: cacheWrite,
+      relays: relays,
+    ));
   }
 
-  NdkResponse subscription(
-      {required List<Filter> filters,
-      String? id,
-      RelaySet? relaySet,
-      bool cacheRead = true,
-      bool cacheWrite = true,
-      relays}) {
+  /// low level nostr subscription
+  /// [id] is automatically provided but can be changed
+  NdkResponse subscription({
+    required List<Filter> filters,
+    String? id,
+    RelaySet? relaySet,
+    bool cacheRead = true,
+    bool cacheWrite = true,
+    List<String>? relays,
+  }) {
     return requestNostrEvent(NdkRequest.subscription(
-        id ?? Helpers.getRandomString(10),
-        filters: filters,
-        relaySet: relaySet,
-        cacheRead: cacheRead,
-        cacheWrite: cacheWrite,
-        relays: relays));
+      id ?? Helpers.getRandomString(10),
+      filters: filters,
+      relaySet: relaySet,
+      cacheRead: cacheRead,
+      cacheWrite: cacheWrite,
+      relays: relays,
+    ));
   }
 
+  /// low level access to request events from the nostr network
+  /// use only if you don't find a prebuilt use case and .query .subscription do not work for you
   NdkResponse requestNostrEvent(NdkRequest request) {
     RequestState state = RequestState(request);
 

@@ -4,11 +4,6 @@ import 'filter.dart';
 import 'relay_set.dart';
 import 'request_state.dart';
 
-/// proposal for a request_config used by the user
-///
-///? before request_config
-///
-
 class NdkRequest {
   /// nostr id
   String id;
