@@ -567,7 +567,7 @@ void main() async {
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
         ContactList? contactList =
-            await ndk.contactLists.getContactList(key.publicKey);
+            await ndk.follows.getContactList(key.publicKey);
 
         expect(contactList != null, true);
 
