@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/cache_manager.dart';
@@ -14,12 +13,12 @@ class CacheWrite {
   /// saves network responses in db and then write to response stream if not already in db (useful to avoid duplicates)
   /// [networkController] input controller,
   /// [responseController] output controller, where the result is written to
-  saveNetworkResponse({
+  Future<void> saveNetworkResponse({
     required bool writeToCache,
     required StreamController<Nip01Event> networkController,
     required StreamController<Nip01Event> responseController,
-  }) {
-    networkController.stream.listen((event) {
+  }) async {
+    networkController.stream.listen((event) async {
       final foundElement = cacheManager.loadEvent(event.id);
       if (foundElement != null) {
         // already in db
@@ -29,8 +28,7 @@ class CacheWrite {
       Logger.log.d("⛁ got event from network $event ");
 
       if (writeToCache) {
-        //todo: currently working on
-        //cacheManager.saveEvent(event);
+        await cacheManager.saveEvent(event);
       }
 
       responseController.add(event);

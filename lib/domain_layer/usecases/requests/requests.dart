@@ -70,34 +70,37 @@ class Requests {
     final concurrency = ConcurrencyCheck(_globalState);
 
     /// cache network response
-    //? async stuff happening here - needed up here because .broadcast() does not buffer
+    Future<void> asyncStuff() async {
+      await _cacheWrite.saveNetworkResponse(
+        writeToCache: request.cacheWrite,
+        networkController: state.networkController,
+        responseController: state.controller,
+      );
 
-    _cacheWrite.saveNetworkResponse(
-      writeToCache: request.cacheWrite,
-      networkController: state.networkController,
-      responseController: state.controller,
-    );
+      /// concurrency check - check if request is inFlight
+      final streamWasReplaced = request.cacheRead && concurrency.check(state);
+      if (streamWasReplaced) {
+        return;
+      }
 
-    /// concurrency check - check if request is inFlight
-    final streamWasReplaced = request.cacheRead && concurrency.check(state);
-    if (streamWasReplaced) {
-      return response;
+      // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
+      if (request.cacheRead) {
+        await _cacheRead.resolveUnresolvedFilters(requestState: state);
+      }
+
+      /// handle request
+      if (_requestManager != null) {
+        await _requestManager.handleRequest(state);
+      } else if (_jitEngine != null) {
+        _jitEngine.handleRequest(state);
+      } else {
+        throw UnimplementedError("Unknown engine");
+      }
     }
 
-    // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
-    if (request.cacheRead) {
-      _cacheRead.resolveUnresolvedFilters(requestState: state);
-    }
+    asyncStuff();
 
-    /// handle request
-    if (_requestManager != null) {
-      _requestManager.handleRequest(state);
-    } else if (_jitEngine != null) {
-      _jitEngine.handleRequest(state);
-    } else {
-      throw UnimplementedError("Unknown engine");
-    }
-
+    // Return the response immediately
     return response;
   }
 }
