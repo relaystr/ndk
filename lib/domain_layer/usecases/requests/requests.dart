@@ -37,13 +37,14 @@ class Requests {
   /// [explicitRelays] when specified only these relays are used. No inbox/outbox
   NdkResponse query({
     required List<Filter> filters,
+    String idPrefix = '',
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
     Iterable<String>? explicitRelays,
   }) {
     return requestNostrEvent(NdkRequest.query(
-      Helpers.getRandomString(10),
+      idPrefix + Helpers.getRandomString(10),
       filters: filters,
       relaySet: relaySet,
       cacheRead: cacheRead,
