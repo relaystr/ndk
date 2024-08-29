@@ -20,16 +20,17 @@ dependencies:
 
 
 ```dart
-        RelayManager manager = RelayManager();
-
-        await manager.connect();
-        
-        NostrRequest request = await manager.query(
-          Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [pubKey]));
-        await for (final event in request.stream) {
-          print(event);
-        }
-
+    Ndk ndk = Ndk(NdkConfig(
+      eventVerifier: Bip340EventVerifier(),
+      cache: MemCacheManager(),
+    ));
+    NdkResponse response = ndk.requests.query(filters: [
+      Filter(kinds: [Nip01Event.TEXT_NODE_KIND], limit: 10)
+    ]);
+    
+    await for (final event in response.stream) {
+    print(event);
+}
 ```
 
 
