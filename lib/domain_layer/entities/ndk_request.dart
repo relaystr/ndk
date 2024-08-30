@@ -1,5 +1,4 @@
-import 'package:ndk/config/request_defaults.dart';
-
+import '../../config/request_defaults.dart';
 import 'filter.dart';
 import 'relay_set.dart';
 import 'request_state.dart';

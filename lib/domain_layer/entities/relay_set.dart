@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:ndk/domain_layer/entities/read_write.dart';
 
+import 'pubkey_mapping.dart';
+import 'read_write.dart';
 import 'request_state.dart';
 import 'filter.dart';
 

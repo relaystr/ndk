@@ -1,10 +1,9 @@
 import 'dart:convert';
 
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-
 import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/helpers.dart';
 import 'nip_01_event.dart';
+import 'read_write_marker.dart';
 
 class ContactList {
   static const int KIND = 3;

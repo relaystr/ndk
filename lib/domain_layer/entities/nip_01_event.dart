@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
+
+import '../../shared/nips/nip01/bip340.dart';
 
 class Nip01Event {
   static const int TEXT_NODE_KIND = 1;

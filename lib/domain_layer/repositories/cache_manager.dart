@@ -1,6 +1,5 @@
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/contact_list.dart';
-
+import '../entities/contact_list.dart';
+import '../entities/nip_01_event.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';

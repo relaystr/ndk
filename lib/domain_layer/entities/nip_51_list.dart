@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-
 import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/helpers.dart';
+import '../repositories/event_signer.dart';
 import 'nip_01_event.dart';
 
 class Nip51List {

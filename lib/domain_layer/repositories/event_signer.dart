@@ -1,4 +1,4 @@
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import '../entities/nip_01_event.dart';
 
 abstract class EventSigner {
   Future<void> sign(Nip01Event event);

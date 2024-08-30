@@ -1,4 +1,4 @@
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'read_write_marker.dart';
 
 enum RelayDirection {
   inbox,

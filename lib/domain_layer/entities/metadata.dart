@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
+import '../../shared/nips/nip01/helpers.dart';
+import 'nip_01_event.dart';
 
 class Metadata {
   static const int KIND = 0;

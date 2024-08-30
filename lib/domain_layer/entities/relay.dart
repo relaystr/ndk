@@ -1,6 +1,6 @@
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/relay_info.dart';
-import 'package:ndk/domain_layer/entities/relay_stats.dart';
+import 'nip_01_event.dart';
+import 'relay_info.dart';
+import 'relay_stats.dart';
 
 class Relay {
   String url;
