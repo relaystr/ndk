@@ -9,12 +9,7 @@ void main() async {
     final CacheManager myCacheManager = MemCacheManager();
 
     final List<Nip01Event> myEvens = [
-      Nip01Event(
-        pubKey: "pubKey1",
-        kind: 1,
-        tags: [],
-        content: "content1_a",
-      ),
+      Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_a"),
       Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
       Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
       Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
@@ -72,11 +67,15 @@ void main() async {
       });
 
       //check if events got saved
+      for (final event in expectedEvents) {
+        final loadedEvent = myCacheManager.loadEvent(event.id);
+        expect(loadedEvent, isNotNull);
+      }
 
-      //todo: events untestable because missing id in constructor
-      final loadedEvents = myCacheManager.loadEvents(
-          kinds: [1],
-          pubKeys: expectedEvents.map((event) => event.pubKey).toList());
+      final duplicatedEvents =
+          myCacheManager.loadEvents(kinds: [1], pubKeys: ['duplicate']);
+
+      expect(duplicatedEvents.length, equals(1));
     });
 
     test('check if skip flags works', () async {});
