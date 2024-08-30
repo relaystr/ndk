@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../ndk_platform_interface.dart';
+import 'bip340_event_verifier.dart';
 
 class AcinqSecp256k1EventVerifier extends Bip340EventVerifier {
   static const platform = MethodChannel('flutter.native/helper');

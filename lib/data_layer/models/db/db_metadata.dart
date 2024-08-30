@@ -1,5 +1,6 @@
-import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:isar/isar.dart';
+
+import '../../../domain_layer/entities/metadata.dart';
 
 part 'db_metadata.g.dart';
 

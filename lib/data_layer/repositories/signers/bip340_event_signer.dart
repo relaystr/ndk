@@ -1,6 +1,5 @@
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-
+import '../../../domain_layer/entities/nip_01_event.dart';
+import '../../../shared/nips/nip01/helpers.dart';
 import '../../../shared/nips/nip04/nip04.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 import '../../../domain_layer/repositories/event_signer.dart';

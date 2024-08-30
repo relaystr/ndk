@@ -1,9 +1,9 @@
 // ignore_for_file: unnecessary_overrides
 
-import 'package:ndk/domain_layer/entities/read_write.dart';
 import 'package:isar/isar.dart';
 
 import '../../../domain_layer/entities/pubkey_mapping.dart';
+import '../../../domain_layer/entities/read_write.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/read_write_marker.dart';
 

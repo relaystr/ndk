@@ -1,12 +1,11 @@
 import 'dart:core';
 
-import 'package:ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/contact_list.dart';
-
+import '../../../domain_layer/entities/contact_list.dart';
+import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../shared/nips/nip05/nip05.dart';
 
 class MemCacheManager implements CacheManager {

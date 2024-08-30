@@ -1,5 +1,6 @@
-import 'package:ndk/domain_layer/entities/contact_list.dart';
 import 'package:isar/isar.dart';
+
+import '../../../domain_layer/entities/contact_list.dart';
 
 part 'db_contact_list.g.dart';
 

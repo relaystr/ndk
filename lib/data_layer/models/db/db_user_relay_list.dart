@@ -1,8 +1,9 @@
 // ignore_for_file: unnecessary_overrides
 
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:isar/isar.dart';
+
+import '../../../domain_layer/entities/read_write_marker.dart';
+import '../../../domain_layer/entities/user_relay_list.dart';
 
 part 'db_user_relay_list.g.dart';
 
