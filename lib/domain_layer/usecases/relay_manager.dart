@@ -5,25 +5,25 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
 
-import 'package:ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
-import 'package:ndk/data_layer/repositories/websocket_nostr_transport.dart';
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/relay.dart';
-import 'package:ndk/domain_layer/entities/relay_info.dart';
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
-import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
-import 'package:ndk/domain_layer/entities/global_state.dart';
-import 'package:ndk/shared/logger/logger.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../config/bootstrap_relays.dart';
 import '../../data_layer/data_sources/websocket.dart';
+import '../../data_layer/repositories/verifiers/bip340_event_verifier.dart';
+import '../../data_layer/repositories/websocket_nostr_transport.dart';
 import '../../event_filter.dart';
 import '../../shared/helpers/relay_helper.dart';
+import '../../shared/logger/logger.dart';
+import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
+import '../entities/pubkey_mapping.dart';
+import '../entities/read_write_marker.dart';
+import '../entities/relay.dart';
+import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
+import '../repositories/event_signer.dart';
 import '../repositories/event_verifier.dart';
+import '../repositories/nostr_transport.dart';
 
 class RelayManager {
   static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
@@ -239,7 +239,7 @@ class RelayManager {
         if (isWebSocketOpen(url)) {
           try {
             Relay? relay = getRelay(url);
-            if (relay!=null) {
+            if (relay != null) {
               relay.stats.activeRequests--;
             }
             send(url, jsonEncode(["CLOSE", state.id]));
@@ -276,7 +276,8 @@ class RelayManager {
     } else if (eventJson[0] == 'EOSE') {
       handleEOSE(eventJson, url);
     } else if (eventJson[0] == 'CLOSED') {
-      Logger.log.w(" CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson[2]}");
+      Logger.log.w(
+          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson[2]}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
     // TODO
@@ -321,7 +322,8 @@ class RelayManager {
   void handleIncomingEvent(List<dynamic> eventJson, String url, message) {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
-      Logger.log.w("RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
+      Logger.log.w(
+          "RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
       send(url, jsonEncode(["CLOSE", id]));
       return;
     }

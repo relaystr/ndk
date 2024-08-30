@@ -1,22 +1,18 @@
 import 'dart:async';
 
-import 'package:ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:ndk/domain_layer/entities/global_state.dart';
-
-import 'package:ndk/shared/logger/logger.dart';
-
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
-import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
-import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
-
-
 import '../../shared/helpers/relay_helper.dart';
+import '../../shared/logger/logger.dart';
 import '../entities/connection_source.dart';
+import '../entities/global_state.dart';
+import '../entities/nip_01_event.dart';
+import '../entities/read_write_marker.dart';
 import '../entities/request_state.dart';
+import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
 import '../repositories/event_verifier.dart';
+import 'relay_jit_manager/relay_jit.dart';
+import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
+import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 
 class JitEngine with Logger {
   EventVerifier eventVerifier;

@@ -3,27 +3,26 @@
 import 'dart:convert';
 import 'dart:core';
 
-import 'package:ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
-import 'package:ndk/domain_layer/entities/contact_list.dart';
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:ndk/domain_layer/entities/read_write.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:ndk/domain_layer/usecases/relay_manager.dart';
-import 'package:ndk/domain_layer/entities/global_state.dart';
-import 'package:ndk/domain_layer/entities/request_response.dart';
-import 'package:ndk/shared/logger/logger.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
-
+import '../../data_layer/repositories/cache_manager/mem_cache_manager.dart';
+import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/helpers.dart';
+import '../entities/contact_list.dart';
+import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../entities/filter.dart';
 import '../entities/nip_65.dart';
+import '../entities/pubkey_mapping.dart';
+import '../entities/read_write.dart';
+import '../entities/read_write_marker.dart';
 import '../entities/relay.dart';
 import '../entities/relay_set.dart';
+import '../entities/request_response.dart';
 import '../entities/request_state.dart';
 import '../entities/user_relay_list.dart';
+import '../repositories/cache_manager.dart';
 import '../repositories/event_verifier.dart';
+import 'relay_manager.dart';
 
 class RelaySetsEngine {
   static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
@@ -51,7 +50,7 @@ class RelaySetsEngine {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
         Relay? relay = relayManager.getRelay(request.url);
-        if (relay!=null) {
+        if (relay != null) {
           relay.stats.activeRequests++;
           relayManager.send(request.url, jsonEncode(list));
         }
