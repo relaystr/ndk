@@ -1,11 +1,16 @@
 // ignore_for_file: avoid_print
+import 'dart:developer';
+
+import 'package:ndk/config/bootstrap_relays.dart';
+import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk/domain_layer/entities/request_state.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
-import 'package:ndk/domain_layer/usecases/jit_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../mocks/mock_event_verifier.dart';
 
 void main() async {
   KeyPair key1 = Bip340.generatePrivateKey();
@@ -35,27 +40,44 @@ void main() async {
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
   group('check doesRelayCoverPubkey()', () {
+    CacheManager cacheManager = MemCacheManager();
+    EventVerifier eventVerifier = MockEventVerifier();
+    GlobalState globalState = GlobalState();
     // setup
-    JitEngine relayJitManager = JitEngine();
+    JitEngine relayJitManager = JitEngine(
+      cache: cacheManager,
+      eventVerifier: eventVerifier,
+      ignoreRelays: [],
+      seedRelays: DEFAULT_BOOTSTRAP_RELAYS,
+      globalState: globalState,
+    );
 
-    RelayJit relayReadOnly = RelayJit('wss://relay.camelus.app');
+    onMessage(Nip01Event event, RequestState requestState) async {
+      log("onMessage(${event.content}, ${requestState.id})");
+    }
+
+    RelayJit relayReadOnly =
+        RelayJit(url: 'wss://relay.camelus.app', onMessage: onMessage);
     relayReadOnly.assignedPubkeys
         .add(RelayJitAssignedPubkey(key1.publicKey, ReadWriteMarker.readOnly));
 
-    RelayJit relayWriteOnly = RelayJit('wss://relay.camelus.app');
+    RelayJit relayWriteOnly =
+        RelayJit(url: 'wss://relay.camelus.app', onMessage: onMessage);
     relayWriteOnly.assignedPubkeys
         .add(RelayJitAssignedPubkey(key1.publicKey, ReadWriteMarker.writeOnly));
 
-    RelayJit relayReadWrite = RelayJit('wss://relay.camelus.app');
+    RelayJit relayReadWrite =
+        RelayJit(url: 'wss://relay.camelus.app', onMessage: onMessage);
     relayReadWrite.assignedPubkeys
         .add(RelayJitAssignedPubkey(key1.publicKey, ReadWriteMarker.readWrite));
 
-    RelayJit relayUnassigend = RelayJit('wss://relay.camelus.app');
+    RelayJit relayUnassigend =
+        RelayJit(url: 'wss://relay.camelus.app', onMessage: onMessage);
 
-    relayJitManager.connectedRelays.add(relayReadOnly);
-    relayJitManager.connectedRelays.add(relayWriteOnly);
-    relayJitManager.connectedRelays.add(relayReadWrite);
-    relayJitManager.connectedRelays.add(relayUnassigend);
+    globalState.connectedRelays.add(relayReadOnly);
+    globalState.connectedRelays.add(relayWriteOnly);
+    globalState.connectedRelays.add(relayReadWrite);
+    globalState.connectedRelays.add(relayUnassigend);
     test('test readOnly relay', () {
       // check
       final resultRequestRo = JitEngine.doesRelayCoverPubkey(

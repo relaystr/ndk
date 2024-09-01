@@ -1,6 +1,12 @@
+import 'dart:developer';
 
+import 'package:ndk/domain_layer/entities/connection_source.dart';
+import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk/domain_layer/entities/ndk_request.dart';
+import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/repositories/event_verifier.dart';
@@ -10,11 +16,9 @@ import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
 import 'package:ndk/domain_layer/usecases/jit_engine.dart';
-import 'package:ndk/domain_layer/usecases/relay_jit_manager/request_jit.dart';
-import 'package:ndk/request.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../../test/mocks/mock_event_verifier.dart';
-import '../../test/mocks/mock_relay.dart';
+import '../../mocks/mock_event_verifier.dart';
+import '../../mocks/mock_relay.dart';
 
 void main() async {
   KeyPair key1 = Bip340.generatePrivateKey();
@@ -46,16 +50,20 @@ void main() async {
   MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5001);
   MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 5002);
 
-  MockRelay relay21 = MockRelay(name: "relay 1", explicitPort: 5003);
-  MockRelay relay22 = MockRelay(name: "relay 2", explicitPort: 5004);
-  MockRelay relay23 = MockRelay(name: "relay 3", explicitPort: 5005);
-  MockRelay relay24 = MockRelay(name: "relay 4", explicitPort: 5006);
+  MockRelay relay21 = MockRelay(name: "relay 21", explicitPort: 5021);
+  MockRelay relay22 = MockRelay(name: "relay 22", explicitPort: 5022);
+  MockRelay relay23 = MockRelay(name: "relay 23", explicitPort: 5023);
+  MockRelay relay24 = MockRelay(name: "relay 24", explicitPort: 5024);
 
   group('connection tests', () {
+    onMessage(Nip01Event event, RequestState requestState) async {
+      log("onMessage(${event.content}, ${requestState.id})");
+    }
+
     test('Connect to relay', () async {
       await relay1.startServer();
 
-      RelayJit relayJit = RelayJit(relay1.url);
+      RelayJit relayJit = RelayJit(url: relay1.url, onMessage: onMessage);
       var result =
           await relayJit.connect(connectionSource: ConnectionSource.UNKNOWN);
 
@@ -66,7 +74,7 @@ void main() async {
     });
 
     test('Try to connect to dead relay', () async {
-      RelayJit relayJit = RelayJit(relay2.url);
+      RelayJit relayJit = RelayJit(url: relay2.url, onMessage: onMessage);
       var result =
           await relayJit.connect(connectionSource: ConnectionSource.UNKNOWN);
 
@@ -139,26 +147,31 @@ void main() async {
       await startServers();
 
       CacheManager cacheManager = MemCacheManager();
-      JitEngine manager = JitEngine(
-        seedRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
-        cacheManager: cacheManager,
-      );
 
       EventVerifier eventVerifier = MockEventVerifier();
-      NostrRequestJit request = NostrRequestJit.query("debug-get-events",
-          eventVerifier: eventVerifier,
-          filters: [
-            Filter(
-                kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key4.publicKey]),
-          ]);
-      manager.handleRequest(request);
+      GlobalState globalState = GlobalState();
+
+      JitEngine manager = JitEngine(
+        cache: cacheManager,
+        eventVerifier: eventVerifier,
+        ignoreRelays: [],
+        seedRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
+        globalState: globalState,
+      );
+
+      RequestState myRequest =
+          RequestState(NdkRequest.query("debug-get-events", filters: [
+        Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key4.publicKey]),
+      ]));
 
       //todo: implement EOSE
-      request.responseStream.listen((event) {
+      myRequest.stream.listen((event) {
         expectAsync1((event) {
           expect(event, key4TextNotes[key4]);
         })(event);
       });
+
+      manager.handleRequest(myRequest);
 
       await Future.delayed(const Duration(seconds: 1));
 
@@ -167,41 +180,36 @@ void main() async {
 
     test('query with inbox/outbox', () async {
       await startServers();
+
       CacheManager cacheManager = MemCacheManager();
-      JitEngine manager = JitEngine(
-        seedRelays: [],
-        cacheManager: cacheManager,
-      );
-      EventVerifier eventVerifier = MockEventVerifier();
 
       // save nip65 data
       await cacheManager
           .saveEvents(nip65s.values.map((e) => e.toEvent()).toList());
 
-      NostrRequestJit myquery = NostrRequestJit.query(
-        "id",
-        eventVerifier: eventVerifier,
-        filters: [
-          Filter(kinds: [
-            Nip01Event.TEXT_NODE_KIND
-          ], authors: [
-            key1.publicKey,
-            key2.publicKey,
-            key3.publicKey,
-            key4.publicKey,
-          ]),
-        ],
-        desiredCoverage: 1,
-      );
-      manager.handleRequest(
-        myquery,
-      );
+      Ndk ndk = Ndk(NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: cacheManager,
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [], // dont connect to anything
+      ));
 
-      List<Nip01Event> responses = [];
-      myquery.responseStream.listen((event) {
-        responses.add(event);
-      });
-      await Future.delayed(const Duration(seconds: 2));
+      NdkResponse response = ndk.requests.query(idPrefix: "qInOut-", filters: [
+        Filter(kinds: [
+          Nip01Event.TEXT_NODE_KIND
+        ], authors: [
+          key1.publicKey,
+          key2.publicKey,
+          key3.publicKey,
+          key4.publicKey,
+        ])
+      ]);
+      // List<Nip01Event> responses = [];
+      // response.stream.listen((event) {
+      //   responses.add(event);
+      // });
+
+      final responses = await response.stream.toList();
 
       expect(responses.length, 4);
       // expect that all responses are there
@@ -209,6 +217,8 @@ void main() async {
       expect(responses.contains(key2TextNotes[key2]), true);
       expect(responses.contains(key3TextNotes[key3]), true);
       expect(responses.contains(key4TextNotes[key4]), true);
+
+      await stopServers();
     });
   });
 }

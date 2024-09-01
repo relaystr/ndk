@@ -31,7 +31,7 @@ class RequestState {
         })
       : controller.stream;
 
-  get id => request.id;
+  String get id => request.id;
 
   get isSubscription => !request.closeOnEOSE;
 
