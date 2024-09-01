@@ -194,16 +194,20 @@ void main() async {
         bootstrapRelays: [], // dont connect to anything
       ));
 
-      NdkResponse response = ndk.requests.query(idPrefix: "qInOut-", filters: [
-        Filter(kinds: [
-          Nip01Event.TEXT_NODE_KIND
-        ], authors: [
-          key1.publicKey,
-          key2.publicKey,
-          key3.publicKey,
-          key4.publicKey,
-        ])
-      ]);
+      NdkResponse response = ndk.requests.query(
+        idPrefix: "qInOut-",
+        filters: [
+          Filter(kinds: [
+            Nip01Event.TEXT_NODE_KIND
+          ], authors: [
+            key1.publicKey,
+            key2.publicKey,
+            key3.publicKey,
+            key4.publicKey,
+          ]),
+        ],
+        desiredCoverage: 1,
+      );
       // List<Nip01Event> responses = [];
       // response.stream.listen((event) {
       //   responses.add(event);

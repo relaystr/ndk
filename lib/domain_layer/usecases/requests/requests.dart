@@ -42,6 +42,7 @@ class Requests {
     bool cacheRead = true,
     bool cacheWrite = true,
     Iterable<String>? explicitRelays,
+    int? desiredCoverage,
   }) {
     return requestNostrEvent(NdkRequest.query(
       idPrefix + Helpers.getRandomString(10),
@@ -50,6 +51,7 @@ class Requests {
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
       explicitRelays: explicitRelays,
+      desiredCoverage: desiredCoverage ?? 2,
     ));
   }
 
@@ -64,14 +66,16 @@ class Requests {
     bool cacheRead = false,
     bool cacheWrite = false,
     Iterable<String>? explicitRelays,
+    int? desiredCoverage,
   }) {
     return requestNostrEvent(NdkRequest.subscription(
-      "$idPrefix${id?? Helpers.getRandomString(10)}",
+      "$idPrefix${id ?? Helpers.getRandomString(10)}",
       filters: filters,
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
       explicitRelays: explicitRelays,
+      desiredCoverage: desiredCoverage ?? 2,
     ));
   }
 
