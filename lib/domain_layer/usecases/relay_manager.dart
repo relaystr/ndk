@@ -92,7 +92,7 @@ class RelayManager {
 
   void send(String url, dynamic data) {
     transports[url]!.send(data);
-    Logger.log.d("send message to $url: $data");
+    Logger.log.t("send message to $url: $data");
   }
 
   Future<void> closeTransport(url) async {

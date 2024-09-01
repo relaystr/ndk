@@ -41,8 +41,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d(
-        "SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+          "SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -63,8 +63,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d(
-        "SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+          "SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -79,8 +79,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d(
-        "SAVED ${userRelayLists.length} UserRelayLists took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+          "SAVED ${userRelayLists.length} UserRelayLists took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -96,8 +96,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d(
-        "SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+          "SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -109,8 +109,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d(
-        "SAVED ${contactLists.length} ContactLists took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+          "SAVED ${contactLists.length} ContactLists took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -177,7 +177,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d("SAVED Metadata took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+      "SAVED Metadata took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -190,8 +191,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d(
-        "SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+          "SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -234,7 +235,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d("SAVED Nip05 took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+      "SAVED Nip05 took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -246,8 +248,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d(
-        "SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+          "SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -284,7 +286,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.d("SAVED Event took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+      "SAVED Event took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -296,8 +299,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log
-        .d("SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
+    Logger.log.t(
+      "SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
   }
 
   // @override
