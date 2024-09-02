@@ -14,3 +14,7 @@ abstract class NostrTransport {
   int? closeCode();
   String? closeReason();
 }
+
+abstract class NostrTransportFactory {
+  NostrTransport call(String url);
+}

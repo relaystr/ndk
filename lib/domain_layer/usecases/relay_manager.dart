@@ -5,12 +5,8 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
 
-import 'package:web_socket_channel/web_socket_channel.dart';
-
 import '../../config/bootstrap_relays.dart';
-import '../../data_layer/data_sources/websocket.dart';
 import '../../data_layer/repositories/verifiers/bip340_event_verifier.dart';
-import '../../data_layer/repositories/websocket_nostr_transport.dart';
 import '../../event_filter.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
@@ -36,6 +32,8 @@ class RelayManager {
   late EventVerifier eventVerifier;
   late GlobalState globalState;
 
+  final NostrTransportFactory nostrTransportFactory;
+
   /// Global relay registry by url
   Map<String, Relay> relays = {};
 
@@ -55,6 +53,7 @@ class RelayManager {
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
   RelayManager({
+    required this.nostrTransportFactory,
     EventVerifier? eventVerifier,
     List<String>? bootstrapRelays,
     GlobalState? globalState,
@@ -151,9 +150,8 @@ class RelayManager {
       //   SocketSimpleTextProcessor(),
       //   connectionOptions: connectionOptions
       // );
-      final wsUrl = Uri.parse(url);
-      transports[url] =
-          WebSocketNostrTransport(WebsocketDS(WebSocketChannel.connect(wsUrl)));
+
+      transports[url] = nostrTransportFactory(url);
       await transports[url]!.ready;
 
       startListeningToSocket(url);

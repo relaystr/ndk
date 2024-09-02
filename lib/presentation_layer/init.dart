@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 
 import '../data_layer/data_sources/http_request.dart';
+import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/follows/follows.dart';
@@ -21,6 +22,9 @@ class Initialization {
 
   /// repositories
 
+  final WebSocketNostrTransportFactory _webSocketNostrTransportFactory =
+      WebSocketNostrTransportFactory();
+
   /// state obj
 
   /// use cases
@@ -38,6 +42,7 @@ class Initialization {
     required this.globalState,
   }) {
     relayManager = RelayManager(
+        nostrTransportFactory: _webSocketNostrTransportFactory,
         eventVerifier: config.eventVerifier,
         bootstrapRelays: config.bootstrapRelays,
         globalState: globalState);
