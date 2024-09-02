@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print
 
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
@@ -45,6 +45,9 @@ void main() async {
   Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
+  final WebSocketNostrTransportFactory _webSocketNostrTransportFactory =
+      WebSocketNostrTransportFactory();
+
   group('Request Manager', () {
     test('Request text note', () async {
       MockRelay relay1 = MockRelay(name: "relay 1");
@@ -54,7 +57,10 @@ void main() async {
       RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
-              bootstrapRelays: [relay1.url], globalState: globalState));
+            bootstrapRelays: [relay1.url],
+            globalState: globalState,
+            nostrTransportFactory: _webSocketNostrTransportFactory,
+          ));
 
       Filter filter =
           Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey]);
@@ -76,7 +82,10 @@ void main() async {
       RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
-              bootstrapRelays: [relay1.url], globalState: globalState));
+            bootstrapRelays: [relay1.url],
+            globalState: globalState,
+            nostrTransportFactory: _webSocketNostrTransportFactory,
+          ));
       NdkResponse response = (await manager.query(
           Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND]),
           null,
@@ -174,8 +183,10 @@ void main() async {
       RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
-              bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-              globalState: globalState));
+            bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+            globalState: globalState,
+            nostrTransportFactory: _webSocketNostrTransportFactory,
+          ));
 
       await manager.loadMissingRelayListsFromNip65OrNip02([key4.publicKey]);
 
@@ -190,8 +201,10 @@ void main() async {
       RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
-              bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-              globalState: globalState));
+            bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+            globalState: globalState,
+            nostrTransportFactory: _webSocketNostrTransportFactory,
+          ));
 
       RelaySet relaySet = await manager.calculateRelaySet(
           name: "test",
@@ -248,8 +261,10 @@ void main() async {
       RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
-              bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-              globalState: globalState));
+            bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+            globalState: globalState,
+            nostrTransportFactory: _webSocketNostrTransportFactory,
+          ));
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
@@ -350,8 +365,10 @@ void main() async {
       RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
-              bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-              globalState: globalState));
+            bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+            globalState: globalState,
+            nostrTransportFactory: _webSocketNostrTransportFactory,
+          ));
 
       // relayMinCountPerPubKey: 1
       RelaySet relaySet = await manager.calculateRelaySet(
@@ -389,8 +406,10 @@ void main() async {
       RelaySetsEngine manager = RelaySetsEngine(
           globalState: globalState,
           relayManager: RelayManager(
-              bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
-              globalState: globalState));
+            bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
+            globalState: globalState,
+            nostrTransportFactory: _webSocketNostrTransportFactory,
+          ));
 
       RelaySet relaySet = await manager.calculateRelaySet(
           name: "feed",
