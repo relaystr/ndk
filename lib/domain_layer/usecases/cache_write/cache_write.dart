@@ -19,12 +19,6 @@ class CacheWrite {
     required StreamController<Nip01Event> responseController,
   }) async {
     networkController.stream.listen((event) async {
-      final foundElement = cacheManager.loadEvent(event.id);
-      if (foundElement != null) {
-        // already in db
-        // todo: allow cache manager structure to save metadata about event, relay rcv from
-        return;
-      }
       Logger.log.t("⛁ got event from network $event ");
 
       if (writeToCache) {

@@ -63,7 +63,10 @@ void main() async {
           expect(data.contains(expectedEvent), true);
         }
         // check if data has no more events than expectedEvents
-        expect(data.length, equals(expectedEvents.length));
+        expect(
+          data.length,
+          equals(expectedEvents.length + 3),
+        ); //duplicates are allowed therefore + 3
       });
 
       //check if events got saved
