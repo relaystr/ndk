@@ -1,3 +1,6 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
+import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
@@ -91,6 +94,12 @@ class Requests {
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
       //todo: duplication check per request
+
+      StreamResponseCleaner()(
+        inputStream: state.networkController.stream,
+        trackingSet: state.returnedIds,
+        outController: state.controller,
+      );
 
       /// cache new responses
       _cacheWrite.saveNetworkResponse(

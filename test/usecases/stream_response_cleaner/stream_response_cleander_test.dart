@@ -20,9 +20,6 @@ void main() async {
 
   group('stream response cleaner', () {
     test('no duplicates ', () async {
-      // local test skips?
-      expect(true, equals(false));
-
       final Set<String> tracking = {};
 
       StreamController<Nip01Event> inputController =

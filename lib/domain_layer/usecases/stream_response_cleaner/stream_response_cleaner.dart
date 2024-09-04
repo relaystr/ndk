@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
-
 import '../../entities/nip_01_event.dart';
 
 /// given a stream  with Nip01 events it tracks the id and adds the one to the provided stream controller
