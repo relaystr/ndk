@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
 
 /// given a stream  with Nip01 events it tracks the id and adds the one to the provided stream controller
@@ -17,8 +18,10 @@ class StreamResponseCleaner {
 
       trackingSet.add(event.id);
       outController.add(event);
-    }).onDone(() {
+    }, onDone: () {
       outController.close();
+    }, onError: (error) {
+      Logger.log.e("⛔ $error ");
     });
   }
 }
