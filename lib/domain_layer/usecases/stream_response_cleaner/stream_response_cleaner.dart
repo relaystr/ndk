@@ -11,11 +11,11 @@ class StreamResponseCleaner {
   }) {
     inputStream.listen((event) {
       // check if event id is in the set
-      if (trackingSet.contains(event.pubKey)) {
+      if (trackingSet.contains(event.id)) {
         return;
       }
 
-      trackingSet.add(event.pubKey);
+      trackingSet.add(event.id);
       outController.add(event);
     });
   }
