@@ -91,8 +91,6 @@ class Requests {
 
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
-      //todo: duplication check per request
-
       StreamResponseCleaner()(
         inputStream: state.networkController.stream,
         trackingSet: state.returnedIds,
