@@ -22,6 +22,9 @@ class RequestState {
   StreamController<Nip01Event> networkController =
       StreamController<Nip01Event>();
 
+  // ids that got already returned by this request
+  Set<String> returnedIds = {};
+
   Stream<Nip01Event> get stream => request.timeout != null
       ? controller.stream.timeout(Duration(seconds: request.timeout!),
           onTimeout: (sink) {
