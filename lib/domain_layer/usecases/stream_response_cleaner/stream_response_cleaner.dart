@@ -17,6 +17,8 @@ class StreamResponseCleaner {
 
       trackingSet.add(event.id);
       outController.add(event);
+    }).onDone(() {
+      outController.close();
     });
   }
 }
