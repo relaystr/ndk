@@ -22,6 +22,9 @@ class RequestState {
   StreamController<Nip01Event> networkController =
       StreamController<Nip01Event>();
 
+  /// [cacheController] is the controller cacheRead writes to
+  StreamController<Nip01Event> cacheController = StreamController<Nip01Event>();
+
   // ids that got already returned by this request
   Set<String> returnedIds = {};
 

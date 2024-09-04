@@ -43,11 +43,11 @@ void main() async {
           StreamController<Nip01Event>.broadcast();
 
       // bind
-      StreamResponseCleaner()(
-        inputStream: inputController.stream,
+      StreamResponseCleaner(
+        inputStreams: [inputController.stream],
         trackingSet: tracking,
         outController: outController,
-      );
+      )();
 
       expectLater(outController.stream, emitsInAnyOrder(myEventsNoDublicate));
 

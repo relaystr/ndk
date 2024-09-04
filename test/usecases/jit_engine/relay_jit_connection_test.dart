@@ -178,7 +178,8 @@ void main() async {
       await stopServers();
     });
 
-    test('query with inbox/outbox', () async {
+    test('query with inbox/outbox',
+        timeout: const Timeout(Duration(seconds: 5)), () async {
       await startServers();
 
       CacheManager cacheManager = MemCacheManager();

@@ -89,20 +89,24 @@ class Requests {
 
     final concurrency = ConcurrencyCheck(_globalState);
 
+    // register listener
+    StreamResponseCleaner(
+      inputStreams: [
+        state.networkController.stream,
+        state.cacheController.stream,
+      ],
+      trackingSet: state.returnedIds,
+      outController: state.controller,
+    )();
+
+    /// cache new responses
+    _cacheWrite.saveNetworkResponse(
+      writeToCache: request.cacheWrite,
+      inputStream: state.controller.stream,
+    );
+
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
-      StreamResponseCleaner()(
-        inputStream: state.networkController.stream,
-        trackingSet: state.returnedIds,
-        outController: state.controller,
-      );
-
-      /// cache new responses
-      _cacheWrite.saveNetworkResponse(
-        writeToCache: request.cacheWrite,
-        inputStream: state.controller.stream,
-      );
-
       /// concurrency check - check if request is inFlight
       final streamWasReplaced = request.cacheRead && concurrency.check(state);
       if (streamWasReplaced) {
@@ -111,7 +115,10 @@ class Requests {
 
       // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
       if (request.cacheRead) {
-        await _cacheRead.resolveUnresolvedFilters(requestState: state);
+        await _cacheRead.resolveUnresolvedFilters(
+          requestState: state,
+          outController: state.cacheController,
+        );
       }
 
       /// handle request

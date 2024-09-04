@@ -39,7 +39,10 @@ void main() async {
       closeStream();
       final response = myRequestState.stream.toList();
 
-      await myUsecase.resolveUnresolvedFilters(requestState: myRequestState);
+      await myUsecase.resolveUnresolvedFilters(
+        requestState: myRequestState,
+        outController: myRequestState.controller,
+      );
 
       await response.then((data) {
         expect(data, equals(myEvens));
@@ -71,7 +74,10 @@ void main() async {
       closeStream();
       final response = myRequestState.stream.toList();
 
-      await myUsecase.resolveUnresolvedFilters(requestState: myRequestState);
+      await myUsecase.resolveUnresolvedFilters(
+        requestState: myRequestState,
+        outController: myRequestState.controller,
+      );
 
       await response.then((data) {
         expect(data, equals(myEvens));

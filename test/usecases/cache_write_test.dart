@@ -5,7 +5,7 @@ import 'package:ndk/domain_layer/usecases/cache_write/cache_write.dart';
 import 'package:ndk/ndk.dart';
 
 void main() async {
-  group('CacheRead', () {
+  group('CacheWrite', () {
     final CacheManager myCacheManager = MemCacheManager();
 
     final List<Nip01Event> myEvens = [

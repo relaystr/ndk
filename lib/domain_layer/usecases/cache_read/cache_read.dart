@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/request_state.dart';
@@ -11,6 +13,7 @@ class CacheRead {
   /// find matching events in cache return them and remove/update unresolved filters
   Future<void> resolveUnresolvedFilters({
     required RequestState requestState,
+    required StreamController<Nip01Event> outController,
   }) async {
     final unresolved = requestState.unresolvedFilters;
     for (final filter in unresolved) {
@@ -35,8 +38,9 @@ class CacheRead {
       // write found events to response stream
       for (final event in foundEvents) {
         Logger.log.t("found event in cache $event ");
-        requestState.controller.add(event);
+        outController.add(event);
       }
+      outController.close();
     }
   }
 }
