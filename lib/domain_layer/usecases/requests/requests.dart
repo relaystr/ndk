@@ -90,11 +90,12 @@ class Requests {
 
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
-      /// cache network response
-      await _cacheWrite.saveNetworkResponse(
+      //todo: duplication check per request
+
+      /// cache new responses
+      _cacheWrite.saveNetworkResponse(
         writeToCache: request.cacheWrite,
-        networkController: state.networkController,
-        responseController: state.controller,
+        inputStream: state.controller.stream,
       );
 
       /// concurrency check - check if request is inFlight
