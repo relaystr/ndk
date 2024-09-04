@@ -1,5 +1,3 @@
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
-
 import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
 import '../../entities/global_state.dart';
