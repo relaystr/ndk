@@ -82,38 +82,53 @@ void main() async {
       await relay4.stopServer();
     });
 
-    Future<void> testNdk(Ndk myNdk) async {
-      NdkResponse response0 = myNdk.requests.query(filters: [
-        myFilters[0],
-      ]);
+    Future<void> testNdk(Ndk myNdk, int coverage) async {
+      NdkResponse response0 = myNdk.requests.query(
+        filters: [
+          myFilters[0],
+        ],
+        desiredCoverage: coverage,
+      );
 
       await expectLater(
           response0.stream, emitsInAnyOrder(key1TextNotes.values));
 
-      NdkResponse response1 = myNdk.requests.query(filters: [
-        myFilters[1],
-      ]);
+      NdkResponse response1 = myNdk.requests.query(
+        filters: [
+          myFilters[1],
+        ],
+        desiredCoverage: coverage,
+      );
 
       await expectLater(response1.stream,
           emitsInAnyOrder([...key1TextNotes.values, ...key2TextNotes.values]));
 
-      NdkResponse response2 = myNdk.requests.query(filters: [
-        myFilters[2],
-      ]);
+      NdkResponse response2 = myNdk.requests.query(
+        filters: [
+          myFilters[2],
+        ],
+        desiredCoverage: coverage,
+      );
 
       await expectLater(response2.stream,
           emitsInAnyOrder([...key3TextNotes.values, ...key4TextNotes.values]));
 
-      NdkResponse response3 = myNdk.requests.query(filters: [
-        myFilters[3],
-      ]);
+      NdkResponse response3 = myNdk.requests.query(
+        filters: [
+          myFilters[3],
+        ],
+        desiredCoverage: coverage,
+      );
 
       await expectLater(response3.stream,
           emitsInAnyOrder([...key2TextNotes.values, ...key4TextNotes.values]));
 
-      NdkResponse response4 = myNdk.requests.query(filters: [
-        myFilters[4],
-      ]);
+      NdkResponse response4 = myNdk.requests.query(
+        filters: [
+          myFilters[4],
+        ],
+        desiredCoverage: coverage,
+      );
       await expectLater(
           response4.stream,
           emitsInAnyOrder([
@@ -122,9 +137,12 @@ void main() async {
             ...key3TextNotes.values,
           ]));
 
-      NdkResponse response5 = myNdk.requests.query(filters: [
-        myFilters[5],
-      ]);
+      NdkResponse response5 = myNdk.requests.query(
+        filters: [
+          myFilters[5],
+        ],
+        desiredCoverage: coverage,
+      );
 
       await expectLater(
           response5.stream,
@@ -148,7 +166,7 @@ void main() async {
         ),
       );
 
-      await testNdk(ndkLists);
+      await testNdk(ndkLists, 1);
     });
 
     test('JIT Engine', timeout: const Timeout(Duration(seconds: 3)), () async {
@@ -162,7 +180,7 @@ void main() async {
         ),
       );
 
-      await testNdk(ndkJit);
+      await testNdk(ndkJit, 1);
     });
   });
 }
