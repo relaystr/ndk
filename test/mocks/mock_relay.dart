@@ -17,7 +17,7 @@ class MockRelay {
   Map<KeyPair, Nip01Event>? textNotes;
   bool signEvents;
 
-  static int startPort = 4045;
+  static int startPort = 4040;
 
   String get url => "ws://localhost:$port";
 
