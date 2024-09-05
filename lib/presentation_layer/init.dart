@@ -54,6 +54,7 @@ class Initialization {
           globalState: globalState,
           relayManager: relayManager,
         );
+        break;
       case NdkEngine.JIT:
         jitEngine = JitEngine(
           eventVerifier: config.eventVerifier,
@@ -71,11 +72,12 @@ class Initialization {
     cacheRead = CacheRead(config.cache);
 
     requests = Requests(
-        globalState: globalState,
-        cacheRead: cacheRead,
-        cacheWrite: cacheWrite,
-        requestManager: relaySetsEngine,
-        jitEngine: jitEngine);
+      globalState: globalState,
+      cacheRead: cacheRead,
+      cacheWrite: cacheWrite,
+      requestManager: relaySetsEngine,
+      jitEngine: jitEngine,
+    );
 
     follows = Follows(
         requests: requests,
