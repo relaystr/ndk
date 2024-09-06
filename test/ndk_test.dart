@@ -40,7 +40,7 @@ void main() async {
   group('Ndk', () {
     test('query simple note LISTS',
         timeout: const Timeout(Duration(seconds: 3)), () async {
-      MockRelay relay1 = MockRelay(name: "relay 1");
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 3900);
       await relay1.startServer(textNotes: key1TextNotes);
 
       Ndk ndk = Ndk(

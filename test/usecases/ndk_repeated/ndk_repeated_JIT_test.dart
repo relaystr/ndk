@@ -3,8 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 
-import 'mocks/mock_event_verifier.dart';
-import 'mocks/mock_relay.dart';
+import '../../mocks/mock_event_verifier.dart';
+import '../../mocks/mock_relay.dart';
+import 'test_repeated.dart';
 
 void main() async {
   group('repeated queries', () {
@@ -34,10 +35,10 @@ void main() async {
     Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
     Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-    MockRelay relay1 = MockRelay(name: "relay 1");
-    MockRelay relay2 = MockRelay(name: "relay 2");
-    MockRelay relay3 = MockRelay(name: "relay 3");
-    MockRelay relay4 = MockRelay(name: "relay 4");
+    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 4140);
+    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 4141);
+    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 4142);
+    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 4143);
 
     final myRelayUrls = [relay1.url, relay2.url, relay3.url, relay4.url];
 
@@ -82,93 +83,6 @@ void main() async {
       await relay4.stopServer();
     });
 
-    Future<void> testNdk(Ndk myNdk, int coverage) async {
-      NdkResponse response0 = myNdk.requests.query(
-        filters: [
-          myFilters[0],
-        ],
-        desiredCoverage: coverage,
-      );
-
-      await expectLater(
-          response0.stream, emitsInAnyOrder(key1TextNotes.values));
-
-      NdkResponse response1 = myNdk.requests.query(
-        filters: [
-          myFilters[1],
-        ],
-        desiredCoverage: coverage,
-      );
-
-      await expectLater(response1.stream,
-          emitsInAnyOrder([...key1TextNotes.values, ...key2TextNotes.values]));
-
-      NdkResponse response2 = myNdk.requests.query(
-        filters: [
-          myFilters[2],
-        ],
-        desiredCoverage: coverage,
-      );
-
-      await expectLater(response2.stream,
-          emitsInAnyOrder([...key3TextNotes.values, ...key4TextNotes.values]));
-
-      NdkResponse response3 = myNdk.requests.query(
-        filters: [
-          myFilters[3],
-        ],
-        desiredCoverage: coverage,
-      );
-
-      await expectLater(response3.stream,
-          emitsInAnyOrder([...key2TextNotes.values, ...key4TextNotes.values]));
-
-      NdkResponse response4 = myNdk.requests.query(
-        filters: [
-          myFilters[4],
-        ],
-        desiredCoverage: coverage,
-      );
-      await expectLater(
-          response4.stream,
-          emitsInAnyOrder([
-            ...key1TextNotes.values,
-            ...key2TextNotes.values,
-            ...key3TextNotes.values,
-          ]));
-
-      NdkResponse response5 = myNdk.requests.query(
-        filters: [
-          myFilters[5],
-        ],
-        desiredCoverage: coverage,
-      );
-
-      await expectLater(
-          response5.stream,
-          emitsInAnyOrder([
-            ...key1TextNotes.values,
-            ...key2TextNotes.values,
-            ...key3TextNotes.values,
-            ...key4TextNotes.values,
-          ]));
-    }
-
-    test('Lists Engine', timeout: const Timeout(Duration(seconds: 3)),
-        () async {
-      Ndk ndkLists = Ndk(
-        NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          eventSigner: Bip340EventSigner(key1.privateKey, key1.publicKey),
-          cache: MemCacheManager(),
-          engine: NdkEngine.RELAY_SETS,
-          bootstrapRelays: myRelayUrls,
-        ),
-      );
-
-      await testNdk(ndkLists, 1);
-    });
-
     test('JIT Engine', timeout: const Timeout(Duration(seconds: 3)), () async {
       Ndk ndkJit = Ndk(
         NdkConfig(
@@ -180,7 +94,15 @@ void main() async {
         ),
       );
 
-      await testNdk(ndkJit, 1);
+      await testNdk(
+        myNdk: ndkJit,
+        coverage: 1,
+        myFilters: myFilters,
+        key1TextNotes: key1TextNotes,
+        key2TextNotes: key2TextNotes,
+        key3TextNotes: key3TextNotes,
+        key4TextNotes: key4TextNotes,
+      );
     });
   });
 }
