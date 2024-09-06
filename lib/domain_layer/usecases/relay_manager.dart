@@ -61,7 +61,6 @@ class RelayManager {
     this.eventVerifier = eventVerifier ?? Bip340EventVerifier();
     this.bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS;
     this.globalState = globalState ?? GlobalState();
-    connect(urls: this.bootstrapRelays);
   }
 
   // ====================================================================================================================

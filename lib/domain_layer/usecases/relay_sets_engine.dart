@@ -32,13 +32,15 @@ class RelaySetsEngine {
   RelayManager relayManager;
   late CacheManager cacheManager;
 
-  RelaySetsEngine(
-      {required this.relayManager,
-      CacheManager? cacheManager,
-      EventVerifier? eventVerifier,
-      GlobalState? globalState}) {
+  RelaySetsEngine({
+    required this.relayManager,
+    CacheManager? cacheManager,
+    EventVerifier? eventVerifier,
+    GlobalState? globalState,
+  }) {
     this.cacheManager = cacheManager ?? MemCacheManager();
     this.globalState = globalState ?? GlobalState();
+    relayManager.connect(urls: relayManager.bootstrapRelays);
   }
 
   // ====================================================================================================================
