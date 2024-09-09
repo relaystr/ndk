@@ -63,16 +63,21 @@ class Ndk {
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
-  Future<Metadata?> getSingleMetadata(String pubKey,
-      {bool forceRefresh = false,
-      int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT}) async {
+  Future<Metadata?> getSingleMetadata(
+    String pubKey, {
+    bool forceRefresh = false,
+    int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
+  }) async {
     Metadata? metadata = config.cache.loadMetadata(pubKey);
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
-        await for (final event in requests.query(filters: [
-          Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
-        ]).stream) {
+        await for (final event in requests.query(
+          idPrefix: 'metadata-',
+          filters: [
+            Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
+          ],
+        ).stream) {
           if (loadedMetadata == null ||
               loadedMetadata.updatedAt == null ||
               loadedMetadata.updatedAt! < event.createdAt) {
