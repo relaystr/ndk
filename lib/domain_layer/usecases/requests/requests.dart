@@ -10,8 +10,6 @@ import '../../entities/request_state.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../cache_read/cache_read.dart';
 import '../cache_write/cache_write.dart';
-import '../jit_engine.dart';
-import '../relay_sets_engine.dart';
 
 class Requests {
   static const int DEFAULT_QUERY_TIMEOUT = 5;

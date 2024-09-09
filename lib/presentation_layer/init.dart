@@ -35,17 +35,18 @@ class Initialization {
   late Requests requests;
   late Follows follows;
 
-  late NetworkEngine engine;
+  late final NetworkEngine engine;
 
   Initialization({
     required this.config,
     required this.globalState,
   }) {
     relayManager = RelayManager(
-        nostrTransportFactory: _webSocketNostrTransportFactory,
-        eventVerifier: config.eventVerifier,
-        bootstrapRelays: config.bootstrapRelays,
-        globalState: globalState);
+      nostrTransportFactory: _webSocketNostrTransportFactory,
+      eventVerifier: config.eventVerifier,
+      bootstrapRelays: config.bootstrapRelays,
+      globalState: globalState,
+    );
     switch (config.engine) {
       case NdkEngine.RELAY_SETS:
         engine = RelaySetsEngine(
@@ -79,8 +80,9 @@ class Initialization {
     );
 
     follows = Follows(
-        requests: requests,
-        cacheManager: config.cache,
-        relayManager: relayManager);
+      requests: requests,
+      cacheManager: config.cache,
+      relayManager: relayManager,
+    );
   }
 }
