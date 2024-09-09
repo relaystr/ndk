@@ -10,7 +10,7 @@ import '../mocks/mock_relay.dart';
 
 void main() async {
   group('Relay Manager', () {
-    final WebSocketNostrTransportFactory _webSocketNostrTransportFactory =
+    final WebSocketNostrTransportFactory webSocketNostrTransportFactory =
         WebSocketNostrTransportFactory();
 
     test('Connect to relay', () async {
@@ -19,7 +19,7 @@ void main() async {
 
       RelayManager manager = RelayManager(
         bootstrapRelays: [relay1.url],
-        nostrTransportFactory: _webSocketNostrTransportFactory,
+        nostrTransportFactory: webSocketNostrTransportFactory,
       );
       await manager
           .connectRelay(relay1.url)
@@ -32,7 +32,7 @@ void main() async {
 
     test('Try to connect to dead relay', () async {
       RelayManager manager = RelayManager(
-        nostrTransportFactory: _webSocketNostrTransportFactory,
+        nostrTransportFactory: webSocketNostrTransportFactory,
       );
 
       MockRelay relay1 = MockRelay(name: "relay 1");

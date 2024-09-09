@@ -123,7 +123,7 @@ class Ndk {
     if (missingPubKeys.isNotEmpty) {
       print("loading missing user metadatas ${missingPubKeys.length}");
       try {
-        await for (final event in (await requests.query(
+        await for (final event in (requests.query(
                 // idleTimeout: 1,
                 // splitRequestsByPubKeyMappings: splitRequestsByPubKeyMappings,
                 idPrefix: "missing-metadatas-",
@@ -176,7 +176,7 @@ class Ndk {
             "loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
-        await for (final event in (await requests.query(
+        await for (final event in (requests.query(
 //                timeout: missingPubKeys.length > 1 ? 10 : 3,
                 filters: [
               Filter(

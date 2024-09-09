@@ -62,6 +62,7 @@ class JitEngine with Logger implements NetworkEngine {
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
   /// if no relay is found the request will be blasted to all connected relays (on start seed Relays)
+  @override
   void handleRequest(
     RequestState requestState,
   ) async {
@@ -82,7 +83,7 @@ class JitEngine with Logger implements NetworkEngine {
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: this.globalState.connectedRelays,
+          connectedRelays: globalState.connectedRelays,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
@@ -98,7 +99,7 @@ class JitEngine with Logger implements NetworkEngine {
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: this.globalState.connectedRelays,
+          connectedRelays: globalState.connectedRelays,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
@@ -121,7 +122,7 @@ class JitEngine with Logger implements NetworkEngine {
       RelayJitBlastAllStrategy.handleRequest(
         requestState: requestState,
         filter: filter,
-        connectedRelays: this.globalState.connectedRelays,
+        connectedRelays: globalState.connectedRelays,
         closeOnEOSE: requestState.request.closeOnEOSE,
       );
     }

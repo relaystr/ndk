@@ -16,7 +16,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 AcinqSecp256k1EventVerifier eventVerifier = AcinqSecp256k1EventVerifier();
                 eventVerifier.verify(Nip01Event.fromJson(json.decode(value['event']))).then((valid) {
                   setState(() {
-                    _text = '${valid?"✅ Valid":"❌ Invalid"}';
+                    _text = valid?"✅ Valid":"❌ Invalid";
                   });
                 });
               },

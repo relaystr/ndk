@@ -1,7 +1,5 @@
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hex/hex.dart';
 

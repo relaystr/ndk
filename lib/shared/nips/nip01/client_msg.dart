@@ -29,7 +29,7 @@ class ClientMsg {
     }
 
     if (type == ClientMsgType.REQ) {
-      if (filters == null || filters.isEmpty) {
+      if (filters.isEmpty) {
         throw Exception("filters are required for type REQ");
       }
       if (id == null) {

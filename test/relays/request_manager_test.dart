@@ -4,9 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
-import 'package:ndk/domain_layer/entities/read_write.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/usecases/relay_sets_engine.dart';
 import 'package:ndk/ndk.dart';
@@ -45,7 +43,7 @@ void main() async {
   Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-  final WebSocketNostrTransportFactory _webSocketNostrTransportFactory =
+  final WebSocketNostrTransportFactory webSocketNostrTransportFactory =
       WebSocketNostrTransportFactory();
 
   group('Request Manager', () {
@@ -59,7 +57,7 @@ void main() async {
           relayManager: RelayManager(
             bootstrapRelays: [relay1.url],
             globalState: globalState,
-            nostrTransportFactory: _webSocketNostrTransportFactory,
+            nostrTransportFactory: webSocketNostrTransportFactory,
           ));
 
       Filter filter =
@@ -84,7 +82,7 @@ void main() async {
           relayManager: RelayManager(
             bootstrapRelays: [relay1.url],
             globalState: globalState,
-            nostrTransportFactory: _webSocketNostrTransportFactory,
+            nostrTransportFactory: webSocketNostrTransportFactory,
           ));
       NdkResponse response = (await manager.query(
           Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND]),
@@ -185,7 +183,7 @@ void main() async {
           relayManager: RelayManager(
             bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
             globalState: globalState,
-            nostrTransportFactory: _webSocketNostrTransportFactory,
+            nostrTransportFactory: webSocketNostrTransportFactory,
           ));
 
       await manager.loadMissingRelayListsFromNip65OrNip02([key4.publicKey]);
@@ -203,7 +201,7 @@ void main() async {
           relayManager: RelayManager(
             bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
             globalState: globalState,
-            nostrTransportFactory: _webSocketNostrTransportFactory,
+            nostrTransportFactory: webSocketNostrTransportFactory,
           ));
 
       RelaySet relaySet = await manager.calculateRelaySet(
@@ -263,7 +261,7 @@ void main() async {
           relayManager: RelayManager(
             bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
             globalState: globalState,
-            nostrTransportFactory: _webSocketNostrTransportFactory,
+            nostrTransportFactory: webSocketNostrTransportFactory,
           ));
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
@@ -367,7 +365,7 @@ void main() async {
           relayManager: RelayManager(
             bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
             globalState: globalState,
-            nostrTransportFactory: _webSocketNostrTransportFactory,
+            nostrTransportFactory: webSocketNostrTransportFactory,
           ));
 
       // relayMinCountPerPubKey: 1
@@ -408,7 +406,7 @@ void main() async {
           relayManager: RelayManager(
             bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
             globalState: globalState,
-            nostrTransportFactory: _webSocketNostrTransportFactory,
+            nostrTransportFactory: webSocketNostrTransportFactory,
           ));
 
       RelaySet relaySet = await manager.calculateRelaySet(
@@ -568,7 +566,7 @@ void main() async {
 // ================================================================================================
 // REAL EXTERNAL RELAYS FOR SOME NPUBS
 // ================================================================================================
-    _calculateBestRelaysForNpubContactsFeed(String npub,
+    calculateBestRelaysForNpubContactsFeed(String npub,
         {String? expectedRelayUrl,
         int iterations = 1,
         required int relayMinCountPerPubKey}) async {
@@ -657,35 +655,35 @@ void main() async {
     // }, timeout: const Timeout.factor(10));
     //
     test('Leo feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
+      await calculateBestRelaysForNpubContactsFeed(
           "npub1w9llyw8c3qnn7h27u3msjlet8xyjz5phdycr5rz335r2j5hj5a0qvs3tur",
           iterations: 1,
           relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Fmar feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
+      await calculateBestRelaysForNpubContactsFeed(
           "npub1xpuz4qerklyck9evtg40wgrthq5rce2mumwuuygnxcg6q02lz9ms275ams",
           iterations: 1,
           relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('mikedilger feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
+      await calculateBestRelaysForNpubContactsFeed(
           "npub1acg6thl5psv62405rljzkj8spesceyfz2c32udakc2ak0dmvfeyse9p35c",
           iterations: 1,
           relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Fiatjaf feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
+      await calculateBestRelaysForNpubContactsFeed(
           "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6",
           iterations: 1,
           relayMinCountPerPubKey: 2);
     }, timeout: const Timeout.factor(10));
 
     test('Love is Bitcoin (3k follows) feed best relays', () async {
-      await _calculateBestRelaysForNpubContactsFeed(
+      await calculateBestRelaysForNpubContactsFeed(
           "npub1kwcatqynqmry9d78a8cpe7d882wu3vmrgcmhvdsayhwqjf7mp25qpqf3xx",
           iterations: 1,
           relayMinCountPerPubKey: 2);

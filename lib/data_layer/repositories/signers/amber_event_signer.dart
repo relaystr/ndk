@@ -19,10 +19,8 @@ class AmberEventSigner implements EventSigner {
         : Nip19.encodePubKey(publicKey);
     Map<dynamic, dynamic> map = await amberFlutterDS.amber.signEvent(
         currentUser: npub, eventJson: jsonEncode(event.toJson()), id: event.id);
-    if (map != null) {
-      event.sig = map['signature'];
+    event.sig = map['signature'];
     }
-  }
 
   @override
   String getPublicKey() {

@@ -63,12 +63,12 @@ void main() {
       // check that covered pubkeys are in the result
       for (var i = 0; i < 10; i++) {
         int foundPubkey = 0;
-        result.ranking.forEach((element) {
+        for (var element in result.ranking) {
           bool found = element.coveredPubkeys.contains(searchingPubkeys[i]);
           if (found) {
             foundPubkey++;
           }
-        });
+        }
         expect(foundPubkey, 2);
       }
 

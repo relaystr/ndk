@@ -1,4 +1,3 @@
-import '../../entities/nip_01_event.dart';
 import '../../entities/request_state.dart';
 
 abstract class NetworkEngine {

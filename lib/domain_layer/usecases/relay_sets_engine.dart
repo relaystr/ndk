@@ -143,6 +143,7 @@ class RelaySetsEngine implements NetworkEngine {
     });
   }
 
+  @override
   Future<void> handleRequest(RequestState state) async {
     await relayManager.seedRelaysConnected;
 
@@ -302,9 +303,9 @@ class RelaySetsEngine implements NetworkEngine {
       if (relayManager.blockedRelays.contains(cleanRelayUrl(url))) {
         continue;
       }
-      if (!pubKeysByRelayUrl[url]!.any((pub_key) =>
-          minimumRelaysCoverageByPubkey[pub_key.pubKey] == null ||
-          minimumRelaysCoverageByPubkey[pub_key.pubKey]!.length <
+      if (!pubKeysByRelayUrl[url]!.any((pubKey) =>
+          minimumRelaysCoverageByPubkey[pubKey.pubKey] == null ||
+          minimumRelaysCoverageByPubkey[pubKey.pubKey]!.length <
               relayMinCountPerPubKey)) {
         continue;
       }
