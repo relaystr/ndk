@@ -4,6 +4,7 @@ import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
+import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/relay_manager.dart';
@@ -34,8 +35,7 @@ class Initialization {
   late Requests requests;
   late Follows follows;
 
-  RelaySetsEngine? relaySetsEngine;
-  JitEngine? jitEngine;
+  late NetworkEngine engine;
 
   Initialization({
     required this.config,
@@ -48,7 +48,7 @@ class Initialization {
         globalState: globalState);
     switch (config.engine) {
       case NdkEngine.RELAY_SETS:
-        relaySetsEngine = RelaySetsEngine(
+        engine = RelaySetsEngine(
           cacheManager: config.cache,
           eventVerifier: config.eventVerifier,
           globalState: globalState,
@@ -56,7 +56,7 @@ class Initialization {
         );
         break;
       case NdkEngine.JIT:
-        jitEngine = JitEngine(
+        engine = JitEngine(
           eventVerifier: config.eventVerifier,
           eventSigner: config.eventSigner,
           cache: config.cache,
@@ -75,8 +75,7 @@ class Initialization {
       globalState: globalState,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
-      requestManager: relaySetsEngine,
-      jitEngine: jitEngine,
+      networkEngine: engine,
     );
 
     follows = Follows(

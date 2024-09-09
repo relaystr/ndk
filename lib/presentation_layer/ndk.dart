@@ -14,6 +14,7 @@ import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/relay_manager.dart';
+import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../shared/helpers/relay_helper.dart';
 import '../shared/logger/logger.dart';
@@ -50,11 +51,14 @@ class Ndk {
       required RelayDirection direction,
       required int relayMinCountPerPubKey,
       Function(String, int, int)? onProgress}) async {
-    if (_initialization.relaySetsEngine == null) {
+    if (_initialization.engine is! RelaySetsEngine) {
       throw UnimplementedError(
           "this engine doesn't support calculation of relay sets");
     }
-    return await _initialization.relaySetsEngine!.calculateRelaySet(
+
+    final RelaySetsEngine myEngine = _initialization.engine as RelaySetsEngine;
+
+    return await myEngine.calculateRelaySet(
         name: name,
         ownerPubKey: ownerPubKey,
         pubKeys: pubKeys,

@@ -10,11 +10,12 @@ import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
 import '../repositories/event_verifier.dart';
+import 'engines/network_engine.dart';
 import 'relay_jit_manager/relay_jit.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 
-class JitEngine with Logger {
+class JitEngine with Logger implements NetworkEngine {
   EventVerifier eventVerifier;
   EventSigner? eventSigner;
   CacheManager cache;

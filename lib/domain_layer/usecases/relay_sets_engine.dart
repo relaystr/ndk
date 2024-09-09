@@ -22,9 +22,10 @@ import '../entities/request_state.dart';
 import '../entities/user_relay_list.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_verifier.dart';
+import 'engines/network_engine.dart';
 import 'relay_manager.dart';
 
-class RelaySetsEngine {
+class RelaySetsEngine implements NetworkEngine {
   static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
 
   late GlobalState globalState;

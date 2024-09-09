@@ -1,3 +1,4 @@
+import '../engines/network_engine.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
 import '../../entities/global_state.dart';
@@ -18,17 +19,14 @@ class Requests {
   final GlobalState _globalState;
   final CacheRead _cacheRead;
   final CacheWrite _cacheWrite;
-  final RelaySetsEngine? _requestManager;
-  final JitEngine? _jitEngine;
+  final NetworkEngine _engine;
 
   Requests({
     required GlobalState globalState,
     required CacheRead cacheRead,
     required CacheWrite cacheWrite,
-    RelaySetsEngine? requestManager,
-    JitEngine? jitEngine,
-  })  : _jitEngine = jitEngine,
-        _requestManager = requestManager,
+    required NetworkEngine networkEngine,
+  })  : _engine = networkEngine,
         _cacheWrite = cacheWrite,
         _cacheRead = cacheRead,
         _globalState = globalState;
@@ -122,13 +120,7 @@ class Requests {
       }
 
       /// handle request
-      if (_requestManager != null) {
-        await _requestManager.handleRequest(state);
-      } else if (_jitEngine != null) {
-        _jitEngine.handleRequest(state);
-      } else {
-        throw UnimplementedError("Unknown engine");
-      }
+      _engine.handleRequest(state);
     }
 
     asyncStuff();
