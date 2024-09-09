@@ -24,6 +24,8 @@ class CacheRead {
         final foundAuthors = cacheManager.loadEvents(
           pubKeys: filter.authors!,
           kinds: filter.kinds ?? [],
+          since: filter.since,
+          until: filter.until,
         );
         foundEvents.addAll(foundAuthors);
 

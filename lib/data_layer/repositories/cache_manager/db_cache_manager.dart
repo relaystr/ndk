@@ -42,7 +42,7 @@ class DbCacheManager extends CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.t(
-          "SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
+        "SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -64,7 +64,7 @@ class DbCacheManager extends CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.t(
-          "SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
+        "SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -80,7 +80,7 @@ class DbCacheManager extends CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.t(
-          "SAVED ${userRelayLists.length} UserRelayLists took ${duration.inMilliseconds} ms");
+        "SAVED ${userRelayLists.length} UserRelayLists took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -97,7 +97,7 @@ class DbCacheManager extends CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.t(
-          "SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
+        "SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -110,7 +110,7 @@ class DbCacheManager extends CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.t(
-          "SAVED ${contactLists.length} ContactLists took ${duration.inMilliseconds} ms");
+        "SAVED ${contactLists.length} ContactLists took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -177,8 +177,7 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
-      "SAVED Metadata took ${duration.inMilliseconds} ms");
+    Logger.log.t("SAVED Metadata took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -192,7 +191,7 @@ class DbCacheManager extends CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.t(
-          "SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
+        "SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -235,8 +234,7 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
-      "SAVED Nip05 took ${duration.inMilliseconds} ms");
+    Logger.log.t("SAVED Nip05 took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -249,7 +247,7 @@ class DbCacheManager extends CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.t(
-          "SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
+        "SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -286,8 +284,7 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
-      "SAVED Event took ${duration.inMilliseconds} ms");
+    Logger.log.t("SAVED Event took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -299,8 +296,8 @@ class DbCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
-      "SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
+    Logger.log
+        .t("SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
   }
 
   // @override
@@ -314,8 +311,16 @@ class DbCacheManager extends CacheManager {
   // }
 
   @override
-  List<Nip01Event> loadEvents(
-      {List<String>? pubKeys, List<int>? kinds, String? pTag}) {
+  List<Nip01Event> loadEvents({
+    List<String>? pubKeys,
+    List<int>? kinds,
+    String? pTag,
+    int? since,
+    int? until,
+  }) {
+    if (since != null || until != null) {
+      throw Exception("since | until not implemented");
+    }
     List<Nip01Event> events = isar_ds.isar.dbEvents
         .where()
         .optional(kinds != null && kinds.isNotEmpty,

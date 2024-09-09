@@ -9,8 +9,13 @@ abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Nip01Event? loadEvent(String id);
-  List<Nip01Event> loadEvents(
-      {List<String> pubKeys, List<int> kinds, String? pTag});
+  List<Nip01Event> loadEvents({
+    List<String> pubKeys,
+    List<int> kinds,
+    String? pTag,
+    int? since,
+    int? until,
+  });
   Future<void> removeEvent(String id);
   Future<void> removeAllEventsByPubKey(String pubKey);
   Future<void> removeAllEvents();

@@ -184,8 +184,13 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  List<Nip01Event> loadEvents(
-      {List<String>? pubKeys, List<int>? kinds, String? pTag}) {
+  List<Nip01Event> loadEvents({
+    List<String>? pubKeys,
+    List<int>? kinds,
+    String? pTag,
+    int? since,
+    int? until,
+  }) {
     List<Nip01Event> result = [];
     for (var event in events.values) {
       if (pubKeys != null && !pubKeys.contains(event.pubKey)) {
@@ -197,6 +202,15 @@ class MemCacheManager implements CacheManager {
       if (pTag != null && !event.pTags.contains(pTag)) {
         continue;
       }
+
+      if (since != null && event.createdAt < since) {
+        continue;
+      }
+
+      if (until != null && event.createdAt > until) {
+        continue;
+      }
+
       result.add(event);
     }
     return result;

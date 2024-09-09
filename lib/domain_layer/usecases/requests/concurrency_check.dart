@@ -12,7 +12,7 @@ class ConcurrencyCheck {
 
   /// checks if the request is already served (based on filters) and if so adds the stream.
   /// returns true if the response stream got replaced
-  check(RequestState requestState) {
+  bool check(RequestState requestState) {
     final hash = _hashFilters(requestState.request.filters);
 
     // check if its not already served
