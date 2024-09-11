@@ -140,7 +140,11 @@ class ContactList {
       identical(this, other) ||
       other is ContactList &&
           runtimeType == other.runtimeType &&
-          pubKey == other.pubKey;
+          pubKey == other.pubKey &&
+          contacts == other.contacts &&
+          followedTags == other.followedTags &&
+          followedCommunities == other.followedCommunities &&
+          followedEvents == other.followedEvents;
 
   @override
   int get hashCode => pubKey.hashCode;

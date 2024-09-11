@@ -12,39 +12,49 @@ class Follows {
   CacheManager cacheManager;
   RelayManager relayManager;
 
-  Follows(
-      {required this.requests,
-      required this.cacheManager,
-      required this.relayManager});
+  Follows({
+    required this.requests,
+    required this.cacheManager,
+    required this.relayManager,
+  });
 
-  Future<ContactList?> getContactList(String pubKey,
-      {bool forceRefresh = false,
-      int idleTimeout = Requests.DEFAULT_QUERY_TIMEOUT}) async {
+  Future<ContactList?> getContactListFuture(
+    String pubKey, {
+    /// skips the cache
+    bool forceRefresh = false,
+    int idleTimeout = Requests.DEFAULT_QUERY_TIMEOUT,
+  }) async {
     ContactList? contactList = cacheManager.loadContactList(pubKey);
-    if (contactList == null || forceRefresh) {
-      ContactList? loadedContactList;
-      try {
-        await for (final event in requests.query(filters: [
-          Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1)
-        ]).stream) {
-          if (loadedContactList == null ||
-              loadedContactList.createdAt < event.createdAt) {
-            loadedContactList = ContactList.fromEvent(event);
-          }
-        }
-      } catch (e) {
-        // probably timeout;
-        Logger.log.e(e);
-      }
-      if (loadedContactList != null &&
-          (contactList == null ||
-              contactList.createdAt < loadedContactList.createdAt)) {
-        loadedContactList.loadedTimestamp =
-            DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        await cacheManager.saveContactList(loadedContactList);
-        contactList = loadedContactList;
-      }
+
+    if (contactList != null && !forceRefresh) {
+      return contactList;
     }
+
+    ContactList? loadedContactList;
+    try {
+      await for (final event in requests.query(
+        filters: [
+          Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1)
+        ],
+      ).stream) {
+        if (loadedContactList == null ||
+            loadedContactList.createdAt < event.createdAt) {
+          loadedContactList = ContactList.fromEvent(event);
+        }
+      }
+    } catch (e) {
+      // probably timeout;
+      Logger.log.e(e);
+    }
+    if (loadedContactList != null &&
+        (contactList == null ||
+            contactList.createdAt < loadedContactList.createdAt)) {
+      loadedContactList.loadedTimestamp =
+          DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      await cacheManager.saveContactList(loadedContactList);
+      contactList = loadedContactList;
+    }
+
     return contactList;
   }
 
@@ -65,7 +75,7 @@ class Follows {
         contactList.loadedTimestamp! < sometimeAgo;
     if (refresh) {
       contactList =
-          await getContactList(signer.getPublicKey(), forceRefresh: true);
+          await getContactListFuture(signer.getPublicKey(), forceRefresh: true);
     }
     contactList ??= ContactList(pubKey: signer.getPublicKey(), contacts: []);
     return contactList;
