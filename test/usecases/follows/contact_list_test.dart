@@ -8,13 +8,13 @@ import '../../mocks/mock_relay.dart';
 
 void main() async {
   group('follows', () {
-    MockRelay relay0 = MockRelay(name: "relay 0", explicitPort: 4340);
+    MockRelay relay0 = MockRelay(name: "relay 0", explicitPort: 4341);
 
     final cache = MemCacheManager();
     final NdkConfig config = NdkConfig(
       eventVerifier: MockEventVerifier(),
       cache: cache,
-      engine: NdkEngine.RELAY_SETS,
+      engine: NdkEngine.JIT,
       bootstrapRelays: [relay0.url],
       ignoreRelays: [],
     );
@@ -101,7 +101,7 @@ void main() async {
       );
 
       // cache
-      expect(rcvContactList, equals(network1ContactList));
+      expect(rcvContactList!.contacts, equals(network1ContactList.contacts));
     });
   });
 }

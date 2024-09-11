@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/filter.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 
@@ -71,6 +72,9 @@ class MockRelay {
             }
             if (filter.kinds!.contains(Nip01Event.TEXT_NODE_KIND) &&
                 textNotes != null) {
+              _respondeTextNote(filter.authors!, requestId);
+            }
+            if (filter.kinds!.contains(ContactList.KIND) && textNotes != null) {
               _respondeTextNote(filter.authors!, requestId);
             }
             // todo: other
