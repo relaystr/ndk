@@ -8,7 +8,7 @@ import '../../mocks/mock_relay.dart';
 
 void main() async {
   group('follows', () {
-    MockRelay relay0 = MockRelay(name: "relay 0", explicitPort: 4341);
+    MockRelay relay0 = MockRelay(name: "relay 0", explicitPort: 10040);
 
     final cache = MemCacheManager();
     final NdkConfig config = NdkConfig(
