@@ -8,7 +8,7 @@ import '../../mocks/mock_relay.dart';
 
 void main() async {
   group('follows', () {
-    MockRelay relay0 = MockRelay(name: "relay 0", explicitPort: 10040);
+    MockRelay relay0 = MockRelay(name: "relay 0", explicitPort: 4095);
 
     final cache = MemCacheManager();
     final NdkConfig config = NdkConfig(
@@ -67,18 +67,18 @@ void main() async {
     );
     cache1ContactList.createdAt = 100;
 
-    // setUp(() async {
-    //   cache.saveContactList(cache0ContactList);
-    //   //cache.saveContactList(cache1ContactList);
-    //   await relay0.startServer(textNotes: {
-    //     key0: network0ContactList.toEvent(),
-    //     key1: network1ContactList.toEvent(),
-    //   });
-    // });
+    setUp(() async {
+      cache.saveContactList(cache0ContactList);
+      //cache.saveContactList(cache1ContactList);
+      await relay0.startServer(textNotes: {
+        key0: network0ContactList.toEvent(),
+        key1: network1ContactList.toEvent(),
+      });
+    });
 
-    // tearDown(() async {
-    //   await relay0.stopServer();
-    // });
+    tearDown(() async {
+      await relay0.stopServer();
+    });
 
     test('contactList equal', () {
       expect(cache0ContactList, equals(cache0ContactList));
@@ -88,27 +88,13 @@ void main() async {
     test('getContactList', () async {});
 
     test('getContactListFuture - cache', () async {
-      cache.saveContactList(cache0ContactList);
-
-      await relay0.startServer(textNotes: {
-        key0: network0ContactList.toEvent(),
-        //key1: network1ContactList.toEvent(),
-      });
-
       final rcvContactList = await follows.getContactListFuture(key0.publicKey);
 
       // cache
       expect(rcvContactList, equals(cache0ContactList));
-
-      await relay0.stopServer();
     });
 
     test('getContactListFuture - network', () async {
-      await relay0.startServer(textNotes: {
-        //key0: network0ContactList.toEvent(),
-        key1: network1ContactList.toEvent(),
-      });
-
       final rcvContactList = await follows.getContactListFuture(
         key1.publicKey,
         forceRefresh: true,
@@ -116,7 +102,6 @@ void main() async {
 
       // cache
       expect(rcvContactList!.contacts, equals(network1ContactList.contacts));
-      await relay0.stopServer();
     });
   });
 }
