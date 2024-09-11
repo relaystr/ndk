@@ -18,7 +18,8 @@ class Follows {
     required this.relayManager,
   });
 
-  Future<ContactList?> getContactListFuture(
+  /// contact list of a given pubkey, not intended to get followers
+  Future<ContactList?> getContactList(
     String pubKey, {
     /// skips the cache
     bool forceRefresh = false,
@@ -75,7 +76,7 @@ class Follows {
         contactList.loadedTimestamp! < sometimeAgo;
     if (refresh) {
       contactList =
-          await getContactListFuture(signer.getPublicKey(), forceRefresh: true);
+          await getContactList(signer.getPublicKey(), forceRefresh: true);
     }
     contactList ??= ContactList(pubKey: signer.getPublicKey(), contacts: []);
     return contactList;

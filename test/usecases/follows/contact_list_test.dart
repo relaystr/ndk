@@ -85,17 +85,15 @@ void main() async {
       expect(cache0ContactList, isNot(equals(network0ContactList)));
     });
 
-    test('getContactList', () async {});
-
-    test('getContactListFuture - cache', () async {
-      final rcvContactList = await follows.getContactListFuture(key0.publicKey);
+    test('getContactList - cache', () async {
+      final rcvContactList = await follows.getContactList(key0.publicKey);
 
       // cache
       expect(rcvContactList, equals(cache0ContactList));
     });
 
-    test('getContactListFuture - network', () async {
-      final rcvContactList = await follows.getContactListFuture(
+    test('getContactList- network', () async {
+      final rcvContactList = await follows.getContactList(
         key1.publicKey,
         forceRefresh: true,
       );
