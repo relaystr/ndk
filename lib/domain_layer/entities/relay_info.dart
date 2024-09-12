@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import '../../shared/logger/logger.dart';
 
 class RelayInfo {
-
   final String name;
 
   final String description;
@@ -37,10 +36,10 @@ class RelayInfo {
     final String pubKey = json["pubkey"] ?? "";
     final String contact = json["contact"] ?? "";
     String icon;
-    if (json["icon"]!=null) {
+    if (json["icon"] != null) {
       icon = json["icon"];
     } else {
-      icon = "$url${url.endsWith("/")?"":"/"}favicon.ico";
+      icon = "$url${url.endsWith("/") ? "" : "/"}favicon.ico";
     }
     final List<dynamic> nips = json["supported_nips"] ?? [];
     final String software = json["software"] ?? "";
@@ -52,11 +51,12 @@ class RelayInfo {
   static Future<RelayInfo?> get(String url) async {
     Uri uri = Uri.parse(url).replace(scheme: 'https');
     try {
-      final response = await http.get(uri,
+      final response = await http.get(
+        uri,
         headers: {'Accept': 'application/nostr+json'},
       );
-      final decodedResponse = jsonDecode(
-          utf8.decode(response.bodyBytes)) as Map;
+      final decodedResponse =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map;
       return RelayInfo.fromJson(decodedResponse, uri.toString());
     } catch (e) {
       Logger.log.d(e);

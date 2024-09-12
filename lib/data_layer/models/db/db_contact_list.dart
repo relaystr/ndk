@@ -59,4 +59,3 @@ class DbContactList extends ContactList {
 //
 //   Contact(this.pubKey, this.petname, this.relay);
 // }
-

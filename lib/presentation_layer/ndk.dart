@@ -178,12 +178,11 @@ class Ndk {
       try {
         await for (final event in (requests.query(
 //                timeout: missingPubKeys.length > 1 ? 10 : 3,
-                filters: [
+            filters: [
               Filter(
                   authors: missingPubKeys,
                   kinds: [Nip65.KIND, ContactList.KIND])
-            ]))
-            .stream) {
+            ])).stream) {
           switch (event.kind) {
             case Nip65.KIND:
               Nip65 nip65 = Nip65.fromEvent(event);

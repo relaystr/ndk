@@ -11,8 +11,7 @@ class DbMetadata extends Metadata {
   List<String>? get splitDisplayNameWords =>
       displayName?.trim().toLowerCase().split(" ");
 
-  List<String>? get splitNameWords =>
-      name?.trim().toLowerCase().split(" ");
+  List<String>? get splitNameWords => name?.trim().toLowerCase().split(" ");
 
   DbMetadata(
       {super.pubKey = "",

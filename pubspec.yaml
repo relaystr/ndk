@@ -29,6 +29,9 @@ dependencies:
   amberflutter: ^0.0.9
   logger: ^2.4.0
   rxdart: ^0.28.0
+  rust_lib_ndk:
+    path: rust_builder
+  flutter_rust_bridge: 2.3.0
 
 #    git:
 #      url:  https://github.com/frnandu/amberflutter
@@ -44,6 +47,8 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 #  ffigen: ^9.0.1
   build_runner: ^2.4.11
+  integration_test:
+    sdk: flutter
 #  freezed: ^2.4.5
 
 # For information on the generic Dart part of this file, see the

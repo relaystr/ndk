@@ -14,7 +14,7 @@ class IsarDbDs {
 
   IsarDbDs();
 
-  Future<void> init({String? directory, bool debug=false}) async {
+  Future<void> init({String? directory, bool debug = false}) async {
     // await Isar.initialize("./libisar_android_armv7.so");//initializeIsarCore(download: true);
 
     // final dir = await getApplicationDocumentsDirectory();

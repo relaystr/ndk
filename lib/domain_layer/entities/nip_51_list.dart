@@ -219,8 +219,7 @@ class Nip51Set extends Nip51List {
       required super.createdAt,
       required super.elements,
       this.title})
-      : super(
-            kind: Nip51List.RELAY_SET);
+      : super(kind: Nip51List.RELAY_SET);
 
   static Future<Nip51Set?> fromEvent(
       Nip01Event event, EventSigner? signer) async {

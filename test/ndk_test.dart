@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';

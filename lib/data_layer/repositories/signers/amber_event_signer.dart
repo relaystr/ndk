@@ -20,7 +20,7 @@ class AmberEventSigner implements EventSigner {
     Map<dynamic, dynamic> map = await amberFlutterDS.amber.signEvent(
         currentUser: npub, eventJson: jsonEncode(event.toJson()), id: event.id);
     event.sig = map['signature'];
-    }
+  }
 
   @override
   String getPublicKey() {
