@@ -3,11 +3,6 @@ use secp256k1::{schnorr::Signature, Message, Secp256k1, XOnlyPublicKey};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
-#[flutter_rust_bridge::frb(sync)] // Synchronous mode for simplicity of the demo
-pub fn greet(name: String) -> String {
-    format!("Hello, {name}!")
-}
-
 #[flutter_rust_bridge::frb(init)]
 pub fn init_app() {
     // Default utilities - feel free to customize
