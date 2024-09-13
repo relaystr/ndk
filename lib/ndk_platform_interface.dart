@@ -22,12 +22,4 @@ abstract class NdkPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
-
-  Future<String?> getPublicKey() {
-    throw UnimplementedError('getPublicKey() has not been implemented.');
-  }
-
-  Future<bool?> verifySignature(String signature, String hash, String pubKey) {
-    throw UnimplementedError('verifySignature() has not been implemented.');
-  }
 }

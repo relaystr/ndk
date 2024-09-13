@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
-import 'package:ndk/data_layer/repositories/verifiers/acinq_event_verifier.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart';
 
 late bool amberAvailable;
@@ -124,8 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         currentUser: _npub,
                         eventJson: eventJson,
                       );
-                      AcinqSecp256k1EventVerifier eventVerifier =
-                          AcinqSecp256k1EventVerifier();
+                      EventVerifier eventVerifier = RustEventVerifier();
                       eventVerifier
                           .verify(
                               Nip01Event.fromJson(json.decode(value['event'])))
