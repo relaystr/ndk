@@ -150,7 +150,9 @@ void main() async {
         pubKey: pubKey1,
         content: "content 11",
         kind: 1,
-        tags: ["tag1", "tag2"],
+        tags: [
+          ["tag1", "tag2"]
+        ],
         createdAt: now,
         sig: 'signature',
         validSig: true,

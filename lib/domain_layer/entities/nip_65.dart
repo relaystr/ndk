@@ -25,7 +25,6 @@ class Nip65 {
     pubKey = event.pubKey;
     createdAt = event.createdAt;
     for (var tag in event.tags) {
-      if (tag is! List<dynamic>) continue;
       final length = tag.length;
       if (length <= 1) continue;
       final name = tag[0];

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
+import '../../shared/helpers/list_casting.dart';
 import '../../shared/nips/nip01/bip340.dart';
 
 class Nip01Event {
@@ -44,7 +45,7 @@ class Nip01Event {
     final pubKey = data['pubkey'] as String;
     final createdAt = data['created_at'] as int;
     final kind = data['kind'] as int;
-    final tags = data['tags'];
+    final tags = castToListOfListOfString(data['tags']);
     final content = data['content'] as String;
     final sig = data['sig'] as String;
 
@@ -64,7 +65,7 @@ class Nip01Event {
   final int kind;
 
   /// A JSON array of event tags.
-  List<dynamic> tags; // Modified by proof-of-work
+  List<List<String>> tags; // Modified by proof-of-work
 
   /// Event content.
   String content;
@@ -139,7 +140,7 @@ class Nip01Event {
   static List<String> getTags(List<dynamic> list, String tag) {
     List<String> tags = [];
     for (var e in list) {
-      if (e.length > 1) {
+      if (e is List<String> && e.length > 1) {
         var key = e[0];
         var value = e[1];
 

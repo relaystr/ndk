@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../shared/helpers/list_casting.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/helpers.dart';
 import '../repositories/event_signer.dart';
@@ -265,7 +266,7 @@ class Nip51Set extends Nip51List {
       tags.add(["image", image]);
     }
     tags.addAll(event.tags);
-    event.tags = tags;
+    event.tags = castToListOfListOfString(tags);
     return event;
   }
 

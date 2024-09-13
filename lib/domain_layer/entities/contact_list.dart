@@ -29,7 +29,6 @@ class ContactList {
     createdAt = event.createdAt;
     loadedTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     for (var tag in event.tags) {
-      if (tag is! List<dynamic>) continue;
       final length = tag.length;
       if (length <= 1) continue;
       final name = tag[0];

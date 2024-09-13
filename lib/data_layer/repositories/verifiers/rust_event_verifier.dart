@@ -27,25 +27,9 @@ class RustEventVerifier implements EventVerifier {
       pubKeyHex: event.pubKey,
       createdAt: BigInt.from(event.createdAt),
       kind: event.kind,
-      tags: castToListOfListOfString(event.tags),
+      tags: event.tags,
       content: event.content,
       signatureHex: event.sig,
     );
-  }
-
-  List<List<String>> castToListOfListOfString(List<dynamic> dynamicList) {
-    return dynamicList.map((item) {
-      if (item is List) {
-        return item.map((subItem) {
-          if (subItem is String) {
-            return subItem;
-          } else {
-            return subItem.toString(); // Convert non-String items to String
-          }
-        }).toList();
-      } else {
-        throw FormatException('Expected a List, but found ${item.runtimeType}');
-      }
-    }).toList();
   }
 }

@@ -1,6 +1,7 @@
 // ignore_for_file: unnecessary_overrides
 
 import 'package:isar/isar.dart';
+import 'package:ndk/shared/helpers/list_casting.dart';
 
 import '../../../domain_layer/entities/nip_01_event.dart';
 
@@ -21,7 +22,7 @@ class DbEvent extends Nip01Event {
   int get createdAt => super.createdAt;
 
   @override
-  List<dynamic> get tags => super.tags;
+  List<List<String>> get tags => super.tags;
 
   @override
   List<String> get pTags {

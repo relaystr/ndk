@@ -122,13 +122,13 @@ DbEvent deserializeDbEvent(IsarReader reader) {
       _createdAt = value;
     }
   }
-  final List<dynamic> _tags;
+  final List<List<String>> _tags;
   {
     final json = isarJsonDecode(IsarCore.readString(reader, 5) ?? 'null');
     if (json is List) {
-      _tags = json;
+      _tags = castToListOfListOfString(json);
     } else {
-      _tags = const <dynamic>[];
+      _tags = const <List<String>>[];
     }
   }
   final String _content;
