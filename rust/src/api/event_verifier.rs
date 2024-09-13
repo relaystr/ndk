@@ -13,7 +13,7 @@ pub fn init_app() {
 }
 
 #[test]
-fn event_verifier_test_valid() {
+fn schnorr_signature_test_valid() {
     let pub_key_hex = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
     let event_id = "a47c525970d21575c67e6f1e47674f1b82fc7edabb098fac4be21bb05425b389";
     let signature_hex = "b03ddc4930776698d39caa3df0cd887558ceea281eb9e2524daaba324906b2e3efc06f2f65a7fbba95c0b3ce9817df81f53d2d8da0124028446b0cc3a59ae6d9";
@@ -25,7 +25,7 @@ fn event_verifier_test_valid() {
 }
 
 #[test]
-fn event_verifier_test_invalid() {
+fn schnorr_signature_test_invalid() {
     let pub_key_hex = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
     let event_id = "a47c525970d21575c67e6f1e47674f1b82fc7edabb098fac4be21bb05425b389";
     // invalid sig
