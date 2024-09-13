@@ -1,5 +1,7 @@
 use hex::decode;
 use secp256k1::{schnorr::Signature, Message, Secp256k1, XOnlyPublicKey};
+use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 
 #[flutter_rust_bridge::frb(sync)] // Synchronous mode for simplicity of the demo
 pub fn greet(name: String) -> String {
@@ -10,6 +12,24 @@ pub fn greet(name: String) -> String {
 pub fn init_app() {
     // Default utilities - feel free to customize
     flutter_rust_bridge::setup_default_user_utils();
+}
+
+pub fn verify_nostr_event(
+    event_id_hex: &str,
+    pub_key_hex: &str,
+    created_at: u64,
+    kind: u16,
+    tags: Vec<Vec<String>>,
+    content: &str,
+    signature_hex: &str,
+) -> bool {
+    // check id
+    let calc_id = hash_event_data(pub_key_hex, created_at, kind, tags, content);
+    if calc_id != event_id_hex {
+        return false;
+    }
+    // check signature
+    return verify_schnorr_signature(pub_key_hex, event_id_hex, signature_hex);
 }
 
 #[test]
@@ -111,4 +131,58 @@ pub fn verify_schnorr_signature(
     //println!("Verification result: {:?}", verification_result);
 
     return verification_result.is_ok();
+}
+
+#[test]
+fn hash_event_data_valid() {
+    let valid_id = "2bd7b2af40868949001713ffdcf95e1b1659dbbabe659ef9299d0fe11e31421d";
+
+    let pubkey = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+    let created_at = 1726215220;
+    let kind = 1;
+    let tags: Vec<Vec<String>> = vec![];
+    let content = "hello world";
+
+    let result = hash_event_data(pubkey, created_at, kind, tags, content);
+    println!("result: {}", result);
+
+    assert_eq!(result, valid_id);
+}
+
+#[test]
+fn hash_event_data_invalid() {
+    let valid_id = "2bd7b2af40868949001713ffdcf95e1b1659dbbabe659ef9299d0fe11e31421d";
+
+    let pubkey = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+    let created_at = 1726215220;
+    let kind = 1;
+    let tags: Vec<Vec<String>> = vec![];
+    let content = "invalid";
+
+    let result = hash_event_data(pubkey, created_at, kind, tags, content);
+    println!("result: {}", result);
+
+    assert_ne!(result, valid_id);
+}
+
+/**
+ * hashes the given params, in nostr this is the id
+ * [return] hash / nostrId
+ */
+pub fn hash_event_data(
+    pubkey: &str,
+    created_at: u64,
+    kind: u16,
+    tags: Vec<Vec<String>>,
+    content: &str,
+) -> String {
+    let event = json!([0, pubkey, created_at, kind, tags, content]);
+
+    let serialized_event = serde_json::to_string(&event).expect("Serialization error");
+
+    let mut hasher = Sha256::new();
+    hasher.update(serialized_event.as_bytes());
+    let result = hasher.finalize();
+
+    format!("{:x}", result)
 }

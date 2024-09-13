@@ -9,6 +9,23 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 String greet({required String name}) =>
     RustLib.instance.api.crateApiEventVerifierGreet(name: name);
 
+Future<bool> verifyNostrEvent(
+        {required String eventIdHex,
+        required String pubKeyHex,
+        required BigInt createdAt,
+        required int kind,
+        required List<List<String>> tags,
+        required String content,
+        required String signatureHex}) =>
+    RustLib.instance.api.crateApiEventVerifierVerifyNostrEvent(
+        eventIdHex: eventIdHex,
+        pubKeyHex: pubKeyHex,
+        createdAt: createdAt,
+        kind: kind,
+        tags: tags,
+        content: content,
+        signatureHex: signatureHex);
+
 Future<bool> verifySchnorrSignature(
         {required String pubKeyHex,
         required String eventIdHex,
@@ -17,3 +34,19 @@ Future<bool> verifySchnorrSignature(
         pubKeyHex: pubKeyHex,
         eventIdHex: eventIdHex,
         signatureHex: signatureHex);
+
+/// * hashes the given params, in nostr this is the id
+/// * [return] hash / nostrId
+///
+Future<String> hashEventData(
+        {required String pubkey,
+        required BigInt createdAt,
+        required int kind,
+        required List<List<String>> tags,
+        required String content}) =>
+    RustLib.instance.api.crateApiEventVerifierHashEventData(
+        pubkey: pubkey,
+        createdAt: createdAt,
+        kind: kind,
+        tags: tags,
+        content: content);

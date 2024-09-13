@@ -93,3 +93,8 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/custom-fonts/#from-packages
+
+
+
+## Build rust glue
+# flutter_rust_bridge_codegen generate --watch
