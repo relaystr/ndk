@@ -9,7 +9,14 @@ set(PROJECT_NAME "rust_lib_ndk")
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 include("../cargokit/cmake/cargokit.cmake")
-apply_cargokit(${PROJECT_NAME} ../../../../../../rust rust_lib_ndk "")
+
+### default - as package
+#apply_cargokit(${PROJECT_NAME} ../../../../../../rust rust_lib_ndk "")
+
+### if dart_ndk is next to the app folder 
+apply_cargokit(${PROJECT_NAME} ../../../../../../../dart_ndk/rust rust_lib_ndk "")
+
+
 
 # List of absolute paths to libraries that should be bundled with the plugin.
 # This list could contain prebuilt libraries, or libraries created by an
