@@ -6,21 +6,21 @@ import '../../../rust_bridge/api/event_verifier.dart';
 import '../../../rust_bridge/frb_generated.dart';
 
 class RustEventVerifier implements EventVerifier {
-  Completer<bool> isInitialized = Completer<bool>();
+  final Completer<bool> _isInitialized = Completer<bool>();
 
   RustEventVerifier() {
-    init();
+    _init();
   }
 
-  Future<bool> init() async {
+  Future<bool> _init() async {
     await RustLib.init();
-    isInitialized.complete(true);
+    _isInitialized.complete(true);
     return true;
   }
 
   @override
   Future<bool> verify(Nip01Event event) async {
-    await isInitialized.future;
+    await _isInitialized.future;
 
     return verifyNostrEvent(
       eventIdHex: event.id,
