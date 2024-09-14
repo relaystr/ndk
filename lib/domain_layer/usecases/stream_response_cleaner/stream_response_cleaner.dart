@@ -34,7 +34,7 @@ class StreamResponseCleaner {
 
       trackingSet.add(event.id);
       outController.add(event);
-      Logger.log.d("added event ${event.content}");
+      Logger.log.t("added event ${event.content}");
     }, onDone: () async {
       _canClose();
     }, onError: (error) {
