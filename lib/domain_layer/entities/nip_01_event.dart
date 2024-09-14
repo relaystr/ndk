@@ -130,7 +130,7 @@ class Nip01Event {
         var value = tag[1];
 
         if (key == "e") {
-          return value as String;
+          return value;
         }
       }
     }
@@ -167,7 +167,7 @@ class Nip01Event {
         var value = tag[1];
 
         if (key == "d") {
-          return value as String;
+          return value;
         }
       }
     }

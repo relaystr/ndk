@@ -3,11 +3,8 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/filter.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
-import 'package:ndk/domain_layer/entities/nip_65.dart';
 
 class MockRelay {
   String name;
