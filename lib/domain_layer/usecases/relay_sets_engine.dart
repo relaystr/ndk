@@ -388,11 +388,10 @@ class RelaySetsEngine implements NetworkEngine {
                   Filter(
                       authors: missingPubKeys,
                       kinds: [Nip65.KIND, ContactList.KIND])
-                ],
-                timeout: missingPubKeys.length > 1 ? 10 : 3));
+                ]));
 
         await _doQuery(requestState);
-        await for (final event in (requestState.stream)) {
+        await for (final event in (requestState.stream).timeout(Duration(seconds: missingPubKeys.length > 1 ? 10 : 3))) {
           switch (event.kind) {
             case Nip65.KIND:
               Nip65 nip65 = Nip65.fromEvent(event);

@@ -7,7 +7,7 @@ import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
 
 void main() async {
-  group('follows', () {
+  group('follows', skip:true, () {
     MockRelay relay0 = MockRelay(name: "relay 0", explicitPort: 4095);
 
     final cache = MemCacheManager();

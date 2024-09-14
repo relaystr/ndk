@@ -180,7 +180,7 @@ class RelayManager {
     }, onDone: () {
       if (allowReconnectRelays) {
         print(
-            "onDone $url on listen (close: ${transports[url]!.closeCode} ${transports[url]!.closeReason}), trying to reconnect");
+            "onDone $url on listen (close: ${transports[url]!.closeCode()} ${transports[url]!.closeReason()}), trying to reconnect");
         if (isWebSocketOpen(url)) {
           print("closing $url webSocket");
           transports[url]!.close();
