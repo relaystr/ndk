@@ -57,7 +57,6 @@ class Initialization {
         break;
       case NdkEngine.JIT:
         engine = JitEngine(
-          eventVerifier: config.eventVerifier,
           eventSigner: config.eventSigner,
           cache: config.cache,
           ignoreRelays: config.ignoreRelays,
@@ -76,6 +75,7 @@ class Initialization {
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
       networkEngine: engine,
+      eventVerifier: config.eventVerifier,
     );
 
     follows = Follows(

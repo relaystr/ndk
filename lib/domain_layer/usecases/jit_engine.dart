@@ -9,14 +9,12 @@ import '../entities/read_write_marker.dart';
 import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
-import '../repositories/event_verifier.dart';
 import 'engines/network_engine.dart';
 import 'relay_jit_manager/relay_jit.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 
 class JitEngine with Logger implements NetworkEngine {
-  EventVerifier eventVerifier;
   EventSigner? eventSigner;
   CacheManager cache;
   List<String> ignoreRelays;
@@ -28,7 +26,6 @@ class JitEngine with Logger implements NetworkEngine {
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
   JitEngine({
-    required this.eventVerifier,
     this.eventSigner,
     required this.cache,
     required this.ignoreRelays,
@@ -164,15 +161,6 @@ class JitEngine with Logger implements NetworkEngine {
 
   /// verify event and add to response stream
   void onMessage(Nip01Event event, RequestState requestState) async {
-    // verify event
-    bool validSig = await eventVerifier.verify(event);
-
-    if (!validSig) {
-      Logger.log.w("🔑⛔ Invalid signature on event: $event");
-      return;
-    }
-    event.validSig = validSig;
-
     // add to response stream
     requestState.networkController.add(event);
   }

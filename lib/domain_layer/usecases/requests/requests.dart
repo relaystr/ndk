@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import '../../../shared/logger/logger.dart';
+import '../../entities/nip_01_event.dart';
+import '../../repositories/event_verifier.dart';
 import '../engines/network_engine.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
@@ -18,16 +23,19 @@ class Requests {
   final CacheRead _cacheRead;
   final CacheWrite _cacheWrite;
   final NetworkEngine _engine;
+  final EventVerifier _eventVerifier;
 
   Requests({
     required GlobalState globalState,
     required CacheRead cacheRead,
     required CacheWrite cacheWrite,
     required NetworkEngine networkEngine,
+    required EventVerifier eventVerifier,
   })  : _engine = networkEngine,
         _cacheWrite = cacheWrite,
         _cacheRead = cacheRead,
-        _globalState = globalState;
+        _globalState = globalState,
+        _eventVerifier = eventVerifier;
 
   /// low level nostr query
   /// [id] is automatically provided
@@ -38,7 +46,6 @@ class Requests {
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    int? timeout,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
@@ -48,7 +55,6 @@ class Requests {
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
-      timeout: timeout,
       explicitRelays: explicitRelays,
       desiredCoverage: desiredCoverage ?? 2,
     ));
@@ -87,21 +93,37 @@ class Requests {
 
     final concurrency = ConcurrencyCheck(_globalState);
 
+    // register event verification - removes invalid events from the stream
+    final verifiedNetworkStream = state.networkController.stream
+        .asyncMap<Nip01Event>((data) async {
+          final valid = await _eventVerifier.verify(data);
+          if (valid) {
+            data.validSig = true;
+            return data;
+          } else {
+            Logger.log.w("🔑⛔ Invalid signature on event: $data");
+            data.validSig = false;
+            return data;
+          }
+        })
+        .where((event) => event.validSig == true) // Filter out invalid events
+        .asBroadcastStream();
+
+    /// register cache new responses
+    _cacheWrite.saveNetworkResponse(
+      writeToCache: request.cacheWrite,
+      inputStream: verifiedNetworkStream,
+    );
+
     // register listener
     StreamResponseCleaner(
       inputStreams: [
-        state.networkController.stream,
-        // state.cacheController.stream,
+        verifiedNetworkStream,
+        state.cacheController.stream,
       ],
       trackingSet: state.returnedIds,
       outController: state.controller,
     )();
-
-    /// cache new responses
-    _cacheWrite.saveNetworkResponse(
-      writeToCache: request.cacheWrite,
-      inputStream: state.controller.stream,
-    );
 
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
