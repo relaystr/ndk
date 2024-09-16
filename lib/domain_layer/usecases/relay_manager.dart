@@ -317,7 +317,7 @@ class RelayManager {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
       Logger.log.w("RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
-      send(url, jsonEncode(["CLOSE", id]));
+      // send(url, jsonEncode(["CLOSE", id]));
       return;
     }
 
@@ -334,25 +334,25 @@ class RelayManager {
     if (state != null) {
       RelayRequestState? request = state.requests[url];
       if (request != null) {
-        request.eventIdsToBeVerified.add(event.id);
-        eventVerifier.verify(event).then((validSig) {
-          if (validSig) {
+        // request.eventIdsToBeVerified.add(event.id);
+        // eventVerifier.verify(event).then((validSig) {
+        //   if (validSig) {
             event.sources.add(url);
-            event.validSig = true;
-            if (relays[url] != null) {
-              relays[url]!.incStatsByNewEvent(event, message.toString().codeUnits.length);
-            }
+            // event.validSig = true;
+            // if (relays[url] != null) {
+            //   relays[url]!.incStatsByNewEvent(event, message.toString().codeUnits.length);
+            // }
             if (state.networkController.isClosed) {
               Logger.log.e("TRIED to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
             } else {
               state.networkController.add(event);
             }
-          } else {
-            Logger.log.f("INVALID EVENT SIGNATURE: $event");
-          }
-          request.eventIdsToBeVerified.remove(event.id);
-          closeIfAllEventsVerified(request, state, url);
-        });
+          // } else {
+          //   Logger.log.f("INVALID EVENT SIGNATURE: $event");
+          // }
+          // request.eventIdsToBeVerified.remove(event.id);
+          // closeIfAllEventsVerified(request, state, url);
+        // });
       }
     }
     return;
