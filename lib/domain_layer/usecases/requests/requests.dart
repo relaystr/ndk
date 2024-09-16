@@ -38,6 +38,7 @@ class Requests {
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
+    int? timeout,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
@@ -47,6 +48,7 @@ class Requests {
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
+      timeout: timeout,
       explicitRelays: explicitRelays,
       desiredCoverage: desiredCoverage ?? 2,
     ));
@@ -89,7 +91,7 @@ class Requests {
     StreamResponseCleaner(
       inputStreams: [
         state.networkController.stream,
-        state.cacheController.stream,
+        // state.cacheController.stream,
       ],
       trackingSet: state.returnedIds,
       outController: state.controller,
