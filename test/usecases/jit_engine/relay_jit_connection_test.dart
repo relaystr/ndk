@@ -146,7 +146,6 @@ void main() async {
 
       JitEngine manager = JitEngine(
         cache: cacheManager,
-        eventVerifier: eventVerifier,
         ignoreRelays: [],
         seedRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
         globalState: globalState,

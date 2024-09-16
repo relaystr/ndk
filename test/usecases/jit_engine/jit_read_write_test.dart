@@ -46,7 +46,6 @@ void main() async {
     // setup
     JitEngine relayJitManager = JitEngine(
       cache: cacheManager,
-      eventVerifier: eventVerifier,
       ignoreRelays: [],
       seedRelays: DEFAULT_BOOTSTRAP_RELAYS,
       globalState: globalState,

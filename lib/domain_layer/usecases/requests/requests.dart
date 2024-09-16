@@ -15,6 +15,7 @@ import '../../entities/request_state.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../cache_read/cache_read.dart';
 import '../cache_write/cache_write.dart';
+import 'verify_event_stream.dart';
 
 class Requests {
   static const int DEFAULT_QUERY_TIMEOUT = 5;
@@ -94,20 +95,10 @@ class Requests {
     final concurrency = ConcurrencyCheck(_globalState);
 
     // register event verification - removes invalid events from the stream
-    final verifiedNetworkStream = state.networkController.stream
-        .asyncMap<Nip01Event>((data) async {
-          final valid = await _eventVerifier.verify(data);
-          if (valid) {
-            data.validSig = true;
-            return data;
-          } else {
-            Logger.log.w("🔑⛔ Invalid signature on event: $data");
-            data.validSig = false;
-            return data;
-          }
-        })
-        .where((event) => event.validSig == true) // Filter out invalid events
-        .asBroadcastStream();
+    final verifiedNetworkStream = VerifyEventStream(
+      unverifiedStreamInput: state.networkController.stream,
+      eventVerifier: _eventVerifier,
+    )();
 
     /// register cache new responses
     _cacheWrite.saveNetworkResponse(
