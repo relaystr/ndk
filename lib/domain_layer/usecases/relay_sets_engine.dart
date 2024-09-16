@@ -36,7 +36,6 @@ class RelaySetsEngine implements NetworkEngine {
   RelaySetsEngine({
     required this.relayManager,
     CacheManager? cacheManager,
-    EventVerifier? eventVerifier,
     GlobalState? globalState,
   }) {
     this.cacheManager = cacheManager ?? MemCacheManager();

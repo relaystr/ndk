@@ -51,7 +51,6 @@ class Initialization {
       case NdkEngine.RELAY_SETS:
         engine = RelaySetsEngine(
           cacheManager: config.cache,
-          eventVerifier: config.eventVerifier,
           globalState: globalState,
           relayManager: relayManager,
         );
