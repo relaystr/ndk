@@ -108,7 +108,7 @@ class RelayJit extends Relay with Logger {
 
         case 'NOTICE':
           //["NOTICE", <message>]
-          Logger.log.i("NOTICE received: $eventJson");
+          Logger.log.i("NOTICE received by: ${this.url} msg: $eventJson");
           Logger.log.f("NOTICE not implemented!");
           break;
 
