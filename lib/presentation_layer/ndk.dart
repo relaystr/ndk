@@ -3,14 +3,12 @@ import 'package:ndk/domain_layer/usecases/user_relay_lists/user_relay_lists.dart
 
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/nip_01_event.dart';
-import '../domain_layer/entities/read_write.dart';
-import '../domain_layer/entities/relay_set.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/relay_manager.dart';
-import '../domain_layer/usecases/relay_sets_engine.dart';
+import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../shared/nips/nip09/deletion.dart';
 import '../shared/nips/nip25/reactions.dart';
@@ -38,28 +36,7 @@ class Ndk {
   Metadatas get metadatas => _initialization.metadatas;
   UserRelayLists get userRelayLists => _initialization.userRelayLists;
   Lists get lists => _initialization.lists;
-
-  Future<RelaySet> calculateRelaySet(
-      {required String name,
-      required String ownerPubKey,
-      required List<String> pubKeys,
-      required RelayDirection direction,
-      required int relayMinCountPerPubKey,
-      Function(String, int, int)? onProgress}) async {
-    if (_initialization.engine is! RelaySetsEngine) {
-      throw UnimplementedError(
-          "this engine doesn't support calculation of relay sets");
-    }
-
-    final RelaySetsEngine myEngine = _initialization.engine as RelaySetsEngine;
-
-    return await myEngine.calculateRelaySet(
-        name: name,
-        ownerPubKey: ownerPubKey,
-        pubKeys: pubKeys,
-        direction: direction,
-        relayMinCountPerPubKey: relayMinCountPerPubKey);
-  }
+  RelaySets get relaySets => _initialization.relaySets;
 
   /// hot swap EventVerifier
   changeEventVerifier(EventVerifier newEventVerifier) {

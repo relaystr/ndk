@@ -12,6 +12,7 @@ import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/relay_manager.dart';
+import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import 'ndk_config.dart';
@@ -40,6 +41,7 @@ class Initialization {
   late Metadatas metadatas;
   late UserRelayLists userRelayLists;
   late Lists lists;
+  late RelaySets relaySets;
 
   late final NetworkEngine engine;
 
@@ -106,6 +108,13 @@ class Initialization {
       requests: requests,
       cacheManager: config.cache,
       relayManager: relayManager,
+    );
+
+    relaySets = RelaySets(
+        requests: requests,
+        cacheManager: config.cache,
+        relayManager: relayManager,
+        userRelayLists: userRelayLists,
     );
   }
 }
