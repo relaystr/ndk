@@ -1,20 +1,18 @@
 import 'dart:async';
 
-import '../../../shared/logger/logger.dart';
-import '../../entities/nip_01_event.dart';
+import '../../../shared/nips/nip01/helpers.dart';
+import '../../entities/filter.dart';
+import '../../entities/global_state.dart';
+import '../../entities/ndk_request.dart';
+import '../../entities/relay_set.dart';
+import '../../entities/request_response.dart';
+import '../../entities/request_state.dart';
 import '../../repositories/event_verifier.dart';
+import '../cache_read/cache_read.dart';
+import '../cache_write/cache_write.dart';
 import '../engines/network_engine.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
-import '../../entities/global_state.dart';
-import '../../entities/ndk_request.dart';
-import '../../entities/request_response.dart';
-import '../../entities/filter.dart';
-import '../../entities/relay_set.dart';
-import '../../entities/request_state.dart';
-import '../../../shared/nips/nip01/helpers.dart';
-import '../cache_read/cache_read.dart';
-import '../cache_write/cache_write.dart';
 import 'verify_event_stream.dart';
 
 class Requests {
