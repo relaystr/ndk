@@ -133,7 +133,7 @@ class RelaySetsEngine implements NetworkEngine {
         state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     } else {
-      for (var url in relayManager.relays.keys) {
+      for (var url in relayManager.bootstrapRelays) {
         state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     }
