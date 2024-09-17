@@ -4,6 +4,7 @@
 ///
 library;
 
+export 'domain_layer/entities/connection_source.dart';
 export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/filter.dart';
 export 'domain_layer/entities/user_metadata.dart';

@@ -10,8 +10,6 @@ export 'presentation_layer/ndk_config.dart';
 export 'domain_layer/entities/ndk_request.dart';
 export 'domain_layer/entities/request_response.dart';
 
-// todo refine api and export
-
 /**
  * common entities
  * 
@@ -36,9 +34,7 @@ export 'domain_layer/entities/user_metadata.dart';
 /// signers / verifiers
 export 'domain_layer/repositories/event_verifier.dart';
 export 'domain_layer/repositories/event_signer.dart';
-// export 'data_layer/repositories/verifiers/acinq_event_verifier.dart';
 export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
-// export 'data_layer/repositories/signers/amber_event_signer.dart';
 export 'data_layer/repositories/signers/bip340_event_signer.dart';
 export 'data_layer/repositories/verifiers/rust_event_verifier.dart';
 
@@ -56,3 +52,7 @@ export "domain_layer/usecases/relay_manager.dart";
 export "domain_layer/usecases/jit_engine.dart";
 export "domain_layer/usecases/requests/requests.dart";
 export "domain_layer/usecases/follows/follows.dart";
+export 'domain_layer/usecases/metadata/metadata.dart';
+export 'domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+export 'domain_layer/usecases/lists/lists.dart';
+export 'domain_layer/usecases/relay_sets/relay_sets.dart';
