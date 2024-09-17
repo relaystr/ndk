@@ -5,8 +5,6 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
 
-import 'package:isar/isar.dart';
-
 import '../../config/bootstrap_relays.dart';
 import '../../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../../event_filter.dart';
@@ -69,7 +67,8 @@ class RelayManager {
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
-  Future<void> connect({Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS}) async {
+  Future<void> connect(
+      {Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS}) async {
     bootstrapRelays = [];
     for (String url in urls) {
       String? clean = cleanRelayUrl(url);
@@ -80,7 +79,9 @@ class RelayManager {
     if (bootstrapRelays.isEmpty) {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
-    await Future.wait(urls.map((url) => reconnectRelay(url, force: true)).toList()).whenComplete(() {
+    await Future.wait(
+            urls.map((url) => reconnectRelay(url, force: true)).toList())
+        .whenComplete(() {
       if (!_seedRelaysCompleter.isCompleted) {
         _seedRelaysCompleter.complete();
       }
@@ -93,7 +94,8 @@ class RelayManager {
   }
 
   Future<void> closeTransport(url) async {
-    return transports[url]?.close().timeout(const Duration(seconds: 3), onTimeout: () {
+    return transports[url]?.close().timeout(const Duration(seconds: 3),
+        onTimeout: () {
       print("timeout while trying to close socket $url");
     });
   }
@@ -117,7 +119,8 @@ class RelayManager {
   }
 
   /// Connect a new relay
-  Future<bool> connectRelay(String dirtyUrl, {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
+  Future<bool> connectRelay(String dirtyUrl,
+      {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
     String? url = cleanRelayUrl(dirtyUrl);
     if (url == null) {
       return false;
@@ -176,7 +179,8 @@ class RelayManager {
       throw Exception("Error in socket");
     }, onDone: () {
       if (allowReconnectRelays) {
-        print("onDone $url on listen (close: ${transports[url]!.closeCode()} ${transports[url]!.closeReason()}), trying to reconnect");
+        print(
+            "onDone $url on listen (close: ${transports[url]!.closeCode()} ${transports[url]!.closeReason()}), trying to reconnect");
         if (isWebSocketOpen(url)) {
           print("closing $url webSocket");
           transports[url]!.close();
@@ -190,10 +194,14 @@ class RelayManager {
   }
 
   List<Relay> getConnectedRelays(Iterable<String> urls) {
-    return urls.where((url) => isRelayConnected(url)).map((url) => relays[url]!).toList();
+    return urls
+        .where((url) => isRelayConnected(url))
+        .map((url) => relays[url]!)
+        .toList();
   }
 
-  Future<void> broadcastEvent(Nip01Event event, Iterable<String> relays, EventSigner signer) async {
+  Future<void> broadcastEvent(
+      Nip01Event event, Iterable<String> relays, EventSigner signer) async {
     await signer.sign(event);
     await Future.wait(relays.map((url) => broadcastSignedEvent(event, url)));
   }
@@ -201,7 +209,8 @@ class RelayManager {
   Future<void> broadcastSignedEvent(Nip01Event event, String url) async {
     if (isWebSocketOpen(url) && (!blockedRelays.contains(url))) {
       try {
-        Logger.log.i("🛈 BROADCASTING to $url : kind: ${event.kind} author: ${event.pubKey}");
+        Logger.log.i(
+            "🛈 BROADCASTING to $url : kind: ${event.kind} author: ${event.pubKey}");
         var webSocket = transports[url];
         if (webSocket != null) {
           send(url, jsonEncode(["EVENT", event.toJson()]));
@@ -219,11 +228,11 @@ class RelayManager {
   void closeSubscription(String subscriptionId) {
     RequestState? state = globalState.inFlightRequests[subscriptionId];
     if (state != null) {
-        for (var url in state.requests.keys) {
-          sendCloseToRelay(url, state.id);
-        }
-        removeInFlightRequestById(subscriptionId);
+      for (var url in state.requests.keys) {
+        sendCloseToRelay(url, state.id);
       }
+      removeInFlightRequestById(subscriptionId);
+    }
   }
 
   void removeInFlightRequestById(String id) {
@@ -257,7 +266,8 @@ class RelayManager {
     } else if (eventJson[0] == 'EOSE') {
       handleEOSE(eventJson, url);
     } else if (eventJson[0] == 'CLOSED') {
-      Logger.log.w(" CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson[2]}");
+      Logger.log.w(
+          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson[2]}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
     // TODO
@@ -304,8 +314,8 @@ class RelayManager {
     }
   }
 
-
-  void closeIfAllEventsVerified(RelayRequestState request, RequestState state, String url) {
+  void closeIfAllEventsVerified(
+      RelayRequestState request, RequestState state, String url) {
     if (request.receivedEOSE && request.eventIdsToBeVerified.isEmpty) {
       if (state.request.closeOnEOSE) {
         sendCloseToRelay(url, state.id);
@@ -320,7 +330,8 @@ class RelayManager {
   void handleIncomingEvent(List<dynamic> eventJson, String url, message) {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
-      Logger.log.w("RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
+      Logger.log.w(
+          "RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
       // send(url, jsonEncode(["CLOSE", id]));
       return;
     }
@@ -341,21 +352,22 @@ class RelayManager {
         // request.eventIdsToBeVerified.add(event.id);
         // eventVerifier.verify(event).then((validSig) {
         //   if (validSig) {
-            event.sources.add(url);
-            // event.validSig = true;
-            // if (relays[url] != null) {
-            //   relays[url]!.incStatsByNewEvent(event, message.toString().codeUnits.length);
-            // }
-            if (state.networkController.isClosed) {
-              Logger.log.e("TRIED to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
-            } else {
-              state.networkController.add(event);
-            }
-          // } else {
-          //   Logger.log.f("INVALID EVENT SIGNATURE: $event");
-          // }
-          // request.eventIdsToBeVerified.remove(event.id);
-          // closeIfAllEventsVerified(request, state, url);
+        event.sources.add(url);
+        // event.validSig = true;
+        // if (relays[url] != null) {
+        //   relays[url]!.incStatsByNewEvent(event, message.toString().codeUnits.length);
+        // }
+        if (state.networkController.isClosed) {
+          Logger.log.e(
+              "TRIED to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
+        } else {
+          state.networkController.add(event);
+        }
+        // } else {
+        //   Logger.log.f("INVALID EVENT SIGNATURE: $event");
+        // }
+        // request.eventIdsToBeVerified.remove(event.id);
+        // closeIfAllEventsVerified(request, state, url);
         // });
       }
     }
@@ -379,7 +391,10 @@ class RelayManager {
     Map<String, List<PubkeyMapping>> map = {};
     for (var relay in relays.keys) {
       if (isWebSocketOpen(relay)) {
-        map[relay] = pubKeys.map((pubKey) => PubkeyMapping(pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite)).toList();
+        map[relay] = pubKeys
+            .map((pubKey) => PubkeyMapping(
+                pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite))
+            .toList();
       }
     }
     return map;
@@ -410,7 +425,10 @@ class RelayManager {
         await transport.ready;
       }
       if (!isWebSocketOpen(url)) {
-        if (relay != null && !force && !relay.wasLastConnectTryLongerThanSeconds(FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS)) {
+        if (relay != null &&
+            !force &&
+            !relay.wasLastConnectTryLongerThanSeconds(
+                FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS)) {
           // don't try too often
           return false;
         }
@@ -459,11 +477,10 @@ class RelayManager {
       int? nameCount = namesMap[state.request.name];
       // kindCount ??= 0;
       // kindCount++;
-      nameCount??=0;
+      nameCount ??= 0;
       nameCount++;
       // kindsMap[kind] = kindCount;
       namesMap[state.request.name] = nameCount;
-
     });
     Logger.log.d(
         "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");

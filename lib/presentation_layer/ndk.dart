@@ -1,15 +1,14 @@
-import 'package:ndk/domain_layer/usecases/lists/lists.dart';
-import 'package:ndk/domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
-
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/nip_01_event.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../domain_layer/usecases/follows/follows.dart';
+import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadata/metadata.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
+import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../shared/nips/nip09/deletion.dart';
 import '../shared/nips/nip25/reactions.dart';
 import 'init.dart';

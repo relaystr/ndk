@@ -1,5 +1,4 @@
 import 'package:http/http.dart' as http;
-import 'package:ndk/domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
@@ -15,6 +14,7 @@ import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
+import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import 'ndk_config.dart';
 
 class Initialization {
