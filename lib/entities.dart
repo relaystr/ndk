@@ -6,7 +6,7 @@ library;
 
 export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/filter.dart';
-export 'domain_layer/entities/metadata.dart';
+export 'domain_layer/entities/user_metadata.dart';
 export 'domain_layer/entities/nip_01_event.dart';
 export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/nip_65.dart';

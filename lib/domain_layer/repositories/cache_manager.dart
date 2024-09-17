@@ -2,7 +2,7 @@ import '../entities/contact_list.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
-import '../entities/metadata.dart';
+import '../entities/user_metadata.dart';
 import '../../shared/nips/nip05/nip05.dart';
 
 abstract class CacheManager {
@@ -37,13 +37,13 @@ abstract class CacheManager {
   Future<void> removeContactList(String pubKey);
   Future<void> removeAllContactLists();
 
-  Future<void> saveMetadata(Metadata metadata);
-  Future<void> saveMetadatas(List<Metadata> metadatas);
-  Metadata? loadMetadata(String pubKey);
-  List<Metadata?> loadMetadatas(List<String> pubKeys);
+  Future<void> saveMetadata(UserMetadata metadata);
+  Future<void> saveMetadatas(List<UserMetadata> metadatas);
+  UserMetadata? loadMetadata(String pubKey);
+  List<UserMetadata?> loadMetadatas(List<String> pubKeys);
   Future<void> removeMetadata(String pubKey);
   Future<void> removeAllMetadatas();
-  Iterable<Metadata> searchMetadatas(String search, int limit);
+  Iterable<UserMetadata> searchMetadatas(String search, int limit);
 
   Future<void> saveNip05(Nip05 nip05);
   Future<void> saveNip05s(List<Nip05> nip05s);

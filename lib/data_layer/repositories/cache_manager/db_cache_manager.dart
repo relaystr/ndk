@@ -3,7 +3,7 @@ import 'dart:core';
 import 'package:isar/isar.dart';
 
 import '../../../domain_layer/entities/contact_list.dart';
-import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/entities/user_metadata.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
@@ -114,7 +114,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Metadata? loadMetadata(String pubKey) {
+  UserMetadata? loadMetadata(String pubKey) {
     return isar_ds.isar.dbMetadatas.get(pubKey);
   }
 
@@ -170,7 +170,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> saveMetadata(Metadata metadata) async {
+  Future<void> saveMetadata(UserMetadata metadata) async {
     final startTime = DateTime.now();
     isar_ds.isar.write((isar) {
       isar.dbMetadatas.put(DbMetadata.fromMetadata(metadata));
@@ -181,7 +181,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> saveMetadatas(List<Metadata> metadatas) async {
+  Future<void> saveMetadatas(List<UserMetadata> metadatas) async {
     final startTime = DateTime.now();
     isar_ds.isar.write((isar) {
       isar.dbMetadatas.putAll(metadatas
@@ -195,12 +195,12 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  List<Metadata?> loadMetadatas(List<String> pubKeys) {
+  List<UserMetadata?> loadMetadatas(List<String> pubKeys) {
     return isar_ds.isar.dbMetadatas.getAll(pubKeys);
   }
 
   @override
-  Iterable<Metadata> searchMetadatas(String search, int limit) {
+  Iterable<UserMetadata> searchMetadatas(String search, int limit) {
     return isar_ds.isar.dbMetadatas
         .where()
         .splitDisplayNameWordsElementStartsWith(search)
@@ -331,7 +331,9 @@ class DbCacheManager extends CacheManager {
         // .and()
         // .optional(Helpers.isNotBlank(pTag), (q) => q.pTagsElementEqualTo(pTag!))
         .findAll();
-    events = Helpers.isNotBlank(pTag)? events.where((event) => event.pTags.contains(pTag)).toList() : events;
+    events = Helpers.isNotBlank(pTag)
+        ? events.where((event) => event.pTags.contains(pTag)).toList()
+        : events;
     return eventFilter != null
         ? events.where((event) => eventFilter!.filter(event)).toList()
         : events;

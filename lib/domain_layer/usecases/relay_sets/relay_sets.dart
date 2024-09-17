@@ -1,23 +1,14 @@
-import 'dart:convert';
-
-import 'package:ndk/domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
-
 import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/logger/logger.dart';
-import '../../../shared/nips/nip01/helpers.dart';
-import '../../entities/filter.dart';
-import '../../entities/metadata.dart';
-import '../../entities/nip_01_event.dart';
 import '../../entities/pubkey_mapping.dart';
 import '../../entities/read_write.dart';
 import '../../entities/read_write_marker.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/user_relay_list.dart';
 import '../../repositories/cache_manager.dart';
-import '../../repositories/event_signer.dart';
 import '../relay_manager.dart';
-import '../relay_sets_engine.dart';
 import '../requests/requests.dart';
+import '../user_relay_lists/user_relay_lists.dart';
 
 class RelaySets {
   Requests requests;
@@ -25,21 +16,20 @@ class RelaySets {
   RelayManager relayManager;
   UserRelayLists userRelayLists;
 
-  RelaySets({
-    required this.requests,
-    required this.cacheManager,
-    required this.relayManager,
-    required this.userRelayLists
-  });
+  RelaySets(
+      {required this.requests,
+      required this.cacheManager,
+      required this.relayManager,
+      required this.userRelayLists});
 
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet(
       {required String name,
-        required String ownerPubKey,
-        required List<String> pubKeys,
-        required RelayDirection direction,
-        required int relayMinCountPerPubKey,
-        Function(String, int, int)? onProgress}) async {
+      required String ownerPubKey,
+      required List<String> pubKeys,
+      required RelayDirection direction,
+      required int relayMinCountPerPubKey,
+      Function(String, int, int)? onProgress}) async {
     RelaySet byScore = await _relaysByPopularity(
         name: name,
         ownerPubKey: ownerPubKey,
@@ -72,15 +62,15 @@ class RelaySets {
   ///     - if not add this relay to list of best relays
   Future<RelaySet> _relaysByPopularity(
       {required String name,
-        required String ownerPubKey,
-        required List<String> pubKeys,
-        required RelayDirection direction,
-        required int relayMinCountPerPubKey,
-        Function(String stepName, int count, int total)? onProgress}) async {
+      required String ownerPubKey,
+      required List<String> pubKeys,
+      required RelayDirection direction,
+      required int relayMinCountPerPubKey,
+      Function(String stepName, int count, int total)? onProgress}) async {
     await userRelayLists.loadMissingRelayListsFromNip65OrNip02(pubKeys,
         onProgress: onProgress);
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl =
-    await _buildPubKeysMapFromRelayLists(pubKeys, direction);
+        await _buildPubKeysMapFromRelayLists(pubKeys, direction);
 
     Map<String, Set<String>> minimumRelaysCoverageByPubkey = {};
     Map<String, List<PubkeyMapping>> bestRelays = {};
@@ -98,7 +88,7 @@ class RelaySets {
         continue;
       }
       if (!pubKeysByRelayUrl[url]!.any((pubKey) =>
-      minimumRelaysCoverageByPubkey[pubKey.pubKey] == null ||
+          minimumRelaysCoverageByPubkey[pubKey.pubKey] == null ||
           minimumRelaysCoverageByPubkey[pubKey.pubKey]!.length <
               relayMinCountPerPubKey)) {
         continue;
@@ -149,7 +139,7 @@ class RelaySets {
         notCoveredPubkeys: notCoveredPubkeys.entries
             .map(
               (entry) => NotCoveredPubKey(entry.key, entry.value),
-        )
+            )
             .toList());
   }
 
@@ -181,22 +171,22 @@ class RelaySets {
 
     /// sort by pubKeys count for each relay descending
     List<MapEntry<String, Set<PubkeyMapping>>> sortedEntries =
-    pubKeysByRelayUrl.entries.toList()
+        pubKeysByRelayUrl.entries.toList()
 
-    /// todo: use more stuff to improve sorting
-      ..sort((a, b) {
-        int rr = b.value.length.compareTo(a.value.length);
-        if (rr == 0) {
-          // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
-          bool aC = relayManager.isWebSocketOpen(a.key);
-          bool bC = relayManager.isWebSocketOpen(b.key);
-          if (aC != bC) {
-            return aC ? -1 : 1;
-          }
-          return 0;
-        }
-        return rr;
-      });
+          /// todo: use more stuff to improve sorting
+          ..sort((a, b) {
+            int rr = b.value.length.compareTo(a.value.length);
+            if (rr == 0) {
+              // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
+              bool aC = relayManager.isWebSocketOpen(a.key);
+              bool bC = relayManager.isWebSocketOpen(b.key);
+              if (aC != bC) {
+                return aC ? -1 : 1;
+              }
+              return 0;
+            }
+            return rr;
+          });
 
     return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
   }

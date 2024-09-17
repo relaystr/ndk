@@ -26,7 +26,7 @@ export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/read_write.dart';
 export 'domain_layer/entities/relay.dart';
 export 'domain_layer/entities/relay_set.dart';
-export 'domain_layer/entities/metadata.dart';
+export 'domain_layer/entities/user_metadata.dart';
 
 /**
  *  export classes that need to be injected

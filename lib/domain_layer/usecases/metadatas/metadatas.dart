@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
-import '../../entities/metadata.dart';
+import '../../entities/user_metadata.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/relay_set.dart';
 import '../../repositories/cache_manager.dart';
@@ -22,26 +22,26 @@ class Metadatas {
     required this.relayManager,
   });
 
-  Future<Metadata?> loadMetadata(
-      String pubKey, {
-        bool forceRefresh = false,
-        int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
-      }) async {
-    Metadata? metadata = cacheManager.loadMetadata(pubKey);
+  Future<UserMetadata?> loadMetadata(
+    String pubKey, {
+    bool forceRefresh = false,
+    int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
+  }) async {
+    UserMetadata? metadata = cacheManager.loadMetadata(pubKey);
     if (metadata == null || forceRefresh) {
-      Metadata? loadedMetadata;
+      UserMetadata? loadedMetadata;
       try {
         await for (final event in requests.query(
           name: 'metadata',
           timeout: idleTimeout,
           filters: [
-            Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
+            Filter(kinds: [UserMetadata.KIND], authors: [pubKey], limit: 1)
           ],
         ).stream) {
           if (loadedMetadata == null ||
               loadedMetadata.updatedAt == null ||
               loadedMetadata.updatedAt! < event.createdAt) {
-            loadedMetadata = Metadata.fromEvent(event);
+            loadedMetadata = UserMetadata.fromEvent(event);
           }
         }
       } catch (e) {
@@ -62,35 +62,35 @@ class Metadatas {
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
-  Future<List<Metadata>> loadMetadatas(
+  Future<List<UserMetadata>> loadMetadatas(
       List<String> pubKeys, RelaySet relaySet,
-      {Function(Metadata)? onLoad}) async {
+      {Function(UserMetadata)? onLoad}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
-      Metadata? userMetadata = cacheManager.loadMetadata(pubKey);
+      UserMetadata? userMetadata = cacheManager.loadMetadata(pubKey);
       if (userMetadata == null) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
       }
     }
-    Map<String, Metadata> metadatas = {};
+    Map<String, UserMetadata> metadatas = {};
 
     if (missingPubKeys.isNotEmpty) {
       Logger.log.d("loading missing user metadatas ${missingPubKeys.length}");
       try {
         await for (final event in (requests.query(
-            name: "load-metadatas",
-            filters: [
-              Filter(authors: missingPubKeys, kinds: [Metadata.KIND])
-            ],
-            relaySet: relaySet))
+                name: "load-metadatas",
+                filters: [
+                  Filter(authors: missingPubKeys, kinds: [UserMetadata.KIND])
+                ],
+                relaySet: relaySet))
             .stream
             .timeout(const Duration(seconds: 5), onTimeout: (sink) {
           Logger.log.w("timeout metadatas.length:${metadatas.length}");
         })) {
           if (metadatas[event.pubKey] == null ||
               metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
-            metadatas[event.pubKey] = Metadata.fromEvent(event);
+            metadatas[event.pubKey] = UserMetadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
             await cacheManager.saveMetadata(metadatas[event.pubKey]!);
             if (onLoad != null) {
@@ -109,7 +109,10 @@ class Metadatas {
   Future<Nip01Event?> _refreshMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
     await for (final event in requests.query(filters: [
-      Filter(kinds: [Metadata.KIND], authors: [signer.getPublicKey()], limit: 1)
+      Filter(
+          kinds: [UserMetadata.KIND],
+          authors: [signer.getPublicKey()],
+          limit: 1)
     ]).stream) {
       if (loaded == null || loaded.createdAt < event.createdAt) {
         loaded = event;
@@ -120,9 +123,8 @@ class Metadatas {
 
   /// *******************************************************************************************************************
 
-  Future<Metadata> broadcastMetadata(
-      Metadata metadata, Iterable<String> broadcastRelays, EventSigner eventSigner) async {
-
+  Future<UserMetadata> broadcastMetadata(UserMetadata metadata,
+      Iterable<String> broadcastRelays, EventSigner eventSigner) async {
     Nip01Event? event = await _refreshMetadataEvent(eventSigner);
     if (event != null) {
       Map<String, dynamic> map = json.decode(event.content);
@@ -144,6 +146,5 @@ class Metadatas {
     return metadata;
   }
 
-/// *******************************************************************************************************************
-
+  /// *******************************************************************************************************************
 }

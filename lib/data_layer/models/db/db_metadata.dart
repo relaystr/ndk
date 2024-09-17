@@ -1,11 +1,11 @@
 import 'package:isar/isar.dart';
 
-import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/entities/user_metadata.dart';
 
 part 'db_metadata.g.dart';
 
 @Collection(inheritance: true)
-class DbMetadata extends Metadata {
+class DbMetadata extends UserMetadata {
   String get id => pubKey;
 
   List<String>? get splitDisplayNameWords =>
@@ -27,7 +27,7 @@ class DbMetadata extends Metadata {
       super.updatedAt,
       super.refreshedTimestamp});
 
-  static DbMetadata fromMetadata(Metadata metadata) {
+  static DbMetadata fromMetadata(UserMetadata metadata) {
     return DbMetadata(
         pubKey: metadata.pubKey,
         name: metadata.name,

@@ -4,7 +4,7 @@ import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
-import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/entities/user_metadata.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../shared/nips/nip05/nip05.dart';
 
@@ -12,7 +12,7 @@ class MemCacheManager implements CacheManager {
   Map<String, UserRelayList> userRelayLists = {};
   Map<String, RelaySet> relaySets = {};
   Map<String, ContactList> contactLists = {};
-  Map<String, Metadata> metadatas = {};
+  Map<String, UserMetadata> metadatas = {};
   Map<String, Nip05> nip05s = {};
   Map<String, Nip01Event> events = {};
 
@@ -114,17 +114,17 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Metadata? loadMetadata(String pubKey) {
+  UserMetadata? loadMetadata(String pubKey) {
     return metadatas[pubKey];
   }
 
   @override
-  Future<void> saveMetadata(Metadata metadata) async {
+  Future<void> saveMetadata(UserMetadata metadata) async {
     metadatas[metadata.pubKey] = metadata;
   }
 
   @override
-  Future<void> saveMetadatas(List<Metadata> list) async {
+  Future<void> saveMetadatas(List<UserMetadata> list) async {
     for (var metadata in list) {
       metadatas[metadata.pubKey] = metadata;
     }
@@ -161,10 +161,10 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  List<Metadata?> loadMetadatas(List<String> pubKeys) {
-    List<Metadata> result = [];
+  List<UserMetadata?> loadMetadatas(List<String> pubKeys) {
+    List<UserMetadata> result = [];
     for (String pubKey in pubKeys) {
-      Metadata? metadata = metadatas[pubKey];
+      UserMetadata? metadata = metadatas[pubKey];
       if (metadata != null) {
         result.add(metadata);
       }
@@ -173,7 +173,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Iterable<Metadata> searchMetadatas(String search, int limit) {
+  Iterable<UserMetadata> searchMetadatas(String search, int limit) {
     /// TODO
     return [];
   }
