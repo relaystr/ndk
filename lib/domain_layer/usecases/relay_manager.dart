@@ -249,6 +249,7 @@ class RelayManager {
 
     if (eventJson[0] == 'NOTICE') {
       Logger.log.w("NOTICE from $url: ${eventJson[1]}");
+      logActiveRequests();
     } else if (eventJson[0] == 'EVENT') {
       handleIncomingEvent(eventJson, url, message);
     } else if (eventJson[0] == 'EOSE') {
@@ -294,6 +295,7 @@ class RelayManager {
           relay.stats.activeRequests--;
         }
         send(url, jsonEncode(["CLOSE", id]));
+        logActiveRequests();
       } catch (e) {
         print(e);
       }
@@ -441,4 +443,21 @@ class RelayManager {
     return true;
   }
 
+  void logActiveRequests() {
+    Map<int?, int> kindsMap = {};
+    globalState.inFlightRequests.forEach((key, request) {
+      int? kind;
+      if (request.requests.isNotEmpty &&
+          request.requests.values.first.filters.first.kinds != null &&
+          request.requests.values.first.filters.first.kinds!.isNotEmpty) {
+        kind = request.requests.values.first.filters.first.kinds!.first;
+      }
+      int? count = kindsMap[kind];
+      count ??= 0;
+      count++;
+      kindsMap[kind] = count;
+    });
+    Logger.log.d(
+        "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
+  }
 }
