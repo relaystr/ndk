@@ -1,16 +1,19 @@
 import 'package:http/http.dart' as http;
+import 'package:ndk/domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/jit_engine.dart';
+import '../domain_layer/usecases/lists/lists.dart';
+import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
-import '../domain_layer/entities/global_state.dart';
 import 'ndk_config.dart';
 
 class Initialization {
@@ -34,6 +37,9 @@ class Initialization {
   late CacheRead cacheRead;
   late Requests requests;
   late Follows follows;
+  late Metadatas metadatas;
+  late UserRelayLists userRelayLists;
+  late Lists lists;
 
   late final NetworkEngine engine;
 
@@ -79,6 +85,24 @@ class Initialization {
     );
 
     follows = Follows(
+      requests: requests,
+      cacheManager: config.cache,
+      relayManager: relayManager,
+    );
+
+    metadatas = Metadatas(
+      requests: requests,
+      cacheManager: config.cache,
+      relayManager: relayManager,
+    );
+
+    userRelayLists = UserRelayLists(
+      requests: requests,
+      cacheManager: config.cache,
+      relayManager: relayManager,
+    );
+
+    lists = Lists(
       requests: requests,
       cacheManager: config.cache,
       relayManager: relayManager,

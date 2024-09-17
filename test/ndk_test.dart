@@ -68,5 +68,30 @@ void main() async {
 
       await relay1.stopServer();
     });
+
+    // ================================================================================================
+
+    test('verify signatures of events', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1", signEvents: false);
+      await relay1.startServer(textNotes: key1TextNotes);
+
+      Ndk ndk = Ndk(
+        NdkConfig(
+            eventVerifier: MockEventVerifier(result: false),
+            cache: MemCacheManager(),
+            engine: NdkEngine.RELAY_SETS,
+            bootstrapRelays: [relay1.url]),
+      );
+
+      NdkResponse response = ndk.requests.query(
+          filters: [Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND])],
+           );
+      // ignore: unused_local_variable
+      await for (final event in response.stream) {
+        fail("should not emit any events, since relay does not sign");
+      }
+      await relay1.stopServer();
+    });
+
   });
 }
