@@ -1,13 +1,10 @@
 import 'dart:math';
 
-import 'dart:developer' as developer;
-
-import 'package:collection/collection.dart';
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip65/nip65.dart';
-import 'package:dart_ndk/nips/nip65/read_write_marker.dart';
-import 'package:dart_ndk/nips/nip65/relay_ranking.dart';
-import 'package:dart_ndk/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_65.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
+import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -65,12 +62,12 @@ void main() {
       // check that covered pubkeys are in the result
       for (var i = 0; i < 10; i++) {
         int foundPubkey = 0;
-        result.ranking.forEach((element) {
+        for (var element in result.ranking) {
           bool found = element.coveredPubkeys.contains(searchingPubkeys[i]);
           if (found) {
             foundPubkey++;
           }
-        });
+        }
         expect(foundPubkey, 2);
       }
 

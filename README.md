@@ -20,16 +20,17 @@ dependencies:
 
 
 ```dart
-        RelayManager manager = RelayManager();
-
-        await manager.connect();
-        
-        NostrRequest request = await manager.query(
-          Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [pubKey]));
-        await for (final event in request.stream) {
-          print(event);
-        }
-
+    Ndk ndk = Ndk(NdkConfig(
+      eventVerifier: Bip340EventVerifier(),
+      cache: MemCacheManager(),
+    ));
+    NdkResponse response = ndk.requests.query(filters: [
+      Filter(kinds: [Nip01Event.TEXT_NODE_KIND], limit: 10)
+    ]);
+    
+    await for (final event in response.stream) {
+    print(event);
+}
 ```
 
 
@@ -43,7 +44,8 @@ dependencies:
 - stream directly from cache and network (if needed)
 - query and subscription, e.g., get data once; subscribe to data.
 - plugin cache interface, bring your own db or use included ones: `inMemory, isarDb`
-- plug in verifier interface, bring your own event verifier, or use included ones: `bip340, amber, acinq`
+- plug in verifier interface, bring your own event verifier, or use included ones: `bip340, acinq`
+- plug in event signer interface, bring your own event signer, or use included ones: `bip340, amber`
 - contact list support, you can convert nostr_event to contact_list
 - nip51 list support, you can convert nostr_event to nip51_list
 
@@ -97,3 +99,4 @@ more details on https://mikedilger.com/gossip-model/
 |**JIT**|Just In Time, e.g. as it happens| -
 |**query**|get data once and close the request| get request
 |**subscription**|stream of events as they come in | stream of data
+|**bootstrapRelays**|default relays to connect when nothing else is specified | seed relays, initial relays

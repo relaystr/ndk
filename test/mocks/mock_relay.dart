@@ -3,11 +3,8 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:dart_ndk/nips/nip01/event.dart';
-import 'package:dart_ndk/nips/nip01/filter.dart';
-import 'package:dart_ndk/nips/nip01/key_pair.dart';
-import 'package:dart_ndk/nips/nip65/nip65.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
 
 class MockRelay {
   String name;
@@ -18,7 +15,7 @@ class MockRelay {
   Map<KeyPair, Nip01Event>? textNotes;
   bool signEvents;
 
-  static int startPort = 4044;
+  static int startPort = 4040;
 
   String get url => "ws://localhost:$port";
 
@@ -72,6 +69,9 @@ class MockRelay {
             }
             if (filter.kinds!.contains(Nip01Event.TEXT_NODE_KIND) &&
                 textNotes != null) {
+              _respondeTextNote(filter.authors!, requestId);
+            }
+            if (filter.kinds!.contains(ContactList.KIND) && textNotes != null) {
               _respondeTextNote(filter.authors!, requestId);
             }
             // todo: other
