@@ -32,7 +32,7 @@ class Metadatas {
       Metadata? loadedMetadata;
       try {
         await for (final event in requests.query(
-          idPrefix: 'metadata-',
+          name: 'metadata',
           filters: [
             Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
           ],
@@ -78,7 +78,7 @@ class Metadatas {
       Logger.log.d("loading missing user metadatas ${missingPubKeys.length}");
       try {
         await for (final event in (requests.query(
-            idPrefix: "load-metadatas-",
+            name: "load-metadatas",
             filters: [
               Filter(authors: missingPubKeys, kinds: [Metadata.KIND])
             ],

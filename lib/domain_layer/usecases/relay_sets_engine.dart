@@ -38,8 +38,7 @@ class RelaySetsEngine implements NetworkEngine {
   // ====================================================================================================================
 
   bool doRelayRequest(String id, RelayRequestState request) {
-    if (relayManager.isWebSocketOpen(request.url) &&
-        (!relayManager.blockedRelays.contains(request.url))) {
+    if (relayManager.isWebSocketOpen(request.url) && (!relayManager.blockedRelays.contains(request.url))) {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
@@ -53,8 +52,7 @@ class RelaySetsEngine implements NetworkEngine {
         print(e);
       }
     } else {
-      print(
-          "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
+      print("COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
 
       relayManager.reconnectRelay(request.url);
     }
@@ -63,8 +61,7 @@ class RelaySetsEngine implements NetworkEngine {
 
   // =====================================================================================
 
-  Future<void> doNostrRequestWithRelaySet(RequestState state,
-      {bool splitRequestsByPubKeyMappings = true}) async {
+  Future<void> doNostrRequestWithRelaySet(RequestState state, {bool splitRequestsByPubKeyMappings = true}) async {
     if (state.unresolvedFilters.isEmpty || state.request.relaySet == null) {
       return;
     }
@@ -89,21 +86,6 @@ class RelaySetsEngine implements NetworkEngine {
       }
     }
     globalState.inFlightRequests[state.id] = state;
-    Map<int?, int> kindsMap = {};
-    globalState.inFlightRequests.forEach((key, request) {
-      int? kind;
-      if (request.requests.isNotEmpty &&
-          request.requests.values.first.filters.first.kinds != null &&
-          request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-        kind = request.requests.values.first.filters.first.kinds!.first;
-      }
-      int? count = kindsMap[kind];
-      count ??= 0;
-      count++;
-      kindsMap[kind] = count;
-    });
-    print(
-        "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
     }
@@ -112,13 +94,11 @@ class RelaySetsEngine implements NetworkEngine {
   Future<NdkResponse> query(
     Filter filter,
     RelaySet? relaySet, {
+    required String name,
     int idleTimeout = RelaySetsEngine.DEFAULT_STREAM_IDLE_TIMEOUT,
     bool splitRequestsByPubKeyMappings = true,
   }) async {
-    RequestState state = RequestState(NdkRequest.query(
-        Helpers.getRandomString(10),
-        filters: [filter],
-        relaySet: relaySet));
+    RequestState state = RequestState(NdkRequest.query(Helpers.getRandomString(10), name: name, filters: [filter], relaySet: relaySet));
     await _doQuery(state);
     return NdkResponse(state.id, state.stream);
   }
@@ -137,41 +117,27 @@ class RelaySetsEngine implements NetworkEngine {
   @override
   Future<void> handleRequest(RequestState state) async {
     await relayManager.seedRelaysConnected;
+    state.request.onTimeout = (state) {
+      Logger.log.w("request ${state.request.id} : ${state.request.filters} timed out after ${state.request.timeout}");
+      for (var url in state.requests.keys) {
+        relayManager.sendCloseToRelay(url, state.id);
+      }
+      relayManager.removeInFlightRequestById(state.id);
+    };
 
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
     }
-    if (state.request.explicitRelays != null &&
-        state.request.explicitRelays!.isNotEmpty) {
+    if (state.request.explicitRelays != null && state.request.explicitRelays!.isNotEmpty) {
       for (var url in state.request.explicitRelays!) {
-        state.addRequest(
-            url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+        state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     } else {
       for (var url in relayManager.relays.keys) {
-        state.addRequest(
-            url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+        state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     }
     globalState.inFlightRequests[state.id] = state;
-
-    /**********************************************************/
-    Map<int?, int> kindsMap = {};
-    globalState.inFlightRequests.forEach((key, request) {
-      int? kind;
-      if (request.requests.isNotEmpty &&
-          request.requests.values.first.filters.first.kinds != null &&
-          request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-        kind = request.requests.values.first.filters.first.kinds!.first;
-      }
-      int? count = kindsMap[kind];
-      count ??= 0;
-      count++;
-      kindsMap[kind] = count;
-    });
-    print(
-        "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
-    /**********************************************************/
 
     List<String> notSent = [];
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
@@ -184,15 +150,14 @@ class RelaySetsEngine implements NetworkEngine {
     }
   }
 
-  Future<NdkResponse> requestRelays(Iterable<String> urls, Filter filter,
-      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
-      bool closeOnEOSE = true,
-      Function()? onTimeout}) async {
+  Future<NdkResponse> requestRelays(String name, Iterable<String> urls, Filter filter,
+      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true, Function()? onTimeout}) async {
     String id = Helpers.getRandomString(10);
     RequestState state = RequestState(closeOnEOSE
-        ? NdkRequest.query(id, filters: [filter])
+        ? NdkRequest.query(id, name: name, filters: [filter])
         : NdkRequest.subscription(
             id,
+            name: name,
             filters: [],
           ));
 
@@ -202,21 +167,6 @@ class RelaySetsEngine implements NetworkEngine {
     globalState.inFlightRequests[state.id] = state;
 
     List<String> notSent = [];
-    Map<int?, int> kindsMap = {};
-    globalState.inFlightRequests.forEach((key, request) {
-      int? kind;
-      if (request.requests.isNotEmpty &&
-          request.requests.values.first.filters.first.kinds != null &&
-          request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-        kind = request.requests.values.first.filters.first.kinds!.first;
-      }
-      int? count = kindsMap[kind];
-      count ??= 0;
-      count++;
-      kindsMap[kind] = count;
-    });
-    print(
-        "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       if (!doRelayRequest(state.id, entry.value)) {
         notSent.add(entry.key);

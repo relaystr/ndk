@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
 
+import 'package:isar/isar.dart';
+
 import '../../config/bootstrap_relays.dart';
 import '../../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../../event_filter.dart';
@@ -444,20 +446,26 @@ class RelayManager {
   }
 
   void logActiveRequests() {
-    Map<int?, int> kindsMap = {};
-    globalState.inFlightRequests.forEach((key, request) {
-      int? kind;
-      if (request.requests.isNotEmpty &&
-          request.requests.values.first.filters.first.kinds != null &&
-          request.requests.values.first.filters.first.kinds!.isNotEmpty) {
-        kind = request.requests.values.first.filters.first.kinds!.first;
-      }
-      int? count = kindsMap[kind];
-      count ??= 0;
-      count++;
-      kindsMap[kind] = count;
+    // Map<int?, int> kindsMap = {};
+    Map<String?, int> namesMap = {};
+    globalState.inFlightRequests.forEach((key, state) {
+      // int? kind;
+      // if (state.requests.isNotEmpty &&
+      //     state.requests.values.first.filters.first.kinds != null &&
+      //     state.requests.values.first.filters.first.kinds!.isNotEmpty) {
+      //   kind = state.requests.values.first.filters.first.kinds!.first;
+      // }
+      // int? kindCount = kindsMap[kind];
+      int? nameCount = namesMap[state.request.name];
+      // kindCount ??= 0;
+      // kindCount++;
+      nameCount??=0;
+      nameCount++;
+      // kindsMap[kind] = kindCount;
+      namesMap[state.request.name] = nameCount;
+
     });
     Logger.log.d(
-        "----------------NOSTR REQUESTS: ${globalState.inFlightRequests.length} || $kindsMap");
+        "----------------GLOBAL STATE IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");
   }
 }

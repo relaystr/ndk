@@ -188,7 +188,7 @@ void main() async {
       ));
 
       NdkResponse response = ndk.requests.query(
-        idPrefix: "qInOut-",
+        name: "qInOut",
         filters: [
           Filter(kinds: [
             Nip01Event.TEXT_NODE_KIND

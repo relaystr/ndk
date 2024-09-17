@@ -27,7 +27,7 @@ void main() async {
         KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
         NdkResponse contactsResponse =
-            ndk.requests.query(idPrefix: "contacts", filters: [
+            ndk.requests.query(name: "contacts", filters: [
           Filter(authors: [key.publicKey], kinds: [ContactList.KIND]),
         ]);
 
@@ -45,7 +45,7 @@ void main() async {
         // get nip65 data
 
         NdkResponse nip65Response =
-            ndk.requests.query(idPrefix: "nip65", filters: [
+            ndk.requests.query(name: "nip65", filters: [
           Filter(authors: myContactList!.contacts, kinds: [Nip65.KIND]),
         ]);
 
@@ -60,7 +60,7 @@ void main() async {
         developer.log('##################################################');
 
         NdkResponse feedResponse =
-            ndk.requests.query(idPrefix: "feed-test", filters: [
+            ndk.requests.query(name: "feed-test", filters: [
           Filter(
             authors: myContactList.contacts,
             kinds: [Nip01Event.TEXT_NODE_KIND],

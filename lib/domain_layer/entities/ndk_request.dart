@@ -6,6 +6,7 @@ import 'request_state.dart';
 class NdkRequest {
   /// nostr id
   String id;
+  String? name;
   bool closeOnEOSE;
   int? timeout;
   Function(RequestState)? onTimeout;
@@ -20,6 +21,7 @@ class NdkRequest {
 
   NdkRequest.query(
     this.id, {
+    this.name,
     required this.filters,
     this.desiredCoverage = 2,
     this.closeOnEOSE = true,
@@ -33,6 +35,7 @@ class NdkRequest {
 
   NdkRequest.subscription(
     this.id, {
+    this.name,
     required this.filters,
     this.desiredCoverage = 2,
     this.closeOnEOSE = false,

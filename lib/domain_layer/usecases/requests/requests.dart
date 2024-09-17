@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
@@ -41,7 +42,7 @@ class Requests {
   /// [explicitRelays] when specified only these relays are used. No inbox/outbox
   NdkResponse query({
     required List<Filter> filters,
-    String idPrefix = '',
+    String name = '',
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
@@ -50,7 +51,8 @@ class Requests {
     int? desiredCoverage,
   }) {
     return requestNostrEvent(NdkRequest.query(
-      idPrefix + Helpers.getRandomString(10),
+      '$name-${Helpers.getRandomString(10)}',
+      name: name,
       filters: filters,
       relaySet: relaySet,
       cacheRead: cacheRead,
@@ -66,7 +68,7 @@ class Requests {
   /// [explicitRelays] when specified only these relays are used. No inbox/outbox
   NdkResponse subscription({
     required List<Filter> filters,
-    String idPrefix = '',
+    String name = '',
     String? id,
     RelaySet? relaySet,
     bool cacheRead = false,
@@ -75,7 +77,8 @@ class Requests {
     int? desiredCoverage,
   }) {
     return requestNostrEvent(NdkRequest.subscription(
-      "$idPrefix${id ?? Helpers.getRandomString(10)}",
+      "$name-${id ?? Helpers.getRandomString(10)}",
+      name: name,
       filters: filters,
       relaySet: relaySet,
       cacheRead: cacheRead,
