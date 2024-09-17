@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
@@ -39,7 +38,11 @@ class Requests {
 
   /// low level nostr query
   /// [id] is automatically provided
+  /// [name] is used as id prefix => name-randomString
   /// [explicitRelays] when specified only these relays are used. No inbox/outbox
+  /// [cacheRead] if the cache should be used to retrieve results
+  /// [cacheWrite] if the query results schuld be written to cache
+  /// [desiredCoverage] determines how many relays per pubkey are queried
   NdkResponse query({
     required List<Filter> filters,
     String name = '',
