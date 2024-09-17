@@ -33,6 +33,7 @@ class Metadatas {
       try {
         await for (final event in requests.query(
           name: 'metadata',
+          timeout: idleTimeout,
           filters: [
             Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
           ],
