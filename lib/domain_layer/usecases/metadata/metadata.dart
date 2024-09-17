@@ -11,12 +11,12 @@ import '../../repositories/event_signer.dart';
 import '../relay_manager.dart';
 import '../requests/requests.dart';
 
-class Metadatas {
+class Metadata {
   Requests requests;
   CacheManager cacheManager;
   RelayManager relayManager;
 
-  Metadatas({
+  Metadata({
     required this.requests,
     required this.cacheManager,
     required this.relayManager,
