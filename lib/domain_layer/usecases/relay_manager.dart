@@ -466,6 +466,6 @@ class RelayManager {
 
     });
     Logger.log.d(
-        "----------------GLOBAL STATE IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");
+        "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");
   }
 }
