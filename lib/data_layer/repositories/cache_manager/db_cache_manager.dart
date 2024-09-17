@@ -328,9 +328,10 @@ class DbCacheManager extends CacheManager {
         .and()
         .optional(pubKeys != null && pubKeys.isNotEmpty,
             (q) => q.anyOf(pubKeys!, (q, pubKey) => q.pubKeyEqualTo(pubKey)))
-        .and()
-        .optional(Helpers.isNotBlank(pTag), (q) => q.pTagsElementEqualTo(pTag!))
+        // .and()
+        // .optional(Helpers.isNotBlank(pTag), (q) => q.pTagsElementEqualTo(pTag!))
         .findAll();
+    events = Helpers.isNotBlank(pTag)? events.where((event) => event.pTags.contains(pTag)).toList() : events;
     return eventFilter != null
         ? events.where((event) => eventFilter!.filter(event)).toList()
         : events;
