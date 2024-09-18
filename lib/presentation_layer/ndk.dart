@@ -3,8 +3,7 @@ import '../domain_layer/entities/nip_01_event.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../domain_layer/usecases/follows/follows.dart';
-import '../domain_layer/usecases/lists/lists.dart';
-import '../domain_layer/usecases/metadata/metadata.dart';
+import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
@@ -32,7 +31,7 @@ class Ndk {
   Requests get requests => _initialization.requests;
   RelayManager get relays => _initialization.relayManager;
   Follows get follows => _initialization.follows;
-  Metadata get metadata => _initialization.metadata;
+  Metadatas get metadatas => _initialization.metadatas;
   UserRelayLists get userRelayLists => _initialization.userRelayLists;
   Lists get lists => _initialization.lists;
   RelaySets get relaySets => _initialization.relaySets;

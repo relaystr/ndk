@@ -9,7 +9,7 @@ import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
-import '../domain_layer/usecases/metadata/metadata.dart';
+import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
@@ -38,7 +38,7 @@ class Initialization {
   late CacheRead cacheRead;
   late Requests requests;
   late Follows follows;
-  late Metadata metadata;
+  late Metadatas metadatas;
   late UserRelayLists userRelayLists;
   late Lists lists;
   late RelaySets relaySets;
@@ -92,7 +92,7 @@ class Initialization {
       relayManager: relayManager,
     );
 
-    metadata = Metadata(
+    metadatas = Metadatas(
       requests: requests,
       cacheManager: config.cache,
       relayManager: relayManager,
@@ -111,10 +111,10 @@ class Initialization {
     );
 
     relaySets = RelaySets(
-      requests: requests,
-      cacheManager: config.cache,
-      relayManager: relayManager,
-      userRelayLists: userRelayLists,
+        requests: requests,
+        cacheManager: config.cache,
+        relayManager: relayManager,
+        userRelayLists: userRelayLists,
     );
   }
 }
