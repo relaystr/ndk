@@ -22,26 +22,26 @@ class Metadatas {
     required this.relayManager,
   });
 
-  Future<UserMetadata?> loadMetadata(
+  Future<Metadata?> loadMetadata(
     String pubKey, {
     bool forceRefresh = false,
     int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
   }) async {
-    UserMetadata? metadata = cacheManager.loadMetadata(pubKey);
+    Metadata? metadata = cacheManager.loadMetadata(pubKey);
     if (metadata == null || forceRefresh) {
-      UserMetadata? loadedMetadata;
+      Metadata? loadedMetadata;
       try {
         await for (final event in requests.query(
           name: 'metadata',
           timeout: idleTimeout,
           filters: [
-            Filter(kinds: [UserMetadata.KIND], authors: [pubKey], limit: 1)
+            Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
           ],
         ).stream) {
           if (loadedMetadata == null ||
               loadedMetadata.updatedAt == null ||
               loadedMetadata.updatedAt! < event.createdAt) {
-            loadedMetadata = UserMetadata.fromEvent(event);
+            loadedMetadata = Metadata.fromEvent(event);
           }
         }
       } catch (e) {
@@ -62,18 +62,18 @@ class Metadatas {
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
-  Future<List<UserMetadata>> loadMetadatas(
+  Future<List<Metadata>> loadMetadatas(
       List<String> pubKeys, RelaySet relaySet,
-      {Function(UserMetadata)? onLoad}) async {
+      {Function(Metadata)? onLoad}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
-      UserMetadata? userMetadata = cacheManager.loadMetadata(pubKey);
+      Metadata? userMetadata = cacheManager.loadMetadata(pubKey);
       if (userMetadata == null) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
       }
     }
-    Map<String, UserMetadata> metadatas = {};
+    Map<String, Metadata> metadatas = {};
 
     if (missingPubKeys.isNotEmpty) {
       Logger.log.d("loading missing user metadatas ${missingPubKeys.length}");
@@ -81,7 +81,7 @@ class Metadatas {
         await for (final event in (requests.query(
                 name: "load-metadatas",
                 filters: [
-                  Filter(authors: missingPubKeys, kinds: [UserMetadata.KIND])
+                  Filter(authors: missingPubKeys, kinds: [Metadata.KIND])
                 ],
                 relaySet: relaySet))
             .stream
@@ -90,7 +90,7 @@ class Metadatas {
         })) {
           if (metadatas[event.pubKey] == null ||
               metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
-            metadatas[event.pubKey] = UserMetadata.fromEvent(event);
+            metadatas[event.pubKey] = Metadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
             await cacheManager.saveMetadata(metadatas[event.pubKey]!);
             if (onLoad != null) {
@@ -110,7 +110,7 @@ class Metadatas {
     Nip01Event? loaded;
     await for (final event in requests.query(filters: [
       Filter(
-          kinds: [UserMetadata.KIND],
+          kinds: [Metadata.KIND],
           authors: [signer.getPublicKey()],
           limit: 1)
     ]).stream) {
@@ -123,7 +123,7 @@ class Metadatas {
 
   /// *******************************************************************************************************************
 
-  Future<UserMetadata> broadcastMetadata(UserMetadata metadata,
+  Future<Metadata> broadcastMetadata(Metadata metadata,
       Iterable<String> broadcastRelays, EventSigner eventSigner) async {
     Nip01Event? event = await _refreshMetadataEvent(eventSigner);
     if (event != null) {

@@ -52,7 +52,7 @@ export "domain_layer/usecases/relay_manager.dart";
 export "domain_layer/usecases/jit_engine.dart";
 export "domain_layer/usecases/requests/requests.dart";
 export "domain_layer/usecases/follows/follows.dart";
-export 'domain_layer/usecases/metadata/metadata.dart';
+export 'domain_layer/usecases/metadatas/metadatas.dart';
 export 'domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 export 'domain_layer/usecases/lists/lists.dart';
 export 'domain_layer/usecases/relay_sets/relay_sets.dart';

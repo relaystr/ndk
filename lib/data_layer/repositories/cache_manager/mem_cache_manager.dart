@@ -12,7 +12,7 @@ class MemCacheManager implements CacheManager {
   Map<String, UserRelayList> userRelayLists = {};
   Map<String, RelaySet> relaySets = {};
   Map<String, ContactList> contactLists = {};
-  Map<String, UserMetadata> metadatas = {};
+  Map<String, Metadata> metadatas = {};
   Map<String, Nip05> nip05s = {};
   Map<String, Nip01Event> events = {};
 
@@ -114,17 +114,17 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  UserMetadata? loadMetadata(String pubKey) {
+  Metadata? loadMetadata(String pubKey) {
     return metadatas[pubKey];
   }
 
   @override
-  Future<void> saveMetadata(UserMetadata metadata) async {
+  Future<void> saveMetadata(Metadata metadata) async {
     metadatas[metadata.pubKey] = metadata;
   }
 
   @override
-  Future<void> saveMetadatas(List<UserMetadata> list) async {
+  Future<void> saveMetadatas(List<Metadata> list) async {
     for (var metadata in list) {
       metadatas[metadata.pubKey] = metadata;
     }
@@ -161,10 +161,10 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  List<UserMetadata?> loadMetadatas(List<String> pubKeys) {
-    List<UserMetadata> result = [];
+  List<Metadata?> loadMetadatas(List<String> pubKeys) {
+    List<Metadata> result = [];
     for (String pubKey in pubKeys) {
-      UserMetadata? metadata = metadatas[pubKey];
+      Metadata? metadata = metadatas[pubKey];
       if (metadata != null) {
         result.add(metadata);
       }
@@ -173,7 +173,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Iterable<UserMetadata> searchMetadatas(String search, int limit) {
+  Iterable<Metadata> searchMetadatas(String search, int limit) {
     /// TODO
     return [];
   }

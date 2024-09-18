@@ -33,14 +33,14 @@ void main() {
       data['lud16'] = "bla@bla.com";
       data['lud06'] = "bla@bla.com";
 
-      UserMetadata metadata = UserMetadata.fromJson(data);
+      Metadata metadata = Metadata.fromJson(data);
       metadata.pubKey = "pubKey1";
       Map<String, dynamic> toJson = <String, dynamic>{};
       toJson = metadata.toJson();
       expect(data, toJson);
 
       Nip01Event event = metadata.toEvent();
-      UserMetadata metadataFromEvent = UserMetadata.fromEvent(event);
+      Metadata metadataFromEvent = Metadata.fromEvent(event);
       expect(metadata, metadataFromEvent);
     });
   });

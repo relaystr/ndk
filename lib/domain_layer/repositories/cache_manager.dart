@@ -37,13 +37,13 @@ abstract class CacheManager {
   Future<void> removeContactList(String pubKey);
   Future<void> removeAllContactLists();
 
-  Future<void> saveMetadata(UserMetadata metadata);
-  Future<void> saveMetadatas(List<UserMetadata> metadatas);
-  UserMetadata? loadMetadata(String pubKey);
-  List<UserMetadata?> loadMetadatas(List<String> pubKeys);
+  Future<void> saveMetadata(Metadata metadata);
+  Future<void> saveMetadatas(List<Metadata> metadatas);
+  Metadata? loadMetadata(String pubKey);
+  List<Metadata?> loadMetadatas(List<String> pubKeys);
   Future<void> removeMetadata(String pubKey);
   Future<void> removeAllMetadatas();
-  Iterable<UserMetadata> searchMetadatas(String search, int limit);
+  Iterable<Metadata> searchMetadatas(String search, int limit);
 
   Future<void> saveNip05(Nip05 nip05);
   Future<void> saveNip05s(List<Nip05> nip05s);

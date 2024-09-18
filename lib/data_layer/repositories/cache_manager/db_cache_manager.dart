@@ -114,7 +114,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  UserMetadata? loadMetadata(String pubKey) {
+  Metadata? loadMetadata(String pubKey) {
     return isar_ds.isar.dbMetadatas.get(pubKey);
   }
 
@@ -170,7 +170,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> saveMetadata(UserMetadata metadata) async {
+  Future<void> saveMetadata(Metadata metadata) async {
     final startTime = DateTime.now();
     isar_ds.isar.write((isar) {
       isar.dbMetadatas.put(DbMetadata.fromMetadata(metadata));
@@ -181,7 +181,7 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> saveMetadatas(List<UserMetadata> metadatas) async {
+  Future<void> saveMetadatas(List<Metadata> metadatas) async {
     final startTime = DateTime.now();
     isar_ds.isar.write((isar) {
       isar.dbMetadatas.putAll(metadatas
@@ -195,12 +195,12 @@ class DbCacheManager extends CacheManager {
   }
 
   @override
-  List<UserMetadata?> loadMetadatas(List<String> pubKeys) {
+  List<Metadata?> loadMetadatas(List<String> pubKeys) {
     return isar_ds.isar.dbMetadatas.getAll(pubKeys);
   }
 
   @override
-  Iterable<UserMetadata> searchMetadatas(String search, int limit) {
+  Iterable<Metadata> searchMetadatas(String search, int limit) {
     return isar_ds.isar.dbMetadatas
         .where()
         .splitDisplayNameWordsElementStartsWith(search)

@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../../shared/nips/nip01/helpers.dart';
 import 'nip_01_event.dart';
 
-class UserMetadata {
+class Metadata {
   static const int KIND = 0;
 
   late String pubKey;
@@ -19,7 +19,7 @@ class UserMetadata {
   int? updatedAt;
   int? refreshedTimestamp;
 
-  UserMetadata(
+  Metadata(
       {this.pubKey = "",
       this.name,
       this.displayName,
@@ -33,7 +33,7 @@ class UserMetadata {
       this.updatedAt,
       this.refreshedTimestamp});
 
-  UserMetadata.fromJson(Map<String, dynamic> json) {
+  Metadata.fromJson(Map<String, dynamic> json) {
     name = json['name'];
     displayName = json['display_name'];
     picture = json['picture'];
@@ -79,11 +79,11 @@ class UserMetadata {
     return data;
   }
 
-  static UserMetadata fromEvent(Nip01Event event) {
-    UserMetadata metadata = UserMetadata();
+  static Metadata fromEvent(Nip01Event event) {
+    Metadata metadata = Metadata();
     if (Helpers.isNotBlank(event.content)) {
       Map<String, dynamic> json = jsonDecode(event.content);
-      metadata = UserMetadata.fromJson(json);
+      metadata = Metadata.fromJson(json);
     }
     metadata.pubKey = event.pubKey;
     metadata.updatedAt = event.createdAt;
@@ -123,7 +123,7 @@ class UserMetadata {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is UserMetadata &&
+      other is Metadata &&
           runtimeType == other.runtimeType &&
           pubKey == other.pubKey;
 
