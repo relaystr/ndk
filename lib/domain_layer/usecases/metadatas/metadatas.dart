@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
-import '../../entities/user_metadata.dart';
+import '../../entities/metadata.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/relay_set.dart';
 import '../../repositories/cache_manager.dart';
