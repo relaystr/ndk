@@ -29,8 +29,14 @@ class Ndk {
           globalState: globalState,
         );
 
+  /// low level nostr requests
+  /// if you want directly query or subscribe to notes from the nostr network
+  /// .query() .subscription()
   Requests get requests => _initialization.requests;
+
   RelayManager get relays => _initialization.relayManager;
+
+  /// retrieval of contact lists .getContactList()
   Follows get follows => _initialization.follows;
   Metadatas get metadatas => _initialization.metadatas;
   UserRelayLists get userRelayLists => _initialization.userRelayLists;
