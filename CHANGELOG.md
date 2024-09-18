@@ -1,3 +1,8 @@
+## 0.1.0-dev9
+* major architecure refactor
+* rust event verifier
+* removed acinq verifier
+
 ## 0.1.0-dev8
 * use fork of amberflutter for isAppInstalled method
 

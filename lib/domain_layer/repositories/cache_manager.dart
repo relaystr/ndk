@@ -2,7 +2,7 @@ import '../entities/contact_list.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
-import '../entities/user_metadata.dart';
+import '../entities/metadata.dart';
 import '../../shared/nips/nip05/nip05.dart';
 
 abstract class CacheManager {

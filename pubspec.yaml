@@ -1,6 +1,6 @@
 name: ndk
 description: Nostr Development Kit
-version: 0.1.0
+version: 0.1.0-dev9
 homepage: https://github.com/relaystr/dart_ndk
 
 environment:
@@ -22,8 +22,8 @@ dependencies:
   pointycastle: ^3.9.1
   plugin_platform_interface: ^2.1.7
 
-  isar: ^4.0.0-dev.14
-  isar_flutter_libs: ^4.0.0-dev.14
+#  isar: ^4.0.0-dev.14
+#  isar_flutter_libs: ^4.0.0-dev.14
 
   amberflutter: ^0.0.9
   logger: ^2.4.0
@@ -32,9 +32,9 @@ dependencies:
   flutter_rust_bridge: ^2.4.0
 
 
-dependency_overrides:
-  rust_lib_ndk:
-    path: rust_builder
+#dependency_overrides:
+#  rust_lib_ndk: ^0.0.1
+#    path: rust_builder
 
 #    git:
 #      url:  https://github.com/frnandu/amberflutter
