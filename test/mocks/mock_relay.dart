@@ -74,7 +74,10 @@ class MockRelay {
             if (filter.kinds!.contains(ContactList.KIND) && textNotes != null) {
               _respondeTextNote(filter.authors!, requestId);
             }
-            // todo: other
+            if (filter.kinds!.any((el) =>
+                Nip51List.POSSIBLE_KINDS.contains(el))) {
+              _respondeTextNote(filter.authors!, requestId);
+            }
           }
           List<dynamic> eose = [];
           eose.add("EOSE");
