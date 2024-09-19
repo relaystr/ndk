@@ -57,7 +57,7 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 4095);
+      relay0 = MockRelay(name: "relay 0", explicitPort: 5095);
       await relay0.startServer(textNotes: {
         key0: network0ContactList.toEvent(),
         key1: network1ContactList.toEvent(),

@@ -48,7 +48,6 @@ class Initialization {
   }) {
     relayManager = RelayManager(
       nostrTransportFactory: _webSocketNostrTransportFactory,
-      eventVerifier: config.eventVerifier,
       bootstrapRelays: config.bootstrapRelays,
       globalState: globalState,
     );

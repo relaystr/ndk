@@ -54,11 +54,9 @@ class RelayManager {
 
   RelayManager({
     required this.nostrTransportFactory,
-    EventVerifier? eventVerifier,
     List<String>? bootstrapRelays,
     GlobalState? globalState,
   }) {
-    this.eventVerifier = eventVerifier ?? Bip340EventVerifier();
     this.bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS;
     this.globalState = globalState ?? GlobalState();
   }
@@ -341,10 +339,10 @@ class RelayManager {
       return;
     }
     // check signature is valid
-    if (!event.isIdValid) {
-      Logger.log.e("RECEIVED $id INVALID EVENT $event");
-      return;
-    }
+    // if (!event.isIdValid) {
+    //   Logger.log.e("RECEIVED $id INVALID EVENT $event");
+    //   return;
+    // }
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
       RelayRequestState? request = state.requests[url];
