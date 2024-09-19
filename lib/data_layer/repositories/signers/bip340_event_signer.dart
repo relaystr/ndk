@@ -37,7 +37,6 @@ class Bip340EventSigner implements EventSigner {
     return Helpers.isNotBlank(privateKey);
   }
 
-  @override
   String? getPrivateKey() {
     return privateKey;
   }

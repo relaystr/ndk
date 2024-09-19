@@ -1,10 +1,9 @@
 import 'dart:async';
 
-import '../../shared/logger/logger.dart';
-import 'filter.dart';
-import 'nip_01_event.dart';
 import '../usecases/relay_jit_manager/relay_jit.dart';
+import 'filter.dart';
 import 'ndk_request.dart';
+import 'nip_01_event.dart';
 
 class RelayRequestState {
   String url;

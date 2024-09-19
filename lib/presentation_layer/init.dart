@@ -1,6 +1,3 @@
-import 'package:http/http.dart' as http;
-
-import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
@@ -23,7 +20,7 @@ class Initialization {
 
   /// data sources
 
-  final HttpRequestDS _httpRequestDS = HttpRequestDS(http.Client());
+  // final HttpRequestDS _httpRequestDS = HttpRequestDS(http.Client());
 
   /// repositories
 

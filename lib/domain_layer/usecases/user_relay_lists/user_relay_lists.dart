@@ -153,7 +153,7 @@ class UserRelayLists {
   Future<UserRelayList> broadcastAddNip65Relay(String relayUrl,
       ReadWriteMarker marker, Iterable<String> broadcastRelays, EventSigner eventSigner) async {
     UserRelayList? userRelayList =
-    await ensureUpToDateUserRelayList(eventSigner!);
+    await ensureUpToDateUserRelayList(eventSigner);
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       userRelayList = UserRelayList(

@@ -109,8 +109,8 @@ class Lists {
 
   Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer,
       {bool forceRefresh = false}) async {
-    Nip51Set? relaySet; //getCachedNip51RelaySets(signer);
-    if (relaySet == null || forceRefresh) {
+    // Nip51Set? relaySet;//  await getCachedNip51RelaySet(signer);
+    // if (relaySet == null || forceRefresh) {
       Map<String, Nip51Set> newRelaySets = {};
       await for (final event in requests.query(filters: [
         Filter(
@@ -132,8 +132,8 @@ class Lists {
         }
       }
       return newRelaySets.values.toList();
-    }
-    return [];
+    // }
+    // return [];
   }
 
   Future<Nip51Set> broadcastAddNip51SetRelay(String relayUrl, String name,
@@ -221,7 +221,7 @@ class Lists {
   Future<Nip51List> broadcastAddNip51ListRelay(int kind, String relayUrl,
       Iterable<String> broadcastRelays, EventSigner eventSigner,
       {bool private = false}) async {
-    if (private && !eventSigner!.canSign()) {
+    if (private && !eventSigner.canSign()) {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
     }

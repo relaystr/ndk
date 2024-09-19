@@ -1,5 +1,5 @@
-// // ignore_for_file: avoid_print
-//
+// ignore_for_file: avoid_print
+
 // import 'package:ndk/data_layer/repositories/cache_manager/db_cache_manager.dart';
 // import 'package:ndk/data_layer/models/db/db_contact_list.dart';
 // import 'package:ndk/data_layer/models/db/db_event.dart';
@@ -13,8 +13,8 @@
 // import 'package:ndk/domain_layer/entities/read_write.dart';
 // import 'package:flutter_test/flutter_test.dart';
 // import 'package:isar/isar.dart' as isar;
-//
-// void main() async {
+
+void main() async {
 //   await isar.Isar.initialize("./libisar.so"); //initializeIsarCore(download: true);
 //
 //   test('DbContactList', () async {
@@ -247,4 +247,4 @@
 //     expect(loadedEventsPubkey2AndKind1.first.pTags, event11.pTags);
 //     expect(loadedEventsPubkey2AndKind1.first.kind, 1);
 //   });
-// }
+}
