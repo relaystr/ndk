@@ -7,21 +7,7 @@ import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
 
 void main() async {
-  group('follows', skip:true, () {
-    MockRelay relay0 = MockRelay(name: "relay 0", explicitPort: 4095);
-
-    final cache = MemCacheManager();
-    final NdkConfig config = NdkConfig(
-      eventVerifier: MockEventVerifier(),
-      cache: cache,
-      engine: NdkEngine.JIT,
-      bootstrapRelays: [relay0.url],
-      ignoreRelays: [],
-    );
-
-    final ndk = Ndk(config);
-
-    final Follows follows = ndk.follows;
+  group('follows', () {
 
     KeyPair key0 = Bip340.generatePrivateKey();
     final ContactList network0ContactList = ContactList(
@@ -67,13 +53,29 @@ void main() async {
     );
     cache1ContactList.createdAt = 100;
 
+    late MockRelay relay0;
+    late Ndk ndk;
+
     setUp(() async {
-      cache.saveContactList(cache0ContactList);
-      //cache.saveContactList(cache1ContactList);
+      relay0 = MockRelay(name: "relay 0", explicitPort: 4095);
       await relay0.startServer(textNotes: {
         key0: network0ContactList.toEvent(),
         key1: network1ContactList.toEvent(),
       });
+
+      final cache = MemCacheManager();
+      final NdkConfig config = NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: cache,
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay0.url],
+        ignoreRelays: [],
+      );
+
+      ndk = Ndk(config);
+
+      cache.saveContactList(cache0ContactList);
+      //cache.saveContactList(cache1ContactList);
     });
 
     tearDown(() async {
@@ -86,14 +88,14 @@ void main() async {
     });
 
     test('getContactList - cache', () async {
-      final rcvContactList = await follows.getContactList(key0.publicKey);
+      final rcvContactList = await ndk.follows.getContactList(key0.publicKey);
 
       // cache
       expect(rcvContactList, equals(cache0ContactList));
     });
 
     test('getContactList- network', () async {
-      final rcvContactList = await follows.getContactList(
+      final rcvContactList = await ndk.follows.getContactList(
         key1.publicKey,
         forceRefresh: true,
       );
