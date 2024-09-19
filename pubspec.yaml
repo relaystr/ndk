@@ -1,6 +1,6 @@
 name: ndk
 description: Nostr Development Kit
-version: 0.1.0-dev9
+version: 0.1.0-dev10
 homepage: https://github.com/relaystr/dart_ndk
 
 environment:

@@ -1,4 +1,4 @@
-## 0.1.0-dev9
+## 0.1.0-dev10
 * major architecure refactor
 * rust event verifier
 * removed acinq verifier
