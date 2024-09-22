@@ -44,7 +44,7 @@ dependencies:
 - stream directly from cache and network (if needed)
 - query and subscription, e.g., get data once; subscribe to data.
 - plugin cache interface, bring your own db or use included ones: `inMemory, isarDb`
-- plug in verifier interface, bring your own event verifier, or use included ones: `bip340, acinq`
+- plug in verifier interface, bring your own event verifier, or use included ones: `bip340, rust`
 - plug in event signer interface, bring your own event signer, or use included ones: `bip340, amber`
 - contact list support, you can convert nostr_event to contact_list
 - nip51 list support, you can convert nostr_event to nip51_list
