@@ -8,6 +8,9 @@ import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../shared/nips/nip05/nip05.dart';
 
+/// In memory database implementation
+/// benefits: very fast
+/// drawbacks: does not persist
 class MemCacheManager implements CacheManager {
   Map<String, UserRelayList> userRelayLists = {};
   Map<String, RelaySet> relaySets = {};
