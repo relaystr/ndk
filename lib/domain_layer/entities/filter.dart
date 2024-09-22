@@ -1,31 +1,57 @@
+/// Represents a filter for querying Nostr events.
+///
+/// This class encapsulates various criteria that can be used to filter
+/// Nostr events when querying relays or local caches.
+/// https://github.com/nostr-protocol/nips/blob/master/01.md#communication-between-clients-and-relays
 class Filter {
+  /// List of event IDs to filter by.
   List<String>? ids;
+
+  /// List of author public keys to filter by.
   List<String>? authors;
+
+  /// List of event kinds to filter by.
   List<int>? kinds;
+
+  /// Text to search for in event content.
   String? search;
 
-  List<String>? eTags; // event tags
-  List<String>? pTags; // pubKey tags
-  List<String>? tTags; // # tags
-  List<String>? aTags; // a tags
-  List<String>? dTags; // a tags
+  /// List of event tags to filter by.
+  List<String>? eTags;
 
+  /// List of pubkey tags to filter by.
+  List<String>? pTags;
+
+  /// List of hashtag tags to filter by.
+  List<String>? tTags;
+
+  /// List of replaceable event tags to filter by.
+  List<String>? aTags;
+
+  List<String>? dTags; // d tags
+
+  /// Unix timestamp to filter events created after this time.
   int? since;
+
+  /// Unix timestamp to filter events created before this time.
   int? until;
+
+  /// Maximum number of events to return.
   int? limit;
 
-  Filter(
-      {this.ids,
-      this.authors,
-      this.kinds,
-      this.eTags,
-      this.pTags,
-      this.tTags,
-      this.aTags,
-      this.dTags,
-      this.since,
-      this.until,
-      this.limit});
+  Filter({
+    this.ids,
+    this.authors,
+    this.kinds,
+    this.eTags,
+    this.pTags,
+    this.tTags,
+    this.aTags,
+    this.dTags,
+    this.since,
+    this.until,
+    this.limit,
+  });
 
   Filter.fromMap(Map<String, dynamic> map) {
     ids = map['ids'] == null ? null : List<String>.from(map['ids']);
@@ -72,18 +98,31 @@ class Filter {
     return toMap().toString();
   }
 
+  /// Creates a new [Filter] with updated authors.
+  ///
+  /// [authors] The new list of authors to use in the filter.
   Filter cloneWithAuthors(List<String> authors) {
     Map<String, dynamic> map = toMap();
     map['authors'] = authors;
     return Filter.fromMap(map);
   }
 
+  /// Creates a new [Filter] with updated pubkey tags.
+  ///
+  /// [pTags] The new list of pubkey tags to use in the filter.
   Filter cloneWithPTags(List<String> pTags) {
     Map<String, dynamic> map = toMap();
     map['#p'] = pTags;
     return Filter.fromMap(map);
   }
 
+  /// Creates a new [Filter] by merging authors from two filters.
+  ///
+  /// [filter1] The first filter to merge.
+  /// [filter2] The second filter to merge.
+  ///
+  /// Throws an exception if either filter doesn't contain authors.
+  /// [filter1] is used as a basis
   Filter.mergeAuthors(Filter filter1, Filter filter2) {
     Map<String, dynamic> map = filter1.toMap();
     if (filter1.authors == null || filter2.authors == null) {
