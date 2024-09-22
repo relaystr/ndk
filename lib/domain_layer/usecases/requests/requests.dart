@@ -15,6 +15,7 @@ import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
 import 'verify_event_stream.dart';
 
+/// A class that handles low-level Nostr network requests and subscriptions.
 class Requests {
   static const int DEFAULT_QUERY_TIMEOUT = 5;
 
@@ -24,6 +25,13 @@ class Requests {
   final NetworkEngine _engine;
   final EventVerifier _eventVerifier;
 
+  /// Creates a new [Requests] instance
+  ///
+  /// [globalState] The global state of the application
+  /// [cacheRead] The cache reader for retrieving cached events
+  /// [cacheWrite] The cache writer for storing events
+  /// [networkEngine] The engine for handling network requests
+  /// [eventVerifier] The verifier for validating Nostr events
   Requests({
     required GlobalState globalState,
     required CacheRead cacheRead,
@@ -36,13 +44,18 @@ class Requests {
         _globalState = globalState,
         _eventVerifier = eventVerifier;
 
-  /// low level nostr query
-  /// [id] is automatically provided
-  /// [name] is used as id prefix => name-randomString
-  /// [explicitRelays] when specified only these relays are used. No inbox/outbox
-  /// [cacheRead] if the cache should be used to retrieve results
-  /// [cacheWrite] if the query results schuld be written to cache
-  /// [desiredCoverage] determines how many relays per pubkey are queried
+  /// Performs a low-level Nostr query
+  ///
+  /// [filters] A list of filters to apply to the query
+  /// [name] An optional name used as an ID prefix
+  /// [relaySet] An optional set of relays to query
+  /// [cacheRead] Whether to read from cache
+  /// [cacheWrite] Whether to write results to cache
+  /// [timeout] An optional timeout for the query
+  /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox
+  /// [desiredCoverage] The number of relays per pubkey to query
+  ///
+  /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
     required List<Filter> filters,
     String name = '',
@@ -66,9 +79,18 @@ class Requests {
     ));
   }
 
-  /// low level nostr subscription
-  /// [id] is automatically provided but can be changed
-  /// [explicitRelays] when specified only these relays are used. No inbox/outbox
+  /// Creates a low-level Nostr subscription
+  ///
+  /// [filters] A list of filters to apply to the subscription
+  /// [name] An optional name for the subscription
+  /// [id] An optional ID for the subscription, overriding name
+  /// [relaySet] An optional set of relays to subscribe to
+  /// [cacheRead] Whether to read from cache
+  /// [cacheWrite] Whether to write results to cache
+  /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox
+  /// [desiredCoverage] The number of relays per pubkey to subscribe to
+  ///
+  /// Returns an [NdkResponse] containing the subscription results as stream
   NdkResponse subscription({
     required List<Filter> filters,
     String name = '',
@@ -80,7 +102,7 @@ class Requests {
     int? desiredCoverage,
   }) {
     return requestNostrEvent(NdkRequest.subscription(
-      "$name-${id ?? Helpers.getRandomString(10)}",
+      id ?? "$name-${Helpers.getRandomString(10)}",
       name: name,
       filters: filters,
       relaySet: relaySet,
@@ -91,8 +113,14 @@ class Requests {
     ));
   }
 
-  /// low level access to request events from the nostr network
-  /// use only if you don't find a prebuilt use case and .query .subscription do not work for you
+  /// Performs a low-level Nostr event request
+  ///
+  /// This method should be used only if the prebuilt use cases and
+  /// [query] or [subscription] methods do not meet your needs
+  ///
+  /// [request] The [NdkRequest] object containing request parameters
+  ///
+  /// Returns an [NdkResponse] containing the request results
   NdkResponse requestNostrEvent(NdkRequest request) {
     RequestState state = RequestState(request);
 
