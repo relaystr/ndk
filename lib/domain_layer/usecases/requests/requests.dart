@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../../config/request_defaults.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
@@ -53,7 +54,7 @@ class Requests {
   /// [cacheWrite] Whether to write results to cache
   /// [timeout] An optional timeout for the query
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox
-  /// [desiredCoverage] The number of relays per pubkey to query
+  /// [desiredCoverage] The number of relays per pubkey to query, default: 2
   ///
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
@@ -75,7 +76,8 @@ class Requests {
       cacheWrite: cacheWrite,
       timeout: timeout,
       explicitRelays: explicitRelays,
-      desiredCoverage: desiredCoverage ?? 2,
+      desiredCoverage:
+          desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
     ));
   }
 
@@ -88,7 +90,7 @@ class Requests {
   /// [cacheRead] Whether to read from cache
   /// [cacheWrite] Whether to write results to cache
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox
-  /// [desiredCoverage] The number of relays per pubkey to subscribe to
+  /// [desiredCoverage] The number of relays per pubkey to subscribe to, default: 2
   ///
   /// Returns an [NdkResponse] containing the subscription results as stream
   NdkResponse subscription({
@@ -109,7 +111,8 @@ class Requests {
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
       explicitRelays: explicitRelays,
-      desiredCoverage: desiredCoverage ?? 2,
+      desiredCoverage:
+          desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
     ));
   }
 
