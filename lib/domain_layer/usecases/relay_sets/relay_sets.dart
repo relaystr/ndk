@@ -16,11 +16,12 @@ class RelaySets {
   RelayManager relayManager;
   UserRelayLists userRelayLists;
 
-  RelaySets(
-      {required this.requests,
-      required this.cacheManager,
-      required this.relayManager,
-      required this.userRelayLists});
+  RelaySets({
+    required this.requests,
+    required this.cacheManager,
+    required this.relayManager,
+    required this.userRelayLists,
+  });
 
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet(

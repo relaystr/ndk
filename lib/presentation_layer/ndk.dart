@@ -14,41 +14,64 @@ import '../shared/nips/nip25/reactions.dart';
 import 'init.dart';
 import 'ndk_config.dart';
 
-// some global obj that schuld be kept in memory by lib user
+/// Main entry point for the NDK (Nostr Development Kit) library.
+///
+/// This file contains the primary class [Ndk] which provides access to various
+/// Nostr-related functionalities/usecases and manages the global state of the application.
 class Ndk {
-  // placeholder
+  /// Configuration for the NDK instance
   final NdkConfig config;
-  static final GlobalState globalState = GlobalState();
 
-  // global initialization use to access rdy repositories
+  /// Global state shared across the application
+  static final GlobalState _globalState = GlobalState();
+
+  /// Internal initialization object for setting up repositories and usecases
   final Initialization _initialization;
 
+  /// Creates a new instance of [Ndk] with the given [config]
   Ndk(this.config)
       : _initialization = Initialization(
           config: config,
-          globalState: globalState,
+          globalState: _globalState,
         );
 
-  /// low level nostr requests
-  /// if you want directly query or subscribe to notes from the nostr network
-  /// .query() .subscription()
+  /// Provides access to low-level Nostr requests.
+  ///
+  /// Use this to directly query or subscribe to notes from the Nostr network.
+  /// Available methods include [query()] and [subscription()]
   Requests get requests => _initialization.requests;
 
   RelayManager get relays => _initialization.relayManager;
 
-  /// retrieval of contact lists .getContactList()
+  /// Handles operations related to user follows
+  ///
+  /// Use [getContactList()] to retrieve contact lists
   Follows get follows => _initialization.follows;
+
+  /// user metadata operations
   Metadatas get metadatas => _initialization.metadatas;
   UserRelayLists get userRelayLists => _initialization.userRelayLists;
+
+  /// Manages various types of lists in the Nostr network
   Lists get lists => _initialization.lists;
+
+  /// calculate relay set
   RelaySets get relaySets => _initialization.relaySets;
 
-  /// hot swap EventVerifier
+  /// Changes the event verifier used by the NDK instance
+  ///
+  /// This method allows for hot-swapping the [EventVerifier] implementation
+  ///
+  /// [newEventVerifier] The new [EventVerifier] to be used
   changeEventVerifier(EventVerifier newEventVerifier) {
     config.eventVerifier = newEventVerifier;
   }
 
-  /// hot swap EventSigner
+  /// Changes the event signer used by the NDK instance
+  ///
+  /// This method allows for hot-swapping the [EventSigner] implementation
+  ///
+  /// [newEventSigner] The new [EventSigner] to be used. Can be null to remove the current signer
   changeEventSigner(EventSigner? newEventSigner) {
     config.eventSigner = newEventSigner;
   }
