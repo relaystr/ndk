@@ -377,7 +377,8 @@ class RelayManager {
     return r;
   }
 
-  bool _doesRelaySupportNip(String url, int nip) {
+  /// does relay support given nip
+  bool doesRelaySupportNip(String url, int nip) {
     Relay? relay = relays[cleanRelayUrl(url)];
     return relay != null && relay.supportsNip(nip);
   }

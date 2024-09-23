@@ -113,7 +113,8 @@ class Nip01Event {
   @override
   int get hashCode => id.hashCode;
 
-  static int _secondsSinceEpoch() {
+  /// seconds since epoch
+  static int secondsSinceEpoch() {
     final secondsSinceEpoch = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     return secondsSinceEpoch;
   }
