@@ -10,13 +10,11 @@ class MethodChannelDartNdk extends NdkPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('ndk');
 
-  @override
   Future<String?> getPublicKey() async {
     final pk = await methodChannel.invokeMethod<String>('get_public_key');
     return pk;
   }
 
-  @override
   Future<bool?> verifySignature(
       String signature, String hash, String pubKey) async {
     final arguments = {

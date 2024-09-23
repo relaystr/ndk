@@ -1,4 +1,4 @@
-## 0.1.0-dev95
+## 0.1.0-dev96
 * add documentation for public members
 
 ## 0.1.0-dev94
