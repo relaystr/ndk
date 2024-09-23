@@ -160,6 +160,22 @@ class Nip01Event {
     return getTags(tags, "p");
   }
 
+  List<String> get replyETags {
+    List<String> replyIds = [];
+    for (var tag in tags) {
+      if (tag.length >= 4) {
+        var key = tag[0];
+        var value = tag[1];
+        var marker = tag[3];
+
+        if (key == "e" && marker == "reply") {
+          replyIds.add(value.toString().trim().toLowerCase())
+        }
+      }
+    }
+    return replyIds;
+  }
+
   String? getDtag() {
     for (var tag in tags) {
       if (tag.length > 1) {
