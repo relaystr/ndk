@@ -7,21 +7,18 @@ import '../../entities/relay_set.dart';
 import '../../entities/user_relay_list.dart';
 import '../../repositories/cache_manager.dart';
 import '../relay_manager.dart';
-import '../requests/requests.dart';
 import '../user_relay_lists/user_relay_lists.dart';
 
 class RelaySets {
-  Requests _requests;
   CacheManager _cacheManager;
   RelayManager _relayManager;
   UserRelayLists _userRelayLists;
 
   RelaySets({
-    required Requests requests,
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required UserRelayLists userRelayLists,
-  }) : _userRelayLists = userRelayLists, _relayManager = relayManager, _cacheManager = cacheManager, _requests = requests;
+  }) : _userRelayLists = userRelayLists, _relayManager = relayManager, _cacheManager = cacheManager;
 
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet(

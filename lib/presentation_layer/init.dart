@@ -107,7 +107,6 @@ class Initialization {
     );
 
     relaySets = RelaySets(
-        requests: requests,
         cacheManager: config.cache,
         relayManager: relayManager,
         userRelayLists: userRelayLists,

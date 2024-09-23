@@ -3,7 +3,6 @@
 import 'dart:convert';
 import 'dart:core';
 
-import '../../data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/helpers.dart';
 import '../entities/filter.dart';
@@ -23,7 +22,6 @@ class RelaySetsEngine implements NetworkEngine {
   late GlobalState _globalState;
 
   RelayManager _relayManager;
-  late CacheManager _cacheManager;
 
   /// engine that pre-calculates relay sets for gossip
   RelaySetsEngine({
@@ -31,7 +29,6 @@ class RelaySetsEngine implements NetworkEngine {
     CacheManager? cacheManager,
     GlobalState? globalState,
   }) : _relayManager = relayManager {
-    this._cacheManager = cacheManager ?? MemCacheManager();
     this._globalState = globalState ?? GlobalState();
     _relayManager.connect(urls: _relayManager.bootstrapRelays);
   }

@@ -6,7 +6,6 @@ import 'dart:core';
 import 'dart:developer' as developer;
 
 import '../../config/bootstrap_relays.dart';
-import '../../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../../event_filter.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
