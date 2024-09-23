@@ -7,16 +7,17 @@ import '../../repositories/event_signer.dart';
 import '../relay_manager.dart';
 import '../requests/requests.dart';
 
+/// Follows usecase
 class Follows {
-  Requests requests;
-  CacheManager cacheManager;
-  RelayManager relayManager;
+  Requests _requests;
+  CacheManager _cacheManager;
+  RelayManager _relayManager;
 
   Follows({
-    required this.requests,
-    required this.cacheManager,
-    required this.relayManager,
-  });
+    required Requests requests,
+    required CacheManager cacheManager,
+    required RelayManager relayManager,
+  }) : _relayManager = relayManager, _cacheManager = cacheManager, _requests = requests;
 
   /// contact list of a given pubkey, not intended to get followers
   Future<ContactList?> getContactList(
@@ -25,7 +26,7 @@ class Follows {
     bool forceRefresh = false,
     int idleTimeout = Requests.DEFAULT_QUERY_TIMEOUT,
   }) async {
-    ContactList? contactList = cacheManager.loadContactList(pubKey);
+    ContactList? contactList = _cacheManager.loadContactList(pubKey);
 
     if (contactList != null && !forceRefresh) {
       return contactList;
@@ -33,7 +34,7 @@ class Follows {
 
     ContactList? loadedContactList;
     try {
-      await for (final event in requests.query(
+      await for (final event in _requests.query(
         filters: [
           Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1)
         ],
@@ -52,7 +53,7 @@ class Follows {
             contactList.createdAt < loadedContactList.createdAt)) {
       loadedContactList.loadedTimestamp =
           DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      await cacheManager.saveContactList(loadedContactList);
+      await _cacheManager.saveContactList(loadedContactList);
       contactList = loadedContactList;
     }
 
@@ -63,10 +64,10 @@ class Follows {
   // otherwise we risk adding/removing contacts to a list that is out of date and thus loosing contacts other client has added/removed since.
   static const Duration REFRESH_CONTACT_LIST_DURATION = Duration(minutes: 10);
 
-  Future<ContactList> ensureUpToDateContactListOrEmpty(
+  Future<ContactList> _ensureUpToDateContactListOrEmpty(
       EventSigner signer) async {
     ContactList? contactList =
-        cacheManager.loadContactList(signer.getPublicKey());
+        _cacheManager.loadContactList(signer.getPublicKey());
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_CONTACT_LIST_DURATION)
             .millisecondsSinceEpoch ~/
@@ -82,85 +83,93 @@ class Follows {
     return contactList;
   }
 
-  Future<ContactList> broadcastAddContactInCollection(
+  Future<ContactList> _broadcastAddContactInCollection(
       String toAdd,
       Iterable<String> relays,
       EventSigner signer,
       List<String> Function(ContactList) collectionAccessor) async {
-    ContactList contactList = await ensureUpToDateContactListOrEmpty(signer);
+    ContactList contactList = await _ensureUpToDateContactListOrEmpty(signer);
     List<String> collection = collectionAccessor(contactList);
     if (!collection.contains(toAdd)) {
       collection.add(toAdd);
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
-      await relayManager.broadcastEvent(contactList.toEvent(), relays, signer);
-      await cacheManager.saveContactList(contactList);
+      await _relayManager.broadcastEvent(contactList.toEvent(), relays, signer);
+      await _cacheManager.saveContactList(contactList);
     }
     return contactList;
   }
 
+  /// broadcast adding of contact
   Future<ContactList> broadcastAddContact(
       String add, Iterable<String> relays, EventSigner signer) async {
-    return broadcastAddContactInCollection(
+    return _broadcastAddContactInCollection(
         add, relays, signer, (list) => list.contacts);
   }
 
+  /// broadcast adding of followed tag
   Future<ContactList> broadcastAddFollowedTag(
       String add, Iterable<String> relays, EventSigner signer) async {
-    return broadcastAddContactInCollection(
+    return _broadcastAddContactInCollection(
         add, relays, signer, (list) => list.followedTags);
   }
 
+  /// broadcast adding of followed community
   Future<ContactList> broadcastAddFollowedCommunity(
       String toAdd, Iterable<String> relays, EventSigner signer) async {
-    return broadcastAddContactInCollection(
+    return _broadcastAddContactInCollection(
         toAdd, relays, signer, (list) => list.followedCommunities);
   }
 
+  /// broadcast adding of followed event
   Future<ContactList> broadcastAddFollowedEvent(
       String toAdd, Iterable<String> relays, EventSigner signer) async {
-    return broadcastAddContactInCollection(
+    return _broadcastAddContactInCollection(
         toAdd, relays, signer, (list) => list.followedEvents);
   }
 
-  Future<ContactList?> broadcastRemoveContactInCollection(
+  Future<ContactList?> _broadcastRemoveContactInCollection(
       String toRemove,
       Iterable<String> relays,
       EventSigner signer,
       List<String> Function(ContactList) collectionAccessor) async {
-    ContactList? contactList = await ensureUpToDateContactListOrEmpty(signer);
+    ContactList? contactList = await _ensureUpToDateContactListOrEmpty(signer);
     List<String> collection = collectionAccessor(contactList);
     if (collection.contains(toRemove)) {
       collection.remove(toRemove);
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
-      await relayManager.broadcastEvent(contactList.toEvent(), relays, signer);
-      await cacheManager.saveContactList(contactList);
+      await _relayManager.broadcastEvent(contactList.toEvent(), relays, signer);
+      await _cacheManager.saveContactList(contactList);
     }
     return contactList;
   }
 
+  /// broadcast removal of contact
   Future<ContactList?> broadcastRemoveContact(
       String toRemove, Iterable<String> relays, EventSigner signer) async {
-    return broadcastRemoveContactInCollection(
+    return _broadcastRemoveContactInCollection(
         toRemove, relays, signer, (list) => list.contacts);
   }
 
+  /// broadcast removal of followed tag
   Future<ContactList?> broadcastRemoveFollowedTag(
       String toRemove, Iterable<String> relays, EventSigner signer) async {
-    return broadcastRemoveContactInCollection(
+    return _broadcastRemoveContactInCollection(
         toRemove, relays, signer, (list) => list.followedTags);
   }
 
+  /// broadcast removal of followed community
   Future<ContactList?> broadcastRemoveFollowedCommunity(
       String toRemove, Iterable<String> relays, EventSigner signer) async {
-    return broadcastRemoveContactInCollection(
+    return _broadcastRemoveContactInCollection(
         toRemove, relays, signer, (list) => list.followedCommunities);
   }
 
+  /// broadcast removal of followed event
   Future<ContactList?> broadcastRemoveFollowedEvent(
       String toRemove, Iterable<String> relays, EventSigner signer) async {
-    return broadcastRemoveContactInCollection(
+    return _broadcastRemoveContactInCollection(
         toRemove, relays, signer, (list) => list.followedEvents);
   }
 }

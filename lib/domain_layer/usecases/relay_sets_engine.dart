@@ -20,32 +20,33 @@ import 'relay_manager.dart';
 class RelaySetsEngine implements NetworkEngine {
   static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
 
-  late GlobalState globalState;
+  late GlobalState _globalState;
 
-  RelayManager relayManager;
-  late CacheManager cacheManager;
+  RelayManager _relayManager;
+  late CacheManager _cacheManager;
 
+  /// engine that pre-calculates relay sets for gossip
   RelaySetsEngine({
-    required this.relayManager,
+    required RelayManager relayManager,
     CacheManager? cacheManager,
     GlobalState? globalState,
-  }) {
-    this.cacheManager = cacheManager ?? MemCacheManager();
-    this.globalState = globalState ?? GlobalState();
-    relayManager.connect(urls: relayManager.bootstrapRelays);
+  }) : _relayManager = relayManager {
+    this._cacheManager = cacheManager ?? MemCacheManager();
+    this._globalState = globalState ?? GlobalState();
+    _relayManager.connect(urls: _relayManager.bootstrapRelays);
   }
 
   // ====================================================================================================================
 
   bool doRelayRequest(String id, RelayRequestState request) {
-    if (relayManager.isWebSocketOpen(request.url) && (!relayManager.blockedRelays.contains(request.url))) {
+    if (_relayManager.isWebSocketOpen(request.url) && (!_relayManager.blockedRelays.contains(request.url))) {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
-        Relay? relay = relayManager.getRelay(request.url);
+        Relay? relay = _relayManager.getRelay(request.url);
         if (relay != null) {
           relay.stats.activeRequests++;
-          relayManager.send(request.url, jsonEncode(list));
+          _relayManager.send(request.url, jsonEncode(list));
         }
         return true;
       } catch (e) {
@@ -54,7 +55,7 @@ class RelaySetsEngine implements NetworkEngine {
     } else {
       print("COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
 
-      relayManager.reconnectRelay(request.url);
+      _relayManager.reconnectRelay(request.url);
     }
     return false;
   }
@@ -75,8 +76,8 @@ class RelaySetsEngine implements NetworkEngine {
 
       if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
         print(
-            "making fallback requests to ${relayManager.bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
-        for (var url in relayManager.bootstrapRelays) {
+            "making fallback requests to ${_relayManager.bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
+        for (var url in _relayManager.bootstrapRelays) {
           state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
         }
       }
@@ -85,7 +86,7 @@ class RelaySetsEngine implements NetworkEngine {
         state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
       }
     }
-    globalState.inFlightRequests[state.id] = state;
+    _globalState.inFlightRequests[state.id] = state;
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
     }
@@ -116,13 +117,13 @@ class RelaySetsEngine implements NetworkEngine {
 
   @override
   Future<void> handleRequest(RequestState state) async {
-    await relayManager.seedRelaysConnected;
+    await _relayManager.seedRelaysConnected;
     state.request.onTimeout = (state) {
       Logger.log.w("request ${state.request.id} : ${state.request.filters} timed out after ${state.request.timeout}");
       for (var url in state.requests.keys) {
-        relayManager.sendCloseToRelay(url, state.id);
+        _relayManager.sendCloseToRelay(url, state.id);
       }
-      relayManager.removeInFlightRequestById(state.id);
+      _relayManager.removeInFlightRequestById(state.id);
     };
 
     if (state.request.relaySet != null) {
@@ -133,11 +134,11 @@ class RelaySetsEngine implements NetworkEngine {
         state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     } else {
-      for (var url in relayManager.bootstrapRelays) {
+      for (var url in _relayManager.bootstrapRelays) {
         state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     }
-    globalState.inFlightRequests[state.id] = state;
+    _globalState.inFlightRequests[state.id] = state;
 
     List<String> notSent = [];
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
@@ -164,7 +165,7 @@ class RelaySetsEngine implements NetworkEngine {
     for (var url in urls) {
       state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
     }
-    globalState.inFlightRequests[state.id] = state;
+    _globalState.inFlightRequests[state.id] = state;
 
     List<String> notSent = [];
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {

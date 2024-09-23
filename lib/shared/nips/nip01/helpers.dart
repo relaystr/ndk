@@ -12,17 +12,20 @@ class Helpers {
   // coverage:ignore-line
   static final Random _rnd = Random();
 
+  /// return a random string of given length
   static String getRandomString(int length) {
     return String.fromCharCodes(Iterable.generate(
         length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
   }
 
+  /// return a secure random string of given length
   static String getSecureRandomString(int length) {
     final random = Random.secure();
     final values = List<int>.generate(length, (i) => random.nextInt(256));
     return base64UrlEncode(values);
   }
 
+  /// return a secure random hex string of given length
   static String getSecureRandomHex(int length) {
     final random = Random.secure();
     final values = List<int>.generate(length, (i) => random.nextInt(256));
@@ -112,6 +115,7 @@ class Helpers {
     return result;
   }
 
+  /// return if given string is not blank
   static bool isNotBlank(String? str) {
     if (str != null && str.trim() != "") {
       return true;
@@ -119,9 +123,11 @@ class Helpers {
     return false;
   }
 
+  /// return if given string is blank
   static bool isBlank(String? str) {
     return !isNotBlank(str);
   }
 
+  /// now
   static int get now => DateTime.now().millisecondsSinceEpoch ~/ 1000;
 }

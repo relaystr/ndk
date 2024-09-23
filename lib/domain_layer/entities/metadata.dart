@@ -3,22 +3,36 @@ import 'dart:convert';
 import '../../shared/nips/nip01/helpers.dart';
 import 'nip_01_event.dart';
 
+/// basic nostr metadata
 class Metadata {
   static const int KIND = 0;
 
+  /// public key
   late String pubKey;
+  /// name
   String? name;
+  /// displayName
   String? displayName;
+  /// picture
   String? picture;
+  /// banner
   String? banner;
+  /// website
   String? website;
+  /// about
   String? about;
+  /// nip05
   String? nip05;
+  /// lud16
   String? lud16;
+  /// lud06
   String? lud06;
+  /// updated at
   int? updatedAt;
+  /// refreshed timestamp
   int? refreshedTimestamp;
 
+  /// basic metadata nostr
   Metadata(
       {this.pubKey = "",
       this.name,
@@ -33,6 +47,7 @@ class Metadata {
       this.updatedAt,
       this.refreshedTimestamp});
 
+  /// convert from json
   Metadata.fromJson(Map<String, dynamic> json) {
     name = json['name'];
     displayName = json['display_name'];
@@ -49,6 +64,7 @@ class Metadata {
     lud06 = json['lud06'];
   }
 
+  /// clean nip05
   String? get cleanNip05 {
     if (nip05 != null) {
       if (nip05!.startsWith("_@")) {
@@ -59,12 +75,14 @@ class Metadata {
     return null;
   }
 
+  /// convert to json (full all fields)
   Map<String, dynamic> toFullJson() {
     var data = toJson();
     data['pub_key'] = pubKey;
     return data;
   }
 
+  /// convert from json (except pub_key)
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['name'] = name;
@@ -79,6 +97,7 @@ class Metadata {
     return data;
   }
 
+  /// convert from nip01 event
   static Metadata fromEvent(Nip01Event event) {
     Metadata metadata = Metadata();
     if (Helpers.isNotBlank(event.content)) {
@@ -90,6 +109,7 @@ class Metadata {
     return metadata;
   }
 
+  /// convert to nip01 event
   Nip01Event toEvent() {
     return Nip01Event(
         pubKey: pubKey,
@@ -99,6 +119,7 @@ class Metadata {
         createdAt: updatedAt ?? 0);
   }
 
+  /// return display name if set, otherwise name if set, otherwise pubKey
   String getName() {
     if (displayName != null && Helpers.isNotBlank(displayName)) {
       return displayName!;
@@ -109,6 +130,7 @@ class Metadata {
     return pubKey;
   }
 
+  /// does it match while searching for given string
   bool matchesSearch(String str) {
     str = str.trim().toLowerCase();
     String d = displayName != null ? displayName!.toLowerCase() : "";

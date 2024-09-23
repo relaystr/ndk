@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import '../../shared/helpers/list_casting.dart';
 import '../../shared/nips/nip01/bip340.dart';
 
+/// basic nostr nip01 event data structure
 class Nip01Event {
   static const int TEXT_NODE_KIND = 1;
 
@@ -73,6 +74,7 @@ class Nip01Event {
   /// 64-byte Schnorr signature of [Nip01Event.id].
   String sig = '';
 
+  /// has signature been validated?
   bool? validSig;
 
   /// Relay that an event was received from
@@ -91,10 +93,12 @@ class Nip01Event {
     };
   }
 
+  /// sign the event with given privateKey
   void sign(String privateKey) {
     sig = Bip340.sign(id, privateKey);
   }
 
+  /// is Id valid?
   bool get isIdValid {
     // Validate event data
     if (id != _calculateId(pubKey, createdAt, kind, tags, content)) {
@@ -123,6 +127,7 @@ class Nip01Event {
     return digest.toString();
   }
 
+  /// return first `e` tag found
   String? getEId() {
     for (var tag in tags) {
       if (tag.length > 1) {
@@ -137,6 +142,7 @@ class Nip01Event {
     return null;
   }
 
+  /// return all tags that match given `tag`
   static List<String> getTags(List<dynamic> list, String tag) {
     List<String> tags = [];
     for (var e in list) {
@@ -152,14 +158,17 @@ class Nip01Event {
     return tags;
   }
 
+  /// return all `t` tags in event
   List<String> get tTags {
     return getTags(tags, "t");
   }
 
+  /// return all `p` tags in event
   List<String> get pTags {
     return getTags(tags, "p");
   }
 
+  /// return all e tags in event that have a `mention` marker
   List<String> get replyETags {
     List<String> replyIds = [];
     for (var tag in tags) {
@@ -176,6 +185,7 @@ class Nip01Event {
     return replyIds;
   }
 
+  /// return first found `d` tag
   String? getDtag() {
     for (var tag in tags) {
       if (tag.length > 1) {

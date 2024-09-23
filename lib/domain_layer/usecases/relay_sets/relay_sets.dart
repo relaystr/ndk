@@ -11,17 +11,17 @@ import '../requests/requests.dart';
 import '../user_relay_lists/user_relay_lists.dart';
 
 class RelaySets {
-  Requests requests;
-  CacheManager cacheManager;
-  RelayManager relayManager;
-  UserRelayLists userRelayLists;
+  Requests _requests;
+  CacheManager _cacheManager;
+  RelayManager _relayManager;
+  UserRelayLists _userRelayLists;
 
   RelaySets({
-    required this.requests,
-    required this.cacheManager,
-    required this.relayManager,
-    required this.userRelayLists,
-  });
+    required Requests requests,
+    required CacheManager cacheManager,
+    required RelayManager relayManager,
+    required UserRelayLists userRelayLists,
+  }) : _userRelayLists = userRelayLists, _relayManager = relayManager, _cacheManager = cacheManager, _requests = requests;
 
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet(
@@ -50,7 +50,7 @@ class RelaySets {
         pubKey: ownerPubKey,
         relayMinCountPerPubkey: relayMinCountPerPubKey,
         direction: direction,
-        relaysMap: relayManager.allConnectedRelays(pubKeys),
+        relaysMap: _relayManager.allConnectedRelays(pubKeys),
         notCoveredPubkeys: []);
   }
 
@@ -68,7 +68,7 @@ class RelaySets {
       required RelayDirection direction,
       required int relayMinCountPerPubKey,
       Function(String stepName, int count, int total)? onProgress}) async {
-    await userRelayLists.loadMissingRelayListsFromNip65OrNip02(pubKeys,
+    await _userRelayLists.loadMissingRelayListsFromNip65OrNip02(pubKeys,
         onProgress: onProgress);
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl =
         await _buildPubKeysMapFromRelayLists(pubKeys, direction);
@@ -85,7 +85,7 @@ class RelaySets {
       notCoveredPubkeys[pubKey] = relayMinCountPerPubKey;
     }
     for (String url in pubKeysByRelayUrl.keys) {
-      if (relayManager.blockedRelays.contains(cleanRelayUrl(url))) {
+      if (_relayManager.blockedRelays.contains(cleanRelayUrl(url))) {
         continue;
       }
       if (!pubKeysByRelayUrl[url]!.any((pubKey) =>
@@ -94,7 +94,7 @@ class RelaySets {
               relayMinCountPerPubKey)) {
         continue;
       }
-      bool connectable = await relayManager.reconnectRelay(url);
+      bool connectable = await _relayManager.reconnectRelay(url);
       Logger.log.d("tried to reconnect to $url = $connectable");
       if (!connectable) {
         continue;
@@ -149,7 +149,7 @@ class RelaySets {
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
     int foundCount = 0;
     for (String pubKey in pubKeys) {
-      UserRelayList? userRelayList = cacheManager.loadUserRelayList(pubKey);
+      UserRelayList? userRelayList = _cacheManager.loadUserRelayList(pubKey);
       if (userRelayList != null) {
         if (userRelayList.relays.isNotEmpty) {
           foundCount++;
@@ -160,14 +160,14 @@ class RelaySets {
         }
       } else {
         int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        await cacheManager.saveUserRelayList(UserRelayList(
+        await _cacheManager.saveUserRelayList(UserRelayList(
             pubKey: pubKey,
             relays: {},
             createdAt: now,
             refreshedTimestamp: now));
       }
     }
-    print(
+    Logger.log.d(
         "Have lists of relays for $foundCount/${pubKeys.length} pubKeys ${foundCount < pubKeys.length ? "(missing ${pubKeys.length - foundCount})" : ""}");
 
     /// sort by pubKeys count for each relay descending
@@ -179,8 +179,8 @@ class RelaySets {
             int rr = b.value.length.compareTo(a.value.length);
             if (rr == 0) {
               // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
-              bool aC = relayManager.isWebSocketOpen(a.key);
-              bool bC = relayManager.isWebSocketOpen(b.key);
+              bool aC = _relayManager.isWebSocketOpen(a.key);
+              bool bC = _relayManager.isWebSocketOpen(b.key);
               if (aC != bC) {
                 return aC ? -1 : 1;
               }

@@ -1,6 +1,7 @@
 import 'package:bech32/bech32.dart';
 import 'package:hex/hex.dart';
 
+import '../../logger/logger.dart';
 import 'hrps.dart';
 
 class Nip19 {
@@ -64,7 +65,7 @@ class Nip19 {
       var data = convertBits(bech32Result.data, 5, 8, false);
       return HEX.encode(data);
     } catch (e) {
-      print("Nip19 decode error ${e.toString()}");
+      Logger.log.e("Nip19 decode error ${e.toString()}");
       return "";
     }
   }
@@ -90,6 +91,7 @@ class Nip19 {
     return isKey(Hrps.NOTE_ID, str);
   }
 
+  /// encode note id
   static String encodeNoteId(String id) {
     return _encodeKey(Hrps.NOTE_ID, id);
   }

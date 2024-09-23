@@ -6,9 +6,9 @@ import '../../entities/global_state.dart';
 import '../../entities/request_state.dart';
 
 class ConcurrencyCheck {
-  GlobalState globalState;
+  GlobalState _globalState;
 
-  ConcurrencyCheck(this.globalState);
+  ConcurrencyCheck(this._globalState);
 
   /// checks if the request is already served (based on filters) and if so adds the stream.
   /// returns true if the response stream got replaced
@@ -16,13 +16,13 @@ class ConcurrencyCheck {
     final hash = _hashFilters(requestState.request.filters);
 
     // check if its not already served
-    if (!globalState.inFlightRequests.containsKey(hash)) {
+    if (!_globalState.inFlightRequests.containsKey(hash)) {
       // add to running requests
-      globalState.inFlightRequests[hash] = requestState;
+      _globalState.inFlightRequests[hash] = requestState;
 
       // register listener so inFlight entry gets removed
       requestState.controller.done.then(
-        (value) => globalState.inFlightRequests.remove(hash),
+        (value) => _globalState.inFlightRequests.remove(hash),
       );
 
       return false;
@@ -30,7 +30,7 @@ class ConcurrencyCheck {
 
     // add already running stream to duplicate request
     requestState.controller
-        .addStream(globalState.inFlightRequests[hash]!.stream);
+        .addStream(_globalState.inFlightRequests[hash]!.stream);
 
     return true;
   }

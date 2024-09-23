@@ -11,27 +11,28 @@ import '../../repositories/event_signer.dart';
 import '../relay_manager.dart';
 import '../requests/requests.dart';
 
+/// nostr metadata usecase
 class Metadatas {
-  Requests requests;
-  CacheManager cacheManager;
-  RelayManager relayManager;
+  Requests _requests;
+  CacheManager _cacheManager;
+  RelayManager _relayManager;
 
   Metadatas({
-    required this.requests,
-    required this.cacheManager,
-    required this.relayManager,
-  });
+    required Requests requests,
+    required CacheManager cacheManager,
+    required RelayManager relayManager,
+  }) : _relayManager = relayManager, _cacheManager = cacheManager, _requests = requests;
 
   Future<Metadata?> loadMetadata(
     String pubKey, {
     bool forceRefresh = false,
     int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
   }) async {
-    Metadata? metadata = cacheManager.loadMetadata(pubKey);
+    Metadata? metadata = _cacheManager.loadMetadata(pubKey);
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
-        await for (final event in requests.query(
+        await for (final event in _requests.query(
           name: 'metadata',
           timeout: idleTimeout,
           filters: [
@@ -54,7 +55,7 @@ class Metadatas {
               loadedMetadata.updatedAt! < metadata.updatedAt! ||
               forceRefresh)) {
         loadedMetadata.refreshedTimestamp = Helpers.now;
-        await cacheManager.saveMetadata(loadedMetadata);
+        await _cacheManager.saveMetadata(loadedMetadata);
         metadata = loadedMetadata;
       }
     }
@@ -67,7 +68,7 @@ class Metadatas {
       {Function(Metadata)? onLoad}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
-      Metadata? userMetadata = cacheManager.loadMetadata(pubKey);
+      Metadata? userMetadata = _cacheManager.loadMetadata(pubKey);
       if (userMetadata == null) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
@@ -78,7 +79,7 @@ class Metadatas {
     if (missingPubKeys.isNotEmpty) {
       Logger.log.d("loading missing user metadatas ${missingPubKeys.length}");
       try {
-        await for (final event in (requests.query(
+        await for (final event in (_requests.query(
                 name: "load-metadatas",
                 filters: [
                   Filter(authors: missingPubKeys, kinds: [Metadata.KIND])
@@ -92,7 +93,7 @@ class Metadatas {
               metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
-            await cacheManager.saveMetadata(metadatas[event.pubKey]!);
+            await _cacheManager.saveMetadata(metadatas[event.pubKey]!);
             if (onLoad != null) {
               onLoad(metadatas[event.pubKey]!);
             }
@@ -108,7 +109,7 @@ class Metadatas {
 
   Future<Nip01Event?> _refreshMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
-    await for (final event in requests.query(filters: [
+    await for (final event in _requests.query(filters: [
       Filter(
           kinds: [Metadata.KIND],
           authors: [signer.getPublicKey()],
@@ -138,10 +139,10 @@ class Metadatas {
     } else {
       event = metadata.toEvent();
     }
-    await relayManager.broadcastEvent(event, broadcastRelays, eventSigner);
+    await _relayManager.broadcastEvent(event, broadcastRelays, eventSigner);
     metadata.updatedAt = Helpers.now;
     metadata.refreshedTimestamp = Helpers.now;
-    await cacheManager.saveMetadata(metadata);
+    await _cacheManager.saveMetadata(metadata);
 
     return metadata;
   }

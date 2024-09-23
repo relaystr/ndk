@@ -5,21 +5,32 @@ import '../../shared/nips/nip01/helpers.dart';
 import 'nip_01_event.dart';
 import 'read_write_marker.dart';
 
+/// nip02 contact list
 class ContactList {
   static const int KIND = 3;
+  /// public key
   late String pubKey;
 
+  /// contacts (public keys)
   List<String> contacts = [];
+  /// contacts relays
   List<String> contactRelays = [];
+  /// petnames
   List<String> petnames = [];
 
+  /// followed tags
   List<String> followedTags = [];
+  /// followed communities
   List<String> followedCommunities = [];
+  /// followed events
   List<String> followedEvents = [];
 
+  /// create at timestamp
   int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  /// loaded at timestamp
   int? loadedTimestamp;
 
+  /// relay sources
   List<String> sources = [];
 
   ContactList({required this.pubKey, required this.contacts});

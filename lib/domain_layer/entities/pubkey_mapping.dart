@@ -2,8 +2,10 @@ import 'read_write_marker.dart';
 
 /// maps the direction for a pubkey read, write, both
 class PubkeyMapping {
+  /// pub key
   String pubKey;
 
+  /// read write marker
   ReadWriteMarker rwMarker;
 
   PubkeyMapping({

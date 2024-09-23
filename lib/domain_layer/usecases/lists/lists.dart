@@ -7,19 +7,21 @@ import '../../repositories/event_signer.dart';
 import '../relay_manager.dart';
 import '../requests/requests.dart';
 
+/// Lists usecase for access to nip51 lists & sets
 class Lists {
-  Requests requests;
-  CacheManager cacheManager;
-  RelayManager relayManager;
+  Requests _requests;
+  CacheManager _cacheManager;
+  RelayManager _relayManager;
 
+  /// lists
   Lists({
-    required this.requests,
-    required this.cacheManager,
-    required this.relayManager,
-  });
+    required Requests requests,
+    required CacheManager cacheManager,
+    required RelayManager relayManager,
+  }) : _relayManager = relayManager, _cacheManager = cacheManager, _requests = requests;
 
-  Future<Nip51List?> getCachedNip51List(int kind, EventSigner signer) async {
-    List<Nip01Event>? events = cacheManager
+  Future<Nip51List?> _getCachedNip51List(int kind, EventSigner signer) async {
+    List<Nip01Event>? events = _cacheManager
         .loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     events.sort(
       (a, b) => b.createdAt.compareTo(a.createdAt),
@@ -29,13 +31,14 @@ class Lists {
         : null;
   }
 
+  /// return nip51 list by given kind
   Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
       {bool forceRefresh = false, int timeout = 5}) async {
     Nip51List? list =
-        !forceRefresh ? await getCachedNip51List(kind, signer) : null;
+        !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
     if (list == null) {
       Nip51List? refreshedList;
-      await for (final event in requests.query(
+      await for (final event in _requests.query(
         filters: [
           Filter(
             authors: [signer.getPublicKey()],
@@ -50,7 +53,7 @@ class Lists {
           //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
           //   refreshedList = decryptedList;
           // }
-          await cacheManager.saveEvent(event);
+          await _cacheManager.saveEvent(event);
         }
       }
       return refreshedList;
@@ -58,9 +61,9 @@ class Lists {
     return list;
   }
 
-  Future<Nip51Set?> getCachedNip51RelaySet(
+  Future<Nip51Set?> _getCachedNip51RelaySet(
       String name, EventSigner signer) async {
-    List<Nip01Event>? events = cacheManager.loadEvents(
+    List<Nip01Event>? events = _cacheManager.loadEvents(
         pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
@@ -76,12 +79,13 @@ class Lists {
         : null;
   }
 
+  /// return single nip51 set that match given name
   Future<Nip51Set?> getSingleNip51RelaySet(String name, EventSigner signer,
       {bool forceRefresh = false}) async {
-    Nip51Set? relaySet = await getCachedNip51RelaySet(name, signer);
+    Nip51Set? relaySet = await _getCachedNip51RelaySet(name, signer);
     if (relaySet == null || forceRefresh) {
       Nip51Set? newRelaySet;
-      await for (final event in requests.query(filters: [
+      await for (final event in _requests.query(filters: [
         Filter(
           authors: [signer.getPublicKey()],
           kinds: [Nip51List.RELAY_SET],
@@ -91,13 +95,13 @@ class Lists {
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
           if (event.getDtag() != null && event.getDtag() == name) {
             newRelaySet = await Nip51Set.fromEvent(event, signer);
-            await cacheManager.saveEvent(event);
+            await _cacheManager.saveEvent(event);
           } else if (Helpers.isNotBlank(event.content)) {
             Nip51Set? decryptedRelaySet =
                 await Nip51Set.fromEvent(event, signer);
             if (decryptedRelaySet != null && decryptedRelaySet.name == name) {
               newRelaySet = decryptedRelaySet;
-              await cacheManager.saveEvent(event);
+              await _cacheManager.saveEvent(event);
             }
           }
         }
@@ -107,12 +111,13 @@ class Lists {
     return relaySet;
   }
 
+  /// return list of all nip51 relay sets that match a given kind
   Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer,
       {bool forceRefresh = false}) async {
     // Nip51Set? relaySet;//  await getCachedNip51RelaySet(signer);
     // if (relaySet == null || forceRefresh) {
       Map<String, Nip51Set> newRelaySets = {};
-      await for (final event in requests.query(filters: [
+      await for (final event in _requests.query(filters: [
         Filter(
           authors: [signer.getPublicKey()],
           kinds: [kind],
@@ -125,7 +130,7 @@ class Lists {
               newRelaySet = await Nip51Set.fromEvent(event, signer);
             }
             if (newRelaySet != null) {
-              await cacheManager.saveEvent(event);
+              await _cacheManager.saveEvent(event);
               newRelaySets[newRelaySet.name] = newRelaySet;
             }
           }
@@ -155,9 +160,9 @@ class Lists {
     Nip01Event event = await list.toEvent(eventSigner);
     //print(event);
     await Future.wait([
-      relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
+      _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
     ]);
-    List<Nip01Event>? events = cacheManager.loadEvents(
+    List<Nip01Event>? events = _cacheManager.loadEvents(
         pubKeys: [eventSigner.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
@@ -166,10 +171,10 @@ class Lists {
       return false;
     }).toList();
     for (var event in events) {
-      cacheManager.removeEvent(event.id);
+      _cacheManager.removeEvent(event.id);
     }
 
-    await cacheManager.saveEvent(event);
+    await _cacheManager.saveEvent(event);
     return list;
   }
 
@@ -200,9 +205,9 @@ class Lists {
       relaySet.createdAt = Helpers.now;
       Nip01Event event = await relaySet.toEvent(eventSigner);
       await Future.wait([
-        relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
+        _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
       ]);
-      List<Nip01Event>? events = cacheManager.loadEvents(
+      List<Nip01Event>? events = _cacheManager.loadEvents(
           pubKeys: [eventSigner.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
       events = events.where((event) {
         if (event.getDtag() != null && event.getDtag() == name) {
@@ -211,9 +216,9 @@ class Lists {
         return false;
       }).toList();
       for (var event in events) {
-        cacheManager.removeEvent(event.id);
+        _cacheManager.removeEvent(event.id);
       }
-      await cacheManager.saveEvent(event);
+      await _cacheManager.saveEvent(event);
     }
     return relaySet;
   }
@@ -237,14 +242,14 @@ class Lists {
     Nip01Event event = await list.toEvent(eventSigner);
     // print(event);
     await Future.wait([
-      relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
+      _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
     ]);
-    List<Nip01Event>? events = cacheManager
+    List<Nip01Event>? events = _cacheManager
         .loadEvents(pubKeys: [eventSigner.getPublicKey()], kinds: [kind]);
     for (var event in events) {
-      cacheManager.removeEvent(event.id);
+      _cacheManager.removeEvent(event.id);
     }
-    await cacheManager.saveEvent(event);
+    await _cacheManager.saveEvent(event);
     return list;
   }
 
@@ -275,14 +280,14 @@ class Lists {
       list.createdAt = Helpers.now;
       Nip01Event event = await list.toEvent(eventSigner);
       await Future.wait([
-        relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
+        _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
       ]);
-      List<Nip01Event>? events = cacheManager
+      List<Nip01Event>? events = _cacheManager
           .loadEvents(pubKeys: [eventSigner.getPublicKey()], kinds: [kind]);
       for (var event in events) {
-        cacheManager.removeEvent(event.id);
+        _cacheManager.removeEvent(event.id);
       }
-      await cacheManager.saveEvent(event);
+      await _cacheManager.saveEvent(event);
     }
     return list;
   }
@@ -311,14 +316,14 @@ class Lists {
       list.createdAt = Helpers.now;
       Nip01Event event = await list.toEvent(eventSigner);
       await Future.wait([
-        relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
+        _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
       ]);
-      List<Nip01Event>? events = cacheManager
+      List<Nip01Event>? events = _cacheManager
           .loadEvents(pubKeys: [eventSigner.getPublicKey()], kinds: [kind]);
       for (var event in events) {
-        cacheManager.removeEvent(event.id);
+        _cacheManager.removeEvent(event.id);
       }
-      await cacheManager.saveEvent(event);
+      await _cacheManager.saveEvent(event);
     }
     return list;
   }
@@ -342,14 +347,14 @@ class Lists {
     Nip01Event event = await list.toEvent(eventSigner);
     // print(event);
     await Future.wait([
-      relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
+      _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
     ]);
-    List<Nip01Event>? events = cacheManager
+    List<Nip01Event>? events = _cacheManager
         .loadEvents(pubKeys: [eventSigner.getPublicKey()], kinds: [kind]);
     for (var event in events) {
-      cacheManager.removeEvent(event.id);
+      _cacheManager.removeEvent(event.id);
     }
-    await cacheManager.saveEvent(event);
+    await _cacheManager.saveEvent(event);
     return list;
   }
 }

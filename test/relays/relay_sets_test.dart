@@ -2,13 +2,9 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:ndk/domain_layer/usecases/relay_sets_engine.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';

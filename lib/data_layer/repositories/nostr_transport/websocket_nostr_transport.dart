@@ -4,10 +4,10 @@ import '../../../domain_layer/repositories/nostr_transport.dart';
 import '../../data_sources/websocket.dart';
 
 class WebSocketNostrTransport implements NostrTransport {
-  WebsocketDS websocketDS;
+  WebsocketDS _websocketDS;
 
-  WebSocketNostrTransport(this.websocketDS) {
-    ready = websocketDS.ready();
+  WebSocketNostrTransport(this._websocketDS) {
+    ready = _websocketDS.ready();
   }
 
   @override
@@ -15,32 +15,32 @@ class WebSocketNostrTransport implements NostrTransport {
 
   @override
   Future<void> close() {
-    return websocketDS.close();
+    return _websocketDS.close();
   }
 
   @override
   StreamSubscription listen(void Function(dynamic p1) onData,
       {Function? onError, void Function()? onDone}) {
-    return websocketDS.listen(onData, onError: onError, onDone: onDone);
+    return _websocketDS.listen(onData, onError: onError, onDone: onDone);
   }
 
   @override
   void send(data) {
-    websocketDS.send(data);
+    _websocketDS.send(data);
   }
 
   @override
   bool isOpen() {
-    return websocketDS.isOpen();
+    return _websocketDS.isOpen();
   }
 
   @override
   int? closeCode() {
-    return websocketDS.closeCode();
+    return _websocketDS.closeCode();
   }
 
   @override
   String? closeReason() {
-    return websocketDS.closeReason();
+    return _websocketDS.closeReason();
   }
 }
