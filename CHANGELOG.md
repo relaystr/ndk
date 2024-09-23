@@ -1,3 +1,6 @@
+## 0.1.0-dev93
+* add replyETags getter to Nip01Event
+
 ## 0.1.0-dev92
 * add example README.md
 
