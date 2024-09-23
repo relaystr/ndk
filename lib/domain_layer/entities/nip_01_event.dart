@@ -169,7 +169,7 @@ class Nip01Event {
         var marker = tag[3];
 
         if (key == "e" && marker == "reply") {
-          replyIds.add(value.toString().trim().toLowerCase())
+          replyIds.add(value.toString().trim().toLowerCase());
         }
       }
     }

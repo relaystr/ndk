@@ -1,4 +1,4 @@
-## 0.1.0-dev93
+## 0.1.0-dev94
 * add replyETags getter to Nip01Event
 
 ## 0.1.0-dev92
