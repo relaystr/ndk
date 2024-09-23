@@ -38,14 +38,14 @@ class Ndk {
   /// Provides access to low-level Nostr requests.
   ///
   /// Use this to directly query or subscribe to notes from the Nostr network.
-  /// Available methods include [query()] and [subscription()]
+  /// Available methods include query() and subscription()
   Requests get requests => _initialization.requests;
 
   RelayManager get relays => _initialization.relayManager;
 
   /// Handles operations related to user follows
   ///
-  /// Use [getContactList()] to retrieve contact lists
+  /// Use getContactList() to retrieve contact lists
   Follows get follows => _initialization.follows;
 
   /// user metadata operations

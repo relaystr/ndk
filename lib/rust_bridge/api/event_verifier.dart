@@ -33,7 +33,7 @@ Future<bool> verifySchnorrSignature(
         signatureHex: signatureHex);
 
 /// * hashes the given params, in nostr this is the id
-/// * [return] hash / nostrId
+/// * return hash / nostrId
 ///
 Future<String> hashEventData(
         {required String pubkey,

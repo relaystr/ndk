@@ -11,8 +11,6 @@ class CacheWrite {
   CacheWrite(this.cacheManager);
 
   /// saves network responses in db and then write to response stream if not already in db (useful to avoid duplicates)
-  /// [networkController] input controller,
-  /// [responseController] output controller, where the result is written to
   void saveNetworkResponse({
     required bool writeToCache,
     required Stream<Nip01Event> inputStream,
