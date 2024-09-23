@@ -13,7 +13,7 @@ Add the following to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  dart_ndk: any
+  ndk: any
 ```
 
 ## Usage
