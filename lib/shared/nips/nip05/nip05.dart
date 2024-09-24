@@ -20,7 +20,8 @@ class Nip05 {
       updatedAt <
       (DateTime.now().subtract(duration).millisecondsSinceEpoch ~/ 1000);
 
-  static Future<bool> check(String nip05Address, String pubkey) async {
+  static Future<bool> check(String nip05Address, String pubkey, {http.Client? client}) async {
+    client ??= http.Client();
     var name = "_";
     var address = nip05Address;
     var strs = nip05Address.split("@");
@@ -33,7 +34,7 @@ class Nip05 {
     try {
       Uri uri = Uri.parse(url).replace(scheme: 'https');
 
-      var response = await http.get(uri);
+      var response = await client.get(uri);
 
       final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
       if (data["names"] != null) {
