@@ -43,7 +43,7 @@ void main() async {
 
       Ndk ndk = Ndk(
         NdkConfig(
-            eventVerifier: MockEventVerifier(),
+            eventVerifier: Bip340EventVerifier(),
             eventSigner: Bip340EventSigner(key1.privateKey, key1.publicKey),
             cache: MemCacheManager(),
             engine: NdkEngine.RELAY_SETS,
