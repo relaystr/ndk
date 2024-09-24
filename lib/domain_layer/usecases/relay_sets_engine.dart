@@ -128,6 +128,7 @@ class RelaySetsEngine implements NetworkEngine {
     }
     if (state.request.explicitRelays != null && state.request.explicitRelays!.isNotEmpty) {
       for (var url in state.request.explicitRelays!) {
+        await _relayManager.reconnectRelay(url);
         state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     } else {
