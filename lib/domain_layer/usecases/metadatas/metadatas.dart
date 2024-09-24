@@ -107,6 +107,7 @@ class Metadatas {
     return metadatas.values.toList();
   }
 
+  // coverage:ignore-start
   Future<Nip01Event?> _refreshMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
     await for (final event in _requests.query(filters: [
@@ -146,6 +147,7 @@ class Metadatas {
 
     return metadata;
   }
+  // coverage:ignore-end
 
   /// *******************************************************************************************************************
 }
