@@ -182,10 +182,12 @@ class RelayManager {
           print("closing $url webSocket");
           transports[url]!.close();
           print("closed $url. Reconnecting");
-          reconnectRelay(url);
-        } else {
-          reconnectRelay(url);
         }
+        reconnectRelay(url).then((connected) {
+          if (connected) {
+            _reSubscribeInFlightSubscriptions(url);
+          }
+        });
       }
     });
   }
@@ -251,7 +253,9 @@ class RelayManager {
 
     if (eventJson[0] == 'OK') {
       //nip 20 used to notify clients if an EVENT was successful
-      // log("OK: ${eventJson[1]}");
+      if (eventJson.length >= 2 && eventJson[2] == false) {
+        Logger.log.e("NOT OK: $eventJson");
+      }
       return;
     }
 
@@ -482,5 +486,22 @@ class RelayManager {
     });
     Logger.log.d(
         "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");
+  }
+
+  void _reSubscribeInFlightSubscriptions(String url) {
+    globalState.inFlightRequests.forEach((key, state) {
+      state.requests.values.where((req) => req.url == url).forEach((req) {
+        if (!state.request.closeOnEOSE) {
+          List<dynamic> list = ["REQ", state.id];
+          list.addAll(req.filters.map((filter) => filter.toMap()));
+          Relay? relay = getRelay(req.url);
+          if (relay != null) {
+            relay.stats.activeRequests++;
+            send(url, jsonEncode(list));
+            // TODO not sure if this works, since there are old streams on the ndk response???
+          }
+        }
+      });
+    });
   }
 }
