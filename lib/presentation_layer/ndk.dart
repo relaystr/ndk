@@ -81,6 +81,7 @@ class Ndk {
   /// **********************************************************************************************************
 
   /// *************************************************************************************************
+  // coverage:ignore-start
 
   Future<Nip01Event> broadcastReaction(String eventId, Iterable<String> relays,
       {String reaction = "+"}) async {
@@ -129,4 +130,5 @@ class Ndk {
     }
     throw Exception("event signer required for broadcasting signed events");
   }
+  // coverage:ignore-end
 }

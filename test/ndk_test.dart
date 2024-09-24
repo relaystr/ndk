@@ -43,12 +43,19 @@ void main() async {
 
       Ndk ndk = Ndk(
         NdkConfig(
+          // TODO this is not working, since eventVerifier is injected into some other usecases
+          //   eventVerifier: MockEventVerifier(result: false),
+          //   eventSigner: Bip340EventSigner("",""),
+
             eventVerifier: Bip340EventVerifier(),
             eventSigner: Bip340EventSigner(key1.privateKey, key1.publicKey),
             cache: MemCacheManager(),
             engine: NdkEngine.RELAY_SETS,
             bootstrapRelays: [relay1.url]),
       );
+
+      ndk.changeEventVerifier(Bip340EventVerifier());
+      ndk.changeEventSigner(Bip340EventSigner(key1.privateKey, key1.publicKey));
 
       NdkResponse response = ndk.requests.query(filters: [
         Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey])
