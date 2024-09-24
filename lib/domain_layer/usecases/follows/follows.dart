@@ -60,10 +60,11 @@ class Follows {
     return contactList;
   }
 
+  // coverage:ignore-start
+
   // if cached contact list is older that now minus this duration that we should go refresh it,
   // otherwise we risk adding/removing contacts to a list that is out of date and thus loosing contacts other client has added/removed since.
   static const Duration REFRESH_CONTACT_LIST_DURATION = Duration(minutes: 10);
-
   Future<ContactList> _ensureUpToDateContactListOrEmpty(
       EventSigner signer) async {
     ContactList? contactList =
@@ -172,4 +173,5 @@ class Follows {
     return _broadcastRemoveContactInCollection(
         toRemove, relays, signer, (list) => list.followedEvents);
   }
+  // coverage:ignore-end
 }

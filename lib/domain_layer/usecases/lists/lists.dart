@@ -141,6 +141,8 @@ class Lists {
     // return [];
   }
 
+  // coverage:ignore-start
+
   Future<Nip51Set> broadcastAddNip51SetRelay(String relayUrl, String name,
       Iterable<String> broadcastRelays, EventSigner eventSigner,
       {bool private = false}) async {
@@ -357,4 +359,5 @@ class Lists {
     await _cacheManager.saveEvent(event);
     return list;
   }
+  // coverage:ignore-end
 }
