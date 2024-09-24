@@ -50,6 +50,8 @@ class Ndk {
 
   /// user metadata operations
   Metadatas get metadatas => _initialization.metadatas;
+
+  /// user relay lists usecase
   UserRelayLists get userRelayLists => _initialization.userRelayLists;
 
   /// Manages various types of lists in the Nostr network

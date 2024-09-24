@@ -74,6 +74,9 @@ class MockRelay {
             if (filter.kinds!.contains(ContactList.KIND) && textNotes != null) {
               _respondeTextNote(filter.authors!, requestId);
             }
+            if (filter.kinds!.contains(Metadata.KIND) && textNotes != null) {
+              _respondeTextNote(filter.authors!, requestId);
+            }
             if (filter.kinds!.any((el) =>
                 Nip51List.POSSIBLE_KINDS.contains(el))) {
               _respondeTextNote(filter.authors!, requestId);

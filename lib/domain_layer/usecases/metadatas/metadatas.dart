@@ -64,7 +64,7 @@ class Metadatas {
 
   // TODO try to use generic query with cacheRead/Write mechanism
   Future<List<Metadata>> loadMetadatas(
-      List<String> pubKeys, RelaySet relaySet,
+      List<String> pubKeys, RelaySet? relaySet,
       {Function(Metadata)? onLoad}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
