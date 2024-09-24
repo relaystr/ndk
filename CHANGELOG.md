@@ -1,3 +1,6 @@
+## 0.1.0-dev99
+* re-subscribe to in flight subscription requests after relay reconnection
+
 ## 0.1.0-dev98
 * add documentation for public members
 
