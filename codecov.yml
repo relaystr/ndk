@@ -1,0 +1,4 @@
+ignore:
+  - "lib/rust_bridge/frb_generated*.dart"
+  - "lib/rust_bridge/api/event_verifier.dart"
+  - "lib/data_layer/repositories/verifiers/rust_event_verifier.dart"
