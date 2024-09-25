@@ -1,4 +1,5 @@
-RegExp RELAY_URL_REGEX = RegExp(
+// ignore: public_member_api_docs, non_constant_identifier_names
+final RegExp RELAY_URL_REGEX = RegExp(
     r'^(wss?:\/\/)([0-9]{1,3}(?:\.[0-9]{1,3}){3}|[^:]+):?([0-9]{1,5})?$');
 
 String? cleanRelayUrl(String adr) {

@@ -4,11 +4,11 @@ mixin class Logger {
   static const _defaultLogLevel = lib_logger.Level.debug;
 
   static final _myPrinter = lib_logger.PrettyPrinter(
-    methodCount: 0,
-    printEmojis: false,
-    printTime: false,
-    //noBoxingByDefault: true,
-  );
+      methodCount: 0,
+      printEmojis: false,
+      dateTimeFormat: lib_logger.DateTimeFormat.none
+      //noBoxingByDefault: true,
+      );
 
   static lib_logger.Logger log = lib_logger.Logger(
     printer: _myPrinter,
