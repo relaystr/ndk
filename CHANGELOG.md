@@ -1,44 +1,58 @@
+## 0.1.0-dev992
+
+- refine example
+
 ## 0.1.0-dev991
-* update examples 
+
+- update examples
 
 ## 0.1.0-dev99
-* re-subscribe to in flight subscription requests after relay reconnection
+
+- re-subscribe to in flight subscription requests after relay reconnection
 
 ## 0.1.0-dev98
-* add documentation for public members
+
+- add documentation for public members
 
 ## 0.1.0-dev94
-* add replyETags getter to Nip01Event
+
+- add replyETags getter to Nip01Event
 
 ## 0.1.0-dev92
-* add example README.md
+
+- add example README.md
 
 ## 0.1.0-dev91
-* major architecure refactor
-* rust event verifier
-* removed acinq verifier
+
+- major architecure refactor
+- rust event verifier
+- removed acinq verifier
 
 ## 0.1.0-dev8
-* use fork of amberflutter for isAppInstalled method
+
+- use fork of amberflutter for isAppInstalled method
 
 ## 0.1.0-dev6
-* amber event signer
+
+- amber event signer
 
 ## 0.1.0-dev6
-* acinq sec256k1 event verifier (native android)
+
+- acinq sec256k1 event verifier (native android)
 
 ## 0.1.0-dev5
-* set isar maxSizeMiB to 1024
-* use compactOnLaunch: const CompactCondition(minRatio: 2.0, minBytes: 100 * 1024 * 1024, minFileSize: 256 * 1024 * 1024),
+
+- set isar maxSizeMiB to 1024
+- use compactOnLaunch: const CompactCondition(minRatio: 2.0, minBytes: 100 _ 1024 _ 1024, minFileSize: 256 _ 1024 _ 1024),
 
 ## 0.1.0-dev3
 
-* fixed reconnect method
+- fixed reconnect method
 
 ## 0.1.0-dev1
 
-* gossip outbox/inbox model implemented
+- gossip outbox/inbox model implemented
 
 ## 0.0.1
 
-* TODO: Describe initial release.
+- TODO: Describe initial release.
