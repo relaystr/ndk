@@ -9,9 +9,9 @@ import '../requests/requests.dart';
 
 /// Follows usecase
 class Follows {
-  Requests _requests;
-  CacheManager _cacheManager;
-  RelayManager _relayManager;
+  final Requests _requests;
+  final CacheManager _cacheManager;
+  final RelayManager _relayManager;
 
   Follows({
     required Requests requests,

@@ -4,7 +4,7 @@ import '../../../domain_layer/repositories/nostr_transport.dart';
 import '../../data_sources/websocket.dart';
 
 class WebSocketNostrTransport implements NostrTransport {
-  WebsocketDS _websocketDS;
+  final WebsocketDS _websocketDS;
 
   WebSocketNostrTransport(this._websocketDS) {
     ready = _websocketDS.ready();

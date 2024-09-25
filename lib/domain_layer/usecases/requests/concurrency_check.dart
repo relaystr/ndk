@@ -6,7 +6,7 @@ import '../../entities/global_state.dart';
 import '../../entities/request_state.dart';
 
 class ConcurrencyCheck {
-  GlobalState _globalState;
+  final GlobalState _globalState;
 
   ConcurrencyCheck(this._globalState);
 

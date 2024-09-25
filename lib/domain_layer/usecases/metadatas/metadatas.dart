@@ -13,9 +13,9 @@ import '../requests/requests.dart';
 
 /// nostr metadata usecase
 class Metadatas {
-  Requests _requests;
-  CacheManager _cacheManager;
-  RelayManager _relayManager;
+  final Requests _requests;
+  final CacheManager _cacheManager;
+  final RelayManager _relayManager;
 
   Metadatas({
     required Requests requests,

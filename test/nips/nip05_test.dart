@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 import 'package:ndk/shared/nips/nip05/nip05.dart';
-import 'nip05_test.mocks.dart';
 import 'nip05_test.mocks.mocks.dart';
 
 void main() {
@@ -12,7 +11,7 @@ void main() {
     test('returns true when updatedAt is older than the given duration', () {
       // Create a Nip05 object with an old updatedAt timestamp
       final oldTimestamp =
-          (DateTime.now().subtract(Duration(days: 10)).millisecondsSinceEpoch ~/
+          (DateTime.now().subtract(const Duration(days: 10)).millisecondsSinceEpoch ~/
               1000);
       final nip05 = Nip05(
           pubKey: 'test_pubkey',
@@ -21,7 +20,7 @@ void main() {
           updatedAt: oldTimestamp);
 
       // Test with a duration of 5 days
-      final result = nip05.needsUpdate(Duration(days: 5));
+      final result = nip05.needsUpdate(const Duration(days: 5));
       expect(result,
           true); // Should return true since the object is older than 5 days
     });
@@ -30,7 +29,7 @@ void main() {
         () {
       // Create a Nip05 object with a recent updatedAt timestamp
       final recentTimestamp =
-          (DateTime.now().subtract(Duration(days: 2)).millisecondsSinceEpoch ~/
+          (DateTime.now().subtract(const Duration(days: 2)).millisecondsSinceEpoch ~/
               1000);
       final nip05 = Nip05(
           pubKey: 'test_pubkey',
@@ -39,7 +38,7 @@ void main() {
           updatedAt: recentTimestamp);
 
       // Test with a duration of 5 days
-      final result = nip05.needsUpdate(Duration(days: 5));
+      final result = nip05.needsUpdate(const Duration(days: 5));
       expect(result,
           false); // Should return false since the object is more recent than 5 days
     });
@@ -47,7 +46,7 @@ void main() {
     test('returns false when updatedAt is exactly the duration ago', () {
       // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
       final exactTimestamp =
-          (DateTime.now().subtract(Duration(days: 5)).millisecondsSinceEpoch ~/
+          (DateTime.now().subtract(const Duration(days: 5)).millisecondsSinceEpoch ~/
               1000);
       final nip05 = Nip05(
           pubKey: 'test_pubkey',
@@ -56,7 +55,7 @@ void main() {
           updatedAt: exactTimestamp);
 
       // Test with a duration of 5 days
-      final result = nip05.needsUpdate(Duration(days: 5));
+      final result = nip05.needsUpdate(const Duration(days: 5));
       expect(
           result, false); // Should return false since it's exactly at the limit
     });
@@ -69,8 +68,8 @@ void main() {
     });
 
     test('returns true when the pubkey matches', () async {
-      final nip05Address = 'name@domain.com';
-      final pubkey = 'sample_pubkey';
+      const nip05Address = 'name@domain.com';
+      const pubkey = 'sample_pubkey';
 
       // Mocking the response
       final responseBody = jsonEncode({
@@ -89,8 +88,8 @@ void main() {
     });
 
     test('returns false when pubkey does not match', () async {
-      final nip05Address = 'name@domain.com';
-      final pubkey = 'wrong_pubkey';
+      const nip05Address = 'name@domain.com';
+      const pubkey = 'wrong_pubkey';
 
       // Mocking the response
       final responseBody = jsonEncode({
@@ -108,8 +107,8 @@ void main() {
     });
 
     test('returns false when an error occurs', () async {
-      final nip05Address = 'name@domain.com';
-      final pubkey = 'sample_pubkey';
+      const nip05Address = 'name@domain.com';
+      const pubkey = 'sample_pubkey';
 
       // Simulate an error in the HTTP request
       when(mockClient.get(any)).thenThrow(Exception('Failed to load'));

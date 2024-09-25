@@ -10,9 +10,9 @@ import '../relay_manager.dart';
 import '../user_relay_lists/user_relay_lists.dart';
 
 class RelaySets {
-  CacheManager _cacheManager;
-  RelayManager _relayManager;
-  UserRelayLists _userRelayLists;
+  final CacheManager _cacheManager;
+  final RelayManager _relayManager;
+  final UserRelayLists _userRelayLists;
 
   RelaySets({
     required CacheManager cacheManager,

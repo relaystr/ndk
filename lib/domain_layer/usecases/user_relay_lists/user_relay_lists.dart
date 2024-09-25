@@ -12,9 +12,9 @@ import '../relay_manager.dart';
 import '../requests/requests.dart';
 
 class UserRelayLists {
-  Requests _requests;
-  CacheManager _cacheManager;
-  RelayManager _relayManager;
+  final Requests _requests;
+  final CacheManager _cacheManager;
+  final RelayManager _relayManager;
 
   /// user relay lists usecase
   UserRelayLists({

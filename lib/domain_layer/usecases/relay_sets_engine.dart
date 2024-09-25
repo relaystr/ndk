@@ -21,7 +21,7 @@ class RelaySetsEngine implements NetworkEngine {
 
   late GlobalState _globalState;
 
-  RelayManager _relayManager;
+  final RelayManager _relayManager;
 
   /// engine that pre-calculates relay sets for gossip
   RelaySetsEngine({
@@ -29,7 +29,7 @@ class RelaySetsEngine implements NetworkEngine {
     CacheManager? cacheManager,
     GlobalState? globalState,
   }) : _relayManager = relayManager {
-    this._globalState = globalState ?? GlobalState();
+    _globalState = globalState ?? GlobalState();
     _relayManager.connect(urls: _relayManager.bootstrapRelays);
   }
 

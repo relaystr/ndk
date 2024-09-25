@@ -9,9 +9,9 @@ import '../requests/requests.dart';
 
 /// Lists usecase for access to nip51 lists & sets
 class Lists {
-  Requests _requests;
-  CacheManager _cacheManager;
-  RelayManager _relayManager;
+  final Requests _requests;
+  final CacheManager _cacheManager;
+  final RelayManager _relayManager;
 
   /// lists
   Lists({
