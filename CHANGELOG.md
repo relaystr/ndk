@@ -1,3 +1,7 @@
+## 0.1.0-dev994
+
+- static fixes
+
 ## 0.1.0-dev993
 
 - test examples

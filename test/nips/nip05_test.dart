@@ -10,9 +10,10 @@ void main() {
   group('Nip05.needsUpdate', () {
     test('returns true when updatedAt is older than the given duration', () {
       // Create a Nip05 object with an old updatedAt timestamp
-      final oldTimestamp =
-          (DateTime.now().subtract(const Duration(days: 10)).millisecondsSinceEpoch ~/
-              1000);
+      final oldTimestamp = (DateTime.now()
+              .subtract(const Duration(days: 10))
+              .millisecondsSinceEpoch ~/
+          1000);
       final nip05 = Nip05(
           pubKey: 'test_pubkey',
           nip05: 'test_nip05',
@@ -28,9 +29,10 @@ void main() {
     test('returns false when updatedAt is more recent than the given duration',
         () {
       // Create a Nip05 object with a recent updatedAt timestamp
-      final recentTimestamp =
-          (DateTime.now().subtract(const Duration(days: 2)).millisecondsSinceEpoch ~/
-              1000);
+      final recentTimestamp = (DateTime.now()
+              .subtract(const Duration(days: 2))
+              .millisecondsSinceEpoch ~/
+          1000);
       final nip05 = Nip05(
           pubKey: 'test_pubkey',
           nip05: 'test_nip05',
@@ -45,9 +47,10 @@ void main() {
 
     test('returns false when updatedAt is exactly the duration ago', () {
       // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
-      final exactTimestamp =
-          (DateTime.now().subtract(const Duration(days: 5)).millisecondsSinceEpoch ~/
-              1000);
+      final exactTimestamp = (DateTime.now()
+              .subtract(const Duration(days: 5))
+              .millisecondsSinceEpoch ~/
+          1000);
       final nip05 = Nip05(
           pubKey: 'test_pubkey',
           nip05: 'test_nip05',
