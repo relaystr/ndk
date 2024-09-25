@@ -59,12 +59,12 @@ Ndk ndk = Ndk(
 
 **Available configs:**
 
-eventVerifier: Bip340EventVerifier(), RustEventVerifier(), \
-cache: MemCacheManager(), \
-bootstrapRelays: ['wss://myrelay.example'], \
-engine: NdkEngine.RELAY_SETS, NdkEngine.JIT \
-eventSigner: Bip340EventSigner('nsec1...', 'npub1...'), \
-ignoreRelays: ['wss://bad.reputation']
+eventVerifier: `Bip340EventVerifier()` `RustEventVerifier()` \
+cache: `MemCacheManager()` \
+bootstrapRelays: `['wss://myrelay.example']` \
+engine: `NdkEngine.RELAY_SETS` `NdkEngine.JIT` \
+eventSigner: `Bip340EventSigner('nsec1...', 'npub1...')` \
+ignoreRelays: `['wss://bad.reputation']`
 
 #### 2️⃣ Usecase
 
