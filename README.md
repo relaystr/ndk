@@ -3,12 +3,10 @@
 [![Pub](https://img.shields.io/pub/v/ndk.svg)](https://pub.dev/packages/ndk)
 [![License](https://img.shields.io/github/license/relaystr/dart_ndk.svg)](LICENSE.txt)
 
-
 Dart Nostr Development Kit
 
-
-
 ## Getting started
+
 Add the following to your `pubspec.yaml` file:
 
 ```yaml
@@ -18,23 +16,37 @@ dependencies:
 
 ## Usage
 
+more [examples](https://github.com/relaystr/dart_ndk/tree/master/example)
 
 ```dart
-    Ndk ndk = Ndk(NdkConfig(
-      eventVerifier: Bip340EventVerifier(),
-      cache: MemCacheManager(),
-    ));
-    NdkResponse response = ndk.requests.query(filters: [
-      Filter(kinds: [Nip01Event.TEXT_NODE_KIND], limit: 10)
-    ]);
-    
-    await for (final event in response.stream) {
-    print(event);
+import 'package:ndk/ndk.dart';
+
+// init
+Ndk ndk = Ndk(
+  NdkConfig(
+    eventVerifier: RustEventVerifier(),
+    cache: MemCacheManager(),
+  ),
+);
+
+// query
+NdkResponse response = ndk.requests.query(
+  filters: [
+    Filter(
+      authors: ['hexPubkey']
+      kinds: [Nip01Event.TEXT_NODE_KIND],
+      limit: 10,
+    ),
+  ],
+);
+
+// result
+await for (final event in response.stream) {
+  print(event);
 }
 ```
 
-
-## Features (WIP) / what does dart_ndk do? (clear borders)
+## Features / what does dart_ndk do? (clear borders)
 
 - return nostr data based on filters (any kind).
 - automatically discover the best relays to satisfy the provided request (using gossip)
@@ -49,9 +61,8 @@ dependencies:
 - contact list support, you can convert nostr_event to contact_list
 - nip51 list support, you can convert nostr_event to nip51_list
 
-
-
 ## not Included
+
 - ready to use feeds, you have to build them on your own @see examples
 - file upload
 - nip05 caching
@@ -61,21 +72,18 @@ dependencies:
 - easy way to get metadata or publish your own
 - support for request overrides (you have to close and reopen requests)
 
-
-
-
 ---
-
 
 ### Gossip/outbox model of relay discovery and connectivity
 
-The simplest characterization of the gossip model is just this: *reading the posts of people you follow from the relays that they wrote them to.*
+The simplest characterization of the gossip model is just this: _reading the posts of people you follow from the relays that they wrote them to._
 
 <img src="https://mikedilger.com/gossip-model/gossip-model.png" style="width:400px; height:400px"/>
 
 more details on https://mikedilger.com/gossip-model/
 
 ### NIPs
+
 - [x] Event Builders / WebSocket Subscriptions ([NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md))
 - [x] User Profiles (edit/follow/unfollow - [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md))
 - [x] Private Messages ([NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md))
@@ -90,13 +98,12 @@ more details on https://mikedilger.com/gossip-model/
 - [ ] Zaps (private, public, anon, non-zap) ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
 - [ ] Badges ([NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md))
 
-
-
 # common terminology
-|term| explanation| simmilar to|
-|--|--|--|
-| **broadcastEvent**| push event to nostr network/relays |postEvent, publishEvent
-|**JIT**|Just In Time, e.g. as it happens| -
-|**query**|get data once and close the request| get request
-|**subscription**|stream of events as they come in | stream of data
-|**bootstrapRelays**|default relays to connect when nothing else is specified | seed relays, initial relays
+
+| term                | explanation                                              | simmilar to                 |
+| ------------------- | -------------------------------------------------------- | --------------------------- |
+| **broadcastEvent**  | push event to nostr network/relays                       | postEvent, publishEvent     |
+| **JIT**             | Just In Time, e.g. as it happens                         | -                           |
+| **query**           | get data once and close the request                      | get request                 |
+| **subscription**    | stream of events as they come in                         | stream of data              |
+| **bootstrapRelays** | default relays to connect when nothing else is specified | seed relays, initial relays |
