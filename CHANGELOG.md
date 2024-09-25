@@ -1,3 +1,6 @@
+## 0.1.0-dev991
+* update examples 
+
 ## 0.1.0-dev99
 * re-subscribe to in flight subscription requests after relay reconnection
 
