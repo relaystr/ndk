@@ -84,14 +84,15 @@ void main() async {
       );
 
       NdkResponse response = ndk.requests.query(
-          filters: [Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND])],
-           );
+        filters: [
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND])
+        ],
+      );
       // ignore: unused_local_variable
       await for (final event in response.stream) {
         fail("should not emit any events, since relay does not sign");
       }
       await relay1.stopServer();
     });
-
   });
 }

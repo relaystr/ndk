@@ -107,9 +107,9 @@ class Initialization {
     );
 
     relaySets = RelaySets(
-        cacheManager: config.cache,
-        relayManager: relayManager,
-        userRelayLists: userRelayLists,
+      cacheManager: config.cache,
+      relayManager: relayManager,
+      userRelayLists: userRelayLists,
     );
   }
 }

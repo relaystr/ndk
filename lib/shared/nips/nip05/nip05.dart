@@ -20,7 +20,8 @@ class Nip05 {
       updatedAt <
       (DateTime.now().subtract(duration).millisecondsSinceEpoch ~/ 1000);
 
-  static Future<bool> check(String nip05Address, String pubkey, {http.Client? client}) async {
+  static Future<bool> check(String nip05Address, String pubkey,
+      {http.Client? client}) async {
     client ??= http.Client();
     var name = "_";
     var address = nip05Address;

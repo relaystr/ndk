@@ -21,7 +21,9 @@ class Metadatas {
     required Requests requests,
     required CacheManager cacheManager,
     required RelayManager relayManager,
-  }) : _relayManager = relayManager, _cacheManager = cacheManager, _requests = requests;
+  })  : _relayManager = relayManager,
+        _cacheManager = cacheManager,
+        _requests = requests;
 
   Future<Metadata?> loadMetadata(
     String pubKey, {
@@ -63,8 +65,7 @@ class Metadatas {
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
-  Future<List<Metadata>> loadMetadatas(
-      List<String> pubKeys, RelaySet? relaySet,
+  Future<List<Metadata>> loadMetadatas(List<String> pubKeys, RelaySet? relaySet,
       {Function(Metadata)? onLoad}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
@@ -111,10 +112,7 @@ class Metadatas {
   Future<Nip01Event?> _refreshMetadataEvent(EventSigner signer) async {
     Nip01Event? loaded;
     await for (final event in _requests.query(filters: [
-      Filter(
-          kinds: [Metadata.KIND],
-          authors: [signer.getPublicKey()],
-          limit: 1)
+      Filter(kinds: [Metadata.KIND], authors: [signer.getPublicKey()], limit: 1)
     ]).stream) {
       if (loaded == null || loaded.createdAt < event.createdAt) {
         loaded = event;

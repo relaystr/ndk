@@ -36,7 +36,8 @@ class RelaySetsEngine implements NetworkEngine {
   // ====================================================================================================================
 
   bool doRelayRequest(String id, RelayRequestState request) {
-    if (_relayManager.isWebSocketOpen(request.url) && (!_relayManager.blockedRelays.contains(request.url))) {
+    if (_relayManager.isWebSocketOpen(request.url) &&
+        (!_relayManager.blockedRelays.contains(request.url))) {
       try {
         List<dynamic> list = ["REQ", id];
         list.addAll(request.filters.map((filter) => filter.toMap()));
@@ -50,7 +51,8 @@ class RelaySetsEngine implements NetworkEngine {
         print(e);
       }
     } else {
-      print("COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
+      print(
+          "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
 
       _relayManager.reconnectRelay(request.url);
     }
@@ -59,7 +61,8 @@ class RelaySetsEngine implements NetworkEngine {
 
   // =====================================================================================
 
-  Future<void> doNostrRequestWithRelaySet(RequestState state, {bool splitRequestsByPubKeyMappings = true}) async {
+  Future<void> doNostrRequestWithRelaySet(RequestState state,
+      {bool splitRequestsByPubKeyMappings = true}) async {
     if (state.unresolvedFilters.isEmpty || state.request.relaySet == null) {
       return;
     }
@@ -96,7 +99,11 @@ class RelaySetsEngine implements NetworkEngine {
     int idleTimeout = RelaySetsEngine.DEFAULT_STREAM_IDLE_TIMEOUT,
     bool splitRequestsByPubKeyMappings = true,
   }) async {
-    RequestState state = RequestState(NdkRequest.query(Helpers.getRandomString(10), name: name, filters: [filter], relaySet: relaySet));
+    RequestState state = RequestState(NdkRequest.query(
+        Helpers.getRandomString(10),
+        name: name,
+        filters: [filter],
+        relaySet: relaySet));
     await _doQuery(state);
     return NdkResponse(state.id, state.stream);
   }
@@ -116,7 +123,8 @@ class RelaySetsEngine implements NetworkEngine {
   Future<void> handleRequest(RequestState state) async {
     await _relayManager.seedRelaysConnected;
     state.request.onTimeout = (state) {
-      Logger.log.w("request ${state.request.id} : ${state.request.filters} timed out after ${state.request.timeout}");
+      Logger.log.w(
+          "request ${state.request.id} : ${state.request.filters} timed out after ${state.request.timeout}");
       for (var url in state.requests.keys) {
         _relayManager.sendCloseToRelay(url, state.id);
       }
@@ -126,14 +134,17 @@ class RelaySetsEngine implements NetworkEngine {
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
     }
-    if (state.request.explicitRelays != null && state.request.explicitRelays!.isNotEmpty) {
+    if (state.request.explicitRelays != null &&
+        state.request.explicitRelays!.isNotEmpty) {
       for (var url in state.request.explicitRelays!) {
         await _relayManager.reconnectRelay(url);
-        state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+        state.addRequest(
+            url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     } else {
       for (var url in _relayManager.bootstrapRelays) {
-        state.addRequest(url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+        state.addRequest(
+            url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     }
     _globalState.inFlightRequests[state.id] = state;
@@ -149,8 +160,11 @@ class RelaySetsEngine implements NetworkEngine {
     }
   }
 
-  Future<NdkResponse> requestRelays(String name, Iterable<String> urls, Filter filter,
-      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT, bool closeOnEOSE = true, Function()? onTimeout}) async {
+  Future<NdkResponse> requestRelays(
+      String name, Iterable<String> urls, Filter filter,
+      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
+      bool closeOnEOSE = true,
+      Function()? onTimeout}) async {
     String id = Helpers.getRandomString(10);
     RequestState state = RequestState(closeOnEOSE
         ? NdkRequest.query(id, name: name, filters: [filter])

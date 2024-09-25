@@ -17,7 +17,9 @@ class Follows {
     required Requests requests,
     required CacheManager cacheManager,
     required RelayManager relayManager,
-  }) : _relayManager = relayManager, _cacheManager = cacheManager, _requests = requests;
+  })  : _relayManager = relayManager,
+        _cacheManager = cacheManager,
+        _requests = requests;
 
   /// contact list of a given pubkey, not intended to get followers
   Future<ContactList?> getContactList(

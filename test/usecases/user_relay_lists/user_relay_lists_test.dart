@@ -9,24 +9,26 @@ import '../../mocks/mock_relay.dart';
 
 void main() async {
   group('user relay lists', () {
-
     KeyPair key0 = Bip340.generatePrivateKey();
 
     final UserRelayList cache0 = UserRelayList(
-      pubKey: key0.publicKey, relays: {}, createdAt: 50, refreshedTimestamp: 0
-    );
+        pubKey: key0.publicKey,
+        relays: {},
+        createdAt: 50,
+        refreshedTimestamp: 0);
 
     KeyPair key1 = Bip340.generatePrivateKey();
 
     final UserRelayList cache1 = UserRelayList(
-      pubKey: key1.publicKey, relays: {}, createdAt: 100, refreshedTimestamp: 0
-    );
+        pubKey: key1.publicKey,
+        relays: {},
+        createdAt: 100,
+        refreshedTimestamp: 0);
 
     late MockRelay relay0;
     late Ndk ndk;
 
     setUp(() async {
-
       final cache = MemCacheManager();
       final NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
@@ -40,8 +42,7 @@ void main() async {
       //cache.saveContactList(cache1ContactList);
     });
 
-    tearDown(() async {
-    });
+    tearDown(() async {});
 
     test('user relay lists equal', () {
       expect(cache0, equals(cache0));
@@ -49,7 +50,8 @@ void main() async {
     });
 
     test('getSingleUserRelayList - cache', () async {
-      final rcv = await ndk.userRelayLists.getSingleUserRelayList(key0.publicKey);
+      final rcv =
+          await ndk.userRelayLists.getSingleUserRelayList(key0.publicKey);
 
       // cache
       expect(rcv, equals(cache0));

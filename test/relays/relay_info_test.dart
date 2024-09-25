@@ -5,7 +5,6 @@ import 'package:ndk/domain_layer/entities/relay_info.dart';
 
 void main() {
   group('RelayInfo', () {
-
     test('fromJson creates RelayInfo from valid JSON', () {
       final json = {
         "name": "Relay 1",

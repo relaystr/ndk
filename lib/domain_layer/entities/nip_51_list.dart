@@ -34,21 +34,20 @@ class Nip51List {
   static const String A = "a";
 
   static const List<int> POSSIBLE_KINDS = [
-    MUTE, 
-    PIN, 
-    BOOKMARKS, 
-    COMMUNITIES, 
-    PUBLIC_CHATS, 
-    BLOCKED_RELAYS, 
-    SEARCH_RELAYS, 
-    INTERESTS, 
-    EMOJIS, 
-  
-    FOLLOW_SET, 
-    RELAY_SET, 
-    BOOKMARKS_SET, 
-    CURATION_SET, 
-    INTERESTS_SET, 
+    MUTE,
+    PIN,
+    BOOKMARKS,
+    COMMUNITIES,
+    PUBLIC_CHATS,
+    BLOCKED_RELAYS,
+    SEARCH_RELAYS,
+    INTERESTS,
+    EMOJIS,
+    FOLLOW_SET,
+    RELAY_SET,
+    BOOKMARKS_SET,
+    CURATION_SET,
+    INTERESTS_SET,
     EMOJIS_SET
   ];
 

@@ -8,30 +8,21 @@ import '../../mocks/mock_relay.dart';
 
 void main() async {
   group('metadatas', () {
-
     KeyPair key0 = Bip340.generatePrivateKey();
-    final Metadata network0Metadata = Metadata(
-        pubKey: key0.publicKey,
-        name: "network0"
-    );
+    final Metadata network0Metadata =
+        Metadata(pubKey: key0.publicKey, name: "network0");
     network0Metadata.updatedAt = 100;
 
-    final Metadata cache0Metadata = Metadata(
-      pubKey: key0.publicKey,
-      name: "cache0"
-    );
+    final Metadata cache0Metadata =
+        Metadata(pubKey: key0.publicKey, name: "cache0");
 
     //? network last
     KeyPair key1 = Bip340.generatePrivateKey();
-    final Metadata network1Metadata = Metadata(
-      pubKey: key1.publicKey,
-      name: "network1"
-    );
+    final Metadata network1Metadata =
+        Metadata(pubKey: key1.publicKey, name: "network1");
 
-    final Metadata cache1Metadata = Metadata(
-      pubKey: key1.publicKey,
-      name: "cache1"
-    );
+    final Metadata cache1Metadata =
+        Metadata(pubKey: key1.publicKey, name: "cache1");
     cache1Metadata.updatedAt = 100;
 
     late MockRelay relay0;
@@ -84,9 +75,8 @@ void main() async {
     });
 
     test('getMetadatas - network', () async {
-      final rcvMetadatas = await ndk.metadatas.loadMetadatas(
-        [key0.publicKey,key1.publicKey],null
-      );
+      final rcvMetadatas = await ndk.metadatas
+          .loadMetadatas([key0.publicKey, key1.publicKey], null);
 
       expect(rcvMetadatas.length, 1); // only one is missing
     });

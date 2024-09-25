@@ -16,11 +16,11 @@ class RelayRequestState {
 
 class RequestState {
   StreamController<Nip01Event> controller =
-  StreamController<Nip01Event>.broadcast();
+      StreamController<Nip01Event>.broadcast();
 
   /// [networkController] used by engines to write their response
   StreamController<Nip01Event> networkController =
-  StreamController<Nip01Event>();
+      StreamController<Nip01Event>();
 
   /// [cacheController] is the controller cacheRead writes to
   StreamController<Nip01Event> cacheController = StreamController<Nip01Event>();
@@ -28,15 +28,14 @@ class RequestState {
   // ids that got already returned by this request
   Set<String> returnedIds = {};
 
-  Stream<Nip01Event> get stream =>
-      request.timeout != null
-          ? controller.stream.timeout(Duration(seconds: request.timeout!),
+  Stream<Nip01Event> get stream => request.timeout != null
+      ? controller.stream.timeout(Duration(seconds: request.timeout!),
           onTimeout: (sink) {
-            if (request.onTimeout != null) {
-              request.onTimeout!.call(this);
-            }
-          })
-          : controller.stream;
+          if (request.onTimeout != null) {
+            request.onTimeout!.call(this);
+          }
+        })
+      : controller.stream;
 
   String get id => request.id;
 

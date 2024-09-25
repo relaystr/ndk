@@ -8,7 +8,6 @@ import '../../mocks/mock_relay.dart';
 
 void main() async {
   group('follows', () {
-
     KeyPair key0 = Bip340.generatePrivateKey();
     final ContactList network0ContactList = ContactList(
       pubKey: key0.publicKey,

@@ -18,7 +18,9 @@ class RelaySets {
     required CacheManager cacheManager,
     required RelayManager relayManager,
     required UserRelayLists userRelayLists,
-  }) : _userRelayLists = userRelayLists, _relayManager = relayManager, _cacheManager = cacheManager;
+  })  : _userRelayLists = userRelayLists,
+        _relayManager = relayManager,
+        _cacheManager = cacheManager;
 
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet(

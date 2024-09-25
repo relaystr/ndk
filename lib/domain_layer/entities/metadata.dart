@@ -9,26 +9,37 @@ class Metadata {
 
   /// public key
   late String pubKey;
+
   /// name
   String? name;
+
   /// displayName
   String? displayName;
+
   /// picture
   String? picture;
+
   /// banner
   String? banner;
+
   /// website
   String? website;
+
   /// about
   String? about;
+
   /// nip05
   String? nip05;
+
   /// lud16
   String? lud16;
+
   /// lud06
   String? lud06;
+
   /// updated at
   int? updatedAt;
+
   /// refreshed timestamp
   int? refreshedTimestamp;
 

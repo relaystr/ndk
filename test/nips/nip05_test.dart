@@ -11,32 +11,54 @@ void main() {
   group('Nip05.needsUpdate', () {
     test('returns true when updatedAt is older than the given duration', () {
       // Create a Nip05 object with an old updatedAt timestamp
-      final oldTimestamp = (DateTime.now().subtract(Duration(days: 10)).millisecondsSinceEpoch ~/ 1000);
-      final nip05 = Nip05(pubKey: 'test_pubkey', nip05: 'test_nip05', valid: true, updatedAt: oldTimestamp);
+      final oldTimestamp =
+          (DateTime.now().subtract(Duration(days: 10)).millisecondsSinceEpoch ~/
+              1000);
+      final nip05 = Nip05(
+          pubKey: 'test_pubkey',
+          nip05: 'test_nip05',
+          valid: true,
+          updatedAt: oldTimestamp);
 
       // Test with a duration of 5 days
       final result = nip05.needsUpdate(Duration(days: 5));
-      expect(result, true);  // Should return true since the object is older than 5 days
+      expect(result,
+          true); // Should return true since the object is older than 5 days
     });
 
-    test('returns false when updatedAt is more recent than the given duration', () {
+    test('returns false when updatedAt is more recent than the given duration',
+        () {
       // Create a Nip05 object with a recent updatedAt timestamp
-      final recentTimestamp = (DateTime.now().subtract(Duration(days: 2)).millisecondsSinceEpoch ~/ 1000);
-      final nip05 = Nip05(pubKey: 'test_pubkey', nip05: 'test_nip05', valid: true, updatedAt: recentTimestamp);
+      final recentTimestamp =
+          (DateTime.now().subtract(Duration(days: 2)).millisecondsSinceEpoch ~/
+              1000);
+      final nip05 = Nip05(
+          pubKey: 'test_pubkey',
+          nip05: 'test_nip05',
+          valid: true,
+          updatedAt: recentTimestamp);
 
       // Test with a duration of 5 days
       final result = nip05.needsUpdate(Duration(days: 5));
-      expect(result, false);  // Should return false since the object is more recent than 5 days
+      expect(result,
+          false); // Should return false since the object is more recent than 5 days
     });
 
     test('returns false when updatedAt is exactly the duration ago', () {
       // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
-      final exactTimestamp = (DateTime.now().subtract(Duration(days: 5)).millisecondsSinceEpoch ~/ 1000);
-      final nip05 = Nip05(pubKey: 'test_pubkey', nip05: 'test_nip05', valid: true, updatedAt: exactTimestamp);
+      final exactTimestamp =
+          (DateTime.now().subtract(Duration(days: 5)).millisecondsSinceEpoch ~/
+              1000);
+      final nip05 = Nip05(
+          pubKey: 'test_pubkey',
+          nip05: 'test_nip05',
+          valid: true,
+          updatedAt: exactTimestamp);
 
       // Test with a duration of 5 days
       final result = nip05.needsUpdate(Duration(days: 5));
-      expect(result, false);  // Should return false since it's exactly at the limit
+      expect(
+          result, false); // Should return false since it's exactly at the limit
     });
   });
   group('Nip05.check', () {
@@ -57,11 +79,12 @@ void main() {
 
       // Simulate a successful HTTP response
       when(mockClient.get(any)).thenAnswer(
-            (_) async => http.Response(responseBody, 200),
+        (_) async => http.Response(responseBody, 200),
       );
 
       // Inject the mocked client into your method
-      final result = await Nip05.check(nip05Address, pubkey, client: mockClient);
+      final result =
+          await Nip05.check(nip05Address, pubkey, client: mockClient);
       expect(result, true);
     });
 
@@ -76,7 +99,7 @@ void main() {
 
       // Simulate a successful HTTP response
       when(mockClient.get(any)).thenAnswer(
-            (_) async => http.Response(responseBody, 200),
+        (_) async => http.Response(responseBody, 200),
       );
 
       // Inject the mocked client into your method

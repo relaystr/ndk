@@ -18,7 +18,9 @@ class Lists {
     required Requests requests,
     required CacheManager cacheManager,
     required RelayManager relayManager,
-  }) : _relayManager = relayManager, _cacheManager = cacheManager, _requests = requests;
+  })  : _relayManager = relayManager,
+        _cacheManager = cacheManager,
+        _requests = requests;
 
   Future<Nip51List?> _getCachedNip51List(int kind, EventSigner signer) async {
     List<Nip01Event>? events = _cacheManager
@@ -116,27 +118,27 @@ class Lists {
       {bool forceRefresh = false}) async {
     // Nip51Set? relaySet;//  await getCachedNip51RelaySet(signer);
     // if (relaySet == null || forceRefresh) {
-      Map<String, Nip51Set> newRelaySets = {};
-      await for (final event in _requests.query(filters: [
-        Filter(
-          authors: [signer.getPublicKey()],
-          kinds: [kind],
-        )
-      ], cacheRead: !forceRefresh).stream) {
-        if (event.getDtag() != null) {
-          Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
-          if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
-            if (event.getDtag() != null) {
-              newRelaySet = await Nip51Set.fromEvent(event, signer);
-            }
-            if (newRelaySet != null) {
-              await _cacheManager.saveEvent(event);
-              newRelaySets[newRelaySet.name] = newRelaySet;
-            }
+    Map<String, Nip51Set> newRelaySets = {};
+    await for (final event in _requests.query(filters: [
+      Filter(
+        authors: [signer.getPublicKey()],
+        kinds: [kind],
+      )
+    ], cacheRead: !forceRefresh).stream) {
+      if (event.getDtag() != null) {
+        Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
+        if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
+          if (event.getDtag() != null) {
+            newRelaySet = await Nip51Set.fromEvent(event, signer);
+          }
+          if (newRelaySet != null) {
+            await _cacheManager.saveEvent(event);
+            newRelaySets[newRelaySet.name] = newRelaySet;
           }
         }
       }
-      return newRelaySets.values.toList();
+    }
+    return newRelaySets.values.toList();
     // }
     // return [];
   }

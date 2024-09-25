@@ -37,7 +37,7 @@ void main() async {
 
   group('Requests', () {
     test('Request text note', () async {
-      MockRelay relay1 = MockRelay(name: "relay 1",explicitPort: 6060);
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
       await relay1.startServer(textNotes: key1TextNotes);
 
       Ndk ndk = Ndk(NdkConfig(
@@ -48,7 +48,8 @@ void main() async {
         bootstrapRelays: [relay1.url],
       ));
 
-      Filter filter = Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey]);
+      Filter filter =
+          Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey]);
 
       NdkResponse query = ndk.requests.query(filters: [filter]);
 
@@ -57,5 +58,4 @@ void main() async {
       await relay1.stopServer();
     });
   });
-
 }

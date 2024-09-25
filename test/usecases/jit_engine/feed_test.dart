@@ -44,8 +44,7 @@ void main() async {
 
         // get nip65 data
 
-        NdkResponse nip65Response =
-            ndk.requests.query(name: "nip65", filters: [
+        NdkResponse nip65Response = ndk.requests.query(name: "nip65", filters: [
           Filter(authors: myContactList!.contacts, kinds: [Nip65.KIND]),
         ]);
 

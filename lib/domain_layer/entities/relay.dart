@@ -5,14 +5,19 @@ import 'relay_stats.dart';
 class Relay {
   /// relay url
   String url;
+
   /// is it connecting
   bool connecting = false;
+
   /// last connection try timestamp
   int? lastConnectTry;
+
   /// last successful connection
   int? lastSuccessfulConnect;
+
   /// relay info
   RelayInfo? info;
+
   /// relay stats
   RelayStats stats = RelayStats();
 

@@ -4,8 +4,10 @@ import 'package:collection/collection.dart';
 class RelayStats {
   /// number of connections
   int connections = 0;
+
   /// number of connection errors
   int connectionErrors = 0;
+
   /// number of active requests on this relay
   int activeRequests = 0;
 
