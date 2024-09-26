@@ -1,0 +1,65 @@
+name: ndk
+description: Nostr Development Kit - the most performant lib for all your nostr usecases
+version: 0.1.0-dev994
+homepage: https://github.com/relaystr/dart_ndk
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=1.17.0"
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  bip340: ^0.2.0
+  bech32: ^0.2.2
+  hex: ^0.2.0
+  web_socket_channel: ^3.0.1
+  crypto: ^3.0.5
+  collection: ^1.18.0
+  path_provider: ^2.1.4
+  convert: ^3.1.1
+  pointycastle: ^3.9.1
+  plugin_platform_interface: ^2.1.7
+
+  #  isar: ^4.0.0-dev.14
+  #  isar_flutter_libs: ^4.0.0-dev.14
+
+  amberflutter: ^0.0.9
+  logger: ^2.4.0
+  rxdart: ^0.28.0
+  rust_lib_ndk: ^0.0.2
+  flutter_rust_bridge: ^2.4.0
+
+#dependency_overrides:
+#  rust_lib_ndk: ^0.0.1
+#    path: rust_builder
+
+#    git:
+#      url:  https://github.com/frnandu/amberflutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+  mockito: ^5.0.17
+  integration_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: relaystr.ndk
+        pluginClass: DartNdkPlugin
+## Build rust glue
+# flutter_rust_bridge_codegen generate --watch

@@ -28,7 +28,9 @@ migrate_working_dir/
 .dart_tool/
 .packages
 build/
+target/
 /coverage/*
 /lcov_badge_generator
 /.flutter-plugins
 /.flutter-plugins-dependencies
+platform-build/*
