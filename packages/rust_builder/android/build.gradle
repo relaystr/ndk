@@ -47,10 +47,19 @@ android {
     defaultConfig {
         minSdkVersion 19
     }
+
+    
+    // Trigger the binary download/update over in CMakeLists.txt
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
 }
 
-apply from: "../cargokit/gradle/plugin.gradle"
-cargokit {
-    manifestDir = "../rust"
-    libname = "rust_lib_ndk"
-}
+// apply from: "../cargokit/gradle/plugin.gradle"
+// cargokit {
+//     manifestDir = "../rust"
+//     libname = "rust_lib_ndk"
+// }
+
