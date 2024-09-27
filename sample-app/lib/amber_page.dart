@@ -6,8 +6,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart';
 
 class AmberPage extends StatefulWidget {
-  final Amberflutter amber;
-  const AmberPage({super.key, required this.amber});
+  const AmberPage({super.key});
 
   @override
   State<AmberPage> createState() => _AmberPageState();
@@ -18,6 +17,7 @@ class _AmberPageState extends State<AmberPage> {
   String _pubkeyHex = '';
   String _text = '';
   String _cipherText = '';
+  final amber = Amberflutter();
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class _AmberPageState extends State<AmberPage> {
       children: <Widget>[
         FilledButton(
           onPressed: () async {
-            widget.amber.getPublicKey(
+            amber.getPublicKey(
               permissions: [
                 const Permission(
                   type: "nip04_encrypt",
@@ -58,7 +58,7 @@ class _AmberPageState extends State<AmberPage> {
               'sig': '',
             });
 
-            widget.amber
+            amber
                 .signEvent(
               currentUser: _npub,
               eventJson: eventJson,
@@ -84,7 +84,7 @@ class _AmberPageState extends State<AmberPage> {
               'sig': '',
             });
 
-            var value = await widget.amber.signEvent(
+            var value = await amber.signEvent(
               currentUser: _npub,
               eventJson: eventJson,
             );
@@ -101,7 +101,7 @@ class _AmberPageState extends State<AmberPage> {
         ),
         FilledButton(
           onPressed: () {
-            widget.amber
+            amber
                 .nip04Encrypt(
               plaintext: "Hello from Amber Flutter, Nip 04!",
               currentUser: _npub,
@@ -118,7 +118,7 @@ class _AmberPageState extends State<AmberPage> {
         ),
         FilledButton(
           onPressed: () async {
-            widget.amber
+            amber
                 .nip04Decrypt(
               ciphertext: _cipherText,
               currentUser: _npub,
@@ -130,7 +130,7 @@ class _AmberPageState extends State<AmberPage> {
               });
             });
             // ;
-            widget.amber
+            amber
                 .nip04Decrypt(
               ciphertext: _cipherText,
               currentUser: _npub,
@@ -142,7 +142,7 @@ class _AmberPageState extends State<AmberPage> {
               });
             });
             //   ,
-            widget.amber
+            amber
                 .nip04Decrypt(
               ciphertext: _cipherText,
               currentUser: _npub,
@@ -158,7 +158,7 @@ class _AmberPageState extends State<AmberPage> {
         ),
         FilledButton(
           onPressed: () {
-            widget.amber
+            amber
                 .nip44Encrypt(
               plaintext: "Hello from Amber Flutter, Nip 44!",
               currentUser: _npub,
@@ -175,7 +175,7 @@ class _AmberPageState extends State<AmberPage> {
         ),
         FilledButton(
           onPressed: () {
-            widget.amber
+            amber
                 .nip44Decrypt(
               ciphertext: _cipherText,
               currentUser: _npub,

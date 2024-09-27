@@ -4,12 +4,17 @@ import 'package:ndk/ndk.dart';
 
 import 'amber_page.dart';
 
-late bool amberAvailable;
+bool amberAvailable = false;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  var amber = Amberflutter();
-  amberAvailable = await amber.isAppInstalled();
+  try {
+    final amber = Amberflutter();
+    amberAvailable = await amber.isAppInstalled();
+  } catch (e) {
+    // not on android or amber not installed
+  }
+
   runApp(const MyApp());
 }
 
@@ -36,8 +41,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final amber = Amberflutter();
-
   final Ndk ndk = Ndk(
     NdkConfig(
       eventVerifier: Bip340EventVerifier(),
@@ -64,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
             metadata(ndk),
             !amberAvailable
                 ? const Center(child: Text("Amber not available"))
-                : AmberPage(amber: amber)
+                : const AmberPage()
           ],
         ),
       ),
