@@ -1,3 +1,9 @@
+## 0.1.0-dev995
+
+- link working rust_lib_ndk
+- readme
+- examples
+
 ## 0.1.0-dev994
 
 - static fixes
