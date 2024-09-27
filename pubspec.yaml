@@ -33,7 +33,7 @@ dependencies:
   logger: ^2.4.0
   rxdart: ^0.28.0
   flutter_rust_bridge: ^2.4.0
-  rust_lib_ndk: ^0.0.3
+  rust_lib_ndk: ^0.0.4-dev002
 
 #dependency_overrides:
 #  rust_lib_ndk:
