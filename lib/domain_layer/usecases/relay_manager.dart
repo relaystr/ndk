@@ -254,7 +254,7 @@ class RelayManager {
     if (eventJson[0] == 'OK') {
       //nip 20 used to notify clients if an EVENT was successful
       if (eventJson.length >= 2 && eventJson[2] == false) {
-        Logger.log.e("NOT OK: $eventJson");
+        Logger.log.e("NOT OK from $url: $eventJson");
       }
       return;
     }
