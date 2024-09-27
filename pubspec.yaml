@@ -57,5 +57,4 @@ flutter:
       android:
         package: relaystr.ndk
         pluginClass: DartNdkPlugin
-## Build rust glue
-# flutter_rust_bridge_codegen generate --watch
+

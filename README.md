@@ -147,4 +147,42 @@ more details on https://mikedilger.com/gossip-model/
 | **subscription**    | stream of events as they come in                         | stream of data              |
 | **bootstrapRelays** | default relays to connect when nothing else is specified | seed relays, initial relays |
 
+$~~~~~~~~~~~$
+
 # [Changelog 🔗](https://github.com/relaystr/dart_ndk/blob/master/CHANGELOG.md)
+
+$~~~~~~~~~~~$
+
+# Development 🏗️
+
+## setup
+
+Install [prerequisites](#prerequisites)
+
+If you work on rust code (`rust_builder/rust`) run `flutter_rust_bridge_codegen generate --watch` to generate the rust dart glue code.
+
+## architecture
+
+- `lib/`
+  - `config/`
+    - `# contains configuration files`
+  - `shared/`
+    - `nipX # folders for nip specific code`
+    - `# only internal code, no external dependencies!`
+  - `data_layer/`
+    - `data_sources/`
+      - `# external apis, websocket impl etc.`
+    - `models/`
+      - `# type conversion e.g. json to entity`
+    - `repositories/`
+      - `# repository implementations (implementing domain_layer repos)`
+  - `domain_layer/`
+    - `entities/`
+      - `# our entities e.g. data types`
+    - `repositories/`
+      - `# contracts`
+    - `usecases/`
+      - `# our main code / business logic`
+  - `presentation_layer/`
+    - `# contains our api design (makes usecases accessible to outside world)`
+  - `ndk.dart # entrypoint, points to presentation_layer`
