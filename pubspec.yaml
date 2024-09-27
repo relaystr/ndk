@@ -29,19 +29,15 @@ dependencies:
   convert: ^3.1.1
   pointycastle: ^3.9.1
   plugin_platform_interface: ^2.1.7
-
-  #  isar: ^4.0.0-dev.14
-  #  isar_flutter_libs: ^4.0.0-dev.14
-
   amberflutter: ^0.0.9
   logger: ^2.4.0
   rxdart: ^0.28.0
-  rust_lib_ndk: ^0.0.2
   flutter_rust_bridge: ^2.4.0
+  rust_lib_ndk: ^0.0.3
 
-dependency_overrides:
-  rust_lib_ndk:
-    path: rust_builder
+#dependency_overrides:
+#  rust_lib_ndk:
+#    path: rust_builder
 
 #    git:
 #      url:  https://github.com/frnandu/amberflutter
