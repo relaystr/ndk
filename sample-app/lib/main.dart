@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip19/nip19.dart';
+
+import 'amber_page.dart';
 
 late bool amberAvailable;
 
@@ -38,197 +37,64 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final amber = Amberflutter();
-  String _npub = '';
-  String _pubkeyHex = '';
-  String _text = '';
-  String _cipherText = '';
+
+  final Ndk ndk = Ndk(
+    NdkConfig(
+      eventVerifier: Bip340EventVerifier(),
+      cache: MemCacheManager(),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Nostr Developer Kit Demo',
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Nostr Development Kit Demo'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Metadata'),
+              Tab(text: 'Amber'),
+            ],
+          ),
         ),
-      ),
-      body: Center(
-        child: !amberAvailable
-            ? const Text("Amber not available")
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  FilledButton(
-                    onPressed: () async {
-                      amber.getPublicKey(
-                        permissions: [
-                          const Permission(
-                            type: "nip04_encrypt",
-                          ),
-                          const Permission(
-                            type: "nip04_decrypt",
-                          ),
-                        ],
-                      ).then((value) {
-                        _npub = value['signature'] ?? '';
-                        _pubkeyHex = Nip19.decode(_npub);
-                        setState(() {
-                          _text = '$value';
-                        });
-                      });
-                    },
-                    child: const Text('Get Public Key'),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      final eventJson = jsonEncode({
-                        'id': '',
-                        'pubkey': Nip19.decode(_npub),
-                        'kind': 1,
-                        'content': 'Hello from Amber Flutter!',
-                        'created_at':
-                            (DateTime.now().millisecondsSinceEpoch / 1000)
-                                .round(),
-                        'tags': [],
-                        'sig': '',
-                      });
-
-                      amber
-                          .signEvent(
-                        currentUser: _npub,
-                        eventJson: eventJson,
-                      )
-                          .then((value) {
-                        setState(() {
-                          _text = '$value';
-                        });
-                      });
-                    },
-                    child: const Text('Sign Event'),
-                  ),
-                  FilledButton(
-                    onPressed: () async {
-                      final eventJson = jsonEncode({
-                        'id': '',
-                        'pubkey': Nip19.decode(_npub),
-                        'kind': 1,
-                        'content': 'Hello from Amber Flutter!',
-                        'created_at':
-                            (DateTime.now().millisecondsSinceEpoch / 1000)
-                                .round(),
-                        'tags': [],
-                        'sig': '',
-                      });
-
-                      var value = await amber.signEvent(
-                        currentUser: _npub,
-                        eventJson: eventJson,
-                      );
-                      EventVerifier eventVerifier = RustEventVerifier();
-                      eventVerifier
-                          .verify(
-                              Nip01Event.fromJson(json.decode(value['event'])))
-                          .then((valid) {
-                        setState(() {
-                          _text = valid ? "✅ Valid" : "❌ Invalid";
-                        });
-                      });
-                    },
-                    child: const Text('Verify signature'),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      amber
-                          .nip04Encrypt(
-                        plaintext: "Hello from Amber Flutter, Nip 04!",
-                        currentUser: _npub,
-                        pubKey: _pubkeyHex,
-                      )
-                          .then((value) {
-                        _cipherText = value['signature'] ?? '';
-                        setState(() {
-                          _text = '$value';
-                        });
-                      });
-                    },
-                    child: const Text('Nip 04 Encrypt'),
-                  ),
-                  FilledButton(
-                    onPressed: () async {
-                      amber
-                          .nip04Decrypt(
-                        ciphertext: _cipherText,
-                        currentUser: _npub,
-                        pubKey: _pubkeyHex,
-                      )
-                          .then((value) {
-                        setState(() {
-                          _text = '$value 1';
-                        });
-                      });
-                      // ;
-                      amber
-                          .nip04Decrypt(
-                        ciphertext: _cipherText,
-                        currentUser: _npub,
-                        pubKey: _pubkeyHex,
-                      )
-                          .then((value) {
-                        setState(() {
-                          _text = '$value 2';
-                        });
-                      });
-                      //   ,
-                      amber
-                          .nip04Decrypt(
-                        ciphertext: _cipherText,
-                        currentUser: _npub,
-                        pubKey: _pubkeyHex,
-                      )
-                          .then((value) {
-                        setState(() {
-                          _text = '$value 3';
-                        });
-                      });
-                    },
-                    child: const Text('Nip 04 Decrypt'),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      amber
-                          .nip44Encrypt(
-                        plaintext: "Hello from Amber Flutter, Nip 44!",
-                        currentUser: _npub,
-                        pubKey: _pubkeyHex,
-                      )
-                          .then((value) {
-                        _cipherText = value['signature'] ?? '';
-                        setState(() {
-                          _text = '$value';
-                        });
-                      });
-                    },
-                    child: const Text('Nip 44 Encrypt'),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      amber
-                          .nip44Decrypt(
-                        ciphertext: _cipherText,
-                        currentUser: _npub,
-                        pubKey: _pubkeyHex,
-                      )
-                          .then((value) {
-                        setState(() {
-                          _text = '$value';
-                        });
-                      });
-                    },
-                    child: const Text('Nip 44 Decrypt'),
-                  ),
-                  Text(_text),
-                ],
-              ),
+        body: TabBarView(
+          children: [
+            metadata(ndk),
+            !amberAvailable
+                ? const Center(child: Text("Amber not available"))
+                : AmberPage(amber: amber)
+          ],
+        ),
       ),
     );
   }
+}
+
+/// how to fetch metadata info
+Widget metadata(Ndk ndk) {
+  final Future<Metadata?> response = ndk.metadatas.loadMetadata(
+      '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d');
+
+  return FutureBuilder<Metadata?>(
+    future: response,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Name: ${snapshot.data?.name ?? 'not found'}'),
+            Text('nip05: ${snapshot.data?.nip05 ?? 'not found'}'),
+            Text('Picture: ${snapshot.data?.picture ?? 'not found'}'),
+            Text('About: ${snapshot.data?.about ?? 'not found'}'),
+          ],
+        );
+      } else if (snapshot.hasError) {
+        return Text('Error: ${snapshot.error}');
+      } else {
+        return const Center(child: CircularProgressIndicator());
+      }
+    },
+  );
 }
