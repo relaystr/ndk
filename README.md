@@ -87,7 +87,7 @@ $~~~~~~~~~~~$
 
 ---
 
-# Features / what does dart_ndk do? (clear borders)
+# Features / what does dart_ndk do?
 
 - return nostr data based on filters (any kind).
 - automatically discover the best relays to satisfy the provided request (using gossip)
