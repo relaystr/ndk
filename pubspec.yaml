@@ -39,9 +39,9 @@ dependencies:
   rust_lib_ndk: ^0.0.2
   flutter_rust_bridge: ^2.4.0
 
-#dependency_overrides:
-#  rust_lib_ndk: ^0.0.1
-#    path: rust_builder
+dependency_overrides:
+  rust_lib_ndk:
+    path: rust_builder
 
 #    git:
 #      url:  https://github.com/frnandu/amberflutter

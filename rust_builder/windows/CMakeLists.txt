@@ -14,7 +14,11 @@ include("../cargokit/cmake/cargokit.cmake")
 #apply_cargokit(${PROJECT_NAME} ../../../../../../rust rust_lib_ndk "")
 
 ### if dart_ndk is next to the app folder 
-apply_cargokit(${PROJECT_NAME} ../../../../../../../dart_ndk/rust rust_lib_ndk "")
+#apply_cargokit(${PROJECT_NAME} ../../rust rust_lib_ndk "test")
+
+### rust in rust_builder
+apply_cargokit(${PROJECT_NAME} ../rust rust_lib_ndk rust_lib_ndk "test")
+
 
 
 
