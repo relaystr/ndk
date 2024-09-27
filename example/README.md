@@ -48,6 +48,8 @@ await for (final event in response.stream) {
 
 #### 1️⃣ Initialize a global `ndk` object
 
+setup your preferred config/dependencies.
+
 ```dart
 Ndk ndk = Ndk(
   NdkConfig(
@@ -65,6 +67,8 @@ bootstrapRelays: `['wss://myrelay.example']` \
 engine: `NdkEngine.RELAY_SETS` `NdkEngine.JIT` \
 eventSigner: `Bip340EventSigner('nsec1...', 'npub1...')` \
 ignoreRelays: `['wss://bad.reputation']`
+
+$~~~~~~~~~~~$
 
 #### 2️⃣ Usecase
 
@@ -88,7 +92,8 @@ final response_future = ndkResponse.future;
 
 ## imports
 
-`import 'package:ndk/ndk.dart';` contains everything exposed by ndk.\
+`import 'package:ndk/ndk.dart';` \
+ contains everything exposed by ndk.\
 If you want to reuse ndk entities you can use them like this:
 
 ```dart
@@ -97,7 +102,7 @@ import 'package:ndk/entities.dart' as ndk_entities;
 final ndk_entities.Nip01Event myEvent = ndk_entities.Nip01Event(...);
 ```
 
-## tips how to keep the ndk obj global
+## tip: how to keep the ndk obj global
 
 If you have a relatively simple app you can initialize ndk in your main method and pass down ndk on the widget tree.\
 For more more complex applications we recommend using [riverpod](<[test](https://pub.dev/packages/riverpod)>) or simmilar packages/methods (get_it, singletons etc).

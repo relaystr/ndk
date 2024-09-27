@@ -3,20 +3,57 @@
 [![Pub](https://img.shields.io/pub/v/ndk.svg)](https://pub.dev/packages/ndk)
 [![License](https://img.shields.io/github/license/relaystr/dart_ndk.svg)](LICENSE.txt)
 
-Dart Nostr Development Kit
+# Dart Nostr Development Kit (NDK)
+
+NDK (Nostr Development Kit) is a Dart library designed to enhance the Nostr development experience. It provides streamlined solutions for common use cases and abstracts away complex relay management, making it ideal for building constrained Nostr clients, particularly on mobile devices.\
+NDK implements the inbox/outbox (gossip) model by default, optimizing network usage and improving performance.
+
+$~~~~~~~~~~~$
+
+## Prerequisites
+
+- android SDK (also for desktop builds)
+- flutter SDK
+- rust ( + toolchain for target)
+
+Rust toolchain android:
+
+```bash
+rustup target add \
+    aarch64-linux-android \
+    armv7-linux-androideabi \
+    x86_64-linux-android \
+    i686-linux-android
+```
+
+Rust toolchain ios:
+
+```bash
+# 64 bit targets (real device & simulator):
+rustup target add aarch64-apple-ios x86_64-apple-ios
+# New simulator target for Xcode 12 and later
+rustup target add aarch64-apple-ios-sim
+# 32 bit targets (you probably don't need these):
+rustup target add armv7-apple-ios i386-apple-ios
+```
 
 ## Getting started
 
-Add the following to your `pubspec.yaml` file:
+### Install
 
-```yaml
-dependencies:
-  ndk: any
+```bash
+flutter pub add ndk
+```
+
+### Import
+
+```dart
+import 'package:ndk/ndk.dart';
 ```
 
 ## Usage
 
-more [examples](https://github.com/relaystr/dart_ndk/tree/master/example)
+> **usage [examples](https://github.com/relaystr/dart_ndk/tree/master/example)**
 
 ```dart
 import 'package:ndk/ndk.dart';
@@ -46,7 +83,11 @@ await for (final event in response.stream) {
 }
 ```
 
-## Features / what does dart_ndk do? (clear borders)
+$~~~~~~~~~~~$
+
+---
+
+# Features / what does dart_ndk do? (clear borders)
 
 - return nostr data based on filters (any kind).
 - automatically discover the best relays to satisfy the provided request (using gossip)
@@ -55,7 +96,7 @@ await for (final event in response.stream) {
 - cache responses to save network bandwidth
 - stream directly from cache and network (if needed)
 - query and subscription, e.g., get data once; subscribe to data.
-- plugin cache interface, bring your own db or use included ones: `inMemory, isarDb`
+- plugin cache interface, bring your own db or use included ones: `inMemory`
 - plug in verifier interface, bring your own event verifier, or use included ones: `bip340, rust`
 - plug in event signer interface, bring your own event signer, or use included ones: `bip340, amber`
 - contact list support, you can convert nostr_event to contact_list
@@ -63,14 +104,12 @@ await for (final event in response.stream) {
 
 ## not Included
 
-- ready to use feeds, you have to build them on your own @see examples
-- file upload
-- nip05 caching
-- create && manage keypairs. You have to provide them
-- threading, you can do this on your own if you move dart_ndk or only the event_verifier into its own thread
-- easy way to get latest contact(or any) list / stream
-- easy way to get metadata or publish your own
-- support for request overrides (you have to close and reopen requests)
+- ready to use feeds, you have to build them on your own (🚫 not planned)
+- create && manage keypairs. You have to provide them (🚫 not planned)
+- file upload (🔜 planned)
+- nip05 caching (🔜 planned)
+- threading, you can do this on your own if you move dart_ndk or only the event_verifier into its own thread (🔜 planned)
+- support for request overrides (you have to close and reopen requests) (🤔 unsure)
 
 ---
 
@@ -82,7 +121,7 @@ The simplest characterization of the gossip model is just this: _reading the pos
 
 more details on https://mikedilger.com/gossip-model/
 
-### NIPs
+## NIPs
 
 - [x] Event Builders / WebSocket Subscriptions ([NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md))
 - [x] User Profiles (edit/follow/unfollow - [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md))
@@ -107,3 +146,5 @@ more details on https://mikedilger.com/gossip-model/
 | **query**           | get data once and close the request                      | get request                 |
 | **subscription**    | stream of events as they come in                         | stream of data              |
 | **bootstrapRelays** | default relays to connect when nothing else is specified | seed relays, initial relays |
+
+# [Changelog 🔗](https://github.com/relaystr/dart_ndk/blob/master/CHANGELOG.md)
