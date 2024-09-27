@@ -43,7 +43,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final Ndk ndk = Ndk(
     NdkConfig(
-      eventVerifier: Bip340EventVerifier(),
+      eventVerifier: RustEventVerifier(),
       cache: MemCacheManager(),
     ),
   );
