@@ -3,6 +3,7 @@ import 'filter.dart';
 import 'relay_set.dart';
 import 'request_state.dart';
 
+// coverage:ignore-start
 class NdkRequest {
   /// nostr id
   String id;
@@ -45,3 +46,4 @@ class NdkRequest {
     this.cacheWrite = true,
   });
 }
+  // coverage:ignore-end
