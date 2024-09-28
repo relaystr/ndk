@@ -161,6 +161,9 @@ Install [prerequisites](#prerequisites)
 
 If you work on rust code (`rust_builder/rust`) run `flutter_rust_bridge_codegen generate --watch` to generate the rust dart glue code.
 
+Run build runner: (e.g for generating mocks)\
+`dart run build_runner build`
+
 ## architecture
 
 - `lib/`
