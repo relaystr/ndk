@@ -1,3 +1,7 @@
+## 0.1.0-dev996
+
+- upgrade to bip340 0.3.0
+
 ## 0.1.0-dev995
 
 - link working rust_lib_ndk

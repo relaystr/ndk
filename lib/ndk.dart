@@ -1,4 +1,4 @@
-library ndk;
+library;
 
 /**
  * presentation layer

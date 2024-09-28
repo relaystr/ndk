@@ -44,7 +44,7 @@ void main() async {
       Ndk ndk = Ndk(
         NdkConfig(
             eventVerifier: Bip340EventVerifier(),
-            eventSigner: Bip340EventSigner("",""),
+            eventSigner: Bip340EventSigner("", ""),
             cache: MemCacheManager(),
             engine: NdkEngine.RELAY_SETS,
             bootstrapRelays: [relay1.url]),
