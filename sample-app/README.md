@@ -1,16 +1,21 @@
 # example
 
-A new Flutter project.
+Example flutter app using NDK
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+0. make sure you have [prerequisites](https://github.com/relaystr/dart_ndk?tab=readme-ov-file#prerequisites) installed
 
-A few resources to get you started if this is your first Flutter project:
+1. clone repository
+   `git clone https://github.com/relaystr/dart_ndk.git`
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+2. change dir into sample app `cd ./sample-app`
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+3. download packages `flutter pub get`
+
+4. start app `flutter run`
+
+## Amber
+
+Amber is a external nostr signer. Its not required in order to run this application. \
+You can read more about it here: [https://github.com/greenart7c3/Amber](https://github.com/greenart7c3/Amber)
