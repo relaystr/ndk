@@ -36,8 +36,4 @@ class Bip340EventSigner implements EventSigner {
   bool canSign() {
     return Helpers.isNotBlank(privateKey);
   }
-
-  String? getPrivateKey() {
-    return privateKey;
-  }
 }
