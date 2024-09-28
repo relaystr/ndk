@@ -113,6 +113,22 @@ $~~~~~~~~~~~$
 
 ---
 
+## NIPs
+
+- [x] Event Builders / WebSocket Subscriptions ([NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md))
+- [x] User Profiles (edit/follow/unfollow - [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md))
+- [x] Private Messages ([NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md))
+- [x] Nostr Address ([NIP-05](https://github.com/nostr-protocol/nips/blob/master/05.md))
+- [x] Event Deletion ([NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md))
+- [x] Relay Info ([NIP-11](https://github.com/nostr-protocol/nips/blob/master/11.md))
+- [x] Reactions ([NIP-25](https://github.com/nostr-protocol/nips/blob/master/25.md))
+- [x] Lists ([NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md))
+- [x] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
+- [ ] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))
+- [ ] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
+- [ ] Zaps (private, public, anon, non-zap) ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
+- [ ] Badges ([NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md))
+
 ## Performance
 
 There are two main constrains that we aim for: battery/compute and network bandwidth.
@@ -136,22 +152,6 @@ The simplest characterization of the gossip model is just this: _reading the pos
 
 more details on https://mikedilger.com/gossip-model/
 
-## NIPs
-
-- [x] Event Builders / WebSocket Subscriptions ([NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md))
-- [x] User Profiles (edit/follow/unfollow - [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md))
-- [x] Private Messages ([NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md))
-- [x] Nostr Address ([NIP-05](https://github.com/nostr-protocol/nips/blob/master/05.md))
-- [x] Event Deletion ([NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md))
-- [x] Relay Info ([NIP-11](https://github.com/nostr-protocol/nips/blob/master/11.md))
-- [x] Reactions ([NIP-25](https://github.com/nostr-protocol/nips/blob/master/25.md))
-- [x] Lists ([NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md))
-- [x] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
-- [ ] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))
-- [ ] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
-- [ ] Zaps (private, public, anon, non-zap) ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
-- [ ] Badges ([NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md))
-
 # common terminology
 
 | term                | explanation                                              | simmilar to                 |
@@ -168,7 +168,7 @@ $~~~~~~~~~~~$
 
 $~~~~~~~~~~~$
 
-# Development 🏗️
+# Library development 🏗️
 
 ## setup
 
