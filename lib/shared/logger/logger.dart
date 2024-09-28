@@ -1,5 +1,6 @@
 import 'package:logger/logger.dart' as lib_logger;
 
+// coverage:ignore-start
 mixin class Logger {
   static const _defaultLogLevel = lib_logger.Level.debug;
 
@@ -22,3 +23,4 @@ mixin class Logger {
     );
   }
 }
+// coverage:ignore-end

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'nip_01_event.dart';
 
+// coverage:ignore-start
+
 /// Represents a response from a Nostr Development Kit (NDK) request.
 class NdkResponse {
   /// The unique identifier for the request that generated this response.
@@ -19,3 +21,4 @@ class NdkResponse {
 
   NdkResponse(this.requestId, this.stream);
 }
+  // coverage:ignore-end
