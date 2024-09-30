@@ -1,7 +1,7 @@
 name: rust_lib_ndk
 description: "Utility to build Rust code"
 version: 0.0.4-dev002
-repository: https://github.com/relaystr/dart_ndk
+repository: https://github.com/relaystr/ndk
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
