@@ -48,7 +48,7 @@ class Ndk {
   Follows get follows => _initialization.follows;
 
   /// user metadata operations
-  Metadatas get metadatas => _initialization.metadatas;
+  Metadatas get metadata => _initialization.metadatas;
 
   /// user relay lists usecase
   UserRelayLists get userRelayLists => _initialization.userRelayLists;
