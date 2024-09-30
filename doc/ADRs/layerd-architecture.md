@@ -84,7 +84,7 @@ none so far
 
 Proposal Accepted.
 Going forward after merging of 
-https://github.com/relaystr/dart_ndk/tree/relay_jit_ranking
-https://github.com/relaystr/dart_ndk/tree/split-relay-manager
-https://github.com/relaystr/dart_ndk
+https://github.com/relaystr/ndk/tree/relay_jit_ranking
+https://github.com/relaystr/ndk/tree/split-relay-manager
+https://github.com/relaystr/ndk
 completed 

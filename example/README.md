@@ -132,7 +132,7 @@ final ndkProvider = Provider<Ndk>((ref) {
 
 ## more examples
 
-- [example folder github](https://github.com/relaystr/dart_ndk/tree/master/example)
-- [example app](https://github.com/relaystr/dart_ndk/tree/master/sample-app)
+- [example folder github](https://github.com/relaystr/ndk/tree/master/example)
+- [example app](https://github.com/relaystr/ndk/tree/master/sample-app)
 - [yana](https://github.com/frnandu/yana)
 - [camelus](https://github.com/leo-lox/camelus)

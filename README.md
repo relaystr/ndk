@@ -53,7 +53,7 @@ import 'package:ndk/ndk.dart';
 
 ## Usage
 
-> **usage [examples](https://github.com/relaystr/dart_ndk/tree/master/example)**
+> **usage [examples](https://github.com/relaystr/ndk/tree/master/example)**
 
 ```dart
 import 'package:ndk/ndk.dart';
@@ -87,7 +87,7 @@ $~~~~~~~~~~~$
 
 ---
 
-# Features / what does dart_ndk do?
+# Features / what does NDK do?
 
 - return nostr data based on filters (any kind).
 - automatically discover the best relays to satisfy the provided request (using gossip)
@@ -108,7 +108,7 @@ $~~~~~~~~~~~$
 - create && manage keypairs. You have to provide them (🚫 not planned)
 - file upload (🔜 planned)
 - nip05 caching (🔜 planned)
-- threading, you can do this on your own if you move dart_ndk or only the event_verifier into its own thread (🔜 planned)
+- threading, you can do this on your own if you move ndk or only the event_verifier into its own thread (🔜 planned)
 - support for request overrides (you have to close and reopen requests) (🤔 unsure)
 
 ---
@@ -164,7 +164,7 @@ more details on https://mikedilger.com/gossip-model/
 
 $~~~~~~~~~~~$
 
-# [Changelog 🔗](https://github.com/relaystr/dart_ndk/blob/master/CHANGELOG.md)
+# [Changelog 🔗](https://github.com/relaystr/ndk/blob/master/CHANGELOG.md)
 
 $~~~~~~~~~~~$
 

@@ -4,10 +4,10 @@ Example flutter app using NDK
 
 ## Getting Started
 
-0. make sure you have [prerequisites](https://github.com/relaystr/dart_ndk?tab=readme-ov-file#prerequisites) installed
+0. make sure you have [prerequisites](https://github.com/relaystr/ndk?tab=readme-ov-file#prerequisites) installed
 
 1. clone repository
-   `git clone https://github.com/relaystr/dart_ndk.git`
+   `git clone https://github.com/relaystr/ndk.git`
 
 2. change dir into sample app `cd ./sample-app`
 
