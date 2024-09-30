@@ -2,28 +2,48 @@ name: Sample app release
 
 on:
   push:
-#    tags:
-#      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   workflow_dispatch:
     branches: [ master ]
 
+env:
+  FLUTTER_VERSION: "3.24.3"
+  JAVA_VERSION: "17"
+  FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
+  RUST_VERSION: "1.76"
+
 jobs:
   build_android:
-    #needs: release
+    needs: release
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./sample-app
+        shell: bash
+#        working-directory: ./sample-app
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
           cache: 'gradle'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+#          targets: ${{ matrix.job.target }}
+          components: "rustfmt"
+
+#      - uses: actions-rs/toolchain@v1
+#        with:
+#          toolchain: nightly
+#          override: true
+#          target: armv7-linux-androideabi
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           cache: true
           cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:' # optional, change this to force refresh cache
@@ -37,18 +57,25 @@ jobs:
         env:
           KEYSTORE_PROPERTIES_PATH: ${{ github.workspace }}/android/key.properties
         run: |
+          cd sample-app
           echo 'storeFile=${{ github.workspace }}/android-keystore.jks' > $KEYSTORE_PROPERTIES_PATH
           echo 'keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}' >> $KEYSTORE_PROPERTIES_PATH
           echo 'storePassword=${{ secrets.KEYSTORE_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
           echo 'keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
 
       - name: pub get
-        run: flutter pub get
+        run: |
+          cd sample-app
+          flutter pub get
 
       - name: build apk-split
-        run: flutter build apk --split-per-abi
+        run: |
+          cd sample-app
+          flutter build apk --split-per-abi --debug
       - name: build apk
-        run: flutter build apk
+        run: |
+          cd sample-app
+          flutter build apk
 
       # APK
       - name: Upload APK to release
@@ -58,7 +85,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-release.apk
-          asset_name: yana-${{ github.ref_name }}-android-universal.apk
+          asset_name: ndk--${{ github.ref_name }}-android-universal.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -67,7 +94,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          asset_name: yana-${{ github.ref_name }}-android-arm64-v8a.apk
+          asset_name: ndk_demo-${{ github.ref_name }}-android-arm64-v8a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -76,7 +103,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-          asset_name: yana-${{ github.ref_name }}-android-armeabi-v7a.apk
+          asset_name: ndk_demo-${{ github.ref_name }}-android-armeabi-v7a.apk
           asset_content_type: application/zip
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
@@ -85,7 +112,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/app-x86_64-release.apk
-          asset_name: yana-${{ github.ref_name }}-android-x86_64.apk
+          asset_name: ndk_demo-${{ github.ref_name }}-android-x86_64.apk
           asset_content_type: application/zip
 
 #  build_linux:
@@ -114,14 +141,14 @@ jobs:
 #      - run: flutter build linux
 #      - run: dart pub global activate flutter_distributor
 #      - run: flutter_distributor package --platform linux --targets deb
-#      - run: cp dist/*/*.deb yana-${{ github.ref_name }}-linux-x86_64.deb
+#      - run: cp dist/*/*.deb ndk_demo-${{ github.ref_name }}-linux-x86_64.deb
 #      #- run: flutter_distributor package --platform linux --targets appimage
 #
 #      - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
 #      - run: chmod +x  appimagetool-x86_64.AppImage
-#      - run: cp -r build/linux/x64/release/bundle/* Yana.AppDir/
-#      - run: cp -r assets/imgs/logo/logo-new.png Yana.AppDir/logo.png
-#      - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
+#      - run: cp -r build/linux/x64/release/bundle/* ndk_demo.AppDir/
+#      - run: cp -r assets/imgs/logo/logo-new.png ndk_demo.AppDir/logo.png
+#      - run: ./appimagetool-x86_64.AppImage ndk_demo.AppDir/
 #
 #      # LINUX APPIMAGE
 #      - name: Upload appImage to release
@@ -131,8 +158,8 @@ jobs:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        with:
 #          upload_url: ${{ needs.release.outputs.upload_url }}
-#          asset_path: Yana-x86_64.AppImage
-#          asset_name: yana-${{ github.ref_name }}-linux-x86_64.AppImage
+#          asset_path: ndk_demo-x86_64.AppImage
+#          asset_name: ndk_demo-${{ github.ref_name }}-linux-x86_64.AppImage
 #          asset_content_type: application/zip
 #      # LINUX DEB
 #      - name: Upload deb to release
@@ -142,8 +169,8 @@ jobs:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        with:
 #          upload_url: ${{ needs.release.outputs.upload_url }}
-#          asset_path: yana-${{ github.ref_name }}-linux-x86_64.deb
-#          asset_name: yana-${{ github.ref_name }}-linux-x86_64.deb
+#          asset_path: ndk_demo-${{ github.ref_name }}-linux-x86_64.deb
+#          asset_name: ndk_demo-${{ github.ref_name }}-linux-x86_64.deb
 #          asset_content_type: application/zip
 
 
@@ -174,15 +201,15 @@ jobs:
 #      - run: flutter build linux
 #      - run: wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
 #      - run: chmod +x  appimagetool-x86_64.AppImage
-#      - run: cp -r build/linux/x64/release/bundle/* Yana.AppDir/
-#      - run: cp -r assets/imgs/logo/logo.png Yana.AppDir/
-#      - run: ./appimagetool-x86_64.AppImage Yana.AppDir/
+#      - run: cp -r build/linux/x64/release/bundle/* ndk_demo.AppDir/
+#      - run: cp -r assets/imgs/logo/logo.png ndk_demo.AppDir/
+#      - run: ./appimagetool-x86_64.AppImage ndk_demo.AppDir/
 
 #      - name: 'Artifact'
 #        uses: actions/upload-artifact@v2
 #        with:
-#          name: Yana-x86_64.AppImage
-#          path: Yana-x86_64.AppImage
+#          name: ndk_demo-x86_64.AppImage
+#          path: ndk_demo-x86_64.AppImage
 #
   release:
     runs-on: ubuntu-latest
@@ -198,14 +225,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          body: |
-            ------
-            Verify the signature of the .apk file:
-            
-            `keytool -printcert -jarfile <.apk-file> |grep SHA256`
-            Compare this with the SHA256 found on nostr profile for [Yana](https://njump.me/npub1gp4xzpmluelsakjtayc4wtzj97fhj5kakqjvsannu00xkdlf4x8s0xdqyq).
-            
-            Use https://sideloadly.io/ to sideload the yana-version-ios.ipa file onto your ios device.
           release_name: Release ${{ github.ref }}
           draft: true
 #          prerelease: true
@@ -238,7 +257,7 @@ jobs:
 #        id: meta
 #        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
 #        with:
-#          images: fmar/yana
+#          images: ???
 #
 #      - name: Build and push Docker image
 #        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
