@@ -21,6 +21,11 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
           cache: 'gradle'
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          target: armv7-linux-androideabi
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.3'
@@ -41,6 +46,8 @@ jobs:
           echo 'keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}' >> $KEYSTORE_PROPERTIES_PATH
           echo 'storePassword=${{ secrets.KEYSTORE_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
           echo 'keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
+      - name: rustup
+        run: rustup -v
 
       - name: pub get
         run: flutter pub get
