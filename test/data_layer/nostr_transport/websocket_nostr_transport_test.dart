@@ -37,9 +37,9 @@ void main() {
   });
 
   test('listen should delegate to WebsocketDS listen', () {
-    final onData = (dynamic _) {};
-    final onError = () {};
-    final onDone = () {};
+    onData(dynamic _) {}
+    onError() {}
+    onDone() {}
     final mockSubscription = MockStreamSubscription();
 
     when(mockWebsocketDS.listen(any,

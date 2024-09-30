@@ -21,4 +21,4 @@ class NdkResponse {
 
   NdkResponse(this.requestId, this.stream);
 }
-  // coverage:ignore-end
+// coverage:ignore-end

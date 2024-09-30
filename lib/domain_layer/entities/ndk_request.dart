@@ -46,4 +46,4 @@ class NdkRequest {
     this.cacheWrite = true,
   });
 }
-  // coverage:ignore-end
+// coverage:ignore-end
