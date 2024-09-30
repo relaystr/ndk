@@ -57,4 +57,3 @@ flutter:
       android:
         package: relaystr.ndk
         pluginClass: DartNdkPlugin
-

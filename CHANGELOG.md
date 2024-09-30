@@ -1,3 +1,16 @@
+## 0.1.0
+
+- complete re architecture of the lib [ADR](https://github.com/relaystr/ndk/blob/master/doc/ADRs/layerd-architecture.md)
+- gossip read support in two engines [LISTS, JIT]
+- caching support
+- rust event verifier
+- drop support for acinq verifier
+- examples and sample app
+- improved testing
+- requests middleware
+- convenience methods for common nostr usecases
+- rename repo `dart_ndk` => `ndk`
+
 ## 0.1.0-dev996
 
 - upgrade to bip340 0.3.0
