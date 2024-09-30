@@ -153,7 +153,7 @@ The simplest characterization of the gossip model is just this: _reading the pos
 
 more details on https://mikedilger.com/gossip-model/
 
-# common terminology
+# Common terminology
 
 | term                | explanation                                              | simmilar to                 |
 | ------------------- | -------------------------------------------------------- | --------------------------- |
