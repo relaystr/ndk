@@ -1,3 +1,8 @@
+
+## 0.1.1
+
+- LF line break issue linux
+
 ## 0.1.0
 
 - complete re architecture of the lib [ADR](https://github.com/relaystr/ndk/blob/master/doc/ADRs/layerd-architecture.md)
