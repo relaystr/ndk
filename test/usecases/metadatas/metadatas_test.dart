@@ -58,14 +58,14 @@ void main() async {
     });
 
     test('getMetadata - cache', () async {
-      final rcvMetadata = await ndk.metadatas.loadMetadata(key0.publicKey);
+      final rcvMetadata = await ndk.metadata.loadMetadata(key0.publicKey);
 
       // cache
       expect(rcvMetadata, equals(cache0Metadata));
     });
 
     test('getMetadata- network', () async {
-      final rcvMetadata = await ndk.metadatas.loadMetadata(
+      final rcvMetadata = await ndk.metadata.loadMetadata(
         key1.publicKey,
         forceRefresh: true,
       );
@@ -75,7 +75,7 @@ void main() async {
     });
 
     test('getMetadatas - network', () async {
-      final rcvMetadatas = await ndk.metadatas
+      final rcvMetadatas = await ndk.metadata
           .loadMetadatas([key0.publicKey, key1.publicKey], null);
 
       expect(rcvMetadatas.length, 1); // only one is missing
