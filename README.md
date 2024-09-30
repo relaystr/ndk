@@ -1,7 +1,7 @@
-[![Build Status](https://github.com/relaystr/dart_ndk/actions/workflows/tests.yaml/badge.svg?branch=master)](https://github.com/relaystr/dart_ndk/actions?query=workflow%3A"tests"+branch%3Amaster)
-[![Coverage](https://codecov.io/github/relaystr/dart_ndk/graph/badge.svg?token=OP3PZCXCML)](https://codecov.io/github/relaystr/dart_ndk)
+[![Build Status](https://github.com/relaystr/ndk/actions/workflows/tests.yaml/badge.svg?branch=master)](https://github.com/relaystr/ndk/actions?query=workflow%3A"tests"+branch%3Amaster)
+[![Coverage](https://codecov.io/github/relaystr/dart_ndk/graph/badge.svg?token=OP3PZCXCML)](https://codecov.io/github/relaystr/ndk)
 [![Pub](https://img.shields.io/pub/v/ndk.svg)](https://pub.dev/packages/ndk)
-[![License](https://img.shields.io/github/license/relaystr/dart_ndk.svg)](LICENSE.txt)
+[![License](https://img.shields.io/github/license/relaystr/ndk.svg)](LICENSE.txt)
 
 # Dart Nostr Development Kit (NDK)
 
