@@ -46,8 +46,6 @@ jobs:
           echo 'keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}' >> $KEYSTORE_PROPERTIES_PATH
           echo 'storePassword=${{ secrets.KEYSTORE_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
           echo 'keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}' >> $KEYSTORE_PROPERTIES_PATH
-      - name: rustup
-        run: rustup -v
 
       - name: pub get
         run: flutter pub get
