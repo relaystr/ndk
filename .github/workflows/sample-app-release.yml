@@ -71,7 +71,7 @@ jobs:
       - name: build apk-split
         run: |
           cd sample-app
-          flutter build apk --split-per-abi --debug
+          flutter build apk --split-per-abi
       - name: build apk
         run: |
           cd sample-app
