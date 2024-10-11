@@ -1,6 +1,6 @@
 name: rust_lib_ndk
 description: "Utility to build Rust code"
-version: 0.1.1
+version: 0.1.2
 repository: https://github.com/relaystr/ndk
 
 environment:

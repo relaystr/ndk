@@ -1,6 +1,6 @@
 name: ndk
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.1.1
+version: 0.1.2
 homepage: https://github.com/relaystr/ndk
 
 environment:
@@ -32,8 +32,8 @@ dependencies:
   amberflutter: ^0.0.9
   logger: ^2.4.0
   rxdart: ^0.28.0
-  flutter_rust_bridge: ^2.4.0
-  rust_lib_ndk: ^0.1.1
+  flutter_rust_bridge: ^2.5.0
+  rust_lib_ndk: ^0.1.2
 
 #dependency_overrides:
 #  rust_lib_ndk:
