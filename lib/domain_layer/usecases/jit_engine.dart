@@ -12,6 +12,8 @@ import '../repositories/event_signer.dart';
 import 'engines/network_engine.dart';
 import 'relay_jit_manager/relay_jit.dart';
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_all.dart';
+import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_other_read.dart';
+import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_own.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 
@@ -137,13 +139,32 @@ class JitEngine with Logger implements NetworkEngine {
   ) async {
     await seedRelaysConnected;
 
-    throw UnimplementedError();
-
     if (specificRelays != null) {
       return RelayJitBroadcastAllStrategy.broadcast(
         eventToPublish: nostrEvent,
         connectedRelays: globalState.connectedRelays,
         privateKey: privateKey,
+      );
+    }
+
+    // default publish to own outbox
+    await RelayJitBroadcastOutboxStrategy.broadcast(
+      eventToPublish: nostrEvent,
+      connectedRelays: globalState.connectedRelays,
+      cacheManager: cache,
+      onMessage: onMessage,
+      privateKey: privateKey,
+    );
+
+    // check if we need to publish to others inboxes
+    if (nostrEvent.pTags.isNotEmpty) {
+      await RelayJitBroadcastOtherReadStrategy.broadcast(
+        eventToPublish: nostrEvent,
+        connectedRelays: globalState.connectedRelays,
+        cacheManager: cache,
+        onMessage: onMessage,
+        privateKey: privateKey,
+        pubkeysOfInbox: nostrEvent.pTags,
       );
     }
   }
