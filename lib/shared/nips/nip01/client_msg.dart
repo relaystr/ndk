@@ -11,13 +11,14 @@ import 'package:ndk/domain_layer/entities/filter.dart';
 class ClientMsg {
   String type;
   String? id;
-  List<Filter> filters;
+  List<Filter>? filters;
   Nip01Event? event;
 
   ClientMsg(
     this.type, {
     this.id,
-    required this.filters,
+    this.event,
+    this.filters,
   }) {
     // verify based on type
     if (type == ClientMsgType.EVENT) {
@@ -27,7 +28,11 @@ class ClientMsg {
     }
 
     if (type == ClientMsgType.REQ) {
-      if (filters.isEmpty) {
+      if (filters == null) {
+        throw Exception("filters are required for type REQ");
+      }
+
+      if (filters!.isEmpty) {
         throw Exception("filters are required for type REQ");
       }
       if (id == null) {
@@ -51,7 +56,7 @@ class ClientMsg {
 
   _reqToJson() {
     List<dynamic> json = [type, id];
-    for (var filter in filters) {
+    for (var filter in filters!) {
       json.add(filter.toMap());
     }
     return json;

@@ -12,6 +12,7 @@ import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_st
 
 import '../../../entities/request_state.dart';
 import '../../../entities/connection_source.dart';
+import '../../inbox_outbox/get_nip_65_data.dart';
 
 /// Strategy Description:
 ///
@@ -141,7 +142,7 @@ class RelayJitPubkeyStrategy with Logger {
       required Function(Nip01Event, RequestState) onMessage}) {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
-    List<Nip65> nip65Data = _getNip65Data(
+    List<Nip65> nip65Data = getNip65Data(
         coveragePubkeys.map((e) => e.pubkey).toList(), cacheManager);
 
     // by finding the best relays to connect and send out the request
@@ -229,18 +230,6 @@ class RelayJitPubkeyStrategy with Logger {
         ]);
       }
     }
-  }
-
-  static List<Nip65> _getNip65Data(
-      List<String> pubkeys, CacheManager cacheManager) {
-    List<Nip01Event> events =
-        cacheManager.loadEvents(kinds: [Nip65.KIND], pubKeys: pubkeys);
-
-    List<Nip65> nip65Data = [];
-    for (var event in events) {
-      nip65Data.add(Nip65.fromEvent(event));
-    }
-    return nip65Data;
   }
 
   // adds the relay to ignoreRelays and retries the request for assigned pubkeys to this relay

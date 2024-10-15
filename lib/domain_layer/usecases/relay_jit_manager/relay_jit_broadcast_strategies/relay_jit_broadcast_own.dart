@@ -1,0 +1,67 @@
+import '../../../../shared/nips/nip01/client_msg.dart';
+import '../../../entities/connection_source.dart';
+import '../../../entities/nip_01_event.dart';
+import '../../../entities/request_state.dart';
+import '../../../repositories/cache_manager.dart';
+import '../../inbox_outbox/get_nip_65_data.dart';
+import '../relay_jit.dart';
+import 'broadcast_strategies_shared.dart';
+
+/// broadcast to own outbox relays
+class RelayJitBroadcastOutboxStrategy {
+  /// publish event to nip65 outbox relays
+  /// [onMessage] callback for new connected relays
+  static Future broadcast({
+    required Nip01Event eventToPublish,
+    required List<RelayJit> connectedRelays,
+    required CacheManager cacheManager,
+    required Function(Nip01Event, RequestState) onMessage,
+    required String privateKey,
+  }) async {
+    final nip65Data = getNip65DataSingle(eventToPublish.pubKey, cacheManager);
+
+    /// get all relays where write marker is write
+
+    final writeRelaysUrls = nip65Data.relays.entries
+        .where((element) => element.value.isWrite)
+        .map((e) => e.key)
+        .toList();
+
+    // check connection status
+    final notConnectedRelays = checkConnectionStatus(
+      connectedRelays: connectedRelays,
+      toCheckRelays: writeRelaysUrls,
+    );
+
+    // connect missing relays
+    final couldNotConnectRelays = await connectRelays(
+        connectedRelays: connectedRelays,
+        onMessage: onMessage,
+        relaysToConnect: notConnectedRelays,
+        connectionSource: ConnectionSource.BROADCAST_OWN);
+
+    // list of relays without the failed ones
+    final List<String> actualBroadcastList = writeRelaysUrls
+        .where((element) => !couldNotConnectRelays.contains(element))
+        .toList();
+
+    // sign event
+    eventToPublish.sign(privateKey);
+
+    final ClientMsg myClientMsg = ClientMsg(
+      ClientMsgType.EVENT,
+      event: eventToPublish,
+    );
+
+    // broadcast event
+    for (var relayUrl in actualBroadcastList) {
+      final relay =
+          connectedRelays.firstWhere((element) => element.url == relayUrl);
+      relay.send(myClientMsg);
+    }
+
+    // todo: look into onMessage and decipher different event types
+
+    return couldNotConnectRelays;
+  }
+}

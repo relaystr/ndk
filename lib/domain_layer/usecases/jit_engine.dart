@@ -11,6 +11,7 @@ import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
 import 'engines/network_engine.dart';
 import 'relay_jit_manager/relay_jit.dart';
+import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_all.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 
@@ -125,9 +126,26 @@ class JitEngine with Logger implements NetworkEngine {
     }
   }
 
-  handleEventPublish(Nip01Event nostrEvent) async {
+  /// broadcasts given event using inbox/outbox (gossip) if explicit relays are given they are used instead
+  /// [nostrEvent] event to publish
+  /// [explicitRelays] used instead of gossip if set
+
+  handleEventBroadcast(
+    Nip01Event nostrEvent,
+    List<String>? specificRelays,
+    String privateKey,
+  ) async {
     await seedRelaysConnected;
+
     throw UnimplementedError();
+
+    if (specificRelays != null) {
+      return RelayJitBroadcastAllStrategy.broadcast(
+        eventToPublish: nostrEvent,
+        connectedRelays: globalState.connectedRelays,
+        privateKey: privateKey,
+      );
+    }
   }
 
   // close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
@@ -159,7 +177,7 @@ class JitEngine with Logger implements NetworkEngine {
     return false;
   }
 
-  /// verify event and add to response stream
+  /// add to response stream
   void onMessage(Nip01Event event, RequestState requestState) async {
     // add to response stream
     requestState.networkController.add(event);
