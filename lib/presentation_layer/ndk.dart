@@ -1,6 +1,7 @@
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/nip_01_event.dart';
 import '../domain_layer/repositories/event_signer.dart';
+import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
@@ -39,6 +40,9 @@ class Ndk {
   /// Use this to directly query or subscribe to notes from the Nostr network.
   /// Available methods include query() and subscription()
   Requests get requests => _initialization.requests;
+
+  /// Provides access to low-level Nostr broadcast/publish.
+  Broadcast get broadcast => _initialization.broadcast;
 
   RelayManager get relays => _initialization.relayManager;
 

@@ -208,13 +208,9 @@ class RelaySetsEngine implements NetworkEngine {
   @override
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
-    required String privateKey,
+    required EventSigner mySigner,
     List<String>? specificRelays,
   }) {
-    if (_signer == null) {
-      throw "Cannot broadcast event without a signer";
-    }
-
     Future<void> asyncStuff() async {
       // =====================================================================================
       // specific relays
@@ -231,7 +227,7 @@ class RelaySetsEngine implements NetworkEngine {
         _relayManager.broadcastEvent(
           nostrEvent,
           specificRelays,
-          _signer,
+          mySigner,
         );
       }
       // =====================================================================================
@@ -251,7 +247,7 @@ class RelaySetsEngine implements NetworkEngine {
         await _relayManager.connectRelay(relayUrl);
       }
 
-      _relayManager.broadcastEvent(nostrEvent, writeRelaysUrls, _signer);
+      _relayManager.broadcastEvent(nostrEvent, writeRelaysUrls, mySigner);
 
       // =====================================================================================
       // other inbox
@@ -284,7 +280,7 @@ class RelaySetsEngine implements NetworkEngine {
           await _relayManager.connectRelay(relayUrl);
         }
         _relayManager.broadcastEvent(
-            nostrEvent, myWriteRelayUrlsOthers, _signer);
+            nostrEvent, myWriteRelayUrlsOthers, mySigner);
       }
     }
 

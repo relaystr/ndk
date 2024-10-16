@@ -1,11 +1,11 @@
-import 'package:ndk/domain_layer/usecases/inbox_outbox/get_nip_65_data.dart';
-import 'package:ndk/entities.dart';
-
 import '../../../../config/broadcast_defaults.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
+import '../../../entities/connection_source.dart';
 import '../../../entities/nip_01_event.dart';
 import '../../../entities/request_state.dart';
 import '../../../repositories/cache_manager.dart';
+import '../../../repositories/event_signer.dart';
+import '../../inbox_outbox/get_nip_65_data.dart';
 import '../relay_jit.dart';
 import 'broadcast_strategies_shared.dart';
 
@@ -19,7 +19,7 @@ class RelayJitBroadcastOtherReadStrategy {
     required List<RelayJit> connectedRelays,
     required CacheManager cacheManager,
     required Function(Nip01Event, RequestState) onMessage,
-    required String privateKey,
+    required EventSigner signer,
     required List<String> pubkeysOfInbox,
   }) async {
     final nip65Data = getNip65Data(pubkeysOfInbox, cacheManager);
@@ -61,7 +61,7 @@ class RelayJitBroadcastOtherReadStrategy {
         .toList();
 
     // sign event
-    eventToPublish.sign(privateKey);
+    signer.sign(eventToPublish);
 
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,

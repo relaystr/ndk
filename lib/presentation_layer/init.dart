@@ -1,5 +1,6 @@
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
+import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
@@ -39,6 +40,7 @@ class Initialization {
   late UserRelayLists userRelayLists;
   late Lists lists;
   late RelaySets relaySets;
+  late Broadcast broadcast;
 
   late final NetworkEngine engine;
 
@@ -111,6 +113,13 @@ class Initialization {
       cacheManager: config.cache,
       relayManager: relayManager,
       userRelayLists: userRelayLists,
+    );
+
+    broadcast = Broadcast(
+      globalState: globalState,
+      cacheRead: cacheRead,
+      networkEngine: engine,
+      signer: config.eventSigner,
     );
   }
 }

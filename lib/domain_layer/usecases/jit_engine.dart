@@ -136,7 +136,7 @@ class JitEngine with Logger implements NetworkEngine {
   @override
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
-    required String privateKey,
+    required EventSigner mySigner,
     List<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
@@ -146,7 +146,7 @@ class JitEngine with Logger implements NetworkEngine {
         return RelayJitBroadcastAllStrategy.broadcast(
           eventToPublish: nostrEvent,
           connectedRelays: globalState.connectedRelays,
-          privateKey: privateKey,
+          signer: mySigner,
         );
       }
 
@@ -156,7 +156,7 @@ class JitEngine with Logger implements NetworkEngine {
         connectedRelays: globalState.connectedRelays,
         cacheManager: cache,
         onMessage: onMessage,
-        privateKey: privateKey,
+        signer: mySigner,
       );
 
       // check if we need to publish to others inboxes
@@ -166,7 +166,7 @@ class JitEngine with Logger implements NetworkEngine {
           connectedRelays: globalState.connectedRelays,
           cacheManager: cache,
           onMessage: onMessage,
-          privateKey: privateKey,
+          signer: mySigner,
           pubkeysOfInbox: nostrEvent.pTags,
         );
       }

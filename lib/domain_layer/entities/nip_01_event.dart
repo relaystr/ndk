@@ -94,6 +94,7 @@ class Nip01Event {
   }
 
   /// sign the event with given privateKey
+  /// [WARN] only for testing! Use [EventSigner] to sign events in production
   void sign(String privateKey) {
     sig = Bip340.sign(id, privateKey);
   }

@@ -3,6 +3,7 @@ import '../../../entities/connection_source.dart';
 import '../../../entities/nip_01_event.dart';
 import '../../../entities/request_state.dart';
 import '../../../repositories/cache_manager.dart';
+import '../../../repositories/event_signer.dart';
 import '../../inbox_outbox/get_nip_65_data.dart';
 import '../relay_jit.dart';
 import 'broadcast_strategies_shared.dart';
@@ -16,7 +17,7 @@ class RelayJitBroadcastOutboxStrategy {
     required List<RelayJit> connectedRelays,
     required CacheManager cacheManager,
     required Function(Nip01Event, RequestState) onMessage,
-    required String privateKey,
+    required EventSigner signer,
   }) async {
     final nip65Data = getNip65DataSingle(eventToPublish.pubKey, cacheManager);
 
@@ -46,7 +47,7 @@ class RelayJitBroadcastOutboxStrategy {
         .toList();
 
     // sign event
-    eventToPublish.sign(privateKey);
+    signer.sign(eventToPublish);
 
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,
