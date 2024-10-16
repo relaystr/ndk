@@ -57,6 +57,7 @@ class Initialization {
           cacheManager: config.cache,
           globalState: globalState,
           relayManager: relayManager,
+          signer: config.eventSigner,
         );
         break;
       case NdkEngine.JIT:

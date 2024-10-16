@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
+import '../entities/broadcast_response.dart';
 import '../entities/connection_source.dart';
 import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
@@ -132,41 +133,47 @@ class JitEngine with Logger implements NetworkEngine {
   /// [nostrEvent] event to publish
   /// [explicitRelays] used instead of gossip if set
 
-  handleEventBroadcast(
-    Nip01Event nostrEvent,
+  @override
+  NdkBroadcastResponse handleEventBroadcast({
+    required Nip01Event nostrEvent,
+    required String privateKey,
     List<String>? specificRelays,
-    String privateKey,
-  ) async {
-    await seedRelaysConnected;
+  }) {
+    Future<void> asyncStuff() async {
+      await seedRelaysConnected;
 
-    if (specificRelays != null) {
-      return RelayJitBroadcastAllStrategy.broadcast(
-        eventToPublish: nostrEvent,
-        connectedRelays: globalState.connectedRelays,
-        privateKey: privateKey,
-      );
-    }
+      if (specificRelays != null) {
+        return RelayJitBroadcastAllStrategy.broadcast(
+          eventToPublish: nostrEvent,
+          connectedRelays: globalState.connectedRelays,
+          privateKey: privateKey,
+        );
+      }
 
-    // default publish to own outbox
-    await RelayJitBroadcastOutboxStrategy.broadcast(
-      eventToPublish: nostrEvent,
-      connectedRelays: globalState.connectedRelays,
-      cacheManager: cache,
-      onMessage: onMessage,
-      privateKey: privateKey,
-    );
-
-    // check if we need to publish to others inboxes
-    if (nostrEvent.pTags.isNotEmpty) {
-      await RelayJitBroadcastOtherReadStrategy.broadcast(
+      // default publish to own outbox
+      await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: nostrEvent,
         connectedRelays: globalState.connectedRelays,
         cacheManager: cache,
         onMessage: onMessage,
         privateKey: privateKey,
-        pubkeysOfInbox: nostrEvent.pTags,
       );
+
+      // check if we need to publish to others inboxes
+      if (nostrEvent.pTags.isNotEmpty) {
+        await RelayJitBroadcastOtherReadStrategy.broadcast(
+          eventToPublish: nostrEvent,
+          connectedRelays: globalState.connectedRelays,
+          cacheManager: cache,
+          onMessage: onMessage,
+          privateKey: privateKey,
+          pubkeysOfInbox: nostrEvent.pTags,
+        );
+      }
     }
+
+    asyncStuff();
+    return NdkBroadcastResponse(publishedEvent: nostrEvent);
   }
 
   // close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
