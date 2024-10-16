@@ -54,8 +54,8 @@ class Broadcast {
   /// convenience methods
   /// **********************************************************************************************************
 
-  /// broadcast a reaction to an event
-  /// [eventId] the event you want to react to
+  /// broadcast a reaction to an event \
+  /// [eventId] the event you want to react to \
   /// [reaction] the reaction, default + (like) can be 🤔 (emoji)
   NdkBroadcastResponse broadcastReaction({
     required String eventId,
@@ -73,9 +73,9 @@ class Broadcast {
     return broadcast(nostrEvent: event);
   }
 
-  /// request a deletion of an event
-  /// [eventId] event you want to delete
-  /// [customRelays] relay URls to send the deletion request to specific relays
+  /// request a deletion of an event \
+  /// [eventId] event you want to delete \
+  /// [customRelays] relay URls to send the deletion request to specific relays \
   /// [customSigner] if you want to use a different signer than the default specified in [NdkConfig]
   NdkBroadcastResponse broadcastDeletion({
     required String eventId,
