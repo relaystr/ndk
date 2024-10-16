@@ -28,10 +28,10 @@ class Requests {
 
   /// Creates a new [Requests] instance
   ///
-  /// [globalState] The global state of the application
-  /// [cacheRead] The cache reader for retrieving cached events
-  /// [cacheWrite] The cache writer for storing events
-  /// [networkEngine] The engine for handling network requests
+  /// [globalState] The global state of the application \
+  /// [cacheRead] The cache reader for retrieving cached events \
+  /// [cacheWrite] The cache writer for storing events \
+  /// [networkEngine] The engine for handling network requests \
   /// [eventVerifier] The verifier for validating Nostr events
   Requests({
     required GlobalState globalState,
@@ -47,14 +47,14 @@ class Requests {
 
   /// Performs a low-level Nostr query
   ///
-  /// [filters] A list of filters to apply to the query
-  /// [name] An optional name used as an ID prefix
-  /// [relaySet] An optional set of relays to query
-  /// [cacheRead] Whether to read from cache
-  /// [cacheWrite] Whether to write results to cache
-  /// [timeout] An optional timeout for the query
-  /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox
-  /// [desiredCoverage] The number of relays per pubkey to query, default: 2
+  /// [filters] A list of filters to apply to the query \
+  /// [name] An optional name used as an ID prefix \
+  /// [relaySet] An optional set of relays to query \
+  /// [cacheRead] Whether to read from cache \
+  /// [cacheWrite] Whether to write results to cache \
+  /// [timeout] An optional timeout for the query \
+  /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
+  /// [desiredCoverage] The number of relays per pubkey to query, default: 2 \
   ///
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
@@ -83,14 +83,14 @@ class Requests {
 
   /// Creates a low-level Nostr subscription
   ///
-  /// [filters] A list of filters to apply to the subscription
-  /// [name] An optional name for the subscription
-  /// [id] An optional ID for the subscription, overriding name
-  /// [relaySet] An optional set of relays to subscribe to
-  /// [cacheRead] Whether to read from cache
-  /// [cacheWrite] Whether to write results to cache
-  /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox
-  /// [desiredCoverage] The number of relays per pubkey to subscribe to, default: 2
+  /// [filters] A list of filters to apply to the subscription \
+  /// [name] An optional name for the subscription \
+  /// [id] An optional ID for the subscription, overriding name \
+  /// [relaySet] An optional set of relays to subscribe to \
+  /// [cacheRead] Whether to read from cache \
+  /// [cacheWrite] Whether to write results to cache \
+  /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
+  /// [desiredCoverage] The number of relays per pubkey to subscribe to, default: 2 \
   ///
   /// Returns an [NdkResponse] containing the subscription results as stream
   NdkResponse subscription({

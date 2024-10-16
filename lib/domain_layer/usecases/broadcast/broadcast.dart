@@ -7,7 +7,7 @@ import '../../repositories/event_signer.dart';
 import '../cache_read/cache_read.dart';
 import '../engines/network_engine.dart';
 
-/// class for low level nostr broadcasts / publish
+/// class for low level nostr broadcasts / publish \
 /// wraps the engines to inject singer
 class Broadcast {
   final NetworkEngine _engine;
