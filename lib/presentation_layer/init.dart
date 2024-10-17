@@ -15,8 +15,10 @@ import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import 'ndk_config.dart';
 
+/// this class is used to inject all the dependencies \
+/// its like playing lego ;)
 class Initialization {
-  final NdkConfig config;
+  final NdkConfig ndkConfig;
   final GlobalState globalState;
 
   /// data sources
@@ -44,82 +46,86 @@ class Initialization {
 
   late final NetworkEngine engine;
 
+  /// [NdkConfig] is user defined
+  /// [GlobalState] global state object that schuld stay in memory
   Initialization({
-    required this.config,
+    required this.ndkConfig,
     required this.globalState,
   }) {
     relayManager = RelayManager(
       nostrTransportFactory: _webSocketNostrTransportFactory,
-      bootstrapRelays: config.bootstrapRelays,
+      bootstrapRelays: ndkConfig.bootstrapRelays,
       globalState: globalState,
     );
-    switch (config.engine) {
+    switch (ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
         engine = RelaySetsEngine(
-          cacheManager: config.cache,
+          cacheManager: ndkConfig.cache,
           globalState: globalState,
           relayManager: relayManager,
-          signer: config.eventSigner,
+          signer: ndkConfig.eventSigner,
         );
         break;
       case NdkEngine.JIT:
         engine = JitEngine(
-          eventSigner: config.eventSigner,
-          cache: config.cache,
-          ignoreRelays: config.ignoreRelays,
-          seedRelays: config.bootstrapRelays,
+          eventSigner: ndkConfig.eventSigner,
+          cache: ndkConfig.cache,
+          ignoreRelays: ndkConfig.ignoreRelays,
+          seedRelays: ndkConfig.bootstrapRelays,
           globalState: globalState,
         );
         break;
       default:
         throw UnimplementedError("Unknown engine");
     }
-    cacheWrite = CacheWrite(config.cache);
-    cacheRead = CacheRead(config.cache);
+    cacheWrite = CacheWrite(ndkConfig.cache);
+    cacheRead = CacheRead(ndkConfig.cache);
 
     requests = Requests(
       globalState: globalState,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
       networkEngine: engine,
-      eventVerifier: config.eventVerifier,
-    );
-
-    follows = Follows(
-      requests: requests,
-      cacheManager: config.cache,
-      relayManager: relayManager,
-    );
-
-    metadatas = Metadatas(
-      requests: requests,
-      cacheManager: config.cache,
-      relayManager: relayManager,
-    );
-
-    userRelayLists = UserRelayLists(
-      requests: requests,
-      cacheManager: config.cache,
-      relayManager: relayManager,
-    );
-
-    lists = Lists(
-      requests: requests,
-      cacheManager: config.cache,
-      relayManager: relayManager,
-    );
-
-    relaySets = RelaySets(
-      cacheManager: config.cache,
-      relayManager: relayManager,
-      userRelayLists: userRelayLists,
+      eventVerifier: ndkConfig.eventVerifier,
     );
 
     broadcast = Broadcast(
       globalState: globalState,
       cacheRead: cacheRead,
       networkEngine: engine,
-      signer: config.eventSigner,
+      signer: ndkConfig.eventSigner,
+    );
+
+    follows = Follows(
+      requests: requests,
+      cacheManager: ndkConfig.cache,
+      relayManager: relayManager,
+      broadcast: broadcast,
+      signer: ndkConfig.eventSigner,
+    );
+
+    metadatas = Metadatas(
+      requests: requests,
+      cacheManager: ndkConfig.cache,
+      relayManager: relayManager,
+    );
+
+    userRelayLists = UserRelayLists(
+      requests: requests,
+      cacheManager: ndkConfig.cache,
+      relayManager: relayManager,
+    );
+
+    lists = Lists(
+      requests: requests,
+      cacheManager: ndkConfig.cache,
+      relayManager: relayManager,
+    );
+
+    relaySets = RelaySets(
+      cacheManager: ndkConfig.cache,
+      relayManager: relayManager,
+      userRelayLists: userRelayLists,
     );
   }
 }

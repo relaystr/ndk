@@ -28,7 +28,7 @@ class Ndk {
   /// Creates a new instance of [Ndk] with the given [config]
   Ndk(this.config)
       : _initialization = Initialization(
-          config: config,
+          ndkConfig: config,
           globalState: _globalState,
         );
 
