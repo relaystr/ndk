@@ -4,11 +4,19 @@ import '../../../shared/nips/nip04/nip04.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 
+/// Pure Dart Event Signer
 class Bip340EventSigner implements EventSigner {
+  /// hex private key
   String? privateKey;
+
+  /// hex public key
   String publicKey;
 
-  Bip340EventSigner(this.privateKey, this.publicKey);
+  /// Get a new event signer with the given keys
+  Bip340EventSigner({
+    required this.privateKey,
+    required this.publicKey,
+  });
 
   @override
   Future<void> sign(Nip01Event event) async {

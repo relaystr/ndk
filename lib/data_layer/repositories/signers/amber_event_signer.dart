@@ -5,12 +5,17 @@ import '../../../shared/nips/nip19/nip19.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 import '../../data_sources/amber_flutter.dart';
 
+/// amber (external app) https://github.com/greenart7c3/Amber singer
 class AmberEventSigner implements EventSigner {
   final AmberFlutterDS amberFlutterDS;
 
   final String publicKey;
 
-  AmberEventSigner(this.publicKey, this.amberFlutterDS);
+  /// get a amber event signer
+  AmberEventSigner({
+    required this.publicKey,
+    required this.amberFlutterDS,
+  });
 
   @override
   Future<void> sign(Nip01Event event) async {
