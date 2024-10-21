@@ -14,7 +14,10 @@ void main() {
       const pub =
           "b1a5c93edcc8d586566fde53a20bdb50049a97b15483cb763854e57016e0fa3d";
 
-      Bip340EventSigner signer = Bip340EventSigner(priv, pub);
+      Bip340EventSigner signer = Bip340EventSigner(
+        privateKey: priv,
+        publicKey: pub,
+      );
 
       const ciphertext =
           "VezuSvWak++ASjFMRqBPWS3mK5pZ0vRLL325iuIL4S+r8n9z+DuMau5vMElz1tGC/UqCDmbzE2kwplafaFo/FnIZMdEj4pdxgptyBV1ifZpH3TEF6OMjEtqbYRRqnxgIXsuOSXaerWgpi0pm+raHQPseoELQI/SZ1cvtFqEUCXdXpa5AYaSd+quEuthAEw7V1jP+5TDRCEC8jiLosBVhCtaPpLcrm8HydMYJ2XB6Ixs=?iv=/rtV49RFm0XyFEwG62Eo9A==";
@@ -42,7 +45,10 @@ void main() {
       const pub =
           "b1a5c93edcc8d586566fde53a20bdb50049a97b15483cb763854e57016e0fa3d";
 
-      Bip340EventSigner signer = Bip340EventSigner(priv, pub);
+      Bip340EventSigner signer = Bip340EventSigner(
+        privateKey: priv,
+        publicKey: pub,
+      );
 
       const clearTextObj = [
         [

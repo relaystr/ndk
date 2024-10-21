@@ -10,10 +10,14 @@ void main() async {
   group('lists', () {
     KeyPair key0 = Bip340.generatePrivateKey();
     KeyPair key1 = Bip340.generatePrivateKey();
-    Bip340EventSigner signer0 =
-        Bip340EventSigner(key0.privateKey, key0.publicKey);
-    Bip340EventSigner signer1 =
-        Bip340EventSigner(key1.privateKey, key1.publicKey);
+    Bip340EventSigner signer0 = Bip340EventSigner(
+      privateKey: key0.privateKey,
+      publicKey: key0.publicKey,
+    );
+    Bip340EventSigner signer1 = Bip340EventSigner(
+      privateKey: key1.privateKey,
+      publicKey: key1.publicKey,
+    );
 
     final Nip51List bookmarkListKey0 = Nip51List(
         pubKey: key0.publicKey,

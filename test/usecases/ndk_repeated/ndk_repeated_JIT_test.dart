@@ -87,7 +87,10 @@ void main() async {
       Ndk ndkJit = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
-          eventSigner: Bip340EventSigner(key1.privateKey, key1.publicKey),
+          eventSigner: Bip340EventSigner(
+            privateKey: key1.privateKey,
+            publicKey: key1.publicKey,
+          ),
           cache: MemCacheManager(),
           engine: NdkEngine.JIT,
           bootstrapRelays: myRelayUrls,
