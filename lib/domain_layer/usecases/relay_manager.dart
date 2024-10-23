@@ -77,7 +77,7 @@ class RelayManager {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
     await Future.wait(
-            urls.map((url) => reconnectRelay(url, force: true)).toList())
+            urls.map((url) => connectRelay(url)).toList())
         .whenComplete(() {
       if (!_seedRelaysCompleter.isCompleted) {
         _seedRelaysCompleter.complete();
@@ -148,7 +148,12 @@ class RelayManager {
       // );
 
       transports[url] = nostrTransportFactory(url);
-      await transports[url]!.ready;
+      await transports[url]!
+          .ready
+          .timeout(Duration(seconds: connectTimeout),
+              onTimeout: () {
+        print("timed out connecting to relay $url");
+      });
 
       startListeningToSocket(url);
 
@@ -410,9 +415,8 @@ class RelayManager {
   Future<void> reconnectRelays(Iterable<String> urls) async {
     final startTime = DateTime.now();
     Logger.log.d("connecting ${urls.length} relays in parallel");
-    List<bool> connected = await Future.wait(urls.map((url) {
-      return reconnectRelay(url, force: true);
-    }));
+    List<bool> connected =
+        await Future.wait(urls.map((url) => reconnectRelay(url, force: true)));
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.d(
@@ -424,7 +428,12 @@ class RelayManager {
     if (allowReconnectRelays) {
       NostrTransport? transport = transports[cleanRelayUrl(url)];
       if (transport != null) {
-        await transport.ready;
+        await transport.ready
+            .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
+            .onError((error, stackTrace) {
+          print("error connecting to relay $url: $error");
+          return []; // Return an empty list in case of error
+        });
       }
       if (!isWebSocketOpen(url)) {
         if (relay != null &&
