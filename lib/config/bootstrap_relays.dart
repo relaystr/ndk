@@ -6,6 +6,6 @@ const List<String> DEFAULT_BOOTSTRAP_RELAYS = [
   "wss://relay.damus.io",
   "wss://nos.lol",
   "wss://nostr.wine",
-  "wss://offchain.pub",
+  // "wss://offchain.pub",
   // "wss://relay.mostr.pub"
 ];
