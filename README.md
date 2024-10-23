@@ -9,6 +9,27 @@ NDK (Nostr Development Kit) is a Dart library designed to enhance the Nostr deve
 It provides streamlined solutions for common use cases and abstracts away complex relay management, making it ideal for building constrained Nostr clients, particularly on mobile devices.\
 NDK implements the inbox/outbox (gossip) model by default, optimizing network usage and improving performance.
 
+**Table of Contents:**
+
+- [Dart Nostr Development Kit (NDK)](#dart-nostr-development-kit-ndk)
+  - [Prerequisites](#prerequisites)
+  - [Getting started](#getting-started)
+    - [Install](#install)
+    - [Import](#import)
+  - [Usage](#usage)
+- [Features / what does NDK do?](#features--what-does-ndk-do)
+  - [not Included](#not-included)
+  - [NIPs](#nips)
+  - [Performance](#performance)
+    - [Gossip/outbox model of relay discovery and connectivity](#gossipoutbox-model-of-relay-discovery-and-connectivity)
+- [Common terminology](#common-terminology)
+- [Changelog 🔗](#changelog-)
+- [Library development 🏗️](#library-development-️)
+  - [setup](#setup)
+  - [Architecture](#architecture)
+    - [Folder Structure](#folder-structure)
+  - [Engines](#engines)
+
 $~~~~~~~~~~~$
 
 ## Prerequisites
