@@ -151,7 +151,7 @@ The simplest characterization of the gossip model is just this: _reading the pos
 
 <img src="https://mikedilger.com/gossip-model/gossip-model.png" style="width:400px; height:400px"/>
 
-more details on https://mikedilger.com/gossip-model/
+more details on <https://mikedilger.com/gossip-model/>
 
 # Common terminology
 
@@ -182,29 +182,44 @@ Run build runner: (e.g for generating mocks)\
 
 ## Architecture
 
-- `lib/`
-  - `config/`
-    - `# contains configuration files`
-  - `shared/`
-    - `nipX # folders for nip specific code`
-    - `# only internal code, no external dependencies!`
-  - `data_layer/`
-    - `data_sources/`
-      - `# external apis, websocket impl etc.`
-    - `models/`
-      - `# type conversion e.g. json to entity`
-    - `repositories/`
-      - `# repository implementations (implementing domain_layer repos)`
-  - `domain_layer/`
-    - `entities/`
-      - `# our entities e.g. data types`
-    - `repositories/`
-      - `# contracts`
-    - `usecases/`
-      - `# our main code / business logic`
-  - `presentation_layer/`
-    - `# contains our api design (makes usecases accessible to outside world)`
-  - `ndk.dart # entrypoint, points to presentation_layer`
+This project uses Clean Architecture. Reasons for it being clear separation of concerns and therefore making it more accessible for future contributors.\
+You can read more about it [here](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
+
+For initialization we use `presentation_layer/init.dart` to assemble all dependencies, these are then exposed in `presentation_layer/ndk.dart` the main entry point for the lib user.
+
+Global state is realized via a simple [GlobalState] object created by `ndk.dart`. \
+The lib user is supposed to keep the [NDK] object in memory.
+
+Other state objects are created on demand, for example [RequestState] for each request.
+
+### Folder Structure
+
+```bash
+lib/
+├── config/
+│   └── # Configuration files
+├── shared/
+│   ├── nipX/ # NIP-specific code folders
+│   └── # Internal code, no external dependencies
+├── data_layer/
+│   ├── data_sources/
+│   │   └── # External APIs, WebSocket implementations, etc.
+│   ├── models/
+│   │   └── # Data transformation (e.g., JSON to entity)
+│   └── repositories/
+│       └── # Concrete repository implementations
+├── domain_layer/
+│   ├── entities/
+│   │   └── # Core business objects
+│   ├── repositories/
+│   │   └── # Repository contracts
+│   └── usecases/
+│       └── # Business logic / use cases
+├── presentation_layer/
+│   └── # API design (exposing use cases to the outside world)
+└── ndk.dart # Entry point, directs to presentation layer
+
+```
 
 ## Engines
 
@@ -230,4 +245,4 @@ If you want to implement your own engine with custom behavior you need to touch 
 
 The current state solution is not ideal because it requires coordination between the engine authors and not enforceable by code. If you have ideas how to improve this system, please reach out.
 
->The network engine is only concerned about network requests! Caching and avoiding concurrency is handled by separate usecases. Take a look at `requests.dart` usecase to learn more.
+> The network engine is only concerned about network requests! Caching and avoiding concurrency is handled by separate usecases. Take a look at `requests.dart` usecase to learn more.
