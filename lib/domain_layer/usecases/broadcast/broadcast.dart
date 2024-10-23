@@ -38,7 +38,7 @@ class Broadcast {
   /// [returns] a [NdkBroadcastResponse] object containing the result => success per relay
   NdkBroadcastResponse broadcast({
     required Nip01Event nostrEvent,
-    List<String>? specificRelays,
+    Iterable<String>? specificRelays,
     EventSigner? customSigner,
   }) {
     final mySigner = _checkSinger(customSigner: customSigner);
@@ -56,9 +56,11 @@ class Broadcast {
 
   /// broadcast a reaction to an event \
   /// [eventId] the event you want to react to \
+  /// [customRelays] relay URls to send the deletion request to specific relays \
   /// [reaction] the reaction, default + (like) can be 🤔 (emoji)
   NdkBroadcastResponse broadcastReaction({
     required String eventId,
+    Iterable<String>? customRelays,
     String reaction = "+",
   }) {
     final signer = _checkSinger();
@@ -70,7 +72,7 @@ class Broadcast {
         ],
         content: reaction,
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
-    return broadcast(nostrEvent: event);
+    return broadcast(nostrEvent: event, specificRelays: customRelays);
   }
 
   /// request a deletion of an event \
@@ -79,7 +81,7 @@ class Broadcast {
   /// [customSigner] if you want to use a different signer than the default specified in [NdkConfig]
   NdkBroadcastResponse broadcastDeletion({
     required String eventId,
-    List<String>? customRelays,
+    Iterable<String>? customRelays,
     EventSigner? customSigner,
   }) {
     final EventSigner mySigner = _checkSinger(customSigner: customSigner);

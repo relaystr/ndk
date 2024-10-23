@@ -100,7 +100,7 @@ class Follows {
 
   Future<ContactList> _broadcastAddContactInCollection(
     String toAdd,
-    List<String>? customRelays,
+    Iterable<String>? customRelays,
     List<String> Function(ContactList) collectionAccessor,
   ) async {
     _checkSigner();
@@ -125,7 +125,7 @@ class Follows {
   /// broadcast adding of contact
   Future<ContactList> broadcastAddContact(
     String add, {
-    List<String>? customRelays,
+    Iterable<String>? customRelays,
   }) async {
     return _broadcastAddContactInCollection(
         add, customRelays, (list) => list.contacts);
@@ -134,7 +134,7 @@ class Follows {
   /// broadcast adding of followed tag
   Future<ContactList> broadcastAddFollowedTag(
     String add, {
-    List<String>? customRelays,
+    Iterable<String>? customRelays,
   }) async {
     return _broadcastAddContactInCollection(
         add, customRelays, (list) => list.followedTags);
@@ -143,24 +143,24 @@ class Follows {
   /// broadcast adding of followed community
   Future<ContactList> broadcastAddFollowedCommunity(
     String toAdd, {
-    List<String>? relays,
+    Iterable<String>? customRelays,
   }) async {
     return _broadcastAddContactInCollection(
-        toAdd, relays, (list) => list.followedCommunities);
+        toAdd, customRelays, (list) => list.followedCommunities);
   }
 
   /// broadcast adding of followed event
   Future<ContactList> broadcastAddFollowedEvent(
     String toAdd, {
-    List<String>? relays,
+    Iterable<String>? customRelays,
   }) async {
     return _broadcastAddContactInCollection(
-        toAdd, relays, (list) => list.followedEvents);
+        toAdd, customRelays, (list) => list.followedEvents);
   }
 
   Future<ContactList?> _broadcastRemoveContactInCollection(
     String toRemove,
-    List<String>? customRelays,
+    Iterable<String>? customRelays,
     List<String> Function(ContactList) collectionAccessor,
   ) async {
     _checkSigner();
@@ -185,16 +185,16 @@ class Follows {
   /// broadcast removal of contact
   Future<ContactList?> broadcastRemoveContact(
     String toRemove, {
-    List<String>? relays,
+    Iterable<String>? customRelays,
   }) async {
     return _broadcastRemoveContactInCollection(
-        toRemove, relays, (list) => list.contacts);
+        toRemove, customRelays, (list) => list.contacts);
   }
 
   /// broadcast removal of followed tag
   Future<ContactList?> broadcastRemoveFollowedTag(
     String toRemove, {
-    List<String>? customRelays,
+    Iterable<String>? customRelays,
   }) async {
     return _broadcastRemoveContactInCollection(
         toRemove, customRelays, (list) => list.followedTags);
@@ -203,7 +203,7 @@ class Follows {
   /// broadcast removal of followed community
   Future<ContactList?> broadcastRemoveFollowedCommunity(
     String toRemove, {
-    List<String>? customRelays,
+    Iterable<String>? customRelays,
   }) async {
     return _broadcastRemoveContactInCollection(
         toRemove, customRelays, (list) => list.followedCommunities);
@@ -212,7 +212,7 @@ class Follows {
   /// broadcast removal of followed event
   Future<ContactList?> broadcastRemoveFollowedEvent(
     String toRemove, {
-    List<String>? customRelays,
+    Iterable<String>? customRelays,
   }) async {
     return _broadcastRemoveContactInCollection(
         toRemove, customRelays, (list) => list.followedEvents);

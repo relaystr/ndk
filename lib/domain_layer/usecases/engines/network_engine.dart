@@ -9,7 +9,7 @@ abstract class NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner mySigner,
-    List<String>? specificRelays,
+    Iterable<String>? specificRelays,
   });
 
   // todo:

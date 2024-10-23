@@ -209,7 +209,7 @@ class RelaySetsEngine implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner mySigner,
-    List<String>? specificRelays,
+    Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
       // =====================================================================================
