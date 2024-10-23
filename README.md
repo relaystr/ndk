@@ -12,10 +12,10 @@ NDK implements the inbox/outbox (gossip) model by default, optimizing network us
 **Table of Contents:**
 
 - [Dart Nostr Development Kit (NDK)](#dart-nostr-development-kit-ndk)
+- [Getting started](#getting-started)
   - [Prerequisites](#prerequisites)
-  - [Getting started](#getting-started)
-    - [Install](#install)
-    - [Import](#import)
+  - [Install](#install)
+  - [Import](#import)
   - [Usage](#usage)
 - [Features / what does NDK do?](#features--what-does-ndk-do)
   - [not Included](#not-included)
@@ -25,12 +25,14 @@ NDK implements the inbox/outbox (gossip) model by default, optimizing network us
 - [Common terminology](#common-terminology)
 - [Changelog 🔗](#changelog-)
 - [Library development 🏗️](#library-development-️)
-  - [setup](#setup)
+  - [Setup](#setup)
   - [Architecture](#architecture)
     - [Folder Structure](#folder-structure)
   - [Engines](#engines)
 
 $~~~~~~~~~~~$
+
+# Getting started
 
 ## Prerequisites
 
@@ -59,15 +61,13 @@ rustup target add aarch64-apple-ios-sim
 rustup target add armv7-apple-ios i386-apple-ios
 ```
 
-## Getting started
-
-### Install
+## Install
 
 ```bash
 flutter pub add ndk
 ```
 
-### Import
+## Import
 
 ```dart
 import 'package:ndk/ndk.dart';
@@ -192,7 +192,7 @@ $~~~~~~~~~~~$
 
 # Library development 🏗️
 
-## setup
+## Setup
 
 Install [prerequisites](#prerequisites)
 
