@@ -108,6 +108,8 @@ class Initialization {
       requests: requests,
       cacheManager: ndkConfig.cache,
       relayManager: relayManager,
+      broadcast: broadcast,
+      signer: ndkConfig.eventSigner,
     );
 
     userRelayLists = UserRelayLists(
