@@ -8,6 +8,7 @@ import '../../entities/nip_01_event.dart';
 import '../../entities/relay_set.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
+import '../broadcast/broadcast.dart';
 import '../relay_manager.dart';
 import '../requests/requests.dart';
 
@@ -16,14 +17,26 @@ class Metadatas {
   final Requests _requests;
   final CacheManager _cacheManager;
   final RelayManager _relayManager;
+  final Broadcast _broadcast;
+  final EventSigner? _signer;
 
   Metadatas({
     required Requests requests,
     required CacheManager cacheManager,
     required RelayManager relayManager,
+    required Broadcast broadcast,
+    required EventSigner? signer,
   })  : _relayManager = relayManager,
         _cacheManager = cacheManager,
-        _requests = requests;
+        _requests = requests,
+        _signer = signer,
+        _broadcast = broadcast;
+
+  _checkSigner() {
+    if (_signer == null) {
+      throw "cannot sign without a signer";
+    }
+  }
 
   Future<Metadata?> loadMetadata(
     String pubKey, {
@@ -109,10 +122,12 @@ class Metadatas {
   }
 
   // coverage:ignore-start
-  Future<Nip01Event?> _refreshMetadataEvent(EventSigner signer) async {
+  Future<Nip01Event?> _refreshMetadataEvent() async {
+    _checkSigner();
     Nip01Event? loaded;
     await for (final event in _requests.query(filters: [
-      Filter(kinds: [Metadata.KIND], authors: [signer.getPublicKey()], limit: 1)
+      Filter(
+          kinds: [Metadata.KIND], authors: [_signer!.getPublicKey()], limit: 1)
     ]).stream) {
       if (loaded == null || loaded.createdAt < event.createdAt) {
         loaded = event;
@@ -123,9 +138,12 @@ class Metadatas {
 
   /// *******************************************************************************************************************
 
-  Future<Metadata> broadcastMetadata(Metadata metadata,
-      Iterable<String> broadcastRelays, EventSigner eventSigner) async {
-    Nip01Event? event = await _refreshMetadataEvent(eventSigner);
+  Future<Metadata> broadcastMetadata(
+    Metadata metadata, {
+    Iterable<String>? specificRelays,
+  }) async {
+    _checkSigner();
+    Nip01Event? event = await _refreshMetadataEvent();
     if (event != null) {
       Map<String, dynamic> map = json.decode(event.content);
       map.addAll(metadata.toJson());
@@ -138,7 +156,18 @@ class Metadatas {
     } else {
       event = metadata.toEvent();
     }
-    await _relayManager.broadcastEvent(event, broadcastRelays, eventSigner);
+    final bResult = _broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: specificRelays,
+    );
+    //todo: implement publishDone
+    //await bResult.publishDone;
+
+    _broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: specificRelays,
+    );
+
     metadata.updatedAt = Helpers.now;
     metadata.refreshedTimestamp = Helpers.now;
     await _cacheManager.saveMetadata(metadata);
