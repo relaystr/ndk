@@ -124,7 +124,7 @@ class Follows {
 
   /// overrides contact list with the given contact list\
   /// Use with cation! Only for initial or restoring a complete contact list \
-  /// [createdAt] and [loadedTimestamp] are set to the current time;
+  /// [createdAt] and [loadedTimestamp] are set to the current time
   Future<ContactList> broadcastSetContactList(ContactList contactList) async {
     contactList.loadedTimestamp = Helpers.now;
     contactList.createdAt = Helpers.now;
