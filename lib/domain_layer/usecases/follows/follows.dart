@@ -122,6 +122,21 @@ class Follows {
     return contactList;
   }
 
+  /// overrides contact list with the given contact list\
+  /// Use with cation! Only for initial or restoring a complete contact list \
+  /// [createdAt] and [loadedTimestamp] are set to the current time;
+  Future<ContactList> broadcastSetContactList(ContactList contactList) async {
+    contactList.loadedTimestamp = Helpers.now;
+    contactList.createdAt = Helpers.now;
+
+    final bResult = _broadcast.broadcast(
+      nostrEvent: contactList.toEvent(),
+    );
+    //await bResult.publishDone;
+    await _cacheManager.saveContactList(contactList);
+    return contactList;
+  }
+
   /// broadcast adding of contact
   Future<ContactList> broadcastAddContact(
     String add, {
