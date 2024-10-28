@@ -23,7 +23,7 @@ class Lists {
         _requests = requests;
 
   Future<Nip51List?> _getCachedNip51List(int kind, EventSigner signer) async {
-    List<Nip01Event>? events = _cacheManager
+    List<Nip01Event>? events = await _cacheManager
         .loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     events.sort(
       (a, b) => b.createdAt.compareTo(a.createdAt),
@@ -65,7 +65,7 @@ class Lists {
 
   Future<Nip51Set?> _getCachedNip51RelaySet(
       String name, EventSigner signer) async {
-    List<Nip01Event>? events = _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _cacheManager.loadEvents(
         pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
@@ -166,7 +166,7 @@ class Lists {
     await Future.wait([
       _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
     ]);
-    List<Nip01Event>? events = _cacheManager.loadEvents(
+    List<Nip01Event>? events = await _cacheManager.loadEvents(
         pubKeys: [eventSigner.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
@@ -211,7 +211,7 @@ class Lists {
       await Future.wait([
         _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
       ]);
-      List<Nip01Event>? events = _cacheManager.loadEvents(
+      List<Nip01Event>? events = await _cacheManager.loadEvents(
           pubKeys: [eventSigner.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
       events = events.where((event) {
         if (event.getDtag() != null && event.getDtag() == name) {
@@ -248,7 +248,7 @@ class Lists {
     await Future.wait([
       _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
     ]);
-    List<Nip01Event>? events = _cacheManager
+    List<Nip01Event>? events = await _cacheManager
         .loadEvents(pubKeys: [eventSigner.getPublicKey()], kinds: [kind]);
     for (var event in events) {
       _cacheManager.removeEvent(event.id);
@@ -286,7 +286,7 @@ class Lists {
       await Future.wait([
         _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
       ]);
-      List<Nip01Event>? events = _cacheManager
+      List<Nip01Event>? events = await _cacheManager
           .loadEvents(pubKeys: [eventSigner.getPublicKey()], kinds: [kind]);
       for (var event in events) {
         _cacheManager.removeEvent(event.id);
@@ -322,7 +322,7 @@ class Lists {
       await Future.wait([
         _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
       ]);
-      List<Nip01Event>? events = _cacheManager
+      List<Nip01Event>? events = await _cacheManager
           .loadEvents(pubKeys: [eventSigner.getPublicKey()], kinds: [kind]);
       for (var event in events) {
         _cacheManager.removeEvent(event.id);
@@ -353,7 +353,7 @@ class Lists {
     await Future.wait([
       _relayManager.broadcastEvent(event, broadcastRelays, eventSigner),
     ]);
-    List<Nip01Event>? events = _cacheManager
+    List<Nip01Event>? events = await _cacheManager
         .loadEvents(pubKeys: [eventSigner.getPublicKey()], kinds: [kind]);
     for (var event in events) {
       _cacheManager.removeEvent(event.id);

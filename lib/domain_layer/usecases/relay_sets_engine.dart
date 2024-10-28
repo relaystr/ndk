@@ -233,7 +233,8 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       // own outbox
       // =====================================================================================
-      final nip65Data = getNip65DataSingle(nostrEvent.pubKey, _cacheManager);
+      final nip65Data =
+          await getNip65DataSingle(nostrEvent.pubKey, _cacheManager);
       final writeRelaysUrls = nip65Data.relays.entries
           .where((element) => element.value.isWrite)
           .map((e) => e.key)
@@ -253,7 +254,7 @@ class RelaySetsEngine implements NetworkEngine {
       // other inbox
       // =====================================================================================
       if (nostrEvent.pTags.isNotEmpty) {
-        final nip65Data = getNip65Data(nostrEvent.pTags, _cacheManager);
+        final nip65Data = await getNip65Data(nostrEvent.pTags, _cacheManager);
 
         List<String> myWriteRelayUrlsOthers = [];
 

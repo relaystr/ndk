@@ -139,10 +139,10 @@ class RelayJitPubkeyStrategy with Logger {
       required ReadWriteMarker direction,
       required List<String> ignoreRelays,
       required bool closeOnEOSE,
-      required Function(Nip01Event, RequestState) onMessage}) {
+      required Function(Nip01Event, RequestState) onMessage}) async {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
-    List<Nip65> nip65Data = getNip65Data(
+    List<Nip65> nip65Data = await getNip65Data(
         coveragePubkeys.map((e) => e.pubkey).toList(), cacheManager);
 
     // by finding the best relays to connect and send out the request
