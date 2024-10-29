@@ -21,7 +21,7 @@ class CacheRead {
 
       // authors
       if (filter.authors != null) {
-        final foundAuthors = cacheManager.loadEvents(
+        final foundAuthors = await cacheManager.loadEvents(
           pubKeys: filter.authors!,
           kinds: filter.kinds ?? [],
           since: filter.since,

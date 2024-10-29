@@ -39,7 +39,7 @@ void main() async {
         cacheManager.saveContactLists(contactLists);
 
         ContactList? myContactList =
-            cacheManager.loadContactList(key.publicKey);
+            await cacheManager.loadContactList(key.publicKey);
         expect(myContactList, isNotNull);
 
         // get nip65 data

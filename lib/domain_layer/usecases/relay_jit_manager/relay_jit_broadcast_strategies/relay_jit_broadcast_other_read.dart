@@ -22,7 +22,7 @@ class RelayJitBroadcastOtherReadStrategy {
     required EventSigner signer,
     required List<String> pubkeysOfInbox,
   }) async {
-    final nip65Data = getNip65Data(pubkeysOfInbox, cacheManager);
+    final nip65Data = await getNip65Data(pubkeysOfInbox, cacheManager);
 
     List<String> myWriteRelayUrls = [];
 

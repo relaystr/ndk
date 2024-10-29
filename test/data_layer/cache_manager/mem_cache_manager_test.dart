@@ -23,7 +23,7 @@ void main() {
       when(mockUserRelayList.pubKey).thenReturn('testPubKey');
 
       await cacheManager.saveUserRelayList(mockUserRelayList);
-      final result = cacheManager.loadUserRelayList('testPubKey');
+      final result = await cacheManager.loadUserRelayList('testPubKey');
 
       expect(result, equals(mockUserRelayList));
     });
@@ -34,7 +34,7 @@ void main() {
 
       await cacheManager.saveUserRelayList(mockUserRelayList);
       await cacheManager.removeUserRelayList('testPubKey');
-      final result = cacheManager.loadUserRelayList('testPubKey');
+      final result = await cacheManager.loadUserRelayList('testPubKey');
 
       expect(result, isNull);
     });
@@ -49,8 +49,8 @@ void main() {
           .saveUserRelayLists([mockUserRelayList1, mockUserRelayList2]);
       await cacheManager.removeAllUserRelayLists();
 
-      expect(cacheManager.loadUserRelayList('testPubKey1'), isNull);
-      expect(cacheManager.loadUserRelayList('testPubKey2'), isNull);
+      expect(await cacheManager.loadUserRelayList('testPubKey1'), isNull);
+      expect(await cacheManager.loadUserRelayList('testPubKey2'), isNull);
     });
   });
 
@@ -60,7 +60,7 @@ void main() {
       when(mockNip05.pubKey).thenReturn('testPubKey');
 
       await cacheManager.saveNip05(mockNip05);
-      final result = cacheManager.loadNip05('testPubKey');
+      final result = await cacheManager.loadNip05('testPubKey');
 
       expect(result, equals(mockNip05));
     });
@@ -71,7 +71,7 @@ void main() {
 
       await cacheManager.saveNip05(mockNip05);
       await cacheManager.removeNip05('testPubKey');
-      final result = cacheManager.loadNip05('testPubKey');
+      final result = await cacheManager.loadNip05('testPubKey');
 
       expect(result, isNull);
     });
@@ -85,8 +85,8 @@ void main() {
       await cacheManager.saveNip05s([mockNip051, mockNip052]);
       await cacheManager.removeAllNip05s();
 
-      expect(cacheManager.loadNip05('testPubKey1'), isNull);
-      expect(cacheManager.loadNip05('testPubKey2'), isNull);
+      expect(await cacheManager.loadNip05('testPubKey1'), isNull);
+      expect(await cacheManager.loadNip05('testPubKey2'), isNull);
     });
   });
 
@@ -96,7 +96,7 @@ void main() {
       when(mockEvent.id).thenReturn('testId');
 
       await cacheManager.saveEvent(mockEvent);
-      final result = cacheManager.loadEvent('testId');
+      final result = await cacheManager.loadEvent('testId');
 
       expect(result, equals(mockEvent));
     });
@@ -107,7 +107,7 @@ void main() {
 
       await cacheManager.saveEvent(mockEvent);
       await cacheManager.removeEvent('testId');
-      final result = cacheManager.loadEvent('testId');
+      final result = await cacheManager.loadEvent('testId');
 
       expect(result, isNull);
     });
@@ -121,8 +121,8 @@ void main() {
       await cacheManager.saveEvents([mockEvent1, mockEvent2]);
       await cacheManager.removeAllEvents();
 
-      expect(cacheManager.loadEvent('testId1'), isNull);
-      expect(cacheManager.loadEvent('testId2'), isNull);
+      expect(await cacheManager.loadEvent('testId1'), isNull);
+      expect(await cacheManager.loadEvent('testId2'), isNull);
     });
   });
 
@@ -135,7 +135,7 @@ void main() {
           .thenReturn(RelaySet.buildId('testName', 'testPubKey'));
 
       await cacheManager.saveRelaySet(mockRelaySet);
-      final result = cacheManager.loadRelaySet('testName', 'testPubKey');
+      final result = await cacheManager.loadRelaySet('testName', 'testPubKey');
 
       expect(result, equals(mockRelaySet));
     });
@@ -149,7 +149,7 @@ void main() {
 
       await cacheManager.saveRelaySet(mockRelaySet);
       await cacheManager.removeRelaySet('testName', 'testPubKey');
-      final result = cacheManager.loadRelaySet('testName', 'testPubKey');
+      final result = await cacheManager.loadRelaySet('testName', 'testPubKey');
 
       expect(result, isNull);
     });
@@ -170,8 +170,10 @@ void main() {
       await cacheManager.saveRelaySet(mockRelaySet2);
       await cacheManager.removeAllRelaySets();
 
-      expect(cacheManager.loadRelaySet('testName1', 'testPubKey1'), isNull);
-      expect(cacheManager.loadRelaySet('testName2', 'testPubKey2'), isNull);
+      expect(
+          await cacheManager.loadRelaySet('testName1', 'testPubKey1'), isNull);
+      expect(
+          await cacheManager.loadRelaySet('testName2', 'testPubKey2'), isNull);
     });
   });
 
@@ -181,7 +183,7 @@ void main() {
       when(mockContactList.pubKey).thenReturn('testPubKey');
 
       await cacheManager.saveContactList(mockContactList);
-      final result = cacheManager.loadContactList('testPubKey');
+      final result = await cacheManager.loadContactList('testPubKey');
 
       expect(result, equals(mockContactList));
     });
@@ -192,7 +194,7 @@ void main() {
 
       await cacheManager.saveContactList(mockContactList);
       await cacheManager.removeContactList('testPubKey');
-      final result = cacheManager.loadContactList('testPubKey');
+      final result = await cacheManager.loadContactList('testPubKey');
 
       expect(result, isNull);
     });
@@ -206,8 +208,8 @@ void main() {
       await cacheManager.saveContactLists([mockContactList1, mockContactList2]);
       await cacheManager.removeAllContactLists();
 
-      expect(cacheManager.loadContactList('testPubKey1'), isNull);
-      expect(cacheManager.loadContactList('testPubKey2'), isNull);
+      expect(await cacheManager.loadContactList('testPubKey1'), isNull);
+      expect(await cacheManager.loadContactList('testPubKey2'), isNull);
     });
   });
 
@@ -217,7 +219,7 @@ void main() {
       when(mockMetadata.pubKey).thenReturn('testPubKey');
 
       await cacheManager.saveMetadata(mockMetadata);
-      final result = cacheManager.loadMetadata('testPubKey');
+      final result = await cacheManager.loadMetadata('testPubKey');
 
       expect(result, equals(mockMetadata));
     });
@@ -228,7 +230,7 @@ void main() {
 
       await cacheManager.saveMetadata(mockMetadata);
       await cacheManager.removeMetadata('testPubKey');
-      final result = cacheManager.loadMetadata('testPubKey');
+      final result = await cacheManager.loadMetadata('testPubKey');
 
       expect(result, isNull);
     });
@@ -242,8 +244,8 @@ void main() {
       await cacheManager.saveMetadatas([mockMetadata1, mockMetadata2]);
       await cacheManager.removeAllMetadatas();
 
-      expect(cacheManager.loadMetadata('testPubKey1'), isNull);
-      expect(cacheManager.loadMetadata('testPubKey2'), isNull);
+      expect(await cacheManager.loadMetadata('testPubKey1'), isNull);
+      expect(await cacheManager.loadMetadata('testPubKey2'), isNull);
     });
 
     test('loadMetadatas', () async {
@@ -253,7 +255,7 @@ void main() {
       when(mockMetadata2.pubKey).thenReturn('testPubKey2');
 
       await cacheManager.saveMetadatas([mockMetadata1, mockMetadata2]);
-      final results = cacheManager
+      final results = await cacheManager
           .loadMetadatas(['testPubKey1', 'testPubKey2', 'nonExistentKey']);
 
       expect(results.length, equals(2));

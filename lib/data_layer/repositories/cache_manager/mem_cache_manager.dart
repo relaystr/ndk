@@ -25,7 +25,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  UserRelayList? loadUserRelayList(String pubKey) {
+  Future<UserRelayList?> loadUserRelayList(String pubKey) async {
     return userRelayLists[pubKey];
   }
 
@@ -54,12 +54,12 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Nip05? loadNip05(String pubKey) {
+  Future<Nip05?> loadNip05(String pubKey) async {
     return nip05s[pubKey];
   }
 
   @override
-  List<Nip05?> loadNip05s(List<String> pubKeys) {
+  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
     List<Nip05> result = [];
     for (String pubKey in pubKeys) {
       Nip05? nip05 = nip05s[pubKey];
@@ -90,7 +90,7 @@ class MemCacheManager implements CacheManager {
   /// **************************************************************************
 
   @override
-  RelaySet? loadRelaySet(String name, String pubKey) {
+  Future<RelaySet?> loadRelaySet(String name, String pubKey) async {
     return relaySets[RelaySet.buildId(name, pubKey)];
   }
 
@@ -100,7 +100,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  ContactList? loadContactList(String pubKey) {
+  Future<ContactList?> loadContactList(String pubKey) async {
     return contactLists[pubKey];
   }
 
@@ -117,7 +117,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Metadata? loadMetadata(String pubKey) {
+  Future<Metadata?> loadMetadata(String pubKey) async {
     return metadatas[pubKey];
   }
 
@@ -164,7 +164,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  List<Metadata?> loadMetadatas(List<String> pubKeys) {
+  Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
     List<Metadata> result = [];
     for (String pubKey in pubKeys) {
       Metadata? metadata = metadatas[pubKey];
@@ -176,24 +176,24 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Iterable<Metadata> searchMetadatas(String search, int limit) {
+  Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     /// TODO
     return [];
   }
 
   @override
-  Nip01Event? loadEvent(String id) {
+  Future<Nip01Event?> loadEvent(String id) async {
     return events[id];
   }
 
   @override
-  List<Nip01Event> loadEvents({
+  Future<List<Nip01Event>> loadEvents({
     List<String>? pubKeys,
     List<int>? kinds,
     String? pTag,
     int? since,
     int? until,
-  }) {
+  }) async {
     List<Nip01Event> result = [];
     for (var event in events.values) {
       if (pubKeys != null && !pubKeys.contains(event.pubKey)) {

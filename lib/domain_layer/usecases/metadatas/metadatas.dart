@@ -43,7 +43,7 @@ class Metadatas {
     bool forceRefresh = false,
     int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
   }) async {
-    Metadata? metadata = _cacheManager.loadMetadata(pubKey);
+    Metadata? metadata = await _cacheManager.loadMetadata(pubKey);
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
@@ -82,7 +82,7 @@ class Metadatas {
       {Function(Metadata)? onLoad}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
-      Metadata? userMetadata = _cacheManager.loadMetadata(pubKey);
+      Metadata? userMetadata = await _cacheManager.loadMetadata(pubKey);
       if (userMetadata == null) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);

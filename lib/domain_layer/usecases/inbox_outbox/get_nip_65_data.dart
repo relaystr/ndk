@@ -11,9 +11,10 @@ import '../../repositories/cache_manager.dart';
 /// reads the latest nip65 data from cache
 /// [pubkeys] pubkeys you want nip65 data for
 /// [cacheManger] the cache manager you want to use
-List<Nip65> getNip65Data(List<String> pubkeys, CacheManager cacheManager) {
+Future<List<Nip65>> getNip65Data(
+    List<String> pubkeys, CacheManager cacheManager) async {
   List<Nip01Event> events =
-      cacheManager.loadEvents(kinds: [Nip65.KIND], pubKeys: pubkeys);
+      await cacheManager.loadEvents(kinds: [Nip65.KIND], pubKeys: pubkeys);
 
   List<Nip65> nip65Data = [];
   for (var event in events) {
@@ -25,8 +26,9 @@ List<Nip65> getNip65Data(List<String> pubkeys, CacheManager cacheManager) {
 /// reads the latest nip65 data from cache
 /// [pubkey] pubkey you want nip65 data for
 /// [cacheManger] the cache manager you want to use
-Nip65 getNip65DataSingle(String pubkey, CacheManager cacheManager) {
-  final data = getNip65Data([pubkey], cacheManager);
+Future<Nip65> getNip65DataSingle(
+    String pubkey, CacheManager cacheManager) async {
+  final data = await getNip65Data([pubkey], cacheManager);
 
   // default
   if (data.isEmpty) {

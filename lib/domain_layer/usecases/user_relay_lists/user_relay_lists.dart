@@ -32,7 +32,8 @@ class UserRelayLists {
       bool forceRefresh = false}) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
-      UserRelayList? userRelayList = _cacheManager.loadUserRelayList(pubKey);
+      UserRelayList? userRelayList =
+          await _cacheManager.loadUserRelayList(pubKey);
       if (userRelayList == null || forceRefresh) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
@@ -107,7 +108,7 @@ class UserRelayLists {
       List<ContactList> contactListsSave = [];
       for (ContactList contactList in contactLists) {
         ContactList? existing =
-            _cacheManager.loadContactList(contactList.pubKey);
+            await _cacheManager.loadContactList(contactList.pubKey);
         if (existing == null || existing.createdAt < contactList.createdAt) {
           contactListsSave.add(contactList);
         }
@@ -125,11 +126,12 @@ class UserRelayLists {
   /// return single user relay list
   Future<UserRelayList?> getSingleUserRelayList(String pubKey,
       {bool forceRefresh = false}) async {
-    UserRelayList? userRelayList = _cacheManager.loadUserRelayList(pubKey);
+    UserRelayList? userRelayList =
+        await _cacheManager.loadUserRelayList(pubKey);
     if (userRelayList == null || forceRefresh) {
       await loadMissingRelayListsFromNip65OrNip02([pubKey],
           forceRefresh: forceRefresh);
-      userRelayList = _cacheManager.loadUserRelayList(pubKey);
+      userRelayList = await _cacheManager.loadUserRelayList(pubKey);
     }
     return userRelayList;
   }
@@ -143,7 +145,7 @@ class UserRelayLists {
   Future<UserRelayList?> _ensureUpToDateUserRelayList(
       EventSigner signer) async {
     UserRelayList? userRelayList =
-        _cacheManager.loadUserRelayList(signer.getPublicKey());
+        await _cacheManager.loadUserRelayList(signer.getPublicKey());
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_USER_RELAY_DURATION)
             .millisecondsSinceEpoch ~/

@@ -148,7 +148,8 @@ class RelaySets {
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
     int foundCount = 0;
     for (String pubKey in pubKeys) {
-      UserRelayList? userRelayList = _cacheManager.loadUserRelayList(pubKey);
+      UserRelayList? userRelayList =
+          await _cacheManager.loadUserRelayList(pubKey);
       if (userRelayList != null) {
         if (userRelayList.relays.isNotEmpty) {
           foundCount++;

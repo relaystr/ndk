@@ -41,7 +41,7 @@ class Follows {
     bool forceRefresh = false,
     int idleTimeout = Requests.DEFAULT_QUERY_TIMEOUT,
   }) async {
-    ContactList? contactList = _cacheManager.loadContactList(pubKey);
+    ContactList? contactList = await _cacheManager.loadContactList(pubKey);
 
     if (contactList != null && !forceRefresh) {
       return contactList;
@@ -83,7 +83,7 @@ class Follows {
   Future<ContactList> _ensureUpToDateContactListOrEmpty(
     String pubkey,
   ) async {
-    ContactList? contactList = _cacheManager.loadContactList(pubkey);
+    ContactList? contactList = await _cacheManager.loadContactList(pubkey);
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_CONTACT_LIST_DURATION)
             .millisecondsSinceEpoch ~/

@@ -56,7 +56,7 @@ void main() async {
       }
 
       final duplicatedEvents =
-          myCacheManager.loadEvents(kinds: [1], pubKeys: ['duplicate']);
+          await myCacheManager.loadEvents(kinds: [1], pubKeys: ['duplicate']);
 
       expect(duplicatedEvents.length, equals(1));
     });
@@ -79,7 +79,7 @@ void main() async {
 
       //check if events got not saved
       for (final event in expectedEvents) {
-        final loadedEvent = myCacheManager.loadEvent(event.id);
+        final loadedEvent = await myCacheManager.loadEvent(event.id);
         expect(loadedEvent, isNull);
       }
     });
