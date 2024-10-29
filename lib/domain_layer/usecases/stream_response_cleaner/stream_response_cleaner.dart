@@ -13,22 +13,41 @@ class StreamResponseCleaner {
 
   int closedStreams = 0;
 
+  int? timeout;
+
+  /// [trackingSet] a set of ids that are already returned
+  /// [inputStreams] a list of streams that are be listened to
+  /// [outController] the controller that is used to add the events to
+  /// [timeout] the timeout for the stream, if null no timeout is set
   StreamResponseCleaner({
     required this.trackingSet,
     required this.inputStreams,
     required this.outController,
-  });
-
-  void call() {
-    for (final stream in inputStreams) {
-      addStreamListener(stream);
+    required this.timeout,
+  }) {
+    if (timeout != null) {
+      Future.delayed(Duration(seconds: timeout!), () {
+        if (!outController.isClosed) {
+          outController.close();
+        }
+      });
     }
   }
 
-  addStreamListener(Stream<Nip01Event> stream) {
+  void call() {
+    for (final stream in inputStreams) {
+      _addStreamListener(stream);
+    }
+  }
+
+  _addStreamListener(Stream<Nip01Event> stream) {
     stream.listen((event) {
       // check if event id is in the set
       if (trackingSet.contains(event.id)) {
+        return;
+      }
+
+      if (outController.isClosed) {
         return;
       }
 
