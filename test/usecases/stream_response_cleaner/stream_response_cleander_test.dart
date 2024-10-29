@@ -47,6 +47,7 @@ void main() async {
         inputStreams: [inputController.stream],
         trackingSet: tracking,
         outController: outController,
+        timeout: 5,
       )();
 
       expectLater(outController.stream, emitsInAnyOrder(myEventsNoDublicate));
