@@ -61,5 +61,40 @@ void main() async {
       await inputController.close();
       await outController.close();
     });
+
+    test('timeout closes the stream', () async {
+      final Set<String> tracking = {};
+
+      StreamController<Nip01Event> inputController =
+          StreamController<Nip01Event>();
+      StreamController<Nip01Event> outController =
+          StreamController<Nip01Event>.broadcast();
+
+      final timeout = 2; // 2 seconds timeout
+
+      StreamResponseCleaner(
+        inputStreams: [inputController.stream],
+        trackingSet: tracking,
+        outController: outController,
+        timeout: timeout,
+      )();
+
+      // Add one event to the stream
+      inputController.add(Nip01Event(
+        pubKey: 'pubKey1',
+        kind: 1,
+        tags: [],
+        content: 'content1',
+      ));
+
+      // Wait for slightly longer than the timeout
+      await Future.delayed(Duration(seconds: timeout + 1));
+
+      // Check if the outController is closed
+      expect(outController.isClosed, isTrue);
+
+      // Clean up
+      await inputController.close();
+    });
   });
 }
