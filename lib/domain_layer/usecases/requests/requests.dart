@@ -52,7 +52,7 @@ class Requests {
   /// [relaySet] An optional set of relays to query \
   /// [cacheRead] Whether to read from cache \
   /// [cacheWrite] Whether to write results to cache \
-  /// [timeout] An optional timeout for the query \
+  /// [timeout] An optional timeout in seconds for the query \
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
   /// [desiredCoverage] The number of relays per pubkey to query, default: 2 \
   ///
@@ -151,6 +151,7 @@ class Requests {
       ],
       trackingSet: state.returnedIds,
       outController: state.controller,
+      timeout: request.timeout,
     )();
 
     /// avoids sending events to response stream before a listener could be attached
