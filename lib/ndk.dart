@@ -37,6 +37,8 @@ export 'domain_layer/repositories/event_verifier.dart';
 export 'domain_layer/repositories/event_signer.dart';
 export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
 export 'data_layer/repositories/signers/bip340_event_signer.dart';
+export 'data_layer/repositories/signers/amber_event_signer.dart';
+export 'data_layer/data_sources/amber_flutter.dart';
 export 'data_layer/repositories/verifiers/rust_event_verifier.dart';
 
 /// cache
