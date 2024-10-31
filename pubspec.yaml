@@ -34,6 +34,8 @@ dependencies:
   rxdart: ^0.28.0
   flutter_rust_bridge: ^2.5.0
   rust_lib_ndk: ^0.1.2
+  objectbox: ^4.0.3
+  objectbox_flutter_libs: any
 
 #dependency_overrides:
 #  rust_lib_ndk:
@@ -47,6 +49,7 @@ dev_dependencies:
   mockito: ^5.0.17
   integration_test:
     sdk: flutter
+  objectbox_generator: any
 
 flutter:
   plugin:
