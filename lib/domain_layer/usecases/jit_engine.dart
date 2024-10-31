@@ -214,6 +214,9 @@ class JitEngine with Logger implements NetworkEngine {
   static void onEoseReceivedFromRelay(RequestState requestState) async {
     // check if all subscriptions received EOSE (async) at the current time
 
+    if (requestState.isSubscription) {
+      return;
+    }
     for (var sub in requestState.activeRelaySubscriptions.values) {
       await sub.activeSubscriptions[requestState.id]?.eoseReceived;
     }
