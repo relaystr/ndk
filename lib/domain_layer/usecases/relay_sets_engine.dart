@@ -289,4 +289,9 @@ class RelaySetsEngine implements NetworkEngine {
 
     return NdkBroadcastResponse(publishedEvent: nostrEvent);
   }
+
+  @override
+  Future<void> closeSubscription(String subId) async {
+    _relayManager.closeSubscription(subId);
+  }
 }

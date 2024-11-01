@@ -12,8 +12,6 @@ abstract class NetworkEngine {
     Iterable<String>? specificRelays,
   });
 
-  // todo:
-  // response obj?
-  // implement in both engines
-  // Future<void> handleCloseSubscription(String subId);
+  /// closes the nostr network subscription
+  Future<void> closeSubscription(String subId);
 }

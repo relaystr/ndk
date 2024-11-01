@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:ndk/shared/nips/nip01/client_msg.dart';
+
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../entities/broadcast_response.dart';
@@ -176,11 +178,16 @@ class JitEngine with Logger implements NetworkEngine {
     return NdkBroadcastResponse(publishedEvent: nostrEvent);
   }
 
-  // close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
-  //todo: this could be moved to the request object
-  handleCloseSubscription(String id) async {
-    await seedRelaysConnected;
-    throw UnimplementedError();
+  /// close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
+  @override
+  closeSubscription(String id) async {
+    //await seedRelaysConnected;
+    for (var relay in globalState.connectedRelays) {
+      if (relay.activeSubscriptions.containsKey(id)) {
+        await relay.closeSubscription(id);
+        relay.activeSubscriptions.remove(id);
+      }
+    }
   }
 
   static doesRelayCoverPubkey(
