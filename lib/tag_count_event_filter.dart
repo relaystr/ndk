@@ -4,6 +4,7 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'domain_layer/entities/contact_list.dart';
 import 'domain_layer/entities/nip_65.dart';
 
+/// filter for too many tags
 class PTagCountEventFilter extends EventFilter {
   int maxTagCount;
 

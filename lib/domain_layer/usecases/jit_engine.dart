@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:ndk/shared/nips/nip01/client_msg.dart';
-
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../entities/broadcast_response.dart';
