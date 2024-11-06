@@ -116,6 +116,11 @@ class Requests {
     ));
   }
 
+  /// Closes a Nostr network subscription
+  Future<void> closeSubscription(String subId) {
+    return _engine.closeSubscription(subId);
+  }
+
   /// Performs a low-level Nostr event request
   ///
   /// This method should be used only if the prebuilt use cases and
