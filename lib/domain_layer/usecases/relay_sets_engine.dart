@@ -29,18 +29,14 @@ class RelaySetsEngine implements NetworkEngine {
 
   final RelayManager _relayManager;
 
-  final EventSigner? _signer;
-
   final CacheManager _cacheManager;
 
   /// engine that pre-calculates relay sets for gossip
   RelaySetsEngine({
     required RelayManager relayManager,
     required CacheManager cacheManager,
-    EventSigner? signer,
     GlobalState? globalState,
   })  : _cacheManager = cacheManager,
-        _signer = signer,
         _relayManager = relayManager {
     _globalState = globalState ?? GlobalState();
     _relayManager.connect(urls: _relayManager.bootstrapRelays);

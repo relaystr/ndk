@@ -63,7 +63,6 @@ class Initialization {
           cacheManager: ndkConfig.cache,
           globalState: globalState,
           relayManager: relayManager,
-          signer: ndkConfig.eventSigner,
         );
         break;
       case NdkEngine.JIT:
@@ -99,7 +98,6 @@ class Initialization {
     follows = Follows(
       requests: requests,
       cacheManager: ndkConfig.cache,
-      relayManager: relayManager,
       broadcast: broadcast,
       signer: ndkConfig.eventSigner,
     );
@@ -107,7 +105,6 @@ class Initialization {
     metadatas = Metadatas(
       requests: requests,
       cacheManager: ndkConfig.cache,
-      relayManager: relayManager,
       broadcast: broadcast,
       signer: ndkConfig.eventSigner,
     );

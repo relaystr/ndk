@@ -5,7 +5,6 @@ import '../../entities/filter.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
 import '../broadcast/broadcast.dart';
-import '../relay_manager.dart';
 import '../requests/requests.dart';
 
 /// Follows usecase
@@ -13,16 +12,14 @@ class Follows {
   final Requests _requests;
   final Broadcast _broadcast;
   final CacheManager _cacheManager;
-  final RelayManager _relayManager;
   final EventSigner? _signer;
 
   Follows({
     required Requests requests,
     required Broadcast broadcast,
     required CacheManager cacheManager,
-    required RelayManager relayManager,
     required EventSigner? signer,
-  })  : _relayManager = relayManager,
+  })  :
         _cacheManager = cacheManager,
         _requests = requests,
         _signer = signer,
@@ -112,7 +109,8 @@ class Follows {
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
 
-      final bResult = _broadcast.broadcast(
+      // final bResult =
+      _broadcast.broadcast(
         nostrEvent: contactList.toEvent(),
         specificRelays: customRelays,
       );
@@ -129,7 +127,8 @@ class Follows {
     contactList.loadedTimestamp = Helpers.now;
     contactList.createdAt = Helpers.now;
 
-    final bResult = _broadcast.broadcast(
+    // final bResult =
+    _broadcast.broadcast(
       nostrEvent: contactList.toEvent(),
     );
     //await bResult.publishDone;
@@ -187,7 +186,8 @@ class Follows {
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
 
-      final bResult = _broadcast.broadcast(
+      // final bResult =
+      _broadcast.broadcast(
         nostrEvent: contactList.toEvent(),
         specificRelays: customRelays,
       );
