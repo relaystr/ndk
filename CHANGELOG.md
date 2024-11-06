@@ -1,3 +1,12 @@
+## 0.1.3
+
+- upgrade to flutter_rust_bridge 2.6.0
+- close usecase in requests
+- async cache manager
+- set contact list usecase
+- use broadcast usecase for other usecases
+-
+
 ## 0.1.2
 
 - upgrade to flutter_rust_bridge 2.5.0
