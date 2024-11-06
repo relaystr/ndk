@@ -5,7 +5,6 @@
 - async cache manager
 - set contact list usecase
 - use broadcast usecase for other usecases
--
 
 ## 0.1.2
 
