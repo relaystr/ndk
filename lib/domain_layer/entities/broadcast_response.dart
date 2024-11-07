@@ -18,7 +18,11 @@ class NdkBroadcastResponse {
 
   NdkBroadcastResponse({
     required this.publishedEvent,
-  });
+  }) {
+    Future.delayed(Duration(seconds: 10), () {
+      _publishCompleter.completeError("timeout");
+    });
+  }
 
   addPublishingRelay({required String url}) {}
 }
