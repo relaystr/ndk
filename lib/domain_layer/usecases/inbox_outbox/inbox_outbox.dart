@@ -10,15 +10,15 @@ import '../requests/requests.dart';
 /// InboxOutbox usecase
 class InboxOutbox {
   final CacheManager _cacheManager;
-  final Requests? _requests;
-  final Broadcast? _broadcast;
+  final Requests _requests;
+  final Broadcast _broadcast;
   final EventSigner? _signer;
 
   /// creates a new [InboxOutbox] instance
   InboxOutbox({
     required CacheManager cacheManager,
-    Requests? requests,
-    Broadcast? broadcast,
+    required Requests requests,
+    required Broadcast broadcast,
     EventSigner? signer,
   })  : _cacheManager = cacheManager,
         _broadcast = broadcast,
@@ -28,18 +28,6 @@ class InboxOutbox {
   _checkSigner() {
     if (_signer == null) {
       throw "cannot sign without a signer";
-    }
-  }
-
-  _checkRequests() {
-    if (_requests == null) {
-      throw "cannot make requests without requests";
-    }
-  }
-
-  _checkBroadcast() {
-    if (_broadcast == null) {
-      throw "cannot broadcast without broadcast";
     }
   }
 
@@ -55,7 +43,6 @@ class InboxOutbox {
     Nip65 newNip65Data, {
     Iterable<String>? customRelays,
   }) async {
-    _checkBroadcast();
     await _cacheManager.saveEvent(newNip65Data.toEvent());
     final response = _broadcast!.broadcast(
       nostrEvent: newNip65Data.toEvent(),
@@ -96,7 +83,6 @@ class InboxOutbox {
     required List<String> pubkeys,
     bool forceRefresh = false,
   }) async {
-    _checkRequests();
     List<Nip65> nip65Cache = await getNip65CacheLatest(
       pubkeys: pubkeys,
       cacheManager: _cacheManager,
@@ -106,7 +92,7 @@ class InboxOutbox {
       return nip65Cache;
     }
 
-    final query = _requests!.query(
+    final query = _requests.query(
       filters: [
         Filter(
           kinds: [Nip65.KIND],
