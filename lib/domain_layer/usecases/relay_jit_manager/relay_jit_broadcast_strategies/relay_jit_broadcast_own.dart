@@ -20,11 +20,14 @@ class RelayJitBroadcastOutboxStrategy {
     required Function(Nip01Event, RequestState) onMessage,
     required EventSigner signer,
   }) async {
-    final nip65Data = (await InboxOutbox.getNip65CacheLatest(
-      pubkeys: [eventToPublish.pubKey],
+    final nip65Data = await InboxOutbox.getNip65CacheLatestSingle(
+      pubkey: eventToPublish.pubKey,
       cacheManager: cacheManager,
-    ))
-        .first;
+    );
+
+    if (nip65Data == null) {
+      throw "could not find nip65 data for event";
+    }
 
     /// get all relays where write marker is write
 

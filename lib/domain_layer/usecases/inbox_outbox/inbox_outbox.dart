@@ -75,7 +75,7 @@ class InboxOutbox {
     _checkSigner();
 
     final selfPubkey = _signer!.getPublicKey();
-    final nip65Data = await getNip65(pubkeys: [selfPubkey]);
+    final nip65Data = await getNip65(pubkeys: [selfPubkey], forceRefresh: true);
 
     if (nip65Data.isEmpty) {
       throw "no nip65 data found";
@@ -89,6 +89,9 @@ class InboxOutbox {
   }
 
   /// reads the latest nip65 data network and cache
+  /// [pubkeys] pubkeys you want nip65 data for
+  /// [forceRefresh] if true, will ignore cache and fetch from network
+  /// [returns] the latest nip65 data if list is empty, no data was found
   Future<List<Nip65>> getNip65({
     required List<String> pubkeys,
     bool forceRefresh = false,
@@ -140,6 +143,23 @@ class InboxOutbox {
         _filterLatest(events.map((e) => Nip65.fromEvent(e)).toList());
 
     return nip65Data;
+  }
+
+  /// reads the latest nip65 data from cache
+  /// [pubkeys] pubkeys you want nip65 data for
+  /// [cacheManger] the cache manager you want to use
+  static Future<Nip65?> getNip65CacheLatestSingle({
+    required String pubkey,
+    required CacheManager cacheManager,
+  }) async {
+    final data = await getNip65CacheLatest(
+      pubkeys: [pubkey],
+      cacheManager: cacheManager,
+    );
+    if (data.isEmpty) {
+      return null;
+    }
+    return data.first;
   }
 }
 
