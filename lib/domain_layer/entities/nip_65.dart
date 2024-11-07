@@ -21,6 +21,13 @@ class Nip65 {
     return relays;
   }
 
+  /// creates a new [Nip65] instance
+  Nip65({
+    required this.pubKey,
+    required this.relays,
+    required this.createdAt,
+  });
+
   Nip65.fromEvent(Nip01Event event) {
     pubKey = event.pubKey;
     createdAt = event.createdAt;
