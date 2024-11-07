@@ -1,3 +1,5 @@
+import 'package:ndk/domain_layer/usecases/inbox_outbox/inbox_outbox.dart';
+
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
@@ -43,6 +45,7 @@ class Initialization {
   late Lists lists;
   late RelaySets relaySets;
   late Broadcast broadcast;
+  late InboxOutbox inboxOutbox;
 
   late final NetworkEngine engine;
 
@@ -57,6 +60,7 @@ class Initialization {
       bootstrapRelays: ndkConfig.bootstrapRelays,
       globalState: globalState,
     );
+
     switch (ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
         engine = RelaySetsEngine(
@@ -125,6 +129,13 @@ class Initialization {
       cacheManager: ndkConfig.cache,
       relayManager: relayManager,
       userRelayLists: userRelayLists,
+    );
+
+    inboxOutbox = InboxOutbox(
+      cacheManager: ndkConfig.cache,
+      broadcast: broadcast,
+      requests: requests,
+      signer: ndkConfig.eventSigner,
     );
   }
 }

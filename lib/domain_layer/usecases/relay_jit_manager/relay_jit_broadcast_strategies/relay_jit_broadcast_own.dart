@@ -4,7 +4,8 @@ import '../../../entities/nip_01_event.dart';
 import '../../../entities/request_state.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../../repositories/event_signer.dart';
-import '../../inbox_outbox/get_nip_65_data.dart';
+
+import '../../inbox_outbox/inbox_outbox.dart';
 import '../relay_jit.dart';
 import 'broadcast_strategies_shared.dart';
 
@@ -19,8 +20,11 @@ class RelayJitBroadcastOutboxStrategy {
     required Function(Nip01Event, RequestState) onMessage,
     required EventSigner signer,
   }) async {
-    final nip65Data =
-        await getNip65DataSingle(eventToPublish.pubKey, cacheManager);
+    final nip65Data = (await InboxOutbox.getNip65CacheLatest(
+      pubkeys: [eventToPublish.pubKey],
+      cacheManager: cacheManager,
+    ))
+        .first;
 
     /// get all relays where write marker is write
 

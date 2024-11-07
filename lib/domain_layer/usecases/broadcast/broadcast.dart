@@ -3,6 +3,7 @@ import '../../../shared/nips/nip25/reactions.dart';
 import '../../entities/broadcast_response.dart';
 import '../../entities/global_state.dart';
 import '../../entities/nip_01_event.dart';
+import '../../entities/nip_65.dart';
 import '../../repositories/event_signer.dart';
 import '../cache_read/cache_read.dart';
 import '../engines/network_engine.dart';
@@ -97,7 +98,7 @@ class Broadcast {
     return broadcast(
       nostrEvent: event,
       specificRelays: customRelays,
-      customSigner: customSigner,
+      customSigner: mySigner,
     );
   }
 }

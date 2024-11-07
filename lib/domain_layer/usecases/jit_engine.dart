@@ -11,6 +11,7 @@ import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
 import 'engines/network_engine.dart';
+import 'inbox_outbox/inbox_outbox.dart';
 import 'relay_jit_manager/relay_jit.dart';
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_all.dart';
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_other_read.dart';
@@ -115,9 +116,9 @@ class JitEngine with Logger implements NetworkEngine {
         throw UnimplementedError("search filter not implemented yet");
       }
 
-      if (filter.ids != null) {
-        throw UnimplementedError("ids filter not implemented yet");
-      }
+      // if (filter.ids != null) {
+      //   throw UnimplementedError("ids filter not implemented yet");
+      // }
 
       /// unknown filter strategy, blast to all connected relays
       RelayJitBlastAllStrategy.handleRequest(

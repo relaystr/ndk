@@ -2,6 +2,7 @@ import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/follows/follows.dart';
+import '../domain_layer/usecases/inbox_outbox/inbox_outbox.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/relay_manager.dart';
@@ -59,6 +60,8 @@ class Ndk {
 
   /// calculate relay set
   RelaySets get relaySets => _initialization.relaySets;
+
+  InboxOutbox get inboxOutbox => _initialization.inboxOutbox;
 
   /// Changes the event signer used by the NDK instance
   ///

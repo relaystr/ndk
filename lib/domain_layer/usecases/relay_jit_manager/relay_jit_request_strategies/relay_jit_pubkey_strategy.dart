@@ -12,7 +12,7 @@ import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_st
 
 import '../../../entities/request_state.dart';
 import '../../../entities/connection_source.dart';
-import '../../inbox_outbox/get_nip_65_data.dart';
+import '../../inbox_outbox/inbox_outbox.dart';
 
 /// Strategy Description:
 ///
@@ -142,8 +142,10 @@ class RelayJitPubkeyStrategy with Logger {
       required Function(Nip01Event, RequestState) onMessage}) async {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
-    List<Nip65> nip65Data = await getNip65Data(
-        coveragePubkeys.map((e) => e.pubkey).toList(), cacheManager);
+    List<Nip65> nip65Data = await InboxOutbox.getNip65CacheLatest(
+      pubkeys: coveragePubkeys.map((e) => e.pubkey).toList(),
+      cacheManager: cacheManager,
+    );
 
     // by finding the best relays to connect and send out the request
     RelayRankingResult relayRanking = rankRelays(
@@ -233,17 +235,18 @@ class RelayJitPubkeyStrategy with Logger {
   }
 
   // adds the relay to ignoreRelays and retries the request for assigned pubkeys to this relay
-  static void _connectionErrorHandling(
-      {required RelayJit errorRelay,
-      required RequestState requestState,
-      required Filter filter,
-      required List<RelayJit> connectedRelays,
-      required CacheManager cacheManager,
-      required int desiredCoverage,
-      required bool closeOnEOSE,
-      required ReadWriteMarker direction,
-      required List<String> ignoreRelays,
-      required Function(Nip01Event, RequestState) onMessage}) {
+  static void _connectionErrorHandling({
+    required RelayJit errorRelay,
+    required RequestState requestState,
+    required Filter filter,
+    required List<RelayJit> connectedRelays,
+    required CacheManager cacheManager,
+    required int desiredCoverage,
+    required bool closeOnEOSE,
+    required ReadWriteMarker direction,
+    required List<String> ignoreRelays,
+    required Function(Nip01Event, RequestState) onMessage,
+  }) {
     // cleanup
     connectedRelays.remove(errorRelay);
 

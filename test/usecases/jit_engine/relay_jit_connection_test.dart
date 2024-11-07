@@ -4,6 +4,7 @@ import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/presentation_layer/init.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
