@@ -27,13 +27,16 @@ class CacheRead {
           since: filter.since,
           until: filter.until,
         );
+
         foundEvents.addAll(foundAuthors);
 
         // remove found authors from unresolved filter if it's not a subscription
-        if (!requestState.isSubscription) {
-          filter.authors!.removeWhere(
-            (author) => foundEvents.any((event) => event.pubKey == author),
-          );
+        if (!requestState.isSubscription && foundAuthors.isNotEmpty) {
+          if ((filter.limit != null && foundEvents.length >= filter.limit!)) {
+            filter.authors!.removeWhere(
+              (author) => foundEvents.any((event) => event.pubKey == author),
+            );
+          }
         }
       }
 
