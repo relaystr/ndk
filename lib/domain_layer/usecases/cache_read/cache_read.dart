@@ -32,7 +32,12 @@ class CacheRead {
 
         // remove found authors from unresolved filter if it's not a subscription
         if (!requestState.isSubscription && foundAuthors.isNotEmpty) {
-          if ((filter.limit != null && foundEvents.length >= filter.limit!)) {
+          if (filter.limit == null) {
+            filter.authors!.removeWhere(
+              (author) => foundEvents.any((event) => event.pubKey == author),
+            );
+          } else if (foundEvents.length >= filter.limit!) {
+            // also ok to remove authors if limit is reached
             filter.authors!.removeWhere(
               (author) => foundEvents.any((event) => event.pubKey == author),
             );
