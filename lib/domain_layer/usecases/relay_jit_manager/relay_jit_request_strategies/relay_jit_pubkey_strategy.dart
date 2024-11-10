@@ -247,6 +247,8 @@ class RelayJitPubkeyStrategy with Logger {
     required List<String> ignoreRelays,
     required Function(Nip01Event, RequestState) onMessage,
   }) {
+    Logger.log.w(
+        "_connectionErrorHandling Error on connection to relay: ${errorRelay.url}");
     // cleanup
     connectedRelays.remove(errorRelay);
 

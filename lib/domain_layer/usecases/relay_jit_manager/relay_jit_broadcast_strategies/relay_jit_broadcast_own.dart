@@ -55,7 +55,7 @@ class RelayJitBroadcastOutboxStrategy {
         .toList();
 
     // sign event
-    signer.sign(eventToPublish);
+    await signer.sign(eventToPublish);
 
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,
