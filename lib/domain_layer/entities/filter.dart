@@ -43,6 +43,7 @@ class Filter {
     this.ids,
     this.authors,
     this.kinds,
+    this.search,
     this.eTags,
     this.pTags,
     this.tTags,
@@ -132,5 +133,22 @@ class Filter {
     // remove duplicates
     map['authors'] = map['authors'].toSet().toList();
     Filter.fromMap(map);
+  }
+
+  Filter clone() {
+    return Filter(
+      ids: ids != null ? List<String>.from(ids!) : null,
+      authors: authors != null ? List<String>.from(authors!) : null,
+      kinds: kinds != null ? List<int>.from(kinds!) : null,
+      search: search,
+      eTags: eTags != null ? List<String>.from(eTags!) : null,
+      pTags: pTags != null ? List<String>.from(pTags!) : null,
+      tTags: tTags != null ? List<String>.from(tTags!) : null,
+      aTags: aTags != null ? List<String>.from(aTags!) : null,
+      dTags: dTags != null ? List<String>.from(dTags!) : null,
+      since: since,
+      until: until,
+      limit: limit,
+    );
   }
 }
