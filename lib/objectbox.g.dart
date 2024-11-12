@@ -17,6 +17,7 @@ import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 import 'data_layer/db/object_box/schema/db_contact_list.dart';
 import 'data_layer/db/object_box/schema/db_metadata.dart';
 import 'data_layer/db/object_box/schema/db_nip_01_event.dart';
+import 'data_layer/db/object_box/schema/db_nip_05.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -246,6 +247,40 @@ final _entities = <obx_int.ModelEntity>[
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(5, 1189162834702422075),
+      name: 'DbNip05',
+      lastPropertyId: const obx_int.IdUid(5, 4248118904091022656),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 7969165770416025296),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 7645157164222799699),
+            name: 'pubKey',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 7879974338560469443),
+            name: 'nip05',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 5481522983626357888),
+            name: 'valid',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 4248118904091022656),
+            name: 'updatedAt',
+            type: 6,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[])
 ];
 
@@ -284,7 +319,7 @@ Future<obx.Store> openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(4, 3637320921488077827),
+      lastEntityId: const obx_int.IdUid(5, 1189162834702422075),
       lastIndexId: const obx_int.IdUid(0, 0),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
@@ -575,6 +610,46 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
+        }),
+    DbNip05: obx_int.EntityDefinition<DbNip05>(
+        model: _entities[4],
+        toOneRelations: (DbNip05 object) => [],
+        toManyRelations: (DbNip05 object) => {},
+        getId: (DbNip05 object) => object.dbId,
+        setId: (DbNip05 object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbNip05 object, fb.Builder fbb) {
+          final pubKeyOffset = fbb.writeString(object.pubKey);
+          final nip05Offset = fbb.writeString(object.nip05);
+          fbb.startTable(6);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, pubKeyOffset);
+          fbb.addOffset(2, nip05Offset);
+          fbb.addBool(3, object.valid);
+          fbb.addInt64(4, object.updatedAt);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final pubKeyParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 6, '');
+          final nip05Param = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 8, '');
+          final validParam =
+              const fb.BoolReader().vTableGet(buffer, rootOffset, 10, false);
+          final updatedAtParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 12, 0);
+          final object = DbNip05(
+              pubKey: pubKeyParam,
+              nip05: nip05Param,
+              valid: validParam,
+              updatedAt: updatedAtParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
         })
   };
 
@@ -741,4 +816,27 @@ class DbTag_ {
   /// See [DbTag.marker].
   static final marker =
       obx.QueryStringProperty<DbTag>(_entities[3].properties[3]);
+}
+
+/// [DbNip05] entity fields to define ObjectBox queries.
+class DbNip05_ {
+  /// See [DbNip05.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbNip05>(_entities[4].properties[0]);
+
+  /// See [DbNip05.pubKey].
+  static final pubKey =
+      obx.QueryStringProperty<DbNip05>(_entities[4].properties[1]);
+
+  /// See [DbNip05.nip05].
+  static final nip05 =
+      obx.QueryStringProperty<DbNip05>(_entities[4].properties[2]);
+
+  /// See [DbNip05.valid].
+  static final valid =
+      obx.QueryBooleanProperty<DbNip05>(_entities[4].properties[3]);
+
+  /// See [DbNip05.updatedAt].
+  static final updatedAt =
+      obx.QueryIntegerProperty<DbNip05>(_entities[4].properties[4]);
 }

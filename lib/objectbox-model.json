@@ -228,9 +228,43 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "5:1189162834702422075",
+      "lastPropertyId": "5:4248118904091022656",
+      "name": "DbNip05",
+      "properties": [
+        {
+          "id": "1:7969165770416025296",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7645157164222799699",
+          "name": "pubKey",
+          "type": 9
+        },
+        {
+          "id": "3:7879974338560469443",
+          "name": "nip05",
+          "type": 9
+        },
+        {
+          "id": "4:5481522983626357888",
+          "name": "valid",
+          "type": 1
+        },
+        {
+          "id": "5:4248118904091022656",
+          "name": "updatedAt",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "4:3637320921488077827",
+  "lastEntityId": "5:1189162834702422075",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

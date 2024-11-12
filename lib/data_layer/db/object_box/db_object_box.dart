@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ndk/data_layer/db/object_box/schema/db_nip_05.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip05/nip05.dart';
@@ -220,12 +221,29 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<Nip05?> loadNip05(String pubKey) async {
-    return null;
+    await _dbRdy;
+    final box = _objectBox.store.box<DbNip05>();
+    final existing = box
+        .query(DbNip05_.pubKey.equals(pubKey))
+        .order(DbNip05_.updatedAt, flags: Order.descending)
+        .build()
+        .findFirst();
+    if (existing == null) {
+      return null;
+    }
+    return existing.toNdk();
   }
 
   @override
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
-    return [];
+    await _dbRdy;
+    final box = _objectBox.store.box<DbNip05>();
+    final existing = box
+        .query(DbNip05_.pubKey.oneOf(pubKeys))
+        .order(DbNip05_.updatedAt, flags: Order.descending)
+        .build()
+        .find();
+    return existing.map((dbMetadata) => dbMetadata.toNdk()).toList();
   }
 
   @override
@@ -285,12 +303,29 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveNip05(Nip05 nip05) async {
-    // No operation for unimplemented method
+    await _dbRdy;
+    final box = _objectBox.store.box<DbNip05>();
+    final existing = box
+        .query(DbNip05_.pubKey.equals(nip05.pubKey))
+        .order(DbNip05_.updatedAt, flags: Order.descending)
+        .build()
+        .find();
+    if (existing.length > 1) {
+      box.removeMany(existing.map((e) => e.dbId).toList());
+    }
+    if (existing.isNotEmpty &&
+        nip05.updatedAt! < existing[0].updatedAt!) {
+      return;
+    }
+    box.put(DbNip05.fromNdk(nip05));
   }
 
   @override
   Future<void> saveNip05s(List<Nip05> nip05s) async {
-    // No operation for unimplemented method
+    await _dbRdy;
+    for (final nip05 in nip05s) {
+      await saveNip05(nip05);
+    }
   }
 
   @override
