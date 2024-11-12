@@ -219,116 +219,97 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05(String pubKey) {
-    // TODO: implement loadNip05
-    throw UnimplementedError();
+  Future<Nip05?> loadNip05(String pubKey) async {
+    return null;
   }
 
   @override
-  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) {
-    // TODO: implement loadNip05s
-    throw UnimplementedError();
+  Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
+    return [];
   }
 
   @override
-  Future<RelaySet?> loadRelaySet(String name, String pubKey) {
-    // TODO: implement loadRelaySet
-    throw UnimplementedError();
+  Future<RelaySet?> loadRelaySet(String name, String pubKey) async {
+    return null;
   }
 
   @override
-  Future<UserRelayList?> loadUserRelayList(String pubKey) {
-    // TODO: implement loadUserRelayList
-    throw UnimplementedError();
+  Future<UserRelayList?> loadUserRelayList(String pubKey) async {
+    return null;
   }
 
   @override
-  Future<void> removeAllNip05s() {
-    // TODO: implement removeAllNip05s
-    throw UnimplementedError();
+  Future<void> removeAllNip05s() async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> removeAllRelaySets() {
-    // TODO: implement removeAllRelaySets
-    throw UnimplementedError();
+  Future<void> removeAllRelaySets() async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> removeAllUserRelayLists() {
-    // TODO: implement removeAllUserRelayLists
-    throw UnimplementedError();
+  Future<void> removeAllUserRelayLists() async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> removeContactList(String pubKey) {
-    // TODO: implement removeContactList
-    throw UnimplementedError();
+  Future<void> removeContactList(String pubKey) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> removeEvent(String id) {
-    // TODO: implement removeEvent
-    throw UnimplementedError();
+  Future<void> removeEvent(String id) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> removeMetadata(String pubKey) {
-    // TODO: implement removeMetadata
-    throw UnimplementedError();
+  Future<void> removeMetadata(String pubKey) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> removeNip05(String pubKey) {
-    // TODO: implement removeNip05
-    throw UnimplementedError();
+  Future<void> removeNip05(String pubKey) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> removeRelaySet(String name, String pubKey) {
-    // TODO: implement removeRelaySet
-    throw UnimplementedError();
+  Future<void> removeRelaySet(String name, String pubKey) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> removeUserRelayList(String pubKey) {
-    // TODO: implement removeUserRelayList
-    throw UnimplementedError();
+  Future<void> removeUserRelayList(String pubKey) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> saveNip05(Nip05 nip05) {
-    // TODO: implement saveNip05
-    throw UnimplementedError();
+  Future<void> saveNip05(Nip05 nip05) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> saveNip05s(List<Nip05> nip05s) {
-    // TODO: implement saveNip05s
-    throw UnimplementedError();
+  Future<void> saveNip05s(List<Nip05> nip05s) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> saveRelaySet(RelaySet relaySet) {
-    // TODO: implement saveRelaySet
-    throw UnimplementedError();
+  Future<void> saveRelaySet(RelaySet relaySet) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> saveUserRelayList(UserRelayList userRelayList) {
-    // TODO: implement saveUserRelayList
-    throw UnimplementedError();
+  Future<void> saveUserRelayList(UserRelayList userRelayList) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) {
-    // TODO: implement saveUserRelayLists
-    throw UnimplementedError();
+  Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
+    // No operation for unimplemented method
   }
 
   @override
-  Future<Iterable<Metadata>> searchMetadatas(String search, int limit) {
-    // TODO: implement searchMetadatas
-    throw UnimplementedError();
+  Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
+    return [];
   }
 }
