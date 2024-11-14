@@ -1,9 +1,10 @@
 name: ndk
 
-repository: https://github.com/relaystr/dart_ndk
+repository: https://github.com/relaystr/ndk
 
 packages:
   - packages/**
+  - sample-app
 
 scripts:
   analyze:

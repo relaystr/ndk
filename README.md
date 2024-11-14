@@ -19,7 +19,7 @@ dependencies:
 more [examples](https://github.com/relaystr/dart_ndk/tree/master/example)
 
 ```dart
-import 'package:ndk/ndk.dart';
+import 'package:ndk/ndk_amber.dart';
 
 // init
 Ndk ndk = Ndk(

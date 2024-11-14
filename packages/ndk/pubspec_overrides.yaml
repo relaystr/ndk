@@ -1,4 +1,0 @@
-# melos_managed_dependency_overrides: rust_lib_ndk
-dependency_overrides:
-  rust_lib_ndk:
-    path: ..\\rust_builder

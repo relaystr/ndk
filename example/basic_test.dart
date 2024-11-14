@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:ndk/ndk.dart';
+import 'package:test/test.dart';
+import 'package:ndk/ndk_amber.dart';
 
 void main() async {
   test('basic', () async {

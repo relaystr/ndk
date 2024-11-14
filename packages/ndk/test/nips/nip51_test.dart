@@ -4,7 +4,7 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_51_list.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('Nip51 Relay Sets', () {

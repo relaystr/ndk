@@ -5,7 +5,6 @@ homepage: https://github.com/relaystr/dart_ndk
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
-  flutter: ">=1.17.0"
 
 platforms:
   android:
@@ -16,8 +15,6 @@ platforms:
   windows:
 
 dependencies:
-  flutter:
-    sdk: flutter
   http: ^1.2.2
   bip340: ^0.2.0
   bech32: ^0.2.2
@@ -30,14 +27,10 @@ dependencies:
   pointycastle: ^3.9.1
   plugin_platform_interface: ^2.1.7
 
-  #  isar: ^4.0.0-dev.14
-  #  isar_flutter_libs: ^4.0.0-dev.14
-
-  amberflutter: ^0.0.9
   logger: ^2.4.0
-  rxdart: ^0.28.0
-  rust_lib_ndk: ^0.0.2
-  flutter_rust_bridge: ^2.4.0
+#  rxdart: ^0.28.0
+#  rust_lib_ndk: ^0.0.2
+#  flutter_rust_bridge: ^2.4.0
 
 #dependency_overrides:
 #  rust_lib_ndk: ^0.0.1
@@ -47,19 +40,7 @@ dependencies:
 #      url:  https://github.com/frnandu/amberflutter
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
   flutter_lints: ^4.0.0
   build_runner: ^2.4.11
   mockito: ^5.0.17
-  integration_test:
-    sdk: flutter
-
-flutter:
-  plugin:
-    platforms:
-      android:
-        package: relaystr.ndk
-        pluginClass: DartNdkPlugin
-## Build rust glue
-# flutter_rust_bridge_codegen generate --watch
+  test: ^1.24.0

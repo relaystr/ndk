@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
-import 'package:flutter_test/flutter_test.dart';
-import 'package:ndk/ndk.dart';
+import 'package:test/test.dart';
+import 'package:ndk/ndk_amber.dart';
 
 void main() async {
   test('contactList', () async {

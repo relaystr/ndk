@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: args
-      sha256: "7cf60b9f0cc88203c5a190b4cd62a99feea42759a7fa695010eb5de1c0b2252a"
+      sha256: bf9f5caeea8d8fe6721a9c358dd8a5c1947b27f1cfaa18b39c301273594919e6
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.0"
+    version: "2.6.0"
   async:
     dependency: transitive
     description:
@@ -138,10 +138,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_rust_bridge
-      sha256: a43a6649385b853bc836ef2bc1b056c264d476c35e131d2d69c38219b5e799f1
+      sha256: fb9d3c9395eae3c71d4fe3ec343b9f30636c9988150c8bb33b60047549b34e3d
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "2.6.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -246,10 +246,24 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: ".."
+      path: "../packages/ndk"
       relative: true
     source: path
-    version: "0.1.0-dev99"
+    version: "0.1.0-dev994"
+  ndk_amber:
+    dependency: "direct main"
+    description:
+      path: "../packages/amber"
+      relative: true
+    source: path
+    version: "0.1.0-dev994"
+  ndk_rust_verifier:
+    dependency: "direct main"
+    description:
+      path: "../packages/rust_verifier"
+      relative: true
+    source: path
+    version: "0.1.0-dev994"
   path:
     dependency: transitive
     description:
@@ -331,21 +345,12 @@ packages:
     source: hosted
     version: "3.9.1"
   rust_lib_ndk:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: rust_lib_ndk
-      sha256: e0a79fe2ba0e289666141ef9ba0701592e1692df6e607ff57c9daf7502e7e6f0
-      url: "https://pub.dev"
-    source: hosted
+      path: "../packages/rust_verifier/rust_builder"
+      relative: true
+    source: path
     version: "0.0.2"
-  rxdart:
-    dependency: transitive
-    description:
-      name: rxdart
-      sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.28.0"
   sky_engine:
     dependency: transitive
     description: flutter

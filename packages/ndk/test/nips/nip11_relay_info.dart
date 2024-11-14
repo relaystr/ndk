@@ -1,5 +1,5 @@
 import 'package:ndk/domain_layer/entities/relay_info.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('relay info', () {

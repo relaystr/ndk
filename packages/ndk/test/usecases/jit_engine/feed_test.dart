@@ -2,7 +2,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 import 'dart:developer' as developer;
 import '../../mocks/mock_event_verifier.dart';
 

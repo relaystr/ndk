@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 import 'package:ndk/domain_layer/usecases/stream_response_cleaner/stream_response_cleaner.dart';
 import 'package:ndk/ndk.dart';
 

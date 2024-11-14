@@ -11,7 +11,7 @@
 // import 'package:ndk/shared/nips/nip01/helpers.dart';
 // import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 // import 'package:ndk/domain_layer/entities/read_write.dart';
-// import 'package:flutter_test/flutter_test.dart';
+// import 'package:test/test.dart';
 // import 'package:isar/isar.dart' as isar;
 
 void main() async {

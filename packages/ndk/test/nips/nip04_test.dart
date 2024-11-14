@@ -4,7 +4,7 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('Nip04', () {

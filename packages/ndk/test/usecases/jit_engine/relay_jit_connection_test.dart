@@ -9,7 +9,7 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
 

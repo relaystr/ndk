@@ -5,7 +5,7 @@
 This example uses a generic low level nostr request
 
 ```dart
-import 'package:ndk/ndk.dart';
+import 'package:ndk/ndk_amber.dart';
 
 // Create an instance of Ndk
 // It's recommended to keep this instance global as it holds critical application state
@@ -105,7 +105,7 @@ For more more complex applications we recommend using [riverpod](<[test](https:/
 riverpod example:
 
 ```dart
-import 'package:ndk/ndk.dart';
+import 'package:ndk/ndk_amber.dart';
 import 'package:riverpod/riverpod.dart';
 
 final ndkProvider = Provider<Ndk>((ref) {
