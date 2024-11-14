@@ -2,10 +2,7 @@ package relaystr.ndk
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
-import androidx.annotation.NonNull
-import com.google.gson.Gson
 import android.content.Context
 
 

@@ -1,11 +1,11 @@
 import 'package:test/test.dart';
-import 'package:ndk/ndk_amber.dart';
+import 'package:ndk/ndk.dart';
 
 void main() async {
   test('basic', () async {
     // Create an instance of Ndk
     // It's recommended to keep this instance global as it holds critical application state
-    Ndk ndk = Ndk(
+    final ndk = Ndk(
       // Configure the Ndk instance using NdkConfig
       NdkConfig(
         // Use Bip340EventVerifier for event verification
