@@ -4,7 +4,7 @@ The idea is to resolve relays just in time as the requests from the library user
 This has the benefit that only the currently needed relays are connected, and requests get automatically split. This means that a request is sent only to the relay where it's most likely to receive an answer.
 This is useful to avoid duplicate data and battery concerns on mobile devices.
 
-## strategies
+## read strategies
 
 First the request handler looks at the filter in the request and decides on a strategy. \
 This is done by switch case.
@@ -13,7 +13,7 @@ This is done by switch case.
 
 ## pubkey strategy
 
-This graphic shows the flow of the pubkey strategy. \
+This graphic shows the flow of the pubkey strategy. 
 
 ![shows how the req relover works](./readme_assets/req_resolver.png "req resolver")
 
@@ -42,3 +42,14 @@ Shows the concept of a relay garbage collector for rarely used relays.
 ![introduction of usefulness score](./readme_assets/kick_unused_relays.png "relay fails")
 
 Multiple websocket connections are expensive, over the lifetime of the app we might have connected relays that are dangling and not used anymore. To avoid this we introduce a usefulness score. The score is increased by 1 for every request that is sent to the relay. If the score is below a certain threshold the relay is disconnected.
+
+# Complexity
+
+The most complex part is the relay ranking with a complexity of O(e \* r). \
+e = number of events \
+r = maximum number of relays per event \
+
+Typically these values range for e from 1-2000 (median 250) and for r from 1-20 (median 11) \
+These estimates are based on a dataset of a public relay with a sample size of ~20000.
+
+For mobile devices its easy to compute and the result can be cached on a per feed basis.
