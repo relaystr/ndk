@@ -1,0 +1,10 @@
+# melos_managed_dependency_overrides: ndk,ndk_amber,ndk_rust_verifier,rust_lib_ndk
+dependency_overrides:
+  ndk:
+    path: ../packages/ndk
+  ndk_amber:
+    path: ../packages/amber
+  ndk_rust_verifier:
+    path: ../packages/rust_verifier
+  rust_lib_ndk:
+    path: ../packages/rust_verifier/rust_builder
