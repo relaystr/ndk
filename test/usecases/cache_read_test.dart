@@ -89,5 +89,64 @@ void main() async {
         expect(filter.authors, equals(['notInCachePubKey']));
       }
     });
+
+    test('cache read - author removal based on limit - remove', () async {
+      final CacheRead myUsecase = CacheRead(myCacheManager);
+
+      // Test with limit
+      final NdkRequest myNdkRequestWithLimit =
+          NdkRequest.query("author-remove", filters: [
+        Filter(
+          authors: ['pubKey1', 'pubKey2'],
+          kinds: [1],
+          limit: 2,
+        )
+      ]);
+      final RequestState myRequestStateWithLimit =
+          RequestState(myNdkRequestWithLimit);
+
+      await myUsecase.resolveUnresolvedFilters(
+        requestState: myRequestStateWithLimit,
+        outController: myRequestStateWithLimit.controller,
+      );
+
+      expect(
+          myRequestStateWithLimit.unresolvedFilters[0].authors, equals(['']));
+    });
+
+    test('cache read - not all in cache', () async {
+      final CacheRead myUsecase = CacheRead(myCacheManager);
+
+      // Test with limit
+      final NdkRequest myNdkRequestWithLimit =
+          NdkRequest.query("author-not-covered", filters: [
+        Filter(
+          authors: [
+            'pubKey1',
+            'pubKey2',
+            'notInCachePubKey1',
+            'notInCachePubKey2'
+          ],
+          kinds: [1],
+          limit: 200, // some high limit
+        )
+      ]);
+      final RequestState myRequestStateWithLimit =
+          RequestState(myNdkRequestWithLimit);
+
+      await myUsecase.resolveUnresolvedFilters(
+        requestState: myRequestStateWithLimit,
+        outController: myRequestStateWithLimit.controller,
+      );
+
+      expect(
+          myRequestStateWithLimit.unresolvedFilters[0].authors,
+          equals([
+            'pubKey1',
+            'pubKey2',
+            'notInCachePubKey1',
+            'notInCachePubKey2'
+          ]));
+    });
   });
 }
