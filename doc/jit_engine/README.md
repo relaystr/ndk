@@ -1,7 +1,7 @@
-# Relay JIT Manager
+# Relay JIT Engine
 
-The idea is to resolve relays just in time as the requests from the library user comes in.
-This has the benefit, that only the currently needed relays are connected and requests get automatically split. This means that a request is sent only to the relay where its most likely to receive an answer.
+The idea is to resolve relays just in time as the requests from the library user stream in.
+This has the benefit that only the currently needed relays are connected, and requests get automatically split. This means that a request is sent only to the relay where it's most likely to receive an answer.
 This is useful to avoid duplicate data and battery concerns on mobile devices.
 
 ## req resolver
