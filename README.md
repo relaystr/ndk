@@ -183,6 +183,7 @@ more details on <https://mikedilger.com/gossip-model/>
 | **query**           | get data once and close the request                      | get request                 |
 | **subscription**    | stream of events as they come in                         | stream of data              |
 | **bootstrapRelays** | default relays to connect when nothing else is specified | seed relays, initial relays |
+| **engine**          | optimized network resolver for nostr requests            | -                           |
 
 $~~~~~~~~~~~$
 
