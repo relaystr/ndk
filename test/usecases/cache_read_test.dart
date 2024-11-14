@@ -110,8 +110,7 @@ void main() async {
         outController: myRequestStateWithLimit.controller,
       );
 
-      expect(
-          myRequestStateWithLimit.unresolvedFilters[0].authors, equals(['']));
+      expect(myRequestStateWithLimit.unresolvedFilters[0].authors, equals([]));
     });
 
     test('cache read - not all in cache', () async {
