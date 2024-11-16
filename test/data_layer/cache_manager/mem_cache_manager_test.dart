@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
+import 'package:ndk/domain_layer/entities/nip_05.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip05/nip05.dart';
 
 // This will generate mock classes for our entities
 @GenerateMocks(

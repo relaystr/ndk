@@ -9,6 +9,7 @@ import 'package:ndk/domain_layer/entities/contact_list.dart' as _i12;
 import 'package:ndk/domain_layer/entities/filter.dart' as _i10;
 import 'package:ndk/domain_layer/entities/metadata.dart' as _i13;
 import 'package:ndk/domain_layer/entities/nip_01_event.dart' as _i3;
+import 'package:ndk/domain_layer/entities/nip_05.dart' as _i14;
 import 'package:ndk/domain_layer/entities/nip_65.dart' as _i2;
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart' as _i9;
 import 'package:ndk/domain_layer/entities/read_write.dart' as _i8;
@@ -16,7 +17,6 @@ import 'package:ndk/domain_layer/entities/read_write_marker.dart' as _i6;
 import 'package:ndk/domain_layer/entities/relay_set.dart' as _i7;
 import 'package:ndk/domain_layer/entities/request_state.dart' as _i11;
 import 'package:ndk/domain_layer/entities/user_relay_list.dart' as _i4;
-import 'package:ndk/shared/nips/nip05/nip05.dart' as _i14;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -929,26 +929,20 @@ class MockNip05 extends _i1.Mock implements _i14.Nip05 {
       );
 
   @override
-  int get updatedAt => (super.noSuchMethod(
-        Invocation.getter(#updatedAt),
-        returnValue: 0,
-      ) as int);
-
-  @override
-  set updatedAt(int? _updatedAt) => super.noSuchMethod(
+  set networkFetchTime(int? _networkFetchTime) => super.noSuchMethod(
         Invocation.setter(
-          #updatedAt,
-          _updatedAt,
+          #networkFetchTime,
+          _networkFetchTime,
         ),
         returnValueForMissingStub: null,
       );
 
   @override
-  bool needsUpdate(Duration? duration) => (super.noSuchMethod(
-        Invocation.method(
-          #needsUpdate,
-          [duration],
+  set relays(List<String>? _relays) => super.noSuchMethod(
+        Invocation.setter(
+          #relays,
+          _relays,
         ),
-        returnValue: false,
-      ) as bool);
+        returnValueForMissingStub: null,
+      );
 }

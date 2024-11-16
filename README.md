@@ -183,6 +183,7 @@ more details on <https://mikedilger.com/gossip-model/>
 | **query**           | get data once and close the request                      | get request                 |
 | **subscription**    | stream of events as they come in                         | stream of data              |
 | **bootstrapRelays** | default relays to connect when nothing else is specified | seed relays, initial relays |
+| **engine**          | optimized network resolver for nostr requests            | -                           |
 
 $~~~~~~~~~~~$
 
@@ -254,7 +255,7 @@ This method gets close to the optimal connections given a certain pubkey coverag
 **Just in Time (JIT) Engine:**\
 JIT Engine does the ranking on the fly only for the missing coverage/pubkey. Healthy relays are assumed during ranking and replaced later on if a relay fails to connect.\
 To Avoid rarely used relays and spawning a bunch of unessecary connections, already connected relays get a boost, and a usefulness score is considered for the ranking.\
-For more information [look here](./lib/domain_layer/usecases/relay_jit_manager/README.md)
+For more information [look here](./doc/jit_engine/README.md)
 
 **Custom Engine**\
 If you want to implement your own engine with custom behavior you need to touch the following things:

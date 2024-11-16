@@ -1,7 +1,15 @@
 // ignore_for_file: avoid_print
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk/domain_layer/entities/request_state.dart';
+import 'package:ndk/domain_layer/usecases/cache_read/cache_read.dart';
+import 'package:ndk/domain_layer/usecases/cache_write/cache_write.dart';
+import 'package:ndk/domain_layer/usecases/engines/network_engine.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/presentation_layer/init.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 
@@ -61,4 +69,58 @@ void main() async {
       await relay1.stopServer();
     });
   });
+
+  group('immutable filters', () {
+    test('Filters are cloned and immutable in query method', () {
+      final init = Initialization(
+        globalState: GlobalState(),
+        ndkConfig: NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+        ),
+      );
+
+      // Create a Requests instance
+      final requests = Requests(
+        globalState: init.globalState,
+        cacheRead: MockCacheRead(init.ndkConfig.cache),
+        cacheWrite: init.cacheWrite,
+        networkEngine: init.engine,
+        eventVerifier: init.ndkConfig.eventVerifier,
+      );
+
+      // Create an initial filter
+      final originalFilter = Filter(
+        kinds: [1],
+        authors: ['author1'],
+      );
+      final originalFilterSub = Filter(
+        kinds: [1],
+        authors: ['author1Sub'],
+      );
+
+      //   query
+      requests.query(filters: [originalFilter]);
+
+      expect(originalFilter.authors!.length, equals(1));
+
+      //   subscription
+      requests.subscription(filters: [originalFilterSub], cacheRead: true);
+      expect(originalFilterSub.authors!.length, equals(1));
+    });
+  });
+}
+
+class MockCacheRead extends CacheRead {
+  MockCacheRead(super.cacheManager);
+
+  @override
+  Future<void> resolveUnresolvedFilters({
+    required RequestState requestState,
+    required StreamController<Nip01Event> outController,
+  }) async {
+    for (var filter in requestState.unresolvedFilters) {
+      filter.authors = [];
+    }
+  }
 }

@@ -45,18 +45,13 @@ void main() async {
         NdkConfig(
             eventVerifier: Bip340EventVerifier(),
             eventSigner: Bip340EventSigner(
-              privateKey: "",
-              publicKey: "",
+              privateKey: key1.privateKey,
+              publicKey: key1.publicKey,
             ),
             cache: MemCacheManager(),
             engine: NdkEngine.RELAY_SETS,
             bootstrapRelays: [relay1.url]),
       );
-
-      ndk.changeEventSigner(Bip340EventSigner(
-        privateKey: key1.privateKey,
-        publicKey: key1.publicKey,
-      ));
 
       NdkResponse response = ndk.requests.query(filters: [
         Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey])
