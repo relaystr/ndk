@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/testing.dart';
 import 'package:mockito/annotations.dart';
+import 'package:ndk/config/nip_05_defaults.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/nip_05_http_impl.dart';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
@@ -139,6 +140,101 @@ void main() {
       expect(results.first.valid, true);
       expect(results.last.valid, true);
       expect(results.first.hashCode, equals(results.last.hashCode));
+    });
+
+    test('returns true when updatedAt is older than the given duration',
+        () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      // Create a Nip05 object with an old updatedAt timestamp
+      final oldTimestamp = (DateTime.now()
+              .subtract(Duration(seconds: NIP_05_VALID_DURATION - 1))
+              .millisecondsSinceEpoch ~/
+          1000);
+
+      final oldNip05 = Nip05(
+        pubKey: 'test_pubkey',
+        nip05: 'test_nip05',
+        valid: true,
+        networkFetchTime: oldTimestamp,
+      );
+
+      await cache.saveNip05(oldNip05);
+
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result =
+          await verifyNip05.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
+
+      expect(result.valid,
+          true); // Should return true since the object is older than 5 days
+    });
+
+    test('returns false when updatedAt is more recent than the given duration',
+        () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      // Create a Nip05 object with a recent updatedAt timestamp
+      final recentTimestamp = (DateTime.now()
+              .subtract(Duration(seconds: NIP_05_VALID_DURATION + 200))
+              .millisecondsSinceEpoch ~/
+          1000);
+      final oldNip05 = Nip05(
+          pubKey: 'test_pubkey',
+          nip05: 'test_nip05',
+          valid: true,
+          networkFetchTime: recentTimestamp);
+
+      await cache.saveNip05(oldNip05);
+
+      // Test with a duration of 5 days
+      final result =
+          await verifyNip05.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
+      expect(result.valid,
+          false); // Should return false since the object is more recent than 5 days
+    });
+
+    test('returns false when updatedAt is exactly the duration ago', () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
+      final exactTimestamp = (DateTime.now()
+              .subtract(Duration(seconds: NIP_05_VALID_DURATION))
+              .millisecondsSinceEpoch ~/
+          1000);
+      final oldNip05 = Nip05(
+        pubKey: 'test_pubkey',
+        nip05: 'test_nip05',
+        valid: true,
+        networkFetchTime: exactTimestamp,
+      );
+
+      await cache.saveNip05(oldNip05);
+
+      final result =
+          await verifyNip05.check(nip05: 'test_nip05', pubkey: 'test_pubkey');
+
+      expect(result.valid,
+          false); // Should return false since it's exactly at the limit
     });
   });
 }

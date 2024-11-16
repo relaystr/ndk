@@ -34,7 +34,7 @@ class VerifyNip05 {
 
     final result = Nip05(pubKey: pubkey, nip05: nip05);
 
-    final databaseResult = await _database.loadNip05(nip05);
+    final databaseResult = await _database.loadNip05(pubkey);
 
     if (databaseResult != null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
