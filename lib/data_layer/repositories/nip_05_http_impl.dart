@@ -4,11 +4,11 @@ import '../data_sources/http_request.dart';
 import '../models/nip_05_model.dart';
 
 /// implementation of the [Nip05Repository] interface with http
-class Nip05RepositoryImpl implements Nip05Repository {
+class Nip05HttpRepositoryImpl implements Nip05Repository {
   final HttpRequestDS httpDS;
 
-  /// creates a new [Nip05RepositoryImpl] instance
-  Nip05RepositoryImpl({required this.httpDS});
+  /// creates a new [Nip05HttpRepositoryImpl] instance
+  Nip05HttpRepositoryImpl({required this.httpDS});
 
   @override
   Future<Nip05?> requestNip05(String nip05, String pubkey) async {

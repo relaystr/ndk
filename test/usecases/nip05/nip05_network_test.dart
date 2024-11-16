@@ -33,7 +33,7 @@ void main() {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
 
       VerifyNip05 verifyNip05 = VerifyNip05(
         database: cache,
@@ -52,7 +52,7 @@ void main() {
       final client = MockClient(requestHandlerErr);
 
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
 
       VerifyNip05 verifyNip05 = VerifyNip05(
         database: cache,
@@ -68,7 +68,7 @@ void main() {
     test('result is invalid', () async {
       final client = MockClient(requestHandler);
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
 
       VerifyNip05 verifyNip05 = VerifyNip05(
         database: cache,
@@ -85,7 +85,7 @@ void main() {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
 
       VerifyNip05 verifyNip05 = VerifyNip05(
         database: cache,
@@ -102,7 +102,7 @@ void main() {
       final client = MockClient(requestHandler2);
 
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
 
       VerifyNip05 verifyNip05 = VerifyNip05(
         database: cache,
@@ -119,7 +119,7 @@ void main() {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
 
       VerifyNip05 verifyNip05 = VerifyNip05(
         database: cache,
@@ -147,7 +147,7 @@ void main() {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
       // Create a Nip05 object with an old updatedAt timestamp
       final oldTimestamp = (DateTime.now()
               .subtract(Duration(seconds: NIP_05_VALID_DURATION - 1))
@@ -180,7 +180,7 @@ void main() {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
       VerifyNip05 verifyNip05 = VerifyNip05(
         database: cache,
         nip05Repository: nip05Repos,
@@ -210,7 +210,7 @@ void main() {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
-      final nip05Repos = Nip05RepositoryImpl(httpDS: HttpRequestDS(client));
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
       VerifyNip05 verifyNip05 = VerifyNip05(
         database: cache,
         nip05Repository: nip05Repos,
