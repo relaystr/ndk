@@ -1,5 +1,3 @@
-import 'package:ndk/domain_layer/usecases/inbox_outbox/inbox_outbox.dart';
-
 import 'package:http/http.dart' as http;
 
 import '../data_layer/data_sources/http_request.dart';
@@ -51,7 +49,7 @@ class Initialization {
   late Lists lists;
   late RelaySets relaySets;
   late Broadcast broadcast;
-  late InboxOutbox inboxOutbox;
+
   late VerifyNip05 verifyNip05;
 
   late final NetworkEngine engine;
@@ -145,12 +143,6 @@ class Initialization {
       userRelayLists: userRelayLists,
     );
 
-    inboxOutbox = InboxOutbox(
-      cacheManager: ndkConfig.cache,
-      broadcast: broadcast,
-      requests: requests,
-      signer: ndkConfig.eventSigner,
-    );
     verifyNip05 = VerifyNip05(
       database: ndkConfig.cache,
       nip05Repository: nip05repository,
