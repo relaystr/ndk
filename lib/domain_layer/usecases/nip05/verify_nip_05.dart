@@ -72,7 +72,11 @@ class VerifyNip05 {
 
     if (networkResult != null) {
       result.valid = networkResult.valid;
+      result.relays = networkResult.relays;
     }
+
+    /// needs to be outside the if statement to update the networkFetchTime even on 404
+    result.networkFetchTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     await _database.saveNip05(result);
     return result;

@@ -236,5 +236,43 @@ void main() {
       expect(result.valid,
           false); // Should return false since it's exactly at the limit
     });
+
+    test('test if data is saved even when network fails', () async {
+      final client = MockClient(requestHandlerErr);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await verifyNip05.check(
+          nip05: 'test_nip05_cache', pubkey: 'test_pubkey_cache');
+
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+      final cacheResult = await cache.loadNip05('test_pubkey_cache');
+
+      /// check that the timestamp is within 5 seconds of the current time
+      expect(cacheResult!.networkFetchTime, greaterThanOrEqualTo(now - 5));
+      expect(cacheResult.networkFetchTime, lessThanOrEqualTo(now));
+    });
+
+    test('test if relays are saved', () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await verifyNip05.check(
+          nip05: 'username@example.com', pubkey: 'pubkey');
+
+      expect(result.relays, equals(['relay1', 'relay2']));
+    });
   });
 }
