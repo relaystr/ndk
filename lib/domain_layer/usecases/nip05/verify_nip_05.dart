@@ -32,8 +32,6 @@ class VerifyNip05 {
       throw Exception("nip05 or pubkey empty");
     }
 
-    final result = Nip05(pubKey: pubkey, nip05: nip05);
-
     final databaseResult = await _database.loadNip05(pubkey);
 
     if (databaseResult != null) {
@@ -49,6 +47,8 @@ class VerifyNip05 {
       // Wait for the existing request to complete
       return await _inFlightRequests[nip05]!;
     }
+
+    final result = Nip05(pubKey: pubkey, nip05: nip05);
 
     // Create a new request and add it to the in-flight map
     final request = _performCheck(nip05, pubkey, result);
