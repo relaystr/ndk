@@ -22,6 +22,7 @@ dependencies:
   amberflutter: ^0.0.9
   logger: ^2.4.0
   ndk:
+    path: ../ndk
 
 dev_dependencies:
   flutter_test:
