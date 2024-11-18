@@ -15,7 +15,7 @@ class NdkBroadcastResponse {
   /// a map of relays publishing to
   /// [String] is the relayUrl/identifier
   /// [Future<String>] is the relay response e.g. OK, err reason
-  Map<String, Completer<String>> _publishingRelays = {};
+  // Map<String, Completer<String>> _publishingRelays = {};
 
   NdkBroadcastResponse({
     required this.publishedEvent,

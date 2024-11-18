@@ -176,11 +176,16 @@ class JitEngine with Logger implements NetworkEngine {
     return NdkBroadcastResponse(publishedEvent: nostrEvent);
   }
 
-  // close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
-  //todo: this could be moved to the request object
-  handleCloseSubscription(String id) async {
-    await seedRelaysConnected;
-    throw UnimplementedError();
+  /// close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
+  @override
+  closeSubscription(String id) async {
+    //await seedRelaysConnected;
+    for (var relay in globalState.connectedRelays) {
+      if (relay.activeSubscriptions.containsKey(id)) {
+        await relay.closeSubscription(id);
+        relay.activeSubscriptions.remove(id);
+      }
+    }
   }
 
   static doesRelayCoverPubkey(
@@ -214,6 +219,9 @@ class JitEngine with Logger implements NetworkEngine {
   static void onEoseReceivedFromRelay(RequestState requestState) async {
     // check if all subscriptions received EOSE (async) at the current time
 
+    if (requestState.isSubscription) {
+      return;
+    }
     for (var sub in requestState.activeRelaySubscriptions.values) {
       await sub.activeSubscriptions[requestState.id]?.eoseReceived;
     }

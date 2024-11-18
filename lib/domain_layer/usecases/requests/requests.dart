@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import '../../../config/request_defaults.dart';
 import '../../../shared/nips/nip01/helpers.dart';
@@ -70,7 +71,7 @@ class Requests {
     return requestNostrEvent(NdkRequest.query(
       '$name-${Helpers.getRandomString(10)}',
       name: name,
-      filters: filters,
+      filters: filters.map((e) => e.clone()).toList(),
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
@@ -106,7 +107,7 @@ class Requests {
     return requestNostrEvent(NdkRequest.subscription(
       id ?? "$name-${Helpers.getRandomString(10)}",
       name: name,
-      filters: filters,
+      filters: filters.map((e) => e.clone()).toList(),
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
@@ -114,6 +115,11 @@ class Requests {
       desiredCoverage:
           desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
     ));
+  }
+
+  /// Closes a Nostr network subscription
+  Future<void> closeSubscription(String subId) {
+    return _engine.closeSubscription(subId);
   }
 
   /// Performs a low-level Nostr event request

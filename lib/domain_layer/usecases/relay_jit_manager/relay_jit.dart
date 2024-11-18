@@ -151,7 +151,7 @@ class RelayJit extends Relay with Logger {
       return;
     }
     activeSubscriptions.remove(id);
-    ClientMsg closeMsg = ClientMsg("CLOSE", id: id, filters: []);
+    ClientMsg closeMsg = ClientMsg("CLOSE", id: id);
     await send(closeMsg);
   }
 

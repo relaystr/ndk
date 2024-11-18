@@ -16,17 +16,15 @@ import '../requests/requests.dart';
 class Metadatas {
   final Requests _requests;
   final CacheManager _cacheManager;
-  final RelayManager _relayManager;
   final Broadcast _broadcast;
   final EventSigner? _signer;
 
   Metadatas({
     required Requests requests,
     required CacheManager cacheManager,
-    required RelayManager relayManager,
     required Broadcast broadcast,
     required EventSigner? signer,
-  })  : _relayManager = relayManager,
+  })  :
         _cacheManager = cacheManager,
         _requests = requests,
         _signer = signer,
@@ -156,7 +154,8 @@ class Metadatas {
     } else {
       event = metadata.toEvent();
     }
-    final bResult = _broadcast.broadcast(
+    // final bResult =
+    _broadcast.broadcast(
       nostrEvent: event,
       specificRelays: specificRelays,
     );
