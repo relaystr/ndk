@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
-import 'package:ndk/domain_layer/usecases/inbox_outbox/inbox_outbox.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/presentation_layer/init.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';

@@ -2,10 +2,11 @@ import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/nip_01_event.dart';
 import '../../../entities/request_state.dart';
+
 import '../../../repositories/cache_manager.dart';
 import '../../../repositories/event_signer.dart';
 
-import '../../inbox_outbox/inbox_outbox.dart';
+import '../../user_relay_lists/user_relay_lists.dart';
 import '../relay_jit.dart';
 import 'broadcast_strategies_shared.dart';
 
@@ -20,7 +21,7 @@ class RelayJitBroadcastOutboxStrategy {
     required Function(Nip01Event, RequestState) onMessage,
     required EventSigner signer,
   }) async {
-    final nip65Data = await InboxOutbox.getNip65CacheLatestSingle(
+    final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(
       pubkey: eventToPublish.pubKey,
       cacheManager: cacheManager,
     );

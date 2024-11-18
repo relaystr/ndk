@@ -3,7 +3,6 @@ import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/client_msg.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
@@ -12,7 +11,8 @@ import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_st
 
 import '../../../entities/request_state.dart';
 import '../../../entities/connection_source.dart';
-import '../../inbox_outbox/inbox_outbox.dart';
+import '../../../entities/user_relay_list.dart';
+import '../../user_relay_lists/user_relay_lists.dart';
 
 /// Strategy Description:
 ///
@@ -142,7 +142,8 @@ class RelayJitPubkeyStrategy with Logger {
       required Function(Nip01Event, RequestState) onMessage}) async {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
-    List<Nip65> nip65Data = await InboxOutbox.getNip65CacheLatest(
+    List<UserRelayList> nip65Data =
+        await UserRelayLists.getUserRelayListCacheLatest(
       pubkeys: coveragePubkeys.map((e) => e.pubkey).toList(),
       cacheManager: cacheManager,
     );

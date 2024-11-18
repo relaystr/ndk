@@ -60,4 +60,3 @@ export 'domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 export 'domain_layer/usecases/lists/lists.dart';
 export 'domain_layer/usecases/relay_sets/relay_sets.dart';
 export 'domain_layer/usecases/broadcast/broadcast.dart';
-export 'domain_layer/usecases/inbox_outbox/inbox_outbox.dart';

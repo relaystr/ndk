@@ -318,14 +318,12 @@ class UserRelayLists {
     required List<String> pubkeys,
     required CacheManager cacheManager,
   }) async {
-    List<UserRelayList> events = [];
-
-    for (final pubkey in pubkeys) {
-      final data = await cacheManager.loadUserRelayList(pubkey);
-      if (data != null) {
-        events.add(data);
-      }
-    }
+    // get the data from cache
+    final List<UserRelayList> events = await Future.wait(
+      pubkeys.map(
+        (pubkey) => cacheManager.loadUserRelayList(pubkey),
+      ),
+    ).then((results) => results.whereType<UserRelayList>().toList());
 
     List<UserRelayList> nip65Data = _filterLatest(events);
 
@@ -335,7 +333,7 @@ class UserRelayLists {
   /// reads the latest nip65 data from cache \
   /// [pubkeys] pubkeys you want nip65 data for \
   /// [cacheManger] the cache manager you want to use
-  static Future<UserRelayList?> getNip65CacheLatestSingle({
+  static Future<UserRelayList?> getUserRelayListCacheLatestSingle({
     required String pubkey,
     required CacheManager cacheManager,
   }) async {
