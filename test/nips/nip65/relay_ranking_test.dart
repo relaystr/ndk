@@ -3,13 +3,14 @@ import 'dart:math';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('relayRanking', () {
-    List<Nip65> nip65Data = [];
+    List<UserRelayList> nip65Data = [];
     List<CoveragePubkey> searchingPubkeys = [];
 
     // 0-9 have good nip65 data
@@ -33,7 +34,8 @@ void main() {
         ],
       );
       final nip65 = Nip65.fromEvent(event);
-      nip65Data.add(nip65);
+      final userRelayList = UserRelayList.fromNip65(nip65);
+      nip65Data.add(userRelayList);
     }
 
     // add random nip65 events
@@ -46,7 +48,8 @@ void main() {
         tags: getRandomTags(),
       );
       final nip65 = Nip65.fromEvent(event);
-      nip65Data.add(nip65);
+      final userRelayList = UserRelayList.fromNip65(nip65);
+      nip65Data.add(userRelayList);
     }
 
     test('basic scoring test - readOnly', () {
