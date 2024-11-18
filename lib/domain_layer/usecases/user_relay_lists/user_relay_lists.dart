@@ -8,28 +8,30 @@ import '../../entities/read_write_marker.dart';
 import '../../entities/user_relay_list.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
-import '../relay_manager.dart';
+import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 
 class UserRelayLists {
   final Requests _requests;
   final CacheManager _cacheManager;
-  final RelayManager _relayManager;
+  final Broadcast _broadcast;
 
   /// user relay lists usecase
   UserRelayLists({
     required Requests requests,
     required CacheManager cacheManager,
-    required RelayManager relayManager,
-  })  : _relayManager = relayManager,
-        _cacheManager = cacheManager,
-        _requests = requests;
+    required Broadcast broadcast,
+  })  : _cacheManager = cacheManager,
+        _requests = requests,
+        _broadcast = broadcast;
 
   // TODO try to use generic query with cacheRead/Write mechanism
   /// load missing user relay lists from nip65 or kind 3 (kind02)
-  Future<void> loadMissingRelayListsFromNip65OrNip02(List<String> pubKeys,
-      {Function(String stepName, int count, int total)? onProgress,
-      bool forceRefresh = false}) async {
+  Future<void> loadMissingRelayListsFromNip65OrNip02(
+    List<String> pubKeys, {
+    Function(String stepName, int count, int total)? onProgress,
+    bool forceRefresh = false,
+  }) async {
     List<String> missingPubKeys = [];
     for (var pubKey in pubKeys) {
       UserRelayList? userRelayList =
@@ -124,8 +126,10 @@ class UserRelayLists {
   }
 
   /// return single user relay list
-  Future<UserRelayList?> getSingleUserRelayList(String pubKey,
-      {bool forceRefresh = false}) async {
+  Future<UserRelayList?> getSingleUserRelayList(
+    String pubKey, {
+    bool forceRefresh = false,
+  }) async {
     UserRelayList? userRelayList =
         await _cacheManager.loadUserRelayList(pubKey);
     if (userRelayList == null || forceRefresh) {
@@ -178,17 +182,27 @@ class UserRelayLists {
           refreshedTimestamp: now);
     }
     userRelayList.relays[relayUrl] = marker;
+
+    final broadcastResponse = _broadcast.broadcast(
+      nostrEvent: userRelayList.toNip65().toEvent(),
+      specificRelays: broadcastRelays,
+    );
     await Future.wait([
-      _relayManager.broadcastEvent(
-          userRelayList.toNip65().toEvent(), broadcastRelays, eventSigner),
+      //todo: broadcastResponse.publishDone,
+      //broadcastResponse.publishDone,
+      // placeholder
+      Future.delayed(Duration(seconds: 1)),
       _cacheManager.saveUserRelayList(userRelayList)
     ]);
     return userRelayList;
   }
 
   /// broadcast removal of nip65 relay
-  Future<UserRelayList?> broadcastRemoveNip65Relay(String relayUrl,
-      Iterable<String> broadcastRelays, EventSigner eventSigner) async {
+  Future<UserRelayList?> broadcastRemoveNip65Relay(
+    String relayUrl,
+    Iterable<String> broadcastRelays,
+    EventSigner eventSigner,
+  ) async {
     UserRelayList? userRelayList =
         await _ensureUpToDateUserRelayList(eventSigner);
     if (userRelayList == null) {
@@ -204,9 +218,16 @@ class UserRelayLists {
     if (userRelayList.relays.keys.contains(relayUrl)) {
       userRelayList.relays.remove(relayUrl);
       userRelayList.refreshedTimestamp = Helpers.now;
+
+      final broadcastResponse = _broadcast.broadcast(
+        nostrEvent: userRelayList.toNip65().toEvent(),
+        specificRelays: broadcastRelays,
+      );
       await Future.wait([
-        _relayManager.broadcastEvent(
-            userRelayList.toNip65().toEvent(), broadcastRelays, eventSigner),
+        //todo: broadcastResponse.publishDone,
+        //broadcastResponse.publishDone,
+        // placeholder
+        Future.delayed(Duration(seconds: 1)),
         _cacheManager.saveUserRelayList(userRelayList)
       ]);
     }
@@ -245,8 +266,17 @@ class UserRelayLists {
     if (url != null) {
       userRelayList.relays[url] = marker;
       userRelayList.refreshedTimestamp = Helpers.now;
-      await _relayManager.broadcastEvent(
-          userRelayList.toNip65().toEvent(), broadcastRelays, eventSigner);
+
+      final broadcastResponse = _broadcast.broadcast(
+        nostrEvent: userRelayList.toNip65().toEvent(),
+        specificRelays: broadcastRelays,
+      );
+
+      //todo: broadcastResponse.publishDone,
+      // await broadcastResponse.publishDone,
+      // placeholder
+      await Future.delayed(Duration(seconds: 1));
+
       await _cacheManager.saveUserRelayList(userRelayList);
     }
     return userRelayList;
