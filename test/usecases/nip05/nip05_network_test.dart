@@ -29,6 +29,25 @@ void main() {
   }
 
   group('Nip05', () {
+    test('throw if no pubkey or nip 05', () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      expect(verifyNip05.check(nip05: '', pubkey: ''), throwsException);
+      expect(verifyNip05.check(nip05: 'test@example.com', pubkey: ''),
+          throwsException);
+      expect(
+          verifyNip05.check(nip05: '', pubkey: 'testPubkey'), throwsException);
+      expect(verifyNip05.check(nip05: 'test@example.com', pubkey: 'testPubkey'),
+          isA<Future<Nip05>>());
+    });
     test('returns Nip05 if the http call completes successfully', () async {
       final client = MockClient(requestHandler);
 
