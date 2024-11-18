@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
+import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/presentation_layer/init.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -177,9 +178,14 @@ void main() async {
 
       CacheManager cacheManager = MemCacheManager();
 
+      // todo: discuss how saveEvents schuld work (saving additional nip65 data?)
       // save nip65 data
       await cacheManager
           .saveEvents(nip65s.values.map((e) => e.toEvent()).toList());
+
+      await cacheManager.saveUserRelayLists(
+        nip65s.values.map((e) => UserRelayList.fromNip65(e)).toList(),
+      );
 
       Ndk ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
