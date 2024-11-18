@@ -12,19 +12,32 @@ import '../../repositories/event_signer.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 
+/// similar to nip65, but also accepts values from nip02 \
+/// [UserRelayList] is a mapping of pubkey to relays with read/write markers
+/// [UserRelayLists] is a usecase for managing [UserRelayList]s
 class UserRelayLists {
   final Requests _requests;
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
+  final EventSigner? _signer;
 
   /// user relay lists usecase
   UserRelayLists({
     required Requests requests,
     required CacheManager cacheManager,
     required Broadcast broadcast,
+    EventSigner? signer,
   })  : _cacheManager = cacheManager,
         _requests = requests,
-        _broadcast = broadcast;
+        _broadcast = broadcast,
+        _signer = signer;
+
+  EventSigner get _eventSigner {
+    if (_signer == null) {
+      throw "cannot sign without a signer";
+    }
+    return _signer;
+  }
 
   // TODO try to use generic query with cacheRead/Write mechanism
   /// load missing user relay lists from nip65 or kind 3 (kind02)
@@ -146,11 +159,9 @@ class UserRelayLists {
 
   /// *************************************************************************************************
 
-  Future<UserRelayList?> _ensureUpToDateUserRelayList(
-    EventSigner signer,
-  ) async {
+  Future<UserRelayList?> _ensureUpToDateUserRelayList() async {
     UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
-      signer.getPublicKey(),
+      _eventSigner.getPublicKey(),
     );
 
     /// if cached user relay list is older that now minus this duration that we should go refresh it,
@@ -164,7 +175,7 @@ class UserRelayLists {
 
     if (refresh) {
       userRelayList = await getSingleUserRelayList(
-        signer.getPublicKey(),
+        _eventSigner.getPublicKey(),
         forceRefresh: true,
       );
     }
@@ -173,16 +184,15 @@ class UserRelayLists {
 
   /// broadcast adding nip65 relay
   Future<UserRelayList> broadcastAddNip65Relay(
-      String relayUrl,
-      ReadWriteMarker marker,
-      Iterable<String> broadcastRelays,
-      EventSigner eventSigner) async {
-    UserRelayList? userRelayList =
-        await _ensureUpToDateUserRelayList(eventSigner);
+    String relayUrl,
+    ReadWriteMarker marker,
+    Iterable<String> broadcastRelays,
+  ) async {
+    UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       userRelayList = UserRelayList(
-          pubKey: eventSigner.getPublicKey(),
+          pubKey: _eventSigner.getPublicKey(),
           relays: {
             for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
           },
@@ -209,16 +219,14 @@ class UserRelayLists {
   Future<UserRelayList?> broadcastRemoveNip65Relay(
     String relayUrl,
     Iterable<String> broadcastRelays,
-    EventSigner eventSigner,
   ) async {
-    UserRelayList? userRelayList =
-        await _ensureUpToDateUserRelayList(eventSigner);
+    UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
 
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
       userRelayList = UserRelayList(
-        pubKey: eventSigner.getPublicKey(),
+        pubKey: _eventSigner.getPublicKey(),
         relays: {
           for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
         },
@@ -247,21 +255,21 @@ class UserRelayLists {
 
   /// broadcast changing marker of nip65 relay
   Future<UserRelayList?> broadcastUpdateNip65RelayMarker(
-      String relayUrl,
-      ReadWriteMarker marker,
-      Iterable<String> broadcastRelays,
-      EventSigner eventSigner) async {
-    UserRelayList? userRelayList =
-        await _ensureUpToDateUserRelayList(eventSigner);
+    String relayUrl,
+    ReadWriteMarker marker,
+    Iterable<String> broadcastRelays,
+  ) async {
+    UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       userRelayList = UserRelayList(
-          pubKey: eventSigner.getPublicKey(),
-          relays: {
-            for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
-          },
-          createdAt: now,
-          refreshedTimestamp: now);
+        pubKey: _eventSigner.getPublicKey(),
+        relays: {
+          for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
+        },
+        createdAt: now,
+        refreshedTimestamp: now,
+      );
     }
     String? url;
     if (userRelayList.relays.keys.contains(relayUrl)) {

@@ -129,7 +129,8 @@ class Initialization {
     userRelayLists = UserRelayLists(
       requests: requests,
       cacheManager: ndkConfig.cache,
-      relayManager: relayManager,
+      broadcast: broadcast,
+      signer: ndkConfig.eventSigner,
     );
 
     lists = Lists(
