@@ -48,10 +48,9 @@ class VerifyNip05 {
       return await _inFlightRequests[nip05]!;
     }
 
-    final result = Nip05(pubKey: pubkey, nip05: nip05);
-
     // Create a new request and add it to the in-flight map
-    final request = _performCheck(nip05, pubkey, result);
+    final request =
+        _performCheck(nip05, pubkey, Nip05(pubKey: pubkey, nip05: nip05));
     _inFlightRequests[nip05] = request;
 
     try {
