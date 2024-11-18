@@ -2,11 +2,11 @@ import 'dart:core';
 
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
+import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
-import '../../../shared/nips/nip05/nip05.dart';
 
 /// In memory database implementation
 /// benefits: very fast
