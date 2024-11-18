@@ -13,6 +13,7 @@ import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 
 /// similar to nip65, but also accepts values from nip02 \
+/// gives you inbox/outbox data in various ways \
 /// [UserRelayList] is a mapping of pubkey to relays with read/write markers
 /// [UserRelayLists] is a usecase for managing [UserRelayList]s
 class UserRelayLists {
@@ -183,11 +184,11 @@ class UserRelayLists {
   }
 
   /// broadcast adding nip65 relay
-  Future<UserRelayList> broadcastAddNip65Relay(
-    String relayUrl,
-    ReadWriteMarker marker,
-    Iterable<String> broadcastRelays,
-  ) async {
+  Future<UserRelayList> broadcastAddNip65Relay({
+    required String relayUrl,
+    required ReadWriteMarker marker,
+    required Iterable<String> broadcastRelays,
+  }) async {
     UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -215,24 +216,41 @@ class UserRelayLists {
     return userRelayList;
   }
 
-  /// broadcast removal of nip65 relay
-  Future<UserRelayList?> broadcastRemoveNip65Relay(
-    String relayUrl,
-    Iterable<String> broadcastRelays,
+  /// set initial user relay list can also be used to update the complete list /
+  /// if you need to edit single entries prefer using [broadcastAddNip65Relay] or [broadcastRemoveNip65Relay] \
+  ///
+  /// [newUserRelayList] the new user relay list
+  /// [returns] the new user relay list
+  Future<UserRelayList> setInitialUserRelayList(
+    UserRelayList newUserRelayList,
   ) async {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    // set created at and refreshed timestamp
+    newUserRelayList.refreshedTimestamp = now;
+    newUserRelayList.createdAt = now;
+
+    final broadcastResponse = _broadcast.broadcast(
+      nostrEvent: newUserRelayList.toNip65().toEvent(),
+    );
+
+    //todo: broadcastResponse.publishDone,
+    //broadcastResponse.publishDone,
+    // placeholder
+    await Future.delayed(Duration(seconds: 1));
+
+    await _cacheManager.saveUserRelayList(newUserRelayList);
+    return newUserRelayList;
+  }
+
+  /// broadcast removal of nip65 relay
+  Future<UserRelayList?> broadcastRemoveNip65Relay({
+    required String relayUrl,
+    Iterable<String>? specificRelays,
+  }) async {
     UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
 
     if (userRelayList == null) {
-      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-      userRelayList = UserRelayList(
-        pubKey: _eventSigner.getPublicKey(),
-        relays: {
-          for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
-        },
-        createdAt: now,
-        refreshedTimestamp: now,
-      );
+      throw "no user relay list found, please make sure to set an initial list";
     }
     if (userRelayList.relays.keys.contains(relayUrl)) {
       userRelayList.relays.remove(relayUrl);
@@ -240,7 +258,7 @@ class UserRelayLists {
 
       final broadcastResponse = _broadcast.broadcast(
         nostrEvent: userRelayList.toNip65().toEvent(),
-        specificRelays: broadcastRelays,
+        specificRelays: specificRelays,
       );
       await Future.wait([
         //todo: broadcastResponse.publishDone,
@@ -253,24 +271,17 @@ class UserRelayLists {
     return userRelayList;
   }
 
-  /// broadcast changing marker of nip65 relay
-  Future<UserRelayList?> broadcastUpdateNip65RelayMarker(
-    String relayUrl,
-    ReadWriteMarker marker,
-    Iterable<String> broadcastRelays,
-  ) async {
+  /// broadcast changing marker of nip65 relay\
+  Future<UserRelayList?> broadcastUpdateNip65RelayMarker({
+    required String relayUrl,
+    required ReadWriteMarker marker,
+  }) async {
     UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
+
     if (userRelayList == null) {
-      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      userRelayList = UserRelayList(
-        pubKey: _eventSigner.getPublicKey(),
-        relays: {
-          for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
-        },
-        createdAt: now,
-        refreshedTimestamp: now,
-      );
+      throw "no user relay list found, please make sure to set an initial list";
     }
+
     String? url;
     if (userRelayList.relays.keys.contains(relayUrl)) {
       url = relayUrl;
@@ -288,7 +299,6 @@ class UserRelayLists {
 
       final broadcastResponse = _broadcast.broadcast(
         nostrEvent: userRelayList.toNip65().toEvent(),
-        specificRelays: broadcastRelays,
       );
 
       //todo: broadcastResponse.publishDone,
@@ -299,5 +309,65 @@ class UserRelayLists {
       await _cacheManager.saveUserRelayList(userRelayList);
     }
     return userRelayList;
+  }
+
+  /// reads the latest nip65 data from cache \
+  /// [pubkeys] pubkeys you want nip65 data for \
+  /// [cacheManger] the cache manager you want to use
+  static Future<List<UserRelayList>> getUserRelayListCacheLatest({
+    required List<String> pubkeys,
+    required CacheManager cacheManager,
+  }) async {
+    List<UserRelayList> events = [];
+
+    for (final pubkey in pubkeys) {
+      final data = await cacheManager.loadUserRelayList(pubkey);
+      if (data != null) {
+        events.add(data);
+      }
+    }
+
+    List<UserRelayList> nip65Data = _filterLatest(events);
+
+    return nip65Data;
+  }
+
+  /// reads the latest nip65 data from cache \
+  /// [pubkeys] pubkeys you want nip65 data for \
+  /// [cacheManger] the cache manager you want to use
+  static Future<UserRelayList?> getNip65CacheLatestSingle({
+    required String pubkey,
+    required CacheManager cacheManager,
+  }) async {
+    final data = await getUserRelayListCacheLatest(
+      pubkeys: [pubkey],
+      cacheManager: cacheManager,
+    );
+    if (data.isEmpty) {
+      return null;
+    }
+    return data.first;
+  }
+
+  /// return only the latest nip65 data for each pubkey
+  static List<UserRelayList> _filterLatest(List<UserRelayList> uncleanData) {
+    final List<UserRelayList> cleanData = [];
+
+    for (final data in uncleanData) {
+      final alreadyIn =
+          cleanData.where((element) => element.pubKey == data.pubKey);
+
+      if (alreadyIn.isNotEmpty) {
+        final existing = alreadyIn.first;
+        if (existing.createdAt > data.createdAt) {
+          continue;
+        } else {
+          cleanData.remove(existing);
+        }
+      }
+
+      cleanData.add(data);
+    }
+    return cleanData;
   }
 }
