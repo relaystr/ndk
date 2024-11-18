@@ -9,7 +9,8 @@ class NdkBroadcastResponse {
   final Completer<bool> _publishCompleter = Completer();
 
   /// completes when all relays have responded
-  Future<bool> get publishDone => _publishCompleter.future;
+  /// TODO
+  // Future<bool> get publishDone => _publishCompleter.future;
 
   /// a map of relays publishing to
   /// [String] is the relayUrl/identifier

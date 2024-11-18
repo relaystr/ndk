@@ -19,3 +19,4 @@ export 'domain_layer/entities/relay_set.dart';
 export 'domain_layer/entities/relay_stats.dart';
 export 'domain_layer/entities/user_relay_list.dart';
 export 'domain_layer/entities/broadcast_response.dart';
+export 'domain_layer/entities/nip_05.dart';
