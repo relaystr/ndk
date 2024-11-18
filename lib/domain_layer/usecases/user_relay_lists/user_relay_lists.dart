@@ -1,3 +1,4 @@
+import '../../../config/user_relay_list_defaults.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
@@ -132,9 +133,12 @@ class UserRelayLists {
   }) async {
     UserRelayList? userRelayList =
         await _cacheManager.loadUserRelayList(pubKey);
+
     if (userRelayList == null || forceRefresh) {
-      await loadMissingRelayListsFromNip65OrNip02([pubKey],
-          forceRefresh: forceRefresh);
+      await loadMissingRelayListsFromNip65OrNip02(
+        [pubKey],
+        forceRefresh: forceRefresh,
+      );
       userRelayList = await _cacheManager.loadUserRelayList(pubKey);
     }
     return userRelayList;
@@ -142,23 +146,27 @@ class UserRelayLists {
 
   /// *************************************************************************************************
 
-  // if cached user relay list is older that now minus this duration that we should go refresh it,
-  // otherwise we risk adding/removing relays to a list that is out of date and thus loosing relays other client has added/removed since.
-  static const Duration REFRESH_USER_RELAY_DURATION = Duration(minutes: 10);
-
   Future<UserRelayList?> _ensureUpToDateUserRelayList(
-      EventSigner signer) async {
-    UserRelayList? userRelayList =
-        await _cacheManager.loadUserRelayList(signer.getPublicKey());
+    EventSigner signer,
+  ) async {
+    UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
+      signer.getPublicKey(),
+    );
+
+    /// if cached user relay list is older that now minus this duration that we should go refresh it,
+    /// otherwise we risk adding/removing relays to a list that is out of date and thus loosing relays other client has added/removed since.
     int sometimeAgo = DateTime.now()
             .subtract(REFRESH_USER_RELAY_DURATION)
             .millisecondsSinceEpoch ~/
         1000;
     bool refresh =
         userRelayList == null || userRelayList.refreshedTimestamp < sometimeAgo;
+
     if (refresh) {
-      userRelayList = await getSingleUserRelayList(signer.getPublicKey(),
-          forceRefresh: true);
+      userRelayList = await getSingleUserRelayList(
+        signer.getPublicKey(),
+        forceRefresh: true,
+      );
     }
     return userRelayList;
   }
@@ -205,15 +213,18 @@ class UserRelayLists {
   ) async {
     UserRelayList? userRelayList =
         await _ensureUpToDateUserRelayList(eventSigner);
+
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
       userRelayList = UserRelayList(
-          pubKey: eventSigner.getPublicKey(),
-          relays: {
-            for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
-          },
-          createdAt: now,
-          refreshedTimestamp: now);
+        pubKey: eventSigner.getPublicKey(),
+        relays: {
+          for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
+        },
+        createdAt: now,
+        refreshedTimestamp: now,
+      );
     }
     if (userRelayList.relays.keys.contains(relayUrl)) {
       userRelayList.relays.remove(relayUrl);
