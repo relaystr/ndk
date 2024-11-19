@@ -6,7 +6,6 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/event_filter.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
-import 'package:ndk/shared/nips/nip05/nip05.dart';
 
 import '../../data_sources/isar_db.dart';
 import '../../models/db/db_contact_list.dart';

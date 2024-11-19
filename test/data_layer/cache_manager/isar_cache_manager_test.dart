@@ -54,13 +54,13 @@ void main() async {
     await cacheManager.init();
     // int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
-    DbNip05 nip05 = DbNip05(pubKey: pubKey1, nip05: "bla@bla.com", updatedAt: Helpers.now, valid: true);
+    DbNip05 nip05 = DbNip05(pubKey: pubKey1, nip05: "bla@bla.com", networkFetchTime: Helpers.now, valid: true);
     await cacheManager.saveNip05s([nip05]);
 
     DbNip05? loadedNip05 = await cacheManager.loadNip05(pubKey1) as DbNip05?;
     expect(loadedNip05!.id, nip05.id);
     expect(loadedNip05.nip05, nip05.nip05);
-    expect(loadedNip05.updatedAt, nip05.updatedAt);
+    expect(loadedNip05.networkFetchTime, nip05.networkFetchTime);
     expect(loadedNip05.valid, nip05.valid);
   });
   test('DbRelaySet', () async {
