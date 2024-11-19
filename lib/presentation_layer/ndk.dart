@@ -63,15 +63,6 @@ class Ndk {
   /// calculate relay set
   RelaySets get relaySets => _initialization.relaySets;
 
-  /// Changes the event signer used by the NDK instance
-  ///
-  /// This method allows for hot-swapping the [EventSigner] implementation
-  ///
-  /// [newEventSigner] The new [EventSigner] to be used. Can be null to remove the current signer
-  changeEventSigner(EventSigner? newEventSigner) {
-    config.eventSigner = newEventSigner;
-  }
-
   /// Verifies NIP-05 events
   VerifyNip05 get nip05 => _initialization.verifyNip05;
 }
