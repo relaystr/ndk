@@ -21,6 +21,7 @@ class DbEvent extends Nip01Event {
   int get createdAt => super.createdAt;
 
   @override
+  @embedded
   List<List<String>> get tags => super.tags;
 
   @override

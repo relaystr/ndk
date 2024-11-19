@@ -37,8 +37,12 @@ const DbNip05Schema = IsarGeneratedSchema(
         type: IsarType.bool,
       ),
       IsarPropertySchema(
-        name: 'updatedAt',
+        name: 'networkFetchTime',
         type: IsarType.long,
+      ),
+      IsarPropertySchema(
+        name: 'relays',
+        type: IsarType.stringList,
       ),
     ],
     indexes: [],
@@ -57,7 +61,20 @@ int serializeDbNip05(IsarWriter writer, DbNip05 object) {
   IsarCore.writeString(writer, 2, object.pubKey);
   IsarCore.writeString(writer, 3, object.nip05);
   IsarCore.writeBool(writer, 4, object.valid);
-  IsarCore.writeLong(writer, 5, object.updatedAt);
+  IsarCore.writeLong(
+      writer, 5, object.networkFetchTime ?? -9223372036854775808);
+  {
+    final list = object.relays;
+    if (list == null) {
+      IsarCore.writeNull(writer, 6);
+    } else {
+      final listWriter = IsarCore.beginList(writer, 6, list.length);
+      for (var i = 0; i < list.length; i++) {
+        IsarCore.writeString(listWriter, i, list[i]);
+      }
+      IsarCore.endList(writer, listWriter);
+    }
+  }
   return Isar.fastHash(object.id);
 }
 
@@ -69,14 +86,37 @@ DbNip05 deserializeDbNip05(IsarReader reader) {
   _nip05 = IsarCore.readString(reader, 3) ?? '';
   final bool _valid;
   _valid = IsarCore.readBool(reader, 4);
-  final int _updatedAt;
-  _updatedAt = IsarCore.readLong(reader, 5);
+  final int? _networkFetchTime;
+  {
+    final value = IsarCore.readLong(reader, 5);
+    if (value == -9223372036854775808) {
+      _networkFetchTime = null;
+    } else {
+      _networkFetchTime = value;
+    }
+  }
   final object = DbNip05(
     pubKey: _pubKey,
     nip05: _nip05,
     valid: _valid,
-    updatedAt: _updatedAt,
+    networkFetchTime: _networkFetchTime,
   );
+  {
+    final length = IsarCore.readList(reader, 6, IsarCore.readerPtrPtr);
+    {
+      final reader = IsarCore.readerPtr;
+      if (reader.isNull) {
+        object.relays = null;
+      } else {
+        final list = List<String>.filled(length, '', growable: true);
+        for (var i = 0; i < length; i++) {
+          list[i] = IsarCore.readString(reader, i) ?? '';
+        }
+        IsarCore.freeReader(reader);
+        object.relays = list;
+      }
+    }
+  }
   return object;
 }
 
@@ -92,7 +132,31 @@ dynamic deserializeDbNip05Prop(IsarReader reader, int property) {
     case 4:
       return IsarCore.readBool(reader, 4);
     case 5:
-      return IsarCore.readLong(reader, 5);
+      {
+        final value = IsarCore.readLong(reader, 5);
+        if (value == -9223372036854775808) {
+          return null;
+        } else {
+          return value;
+        }
+      }
+    case 6:
+      {
+        final length = IsarCore.readList(reader, 6, IsarCore.readerPtrPtr);
+        {
+          final reader = IsarCore.readerPtr;
+          if (reader.isNull) {
+            return null;
+          } else {
+            final list = List<String>.filled(length, '', growable: true);
+            for (var i = 0; i < length; i++) {
+              list[i] = IsarCore.readString(reader, i) ?? '';
+            }
+            IsarCore.freeReader(reader);
+            return list;
+          }
+        }
+      }
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -104,7 +168,7 @@ sealed class _DbNip05Update {
     String? pubKey,
     String? nip05,
     bool? valid,
-    int? updatedAt,
+    int? networkFetchTime,
   });
 }
 
@@ -119,7 +183,7 @@ class _DbNip05UpdateImpl implements _DbNip05Update {
     Object? pubKey = ignore,
     Object? nip05 = ignore,
     Object? valid = ignore,
-    Object? updatedAt = ignore,
+    Object? networkFetchTime = ignore,
   }) {
     return collection.updateProperties([
           id
@@ -127,7 +191,7 @@ class _DbNip05UpdateImpl implements _DbNip05Update {
           if (pubKey != ignore) 2: pubKey as String?,
           if (nip05 != ignore) 3: nip05 as String?,
           if (valid != ignore) 4: valid as bool?,
-          if (updatedAt != ignore) 5: updatedAt as int?,
+          if (networkFetchTime != ignore) 5: networkFetchTime as int?,
         }) >
         0;
   }
@@ -139,7 +203,7 @@ sealed class _DbNip05UpdateAll {
     String? pubKey,
     String? nip05,
     bool? valid,
-    int? updatedAt,
+    int? networkFetchTime,
   });
 }
 
@@ -154,13 +218,13 @@ class _DbNip05UpdateAllImpl implements _DbNip05UpdateAll {
     Object? pubKey = ignore,
     Object? nip05 = ignore,
     Object? valid = ignore,
-    Object? updatedAt = ignore,
+    Object? networkFetchTime = ignore,
   }) {
     return collection.updateProperties(id, {
       if (pubKey != ignore) 2: pubKey as String?,
       if (nip05 != ignore) 3: nip05 as String?,
       if (valid != ignore) 4: valid as bool?,
-      if (updatedAt != ignore) 5: updatedAt as int?,
+      if (networkFetchTime != ignore) 5: networkFetchTime as int?,
     });
   }
 }
@@ -176,7 +240,7 @@ sealed class _DbNip05QueryUpdate {
     String? pubKey,
     String? nip05,
     bool? valid,
-    int? updatedAt,
+    int? networkFetchTime,
   });
 }
 
@@ -191,13 +255,13 @@ class _DbNip05QueryUpdateImpl implements _DbNip05QueryUpdate {
     Object? pubKey = ignore,
     Object? nip05 = ignore,
     Object? valid = ignore,
-    Object? updatedAt = ignore,
+    Object? networkFetchTime = ignore,
   }) {
     return query.updateProperties(limit: limit, {
       if (pubKey != ignore) 2: pubKey as String?,
       if (nip05 != ignore) 3: nip05 as String?,
       if (valid != ignore) 4: valid as bool?,
-      if (updatedAt != ignore) 5: updatedAt as int?,
+      if (networkFetchTime != ignore) 5: networkFetchTime as int?,
     });
   }
 }
@@ -220,7 +284,7 @@ class _DbNip05QueryBuilderUpdateImpl implements _DbNip05QueryUpdate {
     Object? pubKey = ignore,
     Object? nip05 = ignore,
     Object? valid = ignore,
-    Object? updatedAt = ignore,
+    Object? networkFetchTime = ignore,
   }) {
     final q = query.build();
     try {
@@ -228,7 +292,7 @@ class _DbNip05QueryBuilderUpdateImpl implements _DbNip05QueryUpdate {
         if (pubKey != ignore) 2: pubKey as String?,
         if (nip05 != ignore) 3: nip05 as String?,
         if (valid != ignore) 4: valid as bool?,
-        if (updatedAt != ignore) 5: updatedAt as int?,
+        if (networkFetchTime != ignore) 5: networkFetchTime as int?,
       });
     } finally {
       q.close();
@@ -776,8 +840,22 @@ extension DbNip05QueryFilter
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> updatedAtEqualTo(
-    int value,
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
+      networkFetchTimeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 5));
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
+      networkFetchTimeIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 5));
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> networkFetchTimeEqualTo(
+    int? value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -789,8 +867,9 @@ extension DbNip05QueryFilter
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> updatedAtGreaterThan(
-    int value,
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
+      networkFetchTimeGreaterThan(
+    int? value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -803,8 +882,8 @@ extension DbNip05QueryFilter
   }
 
   QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
-      updatedAtGreaterThanOrEqualTo(
-    int value,
+      networkFetchTimeGreaterThanOrEqualTo(
+    int? value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -816,8 +895,9 @@ extension DbNip05QueryFilter
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> updatedAtLessThan(
-    int value,
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
+      networkFetchTimeLessThan(
+    int? value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -830,8 +910,8 @@ extension DbNip05QueryFilter
   }
 
   QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
-      updatedAtLessThanOrEqualTo(
-    int value,
+      networkFetchTimeLessThanOrEqualTo(
+    int? value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -843,9 +923,9 @@ extension DbNip05QueryFilter
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> updatedAtBetween(
-    int lower,
-    int upper,
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> networkFetchTimeBetween(
+    int? lower,
+    int? upper,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -854,6 +934,208 @@ extension DbNip05QueryFilter
           lower: lower,
           upper: upper,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 6));
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 6));
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
+      relaysElementGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
+      relaysElementGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysElementLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
+      relaysElementLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysElementBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 6,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysElementContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysElementMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 6,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 6,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition>
+      relaysElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 6,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysIsEmpty() {
+    return not().group(
+      (q) => q.relaysIsNull().or().relaysIsNotEmpty(),
+    );
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterFilterCondition> relaysIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterOrEqualCondition(property: 6, value: null),
       );
     });
   }
@@ -938,13 +1220,13 @@ extension DbNip05QuerySortBy on QueryBuilder<DbNip05, DbNip05, QSortBy> {
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterSortBy> sortByUpdatedAt() {
+  QueryBuilder<DbNip05, DbNip05, QAfterSortBy> sortByNetworkFetchTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5);
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterSortBy> sortByUpdatedAtDesc() {
+  QueryBuilder<DbNip05, DbNip05, QAfterSortBy> sortByNetworkFetchTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5, sort: Sort.desc);
     });
@@ -1007,13 +1289,13 @@ extension DbNip05QuerySortThenBy
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterSortBy> thenByUpdatedAt() {
+  QueryBuilder<DbNip05, DbNip05, QAfterSortBy> thenByNetworkFetchTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5);
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterSortBy> thenByUpdatedAtDesc() {
+  QueryBuilder<DbNip05, DbNip05, QAfterSortBy> thenByNetworkFetchTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5, sort: Sort.desc);
     });
@@ -1042,9 +1324,15 @@ extension DbNip05QueryWhereDistinct
     });
   }
 
-  QueryBuilder<DbNip05, DbNip05, QAfterDistinct> distinctByUpdatedAt() {
+  QueryBuilder<DbNip05, DbNip05, QAfterDistinct> distinctByNetworkFetchTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(5);
+    });
+  }
+
+  QueryBuilder<DbNip05, DbNip05, QAfterDistinct> distinctByRelays() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(6);
     });
   }
 }
@@ -1074,9 +1362,15 @@ extension DbNip05QueryProperty1 on QueryBuilder<DbNip05, DbNip05, QProperty> {
     });
   }
 
-  QueryBuilder<DbNip05, int, QAfterProperty> updatedAtProperty() {
+  QueryBuilder<DbNip05, int?, QAfterProperty> networkFetchTimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<DbNip05, List<String>?, QAfterProperty> relaysProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
     });
   }
 }
@@ -1106,9 +1400,15 @@ extension DbNip05QueryProperty2<R> on QueryBuilder<DbNip05, R, QAfterProperty> {
     });
   }
 
-  QueryBuilder<DbNip05, (R, int), QAfterProperty> updatedAtProperty() {
+  QueryBuilder<DbNip05, (R, int?), QAfterProperty> networkFetchTimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<DbNip05, (R, List<String>?), QAfterProperty> relaysProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
     });
   }
 }
@@ -1139,9 +1439,16 @@ extension DbNip05QueryProperty3<R1, R2>
     });
   }
 
-  QueryBuilder<DbNip05, (R1, R2, int), QOperations> updatedAtProperty() {
+  QueryBuilder<DbNip05, (R1, R2, int?), QOperations>
+      networkFetchTimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<DbNip05, (R1, R2, List<String>?), QOperations> relaysProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
     });
   }
 }
