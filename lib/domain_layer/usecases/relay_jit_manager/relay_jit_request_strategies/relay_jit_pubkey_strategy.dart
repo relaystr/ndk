@@ -3,7 +3,6 @@ import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/client_msg.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
@@ -12,7 +11,8 @@ import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_st
 
 import '../../../entities/request_state.dart';
 import '../../../entities/connection_source.dart';
-import '../../inbox_outbox/get_nip_65_data.dart';
+import '../../../entities/user_relay_list.dart';
+import '../../user_relay_lists/user_relay_lists.dart';
 
 /// Strategy Description:
 ///
@@ -142,8 +142,11 @@ class RelayJitPubkeyStrategy with Logger {
       required Function(Nip01Event, RequestState) onMessage}) async {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
-    List<Nip65> nip65Data = await getNip65Data(
-        coveragePubkeys.map((e) => e.pubkey).toList(), cacheManager);
+    List<UserRelayList> nip65Data =
+        await UserRelayLists.getUserRelayListCacheLatest(
+      pubkeys: coveragePubkeys.map((e) => e.pubkey).toList(),
+      cacheManager: cacheManager,
+    );
 
     // by finding the best relays to connect and send out the request
     RelayRankingResult relayRanking = rankRelays(
@@ -233,17 +236,20 @@ class RelayJitPubkeyStrategy with Logger {
   }
 
   // adds the relay to ignoreRelays and retries the request for assigned pubkeys to this relay
-  static void _connectionErrorHandling(
-      {required RelayJit errorRelay,
-      required RequestState requestState,
-      required Filter filter,
-      required List<RelayJit> connectedRelays,
-      required CacheManager cacheManager,
-      required int desiredCoverage,
-      required bool closeOnEOSE,
-      required ReadWriteMarker direction,
-      required List<String> ignoreRelays,
-      required Function(Nip01Event, RequestState) onMessage}) {
+  static void _connectionErrorHandling({
+    required RelayJit errorRelay,
+    required RequestState requestState,
+    required Filter filter,
+    required List<RelayJit> connectedRelays,
+    required CacheManager cacheManager,
+    required int desiredCoverage,
+    required bool closeOnEOSE,
+    required ReadWriteMarker direction,
+    required List<String> ignoreRelays,
+    required Function(Nip01Event, RequestState) onMessage,
+  }) {
+    Logger.log.w(
+        "_connectionErrorHandling Error on connection to relay: ${errorRelay.url}");
     // cleanup
     connectedRelays.remove(errorRelay);
 

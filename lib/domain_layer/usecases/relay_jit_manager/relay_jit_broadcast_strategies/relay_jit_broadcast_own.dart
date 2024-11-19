@@ -2,9 +2,11 @@ import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/nip_01_event.dart';
 import '../../../entities/request_state.dart';
+
 import '../../../repositories/cache_manager.dart';
 import '../../../repositories/event_signer.dart';
-import '../../inbox_outbox/get_nip_65_data.dart';
+
+import '../../user_relay_lists/user_relay_lists.dart';
 import '../relay_jit.dart';
 import 'broadcast_strategies_shared.dart';
 
@@ -19,8 +21,14 @@ class RelayJitBroadcastOutboxStrategy {
     required Function(Nip01Event, RequestState) onMessage,
     required EventSigner signer,
   }) async {
-    final nip65Data =
-        await getNip65DataSingle(eventToPublish.pubKey, cacheManager);
+    final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(
+      pubkey: eventToPublish.pubKey,
+      cacheManager: cacheManager,
+    );
+
+    if (nip65Data == null) {
+      throw "could not find nip65 data for event";
+    }
 
     /// get all relays where write marker is write
 
@@ -48,7 +56,7 @@ class RelayJitBroadcastOutboxStrategy {
         .toList();
 
     // sign event
-    signer.sign(eventToPublish);
+    await signer.sign(eventToPublish);
 
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,

@@ -49,6 +49,7 @@ class Initialization {
   late Lists lists;
   late RelaySets relaySets;
   late Broadcast broadcast;
+
   late VerifyNip05 verifyNip05;
 
   late final NetworkEngine engine;
@@ -64,6 +65,7 @@ class Initialization {
       bootstrapRelays: ndkConfig.bootstrapRelays,
       globalState: globalState,
     );
+
     switch (ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
         engine = RelaySetsEngine(
@@ -125,7 +127,8 @@ class Initialization {
     userRelayLists = UserRelayLists(
       requests: requests,
       cacheManager: ndkConfig.cache,
-      relayManager: relayManager,
+      broadcast: broadcast,
+      signer: ndkConfig.eventSigner,
     );
 
     lists = Lists(

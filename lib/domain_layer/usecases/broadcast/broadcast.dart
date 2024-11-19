@@ -97,7 +97,7 @@ class Broadcast {
     return broadcast(
       nostrEvent: event,
       specificRelays: customRelays,
-      customSigner: customSigner,
+      customSigner: mySigner,
     );
   }
 }

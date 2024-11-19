@@ -2,6 +2,7 @@ import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/follows/follows.dart';
+
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
@@ -53,6 +54,7 @@ class Ndk {
   Metadatas get metadata => _initialization.metadatas;
 
   /// user relay lists usecase
+  /// similar to nip65 but more generic, contact list relays can also be considered
   UserRelayLists get userRelayLists => _initialization.userRelayLists;
 
   /// Manages various types of lists in the Nostr network

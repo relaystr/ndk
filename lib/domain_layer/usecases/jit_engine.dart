@@ -115,9 +115,9 @@ class JitEngine with Logger implements NetworkEngine {
         throw UnimplementedError("search filter not implemented yet");
       }
 
-      if (filter.ids != null) {
-        throw UnimplementedError("ids filter not implemented yet");
-      }
+      // if (filter.ids != null) {
+      //   throw UnimplementedError("ids filter not implemented yet");
+      // }
 
       /// unknown filter strategy, blast to all connected relays
       RelayJitBlastAllStrategy.handleRequest(

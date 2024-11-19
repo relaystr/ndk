@@ -5,6 +5,7 @@ import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/presentation_layer/init.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
@@ -43,6 +44,7 @@ void main() async {
     CacheManager cacheManager = MemCacheManager();
     EventVerifier eventVerifier = MockEventVerifier();
     GlobalState globalState = GlobalState();
+
     // setup
     JitEngine relayJitManager = JitEngine(
       cache: cacheManager,

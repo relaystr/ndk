@@ -10,11 +10,12 @@ class UserRelayList {
 
   Map<String, ReadWriteMarker> relays;
 
-  UserRelayList(
-      {required this.pubKey,
-      required this.relays,
-      required this.createdAt,
-      required this.refreshedTimestamp});
+  UserRelayList({
+    required this.pubKey,
+    required this.relays,
+    required this.createdAt,
+    required this.refreshedTimestamp,
+  });
 
   Iterable<String> get urls => relays.keys;
 

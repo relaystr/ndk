@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:core';
 
 import 'package:ndk/domain_layer/entities/broadcast_response.dart';
-
 import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/helpers.dart';
@@ -19,8 +18,8 @@ import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
 import 'engines/network_engine.dart';
-import 'inbox_outbox/get_nip_65_data.dart';
 import 'relay_manager.dart';
+import 'user_relay_lists/user_relay_lists.dart';
 
 class RelaySetsEngine implements NetworkEngine {
   static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
@@ -229,8 +228,11 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       // own outbox
       // =====================================================================================
-      final nip65Data =
-          await getNip65DataSingle(nostrEvent.pubKey, _cacheManager);
+      final nip65Data = (await UserRelayLists.getUserRelayListCacheLatest(
+        pubkeys: [nostrEvent.pubKey],
+        cacheManager: _cacheManager,
+      ))
+          .first;
       final writeRelaysUrls = nip65Data.relays.entries
           .where((element) => element.value.isWrite)
           .map((e) => e.key)
@@ -250,7 +252,10 @@ class RelaySetsEngine implements NetworkEngine {
       // other inbox
       // =====================================================================================
       if (nostrEvent.pTags.isNotEmpty) {
-        final nip65Data = await getNip65Data(nostrEvent.pTags, _cacheManager);
+        final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
+          pubkeys: nostrEvent.pTags,
+          cacheManager: _cacheManager,
+        );
 
         List<String> myWriteRelayUrlsOthers = [];
 

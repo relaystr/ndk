@@ -5,7 +5,7 @@ import '../../../entities/nip_01_event.dart';
 import '../../../entities/request_state.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../../repositories/event_signer.dart';
-import '../../inbox_outbox/get_nip_65_data.dart';
+import '../../user_relay_lists/user_relay_lists.dart';
 import '../relay_jit.dart';
 import 'broadcast_strategies_shared.dart';
 
@@ -22,7 +22,10 @@ class RelayJitBroadcastOtherReadStrategy {
     required EventSigner signer,
     required List<String> pubkeysOfInbox,
   }) async {
-    final nip65Data = await getNip65Data(pubkeysOfInbox, cacheManager);
+    final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
+      pubkeys: pubkeysOfInbox,
+      cacheManager: cacheManager,
+    );
 
     List<String> myWriteRelayUrls = [];
 
@@ -61,7 +64,7 @@ class RelayJitBroadcastOtherReadStrategy {
         .toList();
 
     // sign event
-    signer.sign(eventToPublish);
+    await signer.sign(eventToPublish);
 
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,
