@@ -1,6 +1,6 @@
 import 'package:objectbox/objectbox.dart';
 
-import '../../../../shared/nips/nip05/nip05.dart';
+import '../../../../entities.dart';
 
 @Entity()
 class DbNip05 {
@@ -8,7 +8,7 @@ class DbNip05 {
     required this.pubKey,
     required this.nip05,
     required this.valid,
-    required this.updatedAt,
+    required this.networkFetchTime,
     int createdAt = 0,
   });
 
@@ -25,14 +25,14 @@ class DbNip05 {
   bool valid;
 
   @Property()
-  int updatedAt;
+  int? networkFetchTime;
 
   Nip05 toNdk() {
     final ndkM = Nip05(
       pubKey: pubKey,
       nip05: nip05,
       valid: valid,
-      updatedAt: updatedAt,
+      networkFetchTime: networkFetchTime,
     );
 
     return ndkM;
@@ -43,7 +43,7 @@ class DbNip05 {
       pubKey: ndkM.pubKey,
       nip05: ndkM.nip05,
       valid: ndkM.valid,
-      updatedAt: ndkM.updatedAt,
+      networkFetchTime: ndkM.networkFetchTime,
     );
     return dbM;
   }

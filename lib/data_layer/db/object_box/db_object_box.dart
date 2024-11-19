@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:ndk/data_layer/db/object_box/schema/db_nip_05.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip05/nip05.dart';
 
+import '../../../entities.dart';
 import '../../../objectbox.g.dart';
 import 'db_init_object_box.dart';
 import 'schema/db_contact_list.dart';
@@ -314,7 +314,7 @@ class DbObjectBox implements CacheManager {
       box.removeMany(existing.map((e) => e.dbId).toList());
     }
     if (existing.isNotEmpty &&
-        nip05.updatedAt! < existing[0].updatedAt!) {
+        nip05.networkFetchTime! < existing[0].networkFetchTime!) {
       return;
     }
     box.put(DbNip05.fromNdk(nip05));

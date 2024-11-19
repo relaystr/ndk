@@ -627,7 +627,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addOffset(1, pubKeyOffset);
           fbb.addOffset(2, nip05Offset);
           fbb.addBool(3, object.valid);
-          fbb.addInt64(4, object.updatedAt);
+          fbb.addInt64(4, object.networkFetchTime);
           fbb.finish(fbb.endTable());
           return object.dbId;
         },
@@ -646,7 +646,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
               pubKey: pubKeyParam,
               nip05: nip05Param,
               valid: validParam,
-              updatedAt: updatedAtParam)
+              networkFetchTime: updatedAtParam)
             ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
