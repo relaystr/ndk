@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'package:isar/isar.dart';
 import 'package:ndk/data_layer/models/db/db_contact_list.dart';
 import 'package:ndk/data_layer/models/db/db_event.dart';
 import 'package:ndk/data_layer/models/db/db_metadata.dart';
@@ -24,7 +25,7 @@ void main() async {
     String contact1 = "contact1";
     String pubKey1 = "pubKey1";
     DbContactList userContacts = DbContactList(pubKey: pubKey1, contacts: [contact1]);
-    await cacheManager.saveContactList(userContacts);
+    await cacheManager.saveContactLists([userContacts]);
 
     DbContactList? loadedUserContacts = await cacheManager.loadContactList(pubKey1) as DbContactList?;
     expect(loadedUserContacts!.pubKey, userContacts.pubKey);
@@ -33,12 +34,12 @@ void main() async {
 
   test('DbUserRelayList', () async {
     IsarCacheManager cacheManager = IsarCacheManager();
-    await cacheManager.init();
+    await cacheManager.init(directory: Isar.sqliteInMemory);
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     DbUserRelayList userRelayList =
         DbUserRelayList(pubKey: pubKey1, items: [DbRelayListItem("wss://bla.com", ReadWriteMarker.readWrite)], createdAt: now, refreshedTimestamp: now);
-    await cacheManager.saveUserRelayList(userRelayList);
+    await cacheManager.saveUserRelayLists([userRelayList]);
 
     DbUserRelayList? loadedUserRelayList = await cacheManager.loadUserRelayList(pubKey1) as DbUserRelayList?;
     expect(loadedUserRelayList!.id, userRelayList.id);
@@ -54,7 +55,7 @@ void main() async {
     // int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     DbNip05 nip05 = DbNip05(pubKey: pubKey1, nip05: "bla@bla.com", updatedAt: Helpers.now, valid: true);
-    await cacheManager.saveNip05(nip05);
+    await cacheManager.saveNip05s([nip05]);
 
     DbNip05? loadedNip05 = await cacheManager.loadNip05(pubKey1) as DbNip05?;
     expect(loadedNip05!.id, nip05.id);
@@ -106,7 +107,7 @@ void main() async {
         picture: "https://cdn.picture.com/cat.jpg",
         updatedAt: now,
         website: "https://website.com");
-    await cacheManager.saveMetadata(metadata);
+    await cacheManager.saveMetadatas([metadata]);
 
     DbMetadata? loaded = await cacheManager.loadMetadata(pubKey1) as DbMetadata?;
     expect(loaded!.id, metadata.id);
