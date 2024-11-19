@@ -1,5 +1,10 @@
+import 'package:http/http.dart' as http;
+
+import '../data_layer/data_sources/http_request.dart';
+import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
+import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
@@ -8,6 +13,7 @@ import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
+import '../domain_layer/usecases/nip05/verify_nip_05.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
@@ -23,9 +29,9 @@ class Initialization {
 
   /// data sources
 
-  // final HttpRequestDS _httpRequestDS = HttpRequestDS(http.Client());
+  final HttpRequestDS _httpRequestDS = HttpRequestDS(http.Client());
 
-  /// repositories
+  /// repositories with no dependencies
 
   final WebSocketNostrTransportFactory _webSocketNostrTransportFactory =
       WebSocketNostrTransportFactory();
@@ -43,6 +49,7 @@ class Initialization {
   late Lists lists;
   late RelaySets relaySets;
   late Broadcast broadcast;
+  late VerifyNip05 verifyNip05;
 
   late final NetworkEngine engine;
 
@@ -77,6 +84,12 @@ class Initialization {
       default:
         throw UnimplementedError("Unknown engine");
     }
+
+    /// repositories
+    final Nip05Repository nip05repository =
+        Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
+
+    ///   use cases
     cacheWrite = CacheWrite(ndkConfig.cache);
     cacheRead = CacheRead(ndkConfig.cache);
 
@@ -125,6 +138,11 @@ class Initialization {
       cacheManager: ndkConfig.cache,
       relayManager: relayManager,
       userRelayLists: userRelayLists,
+    );
+
+    verifyNip05 = VerifyNip05(
+      database: ndkConfig.cache,
+      nip05Repository: nip05repository,
     );
   }
 }
