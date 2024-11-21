@@ -49,7 +49,8 @@ class InboxOutbox {
       specificRelays: customRelays,
     );
 
-    await response.publishDone;
+    await Future.delayed(Duration(seconds: 1));
+    //await response.publishDone;
 
     return newNip65Data;
   }
