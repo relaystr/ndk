@@ -32,8 +32,6 @@ class VerifyNip05 {
       throw Exception("nip05 or pubkey empty");
     }
 
-    final result = Nip05(pubKey: pubkey, nip05: nip05);
-
     final databaseResult = await _database.loadNip05(pubkey);
 
     if (databaseResult != null) {
@@ -51,7 +49,8 @@ class VerifyNip05 {
     }
 
     // Create a new request and add it to the in-flight map
-    final request = _performCheck(nip05, pubkey, result);
+    final request =
+        _performCheck(nip05, pubkey, Nip05(pubKey: pubkey, nip05: nip05));
     _inFlightRequests[nip05] = request;
 
     try {
@@ -72,7 +71,11 @@ class VerifyNip05 {
 
     if (networkResult != null) {
       result.valid = networkResult.valid;
+      result.relays = networkResult.relays;
     }
+
+    /// needs to be outside the if statement to update the networkFetchTime even on 404
+    result.networkFetchTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     await _database.saveNip05(result);
     return result;

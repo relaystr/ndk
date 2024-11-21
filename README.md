@@ -123,13 +123,13 @@ $~~~~~~~~~~~$
 - plug in event signer interface, bring your own event signer, or use included ones: `bip340, amber`
 - contact list support, you can convert nostr_event to contact_list
 - nip51 list support, you can convert nostr_event to nip51_list
+- nip05 caching
 
 ## not Included
 
 - ready to use feeds, you have to build them on your own (🚫 not planned)
 - create && manage keypairs. You have to provide them (🚫 not planned)
 - file upload (🔜 planned)
-- nip05 caching (🔜 planned)
 - threading, you can do this on your own if you move ndk or only the event_verifier into its own thread (🔜 planned)
 - support for request overrides (you have to close and reopen requests) (🤔 unsure)
 
