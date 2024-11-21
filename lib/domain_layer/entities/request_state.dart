@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:rxdart/rxdart.dart';
+
 import '../usecases/relay_jit_manager/relay_jit.dart';
 import 'filter.dart';
 import 'ndk_request.dart';
@@ -15,8 +17,7 @@ class RelayRequestState {
 }
 
 class RequestState {
-  StreamController<Nip01Event> controller =
-      StreamController<Nip01Event>.broadcast();
+  ReplaySubject<Nip01Event> controller = ReplaySubject<Nip01Event>();
 
   /// [networkController] used by engines to write their response
   StreamController<Nip01Event> networkController =
