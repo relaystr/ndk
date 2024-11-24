@@ -1,3 +1,5 @@
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
@@ -113,18 +115,41 @@ class Lists {
     return relaySet;
   }
 
+  /// return single public nip51 set that match given name and pubkey
+  Future<Nip51Set?> getSinglePublicNip51RelaySet({
+    required String name,
+    required String publicKey,
+    bool forceRefresh = false,
+  }) async {
+    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    return getSingleNip51RelaySet(name, mySigner, forceRefresh: forceRefresh);
+  }
+
+  Future<List<Nip51Set>?> getPublicNip51RelaySets({
+    required int kind,
+    required String publicKey,
+    bool forceRefresh = false,
+  }) async {
+    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    return getNip51RelaySets(kind, mySigner, forceRefresh: forceRefresh);
+  }
+
   /// return list of all nip51 relay sets that match a given kind
   Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer,
       {bool forceRefresh = false}) async {
     // Nip51Set? relaySet;//  await getCachedNip51RelaySet(signer);
     // if (relaySet == null || forceRefresh) {
     Map<String, Nip51Set> newRelaySets = {};
-    await for (final event in _requests.query(filters: [
-      Filter(
-        authors: [signer.getPublicKey()],
-        kinds: [kind],
-      )
-    ], cacheRead: !forceRefresh).stream) {
+    await for (final event in _requests.query(
+      filters: [
+        Filter(
+          authors: [signer.getPublicKey()],
+          kinds: [kind],
+        )
+      ],
+      cacheRead: !forceRefresh,
+      timeout: 3,
+    ).stream) {
       if (event.getDtag() != null) {
         Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
