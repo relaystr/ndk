@@ -1,2 +1,2 @@
 ignore:
-  - "**/db_*.g.dart"
+  - "**/*.g.dart"
