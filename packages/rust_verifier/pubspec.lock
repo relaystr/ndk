@@ -585,10 +585,9 @@ packages:
   rust_lib_ndk:
     dependency: "direct main"
     description:
-      name: rust_lib_ndk
-      sha256: "5bb8f455cebd72a174d0974651bacfaacb7638960ac9029d741d0dc4dd123e71"
-      url: "https://pub.dev"
-    source: hosted
+      path: rust_builder
+      relative: true
+    source: path
     version: "0.1.3"
   rxdart:
     dependency: "direct main"

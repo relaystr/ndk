@@ -32,9 +32,11 @@ dependencies:
     sdk: flutter
 
   ndk:
-    path: ../packages/ndk
+    path: ../ndk
+  ndk_amber:
+    path: ../amber
   ndk_rust_verifier:
-    path: ../packages/ndk_rust_verifier
+    path: ../ndk_rust_verifier
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

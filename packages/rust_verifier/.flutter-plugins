@@ -5,4 +5,4 @@ path_provider_android=/home/fmar/.pub-cache/hosted/pub.dev/path_provider_android
 path_provider_foundation=/home/fmar/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.0/
 path_provider_linux=/home/fmar/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
 path_provider_windows=/home/fmar/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
-rust_lib_ndk=/home/fmar/.pub-cache/hosted/pub.dev/rust_lib_ndk-0.1.3/
+rust_lib_ndk=/media/fmar/disk/workspace/ndk/packages/rust_verifier/rust_builder/
