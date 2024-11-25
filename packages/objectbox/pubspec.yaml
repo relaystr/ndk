@@ -15,19 +15,6 @@ platforms:
   windows:
 
 dependencies:
-  http: ^1.2.2
-  bip340: ^0.3.0
-  bech32: ^0.2.2
-  hex: ^0.2.0
-  web_socket_channel: ^3.0.1
-  crypto: ^3.0.5
-  collection: ^1.18.0
-  path_provider: ^2.1.4
-  convert: ^3.1.1
-  pointycastle: ^3.9.1
-  plugin_platform_interface: ^2.1.7
-  logger: ^2.4.0
-  rxdart: ^0.28.0
   objectbox: ^4.0.3
   objectbox_flutter_libs: ^4.0.3
   ndk:

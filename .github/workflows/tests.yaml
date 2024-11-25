@@ -16,10 +16,6 @@ jobs:
       - run: dart test ./example
       - run: dart pub global activate coverage
       - run: $HOME/.pub-cache/bin/format_coverage --lcov --in=coverage --out=coverage.lcov --report-on=lib
-#      - uses: subosito/flutter-action@v1
-#      - run: flutter doctor
-#      - run: flutter test --coverage
-#      - run: flutter test ./example
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
