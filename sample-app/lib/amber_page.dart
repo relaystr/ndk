@@ -4,6 +4,7 @@ import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 
 class AmberPage extends StatefulWidget {
   const AmberPage({super.key});

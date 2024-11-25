@@ -323,7 +323,14 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      path: ".."
+      path: "../packages/ndk"
+      relative: true
+    source: path
+    version: "0.1.3"
+  ndk_rust_verifier:
+    dependency: "direct main"
+    description:
+      path: "../packages/ndk_rust_verifier"
       relative: true
     source: path
     version: "0.1.3"

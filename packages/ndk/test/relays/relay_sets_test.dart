@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/ndk.dart';
@@ -253,18 +252,12 @@ void main() async {
           relayMinCountPerPubKey: 1,
           onProgress: (stepName, count, total) {
             if (count % 100 == 0 || (total - count) < 10) {
-              if (kDebugMode) {
-                print("[PROGRESS] $stepName: $count/$total");
-              }
+              print("[PROGRESS] $stepName: $count/$total");
             }
           });
-      if (kDebugMode) {
-        print("BEST ${relaySet.relaysMap.length} RELAYS:");
-      }
+      print("BEST ${relaySet.relaysMap.length} RELAYS:");
       relaySet.relaysMap.forEach((url, pubKeyMappings) {
-        if (kDebugMode) {
-          print("  ${relayNames[url]} => has ${pubKeyMappings.length} follows");
-        }
+        print("  ${relayNames[url]} => has ${pubKeyMappings.length} follows");
       });
       NdkResponse query = ndk.requests.query(filters: [
         Filter(kinds: [
@@ -584,25 +577,19 @@ void main() async {
         bestRelays.name = setName;
         bestRelays.pubKey = key.publicKey;
 //          await manager.saveRelaySet(bestRelays);
-        if (kDebugMode) {
-          print(
-              "BEST ${bestRelays.relaysMap.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
-        }
+        print(
+            "BEST ${bestRelays.relaysMap.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
         bestRelays.relaysMap.forEach((url, pubKeyMappings) {
-          if (kDebugMode) {
-            print(
-                "  $url ${pubKeyMappings.length} follows ${pubKeyMappings.length <= 2 ? pubKeyMappings : ""}");
-          }
+          print(
+              "  $url ${pubKeyMappings.length} follows ${pubKeyMappings.length <= 2 ? pubKeyMappings : ""}");
         });
 
         if (Helpers.isNotBlank(expectedRelayUrl)) {
           expect(bestRelays.urls.contains(expectedRelayUrl), true);
         }
         final t1 = DateTime.now();
-        if (kDebugMode) {
-          print(
-              "===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
-        }
+        print(
+            "===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
         i++;
       }
     }

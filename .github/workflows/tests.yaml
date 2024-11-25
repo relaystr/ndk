@@ -3,12 +3,20 @@ on: [push, workflow_dispatch]
 jobs:
   tests:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/ndk
     steps:
       - uses: actions/checkout@v1
-      - uses: subosito/flutter-action@v1
-      - run: flutter doctor
-      - run: flutter test --coverage
-      - run: flutter test ./example
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: dart analyze
+      - run: dart test
+#      - uses: subosito/flutter-action@v1
+#      - run: flutter doctor
+#      - run: flutter test --coverage
+#      - run: flutter test ./example
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
