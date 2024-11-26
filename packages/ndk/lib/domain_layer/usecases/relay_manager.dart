@@ -273,7 +273,7 @@ class RelayManager {
       handleEOSE(eventJson, url);
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
-          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson[2]}");
+          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson.length>2?eventJson[2]:''}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
     // TODO
