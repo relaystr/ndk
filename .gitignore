@@ -32,3 +32,5 @@ build/
 /lcov_badge_generator
 /.flutter-plugins
 /.flutter-plugins-dependencies
+/packages/ndk/coverage/*
+/packages/ndk/coverage.lcov
