@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:test/test.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/usecases/cache_read/cache_read.dart';
@@ -146,6 +148,54 @@ void main() async {
             'notInCachePubKey1',
             'notInCachePubKey2'
           ]));
+    });
+
+    test('cache read - id filter', () async {
+      final CacheManager myCacheManager = MemCacheManager();
+      final CacheRead myUsecase = CacheRead(myCacheManager);
+
+      final eventId0 =
+          Nip01Event(pubKey: "pubKey0", kind: 1, tags: [], content: "content0");
+      eventId0.id = "id0";
+      final eventId1 =
+          Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1");
+      eventId1.id = "id1";
+      final eventId2 =
+          Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2");
+      eventId2.id = "id2";
+
+      final List<Nip01Event> idEvents = [
+        eventId0,
+        eventId1,
+        eventId2,
+      ];
+
+      await myCacheManager.saveEvents(idEvents);
+
+      final NdkRequest myNdkRequest = NdkRequest.query("id-filter", filters: [
+        Filter(
+          ids: ['id0', 'id1', 'id2', 'id3'],
+          kinds: [1],
+        )
+      ]);
+      final RequestState myRequestState = RequestState(myNdkRequest);
+
+      final streamController = StreamController<Nip01Event>();
+      final response = streamController.stream.toList();
+
+      await myUsecase.resolveUnresolvedFilters(
+        requestState: myRequestState,
+        outController: streamController,
+      );
+
+      await streamController.close();
+
+      final foundEvents = await response;
+      expect(foundEvents.length, equals(3));
+      expect(
+          foundEvents.map((e) => e.id).toSet(), equals({'id0', 'id1', 'id2'}));
+
+      expect(myRequestState.unresolvedFilters[0].ids, equals(['id3']));
     });
   });
 }
