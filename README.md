@@ -5,9 +5,9 @@
 
 # Dart Nostr Development Kit (NDK)
 
-NDK (Nostr Development Kit) is a Dart library designed to enhance the Nostr development experience.\
-It provides streamlined solutions for common use cases and abstracts away complex relay management, making it ideal for building constrained Nostr clients, particularly on mobile devices.\
-NDK implements the inbox/outbox (gossip) model by default, optimizing network usage and improving performance.
+NDK (Nostr Development Kit) is a Dart library that enhances the Nostr development experience.\
+Ndk supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.\
+Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.\
 
 **Table of Contents:**
 
