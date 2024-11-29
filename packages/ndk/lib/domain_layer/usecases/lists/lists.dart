@@ -1,3 +1,4 @@
+import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
@@ -34,8 +35,12 @@ class Lists {
   }
 
   /// return nip51 list by given kind
-  Future<Nip51List?> getSingleNip51List(int kind, EventSigner signer,
-      {bool forceRefresh = false, int timeout = 5}) async {
+  Future<Nip51List?> getSingleNip51List(
+    int kind,
+    EventSigner signer, {
+    bool forceRefresh = false,
+    int timeout = 5,
+  }) async {
     Nip51List? list =
         !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
     if (list == null) {
@@ -64,7 +69,9 @@ class Lists {
   }
 
   Future<Nip51Set?> _getCachedNip51RelaySet(
-      String name, EventSigner signer) async {
+    String name,
+    EventSigner signer,
+  ) async {
     List<Nip01Event>? events = await _cacheManager.loadEvents(
         pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
     events = events.where((event) {
@@ -82,8 +89,11 @@ class Lists {
   }
 
   /// return single nip51 set that match given name
-  Future<Nip51Set?> getSingleNip51RelaySet(String name, EventSigner signer,
-      {bool forceRefresh = false}) async {
+  Future<Nip51Set?> getSingleNip51RelaySet(
+    String name,
+    EventSigner signer, {
+    bool forceRefresh = false,
+  }) async {
     Nip51Set? relaySet = await _getCachedNip51RelaySet(name, signer);
     if (relaySet == null || forceRefresh) {
       Nip51Set? newRelaySet;
@@ -114,17 +124,23 @@ class Lists {
   }
 
   /// return list of all nip51 relay sets that match a given kind
-  Future<List<Nip51Set>?> getNip51RelaySets(int kind, EventSigner signer,
-      {bool forceRefresh = false}) async {
+  Future<List<Nip51Set>?> getNip51RelaySets(
+    int kind,
+    EventSigner signer, {
+    bool forceRefresh = false,
+  }) async {
     // Nip51Set? relaySet;//  await getCachedNip51RelaySet(signer);
     // if (relaySet == null || forceRefresh) {
     Map<String, Nip51Set> newRelaySets = {};
-    await for (final event in _requests.query(filters: [
-      Filter(
-        authors: [signer.getPublicKey()],
-        kinds: [kind],
-      )
-    ], cacheRead: !forceRefresh).stream) {
+    await for (final event in _requests.query(
+      filters: [
+        Filter(
+          authors: [signer.getPublicKey()],
+          kinds: [kind],
+        )
+      ],
+      cacheRead: !forceRefresh,
+    ).stream) {
       if (event.getDtag() != null) {
         Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
@@ -143,11 +159,35 @@ class Lists {
     // return [];
   }
 
+  /// return single public nip51 set that match given name and pubkey
+  Future<Nip51Set?> getSinglePublicNip51RelaySet({
+    required String name,
+    required String publicKey,
+    bool forceRefresh = false,
+  }) async {
+    //? not perfect to use bip340 signer here
+    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    return getSingleNip51RelaySet(name, mySigner, forceRefresh: forceRefresh);
+  }
+
+  Future<List<Nip51Set>?> getPublicNip51RelaySets({
+    required int kind,
+    required String publicKey,
+    bool forceRefresh = false,
+  }) async {
+    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    return getNip51RelaySets(kind, mySigner, forceRefresh: forceRefresh);
+  }
+
   // coverage:ignore-start
 
-  Future<Nip51Set> broadcastAddNip51SetRelay(String relayUrl, String name,
-      Iterable<String> broadcastRelays, EventSigner eventSigner,
-      {bool private = false}) async {
+  Future<Nip51Set> broadcastAddNip51SetRelay(
+    String relayUrl,
+    String name,
+    Iterable<String> broadcastRelays,
+    EventSigner eventSigner, {
+    bool private = false,
+  }) async {
     if (private && !eventSigner.canSign()) {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
@@ -157,6 +197,7 @@ class Lists {
     list ??= Nip51Set(
         name: name,
         pubKey: eventSigner.getPublicKey(),
+        kind: Nip51List.RELAY_SET,
         createdAt: Helpers.now,
         elements: []);
     list.addRelay(relayUrl, private);
@@ -182,9 +223,14 @@ class Lists {
     return list;
   }
 
-  Future<Nip51Set?> broadcastRemoveNip51SetRelay(String relayUrl, String name,
-      Iterable<String> broadcastRelays, EventSigner eventSigner,
-      {List<String>? defaultRelaysIfEmpty, bool private = false}) async {
+  Future<Nip51Set?> broadcastRemoveNip51SetRelay(
+    String relayUrl,
+    String name,
+    Iterable<String> broadcastRelays,
+    EventSigner eventSigner, {
+    List<String>? defaultRelaysIfEmpty,
+    bool private = false,
+  }) async {
     if (private && !eventSigner.canSign()) {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
@@ -199,6 +245,7 @@ class Lists {
         defaultRelaysIfEmpty.isNotEmpty) {
       relaySet = Nip51Set(
           name: name,
+          kind: Nip51List.RELAY_SET,
           pubKey: eventSigner.getPublicKey(),
           createdAt: Helpers.now,
           elements: []);
@@ -227,9 +274,13 @@ class Lists {
     return relaySet;
   }
 
-  Future<Nip51List> broadcastAddNip51ListRelay(int kind, String relayUrl,
-      Iterable<String> broadcastRelays, EventSigner eventSigner,
-      {bool private = false}) async {
+  Future<Nip51List> broadcastAddNip51ListRelay(
+    int kind,
+    String relayUrl,
+    Iterable<String> broadcastRelays,
+    EventSigner eventSigner, {
+    bool private = false,
+  }) async {
     if (private && !eventSigner.canSign()) {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
@@ -257,9 +308,13 @@ class Lists {
     return list;
   }
 
-  Future<Nip51List?> broadcastRemoveNip51Relay(int kind, String relayUrl,
-      Iterable<String> broadcastRelays, EventSigner eventSigner,
-      {List<String>? defaultRelaysIfEmpty}) async {
+  Future<Nip51List?> broadcastRemoveNip51Relay(
+    int kind,
+    String relayUrl,
+    Iterable<String> broadcastRelays,
+    EventSigner eventSigner, {
+    List<String>? defaultRelaysIfEmpty,
+  }) async {
     if (!eventSigner.canSign()) {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
@@ -332,9 +387,14 @@ class Lists {
     return list;
   }
 
-  Future<Nip51List> broadcastAddNip51ListElement(int kind, String tag,
-      String value, Iterable<String> broadcastRelays, EventSigner eventSigner,
-      {bool private = false}) async {
+  Future<Nip51List> broadcastAddNip51ListElement(
+    int kind,
+    String tag,
+    String value,
+    Iterable<String> broadcastRelays,
+    EventSigner eventSigner, {
+    bool private = false,
+  }) async {
     if (private && !eventSigner.canSign()) {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");

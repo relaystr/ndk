@@ -232,25 +232,30 @@ class Nip51Set extends Nip51List {
   }
   // coverage:ignore-end
 
-  Nip51Set(
-      {required super.pubKey,
-      required this.name,
-      required super.createdAt,
-      required super.elements,
-      this.title})
-      : super(kind: Nip51List.RELAY_SET);
+  Nip51Set({
+    required super.pubKey,
+    required this.name,
+    required super.createdAt,
+    required super.elements,
+    required super.kind,
+    this.title,
+  }) : super();
 
   static Future<Nip51Set?> fromEvent(
-      Nip01Event event, EventSigner? signer) async {
+    Nip01Event event,
+    EventSigner? signer,
+  ) async {
     String? name = event.getDtag();
-    if (name == null || event.kind != Nip51List.RELAY_SET) {
+    if (name == null) {
       return null;
     }
     Nip51Set set = Nip51Set(
-        pubKey: event.pubKey,
-        name: name,
-        createdAt: event.createdAt,
-        elements: []);
+      pubKey: event.pubKey,
+      name: name,
+      createdAt: event.createdAt,
+      kind: event.kind,
+      elements: [],
+    );
     set.id = event.id;
     if (Helpers.isNotBlank(event.content) &&
         signer != null &&

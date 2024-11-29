@@ -30,6 +30,7 @@ void main() async {
 
     final Nip51Set favoriteRelaysKey1 = Nip51Set(
         pubKey: key1.publicKey,
+        kind: Nip51List.RELAY_SET,
         name: "my favorite relays",
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         elements: [
