@@ -1,3 +1,7 @@
+## 0.2.0-dev001
+
+ - Bump "ndk" to `0.2.0-dev001`.
+
 ## 0.1.3
 
 - upgrade to flutter_rust_bridge 2.6.0
