@@ -3,7 +3,11 @@ name: ndk
 repository: https://github.com/relaystr/ndk
 
 packages:
-  - packages/**
+  - packages/amber
+  - packages/ndk
+  - packages/objectbox
+  - packages/rust_verifier
+  - packages/rust_verifier/rust_builder
 
 scripts:
   analyze:
@@ -18,9 +22,7 @@ scripts:
     exec: dart format .
     description: Format a specific package in this project.
 
-  version:
-    description: Updates version numbers in all build files
-    run: bash scripts/version.sh
+
 
   build:
     run: melos run build:apple && melos run build:android && melos run build:other
