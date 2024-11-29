@@ -102,6 +102,13 @@ import 'package:ndk/entities.dart' as ndk_entities;
 final ndk_entities.Nip01Event myEvent = ndk_entities.Nip01Event(...);
 ```
 
+other imports:
+
+```dart
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
+import 'package:ndk_amber/ndk_amber.dart';
+```
+
 ## tip: how to keep the ndk obj global
 
 If you have a relatively simple app you can initialize ndk in your main method and pass down ndk on the widget tree.\

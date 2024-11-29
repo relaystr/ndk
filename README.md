@@ -5,15 +5,16 @@
 
 # Dart Nostr Development Kit (NDK)
 
-NDK (Nostr Development Kit) is a Dart library designed to enhance the Nostr development experience.\
-It provides streamlined solutions for common use cases and abstracts away complex relay management, making it ideal for building constrained Nostr clients, particularly on mobile devices.\
-NDK implements the inbox/outbox (gossip) model by default, optimizing network usage and improving performance.
+NDK (Nostr Development Kit) is a Dart library that enhances the Nostr development experience.\
+NDK supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.\
+Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.
 
 **Table of Contents:**
 
 - [Dart Nostr Development Kit (NDK)](#dart-nostr-development-kit-ndk)
 - [Getting started](#getting-started)
   - [Prerequisites](#prerequisites)
+    - [Prerequisites `ndk_rust_verifier`](#prerequisites-ndk_rust_verifier)
   - [Install](#install)
   - [Import](#import)
   - [Usage](#usage)
@@ -27,7 +28,7 @@ NDK implements the inbox/outbox (gossip) model by default, optimizing network us
 - [Library development 🏗️](#library-development-️)
   - [Setup](#setup)
   - [Architecture](#architecture)
-    - [Folder Structure](#folder-structure)
+    - [Folder Structure of `ndk`](#folder-structure-of-ndk)
   - [Engines](#engines)
 
 $~~~~~~~~~~~$
@@ -35,6 +36,10 @@ $~~~~~~~~~~~$
 # Getting started
 
 ## Prerequisites
+
+- dart SDK
+
+### Prerequisites `ndk_rust_verifier`
 
 - android SDK (also for desktop builds)
 - flutter SDK
@@ -63,8 +68,17 @@ rustup target add armv7-apple-ios i386-apple-ios
 
 ## Install
 
+Ndk has a core package `ndk` and optional packages like `rust_verifier` and `amber`.
+
 ```bash
 flutter pub add ndk
+```
+
+Optional:
+
+```bash
+flutter pub add ndk_rust_verifier
+flutter pub add ndk_amber
 ```
 
 ## Import
@@ -73,12 +87,20 @@ flutter pub add ndk
 import 'package:ndk/ndk.dart';
 ```
 
+Optional:
+
+```dart
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
+import 'package:ndk_amber/ndk_amber.dart';
+```
+
 ## Usage
 
-> **usage [examples](https://github.com/relaystr/ndk/tree/master/example)**
+> **more [examples 🔗](https://github.com/relaystr/ndk/tree/master/packages/ndk/example)**
 
 ```dart
 import 'package:ndk/ndk.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 
 // init
 Ndk ndk = Ndk(
@@ -105,7 +127,8 @@ await for (final event in response.stream) {
 }
 ```
 
-$~~~~~~~~~~~$
+> We strongly recommend using `RustEventVerifier()` for client applications. It uses a separate thread for signature verification and is therefore more performant.
+> $~~~~~~~~~~~$
 
 ---
 
@@ -187,7 +210,7 @@ more details on <https://mikedilger.com/gossip-model/>
 
 $~~~~~~~~~~~$
 
-# [Changelog 🔗](https://github.com/relaystr/ndk/blob/master/CHANGELOG.md)
+# [Changelog 🔗](./packages/ndk/CHANGELOG.md)
 
 $~~~~~~~~~~~$
 
@@ -197,14 +220,20 @@ $~~~~~~~~~~~$
 
 Install [prerequisites](#prerequisites)
 
-If you work on rust code (`rust_builder/rust`) run `flutter_rust_bridge_codegen generate --watch` to generate the rust dart glue code.
+run `melos bootstrap` to install all dependencies.
+
+If you work on rust code (`packages/rust_verifier/rust_builder/rust`) run `flutter_rust_bridge_codegen generate --watch` to generate the rust dart glue code.
 
 Run build runner: (e.g for generating mocks)\
 `dart run build_runner build`
 
 ## Architecture
 
-This project uses Clean Architecture. Reasons for it being clear separation of concerns and therefore making it more accessible for future contributors.\
+The repo is setup as a monorepo and packages are split to enable user choice of what to include.\
+The main package is `ndk` which is the main entry point for the lib user. \
+Other packages like `rust_verifier` or `amber` are optional and can be included if needed.
+
+NDK uses Clean Architecture. Reasons for it being clear separation of concerns and therefore making it more accessible for future contributors.\
 You can read more about it [here](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
 
 For initialization we use `presentation_layer/init.dart` to assemble all dependencies, these are then exposed in `presentation_layer/ndk.dart` the main entry point for the lib user.
@@ -214,7 +243,7 @@ The lib user is supposed to keep the [NDK] object in memory.
 
 Other state objects are created on demand, for example [RequestState] for each request.
 
-### Folder Structure
+### Folder Structure of `ndk`
 
 ```bash
 lib/
