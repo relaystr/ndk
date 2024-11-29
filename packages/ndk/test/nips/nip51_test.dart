@@ -42,6 +42,7 @@ void main() {
 
       Nip51Set relaySet = Nip51Set(
           pubKey: key1.publicKey,
+          kind: Nip51List.RELAY_SET,
           name: "test",
           createdAt: Helpers.now,
           elements: []);

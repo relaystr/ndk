@@ -237,8 +237,9 @@ class Nip51Set extends Nip51List {
     required this.name,
     required super.createdAt,
     required super.elements,
+    required super.kind,
     this.title,
-  }) : super(kind: Nip51List.RELAY_SET);
+  }) : super();
 
   static Future<Nip51Set?> fromEvent(
     Nip01Event event,
@@ -249,10 +250,12 @@ class Nip51Set extends Nip51List {
       return null;
     }
     Nip51Set set = Nip51Set(
-        pubKey: event.pubKey,
-        name: name,
-        createdAt: event.createdAt,
-        elements: []);
+      pubKey: event.pubKey,
+      name: name,
+      createdAt: event.createdAt,
+      kind: event.kind,
+      elements: [],
+    );
     set.id = event.id;
     if (Helpers.isNotBlank(event.content) &&
         signer != null &&

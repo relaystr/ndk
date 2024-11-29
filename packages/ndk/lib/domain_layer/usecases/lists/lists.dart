@@ -197,6 +197,7 @@ class Lists {
     list ??= Nip51Set(
         name: name,
         pubKey: eventSigner.getPublicKey(),
+        kind: Nip51List.RELAY_SET,
         createdAt: Helpers.now,
         elements: []);
     list.addRelay(relayUrl, private);
@@ -244,6 +245,7 @@ class Lists {
         defaultRelaysIfEmpty.isNotEmpty) {
       relaySet = Nip51Set(
           name: name,
+          kind: Nip51List.RELAY_SET,
           pubKey: eventSigner.getPublicKey(),
           createdAt: Helpers.now,
           elements: []);
