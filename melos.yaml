@@ -8,6 +8,7 @@ packages:
   - packages/objectbox
   - packages/rust_verifier
   - packages/rust_verifier/rust_builder
+  - packages/nwc
 
 scripts:
   analyze:
