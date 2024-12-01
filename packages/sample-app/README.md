@@ -2,14 +2,16 @@
 
 Example flutter app using NDK
 
+Main package: [🔗 Dart Nostr Development Kit (NDK)](https://pub.dev/packages/ndk)
+
 ## Getting Started
 
-0. make sure you have [prerequisites](https://github.com/relaystr/ndk?tab=readme-ov-file#prerequisites) installed
+0. make sure you have [prerequisites](https://pub.dev/packages/ndk#prerequisites) installed
 
 1. clone repository
    `git clone https://github.com/relaystr/ndk.git`
 
-2. change dir into sample app `cd ./sample-app`
+2. change dir into sample app `cd ./packages/sample-app`
 
 3. download packages `flutter pub get`
 
