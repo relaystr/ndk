@@ -76,8 +76,7 @@ class RelayManager {
     if (bootstrapRelays.isEmpty) {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
-    await Future.wait(
-            urls.map((url) => connectRelay(url)).toList())
+    await Future.wait(urls.map((url) => connectRelay(url)).toList())
         .whenComplete(() {
       if (!_seedRelaysCompleter.isCompleted) {
         _seedRelaysCompleter.complete();
@@ -116,8 +115,10 @@ class RelayManager {
   }
 
   /// Connect a new relay
-  Future<bool> connectRelay(String dirtyUrl,
-      {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
+  Future<bool> connectRelay(
+    String dirtyUrl, {
+    int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
+  }) async {
     String? url = cleanRelayUrl(dirtyUrl);
     if (url == null) {
       return false;
@@ -148,10 +149,8 @@ class RelayManager {
       // );
 
       transports[url] = nostrTransportFactory(url);
-      await transports[url]!
-          .ready
-          .timeout(Duration(seconds: connectTimeout),
-              onTimeout: () {
+      await transports[url]!.ready.timeout(Duration(seconds: connectTimeout),
+          onTimeout: () {
         print("timed out connecting to relay $url");
       });
 
@@ -273,7 +272,7 @@ class RelayManager {
       handleEOSE(eventJson, url);
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
-          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson.length>2?eventJson[2]:''}");
+          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
     // TODO
