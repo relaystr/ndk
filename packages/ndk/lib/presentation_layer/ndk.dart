@@ -1,8 +1,8 @@
+import '../data_layer/repositories/cache_manager/mem_cache_manager.dart';
+import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
-import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/follows/follows.dart';
-
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
@@ -33,6 +33,13 @@ class Ndk {
           ndkConfig: config,
           globalState: _globalState,
         );
+
+  /// Creates a new instance of [Ndk] with default configuration
+  Ndk.defaultConfig()
+      : this(NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: Bip340EventVerifier(),
+        ));
 
   /// Provides access to low-level Nostr requests.
   ///
