@@ -1,7 +1,7 @@
 // ignore_for_file: camel_case_types
 
 import 'package:equatable/equatable.dart';
-import 'package:ndk_nwc/commands/nwc_response.dart';
+import 'nwc_response.dart';
 import 'package:ndk_nwc/consts/nwc_method.dart';
 
 /// Represents the result of a 'list_transactions' response.

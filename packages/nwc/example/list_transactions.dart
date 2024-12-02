@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk_nwc/commands/list_transactions_response.dart';
 import 'package:ndk_nwc/consts/transaction_type.dart';
 import 'package:ndk_nwc/nwc.dart';
 import 'package:ndk_nwc/nwc_connection.dart';
+import 'package:ndk_nwc/responses/list_transactions_response.dart';
 import 'package:test/test.dart';
 
 void main() {

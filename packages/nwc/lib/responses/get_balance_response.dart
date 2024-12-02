@@ -1,6 +1,6 @@
 // ignore_for_file: camel_case_types
 
-import 'package:ndk_nwc/commands/nwc_response.dart';
+import 'nwc_response.dart';
 
 /// Represents the result of a 'get_balance' response.
 class GetBalanceResponse extends NwcResponse {

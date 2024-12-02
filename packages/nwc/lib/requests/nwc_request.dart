@@ -1,14 +1,22 @@
 import 'dart:convert';
 
-import 'package:meta/meta.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk_nwc/consts/nwc_method.dart';
+import 'get_balance.dart';
+import 'get_info.dart';
+import 'list_transactions.dart';
+import 'lookup_invoice.dart';
+import 'make_invoice.dart';
+import 'multi_pay_invoice.dart';
+import 'multi_pay_keysend.dart';
+import 'pay_invoice.dart';
+import 'pay_keysend.dart';
 import 'package:ndk_nwc/tlv_record.dart';
 
 import '../consts/transaction_type.dart';
 
-sealed class NwcRequest {
+class NwcRequest {
   final NwcMethod method;
 
   const NwcRequest({
@@ -114,231 +122,6 @@ sealed class NwcRequest {
   Map<String, dynamic> toMap() {
     return {
       'method': method.name,
-    };
-  }
-}
-
-// Subclass for requests to get info like supported methods
-@immutable
-class GetInfoRequest extends NwcRequest {
-  const GetInfoRequest() : super(method: NwcMethod.GET_INFO);
-}
-
-// Subclass for requests to get balance
-@immutable
-class GetBalanceRequest extends NwcRequest {
-  const GetBalanceRequest() : super(method: NwcMethod.GET_BALANCE);
-}
-
-// Subclass for requests to make a bolt11 invoice
-class MakeInvoiceRequest extends NwcRequest {
-  final int amountSat;
-  final String? description;
-  final String? descriptionHash;
-  final int? expiry;
-
-  const MakeInvoiceRequest({
-    required amountMsat,
-    this.description,
-    this.descriptionHash,
-    this.expiry,
-  })  : amountSat = amountMsat ~/ 1000,
-        super(method: NwcMethod.MAKE_INVOICE);
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      ...super.toMap(),
-      'params': {
-        'amount': amountSat * 1000,
-        if (description != null) 'description': description,
-        if (descriptionHash != null) 'description_hash': descriptionHash,
-        if (expiry != null) 'expiry': expiry,
-      }
-    };
-  }
-}
-
-// Subclass for requests to pay a bolt11 invoice
-class PayInvoiceRequest extends NwcRequest {
-  final String invoice;
-
-  const PayInvoiceRequest({
-    required this.invoice,
-  }) : super(method: NwcMethod.PAY_INVOICE);
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      ...super.toMap(),
-      'params': {
-        'invoice': invoice,
-      }
-    };
-  }
-}
-
-// Subclass for requests to pay multiple bolt11 invoices
-class MultiPayInvoiceRequest extends NwcRequest {
-  final List<MultiPayInvoiceRequestInvoicesElement> invoices;
-
-  const MultiPayInvoiceRequest({
-    required this.invoices,
-  }) : super(method: NwcMethod.MULTI_PAY_INVOICE);
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      ...super.toMap(),
-      'params': {
-        'invoices': invoices.map((e) => e.toMap()).toList(),
-      }
-    };
-  }
-}
-
-class MultiPayInvoiceRequestInvoicesElement {
-  final String invoice;
-  final int amountSat;
-
-  const MultiPayInvoiceRequestInvoicesElement({
-    required this.invoice,
-    required amountMsat,
-  }) : amountSat = amountMsat ~/ 1000;
-
-  Map<String, dynamic> toMap() {
-    return {
-      'params': {
-        'invoice': invoice,
-        'amount': amountSat * 1000,
-      }
-    };
-  }
-}
-
-// Subclass for requests for a keysend payment
-class PayKeysendRequest extends NwcRequest {
-  final int amountSat;
-  final String pubkey;
-  final String? preimage;
-  final List<TlvRecord>? tlvRecords;
-
-  const PayKeysendRequest({
-    required amountMsat,
-    required this.pubkey,
-    this.preimage,
-    this.tlvRecords,
-  })  : amountSat = amountMsat ~/ 1000,
-        super(method: NwcMethod.PAY_KEYSEND);
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      ...super.toMap(),
-      'params': {
-        'amount': amountSat * 1000,
-        'pubkey': pubkey,
-        if (preimage != null) 'preimage': preimage,
-        'tlv_records': tlvRecords?.map((e) => e.toMap()).toList(),
-      }
-    };
-  }
-}
-
-// Subclass for requests to pay multiple keysend payments
-class MultiPayKeysendRequest extends NwcRequest {
-  final List<MultiPayKeysendRequestInvoicesElement> keysends;
-
-  const MultiPayKeysendRequest({
-    required this.keysends,
-  }) : super(method: NwcMethod.MULTI_PAY_KEYSEND);
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      ...super.toMap(),
-      'params': {
-        'keysends': keysends.map((e) => e.toMap()).toList(),
-      }
-    };
-  }
-}
-
-class MultiPayKeysendRequestInvoicesElement  {
-  final String pubkey;
-  final int amountSat;
-  final String? preimage;
-  final List<TlvRecord>? tlvRecords;
-
-  const MultiPayKeysendRequestInvoicesElement({
-    required this.pubkey,
-    required amountMsat,
-    this.preimage,
-    this.tlvRecords,
-  }) : amountSat = amountMsat ~/ 1000;
-
-  Map<String, dynamic> toMap() {
-    return {
-      'pubkey': pubkey,
-      'amount': amountSat * 1000,
-      if (preimage != null) 'preimage': preimage,
-      'tlv_records': tlvRecords?.map((e) => e.toMap()).toList(),
-    };
-  }
-}
-
-// Subclass for requests to look up an invoice
-class LookupInvoiceRequest extends NwcRequest {
-  final String? paymentHash;
-  final String? invoice;
-
-  const LookupInvoiceRequest({
-    this.paymentHash,
-    this.invoice,
-  }) : super(method: NwcMethod.LOOKUP_INVOICE);
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      ...super.toMap(),
-      'params' : {
-        if (paymentHash != null) 'payment_hash': paymentHash,
-        if (invoice != null) 'invoice': invoice,
-      }
-    };
-  }
-}
-
-// Subclass for requests to get a list of transactions
-class ListTransactionsRequest extends NwcRequest {
-  final int? from;
-  final int? until;
-  final int? limit;
-  final int? offset;
-  final bool unpaid;
-  final TransactionType? type;
-
-  const ListTransactionsRequest({
-    this.from,
-    this.until,
-    this.limit,
-    this.offset,
-    this.unpaid = false,
-    this.type,
-  }) : super(method: NwcMethod.LIST_TRANSACTIONS);
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      ...super.toMap(),
-      'params' : {
-        if (from != null) 'from': from,
-        if (until != null) 'until': until,
-        if (limit != null) 'limit': limit,
-        if (offset != null) 'offset': offset,
-        'unpaid': unpaid,
-        if (type != null) 'type': type!.name,
-      }
     };
   }
 }
