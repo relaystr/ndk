@@ -212,7 +212,7 @@ class Nwc {
   }
 
   Future<PayInvoiceResponse> payInvoice(
-      NwcConnection connection, String invoice) async {
+      NwcConnection connection, {required String invoice}) async {
     return _executeRequest<PayInvoiceResponse>(
         connection, PayInvoiceRequest(invoice: invoice));
   }
