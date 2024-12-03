@@ -3,7 +3,7 @@
 
 # NWC
 
-<img src="https://framerusercontent.com/assets/zipB5Tdnkw0u2uMIStFerslkTa4.png" />
+<img align="right" src="https://framerusercontent.com/assets/zipB5Tdnkw0u2uMIStFerslkTa4.png" width="200px" />
 
 Nostr Wallet Connect implementation for dart NDK.
 https://nwc.dev
