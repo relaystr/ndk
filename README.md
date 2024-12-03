@@ -15,7 +15,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 Core package of the NDK.
 
-## [🔗 amber](./packages/ndk_amber/)
+## [🔗 amber](./packages/amber/)
 
 Amber signer compatible with the NDK.
 
@@ -26,6 +26,10 @@ ObjectBox database implementation.
 ## [🔗 rust verifier](./packages/rust_verifier/)
 
 Event verifier written in Rust.
+
+## [🔗 NWC](./packages/nwc/)
+
+Nostr Wallet Connect implementation
 
 ## [🔗 sample app](./packages/sample-app/)
 
