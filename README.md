@@ -13,7 +13,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 ## [🔗 Dart Nostr Development Kit (NDK)](./packages/ndk/)
 
-Core package of the NDK.
+Core package of the NDK. Go here for instructions on how to use the NDK. 📜
 
 ## [🔗 amber](./packages/amber/)
 
