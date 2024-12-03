@@ -42,7 +42,9 @@ void main() async {
       //cache.saveContactList(cache1ContactList);
     });
 
-    tearDown(() async {});
+    tearDown(() async {
+      await ndk.close();
+    });
 
     test('user relay lists equal', () {
       expect(cache0, equals(cache0));

@@ -49,6 +49,7 @@ void main() async {
     });
 
     tearDown(() async {
+      await ndk.close();
       await relay0.stopServer();
     });
 
