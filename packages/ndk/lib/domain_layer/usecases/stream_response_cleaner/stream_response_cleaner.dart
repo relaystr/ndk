@@ -26,16 +26,6 @@ class StreamResponseCleaner {
     required this.outController,
     required this.timeout,
   }) {
-    if (timeout != null) {
-      Future.delayed(
-          Duration(
-            seconds: timeout!,
-          ), () {
-        if (!outController.isClosed) {
-          outController.close();
-        }
-      });
-    }
   }
 
   void call() {

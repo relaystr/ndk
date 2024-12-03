@@ -41,6 +41,14 @@ class Ndk {
           eventVerifier: Bip340EventVerifier(),
         ));
 
+  /// Creates a new instance of [Ndk] with default configuration and empty bootstrap relays
+  Ndk.emptyBootstrapRelaysConfig()
+      : this(NdkConfig(
+    cache: MemCacheManager(),
+    eventVerifier: Bip340EventVerifier(),
+    bootstrapRelays: []
+  ));
+
   /// Provides access to low-level Nostr requests.
   ///
   /// Use this to directly query or subscribe to notes from the Nostr network. \
@@ -72,4 +80,7 @@ class Ndk {
 
   /// Verifies NIP-05 events
   VerifyNip05 get nip05 => _initialization.verifyNip05;
+
+  /// Close all transports on relay manager
+  Future<void> close() async => await _initialization.relayManager.closeAllTransports();
 }

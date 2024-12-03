@@ -5,18 +5,16 @@ import 'package:ndk_nwc/nwc.dart';
 import 'package:ndk_nwc/nwc_connection.dart';
 import 'package:test/test.dart';
 
-void main() {
-  test('connect and get info', () async {
-    Ndk ndk = Ndk.defaultConfig();
-    Nwc nwc = Nwc(ndk);
+void main() async {
+  Ndk ndk = Ndk.emptyBootstrapRelaysConfig();
+  Nwc nwc = Nwc(ndk);
 
-    String testUri = Platform.environment['NWC_URI']!;
+  // use an NWC_URI env var or replace with your NWC uri connection
+  NwcConnection connection = await nwc.connect(Platform.environment['NWC_URI']!, doGetInfoMethod: true);
 
-    NwcConnection connection = await nwc.connect(testUri);
+  print("alias: ${connection.info!.alias}");
+  print("pubkey: ${connection.info!.pubkey}");
 
-    expect(connection, isNotNull);
-    expect(connection.info, isNotNull);
-    await expectLater(
-        connection.responseStream.stream, emitsInAnyOrder([isNotNull]));
-  });
+  await nwc.close();
+  await ndk.close();
 }

@@ -22,5 +22,4 @@ class NwcResponse {
       errorMessage = error["message"]??null;
     }
   }
-
 }
