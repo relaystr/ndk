@@ -62,6 +62,7 @@ void main() async {
       await expectLater(query.stream, emitsInAnyOrder(key1TextNotes.values));
 
       await relay1.stopServer();
+      await ndk.close();
     });
   });
 
@@ -191,6 +192,7 @@ void main() async {
         await expectLater(event, key4TextNotes[key4]);
         // print(event);
       }
+      await ndk.close();
     });
 
     // ================================================================================================
@@ -280,6 +282,8 @@ void main() async {
       /// todo: how to ALSO check if actually all notes are returned in the stream?
       //List<Nip01Event> expectedAllNotes = [...key1TextNotes.values, ...key2TextNotes.values, ...key3TextNotes.values, ...key4TextNotes.values];
       //expect(query, emitsInAnyOrder(key1TextNotes.values));
+      await ndk.close();
+
     });
 
     // ================================================================================================
@@ -364,6 +368,8 @@ void main() async {
       expect(relaySet.urls.contains(relay3.url), false);
       expect(relaySet.urls.contains(relay4.url), true);
       expect(relaySet.notCoveredPubkeys.isEmpty, true);
+      await ndk.close();
+
     });
 
     test(
@@ -405,6 +411,7 @@ void main() async {
       expect(relaySet.urls.contains(relay2.url), true);
       expect(relaySet.urls.contains(relay3.url), false);
       expect(relaySet.urls.contains(relay4.url), true);
+      await ndk.close();
     });
   });
   group("misc", () {
@@ -591,6 +598,8 @@ void main() async {
         print(
             "===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
         i++;
+        await ndk.close();
+
       }
     }
 
