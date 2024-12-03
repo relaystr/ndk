@@ -1,9 +1,10 @@
+<img align="right" src="https://framerusercontent.com/assets/zipB5Tdnkw0u2uMIStFerslkTa4.png" width="400px" />
+
 [![Pub](https://img.shields.io/pub/v/ndk_nwc.svg)](https://pub.dev/packages/ndk_nwc)
 [![License](https://img.shields.io/github/license/relaystr/ndk.svg)](LICENSE.txt)
 
 # NWC
 
-<img align="right" src="https://framerusercontent.com/assets/zipB5Tdnkw0u2uMIStFerslkTa4.png" width="200px" />
 
 Nostr Wallet Connect implementation for dart NDK.
 https://nwc.dev
