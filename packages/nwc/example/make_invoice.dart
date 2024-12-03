@@ -4,26 +4,21 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_nwc/nwc.dart';
 import 'package:ndk_nwc/nwc_connection.dart';
 import 'package:ndk_nwc/responses/make_invoice_response.dart';
-import 'package:test/test.dart';
 
-void main() {
-  test('make invoice', () async {
-    Ndk ndk = Ndk.defaultConfig();
-    Nwc nwc = Nwc(ndk);
+void main() async {
+  Ndk ndk = Ndk.emptyBootstrapRelaysConfig();
+  Nwc nwc = Nwc(ndk);
 
-    String testUri = Platform.environment['NWC_URI']!;
+  // use an NWC_URI env var or replace with your NWC uri connection
+  NwcConnection connection = await nwc.connect(Platform.environment['NWC_URI']!);
 
-    NwcConnection connection = await nwc.connect(testUri);
+  int amount = 1000;
+  String description = "hello";
+  MakeInvoiceResponse response = await nwc.makeInvoice(connection,
+      amountSats: amount, description: description);
 
-    int amount = 1000;
-    String description = "hello";
-    MakeInvoiceResponse response = await nwc.makeInvoice(connection,
-        amountSats: amount, description: description);
+  print("invoice: ${response.invoice}");
 
-    expect(response, isNotNull);
-    expect(response.amountSat, amount);
-    expect(response.invoice, isNotEmpty);
-    expect(response.invoice.startsWith("lnbc"), true);
-    expect(response.description, description);
-  });
+  await nwc.close();
+  await ndk.close();
 }

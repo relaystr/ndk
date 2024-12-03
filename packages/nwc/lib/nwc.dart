@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'responses/get_balance_response.dart';
 import 'responses/get_info_response.dart';
@@ -28,32 +29,32 @@ import 'nwc_notification.dart';
 class Nwc {
   static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
 
-  Ndk ndk;
+  Ndk _ndk;
 
-  Map<String, Completer<NwcResponse>> inflighRequests = {};
+  Map<String, Completer<NwcResponse>> _inflighRequests = {};
 
-  Nwc(this.ndk);
+  Set<NwcConnection> _connections = {};
+
+  Nwc(this._ndk);
 
   Future<NwcConnection> connect(String uri,
-      {Function(String?)? onError}) async {
+      {bool doGetInfoMethod=false, Function(String?)? onError}) async {
     var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
     var relay = Uri.decodeFull(parsedUri.relay);
     var filter =
         Filter(kinds: [NwcKind.INFO.value], authors: [parsedUri.walletPubkey]);
-    await ndk.relays.reconnectRelay(relay);
 
     Completer<NwcConnection> completer = Completer();
-    ndk.requests
+    _ndk.requests
         .query(
             name: "nwc-info",
             explicitRelays: [relay],
             filters: [filter],
+            timeout: 5,
             cacheRead: false,
             cacheWrite: false)
         .stream
-        .timeout(const Duration(seconds: 10), onTimeout: (sink) {
-      onError?.call("timed out...");
-    }).listen((event) async {
+        .listen((event) async {
       if (event.kind == NwcKind.INFO.value && event.content != "") {
         NwcConnection connection = NwcConnection(parsedUri);
 
@@ -71,11 +72,13 @@ class Nwc {
 
         await subscribeToNotificationsAndResponses(connection);
 
-        if (connection.permissions.contains(NwcMethod.GET_INFO.name)) {
+        if (doGetInfoMethod && connection.permissions.contains(NwcMethod.GET_INFO.name)) {
           await getInfo(connection).then((info) {
             connection.info = info;
           });
         }
+        Logger.log.i("NWC ${connection.uri} connected");
+        _connections.add(connection);
         completer.complete(connection);
       }
     });
@@ -84,7 +87,7 @@ class Nwc {
 
   Future<void> subscribeToNotificationsAndResponses(
       NwcConnection connection) async {
-    connection.subscription = ndk.requests.subscription(
+    connection.subscription = _ndk.requests.subscription(
         name: "nwc-sub",
         explicitRelays: [connection.uri.relay],
         filters: [
@@ -106,6 +109,8 @@ class Nwc {
         await onLegacyNotification(event, connection);
       } else if (event.kind == NwcKind.RESPONSE.value) {
         await onResponse(event, connection);
+      } else if (event.kind == NwcKind.NOTIFICATION.value) {
+        await onNotification(event, connection);
       }
       // else ignore
     });
@@ -136,14 +141,15 @@ class Nwc {
         response = NwcResponse(resultType: data['result_type']);
       }
       if (response != null) {
+        Logger.log.i("nwc response ${data}");
         response.deserializeError(data);
         connection.responseStream.add(response);
         var eId = event.getEId();
         if (eId != null) {
-          Completer<NwcResponse>? completer = inflighRequests[eId];
+          Completer<NwcResponse>? completer = _inflighRequests[eId];
           if (completer != null) {
             completer.complete(response);
-            inflighRequests.remove(eId);
+            _inflighRequests.remove(eId);
           }
         }
       }
@@ -158,15 +164,30 @@ class Nwc {
       Map<String, dynamic> data;
       data = json.decode(decrypted);
       if (data.containsKey("notification_type") &&
-          data['notification_type'] == NwcNotification.PAYMENT_RECEIVED &&
           data['notification'] != null) {
-        // TODO
-        // handlePayment(data);
+        NwcNotification notification = NwcNotification.fromMap(data['notification']);
+        connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
-        // TODO
-        // EasyLoading.showError("error ${data['error'].toString()}",
-        //     duration: const Duration(seconds: 5));
+        // TODO ??
       }
+    }
+  }
+
+  Future<void> onNotification(
+      Nip01Event event, NwcConnection connection) async {
+    if (event.content != "") {
+    // TODO
+    //   var decrypted = Nip44.decrypt(
+    //       connection.uri.secret, connection.uri.walletPubkey, event.content);
+    //   Map<String, dynamic> data;
+    //   data = json.decode(decrypted);
+    //   if (data.containsKey("notification_type") &&
+    //       data['notification'] != null) {
+    //     NwcNotification notification = NwcNotification.fromMap(data['notification']);
+    //     connection.notificationStream.add(notification);
+    //   } else if (data.containsKey("error")) {
+    //     // TODO ??
+    //   }
     }
   }
 
@@ -175,8 +196,8 @@ class Nwc {
     if (connection.permissions.contains(request.method.name)) {
       var json = request.toMap();
       var content = jsonEncode(json);
-      var encrypted = Nip04.encrypt(connection.uri.secret,
-          connection.uri.walletPubkey, content );
+      var encrypted = Nip04.encrypt(
+          connection.uri.secret, connection.uri.walletPubkey, content);
 
       Nip01Event event = Nip01Event(
           pubKey: connection.signer.getPublicKey(),
@@ -185,10 +206,10 @@ class Nwc {
             ["p", connection.uri.walletPubkey]
           ],
           content: encrypted);
-      await ndk.relays
+      await _ndk.relays
           .broadcastEvent(event, [connection.uri.relay], connection.signer);
       Completer<T> completer = Completer();
-      inflighRequests[event.id] = completer;
+      _inflighRequests[event.id] = completer;
       return completer.future;
     }
     throw Exception("${request.method.name} method not in permissions");
@@ -216,8 +237,8 @@ class Nwc {
             expiry: expiry));
   }
 
-  Future<PayInvoiceResponse> payInvoice(
-      NwcConnection connection, {required String invoice}) async {
+  Future<PayInvoiceResponse> payInvoice(NwcConnection connection,
+      {required String invoice}) async {
     return _executeRequest<PayInvoiceResponse>(
         connection, PayInvoiceRequest(invoice: invoice));
   }
@@ -244,5 +265,23 @@ class Nwc {
             offset: offset,
             unpaid: unpaid,
             type: type));
+  }
+
+  disconnect(NwcConnection connection) async {
+    if (connection.subscription != null) {
+      Logger.log.d("closing nwc subscription ${connection}....");
+      await _ndk.requests.closeSubscription(connection.subscription!.requestId);
+    }
+    Logger.log.d("closing nwc streams ${connection}....");
+    await connection.responseStream.close();
+    await connection.notificationStream.close();
+    _connections.remove(connection);
+  }
+
+  close() async {
+    List<NwcConnection> list = _connections.toList();
+    list.forEach((connection) async {
+      await disconnect(connection);
+    });
   }
 }

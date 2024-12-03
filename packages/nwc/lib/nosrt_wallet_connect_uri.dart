@@ -46,6 +46,5 @@ class NostrWalletConnectUri extends Equatable {
         walletPubkey,
         relay,
         secret,
-        lud16,
       ];
 }
