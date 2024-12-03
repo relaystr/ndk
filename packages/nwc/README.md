@@ -29,5 +29,3 @@ Main package: [🔗 Dart Nostr Development Kit (NDK)](https://pub.dev/packages/n
 ```
 
 > **more [examples 🔗](https://github.com/relaystr/ndk/tree/master/packages/nwc/example)**
-
-more examples
