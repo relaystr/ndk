@@ -27,6 +27,10 @@ ObjectBox database implementation.
 
 Event verifier written in Rust.
 
+## [🔗 NWC](./packages/nwc/)
+
+Nostr Wallet Connect implementation
+
 ## [🔗 sample app](./packages/sample-app/)
 
 example app using the NDK.
