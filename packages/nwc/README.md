@@ -4,8 +4,11 @@
 # NWC
 
 Nostr Wallet Connect implementation for dart NDK.
+https://nwc.dev
 
-Main package: [🔗 Dart Nostr Development Kit (NDK)](https://pub.dev/packages/ndk)
+## Resources
+- https://github.com/getAlby/awesome-nwc for more info how to get a wallet supporting NWC
+- https://github.com/nostr-protocol/nips/blob/master/47.md for protocol spec 
 
 ## Usage
 
