@@ -1,7 +1,7 @@
-import 'package:ndk/shared/nips/nip01/client_msg.dart';
-import 'package:ndk/domain_layer/entities/filter.dart';
-import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
-
+import '../../../../shared/nips/nip01/client_msg.dart';
+import '../../../entities/filter.dart';
+import '../../../entities/jit_engine_relay_connectivity_data.dart';
+import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
 import '../../jit_engine.dart';
 
@@ -10,27 +10,23 @@ import '../../jit_engine.dart';
 /// blast the request to all connected relays without adding the pubkey to the relay
 ///
 class RelayJitBlastAllStrategy {
+  /// send out the request
   static handleRequest({
     required RequestState requestState,
     required Filter filter,
-    required List<RelayJit> connectedRelays,
+    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+        connectedRelays,
     required bool closeOnEOSE,
   }) {
-    for (var connectedRelay in connectedRelays) {
-      // todo: do not overwrite the subscription if it already exists
-      // link the request id to the relay
-      connectedRelay.activeSubscriptions[requestState.id] =
-          RelayActiveSubscription(requestState.id, [filter], requestState);
+    for (final connectedRelay in connectedRelays) {
+      // todo: figure out the linking of the request to the relay
 
-      // link back
-      JitEngine.addRelayActiveSubscription(connectedRelay, requestState);
-
-      var clientMsg = ClientMsg(
+      final clientMsg = ClientMsg(
         ClientMsgType.REQ,
         id: requestState.id,
         filters: [filter],
       );
-      connectedRelay.send(clientMsg);
+      connectedRelay.relayTransport!.send(clientMsg);
     }
   }
 }

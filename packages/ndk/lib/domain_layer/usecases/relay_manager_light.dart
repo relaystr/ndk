@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as developer;
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
 import '../../shared/helpers/relay_helper.dart';
+import '../../shared/logger/logger.dart';
+import '../entities/connection_source.dart';
 import '../entities/global_state.dart';
 import '../entities/relay.dart';
 import '../entities/relay_connectivity.dart';
@@ -15,7 +18,8 @@ import '../repositories/nostr_transport.dart';
 class RelayManagerLight {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
 
-  get seedRelaysConnected => _seedRelaysCompleter.future;
+  /// completes when all seed relays are connected
+  Future<void> get seedRelaysConnected => _seedRelaysCompleter.future;
 
   GlobalState globalState;
   final NostrTransportFactory nostrTransportFactory;
@@ -23,8 +27,9 @@ class RelayManagerLight {
   RelayManagerLight({
     required this.globalState,
     required this.nostrTransportFactory,
+    List<String>? seedRelays,
   }) {
-    _connectSeedRelays();
+    _connectSeedRelays(urls: seedRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
 
   /// This will initialize the manager with bootstrap relays.
@@ -42,7 +47,14 @@ class RelayManagerLight {
     if (bootstrapRelays.isEmpty) {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
-    await Future.wait(urls.map((url) => connectRelay(url)).toList())
+    await Future.wait(urls
+            .map(
+              (url) => connectRelay(
+                dirtyUrl: url,
+                connectionSource: ConnectionSource.SEED,
+              ),
+            )
+            .toList())
         .whenComplete(() {
       if (!_seedRelaysCompleter.isCompleted) {
         _seedRelaysCompleter.complete();
@@ -50,11 +62,18 @@ class RelayManagerLight {
     });
   }
 
+  /// Returns a list of fully connected relays, excluding connecting ones.
+  List<RelayConnectivity> get connectedRelays => globalState.relays.values
+      .where((relay) =>
+          relay.relayTransport != null && relay.relayTransport!.isOpen())
+      .toList();
+
   /// Connects to a relay to the relay pool.
   /// Returns a tuple with the first element being a boolean indicating success \\
   /// and the second element being a string with the error message if any.
-  Future<Tuple<bool, String>> connectRelay(
-    String dirtyUrl, {
+  Future<Tuple<bool, String>> connectRelay({
+    required String dirtyUrl,
+    required ConnectionSource connectionSource,
     int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
   }) async {
     String? url = cleanRelayUrl(dirtyUrl);
@@ -66,7 +85,11 @@ class RelayManagerLight {
     }
     try {
       if (globalState.relays[url] == null) {
-        globalState.relays[url] = RelayConnectivity(relay: Relay(url));
+        globalState.relays[url] = RelayConnectivity(
+            relay: Relay(
+          url: url,
+          connectionSource: connectionSource,
+        ));
       }
       globalState.relays[url]!.relay.tryingToConnect();
 
@@ -136,11 +159,15 @@ class RelayManagerLight {
           Relay relay = relayConnectivity.relay;
 
           relay.stats.activeRequests++;
-          send(url, jsonEncode(list));
-          // TODO not sure if this works, since there are old streams on the ndk response???
+          _send(relayConnectivity, jsonEncode(list));
         }
       });
     });
+  }
+
+  void _send(RelayConnectivity relayConnectivity, dynamic data) {
+    relayConnectivity.relayTransport!.send(data);
+    Logger.log.d("send message to ${relayConnectivity.url}: $data");
   }
 
   _handleIncommingMessage(dynamic message, String url) {

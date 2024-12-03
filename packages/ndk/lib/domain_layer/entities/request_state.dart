@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import '../../config/rx_defaults.dart';
-import '../usecases/relay_jit_manager/relay_jit.dart';
 import 'filter.dart';
 import 'ndk_request.dart';
 import 'nip_01_event.dart';
@@ -47,10 +46,6 @@ class RequestState {
 
   //! our requests tracking obj
   Map<String, RelayRequestState> requests = {};
-
-  // string is the relay url
-  // TODO this class should not hold anything JIT specific
-  Map<String, RelayJit> activeRelaySubscriptions = {};
 
   NdkRequest request;
 

@@ -5,60 +5,47 @@ import '../../shared/logger/logger.dart';
 import '../entities/broadcast_response.dart';
 import '../entities/connection_source.dart';
 import '../entities/global_state.dart';
+import '../entities/jit_engine_relay_connectivity_data.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/read_write_marker.dart';
+import '../entities/relay_connectivity.dart';
 import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
 import 'engines/network_engine.dart';
-import 'relay_jit_manager/relay_jit.dart';
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_all.dart';
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_other_read.dart';
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_own.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
+import 'relay_manager_light.dart';
 
+/// Just In Time Network Engine
+/// This engine is responsible for handling all nostr network requests
 class JitEngine with Logger implements NetworkEngine {
+  /// event signer for signing events
   EventSigner? eventSigner;
-  CacheManager cache;
-  List<String> ignoreRelays;
-  List<String> seedRelays;
 
+  /// cache manager for caching events
+  CacheManager cache;
+
+  /// relays to ignore
+  List<String> ignoreRelays;
+
+  /// manager for all relays
+  RelayManagerLight relayManagerLight;
+
+  /// global state of the ndk
   GlobalState globalState;
 
-  final Completer<void> _seedRelaysCompleter = Completer<void>();
-  get seedRelaysConnected => _seedRelaysCompleter.future;
-
+  /// Creates a new JIT engine.
   JitEngine({
     this.eventSigner,
+    required this.relayManagerLight,
     required this.cache,
     required this.ignoreRelays,
-    required this.seedRelays,
     required this.globalState,
-  }) {
-    _connectSeedRelays(cleanRelayUrls(seedRelays));
-  }
-
-  _connectSeedRelays(List<String> seedRelays) async {
-    List<Future> futures = [];
-    // init seed relays
-    for (var seedRelay in seedRelays) {
-      var relay = RelayJit(
-        url: seedRelay,
-        onMessage: onMessage,
-      );
-      var future = relay
-          .connect(connectionSource: ConnectionSource.SEED)
-          .then((success) => {
-                if (success) {globalState.connectedRelays.add(relay)}
-              });
-      futures.add(future);
-    }
-    // wait for all futures to complete
-    Future.wait(futures).whenComplete(() {
-      _seedRelaysCompleter.complete();
-    });
-  }
+  }) {}
 
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it
@@ -67,7 +54,7 @@ class JitEngine with Logger implements NetworkEngine {
   void handleRequest(
     RequestState requestState,
   ) async {
-    await seedRelaysConnected;
+    await relayManagerLight.seedRelaysConnected;
 
     final ndkRequest = requestState.request;
 
@@ -84,7 +71,7 @@ class JitEngine with Logger implements NetworkEngine {
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: globalState.connectedRelays,
+          connectedRelays: relayManagerLight.connectedRelays,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
@@ -100,7 +87,7 @@ class JitEngine with Logger implements NetworkEngine {
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: globalState.connectedRelays,
+          connectedRelays: relayManagerLight.connectedRelays,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
@@ -123,7 +110,7 @@ class JitEngine with Logger implements NetworkEngine {
       RelayJitBlastAllStrategy.handleRequest(
         requestState: requestState,
         filter: filter,
-        connectedRelays: globalState.connectedRelays,
+        connectedRelays: relayManagerLight.connectedRelays,
         closeOnEOSE: requestState.request.closeOnEOSE,
       );
     }
@@ -140,7 +127,7 @@ class JitEngine with Logger implements NetworkEngine {
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
-      await seedRelaysConnected;
+      await relayManagerLight.seedRelaysConnected;
 
       if (specificRelays != null) {
         return RelayJitBroadcastAllStrategy.broadcast(
@@ -188,12 +175,14 @@ class JitEngine with Logger implements NetworkEngine {
     }
   }
 
-  static doesRelayCoverPubkey(
-    RelayJit relay,
+  /// checks if relay covers given pubkey in given direction
+  static bool doesRelayCoverPubkey(
+    RelayConnectivity<JitEngineRelayConnectivityData> relay,
     String pubkey,
     ReadWriteMarker direction,
   ) {
-    for (RelayJitAssignedPubkey assignedPubkey in relay.assignedPubkeys) {
+    for (RelayJitAssignedPubkey assignedPubkey
+        in relay.specificEngineData!.assignedPubkeys) {
       if (assignedPubkey.pubkey == pubkey) {
         switch (direction) {
           case ReadWriteMarker.readOnly:
@@ -226,11 +215,5 @@ class JitEngine with Logger implements NetworkEngine {
       await sub.activeSubscriptions[requestState.id]?.eoseReceived;
     }
     requestState.networkController.close();
-  }
-
-  /// addRelayActiveSubscription to request
-  static void addRelayActiveSubscription(
-      RelayJit relay, RequestState requestState) {
-    requestState.activeRelaySubscriptions[relay.url] = relay;
   }
 }

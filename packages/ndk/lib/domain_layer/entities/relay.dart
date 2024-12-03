@@ -1,3 +1,4 @@
+import 'connection_source.dart';
 import 'nip_01_event.dart';
 import 'relay_info.dart';
 import 'relay_stats.dart';
@@ -21,7 +22,12 @@ class Relay {
   /// relay stats
   RelayStats stats = RelayStats();
 
-  Relay(this.url);
+  ConnectionSource connectionSource;
+
+  Relay({
+    required this.url,
+    required this.connectionSource,
+  });
 
   /// does this relay support given nip
   bool supportsNip(int nip) {

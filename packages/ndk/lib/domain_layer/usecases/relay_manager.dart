@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
 
+import 'package:ndk/domain_layer/entities/connection_source.dart';
+
 import '../../config/bootstrap_relays.dart';
 import '../../event_filter.dart';
 import '../../shared/helpers/relay_helper.dart';
@@ -128,7 +130,10 @@ class RelayManager {
     }
     try {
       if (relays[url] == null) {
-        relays[url] = Relay(url);
+        relays[url] = Relay(
+          url: url,
+          connectionSource: ConnectionSource.UNKNOWN,
+        );
       }
       relays[url]!.tryingToConnect();
       if (url.startsWith("wss://brb.io")) {
