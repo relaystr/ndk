@@ -15,7 +15,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 Core package of the NDK.
 
-## [🔗 amber](./packages/ndk_amber/)
+## [🔗 amber](./packages/amber/)
 
 Amber signer compatible with the NDK.
 
