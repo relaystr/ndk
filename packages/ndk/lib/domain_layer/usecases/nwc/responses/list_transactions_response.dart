@@ -2,7 +2,7 @@
 
 import 'package:equatable/equatable.dart';
 import 'nwc_response.dart';
-import 'package:ndk_nwc/consts/nwc_method.dart';
+import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 
 /// Represents the result of a 'list_transactions' response.
 class ListTransactionsResponse extends NwcResponse {

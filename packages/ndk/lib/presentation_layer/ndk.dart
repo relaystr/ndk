@@ -57,6 +57,8 @@ class Ndk {
   /// Provides access to low-level Nostr broadcast/publish.
   Broadcast get broadcast => _initialization.broadcast;
 
+  RelayManager get relays => _initialization.relayManager;
+
   /// Handles operations related to user follows
   ///
   /// Use getContactList() to retrieve contact lists
@@ -78,6 +80,12 @@ class Ndk {
   /// Verifies NIP-05 events
   VerifyNip05 get nip05 => _initialization.verifyNip05;
 
+  /// Nostr Wallet connect
+  Nwc get nwc => _initialization.nwc;
+
   /// Close all transports on relay manager
-  Future<void> close() async => await _initialization.relayManager.closeAllTransports();
+  Future<void> destroy() async {
+    await nwc.disconnectAll();
+    await _initialization.relayManager.closeAllTransports();
+  }
 }

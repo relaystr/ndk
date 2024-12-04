@@ -143,6 +143,14 @@ class RelaySetsEngine implements NetworkEngine {
   @override
   Future<void> handleRequest(RequestState state) async {
     await _relayManager.seedRelaysConnected;
+    state.request.onTimeout = (state) {
+      Logger.log.w(
+          "request ${state.request.id} : ${state.request.filters} timed out after ${state.request.timeout}");
+      for (var url in state.requests.keys) {
+        _relayManager.sendCloseToRelay(url, state.id);
+      }
+      _relayManager.removeInFlightRequestById(state.id);
+    };
 
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
@@ -246,6 +254,7 @@ class RelaySetsEngine implements NetworkEngine {
                 event: nostrEvent,
               ));
         }
+        return;
       }
       // =====================================================================================
       // own outbox

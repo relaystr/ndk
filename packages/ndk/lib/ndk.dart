@@ -27,6 +27,14 @@ export 'domain_layer/entities/relay.dart';
 export 'domain_layer/entities/relay_set.dart';
 export 'domain_layer/entities/metadata.dart';
 
+export 'domain_layer/usecases/nwc/responses/get_balance_response.dart';
+export 'domain_layer/usecases/nwc/responses/get_info_response.dart';
+export 'domain_layer/usecases/nwc/responses/make_invoice_response.dart';
+export 'domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
+export 'domain_layer/usecases/nwc/responses/list_transactions_response.dart';
+export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
+export 'domain_layer/usecases/nwc/nwc_connection.dart';
+
 /**
  *  export classes that need to be injected
  * 
@@ -56,3 +64,4 @@ export 'domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 export 'domain_layer/usecases/lists/lists.dart';
 export 'domain_layer/usecases/relay_sets/relay_sets.dart';
 export 'domain_layer/usecases/broadcast/broadcast.dart';
+export 'domain_layer/usecases/nwc/nwc.dart';

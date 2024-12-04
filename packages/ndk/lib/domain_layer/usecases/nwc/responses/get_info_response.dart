@@ -1,6 +1,6 @@
 // ignore_for_file: camel_case_types
 
-import 'package:ndk_nwc/consts/bitcoin_network.dart';
+import 'package:ndk/domain_layer/usecases/nwc/consts/bitcoin_network.dart';
 
 import 'nwc_response.dart';
 

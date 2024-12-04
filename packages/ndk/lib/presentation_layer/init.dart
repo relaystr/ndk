@@ -4,7 +4,6 @@ import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
-import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
@@ -16,6 +15,8 @@ import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
 import '../domain_layer/usecases/relay_manager_light.dart';
+import '../domain_layer/usecases/nwc/nwc.dart';
+import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
@@ -51,6 +52,7 @@ class Initialization {
   late Lists lists;
   late RelaySets relaySets;
   late Broadcast broadcast;
+  late Nwc nwc;
 
   late VerifyNip05 verifyNip05;
 
@@ -158,6 +160,11 @@ class Initialization {
     verifyNip05 = VerifyNip05(
       database: ndkConfig.cache,
       nip05Repository: nip05repository,
+    );
+
+    nwc = Nwc(
+      requests: requests,
+      broadcast: broadcast
     );
   }
 }
