@@ -32,11 +32,11 @@ class RequestState {
   // ids that got already returned by this request
   Set<String> returnedIds = {};
 
-  Timer? timeout;
+  Timer? _timeout;
 
   Stream<Nip01Event> get stream {
-    if (request.timeout != null && timeout==null) {
-      timeout = Timer(Duration(seconds: request.timeout!), () {
+    if (request.timeout != null && _timeout==null) {
+      _timeout = Timer(Duration(seconds: request.timeout!), () {
         if (request.onTimeout != null) {
           request.onTimeout!.call(this);
         }
@@ -78,8 +78,8 @@ class RequestState {
 
   Future<void> close() async {
     await networkController.close();
-    if (timeout!=null) {
-      timeout!.cancel();
+    if (_timeout!=null) {
+      _timeout!.cancel();
     }
   }
 }
