@@ -288,7 +288,7 @@ class RelaySetsEngine implements NetworkEngine {
 
     asyncStuff();
 
-    return NdkBroadcastResponse(publishedEvent: nostrEvent);
+    return NdkBroadcastResponse(publishEvent: nostrEvent);
   }
 
   @override

@@ -181,7 +181,8 @@ class RelayManagerLight {
       }
       globalState.activeBroadcasts[eventJson[1]]?.completePublishingRelay(
         url: relayConnectivity.url,
-        response: eventJson[2] ?? '',
+        success: eventJson[2],
+        response: eventJson[3] ?? '',
       );
 
       return;

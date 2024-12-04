@@ -164,7 +164,7 @@ class JitEngine with Logger implements NetworkEngine {
     }
 
     asyncStuff();
-    return NdkBroadcastResponse(publishedEvent: nostrEvent);
+    return NdkBroadcastResponse(publishEvent: nostrEvent);
   }
 
   /// close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
