@@ -23,8 +23,6 @@ class NwcConnection {
           // .broadcast
         ();
 
-  Timer? timeoutTimer;
-
   List<String> supportedVersions = ["0.0"];
 
   Set<String> permissions = {};

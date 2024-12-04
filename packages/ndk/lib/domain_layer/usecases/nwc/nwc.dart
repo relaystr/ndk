@@ -34,6 +34,7 @@ class Nwc {
         _broadcast = broadcast;
 
   Map<String, Completer<NwcResponse>> _inflighRequests = {};
+  Map<String, Timer> _inflighRequestTimers = {};
 
   Set<NwcConnection> _connections = {};
 
@@ -50,43 +51,43 @@ class Nwc {
 
     Completer<NwcConnection> completer = Completer();
 
-    // _requests
-    //     .query(
-    //         name: "nwc-info",
-    //         explicitRelays: [relay],
-    //         filters: [filter],
-    //         timeout: 5,
-    //         cacheRead: false,
-    //         cacheWrite: false)
-    //     .stream
-    //     .listen((event) async {
-    //   if (event.kind == NwcKind.INFO.value && event.content != "") {
-        NwcConnection connection = NwcConnection(parsedUri);
+    _requests
+        .query(
+            name: "nwc-info",
+            explicitRelays: [relay],
+            filters: [filter],
+            timeout: 5,
+            cacheRead: false,
+            cacheWrite: false)
+        .stream
+        .listen((event) async {
+      if (event.kind == NwcKind.INFO.value && event.content != "") {
+        final connection = NwcConnection(parsedUri);
 
-        // connection.permissions = event.content.split(" ").toSet();
-        //
-        // if (connection.permissions.length == 1) {
-        //   connection.permissions =
-        //       connection.permissions.first.split(",").toSet();
-        // }
+        connection.permissions = event.content.split(" ").toSet();
 
-        // List<String> versionTags = Nip01Event.getTags(event.tags, "v");
-        // if (versionTags.isNotEmpty) {
-        //   connection.supportedVersions = versionTags.first.split(" ");
-        // }
+        if (connection.permissions.length == 1) {
+          connection.permissions =
+              connection.permissions.first.split(",").toSet();
+        }
+
+        List<String> versionTags = Nip01Event.getTags(event.tags, "v");
+        if (versionTags.isNotEmpty) {
+          connection.supportedVersions = versionTags.first.split(" ");
+        }
 
         await _subscribeToNotificationsAndResponses(connection);
 
-        // if (doGetInfoMethod && connection.permissions.contains(NwcMethod.GET_INFO.name)) {
-        //   await getInfo(connection).then((info) {
-        //     connection.info = info;
-        //   });
-        // }
+        if (doGetInfoMethod && connection.permissions.contains(NwcMethod.GET_INFO.name)) {
+          await getInfo(connection).then((info) {
+            connection.info = info;
+          });
+        }
         Logger.log.i("NWC ${connection.uri} connected");
         _connections.add(connection);
         completer.complete(connection);
-    //   }
-    // });
+      }
+    });
     return completer.future;
   }
 
@@ -151,6 +152,10 @@ class Nwc {
         connection.responseStream.add(response);
         var eId = event.getEId();
         if (eId != null) {
+          Timer? timer = _inflighRequestTimers[eId];
+          if (timer!=null) {
+            timer.cancel();
+          }
           Completer<NwcResponse>? completer = _inflighRequests[eId];
           if (completer != null) {
             completer.complete(response);
@@ -198,7 +203,7 @@ class Nwc {
 
   Future<T> _executeRequest<T extends NwcResponse>(
       NwcConnection connection, NwcRequest request) async {
-    if (true || connection.permissions.contains(request.method.name)) {
+    if (connection.permissions.contains(request.method.name)) {
       var json = request.toMap();
       var content = jsonEncode(json);
       var encrypted = Nip04.encrypt(
@@ -216,13 +221,17 @@ class Nwc {
         specificRelays: [connection.uri.relay],
         customSigner: connection.signer
       );
-      connection.timeoutTimer = Timer(Duration(seconds: 5), () {
-        // TODO use a Timer for timeout for responses
-
-
-      });
       Completer<T> completer = Completer();
       _inflighRequests[event.id] = completer;
+      _inflighRequestTimers[event.id] = Timer(Duration(seconds: 3), () {
+        if (!completer.isCompleted) {
+          final error = "Timed out while executing NWC request ${request.method
+              .name} with relay ${connection.uri.relay}";
+          completer.completeError(error);
+          _inflighRequests.remove(event.id);
+          Logger.log.w(error);
+        }
+      });
       return completer.future;
     }
     throw Exception("${request.method.name} method not in permissions");
