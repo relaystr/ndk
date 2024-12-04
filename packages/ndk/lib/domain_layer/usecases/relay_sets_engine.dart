@@ -224,6 +224,7 @@ class RelaySetsEngine implements NetworkEngine {
           specificRelays,
           mySigner,
         );
+        return;
       }
       // =====================================================================================
       // own outbox

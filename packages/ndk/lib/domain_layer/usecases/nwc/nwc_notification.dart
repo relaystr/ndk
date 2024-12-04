@@ -1,4 +1,4 @@
-import 'package:ndk_nwc/consts/transaction_type.dart';
+import 'consts/transaction_type.dart';
 
 class NwcNotification {
   static const String PAYMENT_RECEIVED = "payment_received";

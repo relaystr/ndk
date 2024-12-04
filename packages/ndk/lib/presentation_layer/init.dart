@@ -14,6 +14,7 @@ import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
@@ -49,6 +50,7 @@ class Initialization {
   late Lists lists;
   late RelaySets relaySets;
   late Broadcast broadcast;
+  late Nwc nwc;
 
   late VerifyNip05 verifyNip05;
 
@@ -146,6 +148,11 @@ class Initialization {
     verifyNip05 = VerifyNip05(
       database: ndkConfig.cache,
       nip05Repository: nip05repository,
+    );
+
+    nwc = Nwc(
+      requests: requests,
+      broadcast: broadcast
     );
   }
 }

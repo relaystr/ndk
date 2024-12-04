@@ -1,4 +1,4 @@
-import 'package:ndk_nwc/consts/nwc_method.dart';
+import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 
 import 'nwc_request.dart';
 

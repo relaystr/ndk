@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:bip340/bip340.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk_nwc/nosrt_wallet_connect_uri.dart';
-import 'package:ndk_nwc/nwc_notification.dart';
+import 'nostr_wallet_connect_uri.dart';
+import 'nwc_notification.dart';
 
 import 'responses/get_info_response.dart';
 import 'responses/nwc_response.dart';

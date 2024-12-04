@@ -1,6 +1,8 @@
-import 'package:ndk_nwc/consts/nwc_method.dart';
-import 'package:ndk_nwc/tlv_record.dart';
 
+
+import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
+
+import '../tlv_record.dart';
 import 'nwc_request.dart';
 
 // Subclass for requests for a keysend payment

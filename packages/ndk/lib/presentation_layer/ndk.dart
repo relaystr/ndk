@@ -6,6 +6,7 @@ import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
@@ -81,6 +82,12 @@ class Ndk {
   /// Verifies NIP-05 events
   VerifyNip05 get nip05 => _initialization.verifyNip05;
 
+  /// Nostr Wallet connect
+  Nwc get nwc => _initialization.nwc;
+
   /// Close all transports on relay manager
-  Future<void> close() async => await _initialization.relayManager.closeAllTransports();
+  Future<void> destroy() async {
+    await nwc.disconnectAll();
+    await _initialization.relayManager.closeAllTransports();
+  }
 }

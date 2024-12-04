@@ -4,13 +4,12 @@ import 'dart:convert';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
-import 'responses/get_balance_response.dart';
-import 'responses/get_info_response.dart';
-import 'responses/list_transactions_response.dart';
-import 'responses/lookup_invoice_response.dart';
-import 'responses/pay_invoice_response.dart';
-import 'nosrt_wallet_connect_uri.dart';
-import 'nwc_connection.dart';
+
+import 'consts/nwc_kind.dart';
+import 'consts/nwc_method.dart';
+import 'consts/transaction_type.dart';
+import 'nostr_wallet_connect_uri.dart';
+import 'nwc_notification.dart';
 import 'requests/get_balance.dart';
 import 'requests/get_info.dart';
 import 'requests/list_transactions.dart';
@@ -18,25 +17,30 @@ import 'requests/lookup_invoice.dart';
 import 'requests/make_invoice.dart';
 import 'requests/nwc_request.dart';
 import 'requests/pay_invoice.dart';
-import 'responses/make_invoice_response.dart';
 import 'responses/nwc_response.dart';
-import 'consts/nwc_kind.dart';
-import 'consts/transaction_type.dart';
-import 'consts/nwc_method.dart';
-import 'nwc_notification.dart';
 
-/// Main entry point for the NWC (Nostr Wallet Connect) library.
+/// Main entry point for the NWC (Nostr Wallet Connect - NIP47 ) usecase
 class Nwc {
   static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
 
-  Ndk _ndk;
+  Requests _requests;
+  Broadcast _broadcast;
+
+  /// main constructor
+  Nwc({
+    required Requests requests,
+    required Broadcast broadcast,
+  })  : _requests = requests,
+        _broadcast = broadcast;
 
   Map<String, Completer<NwcResponse>> _inflighRequests = {};
 
   Set<NwcConnection> _connections = {};
 
-  Nwc(this._ndk);
-
+  /// Connects to a given nostr+walletconnect:// uri,
+  /// checking for 13194 event info, 
+  /// and optionally doing a `get_info` request (default false).
+  /// It subscribes for notifications 
   Future<NwcConnection> connect(String uri,
       {bool doGetInfoMethod=false, Function(String?)? onError}) async {
     var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
@@ -45,7 +49,7 @@ class Nwc {
         Filter(kinds: [NwcKind.INFO.value], authors: [parsedUri.walletPubkey]);
 
     Completer<NwcConnection> completer = Completer();
-    _ndk.requests
+    _requests
         .query(
             name: "nwc-info",
             explicitRelays: [relay],
@@ -70,7 +74,7 @@ class Nwc {
           connection.supportedVersions = versionTags.first.split(" ");
         }
 
-        await subscribeToNotificationsAndResponses(connection);
+        await _subscribeToNotificationsAndResponses(connection);
 
         if (doGetInfoMethod && connection.permissions.contains(NwcMethod.GET_INFO.name)) {
           await getInfo(connection).then((info) {
@@ -85,9 +89,9 @@ class Nwc {
     return completer.future;
   }
 
-  Future<void> subscribeToNotificationsAndResponses(
+  Future<void> _subscribeToNotificationsAndResponses(
       NwcConnection connection) async {
-    connection.subscription = _ndk.requests.subscription(
+    connection.subscription = _requests.subscription(
         name: "nwc-sub",
         explicitRelays: [connection.uri.relay],
         filters: [
@@ -106,17 +110,17 @@ class Nwc {
         cacheWrite: false);
     connection.subscription!.stream.listen((event) async {
       if (event.kind == NwcKind.LEGACY_NOTIFICATION.value) {
-        await onLegacyNotification(event, connection);
+        await _onLegacyNotification(event, connection);
       } else if (event.kind == NwcKind.RESPONSE.value) {
-        await onResponse(event, connection);
+        await _onResponse(event, connection);
       } else if (event.kind == NwcKind.NOTIFICATION.value) {
-        await onNotification(event, connection);
+        await _onNotification(event, connection);
       }
       // else ignore
     });
   }
 
-  Future<void> onResponse(Nip01Event event, NwcConnection connection) async {
+  Future<void> _onResponse(Nip01Event event, NwcConnection connection) async {
     if (event.content != '') {
       var decrypted = Nip04.decrypt(
           connection.uri.secret, connection.uri.walletPubkey, event.content);
@@ -156,7 +160,7 @@ class Nwc {
     }
   }
 
-  Future<void> onLegacyNotification(
+  Future<void> _onLegacyNotification(
       Nip01Event event, NwcConnection connection) async {
     if (event.content != "") {
       var decrypted = Nip04.decrypt(
@@ -173,7 +177,7 @@ class Nwc {
     }
   }
 
-  Future<void> onNotification(
+  Future<void> _onNotification(
       Nip01Event event, NwcConnection connection) async {
     if (event.content != "") {
     // TODO
@@ -206,8 +210,11 @@ class Nwc {
             ["p", connection.uri.walletPubkey]
           ],
           content: encrypted);
-      await _ndk.relays
-          .broadcastEvent(event, [connection.uri.relay], connection.signer);
+      await _broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: [connection.uri.relay],
+        customSigner: connection.signer
+      );
       Completer<T> completer = Completer();
       _inflighRequests[event.id] = completer;
       return completer.future;
@@ -215,14 +222,17 @@ class Nwc {
     throw Exception("${request.method.name} method not in permissions");
   }
 
+  /// Does a `get_info` request for returning node detailed info
   Future<GetInfoResponse> getInfo(NwcConnection connection) async {
     return _executeRequest<GetInfoResponse>(connection, GetInfoRequest());
   }
 
+  /// Does a `get_balance` request
   Future<GetBalanceResponse> getBalance(NwcConnection connection) async {
     return _executeRequest<GetBalanceResponse>(connection, GetBalanceRequest());
   }
 
+  /// Does a `make_invoie` request
   Future<MakeInvoiceResponse> makeInvoice(NwcConnection connection,
       {required int amountSats,
       String? description,
@@ -237,18 +247,21 @@ class Nwc {
             expiry: expiry));
   }
 
+  /// Does a `pay_invoice` request
   Future<PayInvoiceResponse> payInvoice(NwcConnection connection,
       {required String invoice}) async {
     return _executeRequest<PayInvoiceResponse>(
         connection, PayInvoiceRequest(invoice: invoice));
   }
 
+  /// Does a `lookup_invoice` request
   Future<LookupInvoiceResponse> lookupInvoice(NwcConnection connection,
       {String? paymentHash, String? invoice}) async {
     return _executeRequest<LookupInvoiceResponse>(connection,
         LookupInvoiceRequest(paymentHash: paymentHash, invoice: invoice));
   }
 
+  /// Does a `list_transactions` request
   Future<ListTransactionsResponse> listTransactions(NwcConnection connection,
       {int? from,
       int? until,
@@ -267,10 +280,12 @@ class Nwc {
             type: type));
   }
 
+  /// Disconnects everything related to this connection,
+  /// i.e.: closes response & notification subscription and streams
   disconnect(NwcConnection connection) async {
     if (connection.subscription != null) {
       Logger.log.d("closing nwc subscription ${connection}....");
-      await _ndk.requests.closeSubscription(connection.subscription!.requestId);
+      await _requests.closeSubscription(connection.subscription!.requestId);
     }
     Logger.log.d("closing nwc streams ${connection}....");
     await connection.responseStream.close();
@@ -278,7 +293,8 @@ class Nwc {
     _connections.remove(connection);
   }
 
-  close() async {
+  /// Disconnects all NWC connections
+  disconnectAll() async {
     List<NwcConnection> list = _connections.toList();
     list.forEach((connection) async {
       await disconnect(connection);
