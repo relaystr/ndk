@@ -10,20 +10,23 @@ https://nwc.dev
 ## Usage
 
 ```dart
-  final ndk = Ndk.emptyBootstrapRelaysConfig();
+import 'dart:io';
+import 'package:ndk/ndk.dart';
 
-  final connection = await ndk.nwc.connect(Platform.environment['NWC_URI']!);
+final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-  final balanceResponse = await ndk.nwc.getBalance(connection);
-  print("Balance: ${balanceResponse.balanceSats} sats");
+final connection = await ndk.nwc.connect(Platform.environment['NWC_URI']!);
 
-  final makeInvoice = await ndk.nwc.makeInvoice(connection, amountSats: 100);
-  print("paying ${makeInvoice.amountSat} sats invoice: ${makeInvoice.invoice}");
+final balanceResponse = await ndk.nwc.getBalance(connection);
+print("Balance: ${balanceResponse.balanceSats} sats");
 
-  final payInvoice = await ndk.nwc.payInvoice(connection, invoice: makeInvoice.invoice);
-  print("preimage: ${payInvoice.preimage}");
+final makeInvoice = await ndk.nwc.makeInvoice(connection, amountSats: 100);
+print("paying ${makeInvoice.amountSat} sats invoice: ${makeInvoice.invoice}");
 
-  await ndk.destroy();
+final payInvoice = await ndk.nwc.payInvoice(connection, invoice: makeInvoice.invoice);
+print("preimage: ${payInvoice.preimage}");
+
+await ndk.destroy();
 ```
 
 > **more [examples 🔗](https://github.com/relaystr/ndk/tree/master/packages/ndk/example/nwc)**
