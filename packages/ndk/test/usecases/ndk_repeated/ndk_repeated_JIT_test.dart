@@ -84,7 +84,7 @@ void main() async {
     });
 
     test('JIT Engine', timeout: const Timeout(Duration(seconds: 3)), () async {
-      Ndk ndkJit = Ndk(
+      final ndkJit = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
           eventSigner: Bip340EventSigner(

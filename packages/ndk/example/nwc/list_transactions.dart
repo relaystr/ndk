@@ -7,17 +7,18 @@ import 'package:test/test.dart';
 void main() async {
   // We use an empty bootstrap relay list,
   // since NWC will provide the relay we connect to so we don't need default relays
-  Ndk ndk = Ndk.emptyBootstrapRelaysConfig();
+  final ndk = Ndk.emptyBootstrapRelaysConfig();
 
   // You need an NWC_URI env var or to replace with your NWC uri connection
-  var nwcUri = Platform.environment['NWC_URI']!;
-  NwcConnection connection = await ndk.nwc.connect(nwcUri);
+  final nwcUri = Platform.environment['NWC_URI']!;
+  final connection = await ndk.nwc.connect(nwcUri);
 
   ListTransactionsResponse response = await ndk.nwc.listTransactions(connection,
-      unpaid: false, type: TransactionType.incoming);
+      unpaid: false);
 
   response.transactions.forEach((transaction) {
     print(
         "Transaction ${transaction.type} ${transaction.amountSat} sats ${transaction.description!}");
   });
+  await ndk.destroy();
 }

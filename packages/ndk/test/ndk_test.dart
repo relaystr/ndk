@@ -41,7 +41,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 3900);
       await relay1.startServer(textNotes: key1TextNotes);
 
-      Ndk ndk = Ndk(
+      final ndk = Ndk(
         NdkConfig(
             eventVerifier: Bip340EventVerifier(),
             eventSigner: Bip340EventSigner(
@@ -53,13 +53,13 @@ void main() async {
             bootstrapRelays: [relay1.url]),
       );
 
-      NdkResponse response = ndk.requests.query(filters: [
+      final response = ndk.requests.query(filters: [
         Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey])
       ]);
 
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
 
-      NdkResponse response2 = ndk.requests.query(filters: [
+      final response2 = ndk.requests.query(filters: [
         Filter(
           kinds: [Nip01Event.TEXT_NODE_KIND],
           authors: [key1.publicKey, key2.publicKey],
@@ -78,7 +78,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1", signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
-      Ndk ndk = Ndk(
+      final ndk = Ndk(
         NdkConfig(
             eventVerifier: MockEventVerifier(result: false),
             cache: MemCacheManager(),
@@ -86,7 +86,7 @@ void main() async {
             bootstrapRelays: [relay1.url]),
       );
 
-      NdkResponse response = ndk.requests.query(
+      final response = ndk.requests.query(
         filters: [
           Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND])
         ],

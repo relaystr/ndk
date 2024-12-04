@@ -43,7 +43,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: key1TextNotes);
 
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -165,7 +165,7 @@ void main() async {
 
     // ================================================================================================
     test('query events from key that writes only on one relay', () async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -228,7 +228,7 @@ void main() async {
     test(
         // skip: 'WiP',
         'query all keys and do not use redundant relays', () async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -330,7 +330,7 @@ void main() async {
     test(
         "calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays",
         () async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -375,7 +375,7 @@ void main() async {
     test(
         "calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays",
         () async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -548,7 +548,7 @@ void main() async {
         {String? expectedRelayUrl,
         int iterations = 1,
         required int relayMinCountPerPubKey}) async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,

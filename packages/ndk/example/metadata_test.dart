@@ -7,7 +7,7 @@ void main() async {
   test('metadata', () async {
     // Create an instance of Ndk
     // It's recommended to keep this instance global as it holds critical application state
-    final Ndk ndk = Ndk(
+    final ndk = Ndk(
       // Configure the Ndk instance using NdkConfig
       NdkConfig(
         // Use Bip340EventVerifier for event verification

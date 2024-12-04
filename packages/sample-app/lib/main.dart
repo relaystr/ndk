@@ -8,7 +8,7 @@ import 'amber_page.dart';
 
 bool amberAvailable = false;
 
-final Ndk ndk = Ndk(
+final ndk = Ndk(
   NdkConfig(
     eventVerifier: RustEventVerifier(),
     cache: MemCacheManager(),

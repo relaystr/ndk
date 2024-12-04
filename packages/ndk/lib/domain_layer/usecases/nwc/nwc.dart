@@ -49,43 +49,44 @@ class Nwc {
         Filter(kinds: [NwcKind.INFO.value], authors: [parsedUri.walletPubkey]);
 
     Completer<NwcConnection> completer = Completer();
-    _requests
-        .query(
-            name: "nwc-info",
-            explicitRelays: [relay],
-            filters: [filter],
-            timeout: 5,
-            cacheRead: false,
-            cacheWrite: false)
-        .stream
-        .listen((event) async {
-      if (event.kind == NwcKind.INFO.value && event.content != "") {
+
+    // _requests
+    //     .query(
+    //         name: "nwc-info",
+    //         explicitRelays: [relay],
+    //         filters: [filter],
+    //         timeout: 5,
+    //         cacheRead: false,
+    //         cacheWrite: false)
+    //     .stream
+    //     .listen((event) async {
+    //   if (event.kind == NwcKind.INFO.value && event.content != "") {
         NwcConnection connection = NwcConnection(parsedUri);
 
-        connection.permissions = event.content.split(" ").toSet();
+        // connection.permissions = event.content.split(" ").toSet();
+        //
+        // if (connection.permissions.length == 1) {
+        //   connection.permissions =
+        //       connection.permissions.first.split(",").toSet();
+        // }
 
-        if (connection.permissions.length == 1) {
-          connection.permissions =
-              connection.permissions.first.split(",").toSet();
-        }
-
-        List<String> versionTags = Nip01Event.getTags(event.tags, "v");
-        if (versionTags.isNotEmpty) {
-          connection.supportedVersions = versionTags.first.split(" ");
-        }
+        // List<String> versionTags = Nip01Event.getTags(event.tags, "v");
+        // if (versionTags.isNotEmpty) {
+        //   connection.supportedVersions = versionTags.first.split(" ");
+        // }
 
         await _subscribeToNotificationsAndResponses(connection);
 
-        if (doGetInfoMethod && connection.permissions.contains(NwcMethod.GET_INFO.name)) {
-          await getInfo(connection).then((info) {
-            connection.info = info;
-          });
-        }
+        // if (doGetInfoMethod && connection.permissions.contains(NwcMethod.GET_INFO.name)) {
+        //   await getInfo(connection).then((info) {
+        //     connection.info = info;
+        //   });
+        // }
         Logger.log.i("NWC ${connection.uri} connected");
         _connections.add(connection);
         completer.complete(connection);
-      }
-    });
+    //   }
+    // });
     return completer.future;
   }
 
@@ -197,7 +198,7 @@ class Nwc {
 
   Future<T> _executeRequest<T extends NwcResponse>(
       NwcConnection connection, NwcRequest request) async {
-    if (connection.permissions.contains(request.method.name)) {
+    if (true || connection.permissions.contains(request.method.name)) {
       var json = request.toMap();
       var content = jsonEncode(json);
       var encrypted = Nip04.encrypt(
@@ -215,6 +216,11 @@ class Nwc {
         specificRelays: [connection.uri.relay],
         customSigner: connection.signer
       );
+      connection.timeoutTimer = Timer(Duration(seconds: 5), () {
+        // TODO use a Timer for timeout for responses
+
+
+      });
       Completer<T> completer = Completer();
       _inflighRequests[event.id] = completer;
       return completer.future;
