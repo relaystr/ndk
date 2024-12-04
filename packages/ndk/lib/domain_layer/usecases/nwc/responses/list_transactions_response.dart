@@ -50,6 +50,9 @@ class TransactionResult extends Equatable {
   /// The amount of the transaction (in MSATs).
   final int amount;
 
+  /// The amount of the invoice (in SATS)
+  get amountSat => amount ~/ 1000;
+
   /// The fees paid for the transaction (in MSATs).
   final int feesPaid;
 

@@ -78,7 +78,7 @@ void main() async {
     });
 
     tearDown(() async {
-      await ndk.close();
+      await ndk.destroy();
       await relay0.stopServer();
     });
 

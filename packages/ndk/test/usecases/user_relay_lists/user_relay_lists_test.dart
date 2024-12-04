@@ -43,7 +43,7 @@ void main() async {
     });
 
     tearDown(() async {
-      await ndk.close();
+      await ndk.destroy();
     });
 
     test('user relay lists equal', () {
