@@ -254,6 +254,7 @@ class RelayManager {
       }
       globalState.inFlightRequests.remove(id);
     }
+    logActiveRequests();
   }
 
   // =====================================================================================
@@ -318,7 +319,6 @@ class RelayManager {
           relay.stats.activeRequests--;
         }
         send(url, jsonEncode(["CLOSE", id]));
-        logActiveRequests();
       } catch (e) {
         print(e);
       }
