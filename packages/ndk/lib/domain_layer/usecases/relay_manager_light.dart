@@ -104,7 +104,7 @@ class RelayManagerLight {
 
       developer.log("connected to relay: $url");
       globalState.relays[url]!.relay.succeededToConnect();
-      globalState.relays[url]!.relay.stats.connections++;
+      globalState.relays[url]!.stats.connections++;
       getRelayInfo(url);
       return Tuple(true, "");
     } catch (e) {
@@ -112,7 +112,7 @@ class RelayManagerLight {
       globalState.relays[url]!.relayTransport == null;
     }
     globalState.relays[url]!.relay.failedToConnect();
-    globalState.relays[url]!.relay.stats.connectionErrors++;
+    globalState.relays[url]!.stats.connectionErrors++;
     return Tuple(false, "could not connect to $url");
   }
 
@@ -124,7 +124,7 @@ class RelayManagerLight {
       );
     }, onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
-      relayConnectivity.relay.stats.connectionErrors++;
+      relayConnectivity.stats.connectionErrors++;
       print("onError ${relayConnectivity.url} on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
@@ -156,9 +156,8 @@ class RelayManagerLight {
         if (!state.request.closeOnEOSE) {
           List<dynamic> list = ["REQ", state.id];
           list.addAll(req.filters.map((filter) => filter.toMap()));
-          Relay relay = relayConnectivity.relay;
 
-          relay.stats.activeRequests++;
+          relayConnectivity.stats.activeRequests++;
           _send(relayConnectivity, jsonEncode(list));
         }
       });

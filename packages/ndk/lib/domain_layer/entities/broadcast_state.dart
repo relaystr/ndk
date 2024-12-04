@@ -4,6 +4,8 @@ import 'package:ndk/domain_layer/entities/tuple.dart';
 
 import 'broadcast_response.dart';
 
+// todo: turn into streams
+
 /// hold state information for a broadcast
 class BroadcastState {
   /// creates a new [BroadcastState] instance

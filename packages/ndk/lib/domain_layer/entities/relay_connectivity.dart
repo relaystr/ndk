@@ -1,6 +1,7 @@
 import '../repositories/nostr_transport.dart';
 import 'relay.dart';
 import 'relay_info.dart';
+import 'relay_stats.dart';
 
 /// Represents the connectivity of a relay.
 class RelayConnectivity<T> {
@@ -9,6 +10,9 @@ class RelayConnectivity<T> {
 
   /// user facing relay info
   RelayInfo? relayInfo;
+
+  /// relay stats
+  RelayStats stats = RelayStats();
 
   /// transport layer for this relay, usually websocket
   NostrTransport? relayTransport;
