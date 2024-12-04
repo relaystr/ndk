@@ -110,7 +110,8 @@ class JitEngine with Logger implements NetworkEngine {
       RelayJitBlastAllStrategy.handleRequest(
         requestState: requestState,
         filter: filter,
-        connectedRelays: relayManagerLight.connectedRelays,
+        connectedRelays: relayManagerLight.connectedRelays
+            as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
         closeOnEOSE: requestState.request.closeOnEOSE,
       );
     }
@@ -132,7 +133,8 @@ class JitEngine with Logger implements NetworkEngine {
       if (specificRelays != null) {
         return RelayJitBroadcastAllStrategy.broadcast(
           eventToPublish: nostrEvent,
-          connectedRelays: globalState.connectedRelays,
+          connectedRelays: relayManagerLight.connectedRelays
+              as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
           signer: mySigner,
         );
       }
@@ -140,7 +142,8 @@ class JitEngine with Logger implements NetworkEngine {
       // default publish to own outbox
       await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: nostrEvent,
-        connectedRelays: globalState.connectedRelays,
+        connectedRelays: relayManagerLight.connectedRelays
+            as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
         cacheManager: cache,
         onMessage: onMessage,
         signer: mySigner,
@@ -150,7 +153,8 @@ class JitEngine with Logger implements NetworkEngine {
       if (nostrEvent.pTags.isNotEmpty) {
         await RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: nostrEvent,
-          connectedRelays: globalState.connectedRelays,
+          connectedRelays: relayManagerLight.connectedRelays
+              as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
           cacheManager: cache,
           onMessage: onMessage,
           signer: mySigner,

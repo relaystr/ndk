@@ -5,25 +5,15 @@ import 'nip_01_event.dart';
 /// the response to a low level broadcast request
 class NdkBroadcastResponse {
   final Nip01Event publishedEvent;
+  final Future<Map<String, String>> _publishDoneFuture;
 
-  final Completer<bool> _publishCompleter = Completer();
+  /// completes when all relays have responded or timed out \
+  /// key is the relay url, value is the response [] on success
+  Future<Map<String, String>> get publishDone => _publishDoneFuture;
 
-  /// completes when all relays have responded
-  /// TODO
-  // Future<bool> get publishDone => _publishCompleter.future;
-
-  /// a map of relays publishing to
-  /// [String] is the relayUrl/identifier
-  /// [Future<String>] is the relay response e.g. OK, err reason
-  // Map<String, Completer<String>> _publishingRelays = {};
-
+  /// creates a new [NdkBroadcastResponse] instance
   NdkBroadcastResponse({
     required this.publishedEvent,
-  }) {
-    Future.delayed(Duration(seconds: 10), () {
-      _publishCompleter.completeError("timeout");
-    });
-  }
-
-  addPublishingRelay({required String url}) {}
+    required Future<Map<String, String>> publishDoneFuture,
+  }) : _publishDoneFuture = publishDoneFuture;
 }

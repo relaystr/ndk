@@ -120,7 +120,7 @@ class RelayManagerLight {
     relayConnectivity.relayTransport!.listen((message) {
       _handleIncommingMessage(
         message,
-        relayConnectivity.url,
+        relayConnectivity,
       );
     }, onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
@@ -170,8 +170,35 @@ class RelayManagerLight {
     Logger.log.d("send message to ${relayConnectivity.url}: $data");
   }
 
-  _handleIncommingMessage(dynamic message, String url) {
-    throw UnimplementedError();
+  void _handleIncommingMessage(
+      dynamic message, RelayConnectivity relayConnectivity) {
+    List<dynamic> eventJson = json.decode(message);
+
+    if (eventJson[0] == 'OK') {
+      //nip 20 used to notify clients if an EVENT was successful
+      if (eventJson.length >= 2 && eventJson[2] == false) {
+        Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
+      }
+      globalState.activeBroadcasts[eventJson[1]]?.completePublishingRelay(
+        url: relayConnectivity.url,
+        response: eventJson[2] ?? '',
+      );
+
+      return;
+    }
+    if (eventJson[0] == 'NOTICE') {
+      Logger.log.w("NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
+    } else if (eventJson[0] == 'EVENT') {
+      //handleIncomingEvent(eventJson, url, message);
+      Logger.log.d("EVENT from ${relayConnectivity.url}: $eventJson");
+    } else if (eventJson[0] == 'EOSE') {
+      Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
+      //handleEOSE(eventJson, url);
+    } else if (eventJson[0] == 'CLOSED') {
+      Logger.log.w(
+          " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
+      globalState.inFlightRequests.remove(eventJson[1]);
+    }
   }
 
   /// fetches relay info

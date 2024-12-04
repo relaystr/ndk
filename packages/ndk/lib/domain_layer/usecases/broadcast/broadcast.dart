@@ -1,6 +1,7 @@
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
 import '../../entities/broadcast_response.dart';
+import '../../entities/broadcast_state.dart';
 import '../../entities/global_state.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
@@ -12,6 +13,7 @@ import '../engines/network_engine.dart';
 class Broadcast {
   final NetworkEngine _engine;
   final EventSigner? _signer;
+  final GlobalState _globalState;
 
   /// creates a new [Broadcast] instance
   ///
@@ -21,7 +23,8 @@ class Broadcast {
     required NetworkEngine networkEngine,
     required EventSigner? signer,
   })  : _signer = signer,
-        _engine = networkEngine;
+        _engine = networkEngine,
+        _globalState = globalState;
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
@@ -41,6 +44,10 @@ class Broadcast {
     Iterable<String>? specificRelays,
     EventSigner? customSigner,
   }) {
+    final broadcastState = BroadcastState();
+    // register broadcast state
+    _globalState.activeBroadcasts[nostrEvent.id] = broadcastState;
+
     final mySigner = _checkSinger(customSigner: customSigner);
 
     return _engine.handleEventBroadcast(
