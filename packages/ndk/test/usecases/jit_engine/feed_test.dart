@@ -15,7 +15,7 @@ void main() async {
           {int relayMinCountPerPubKey = 2}) async {
         CacheManager cacheManager = MemCacheManager();
 
-        Ndk ndk = Ndk(NdkConfig(
+        final ndk = Ndk(NdkConfig(
           eventVerifier: MockEventVerifier(),
           cache: cacheManager,
           engine: NdkEngine.JIT,
@@ -24,9 +24,9 @@ void main() async {
         // wait for the relays to connect
         await Future.delayed(const Duration(seconds: 2));
 
-        KeyPair key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
+        final key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        NdkResponse contactsResponse =
+        final contactsResponse =
             ndk.requests.query(name: "contacts", filters: [
           Filter(authors: [key.publicKey], kinds: [ContactList.KIND]),
         ]);

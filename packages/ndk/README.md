@@ -103,7 +103,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 
 // init
-Ndk ndk = Ndk(
+final ndk = Ndk(
   NdkConfig(
     eventVerifier: RustEventVerifier(),
     cache: MemCacheManager(),
@@ -111,7 +111,7 @@ Ndk ndk = Ndk(
 );
 
 // query
-NdkResponse response = ndk.requests.query(
+final response = ndk.requests.query(
   filters: [
     Filter(
       authors: ['hexPubkey']

@@ -48,7 +48,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
       await relay1.startServer(textNotes: key1TextNotes);
 
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -59,10 +59,10 @@ void main() async {
         bootstrapRelays: [relay1.url],
       ));
 
-      Filter filter =
+      final filter =
           Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey]);
 
-      NdkResponse query = ndk.requests.query(filters: [filter]);
+      final query = ndk.requests.query(filters: [filter]);
 
       await expectLater(query.stream, emitsInAnyOrder(key1TextNotes.values));
 

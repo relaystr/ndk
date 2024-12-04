@@ -172,14 +172,14 @@ void main() async {
         nip65s.values.map((e) => UserRelayList.fromNip65(e)).toList(),
       );
 
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: cacheManager,
         engine: NdkEngine.JIT,
         bootstrapRelays: [], // dont connect to anything
       ));
 
-      NdkResponse response = ndk.requests.query(
+      final response = ndk.requests.query(
         name: "qInOut",
         filters: [
           Filter(kinds: [

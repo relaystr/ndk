@@ -25,8 +25,8 @@ void main() async {
         createdAt: 100,
         refreshedTimestamp: 0);
 
-    late MockRelay relay0;
-    late Ndk ndk;
+    late var relay0;
+    late var ndk;
 
     setUp(() async {
       final cache = MemCacheManager();
