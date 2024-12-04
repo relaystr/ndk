@@ -89,7 +89,7 @@ void main() async {
 
       await expectLater(
           response1.stream, emitsInAnyOrder(key1TextNotes.values));
-      await ndkJit.close();
+      await ndkJit.destroy();
 
     });
   });

@@ -169,8 +169,8 @@ await for (final event in response.stream) {
 - [x] Reactions ([NIP-25](https://github.com/nostr-protocol/nips/blob/master/25.md))
 - [x] Lists ([NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md))
 - [x] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
+- [x] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
 - [ ] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))
-- [ ] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
 - [ ] Zaps (private, public, anon, non-zap) ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
 - [ ] Badges ([NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md))
 
