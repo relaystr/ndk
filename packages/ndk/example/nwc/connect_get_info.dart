@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:ndk/ndk.dart';
 
 void main() async {
