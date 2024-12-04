@@ -130,7 +130,7 @@ class Requests {
   ///
   /// Returns an [NdkResponse] containing the request results
   NdkResponse requestNostrEvent(NdkRequest request) {
-    RequestState state = RequestState(request);
+    final state = RequestState(request);
 
     final response = NdkResponse(state.id, state.stream);
 
