@@ -15,12 +15,12 @@ class NwcConnection {
   NdkResponse? subscription;
   StreamController<NwcResponse> responseStream =
       StreamController<NwcResponse>
-          // .broadcast
+          .broadcast
   ();
 
   StreamController<NwcNotification> notificationStream =
       StreamController<NwcNotification>
-          // .broadcast
+          .broadcast
         ();
 
   List<String> supportedVersions = ["0.0"];
