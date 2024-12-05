@@ -1,10 +1,6 @@
-import 'dart:convert';
-
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip19/nip19.dart';
 
 import 'main.dart';
 
@@ -45,7 +41,7 @@ class _RelaysPageState extends State<RelaysPage> {
                     UserRelayList? response = await ndk.userRelayLists
                         .getSingleUserRelayList(value['signature']);
                     setState(() {
-                      _text = '${response!.relays.toString()}';
+                      _text = response!.relays.toString();
                     });
                   });
                 },
