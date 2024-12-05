@@ -6,40 +6,39 @@ import '../../entities/nip_01_event.dart';
 /// given a stream  with Nip01 events it tracks the id and adds the one to the provided stream controller \
 /// tracking of the happens in the tracking list
 class StreamResponseCleaner {
-  final Set<String> trackingSet;
-  final List<Stream<Nip01Event>> inputStreams;
-  final StreamController<Nip01Event> outController;
+  final Set<String> _trackingSet;
+  final List<Stream<Nip01Event>> _inputStreams;
+  final StreamController<Nip01Event> _outController;
 
-  int get numStreams => inputStreams.length;
+  int get _numStreams => _inputStreams.length;
 
-  int closedStreams = 0;
+  int _closedStreams = 0;
 
-  int? timeout;
+  Timer? _timeoutTimer;
+
+  int? _timeout;
 
   /// -  [trackingSet] a set of ids that are already returned \
   /// - [inputStreams] a list of streams that are be listened to \
   /// - [outController] the controller that is used to add the events to \
   /// - [timeout] the timeout for the stream, if null [RequestDefaults.DEFAULT_STREAM_IDLE_TIMEOUT] is used
   StreamResponseCleaner({
-    required this.trackingSet,
-    required this.inputStreams,
-    required this.outController,
-    required this.timeout,
-  }) {
-    // if (timeout != null) {
-    //   Future.delayed(
-    //       Duration(
-    //         seconds: timeout!,
-    //       ), () {
-    //     if (!outController.isClosed) {
-    //       outController.close();
-    //     }
-    //   });
-    // }
+    required Set<String> trackingSet,
+    required List<Stream<Nip01Event>> inputStreams,
+    required StreamController<Nip01Event> outController,
+    required int? timeout,
+  }) : _timeout = timeout, _trackingSet = trackingSet, _outController = outController, _inputStreams = inputStreams {
+    if (_timeout != null) {
+      _timeoutTimer = Timer(Duration(seconds: _timeout!), () async {
+        if (!_outController.isClosed) {
+          await _outController.close();
+        }
+      });
+    }
   }
 
   void call() {
-    for (final stream in inputStreams) {
+    for (final stream in _inputStreams) {
       _addStreamListener(stream);
     }
   }
@@ -47,16 +46,16 @@ class StreamResponseCleaner {
   _addStreamListener(Stream<Nip01Event> stream) {
     stream.listen((event) {
       // check if event id is in the set
-      if (trackingSet.contains(event.id)) {
+      if (_trackingSet.contains(event.id)) {
         return;
       }
 
-      if (outController.isClosed) {
+      if (_outController.isClosed) {
         return;
       }
 
-      trackingSet.add(event.id);
-      outController.add(event);
+      _trackingSet.add(event.id);
+      _outController.add(event);
       Logger.log.t("added event ${event.content}");
     }, onDone: () async {
       _canClose();
@@ -67,9 +66,12 @@ class StreamResponseCleaner {
 
   /// used to wait on all streams
   Future<void> _canClose() async {
-    closedStreams++;
-    if (closedStreams >= numStreams) {
-      await outController.close();
+    _closedStreams++;
+    if (_closedStreams >= _numStreams) {
+      if (_timeoutTimer != null) {
+        _timeoutTimer!.cancel();
+      }
+      await _outController.close();
     }
   }
 }
