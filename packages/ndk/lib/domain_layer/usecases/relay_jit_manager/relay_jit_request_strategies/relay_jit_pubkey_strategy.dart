@@ -5,13 +5,15 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/filter.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
-import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
 import 'package:ndk/domain_layer/usecases/jit_engine.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 
+import '../../../entities/jit_engine_relay_connectivity_data.dart';
+import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/user_relay_list.dart';
+import '../../relay_manager_light.dart';
 import '../../user_relay_lists/user_relay_lists.dart';
 
 /// Strategy Description:
@@ -37,7 +39,8 @@ class RelayJitPubkeyStrategy with Logger {
 
     // specific filter (only one for this request)
     required Filter filter,
-    required List<RelayJit> connectedRelays,
+    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+        connectedRelays,
 
     /// used to get the nip65 data if its necessary to look for not covered pubkeys
     required CacheManager cacheManager,
@@ -45,9 +48,7 @@ class RelayJitPubkeyStrategy with Logger {
     required bool closeOnEOSE,
     required ReadWriteMarker direction,
     required List<String> ignoreRelays,
-
-    // on message async funciton
-    required Function(Nip01Event, RequestState) onMessage,
+    required RelayManagerLight relayManager,
   }) {
     List<String> combindedPubkeys = [
       ...?filter.authors,
@@ -74,11 +75,11 @@ class RelayJitPubkeyStrategy with Logger {
         }
       }
 
-      connectedRelay.touched++;
+      connectedRelay.specificEngineData!.touched++;
       if (coveredPubkeysForRelay.isEmpty) {
         continue;
       }
-      connectedRelay.touchUseful++;
+      connectedRelay.specificEngineData!.touchUseful++;
 
       /// create splitFilter that only contains the pubkeys for the relay
       Filter splitFilter = _splitFilter(filter, coveredPubkeysForRelay);
@@ -105,7 +106,6 @@ class RelayJitPubkeyStrategy with Logger {
       direction: direction,
       ignoreRelays: ignoreRelays,
       closeOnEOSE: closeOnEOSE,
-      onMessage: onMessage,
     );
 
     _removeFullyCoveredPubkeys(coveragePubkeys);
@@ -129,17 +129,18 @@ class RelayJitPubkeyStrategy with Logger {
   // looks in nip65 data for not covered pubkeys
   // the result is relay candidates
   // connects to these candidates and sends out the request
-  static void _findRelaysForUnresolvedPubkeys(
-      {required RequestState requestState,
-      required Filter filter,
-      required List<CoveragePubkey> coveragePubkeys,
-      required List<RelayJit> connectedRelays,
-      required CacheManager cacheManager,
-      required int desiredCoverage,
-      required ReadWriteMarker direction,
-      required List<String> ignoreRelays,
-      required bool closeOnEOSE,
-      required Function(Nip01Event, RequestState) onMessage}) async {
+  static void _findRelaysForUnresolvedPubkeys({
+    required RequestState requestState,
+    required Filter filter,
+    required List<CoveragePubkey> coveragePubkeys,
+    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+        connectedRelays,
+    required CacheManager cacheManager,
+    required int desiredCoverage,
+    required ReadWriteMarker direction,
+    required List<String> ignoreRelays,
+    required bool closeOnEOSE,
+  }) async {
     /// ### resolve not covered pubkeys ###
     // look in nip65 data for not covered pubkeys
     List<UserRelayList> nip65Data =
@@ -280,7 +281,9 @@ _removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
 }
 
 void _sendRequestToSocket(
-    RelayJit connectedRelay, RequestState requestState, List<Filter> filters) {
+    RelayConnectivity<JitEngineRelayConnectivityData> connectedRelay,
+    RequestState requestState,
+    List<Filter> filters) {
   // check if the subscription already exists and if its need to be modified
   if (connectedRelay.hasActiveSubscription(requestState.id)) {
     // modify the existing subscription

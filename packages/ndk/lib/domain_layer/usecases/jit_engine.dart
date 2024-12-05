@@ -145,7 +145,7 @@ class JitEngine with Logger implements NetworkEngine {
         connectedRelays: relayManagerLight.connectedRelays
             as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
         cacheManager: cache,
-        onMessage: onMessage,
+        relayManager: relayManagerLight,
         signer: mySigner,
       );
 
@@ -156,7 +156,7 @@ class JitEngine with Logger implements NetworkEngine {
           connectedRelays: relayManagerLight.connectedRelays
               as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
           cacheManager: cache,
-          onMessage: onMessage,
+          relayManager: relayManagerLight,
           signer: mySigner,
           pubkeysOfInbox: nostrEvent.pTags,
         );
