@@ -77,9 +77,10 @@ class RequestState {
   }
 
   Future<void> close() async {
-    await networkController.close();
     if (_timeout!=null) {
       _timeout!.cancel();
     }
+    await networkController.close();
+    await cacheController.close();
   }
 }
