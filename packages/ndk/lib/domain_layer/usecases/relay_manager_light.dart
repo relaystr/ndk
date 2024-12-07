@@ -6,6 +6,7 @@ import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/client_msg.dart';
 import '../entities/connection_source.dart';
 import '../entities/global_state.dart';
 import '../entities/relay.dart';
@@ -15,7 +16,7 @@ import '../entities/tuple.dart';
 import '../repositories/nostr_transport.dart';
 
 /// wip relay manger that only does connection and relay lifecycle management
-class RelayManagerLight {
+class RelayManagerLight<T> {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
 
   /// completes when all seed relays are connected
@@ -85,7 +86,7 @@ class RelayManagerLight {
     }
     try {
       if (globalState.relays[url] == null) {
-        globalState.relays[url] = RelayConnectivity(
+        globalState.relays[url] = RelayConnectivity<T>(
             relay: Relay(
           url: url,
           connectionSource: connectionSource,
@@ -158,15 +159,28 @@ class RelayManagerLight {
           list.addAll(req.filters.map((filter) => filter.toMap()));
 
           relayConnectivity.stats.activeRequests++;
-          _send(relayConnectivity, jsonEncode(list));
+          _sendRaw(relayConnectivity, jsonEncode(list));
         }
       });
     });
   }
 
-  void _send(RelayConnectivity relayConnectivity, dynamic data) {
+  void _sendRaw(RelayConnectivity relayConnectivity, dynamic data) {
     relayConnectivity.relayTransport!.send(data);
     Logger.log.d("send message to ${relayConnectivity.url}: $data");
+  }
+
+  /// sends a [ClientMsg] to relay transport sink, throw an error if relay not connected
+  void send(RelayConnectivity relayConnectivity, ClientMsg msg) async {
+    if (relayConnectivity.relayTransport == null) {
+      throw Exception("relay not connected");
+    }
+
+    /// wait until rdy
+    await relayConnectivity.relayTransport!.ready;
+
+    final String encodedMsg = jsonEncode(msg.toJson());
+    _sendRaw(relayConnectivity, encodedMsg);
   }
 
   void _handleIncommingMessage(

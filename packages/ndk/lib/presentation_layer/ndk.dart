@@ -1,5 +1,4 @@
 import '../domain_layer/entities/global_state.dart';
-import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 

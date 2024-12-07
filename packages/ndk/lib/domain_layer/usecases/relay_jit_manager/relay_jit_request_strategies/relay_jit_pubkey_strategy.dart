@@ -91,6 +91,7 @@ class RelayJitPubkeyStrategy with Logger {
         requestState,
         [splitFilter],
         globalState,
+        relayManager,
       );
 
       // clear out fully covered pubkeys
@@ -129,6 +130,7 @@ class RelayJitPubkeyStrategy with Logger {
     //  send out not found request to all connected relays
     RelayJitBlastAllStrategy.handleRequest(
       requestState: requestState,
+      relayManager: relayManager,
       filter: notFoundFilter,
       connectedRelays: connectedRelays,
       closeOnEOSE: closeOnEOSE,
@@ -209,6 +211,7 @@ class RelayJitPubkeyStrategy with Logger {
                 )
               ],
               globalState,
+              relayManger,
             );
           }
 
@@ -248,6 +251,7 @@ class RelayJitPubkeyStrategy with Logger {
                 relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList())
           ],
           globalState,
+          relayManger,
         );
       }
     }
@@ -302,6 +306,7 @@ void _sendRequestToSocket(
   RequestState requestState,
   List<Filter> filters,
   GlobalState globalState,
+  RelayManagerLight relayManger,
 ) {
   // check if the subscription already exists and if its need to be modified
   if (globalState.inFlightRequests.containsKey(requestState.id)) {
@@ -314,12 +319,14 @@ void _sendRequestToSocket(
         .addAll(filters);
 
     // send out the updated request
-    connectedRelay.relayTransport!.send(ClientMsg(
-      ClientMsgType.REQ,
-      id: requestState.id,
-      filters: globalState.inFlightRequests[requestState.id]!
-          .requests[connectedRelay.url]!.filters,
-    ));
+    relayManger.send(
+        connectedRelay,
+        ClientMsg(
+          ClientMsgType.REQ,
+          id: requestState.id,
+          filters: globalState.inFlightRequests[requestState.id]!
+              .requests[connectedRelay.url]!.filters,
+        ));
 
     return;
   }
@@ -334,11 +341,13 @@ void _sendRequestToSocket(
   );
 
   // send out the request
-  connectedRelay.relayTransport!.send(ClientMsg(
-    ClientMsgType.REQ,
-    id: requestState.id,
-    filters: filters,
-  ));
+  relayManger.send(
+      connectedRelay,
+      ClientMsg(
+        ClientMsgType.REQ,
+        id: requestState.id,
+        filters: filters,
+      ));
 }
 
 Filter _splitFilter(Filter filter, List<String> pubkeysToInclude) {

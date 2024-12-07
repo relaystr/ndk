@@ -68,7 +68,7 @@ class RelayJitBroadcastOutboxStrategy {
     for (var relayUrl in actualBroadcastList) {
       final relay =
           connectedRelays.firstWhere((element) => element.url == relayUrl);
-      relay.relayTransport!.send(myClientMsg);
+      relayManager.send(relay, myClientMsg);
     }
 
     // todo: look into onMessage and decipher different event types

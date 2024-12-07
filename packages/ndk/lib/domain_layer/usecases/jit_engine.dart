@@ -74,7 +74,8 @@ class JitEngine with Logger implements NetworkEngine {
           cacheManager: cache,
           filter: filter,
           connectedRelays: relayManagerLight.connectedRelays
-              as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
+              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+              .toList(),
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
@@ -92,7 +93,8 @@ class JitEngine with Logger implements NetworkEngine {
           cacheManager: cache,
           filter: filter,
           connectedRelays: relayManagerLight.connectedRelays
-              as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
+              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+              .toList(),
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
@@ -112,10 +114,12 @@ class JitEngine with Logger implements NetworkEngine {
 
       /// unknown filter strategy, blast to all connected relays
       RelayJitBlastAllStrategy.handleRequest(
+        relayManager: relayManagerLight,
         requestState: requestState,
         filter: filter,
         connectedRelays: relayManagerLight.connectedRelays
-            as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
+            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+            .toList(),
         closeOnEOSE: requestState.request.closeOnEOSE,
       );
     }
@@ -137,9 +141,11 @@ class JitEngine with Logger implements NetworkEngine {
 
       if (specificRelays != null) {
         return RelayJitBroadcastAllStrategy.broadcast(
+          relayManger: relayManagerLight,
           eventToPublish: nostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
-              as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
+              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+              .toList(),
           signer: mySigner,
         );
       }
@@ -148,7 +154,8 @@ class JitEngine with Logger implements NetworkEngine {
       await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: nostrEvent,
         connectedRelays: relayManagerLight.connectedRelays
-            as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
+            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+            .toList(),
         cacheManager: cache,
         relayManager: relayManagerLight,
         signer: mySigner,
@@ -159,7 +166,8 @@ class JitEngine with Logger implements NetworkEngine {
         await RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: nostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
-              as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
+              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+              .toList(),
           cacheManager: cache,
           relayManager: relayManagerLight,
           signer: mySigner,

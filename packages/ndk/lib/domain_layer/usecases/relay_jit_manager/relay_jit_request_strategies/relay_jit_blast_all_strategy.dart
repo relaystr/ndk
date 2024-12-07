@@ -3,6 +3,7 @@ import '../../../entities/filter.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
+import '../../relay_manager_light.dart';
 
 /// Strategy Description:
 ///
@@ -10,13 +11,13 @@ import '../../../entities/request_state.dart';
 ///
 class RelayJitBlastAllStrategy {
   /// send out the request
-  static handleRequest({
-    required RequestState requestState,
-    required Filter filter,
-    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-        connectedRelays,
-    required bool closeOnEOSE,
-  }) {
+  static handleRequest(
+      {required RequestState requestState,
+      required Filter filter,
+      required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+          connectedRelays,
+      required bool closeOnEOSE,
+      required RelayManagerLight relayManager}) {
     for (final connectedRelay in connectedRelays) {
       // todo: figure out the linking of the request to the relay
 
@@ -25,7 +26,8 @@ class RelayJitBlastAllStrategy {
         id: requestState.id,
         filters: [filter],
       );
-      connectedRelay.relayTransport!.send(clientMsg);
+
+      relayManager.send(connectedRelay, clientMsg);
     }
   }
 }

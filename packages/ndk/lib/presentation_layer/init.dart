@@ -4,6 +4,7 @@ import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
+import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
@@ -68,7 +69,7 @@ class Initialization {
       globalState: globalState,
     );
 
-    relayManagerLight = RelayManagerLight(
+    relayManagerLight = RelayManagerLight<JitEngineRelayConnectivityData>(
       globalState: globalState,
       nostrTransportFactory: _webSocketNostrTransportFactory,
       seedRelays: ndkConfig.bootstrapRelays,
