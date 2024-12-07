@@ -68,32 +68,36 @@ class JitEngine with Logger implements NetworkEngine {
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
         RelayJitPubkeyStrategy.handleRequest(
+          globalState: globalState,
+          relayManager: relayManagerLight,
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays,
+          connectedRelays: relayManagerLight.connectedRelays
+              as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
               .writeOnly, // the author should write on the persons write relays
           ignoreRelays: cleanIgnoreRelays,
-          onMessage: onMessage,
         );
         continue;
       }
 
       if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
         RelayJitPubkeyStrategy.handleRequest(
+          relayManager: relayManagerLight,
+          globalState: globalState,
           requestState: requestState,
           cacheManager: cache,
           filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays,
+          connectedRelays: relayManagerLight.connectedRelays
+              as List<RelayConnectivity<JitEngineRelayConnectivityData>>,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
               .readOnly, // others should mention on the persons read relays
           ignoreRelays: cleanIgnoreRelays,
-          onMessage: onMessage,
         );
         continue;
       }
@@ -125,6 +129,7 @@ class JitEngine with Logger implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner mySigner,
+    required Future<List<RelayBroadcastResponse>> doneFuture,
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
@@ -164,19 +169,17 @@ class JitEngine with Logger implements NetworkEngine {
     }
 
     asyncStuff();
-    return NdkBroadcastResponse(publishEvent: nostrEvent);
+    return NdkBroadcastResponse(
+      publishEvent: nostrEvent,
+      publishDoneFuture: doneFuture,
+    );
   }
 
   /// close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
   @override
   closeSubscription(String id) async {
     //await seedRelaysConnected;
-    for (var relay in globalState.connectedRelays) {
-      if (relay.activeSubscriptions.containsKey(id)) {
-        await relay.closeSubscription(id);
-        relay.activeSubscriptions.remove(id);
-      }
-    }
+    print("todo: cloes");
   }
 
   /// checks if relay covers given pubkey in given direction
@@ -215,9 +218,11 @@ class JitEngine with Logger implements NetworkEngine {
     if (requestState.isSubscription) {
       return;
     }
-    for (var sub in requestState.activeRelaySubscriptions.values) {
-      await sub.activeSubscriptions[requestState.id]?.eoseReceived;
-    }
-    requestState.networkController.close();
+    // for (var sub in requestState.activeRelaySubscriptions.values) {
+    //   await sub.activeSubscriptions[requestState.id]?.eoseReceived;
+    // }
+    // requestState.networkController.close();
+
+    print("todo eose");
   }
 }

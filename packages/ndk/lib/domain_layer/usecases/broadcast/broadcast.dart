@@ -54,6 +54,7 @@ class Broadcast {
       nostrEvent: nostrEvent,
       mySigner: mySigner,
       specificRelays: specificRelays,
+      doneFuture: broadcastState.publishDone,
     );
   }
 

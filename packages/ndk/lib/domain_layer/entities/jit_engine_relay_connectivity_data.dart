@@ -10,6 +10,14 @@ class JitEngineRelayConnectivityData {
   int touchUseful = 0;
 
   double get relayUsefulness => touchUseful / touched;
+
+  /// adds pubkeys with a direction to assigned Pubkeys
+  void addPubkeysToAssignedPubkeys(
+      List<String> pubkeys, ReadWriteMarker direction) {
+    for (var pubkey in pubkeys) {
+      assignedPubkeys.add(RelayJitAssignedPubkey(pubkey, direction));
+    }
+  }
 }
 
 class RelayJitAssignedPubkey {

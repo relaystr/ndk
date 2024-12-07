@@ -8,6 +8,7 @@ import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
 import 'package:ndk/domain_layer/usecases/jit_engine.dart';
 import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 
+import '../../../entities/global_state.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
@@ -36,6 +37,7 @@ import '../../user_relay_lists/user_relay_lists.dart';
 class RelayJitPubkeyStrategy with Logger {
   static handleRequest({
     required RequestState requestState,
+    required GlobalState globalState,
 
     // specific filter (only one for this request)
     required Filter filter,
@@ -84,7 +86,12 @@ class RelayJitPubkeyStrategy with Logger {
       /// create splitFilter that only contains the pubkeys for the relay
       Filter splitFilter = _splitFilter(filter, coveredPubkeysForRelay);
 
-      _sendRequestToSocket(connectedRelay, requestState, [splitFilter]);
+      _sendRequestToSocket(
+        connectedRelay,
+        requestState,
+        [splitFilter],
+        globalState,
+      );
 
       // clear out fully covered pubkeys
       _removeFullyCoveredPubkeys(coveragePubkeys);
@@ -98,6 +105,8 @@ class RelayJitPubkeyStrategy with Logger {
 
     _findRelaysForUnresolvedPubkeys(
       requestState: requestState,
+      globalState: globalState,
+      relayManger: relayManager,
       filter: filter,
       coveragePubkeys: coveragePubkeys,
       connectedRelays: connectedRelays,
@@ -130,7 +139,9 @@ class RelayJitPubkeyStrategy with Logger {
   // the result is relay candidates
   // connects to these candidates and sends out the request
   static void _findRelaysForUnresolvedPubkeys({
+    required RelayManagerLight relayManger,
     required RequestState requestState,
+    required GlobalState globalState,
     required Filter filter,
     required List<CoveragePubkey> coveragePubkeys,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
@@ -172,108 +183,114 @@ class RelayJitPubkeyStrategy with Logger {
           .any((element) => element.url == relayCandidate.relayUrl);
 
       if (!alreadyConnected) {
-        RelayJit newRelay = RelayJit(
-          url: relayCandidate.relayUrl,
-          onMessage: onMessage,
-        );
+        relayManger
+            .connectRelay(
+                dirtyUrl: relayCandidate.relayUrl,
+                connectionSource: ConnectionSource.PUBKEY_STRATEGY)
+            .then((success) {
+          if (success.first) {
+            final myRelayConnectivity =
+                globalState.relays[relayCandidate.relayUrl]
+                    as RelayConnectivity<JitEngineRelayConnectivityData>;
+            // add assigned pubkeys
+            myRelayConnectivity.specificEngineData!.addPubkeysToAssignedPubkeys(
+              relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
+              direction,
+            );
 
-        // add the relay to the connected relays
-        connectedRelays.add(newRelay);
+            // send out the request
+            _sendRequestToSocket(
+              myRelayConnectivity,
+              requestState,
+              [
+                _splitFilter(
+                  filter,
+                  relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
+                )
+              ],
+              globalState,
+            );
+          }
 
-        newRelay
-            .connect(connectionSource: ConnectionSource.PUBKEY_STRATEGY)
-            .then((success) => {
-                  if (success)
-                    {
-                      // add the pubkeys to the relay
-                      newRelay.addPubkeysToAssignedPubkeys(
-                          relayCandidate.coveredPubkeys
-                              .map((e) => e.pubkey)
-                              .toList(),
-                          direction),
+          if (!success.first) {
+            Logger.log.w(
+                "Could not connect to relay: ${relayCandidate.relayUrl} - errorHandling");
+            // _connectionErrorHandling(
+            //   errorRelay: newRelay,
+            //   requestState: requestState,
+            //   filter: filter,
+            //   connectedRelays: connectedRelays,
+            //   cacheManager: cacheManager,
+            //   desiredCoverage: desiredCoverage,
+            //   direction: direction,
+            //   ignoreRelays: ignoreRelays,
+            //   closeOnEOSE: closeOnEOSE,
 
-                      // send out the request
-                      _sendRequestToSocket(newRelay, requestState, [
-                        _splitFilter(
-                            filter,
-                            relayCandidate.coveredPubkeys
-                                .map((e) => e.pubkey)
-                                .toList())
-                      ])
-                    },
-                  if (!success)
-                    {
-                      Logger.log.w(
-                          "Could not connect to relay: ${newRelay.url} - errorHandling"),
-                      _connectionErrorHandling(
-                        errorRelay: newRelay,
-                        requestState: requestState,
-                        filter: filter,
-                        connectedRelays: connectedRelays,
-                        cacheManager: cacheManager,
-                        desiredCoverage: desiredCoverage,
-                        direction: direction,
-                        ignoreRelays: ignoreRelays,
-                        closeOnEOSE: closeOnEOSE,
-                        onMessage: onMessage,
-                      ),
-                    }
-                });
+            // );
+          }
+        });
       }
 
       if (alreadyConnected) {
-        RelayJit connectedRelay = connectedRelays
-            .firstWhere((element) => element.url == relayCandidate.relayUrl);
+        final myRelayConnectivity = globalState.relays[relayCandidate.relayUrl]
+            as RelayConnectivity<JitEngineRelayConnectivityData>;
 
-        connectedRelay.addPubkeysToAssignedPubkeys(
-            relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
-            direction);
-        _sendRequestToSocket(connectedRelay, requestState, [
-          _splitFilter(filter,
-              relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList())
-        ]);
+        myRelayConnectivity.specificEngineData!.addPubkeysToAssignedPubkeys(
+          relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList(),
+          direction,
+        );
+
+        _sendRequestToSocket(
+          myRelayConnectivity,
+          requestState,
+          [
+            _splitFilter(filter,
+                relayCandidate.coveredPubkeys.map((e) => e.pubkey).toList())
+          ],
+          globalState,
+        );
       }
     }
   }
 
   // adds the relay to ignoreRelays and retries the request for assigned pubkeys to this relay
-  static void _connectionErrorHandling({
-    required RelayJit errorRelay,
-    required RequestState requestState,
-    required Filter filter,
-    required List<RelayJit> connectedRelays,
-    required CacheManager cacheManager,
-    required int desiredCoverage,
-    required bool closeOnEOSE,
-    required ReadWriteMarker direction,
-    required List<String> ignoreRelays,
-    required Function(Nip01Event, RequestState) onMessage,
-  }) {
-    Logger.log.w(
-        "_connectionErrorHandling Error on connection to relay: ${errorRelay.url}");
-    // cleanup
-    connectedRelays.remove(errorRelay);
+  // static void _connectionErrorHandling({
+  //   required RelayJit errorRelay,
+  //   required RequestState requestState,
+  //   required Filter filter,
+  //   required List<RelayJit> connectedRelays,
+  //   required CacheManager cacheManager,
+  //   required int desiredCoverage,
+  //   required bool closeOnEOSE,
+  //   required ReadWriteMarker direction,
+  //   required List<String> ignoreRelays,
+  //   required Function(Nip01Event, RequestState) onMessage,
+  // }) {
+  //   Logger.log.w(
+  //       "_connectionErrorHandling Error on connection to relay: ${errorRelay.url}");
+  //   // cleanup
+  //   connectedRelays.remove(errorRelay);
 
-    // add to ignoreRelays
-    ignoreRelays.add(errorRelay.url);
+  //   // add to ignoreRelays
+  //   ignoreRelays.add(errorRelay.url);
 
-    List<CoveragePubkey> unresolvedPubkeysOfRelay = errorRelay.assignedPubkeys
-        .map((e) => CoveragePubkey(e.pubkey, 1, 1))
-        .toList();
+  //   List<CoveragePubkey> unresolvedPubkeysOfRelay = errorRelay.assignedPubkeys
+  //       .map((e) => CoveragePubkey(e.pubkey, 1, 1))
+  //       .toList();
 
-    _findRelaysForUnresolvedPubkeys(
-      requestState: requestState,
-      filter: filter,
-      coveragePubkeys: unresolvedPubkeysOfRelay,
-      connectedRelays: connectedRelays,
-      cacheManager: cacheManager,
-      desiredCoverage: desiredCoverage,
-      direction: direction,
-      ignoreRelays: ignoreRelays,
-      closeOnEOSE: closeOnEOSE,
-      onMessage: onMessage,
-    );
-  }
+  //   _findRelaysForUnresolvedPubkeys(
+  //     requestState: requestState,
+  //     filter: filter,
+  //     coveragePubkeys: unresolvedPubkeysOfRelay,
+  //     connectedRelays: connectedRelays,
+  //     cacheManager: cacheManager,
+  //     desiredCoverage: desiredCoverage,
+  //     direction: direction,
+  //     ignoreRelays: ignoreRelays,
+  //     closeOnEOSE: closeOnEOSE,
+  //     onMessage: onMessage,
+  //   );
+  // }
 }
 
 _removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
@@ -281,23 +298,27 @@ _removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
 }
 
 void _sendRequestToSocket(
-    RelayConnectivity<JitEngineRelayConnectivityData> connectedRelay,
-    RequestState requestState,
-    List<Filter> filters) {
+  RelayConnectivity<JitEngineRelayConnectivityData> connectedRelay,
+  RequestState requestState,
+  List<Filter> filters,
+  GlobalState globalState,
+) {
   // check if the subscription already exists and if its need to be modified
-  if (connectedRelay.hasActiveSubscription(requestState.id)) {
+  if (globalState.inFlightRequests.containsKey(requestState.id)) {
     // modify the existing subscription
 
     // add the filters to the existing subscription
     // to concat the filters is probably not the best way to do it but should be fine
-    connectedRelay.activeSubscriptions[requestState.id]!.filters
+    globalState.inFlightRequests[requestState.id]!.requests[connectedRelay.url]!
+        .filters
         .addAll(filters);
 
     // send out the updated request
-    connectedRelay.send(ClientMsg(
+    connectedRelay.relayTransport!.send(ClientMsg(
       ClientMsgType.REQ,
       id: requestState.id,
-      filters: connectedRelay.activeSubscriptions[requestState.id]!.filters,
+      filters: globalState.inFlightRequests[requestState.id]!
+          .requests[connectedRelay.url]!.filters,
     ));
 
     return;
@@ -306,17 +327,14 @@ void _sendRequestToSocket(
 
   // todo: do not overwrite the subscription if it already exists
   // link the request id to the relay
-  connectedRelay.activeSubscriptions[requestState.id] = RelayActiveSubscription(
-    requestState.id,
+  globalState.inFlightRequests[requestState.id]!.requests[connectedRelay.url] =
+      RelayRequestState(
+    connectedRelay.url,
     filters,
-    requestState,
   );
 
-  // link back
-  JitEngine.addRelayActiveSubscription(connectedRelay, requestState);
-
   // send out the request
-  connectedRelay.send(ClientMsg(
+  connectedRelay.relayTransport!.send(ClientMsg(
     ClientMsgType.REQ,
     id: requestState.id,
     filters: filters,

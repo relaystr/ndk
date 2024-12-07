@@ -3,7 +3,6 @@ import '../../../entities/filter.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
-import '../../jit_engine.dart';
 
 /// Strategy Description:
 ///
