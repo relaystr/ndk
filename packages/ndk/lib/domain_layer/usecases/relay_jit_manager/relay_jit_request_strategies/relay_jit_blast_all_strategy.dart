@@ -11,13 +11,14 @@ import '../../relay_manager_light.dart';
 ///
 class RelayJitBlastAllStrategy {
   /// send out the request
-  static handleRequest(
-      {required RequestState requestState,
-      required Filter filter,
-      required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-          connectedRelays,
-      required bool closeOnEOSE,
-      required RelayManagerLight relayManager}) {
+  static handleRequest({
+    required RequestState requestState,
+    required Filter filter,
+    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+        connectedRelays,
+    required bool closeOnEOSE,
+    required RelayManagerLight relayManager,
+  }) {
     for (final connectedRelay in connectedRelays) {
       // todo: figure out the linking of the request to the relay
 

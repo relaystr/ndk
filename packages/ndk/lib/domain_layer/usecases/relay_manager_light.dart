@@ -120,34 +120,6 @@ class RelayManagerLight<T> {
     return Tuple(false, "could not connect to $url");
   }
 
-  void _startListeningToSocket(RelayConnectivity relayConnectivity) {
-    relayConnectivity.relayTransport!.listen((message) {
-      _handleIncommingMessage(
-        message,
-        relayConnectivity,
-      );
-    }, onError: (error) async {
-      /// todo: handle this better, should clean subscription stuff
-      relayConnectivity.stats.connectionErrors++;
-      print("onError ${relayConnectivity.url} on listen $error");
-      throw Exception("Error in socket");
-    }, onDone: () {
-      /// reconnect on close
-      print(
-          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()}), trying to reconnect");
-      if (relayConnectivity.relayTransport!.isOpen()) {
-        print("closing ${relayConnectivity.url} webSocket");
-        relayConnectivity.relayTransport!.close();
-        print("closed ${relayConnectivity.url}. Reconnecting");
-      }
-      reconnectRelay(relayConnectivity).then((connected) {
-        if (connected) {
-          _reSubscribeInFlightSubscriptions(relayConnectivity);
-        }
-      });
-    });
-  }
-
   Future<bool> reconnectRelay(RelayConnectivity relayConnectivity) {
     throw UnimplementedError();
   }
@@ -207,7 +179,35 @@ class RelayManagerLight<T> {
     }
   }
 
-  void _handleIncommingMessage(
+  void _startListeningToSocket(RelayConnectivity relayConnectivity) {
+    relayConnectivity.relayTransport!.listen((message) {
+      _handleIncomingMessage(
+        message,
+        relayConnectivity,
+      );
+    }, onError: (error) async {
+      /// todo: handle this better, should clean subscription stuff
+      relayConnectivity.stats.connectionErrors++;
+      print("onError ${relayConnectivity.url} on listen $error");
+      throw Exception("Error in socket");
+    }, onDone: () {
+      /// reconnect on close
+      print(
+          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()}), trying to reconnect");
+      if (relayConnectivity.relayTransport!.isOpen()) {
+        print("closing ${relayConnectivity.url} webSocket");
+        relayConnectivity.relayTransport!.close();
+        print("closed ${relayConnectivity.url}. Reconnecting");
+      }
+      reconnectRelay(relayConnectivity).then((connected) {
+        if (connected) {
+          _reSubscribeInFlightSubscriptions(relayConnectivity);
+        }
+      });
+    });
+  }
+
+  void _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) {
     List<dynamic> eventJson = json.decode(message);
 
