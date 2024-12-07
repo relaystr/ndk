@@ -66,43 +66,43 @@ class JitEngine with Logger implements NetworkEngine {
     for (var filter in requestState.unresolvedFilters) {
       // filter different types of filters/requests because each requires a different strategy
 
-      if ((filter.authors != null && filter.authors!.isNotEmpty)) {
-        RelayJitPubkeyStrategy.handleRequest(
-          globalState: globalState,
-          relayManager: relayManagerLight,
-          requestState: requestState,
-          cacheManager: cache,
-          filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
-          desiredCoverage: ndkRequest.desiredCoverage,
-          closeOnEOSE: ndkRequest.closeOnEOSE,
-          direction: ReadWriteMarker
-              .writeOnly, // the author should write on the persons write relays
-          ignoreRelays: cleanIgnoreRelays,
-        );
-        continue;
-      }
+      // if ((filter.authors != null && filter.authors!.isNotEmpty)) {
+      //   RelayJitPubkeyStrategy.handleRequest(
+      //     globalState: globalState,
+      //     relayManager: relayManagerLight,
+      //     requestState: requestState,
+      //     cacheManager: cache,
+      //     filter: filter,
+      //     connectedRelays: relayManagerLight.connectedRelays
+      //         .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+      //         .toList(),
+      //     desiredCoverage: ndkRequest.desiredCoverage,
+      //     closeOnEOSE: ndkRequest.closeOnEOSE,
+      //     direction: ReadWriteMarker
+      //         .writeOnly, // the author should write on the persons write relays
+      //     ignoreRelays: cleanIgnoreRelays,
+      //   );
+      //   continue;
+      // }
 
-      if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
-        RelayJitPubkeyStrategy.handleRequest(
-          relayManager: relayManagerLight,
-          globalState: globalState,
-          requestState: requestState,
-          cacheManager: cache,
-          filter: filter,
-          connectedRelays: relayManagerLight.connectedRelays
-              .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-              .toList(),
-          desiredCoverage: ndkRequest.desiredCoverage,
-          closeOnEOSE: ndkRequest.closeOnEOSE,
-          direction: ReadWriteMarker
-              .readOnly, // others should mention on the persons read relays
-          ignoreRelays: cleanIgnoreRelays,
-        );
-        continue;
-      }
+      // if (filter.pTags?.isNotEmpty != null && filter.pTags!.isNotEmpty) {
+      //   RelayJitPubkeyStrategy.handleRequest(
+      //     relayManager: relayManagerLight,
+      //     globalState: globalState,
+      //     requestState: requestState,
+      //     cacheManager: cache,
+      //     filter: filter,
+      //     connectedRelays: relayManagerLight.connectedRelays
+      //         .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+      //         .toList(),
+      //     desiredCoverage: ndkRequest.desiredCoverage,
+      //     closeOnEOSE: ndkRequest.closeOnEOSE,
+      //     direction: ReadWriteMarker
+      //         .readOnly, // others should mention on the persons read relays
+      //     ignoreRelays: cleanIgnoreRelays,
+      //   );
+      //   continue;
+      // }
 
       if (filter.search != null) {
         throw UnimplementedError("search filter not implemented yet");

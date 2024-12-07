@@ -3,14 +3,11 @@ import 'relay_connectivity.dart';
 import 'request_state.dart';
 
 class GlobalState {
-  /// used by concurrency check
+  /// used by concurrency check, and relay manager
+  /// key: request Id
   final Map<String, RequestState> inFlightRequests = {};
 
   ///todo: WIP
-
-  /// todo: discuss what active means or if the same as inFlight (requestState.controller.done => request is done?)
-  /// key: request Id
-  final Map<String, RequestState> activeRequests = {};
 
   /// hold state information for a broadcast
   /// key: event Id

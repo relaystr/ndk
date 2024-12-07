@@ -27,6 +27,12 @@ class RelayJitBlastAllStrategy {
         filters: [filter],
       );
 
+      /// register request
+      relayManager.registerRelayRequest(
+        reqId: requestState.id,
+        relayUrl: connectedRelay.url,
+        filters: [filter],
+      );
       relayManager.send(connectedRelay, clientMsg);
     }
   }

@@ -11,7 +11,6 @@ class RelayRequestState {
   String url;
   bool receivedEOSE = false;
   List<Filter> filters;
-  List<String> eventIdsToBeVerified = [];
 
   RelayRequestState(this.url, this.filters);
 }
@@ -45,6 +44,7 @@ class RequestState {
   bool get isSubscription => !request.closeOnEOSE;
 
   //! our requests tracking obj
+  // key is relay url, value is RelayRequestState
   Map<String, RelayRequestState> requests = {};
 
   NdkRequest request;

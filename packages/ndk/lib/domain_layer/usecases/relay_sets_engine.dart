@@ -51,7 +51,7 @@ class RelaySetsEngine implements NetworkEngine {
         list.addAll(request.filters.map((filter) => filter.toMap()));
         Relay? relay = _relayManager.getRelay(request.url);
         if (relay != null) {
-          relay.stats.activeRequests++;
+          //// relay.stats.activeRequests++;
           _relayManager.send(request.url, jsonEncode(list));
         }
         return true;
@@ -204,6 +204,7 @@ class RelaySetsEngine implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner mySigner,
+    required Future<List<RelayBroadcastResponse>> doneFuture,
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
@@ -288,7 +289,10 @@ class RelaySetsEngine implements NetworkEngine {
 
     asyncStuff();
 
-    return NdkBroadcastResponse(publishEvent: nostrEvent);
+    return NdkBroadcastResponse(
+      publishEvent: nostrEvent,
+      publishDoneFuture: doneFuture,
+    );
   }
 
   @override

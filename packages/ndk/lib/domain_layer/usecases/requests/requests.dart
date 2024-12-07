@@ -165,6 +165,9 @@ class Requests {
       final streamWasReplaced = request.cacheRead && concurrency.check(state);
       if (streamWasReplaced) {
         return;
+      } else {
+        // add to in flight
+        _globalState.inFlightRequests[state.id] = state;
       }
 
       // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine

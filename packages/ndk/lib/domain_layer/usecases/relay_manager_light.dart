@@ -8,10 +8,13 @@ import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../entities/connection_source.dart';
+import '../entities/filter.dart';
 import '../entities/global_state.dart';
+import '../entities/nip_01_event.dart';
 import '../entities/relay.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
+import '../entities/request_state.dart';
 import '../entities/tuple.dart';
 import '../repositories/nostr_transport.dart';
 
@@ -183,6 +186,27 @@ class RelayManagerLight<T> {
     _sendRaw(relayConnectivity, encodedMsg);
   }
 
+  /// use this to register your request against a relay, \
+  /// this is needed so the response from a relay can be tracked back
+  void registerRelayRequest({
+    required String reqId,
+    required String relayUrl,
+    required List<Filter> filters,
+  }) {
+    // new tracking
+    if (globalState.inFlightRequests[reqId]!.requests[relayUrl] == null) {
+      globalState.inFlightRequests[reqId]!.requests[relayUrl] =
+          RelayRequestState(
+        relayUrl,
+        filters,
+      );
+    } else {
+      // do not overwrite and add new filters
+      globalState.inFlightRequests[reqId]!.requests[relayUrl]!.filters
+          .addAll(filters);
+    }
+  }
+
   void _handleIncommingMessage(
       dynamic message, RelayConnectivity relayConnectivity) {
     List<dynamic> eventJson = json.decode(message);
@@ -203,7 +227,7 @@ class RelayManagerLight<T> {
     if (eventJson[0] == 'NOTICE') {
       Logger.log.w("NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
     } else if (eventJson[0] == 'EVENT') {
-      //handleIncomingEvent(eventJson, url, message);
+      _handleIncomingEvent(eventJson, relayConnectivity.url);
       Logger.log.d("EVENT from ${relayConnectivity.url}: $eventJson");
     } else if (eventJson[0] == 'EOSE') {
       Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
@@ -212,6 +236,35 @@ class RelayManagerLight<T> {
       Logger.log.w(
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
       globalState.inFlightRequests.remove(eventJson[1]);
+    }
+  }
+
+  void _handleIncomingEvent(List<dynamic> eventJson, String url) {
+    var id = eventJson[1];
+    if (globalState.inFlightRequests[id] == null) {
+      Logger.log.w(
+          "RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
+      // send(url, jsonEncode(["CLOSE", id]));
+      return;
+    }
+
+    Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+
+    RequestState? state = globalState.inFlightRequests[id];
+    if (state != null) {
+      RelayRequestState? request = state.requests[url];
+      if (request == null) {
+        Logger.log.w("No RelayRequestState found for id ${id}");
+        return;
+      }
+      event.sources.add(url);
+
+      if (state.networkController.isClosed) {
+        Logger.log.e(
+            "TRIED to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
+      } else {
+        state.networkController.add(event);
+      }
     }
   }
 

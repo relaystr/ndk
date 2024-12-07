@@ -332,12 +332,11 @@ void _sendRequestToSocket(
   }
   // create a new subscription
 
-  // todo: do not overwrite the subscription if it already exists
   // link the request id to the relay
-  globalState.inFlightRequests[requestState.id]!.requests[connectedRelay.url] =
-      RelayRequestState(
-    connectedRelay.url,
-    filters,
+  relayManger.registerRelayRequest(
+    reqId: requestState.id,
+    relayUrl: connectedRelay.url,
+    filters: filters,
   );
 
   // send out the request
