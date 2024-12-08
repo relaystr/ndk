@@ -4,26 +4,37 @@ import 'nip_01_event.dart';
 
 /// the response to a low level broadcast request
 class NdkBroadcastResponse {
-  final Nip01Event publishedEvent;
+  /// the event that is being published
+  final Nip01Event publishEvent;
 
-  final Completer<bool> _publishCompleter = Completer();
+  final Future<List<RelayBroadcastResponse>> _publishDoneFuture;
 
-  /// completes when all relays have responded
-  /// TODO
-  // Future<bool> get publishDone => _publishCompleter.future;
+  /// completes when all relays have responded or timed out \
+  /// key is the relay url, value is the response [] on success
+  Future<List<RelayBroadcastResponse>> get publishDone => _publishDoneFuture;
 
-  /// a map of relays publishing to
-  /// [String] is the relayUrl/identifier
-  /// [Future<String>] is the relay response e.g. OK, err reason
-  // Map<String, Completer<String>> _publishingRelays = {};
-
+  /// creates a new [NdkBroadcastResponse] instance
   NdkBroadcastResponse({
-    required this.publishedEvent,
-  }) {
-    Future.delayed(Duration(seconds: 10), () {
-      _publishCompleter.completeError("timeout");
-    });
-  }
+    required this.publishEvent,
+    required Future<List<RelayBroadcastResponse>> publishDoneFuture,
+  }) : _publishDoneFuture = publishDoneFuture;
+}
 
-  addPublishingRelay({required String url}) {}
+/// individual response from a relay
+class RelayBroadcastResponse {
+  /// the relay url
+  final String relayUrl;
+
+  /// true if publishing was successful
+  final bool success;
+
+  /// the response message usually an error message
+  final String msg;
+
+  /// creates a new [RelayBroadcastResponse] instance
+  RelayBroadcastResponse({
+    required this.relayUrl,
+    required this.success,
+    required this.msg,
+  });
 }

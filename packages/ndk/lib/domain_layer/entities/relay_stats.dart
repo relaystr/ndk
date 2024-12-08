@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
 
+import 'nip_01_event.dart';
+
 /// relay stats
 class RelayStats {
   /// number of connections
@@ -31,5 +33,13 @@ class RelayStats {
   /// Get total bytes read this relay
   int getTotalBytesRead() {
     return dataReadBytes.values.sum;
+  }
+
+  /// increment stats by new event
+  void incStatsByNewEvent(Nip01Event event, int bytes) {
+    int eventsRead = this.eventsRead[event.kind] ?? 0;
+    this.eventsRead[event.kind] = eventsRead + 1;
+    int bytesRead = this.dataReadBytes[event.kind] ?? 0;
+    this.dataReadBytes[event.kind] = bytesRead + bytes;
   }
 }

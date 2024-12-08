@@ -1,12 +1,13 @@
 import '../../../entities/connection_source.dart';
-import '../../../entities/nip_01_event.dart';
-import '../../../entities/request_state.dart';
-import '../relay_jit.dart';
+import '../../../entities/jit_engine_relay_connectivity_data.dart';
+import '../../../entities/relay_connectivity.dart';
+import '../../relay_manager_light.dart';
 
 /// checks if [toCheckRelays] are in [connectedRelays]
 /// [returns] list of relays that are not in connectedRelays
 List<String> checkConnectionStatus({
-  required List<RelayJit> connectedRelays,
+  required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+      connectedRelays,
   required List<String> toCheckRelays,
 }) {
   List<String> notConnectedRelays = [];
@@ -21,26 +22,21 @@ List<String> checkConnectionStatus({
 /// connect relays
 /// [relaysToConnect] the relays this function tries to connect
 /// [connectedRelays] already connected relays
-/// [onMessage] callback for new connected relays
+
 /// [returns] list of relays where the connection failed
 Future<List<String>> connectRelays({
   required List<String> relaysToConnect,
-  required List<RelayJit> connectedRelays,
-  required Function(Nip01Event, RequestState) onMessage,
+  required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+      connectedRelays,
+  required RelayManagerLight relayManager,
   required ConnectionSource connectionSource,
 }) async {
   final List<String> couldNotConnectRelays = [];
   for (final relayUrl in relaysToConnect) {
-    RelayJit newRelay = RelayJit(
-      url: relayUrl,
-      onMessage: onMessage,
-    );
+    final success = await relayManager.connectRelay(
+        connectionSource: connectionSource, dirtyUrl: relayUrl);
 
-    // add the relay to the connected relays
-    connectedRelays.add(newRelay);
-
-    final success = await newRelay.connect(connectionSource: connectionSource);
-    if (!success) {
+    if (!success.first) {
       couldNotConnectRelays.add(relayUrl);
     }
   }

@@ -4,6 +4,7 @@ import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
+import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
@@ -15,6 +16,7 @@ import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
 import '../domain_layer/usecases/relay_manager.dart';
+import '../domain_layer/usecases/relay_manager_light.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
@@ -40,6 +42,7 @@ class Initialization {
 
   /// use cases
   late RelayManager relayManager;
+  late RelayManagerLight relayManagerLight;
   late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
@@ -66,6 +69,12 @@ class Initialization {
       globalState: globalState,
     );
 
+    relayManagerLight = RelayManagerLight<JitEngineRelayConnectivityData>(
+      globalState: globalState,
+      nostrTransportFactory: _webSocketNostrTransportFactory,
+      seedRelays: ndkConfig.bootstrapRelays,
+    );
+
     switch (ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
         engine = RelaySetsEngine(
@@ -79,7 +88,7 @@ class Initialization {
           eventSigner: ndkConfig.eventSigner,
           cache: ndkConfig.cache,
           ignoreRelays: ndkConfig.ignoreRelays,
-          seedRelays: ndkConfig.bootstrapRelays,
+          relayManagerLight: relayManagerLight,
           globalState: globalState,
         );
         break;
