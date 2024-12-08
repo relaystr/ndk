@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:ndk/shared/nips/nip01/client_msg.dart';
+
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../entities/broadcast_response.dart';
@@ -187,8 +189,24 @@ class JitEngine with Logger implements NetworkEngine {
   /// close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
   @override
   closeSubscription(String id) async {
-    //await seedRelaysConnected;
-    print("todo: cloes");
+    final relayUrls = globalState.inFlightRequests[id]?.requests.keys;
+    if (relayUrls == null) {
+      Logger.log.w("no relay urls found for subscription $id, cannot close");
+      return;
+    }
+    Iterable<RelayConnectivity<JitEngineRelayConnectivityData>> relays =
+        relayManagerLight.connectedRelays
+            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
+            .where((relay) => relayUrls.contains(relay.url));
+
+    for (var relay in relays) {
+      this
+          .relayManagerLight
+          .send(relay, ClientMsg(ClientMsgType.CLOSE, id: id));
+    }
+
+    // remove from in flight requests
+    globalState.inFlightRequests.remove(id);
   }
 
   /// checks if relay covers given pubkey in given direction
@@ -219,19 +237,5 @@ class JitEngine with Logger implements NetworkEngine {
   void onMessage(Nip01Event event, RequestState requestState) async {
     // add to response stream
     requestState.networkController.add(event);
-  }
-
-  static void onEoseReceivedFromRelay(RequestState requestState) async {
-    // check if all subscriptions received EOSE (async) at the current time
-
-    if (requestState.isSubscription) {
-      return;
-    }
-    // for (var sub in requestState.activeRelaySubscriptions.values) {
-    //   await sub.activeSubscriptions[requestState.id]?.eoseReceived;
-    // }
-    // requestState.networkController.close();
-
-    print("todo eose");
   }
 }
