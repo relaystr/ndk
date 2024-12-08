@@ -25,8 +25,8 @@ void main() async {
         createdAt: 100,
         refreshedTimestamp: 0);
 
-    late MockRelay relay0;
-    late Ndk ndk;
+    late var relay0;
+    late var ndk;
 
     setUp(() async {
       final cache = MemCacheManager();
@@ -42,7 +42,9 @@ void main() async {
       //cache.saveContactList(cache1ContactList);
     });
 
-    tearDown(() async {});
+    tearDown(() async {
+      await ndk.destroy();
+    });
 
     test('user relay lists equal', () {
       expect(cache0, equals(cache0));

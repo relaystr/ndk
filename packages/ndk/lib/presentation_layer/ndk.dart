@@ -1,11 +1,12 @@
+import '../data_layer/repositories/cache_manager/mem_cache_manager.dart';
+import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
-import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/follows/follows.dart';
-
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
@@ -33,6 +34,21 @@ class Ndk {
           ndkConfig: config,
           globalState: _globalState,
         );
+
+  /// Creates a new instance of [Ndk] with default configuration
+  Ndk.defaultConfig()
+      : this(NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: Bip340EventVerifier(),
+        ));
+
+  /// Creates a new instance of [Ndk] with default configuration and empty bootstrap relays
+  Ndk.emptyBootstrapRelaysConfig()
+      : this(NdkConfig(
+    cache: MemCacheManager(),
+    eventVerifier: Bip340EventVerifier(),
+    bootstrapRelays: []
+  ));
 
   /// Provides access to low-level Nostr requests.
   ///
@@ -65,4 +81,13 @@ class Ndk {
 
   /// Verifies NIP-05 events
   VerifyNip05 get nip05 => _initialization.verifyNip05;
+
+  /// Nostr Wallet connect
+  Nwc get nwc => _initialization.nwc;
+
+  /// Close all transports on relay manager
+  Future<void> destroy() async {
+    await nwc.disconnectAll();
+    await _initialization.relayManager.closeAllTransports();
+  }
 }

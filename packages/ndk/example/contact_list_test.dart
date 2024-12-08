@@ -7,7 +7,7 @@ void main() async {
   test('contactList', () async {
     // Create an instance of Ndk
     // It's recommended to keep this instance global as it holds critical application state
-    final Ndk ndk = Ndk(
+    final ndk = Ndk(
       // Configure the Ndk instance using NdkConfig
       NdkConfig(
         // Use Bip340EventVerifier for event verification
@@ -20,7 +20,7 @@ void main() async {
     );
 
     // Use a prebuilt ndk usecase (contact list in this case)
-    final ContactList? response = await ndk.follows.getContactList(
+    final response = await ndk.follows.getContactList(
         '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d');
 
     // read entity

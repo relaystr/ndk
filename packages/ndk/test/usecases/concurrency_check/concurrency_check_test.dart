@@ -57,7 +57,7 @@ void main() async {
 
     test('test if events get replayed on concurrency requests',
         timeout: const Timeout(Duration(seconds: 3)), () async {
-      Ndk ndkJit = Ndk(
+      final ndkJit = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
           eventSigner: Bip340EventSigner(
@@ -74,12 +74,12 @@ void main() async {
           kinds: [Nip01Event.TEXT_NODE_KIND],
           authors: [key1.publicKey, key2.publicKey]);
 
-      NdkResponse response0 = ndkJit.requests.query(
+      final response0 = ndkJit.requests.query(
         filters: [myfilter],
         desiredCoverage: 1,
       );
       await Future.delayed(Duration(milliseconds: 1));
-      NdkResponse response1 = ndkJit.requests.query(
+      final response1 = ndkJit.requests.query(
         filters: [myfilter],
         desiredCoverage: 1,
       );
@@ -89,6 +89,8 @@ void main() async {
 
       await expectLater(
           response1.stream, emitsInAnyOrder(key1TextNotes.values));
+      await ndkJit.destroy();
+
     });
   });
 }

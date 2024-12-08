@@ -73,11 +73,10 @@ class RelayManager {
         bootstrapRelays.add(clean);
       }
     }
-    if (bootstrapRelays.isEmpty) {
-      bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
-    }
-    await Future.wait(
-            urls.map((url) => connectRelay(url)).toList())
+    // if (bootstrapRelays.isEmpty) {
+    //   bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
+    // }
+    await Future.wait(urls.map((url) => connectRelay(url)).toList())
         .whenComplete(() {
       if (!_seedRelaysCompleter.isCompleted) {
         _seedRelaysCompleter.complete();
@@ -91,15 +90,21 @@ class RelayManager {
   }
 
   Future<void> closeTransport(url) async {
-    return transports[url]?.close().timeout(const Duration(seconds: 3),
-        onTimeout: () {
-      print("timeout while trying to close socket $url");
-    });
+    NostrTransport? transport = transports[url];
+    if (transport != null) {
+      Logger.log.d("Disconnecting $url...");
+      transports.remove(url);
+      return transport.close().timeout(const Duration(seconds: 3),
+          onTimeout: () {
+        Logger.log.w("timeout while trying to close socket $url");
+      });
+    }
   }
 
   Future<void> closeAllTransports() async {
+    Iterable<String> keys = transports.keys.toList();
     try {
-      await Future.wait(transports.keys.map((url) => closeTransport(url)));
+      await Future.wait(keys.map((url) => closeTransport(url)));
     } catch (e) {
       print(e);
     }
@@ -180,7 +185,7 @@ class RelayManager {
       print("onError $url on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
-      if (allowReconnectRelays) {
+      if (allowReconnectRelays && transports[url] != null) {
         print(
             "onDone $url on listen (close: ${transports[url]!.closeCode()} ${transports[url]!.closeReason()}), trying to reconnect");
         if (isWebSocketOpen(url)) {
@@ -225,30 +230,31 @@ class RelayManager {
     }
   }
 
-  void removeInFlightRequest(RequestState state) {
+  void removeInFlightRequest(RequestState state) async {
     return removeInFlightRequestById(state.id);
   }
 
-  void closeSubscription(String subscriptionId) {
+  void closeSubscription(String subscriptionId) async {
     RequestState? state = globalState.inFlightRequests[subscriptionId];
     if (state != null) {
       for (var url in state.requests.keys) {
         sendCloseToRelay(url, state.id);
       }
-      removeInFlightRequestById(subscriptionId);
+      await removeInFlightRequestById(subscriptionId);
     }
   }
 
-  void removeInFlightRequestById(String id) {
+  Future<void> removeInFlightRequestById(String id) async {
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
       try {
-        state.networkController.close();
+        await state.close();
       } catch (e) {
         Logger.log.e(e);
       }
       globalState.inFlightRequests.remove(id);
     }
+    logActiveRequests();
   }
 
   // =====================================================================================
@@ -273,7 +279,7 @@ class RelayManager {
       handleEOSE(eventJson, url);
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
-          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson.length>2?eventJson[2]:''}");
+          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
     // TODO
@@ -313,7 +319,6 @@ class RelayManager {
           relay.stats.activeRequests--;
         }
         send(url, jsonEncode(["CLOSE", id]));
-        logActiveRequests();
       } catch (e) {
         print(e);
       }

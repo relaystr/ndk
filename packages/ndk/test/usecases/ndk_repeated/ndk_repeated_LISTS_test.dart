@@ -85,7 +85,7 @@ void main() async {
 
     test('Lists Engine', timeout: const Timeout(Duration(seconds: 3)),
         () async {
-      Ndk ndkLists = Ndk(
+      final ndkLists = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
           eventSigner: Bip340EventSigner(

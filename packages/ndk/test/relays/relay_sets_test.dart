@@ -43,7 +43,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: key1TextNotes);
 
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -62,6 +62,7 @@ void main() async {
       await expectLater(query.stream, emitsInAnyOrder(key1TextNotes.values));
 
       await relay1.stopServer();
+      await ndk.destroy();
     });
   });
 
@@ -164,7 +165,7 @@ void main() async {
 
     // ================================================================================================
     test('query events from key that writes only on one relay', () async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -191,6 +192,7 @@ void main() async {
         await expectLater(event, key4TextNotes[key4]);
         // print(event);
       }
+      await ndk.destroy();
     });
 
     // ================================================================================================
@@ -226,7 +228,7 @@ void main() async {
     test(
         // skip: 'WiP',
         'query all keys and do not use redundant relays', () async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -280,6 +282,8 @@ void main() async {
       /// todo: how to ALSO check if actually all notes are returned in the stream?
       //List<Nip01Event> expectedAllNotes = [...key1TextNotes.values, ...key2TextNotes.values, ...key3TextNotes.values, ...key4TextNotes.values];
       //expect(query, emitsInAnyOrder(key1TextNotes.values));
+      await ndk.destroy();
+
     });
 
     // ================================================================================================
@@ -326,7 +330,7 @@ void main() async {
     test(
         "calculate best relays for relayMinCountPerPubKey=1 and check that it doesn't use redundant relays",
         () async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -364,12 +368,14 @@ void main() async {
       expect(relaySet.urls.contains(relay3.url), false);
       expect(relaySet.urls.contains(relay4.url), true);
       expect(relaySet.notCoveredPubkeys.isEmpty, true);
+      await ndk.destroy();
+
     });
 
     test(
         "calculate best relays for relayMinCountPerPubKey=2 and check that it doesn't use redundant relays",
         () async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -405,6 +411,7 @@ void main() async {
       expect(relaySet.urls.contains(relay2.url), true);
       expect(relaySet.urls.contains(relay3.url), false);
       expect(relaySet.urls.contains(relay4.url), true);
+      await ndk.destroy();
     });
   });
   group("misc", () {
@@ -541,7 +548,7 @@ void main() async {
         {String? expectedRelayUrl,
         int iterations = 1,
         required int relayMinCountPerPubKey}) async {
-      Ndk ndk = Ndk(NdkConfig(
+      final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
         eventSigner: Bip340EventSigner(
           privateKey: key1.privateKey,
@@ -591,6 +598,8 @@ void main() async {
         print(
             "===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
         i++;
+        await ndk.destroy();
+
       }
     }
 

@@ -1,6 +1,7 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 
@@ -8,7 +9,7 @@ import 'amber_page.dart';
 
 bool amberAvailable = false;
 
-final Ndk ndk = Ndk(
+final ndk = Ndk(
   NdkConfig(
     eventVerifier: RustEventVerifier(),
     cache: MemCacheManager(),
@@ -54,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Nostr Development Kit Demo'),
@@ -63,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Tab(text: 'Metadata'),
               Tab(text: 'Amber'),
               Tab(text: 'Relays'),
+              Tab(text: 'NWC'),
             ],
           ),
         ),
@@ -73,7 +75,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 ? const Center(child: Text("Amber not available"))
                 : const AmberPage()
             ,
-            const RelaysPage()
+            const RelaysPage(),
+            const NwcPage()
           ],
         ),
       ),

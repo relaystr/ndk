@@ -32,14 +32,18 @@ class RequestState {
   // ids that got already returned by this request
   Set<String> returnedIds = {};
 
-  Stream<Nip01Event> get stream => request.timeout != null
-      ? controller.stream.timeout(Duration(seconds: request.timeout!),
-          onTimeout: (sink) {
-          if (request.onTimeout != null) {
-            request.onTimeout!.call(this);
-          }
-        })
-      : controller.stream;
+  Timer? _timeout;
+
+  Stream<Nip01Event> get stream {
+    if (request.timeout != null && _timeout==null) {
+      _timeout = Timer(Duration(seconds: request.timeout!), () {
+        if (request.onTimeout != null) {
+          request.onTimeout!.call(this);
+        }
+      });
+    }
+    return controller.stream;
+  }
 
   String get id => request.id;
 
@@ -70,5 +74,13 @@ class RequestState {
     if (!requests.containsKey(url)) {
       requests[url] = RelayRequestState(url, filters);
     }
+  }
+
+  Future<void> close() async {
+    if (_timeout!=null) {
+      _timeout!.cancel();
+    }
+    await networkController.close();
+    await cacheController.close();
   }
 }

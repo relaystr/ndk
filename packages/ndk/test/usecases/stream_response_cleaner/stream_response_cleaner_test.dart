@@ -62,7 +62,7 @@ void main() async {
       await outController.close();
     });
 
-    test('timeout closes the stream', () async {
+    test( 'timeout closes the stream', () async {
       final Set<String> tracking = {};
 
       StreamController<Nip01Event> inputController =

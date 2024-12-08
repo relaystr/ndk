@@ -9,7 +9,7 @@ import 'package:ndk/ndk.dart';
 
 // Create an instance of Ndk
 // It's recommended to keep this instance global as it holds critical application state
-Ndk ndk = Ndk(
+final ndk = Ndk(
   // Configure the Ndk instance using NdkConfig
   NdkConfig(
     // Use Bip340EventVerifier for event verification
@@ -21,7 +21,7 @@ Ndk ndk = Ndk(
 );
 
 // Create a query request using the Ndk instance
-NdkResponse response = ndk.requests.query(
+final response = ndk.requests.query(
   filters: [
     // Define a filter for the query
     Filter(
@@ -51,7 +51,7 @@ await for (final event in response.stream) {
 setup your preferred config/dependencies.
 
 ```dart
-Ndk ndk = Ndk(
+final ndk = Ndk(
   NdkConfig(
     eventVerifier: RustEventVerifier(),
     cache: MemCacheManager(),
@@ -139,7 +139,7 @@ final ndkProvider = Provider<Ndk>((ref) {
 
 ## more examples
 
-- [example folder github](https://github.com/relaystr/ndk/tree/master/example)
-- [example app](https://github.com/relaystr/ndk/tree/master/sample-app)
+- [example folder github](https://github.com/relaystr/ndk/tree/master/packages/ndk/example)
+- [example app](https://github.com/relaystr/ndk/tree/master/packages/sample-app)
 - [yana](https://github.com/frnandu/yana)
 - [camelus](https://github.com/leo-lox/camelus)

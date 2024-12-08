@@ -8,7 +8,7 @@ void main() async {
   test('user relay list', () async {
     // Create an instance of Ndk
     // It's recommended to keep this instance global as it holds critical application state
-    final Ndk ndk = Ndk(
+    final ndk = Ndk(
       // Configure the Ndk instance using NdkConfig
       NdkConfig(
         // Use Bip340EventVerifier for event verification
@@ -21,7 +21,7 @@ void main() async {
     );
 
     // Use a prebuilt ndk usecase (userRelayLists in this case)
-    final UserRelayList? response = await ndk.userRelayLists.getSingleUserRelayList(
+    final response = await ndk.userRelayLists.getSingleUserRelayList(
         '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177');
 
     // read entity
