@@ -26,9 +26,13 @@ class RelayManagerLight<T> {
   /// completes when all seed relays are connected
   Future<void> get seedRelaysConnected => _seedRelaysCompleter.future;
 
+  /// global state obj
   GlobalState globalState;
+
+  /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
 
+  /// Creates a new relay manager.
   RelayManagerLight({
     required this.globalState,
     required this.nostrTransportFactory,
@@ -121,8 +125,39 @@ class RelayManagerLight<T> {
     return Tuple(false, "could not connect to $url");
   }
 
-  Future<bool> reconnectRelay(RelayConnectivity relayConnectivity) {
-    throw UnimplementedError();
+  /// Reconnects to a relay, if the relay is not connected or the connection is closed.
+  Future<bool> reconnectRelay(RelayConnectivity relayConnectivity,
+      {bool force = false}) async {
+    if (relayConnectivity.relayTransport != null) {
+      await relayConnectivity.relayTransport!.ready
+          .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
+          .onError((error, stackTrace) {
+        print("error connecting to relay ${relayConnectivity.url}: $error");
+        return []; // Return an empty list in case of error
+      });
+    }
+    if (!relayConnectivity.relayTransport!.isOpen()) {
+      if (!force &&
+          !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
+              FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS)) {
+        // don't try too often
+        return false;
+      }
+
+      if (!(await connectRelay(
+        dirtyUrl: relayConnectivity.url,
+        connectionSource: relayConnectivity.relay.connectionSource,
+      ))
+          .first) {
+        // could not connect
+        return false;
+      }
+      if (!relayConnectivity.relayTransport!.isOpen()) {
+        // web socket is not open
+        return false;
+      }
+    }
+    return true;
   }
 
   void _reSubscribeInFlightSubscriptions(RelayConnectivity relayConnectivity) {
