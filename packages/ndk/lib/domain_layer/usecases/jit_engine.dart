@@ -3,6 +3,7 @@ import 'dart:async';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../entities/broadcast_response.dart';
+import '../entities/broadcast_state.dart';
 import '../entities/connection_source.dart';
 import '../entities/global_state.dart';
 import '../entities/jit_engine_relay_connectivity_data.dart';
@@ -133,7 +134,7 @@ class JitEngine with Logger implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner mySigner,
-    required Future<List<RelayBroadcastResponse>> doneFuture,
+    required Stream<List<RelayBroadcastResponse>> doneStream,
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
@@ -179,7 +180,7 @@ class JitEngine with Logger implements NetworkEngine {
     asyncStuff();
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      publishDoneFuture: doneFuture,
+      broadcastDoneStream: doneStream,
     );
   }
 

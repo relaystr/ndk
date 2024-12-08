@@ -7,6 +7,7 @@ import '../../config/relay_defaults.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
+import '../entities/broadcast_state.dart';
 import '../entities/connection_source.dart';
 import '../entities/filter.dart';
 import '../entities/global_state.dart';
@@ -179,6 +180,27 @@ class RelayManagerLight<T> {
     }
   }
 
+  /// use this to register your broadcast against a relay, \
+  /// this is needed so the response from a relay can be tracked back
+  void registerRelayBroadcast({
+    required String relayUrl,
+    required Nip01Event eventToPublish,
+  }) {
+    // new tracking
+    if (globalState
+            .inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] ==
+        null) {
+      globalState.inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] =
+          RelayBroadcastResponse(
+        relayUrl: relayUrl,
+      );
+    } else {
+      // do not overwrite
+      Logger.log.w(
+          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} ${relayUrl}, skipping");
+    }
+  }
+
   void _startListeningToSocket(RelayConnectivity relayConnectivity) {
     relayConnectivity.relayTransport!.listen((message) {
       _handleIncomingMessage(
@@ -216,10 +238,13 @@ class RelayManagerLight<T> {
       if (eventJson.length >= 2 && eventJson[2] == false) {
         Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
       }
-      globalState.activeBroadcasts[eventJson[1]]?.completePublishingRelay(
-        url: relayConnectivity.url,
-        success: eventJson[2],
-        response: eventJson[3] ?? '',
+      globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
+        RelayBroadcastResponse(
+          relayUrl: relayConnectivity.url,
+          okReceived: true,
+          broadcastSuccessful: eventJson[2],
+          msg: eventJson[3] ?? '',
+        ),
       );
 
       return;

@@ -46,7 +46,7 @@ class Broadcast {
   }) {
     final broadcastState = BroadcastState();
     // register broadcast state
-    _globalState.activeBroadcasts[nostrEvent.id] = broadcastState;
+    _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
 
     final mySigner = _checkSinger(customSigner: customSigner);
 
@@ -54,7 +54,8 @@ class Broadcast {
       nostrEvent: nostrEvent,
       mySigner: mySigner,
       specificRelays: specificRelays,
-      doneFuture: broadcastState.publishDone,
+      doneStream: broadcastState.stateUpdates
+          .map((state) => state.broadcasts.values.toList()),
     );
   }
 

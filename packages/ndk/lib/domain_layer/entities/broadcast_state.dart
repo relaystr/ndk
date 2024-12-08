@@ -1,59 +1,90 @@
 import 'dart:async';
+import 'package:rxdart/rxdart.dart';
 
-import 'package:ndk/domain_layer/entities/tuple.dart';
+/// hols information about a individual relay broadcast response \
+/// e.g. \
+/// ["OK", "b1a649ebe8...", true, "duplicate: already have this event"]
+/// ["OK", "b1a649ebe8...", false, "pow: difficulty 26 is less than 30"]
+class RelayBroadcastResponse {
+  /// the relay url
+  final String relayUrl;
 
-import 'broadcast_response.dart';
+  /// true if the relay responded with "OK"
+  bool okReceived;
 
-// todo: turn into streams
+  /// true if publishing was successful
+  bool broadcastSuccessful;
+
+  /// the response message usually an error message
+  String msg;
+
+  /// creates a new [RelayBroadcastResponse] instance
+  RelayBroadcastResponse({
+    required this.relayUrl,
+    this.okReceived = false,
+    this.broadcastSuccessful = false,
+    this.msg = "",
+  });
+
+  @override
+  operator ==(other) =>
+      other is RelayBroadcastResponse && relayUrl == other.relayUrl;
+
+  @override
+  int get hashCode => relayUrl.hashCode;
+}
 
 /// hold state information for a broadcast
 class BroadcastState {
-  /// creates a new [BroadcastState] instance
-  BroadcastState() {
-    Future.delayed(Duration(seconds: 10), () {
-      _publishCompleter.completeError("timeout");
-    });
-  }
+  /// stream controller for state updates
+  BehaviorSubject<BroadcastState> _stateUpdatesController =
+      BehaviorSubject<BroadcastState>();
+
+  /// [networkController] used by relay manger to write responses
+  StreamController<RelayBroadcastResponse> networkController =
+      StreamController<RelayBroadcastResponse>();
+
+  /// stream of state updates \
+  /// updates are sent when a relay responds, the whole state is sent \
+  /// if you call .listen() the last state is sent immediately
+  Stream<BroadcastState> get stateUpdates => _stateUpdatesController.stream;
+
+  //! our broadcast tracking obj
+  /// key is relay url, value is [RelayBroadcastResponse]
+  Map<String, RelayBroadcastResponse> broadcasts = {};
 
   /// completes when all relays have responded or timed out
   /// first string is the relay url, second is the response
-  Future<List<RelayBroadcastResponse>> get publishDone =>
-      _publishCompleter.future;
+  bool get publishDone =>
+      broadcasts.values.every((element) => element.okReceived);
 
-  final Completer<List<RelayBroadcastResponse>> _publishCompleter = Completer();
+  /// completes when state update controller closes
+  Future<BroadcastState> get publishDoneFuture => _stateUpdatesController.last;
 
-  /// tuple marks success, and string is the msg (usually an error message)\
-  /// ["OK", "b1a649ebe8...", true, "duplicate: already have this event"]
-  /// ["OK", "b1a649ebe8...", false, "pow: difficulty 26 is less than 30"]
-  Map<String, Completer<Tuple<bool, String>>> _publishingRelays = {};
+  late final StreamSubscription _networkSubscription;
 
-  /// add a relay to the publishing list
-  addPublishingRelay({required String url}) {
-    _publishingRelays[url] = Completer<Tuple<bool, String>>();
+  /// creates a new [BroadcastState] instance
+  BroadcastState() {
+    _networkSubscription = networkController.stream.listen((response) {
+      // got a response from a relay
+      broadcasts[response.relayUrl] = response;
+      // send state update
+      _stateUpdatesController.add(this);
+      // check if all relays responded
+      _checkBroadcastDone();
+    });
   }
 
-  /// complete the relay
-  completePublishingRelay(
-      {required String url, required bool success, required String response}) {
-    if (_publishingRelays.containsKey(url)) {
-      _publishingRelays[url]!.complete(Tuple(success, response));
+  void _checkBroadcastDone() {
+    if (publishDone) {
+      _dispose();
     }
-    _completeBroadcast();
   }
 
-  /// check if all relays have responded
-  _completeBroadcast() {
-    if (_publishingRelays.values.every((element) => element.isCompleted)) {
-      List<RelayBroadcastResponse> responses = [];
-      _publishingRelays.forEach((key, value) {
-        responses.add(RelayBroadcastResponse(
-          relayUrl: key,
-          success: value.isCompleted,
-          msg: value.future.toString(),
-        ));
-      });
-
-      _publishCompleter.complete(responses);
-    }
+  /// dispose of the broadcast state => close all streams
+  void _dispose() {
+    _networkSubscription.cancel();
+    _stateUpdatesController.close();
+    networkController.close();
   }
 }

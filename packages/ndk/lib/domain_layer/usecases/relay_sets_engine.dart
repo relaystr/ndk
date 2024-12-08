@@ -7,6 +7,7 @@ import 'package:ndk/domain_layer/entities/broadcast_response.dart';
 import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/helpers.dart';
+import '../entities/broadcast_state.dart';
 import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
@@ -204,7 +205,7 @@ class RelaySetsEngine implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner mySigner,
-    required Future<List<RelayBroadcastResponse>> doneFuture,
+    required Stream<List<RelayBroadcastResponse>> doneStream,
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
@@ -291,7 +292,7 @@ class RelaySetsEngine implements NetworkEngine {
 
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      publishDoneFuture: doneFuture,
+      broadcastDoneStream: doneStream,
     );
   }
 

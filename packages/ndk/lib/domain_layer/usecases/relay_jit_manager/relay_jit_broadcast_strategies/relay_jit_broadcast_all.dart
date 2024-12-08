@@ -24,6 +24,10 @@ class RelayJitBroadcastAllStrategy {
     // broadcast event
 
     for (var relay in connectedRelays) {
+      relayManger.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relay.url,
+      );
       relayManger.send(relay, myClientMsg);
     }
   }
