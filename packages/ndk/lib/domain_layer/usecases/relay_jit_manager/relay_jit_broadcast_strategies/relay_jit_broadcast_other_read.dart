@@ -77,6 +77,12 @@ class RelayJitBroadcastOtherReadStrategy {
     for (var relayUrl in actualBroadcastList) {
       final relay =
           connectedRelays.firstWhere((element) => element.url == relayUrl);
+
+      // register relay broadcast
+      relayManager.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relay.url,
+      );
       relayManager.send(relay, myClientMsg);
     }
 

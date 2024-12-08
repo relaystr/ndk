@@ -68,6 +68,11 @@ class RelayJitBroadcastOutboxStrategy {
     for (var relayUrl in actualBroadcastList) {
       final relay =
           connectedRelays.firstWhere((element) => element.url == relayUrl);
+
+      relayManager.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relay.url,
+      );
       relayManager.send(relay, myClientMsg);
     }
 
