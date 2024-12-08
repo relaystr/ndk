@@ -176,7 +176,7 @@ class RelayJitPubkeyStrategy with Logger {
     coveragePubkeys = relayRanking.notCoveredPubkeys;
 
     // connect to the new found relays and send out the request
-    for (var relayCandidate in relayRanking.ranking) {
+    for (final relayCandidate in relayRanking.ranking) {
       if (relayCandidate.score <= 0) {
         continue;
       }

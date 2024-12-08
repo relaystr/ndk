@@ -73,6 +73,7 @@ class Initialization {
       globalState: globalState,
       nostrTransportFactory: _webSocketNostrTransportFactory,
       seedRelays: ndkConfig.bootstrapRelays,
+      engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
     );
 
     switch (ndkConfig.engine) {

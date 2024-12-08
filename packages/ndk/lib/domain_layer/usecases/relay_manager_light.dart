@@ -18,6 +18,7 @@ import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
 import '../entities/tuple.dart';
 import '../repositories/nostr_transport.dart';
+import 'engines/network_engine.dart';
 
 /// wip relay manger that only does connection and relay lifecycle management
 class RelayManagerLight<T> {
@@ -32,10 +33,14 @@ class RelayManagerLight<T> {
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
 
+  /// factory for creating additional data for the engine
+  final EngineAdditionalDataFactory? engineAdditionalDataFactory;
+
   /// Creates a new relay manager.
   RelayManagerLight({
     required this.globalState,
     required this.nostrTransportFactory,
+    this.engineAdditionalDataFactory,
     List<String>? seedRelays,
   }) {
     _connectSeedRelays(urls: seedRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
@@ -95,10 +100,12 @@ class RelayManagerLight<T> {
     try {
       if (globalState.relays[url] == null) {
         globalState.relays[url] = RelayConnectivity<T>(
-            relay: Relay(
-          url: url,
-          connectionSource: connectionSource,
-        ));
+          relay: Relay(
+            url: url,
+            connectionSource: connectionSource,
+          ),
+          specificEngineData: engineAdditionalDataFactory?.call(),
+        );
       }
       globalState.relays[url]!.relay.tryingToConnect();
 
