@@ -231,7 +231,7 @@ class RelayManagerLight<T> {
       Logger.log.d("EVENT from ${relayConnectivity.url}: $eventJson");
     } else if (eventJson[0] == 'EOSE') {
       Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
-      //handleEOSE(eventJson, url);
+      _handleEOSE(eventJson, relayConnectivity.url);
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
@@ -265,6 +265,53 @@ class RelayManagerLight<T> {
       } else {
         state.networkController.add(event);
       }
+    }
+  }
+
+  /// handles EOSE messages
+  void _handleEOSE(List<dynamic> eventJson, String url) {
+    String id = eventJson[1];
+    RequestState? state = globalState.inFlightRequests[id];
+    if (state != null && state.request.closeOnEOSE) {
+      Logger.log.t(
+          "⛁ received EOSE from $url for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+      RelayRequestState? request = state.requests[url];
+      if (request != null) {
+        request.receivedEOSE = true;
+      }
+
+      if (state.request.closeOnEOSE) {
+        _sendCloseToRelay(url, state.id);
+        if (state.requests.isEmpty || state.didAllRequestsReceivedEOSE) {
+          _removeInFlightRequestById(id);
+        }
+      }
+    }
+    return;
+  }
+
+  /// sends a close message to a relay
+  void _sendCloseToRelay(String url, String id) {
+    try {
+      final myRelay = globalState.relays[url]!;
+
+      _sendRaw(myRelay, jsonEncode(["CLOSE", id]));
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// removes a request from the inFlightRequests \
+  /// and closes the network controller
+  void _removeInFlightRequestById(String id) {
+    RequestState? state = globalState.inFlightRequests[id];
+    if (state != null) {
+      try {
+        state.networkController.close();
+      } catch (e) {
+        Logger.log.e(e);
+      }
+      globalState.inFlightRequests.remove(id);
     }
   }
 
