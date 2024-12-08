@@ -231,7 +231,7 @@ class RelayManagerLight<T> {
       Logger.log.d("EVENT from ${relayConnectivity.url}: $eventJson");
     } else if (eventJson[0] == 'EOSE') {
       Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
-      _handleEOSE(eventJson, relayConnectivity.url);
+      _handleEOSE(eventJson, relayConnectivity);
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
@@ -269,19 +269,20 @@ class RelayManagerLight<T> {
   }
 
   /// handles EOSE messages
-  void _handleEOSE(List<dynamic> eventJson, String url) {
+  void _handleEOSE(
+      List<dynamic> eventJson, RelayConnectivity relayConnectivity) {
     String id = eventJson[1];
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null && state.request.closeOnEOSE) {
       Logger.log.t(
-          "⛁ received EOSE from $url for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
-      RelayRequestState? request = state.requests[url];
+          "⛁ received EOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+      RelayRequestState? request = state.requests[relayConnectivity.url];
       if (request != null) {
         request.receivedEOSE = true;
       }
 
       if (state.request.closeOnEOSE) {
-        _sendCloseToRelay(url, state.id);
+        _sendCloseToRelay(relayConnectivity, state.id);
         if (state.requests.isEmpty || state.didAllRequestsReceivedEOSE) {
           _removeInFlightRequestById(id);
         }
@@ -291,11 +292,9 @@ class RelayManagerLight<T> {
   }
 
   /// sends a close message to a relay
-  void _sendCloseToRelay(String url, String id) {
+  void _sendCloseToRelay(RelayConnectivity relayConnectivity, String id) {
     try {
-      final myRelay = globalState.relays[url]!;
-
-      _sendRaw(myRelay, jsonEncode(["CLOSE", id]));
+      send(relayConnectivity, ClientMsg(ClientMsgType.CLOSE, id: id));
     } catch (e) {
       print(e);
     }
