@@ -176,6 +176,9 @@ class Requests {
           requestState: state,
           outController: state.cacheController,
         );
+      } else {
+        /// close cache controller if not used
+        state.cacheController.close();
       }
 
       /// handle request
