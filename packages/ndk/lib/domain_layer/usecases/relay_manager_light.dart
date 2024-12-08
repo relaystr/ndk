@@ -20,7 +20,8 @@ import '../entities/tuple.dart';
 import '../repositories/nostr_transport.dart';
 import 'engines/network_engine.dart';
 
-/// wip relay manger that only does connection and relay lifecycle management
+///  relay manager, responsible for lifecycle of relays, sending messages, \
+///  and help with tracking of requests
 class RelayManagerLight<T> {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
 
