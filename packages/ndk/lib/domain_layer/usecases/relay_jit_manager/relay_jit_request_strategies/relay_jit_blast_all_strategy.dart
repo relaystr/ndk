@@ -20,8 +20,6 @@ class RelayJitBlastAllStrategy {
     required RelayManagerLight relayManager,
   }) {
     for (final connectedRelay in connectedRelays) {
-      // todo: figure out the linking of the request to the relay
-
       final clientMsg = ClientMsg(
         ClientMsgType.REQ,
         id: requestState.id,
