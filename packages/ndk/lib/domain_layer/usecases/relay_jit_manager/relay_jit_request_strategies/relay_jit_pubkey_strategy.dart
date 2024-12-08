@@ -308,37 +308,6 @@ void _sendRequestToSocket(
   GlobalState globalState,
   RelayManagerLight relayManager,
 ) {
-  // check if the subscription already exists and if its need to be modified
-  if (globalState.inFlightRequests.containsKey(requestState.id)) {
-    // modify the existing subscription
-
-    // add the filters to the existing subscription
-    // to concat the filters is probably not the best way to do it but should be fine
-    globalState.inFlightRequests[requestState.id]!.requests[connectedRelay.url]!
-        .filters
-        .addAll(filters);
-
-    relayManager.registerRelayRequest(
-      reqId: requestState.id,
-      relayUrl: connectedRelay.url,
-      filters: globalState.inFlightRequests[requestState.id]!
-          .requests[connectedRelay.url]!.filters,
-    );
-
-    // send out the updated request
-    relayManager.send(
-        connectedRelay,
-        ClientMsg(
-          ClientMsgType.REQ,
-          id: requestState.id,
-          filters: globalState.inFlightRequests[requestState.id]!
-              .requests[connectedRelay.url]!.filters,
-        ));
-
-    return;
-  }
-  // create a new subscription
-
   // link the request id to the relay
   relayManager.registerRelayRequest(
     reqId: requestState.id,
