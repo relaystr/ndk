@@ -73,7 +73,7 @@ class RelaySetsEngine implements NetworkEngine {
           "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
       RelayConnectivity? relay = _globalState.relays[request.url];
       if (relay != null) {
-        _relayManager.reconnectRelay(relay);
+        _relayManager.reconnectRelay(relay.url, connectionSource: relay.relay.connectionSource);
       }
     }
     return false;
