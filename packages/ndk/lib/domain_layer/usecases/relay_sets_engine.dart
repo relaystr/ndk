@@ -73,7 +73,8 @@ class RelaySetsEngine implements NetworkEngine {
           "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
       RelayConnectivity? relay = _globalState.relays[request.url];
       if (relay != null) {
-        _relayManager.reconnectRelay(relay.url, connectionSource: relay.relay.connectionSource);
+        _relayManager.reconnectRelay(relay.url,
+            connectionSource: relay.relay.connectionSource);
       }
     }
     return false;
@@ -242,8 +243,9 @@ class RelaySetsEngine implements NetworkEngine {
             relayUrl: relayUrl,
           );
 
-          final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
-          if (relayConnectivity!=null) {
+          final relayConnectivity =
+              _relayManager.getRelayConnectivity(relayUrl);
+          if (relayConnectivity != null) {
             _relayManager.send(
                 relayConnectivity,
                 ClientMsg(
@@ -268,8 +270,8 @@ class RelaySetsEngine implements NetworkEngine {
           .toList();
 
       for (final relayUrl in writeRelaysUrls) {
-        final isConnected = _relayManager.connectedRelays
-            .contains((RelayConnectivity e) => e.url == relayUrl);
+        final isConnected =
+            _globalState.relays[relayUrl]?.relayTransport?.isOpen() ?? false;
         if (isConnected) {
           continue;
         }
@@ -324,8 +326,8 @@ class RelaySetsEngine implements NetworkEngine {
         }
 
         for (final relayUrl in myWriteRelayUrlsOthers) {
-          final isConnected = _relayManager.connectedRelays
-              .contains((RelayConnectivity e) => e.url == relayUrl);
+          final isConnected =
+              _globalState.relays[relayUrl]?.relayTransport?.isOpen() ?? false;
           if (isConnected) {
             continue;
           }
