@@ -42,9 +42,9 @@ class RelayManagerLight<T> {
     required this.globalState,
     required this.nostrTransportFactory,
     this.engineAdditionalDataFactory,
-    List<String>? seedRelays,
+    List<String>? bootstrapRelays,
   }) {
-    _connectSeedRelays(urls: seedRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
+    _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
 
   /// This will initialize the manager with bootstrap relays.

@@ -176,11 +176,12 @@ void main() async {
       ));
 
       RelaySet relaySet = await ndk.relaySets.calculateRelaySet(
-          name: "test",
-          ownerPubKey: "test",
-          pubKeys: [key4.publicKey],
-          direction: RelayDirection.outbox,
-          relayMinCountPerPubKey: RelayManager.DEFAULT_BEST_RELAYS_MIN_COUNT);
+        name: "test",
+        ownerPubKey: "test",
+        pubKeys: [key4.publicKey],
+        direction: RelayDirection.outbox,
+        relayMinCountPerPubKey: 2,
+      );
 
       NdkResponse query = ndk.requests.query(filters: [
         Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key4.publicKey])

@@ -67,7 +67,7 @@ class Initialization {
         relayManagerLight = RelayManagerLight(
           globalState: globalState,
           nostrTransportFactory: _webSocketNostrTransportFactory,
-          seedRelays: ndkConfig.bootstrapRelays,
+          bootstrapRelays: ndkConfig.bootstrapRelays,
         );
 
         engine = RelaySetsEngine(
@@ -81,7 +81,7 @@ class Initialization {
         relayManagerLight = RelayManagerLight<JitEngineRelayConnectivityData>(
           globalState: globalState,
           nostrTransportFactory: _webSocketNostrTransportFactory,
-          seedRelays: ndkConfig.bootstrapRelays,
+          bootstrapRelays: ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
         );
 
