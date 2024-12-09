@@ -114,6 +114,7 @@ class Initialization {
       cacheWrite: cacheWrite,
       networkEngine: engine,
       eventVerifier: ndkConfig.eventVerifier,
+      eventOutFilters: ndkConfig.eventOutFilters,
     );
 
     broadcast = Broadcast(
@@ -163,9 +164,6 @@ class Initialization {
       nip05Repository: nip05repository,
     );
 
-    nwc = Nwc(
-      requests: requests,
-      broadcast: broadcast
-    );
+    nwc = Nwc(requests: requests, broadcast: broadcast);
   }
 }

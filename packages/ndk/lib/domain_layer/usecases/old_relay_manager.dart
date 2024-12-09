@@ -8,7 +8,7 @@ import 'dart:developer' as developer;
 import 'package:ndk/domain_layer/entities/connection_source.dart';
 
 import '../../config/bootstrap_relays.dart';
-import '../../event_filter.dart';
+import '../entities/event_filter.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../entities/global_state.dart';
@@ -134,7 +134,8 @@ class OldRelayManager {
     }
     try {
       if (relays[url] == null) {
-        relays[url] = Relay(url: url, connectionSource: ConnectionSource.UNKNOWN);
+        relays[url] =
+            Relay(url: url, connectionSource: ConnectionSource.UNKNOWN);
       }
       relays[url]!.tryingToConnect();
       if (url.startsWith("wss://brb.io")) {
@@ -144,10 +145,8 @@ class OldRelayManager {
       }
 
       transports[url] = nostrTransportFactory(url);
-      await transports[url]!
-          .ready
-          .timeout(Duration(seconds: connectTimeout),
-              onTimeout: () {
+      await transports[url]!.ready.timeout(Duration(seconds: connectTimeout),
+          onTimeout: () {
         print("timed out connecting to relay $url");
       });
 
@@ -155,7 +154,7 @@ class OldRelayManager {
 
       developer.log("connected to relay: $url");
       relays[url]!.succeededToConnect();
-  //    relays[url]!.stats.connections++;
+      //    relays[url]!.stats.connections++;
       getRelayInfo(url);
       return true;
     } catch (e) {
@@ -172,7 +171,7 @@ class OldRelayManager {
       _handleIncommingMessage(message, url);
     }, onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
-     // relays[url]!.stats.connectionErrors++;
+      // relays[url]!.stats.connectionErrors++;
       print("onError $url on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
