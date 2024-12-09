@@ -98,6 +98,13 @@ class RelayManagerLight<T> {
     if (globalState.blockedRelays.contains(url)) {
       return Tuple(false, "relay is blocked");
     }
+
+    if (connectedRelays
+        .contains((RelayConnectivity element) => element.url == url)) {
+      Logger.log.t("relay already connected: $url");
+      return Tuple(true, "");
+    }
+
     try {
       if (globalState.relays[url] == null) {
         globalState.relays[url] = RelayConnectivity<T>(

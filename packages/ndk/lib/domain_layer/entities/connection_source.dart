@@ -5,4 +5,5 @@ enum ConnectionSource {
   BROADCAST_OWN,
   BROADCAST_OTHER,
   BROADCAST_SPECIFIC,
+  EXPLICIT,
 }

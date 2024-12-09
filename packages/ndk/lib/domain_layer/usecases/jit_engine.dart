@@ -199,7 +199,7 @@ class JitEngine with Logger implements NetworkEngine {
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .where((relay) => relayUrls.contains(relay.url));
 
-    for (var relay in relays) {
+    for (final relay in relays) {
       this
           .relayManagerLight
           .send(relay, ClientMsg(ClientMsgType.CLOSE, id: id));
