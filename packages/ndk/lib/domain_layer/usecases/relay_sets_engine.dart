@@ -385,6 +385,6 @@ class RelaySetsEngine implements NetworkEngine {
     }
 
     // remove from in flight requests
-    _globalState.inFlightRequests.remove(subId);
+    await _relayManager.removeInFlightRequestById(subId);
   }
 }

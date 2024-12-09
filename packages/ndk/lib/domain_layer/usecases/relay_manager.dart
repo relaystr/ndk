@@ -51,6 +51,14 @@ class RelayManager<T> {
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
 
+  /// gets allowed to reconnectRelays
+  bool get allowReconnectRelays => _allowReconnectRelays;
+
+  /// sets allowed to reconnectRelays
+  void set allowReconnectRelays(bool b) {
+    _allowReconnectRelays = b;
+  }
+
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
   Future<void> _connectSeedRelays({
@@ -92,6 +100,13 @@ class RelayManager<T> {
   bool isRelayConnected(String url) {
     return globalState.relays[url]?.relayTransport?.isOpen() ?? false;
   }
+
+  /// checks if a relay is connecting
+  bool isRelayConnecting(String url) {
+    Relay? relay = globalState.relays[url]?.relay ?? null;
+    return relay != null && relay.connecting;
+  }
+
 
   /// Connects to a relay to the relay pool.
   /// Returns a tuple with the first element being a boolean indicating success \\
@@ -341,6 +356,7 @@ class RelayManager<T> {
     }
     if (eventJson[0] == 'NOTICE') {
       Logger.log.w("NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
+      _logActiveRequests();
     } else if (eventJson[0] == 'EVENT') {
       _handleIncomingEvent(eventJson, relayConnectivity.url);
       Logger.log.d("EVENT from ${relayConnectivity.url}: $eventJson");
@@ -425,16 +441,40 @@ class RelayManager<T> {
 
   /// removes a request from the inFlightRequests \
   /// and closes the network controller
-  void removeInFlightRequestById(String id) {
+  Future<void> removeInFlightRequestById(String id) async {
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
       try {
-        state.networkController.close();
+        await state.close();
       } catch (e) {
         Logger.log.e(e);
       }
       globalState.inFlightRequests.remove(id);
     }
+    _logActiveRequests();
+  }
+
+  void _logActiveRequests() {
+    // Map<int?, int> kindsMap = {};
+    Map<String?, int> namesMap = {};
+    globalState.inFlightRequests.forEach((key, state) {
+      // int? kind;
+      // if (state.requests.isNotEmpty &&
+      //     state.requests.values.first.filters.first.kinds != null &&
+      //     state.requests.values.first.filters.first.kinds!.isNotEmpty) {
+      //   kind = state.requests.values.first.filters.first.kinds!.first;
+      // }
+      // int? kindCount = kindsMap[kind];
+      int? nameCount = namesMap[state.request.name];
+      // kindCount ??= 0;
+      // kindCount++;
+      nameCount ??= 0;
+      nameCount++;
+      // kindsMap[kind] = kindCount;
+      namesMap[state.request.name] = nameCount;
+    });
+    Logger.log.d(
+        "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");
   }
 
   /// Closes this url transport and removes

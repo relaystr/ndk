@@ -7,4 +7,5 @@ enum ConnectionSource {
   BROADCAST_SPECIFIC,
   EXPLICIT,
   CONNECTION_PROBE,
+  NIP_51_SEARCH
 }
