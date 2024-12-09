@@ -15,6 +15,7 @@ import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
