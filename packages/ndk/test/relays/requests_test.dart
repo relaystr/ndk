@@ -87,6 +87,7 @@ void main() async {
         cacheWrite: init.cacheWrite,
         networkEngine: init.engine,
         eventVerifier: init.ndkConfig.eventVerifier,
+        eventOutFilters: [],
       );
 
       // Create an initial filter
