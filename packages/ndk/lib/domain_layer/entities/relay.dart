@@ -1,5 +1,6 @@
 import 'connection_source.dart';
 
+/// Basic relay info/status
 class Relay {
   /// relay url
   String url;
@@ -15,6 +16,7 @@ class Relay {
 
   ConnectionSource connectionSource;
 
+  /// default constructor
   Relay({
     required this.url,
     required this.connectionSource,

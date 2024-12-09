@@ -50,8 +50,7 @@ class RelaySetsEngine implements NetworkEngine {
   // ====================================================================================================================
 
   bool doRelayRequest(String id, RelayRequestState request) {
-    if (_relayManager.connectedRelays
-            .contains((RelayConnectivity e) => e.url == request.url) &&
+    if (_relayManager.isRelayConnected(request.url) &&
         (!_globalState.blockedRelays.contains(request.url))) {
       try {
         RelayConnectivity? relay = _globalState.relays[request.url];
@@ -229,9 +228,7 @@ class RelaySetsEngine implements NetworkEngine {
       if (specificRelays != null) {
         // check connectivity
         for (final relayUrl in specificRelays) {
-          final isConnected = _relayManager.connectedRelays
-              .contains((RelayConnectivity e) => e.url == relayUrl);
-          if (isConnected) {
+          if (_relayManager.isRelayConnected(relayUrl)) {
             continue;
           }
           await _relayManager.connectRelay(
@@ -245,14 +242,15 @@ class RelaySetsEngine implements NetworkEngine {
             relayUrl: relayUrl,
           );
 
-          final relay = _relayManager.connectedRelays
-              .firstWhere((element) => element.url == relayUrl);
-          _relayManager.send(
-              relay,
-              ClientMsg(
-                ClientMsgType.EVENT,
-                event: nostrEvent,
-              ));
+          final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
+          if (relayConnectivity!=null) {
+            _relayManager.send(
+                relayConnectivity,
+                ClientMsg(
+                  ClientMsgType.EVENT,
+                  event: nostrEvent,
+                ));
+          }
         }
         return;
       }

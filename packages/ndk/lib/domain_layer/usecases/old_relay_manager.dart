@@ -142,17 +142,6 @@ class OldRelayManager {
 //        relays[url]!.stats.connectionErrors++;
         return false;
       }
-      // var connectionOptions = SocketConnectionOptions(
-      //   timeoutConnectionMs: connectTimeout*1000,
-      //   skipPingMessages: true,
-      //   pingRestrictionForce: true,
-      //   reconnectionDelay: const Duration(seconds:5),
-      // );
-      // webSockets[url] = IWebSocketHandler<String, String>.createClient(
-      //   url,
-      //   SocketSimpleTextProcessor(),
-      //   connectionOptions: connectionOptions
-      // );
 
       transports[url] = nostrTransportFactory(url);
       await transports[url]!

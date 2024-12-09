@@ -37,13 +37,17 @@ class RelayManager<T> {
   /// factory for creating additional data for the engine
   final EngineAdditionalDataFactory? engineAdditionalDataFactory;
 
+  /// Are reconnects allowed when a connection drops?
+  bool _allowReconnectRelays = true;
+
   /// Creates a new relay manager.
-  RelayManager({
-    required this.globalState,
-    required this.nostrTransportFactory,
-    this.engineAdditionalDataFactory,
-    List<String>? bootstrapRelays,
-  }) {
+  RelayManager(
+      {required this.globalState,
+      required this.nostrTransportFactory,
+      this.engineAdditionalDataFactory,
+      List<String>? bootstrapRelays,
+      allowReconnect = true}) {
+    _allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
 
@@ -78,6 +82,7 @@ class RelayManager<T> {
   }
 
   /// Returns a list of fully connected relays, excluding connecting ones.
+  /// DO NOT USE THIS FOR CHECKING A SINGLE RELAY, use [isRelayConnected] INSTEAD
   List<RelayConnectivity> get connectedRelays => globalState.relays.values
       .where((relay) =>
           relay.relayTransport != null && relay.relayTransport!.isOpen())
@@ -104,8 +109,7 @@ class RelayManager<T> {
       return Tuple(false, "relay is blocked");
     }
 
-    if (connectedRelays
-        .contains((RelayConnectivity element) => element.url == url)) {
+    if (isRelayConnected(url)) {
       Logger.log.t("relay already connected: $url");
       return Tuple(true, "");
     }
@@ -121,6 +125,14 @@ class RelayManager<T> {
         );
       }
       globalState.relays[url]!.relay.tryingToConnect();
+
+      /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
+      if (url.startsWith("wss://brb.io")) {
+        globalState.relays[url]!.relay.failedToConnect();
+        return Tuple(false, "bad relay");
+      }
+
+      Logger.log.f("connecting to relay $dirtyUrl");
 
       globalState.relays[url]!.relayTransport = nostrTransportFactory(url);
       await globalState.relays[url]!.relayTransport!.ready
@@ -146,38 +158,52 @@ class RelayManager<T> {
   }
 
   /// Reconnects to a relay, if the relay is not connected or the connection is closed.
-  Future<bool> reconnectRelay(RelayConnectivity relayConnectivity,
-      {bool force = false}) async {
-    if (relayConnectivity.relayTransport != null) {
+  Future<bool> reconnectRelay(String url,
+      {required ConnectionSource connectionSource, bool force = false}) async {
+    RelayConnectivity? relayConnectivity = globalState.relays[url];
+    if (relayConnectivity!=null && relayConnectivity.relayTransport != null) {
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
           .onError((error, stackTrace) {
-        print("error connecting to relay ${relayConnectivity.url}: $error");
+        print("error connecting to relay ${url}: $error");
         return []; // Return an empty list in case of error
       });
     }
-    if (!relayConnectivity.relayTransport!.isOpen()) {
+    if (relayConnectivity==null || !relayConnectivity.relayTransport!.isOpen()) {
       if (!force &&
-          !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
-              FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS)) {
+          (relayConnectivity==null || !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
+              FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS))) {
         // don't try too often
         return false;
       }
 
       if (!(await connectRelay(
-        dirtyUrl: relayConnectivity.url,
-        connectionSource: relayConnectivity.relay.connectionSource,
+        dirtyUrl: url,
+        connectionSource: connectionSource,
       ))
           .first) {
         // could not connect
         return false;
       }
-      if (!relayConnectivity.relayTransport!.isOpen()) {
+      relayConnectivity = globalState.relays[url];
+      if (relayConnectivity==null || !relayConnectivity.relayTransport!.isOpen()) {
         // web socket is not open
         return false;
       }
     }
     return true;
+  }
+
+  /// Reconnects all given relays
+  Future<void> reconnectRelays(Iterable<String> urls) async {
+    final startTime = DateTime.now();
+    Logger.log.d("connecting ${urls.length} relays in parallel");
+    List<bool> connected =
+    await Future.wait(urls.map((url) => reconnectRelay(url, connectionSource: ConnectionSource.EXPLICIT, force: true)));
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    Logger.log.d(
+        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED, took ${duration.inMilliseconds} ms");
   }
 
   void _reSubscribeInFlightSubscriptions(RelayConnectivity relayConnectivity) {
@@ -268,19 +294,21 @@ class RelayManager<T> {
       print("onError ${relayConnectivity.url} on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
-      /// reconnect on close
       print(
           "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()}), trying to reconnect");
       if (relayConnectivity.relayTransport!.isOpen()) {
         print("closing ${relayConnectivity.url} webSocket");
         relayConnectivity.relayTransport!.close();
-        print("closed ${relayConnectivity.url}. Reconnecting");
       }
-      reconnectRelay(relayConnectivity).then((connected) {
-        if (connected) {
-          _reSubscribeInFlightSubscriptions(relayConnectivity);
-        }
-      });
+      // reconnect on close
+      if (_allowReconnectRelays && globalState.relays[relayConnectivity.url] != null) {
+        print("closed ${relayConnectivity.url}. Reconnecting");
+        reconnectRelay(relayConnectivity.url, connectionSource: relayConnectivity.relay.connectionSource).then((connected) {
+          if (connected) {
+            _reSubscribeInFlightSubscriptions(relayConnectivity);
+          }
+        });
+      }
     });
   }
 
@@ -425,7 +453,6 @@ class RelayManager<T> {
     }
   }
 
-
   /// fetches relay info
   /// todo: refactor to use http injector and decouple data from fetching
   Future<RelayInfo?> getRelayInfo(String url) async {
@@ -440,5 +467,10 @@ class RelayManager<T> {
   bool doesRelaySupportNip(String url, int nip) {
     RelayConnectivity? connectivity = globalState.relays[cleanRelayUrl(url)];
     return connectivity != null && connectivity.relayInfo!=null && connectivity.relayInfo!.supportsNip(nip);
+  }
+
+  /// return [RelayConnectivity] by url
+  RelayConnectivity? getRelayConnectivity(String url) {
+    return globalState.relays[url];
   }
 }
