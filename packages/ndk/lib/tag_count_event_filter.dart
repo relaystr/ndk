@@ -1,4 +1,4 @@
-import 'package:ndk/event_filter.dart';
+import 'package:ndk/domain_layer/entities/event_filter.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 
 import 'domain_layer/entities/contact_list.dart';

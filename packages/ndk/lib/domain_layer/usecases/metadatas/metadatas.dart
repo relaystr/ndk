@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../config/metadata_defaults.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
@@ -9,7 +10,6 @@ import '../../entities/relay_set.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
 import '../broadcast/broadcast.dart';
-import '../relay_manager.dart';
 import '../requests/requests.dart';
 
 /// nostr metadata usecase
@@ -19,13 +19,13 @@ class Metadatas {
   final Broadcast _broadcast;
   final EventSigner? _signer;
 
+  /// create a new instance of Metadatas
   Metadatas({
     required Requests requests,
     required CacheManager cacheManager,
     required Broadcast broadcast,
     required EventSigner? signer,
-  })  :
-        _cacheManager = cacheManager,
+  })  : _cacheManager = cacheManager,
         _requests = requests,
         _signer = signer,
         _broadcast = broadcast;
@@ -36,10 +36,12 @@ class Metadatas {
     }
   }
 
+  /// load metadata for a pubkey
+  /// if [forceRefresh] is true, it will use the network to refresh the metadata
   Future<Metadata?> loadMetadata(
     String pubKey, {
     bool forceRefresh = false,
-    int idleTimeout = RelayManager.DEFAULT_STREAM_IDLE_TIMEOUT,
+    int idleTimeout = METADATA_IDLE_TIMEOUT,
   }) async {
     Metadata? metadata = await _cacheManager.loadMetadata(pubKey);
     if (metadata == null || forceRefresh) {

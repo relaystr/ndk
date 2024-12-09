@@ -34,10 +34,10 @@ void main() async {
     Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
     Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 4140);
-    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 4141);
-    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 4142);
-    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 4143);
+    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 4340);
+    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 4341);
+    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 4342);
+    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 4343);
 
     final myRelayUrls = [relay1.url, relay2.url, relay3.url, relay4.url];
 
@@ -90,7 +90,6 @@ void main() async {
       await expectLater(
           response1.stream, emitsInAnyOrder(key1TextNotes.values));
       await ndkJit.destroy();
-
     });
   });
 }

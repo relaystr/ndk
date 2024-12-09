@@ -1,4 +1,5 @@
 import '../config/bootstrap_relays.dart';
+import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
@@ -33,6 +34,9 @@ class NdkConfig {
   /// Defaults to [DEFAULT_BOOTSTRAP_RELAYS].
   List<String> bootstrapRelays;
 
+  /// filters that are applied to the output stream
+  List<EventFilter> eventOutFilters;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events.
@@ -48,6 +52,7 @@ class NdkConfig {
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
+    this.eventOutFilters = const [],
   });
 }
 

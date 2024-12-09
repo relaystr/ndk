@@ -48,6 +48,7 @@ void main() async {
         trackingSet: tracking,
         outController: outController,
         timeout: 5,
+        eventOutFilters: [],
       )();
 
       expectLater(outController.stream, emitsInAnyOrder(myEventsNoDublicate));
@@ -62,7 +63,7 @@ void main() async {
       await outController.close();
     });
 
-    test( 'timeout closes the stream', () async {
+    test('timeout closes the stream', () async {
       final Set<String> tracking = {};
 
       StreamController<Nip01Event> inputController =
@@ -77,6 +78,7 @@ void main() async {
         trackingSet: tracking,
         outController: outController,
         timeout: timeout,
+        eventOutFilters: [],
       )();
 
       // Add one event to the stream

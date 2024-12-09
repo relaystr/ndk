@@ -1,12 +1,13 @@
 import '../../../../config/broadcast_defaults.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
+import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
-import '../../../entities/request_state.dart';
+import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../../repositories/event_signer.dart';
+import '../../relay_manager.dart';
 import '../../user_relay_lists/user_relay_lists.dart';
-import '../relay_jit.dart';
 import 'broadcast_strategies_shared.dart';
 
 /// broadcast to other read relays
@@ -16,9 +17,10 @@ class RelayJitBroadcastOtherReadStrategy {
   /// [onMessage] callback for new connected relays
   static Future broadcast({
     required Nip01Event eventToPublish,
-    required List<RelayJit> connectedRelays,
+    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+        connectedRelays,
     required CacheManager cacheManager,
-    required Function(Nip01Event, RequestState) onMessage,
+    required RelayManager relayManager,
     required EventSigner signer,
     required List<String> pubkeysOfInbox,
   }) async {
@@ -53,7 +55,7 @@ class RelayJitBroadcastOtherReadStrategy {
     // connect missing relays
     final couldNotConnectRelays = await connectRelays(
       connectedRelays: connectedRelays,
-      onMessage: onMessage,
+      relayManager: relayManager,
       relaysToConnect: notConnectedRelays,
       connectionSource: ConnectionSource.BROADCAST_OTHER,
     );
@@ -75,7 +77,13 @@ class RelayJitBroadcastOtherReadStrategy {
     for (var relayUrl in actualBroadcastList) {
       final relay =
           connectedRelays.firstWhere((element) => element.url == relayUrl);
-      relay.send(myClientMsg);
+
+      // register relay broadcast
+      relayManager.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relay.url,
+      );
+      relayManager.send(relay, myClientMsg);
     }
 
     return couldNotConnectRelays;
