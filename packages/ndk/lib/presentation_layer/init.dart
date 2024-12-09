@@ -144,6 +144,8 @@ class Initialization {
     lists = Lists(
       requests: requests,
       cacheManager: ndkConfig.cache,
+      broadcast: broadcast,
+      eventSigner: ndkConfig.eventSigner,
     );
 
     relaySets = RelaySets(
