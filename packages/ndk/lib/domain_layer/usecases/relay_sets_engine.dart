@@ -283,8 +283,11 @@ class RelaySetsEngine implements NetworkEngine {
       }
 
       for (final relayUrl in writeRelaysUrls) {
-        final relay = _relayManager.connectedRelays
-            .firstWhere((element) => element.url == relayUrl);
+        final relay = _globalState.relays[relayUrl];
+        if (relay == null) {
+          Logger.log.w("relay $relayUrl not found");
+          continue;
+        }
 
         _relayManager.registerRelayBroadcast(
           eventToPublish: nostrEvent,
@@ -336,8 +339,12 @@ class RelaySetsEngine implements NetworkEngine {
               connectionSource: ConnectionSource.BROADCAST_OTHER);
         }
         for (final relayUrl in myWriteRelayUrlsOthers) {
-          final relay = _relayManager.connectedRelays
-              .firstWhere((element) => element.url == relayUrl);
+          final relay = _globalState.relays[relayUrl];
+
+          if (relay == null) {
+            Logger.log.w("relay $relayUrl not found");
+            continue;
+          }
 
           _relayManager.registerRelayBroadcast(
             eventToPublish: nostrEvent,
