@@ -3,7 +3,7 @@ import '../../../entities/filter.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
-import '../../relay_manager_light.dart';
+import '../../relay_manager.dart';
 
 /// Strategy Description:
 ///
@@ -17,7 +17,7 @@ class RelayJitBlastAllStrategy {
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
         connectedRelays,
     required bool closeOnEOSE,
-    required RelayManagerLight relayManager,
+    required RelayManager relayManager,
   }) {
     for (final connectedRelay in connectedRelays) {
       final clientMsg = ClientMsg(

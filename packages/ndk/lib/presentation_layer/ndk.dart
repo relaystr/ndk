@@ -1,4 +1,4 @@
-import 'package:ndk/domain_layer/usecases/relay_manager_light.dart';
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 
 import '../data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
@@ -62,7 +62,7 @@ class Ndk {
 
   /// to be removed
   @deprecated
-  RelayManagerLight get relays => _initialization.relayManager;
+  RelayManager get relays => _initialization.relayManager;
 
   /// Handles operations related to user follows
   ///

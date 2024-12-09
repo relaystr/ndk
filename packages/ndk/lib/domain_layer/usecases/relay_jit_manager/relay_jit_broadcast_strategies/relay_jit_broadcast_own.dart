@@ -5,7 +5,7 @@ import '../../../entities/nip_01_event.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../../repositories/event_signer.dart';
-import '../../relay_manager_light.dart';
+import '../../relay_manager.dart';
 import '../../user_relay_lists/user_relay_lists.dart';
 import 'broadcast_strategies_shared.dart';
 
@@ -18,7 +18,7 @@ class RelayJitBroadcastOutboxStrategy {
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
         connectedRelays,
     required CacheManager cacheManager,
-    required RelayManagerLight relayManager,
+    required RelayManager relayManager,
     required EventSigner signer,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(

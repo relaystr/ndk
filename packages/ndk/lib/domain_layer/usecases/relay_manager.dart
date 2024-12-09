@@ -22,7 +22,7 @@ import 'engines/network_engine.dart';
 
 ///  relay manager, responsible for lifecycle of relays, sending messages, \
 ///  and help with tracking of requests
-class RelayManagerLight<T> {
+class RelayManager<T> {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
 
   /// completes when all seed relays are connected
@@ -38,7 +38,7 @@ class RelayManagerLight<T> {
   final EngineAdditionalDataFactory? engineAdditionalDataFactory;
 
   /// Creates a new relay manager.
-  RelayManagerLight({
+  RelayManager({
     required this.globalState,
     required this.nostrTransportFactory,
     this.engineAdditionalDataFactory,

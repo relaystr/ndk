@@ -8,19 +8,19 @@ import '../../entities/relay_set.dart';
 import '../../entities/user_relay_list.dart';
 import '../../repositories/cache_manager.dart';
 
-import '../relay_manager_light.dart';
+import '../relay_manager.dart';
 import '../user_relay_lists/user_relay_lists.dart';
 
 class RelaySets {
   final CacheManager _cacheManager;
-  final RelayManagerLight _relayManager;
+  final RelayManager _relayManager;
   final UserRelayLists _userRelayLists;
 
   final Set<String> _blockedRelays;
 
   RelaySets({
     required CacheManager cacheManager,
-    required RelayManagerLight relayManager,
+    required RelayManager relayManager,
     required UserRelayLists userRelayLists,
     required Set<String> blockedRelays,
   })  : _userRelayLists = userRelayLists,

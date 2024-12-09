@@ -15,7 +15,7 @@ import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
-import '../domain_layer/usecases/relay_manager_light.dart';
+import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
@@ -42,7 +42,7 @@ class Initialization {
 
   /// use cases
 
-  late RelayManagerLight relayManager;
+  late RelayManager relayManager;
   late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
@@ -66,7 +66,7 @@ class Initialization {
   }) {
     switch (ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
-        relayManager = RelayManagerLight(
+        relayManager = RelayManager(
           globalState: globalState,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: ndkConfig.bootstrapRelays,
@@ -80,7 +80,7 @@ class Initialization {
         );
         break;
       case NdkEngine.JIT:
-        relayManager = RelayManagerLight<JitEngineRelayConnectivityData>(
+        relayManager = RelayManager<JitEngineRelayConnectivityData>(
           globalState: globalState,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: ndkConfig.bootstrapRelays,

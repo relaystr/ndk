@@ -14,7 +14,7 @@ import '../../../entities/relay_connectivity.dart';
 import '../../../entities/request_state.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/user_relay_list.dart';
-import '../../relay_manager_light.dart';
+import '../../relay_manager.dart';
 import '../../user_relay_lists/user_relay_lists.dart';
 
 /// Strategy Description:
@@ -50,7 +50,7 @@ class RelayJitPubkeyStrategy with Logger {
     required bool closeOnEOSE,
     required ReadWriteMarker direction,
     required List<String> ignoreRelays,
-    required RelayManagerLight relayManager,
+    required RelayManager relayManager,
   }) {
     List<String> combindedPubkeys = [
       ...?filter.authors,
@@ -141,7 +141,7 @@ class RelayJitPubkeyStrategy with Logger {
   // the result is relay candidates
   // connects to these candidates and sends out the request
   static void _findRelaysForUnresolvedPubkeys({
-    required RelayManagerLight relayManger,
+    required RelayManager relayManger,
     required RequestState requestState,
     required GlobalState globalState,
     required Filter filter,
@@ -306,7 +306,7 @@ void _sendRequestToSocket(
   RequestState requestState,
   List<Filter> filters,
   GlobalState globalState,
-  RelayManagerLight relayManager,
+  RelayManager relayManager,
 ) {
   // link the request id to the relay
   relayManager.registerRelayRequest(

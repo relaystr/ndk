@@ -7,7 +7,7 @@ import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
-import 'package:ndk/domain_layer/usecases/relay_manager_light.dart';
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/presentation_layer/init.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -125,7 +125,7 @@ void main() async {
       NostrTransportFactory nostrTransportFactory =
           WebSocketNostrTransportFactory();
 
-      RelayManagerLight relayManagerLight = RelayManagerLight(
+      RelayManager relayManagerLight = RelayManager(
         bootstrapRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
         globalState: globalState,
         nostrTransportFactory: nostrTransportFactory,

@@ -3,7 +3,7 @@
 import 'dart:async';
 
 import 'package:ndk/domain_layer/entities/global_state.dart';
-import 'package:ndk/domain_layer/usecases/relay_manager_light.dart';
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
@@ -19,7 +19,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5044);
       await relay1.startServer();
 
-      RelayManagerLight manager = RelayManagerLight(
+      RelayManager manager = RelayManager(
         globalState: GlobalState(),
         bootstrapRelays: [relay1.url],
         nostrTransportFactory: webSocketNostrTransportFactory,
@@ -35,7 +35,7 @@ void main() async {
     });
 
     test('Try to connect to dead relay', () async {
-      RelayManagerLight manager = RelayManagerLight(
+      RelayManager manager = RelayManager(
         nostrTransportFactory: webSocketNostrTransportFactory,
         globalState: GlobalState(),
       );

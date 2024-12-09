@@ -21,7 +21,7 @@ import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
 import 'engines/network_engine.dart';
-import 'relay_manager_light.dart';
+import 'relay_manager.dart';
 import 'user_relay_lists/user_relay_lists.dart';
 
 class RelaySetsEngine implements NetworkEngine {
@@ -29,7 +29,7 @@ class RelaySetsEngine implements NetworkEngine {
 
   late GlobalState _globalState;
 
-  final RelayManagerLight _relayManager;
+  final RelayManager _relayManager;
 
   final CacheManager _cacheManager;
 
@@ -37,7 +37,7 @@ class RelaySetsEngine implements NetworkEngine {
 
   /// engine that pre-calculates relay sets for gossip
   RelaySetsEngine({
-    required RelayManagerLight relayManager,
+    required RelayManager relayManager,
     required CacheManager cacheManager,
     required List<String>? bootstrapRelays,
     GlobalState? globalState,

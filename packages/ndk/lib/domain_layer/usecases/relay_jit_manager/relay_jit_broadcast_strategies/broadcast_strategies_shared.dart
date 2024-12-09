@@ -1,7 +1,7 @@
 import '../../../entities/connection_source.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/relay_connectivity.dart';
-import '../../relay_manager_light.dart';
+import '../../relay_manager.dart';
 
 /// checks if [toCheckRelays] are in [connectedRelays]
 /// [returns] list of relays that are not in connectedRelays
@@ -28,7 +28,7 @@ Future<List<String>> connectRelays({
   required List<String> relaysToConnect,
   required List<RelayConnectivity<JitEngineRelayConnectivityData>>
       connectedRelays,
-  required RelayManagerLight relayManager,
+  required RelayManager relayManager,
   required ConnectionSource connectionSource,
 }) async {
   final List<String> couldNotConnectRelays = [];

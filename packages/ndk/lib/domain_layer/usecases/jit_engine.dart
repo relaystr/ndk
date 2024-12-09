@@ -21,7 +21,7 @@ import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_oth
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_own.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
-import 'relay_manager_light.dart';
+import 'relay_manager.dart';
 
 /// Just In Time Network Engine
 /// This engine is responsible for handling all nostr network requests
@@ -36,7 +36,7 @@ class JitEngine with Logger implements NetworkEngine {
   List<String> ignoreRelays;
 
   /// manager for all relays
-  RelayManagerLight relayManagerLight;
+  RelayManager relayManagerLight;
 
   /// global state of the ndk
   GlobalState globalState;
