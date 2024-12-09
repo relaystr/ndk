@@ -113,47 +113,52 @@ class RelayManager<T> {
       Logger.log.t("relay already connected: $url");
       return Tuple(true, "");
     }
+    RelayConnectivity? relayConnectivity = globalState.relays[url];
 
     try {
-      if (globalState.relays[url] == null) {
-        globalState.relays[url] = RelayConnectivity<T>(
+      if (relayConnectivity == null) {
+        relayConnectivity = RelayConnectivity<T>(
           relay: Relay(
             url: url,
             connectionSource: connectionSource,
           ),
           specificEngineData: engineAdditionalDataFactory?.call(),
         );
+        globalState.relays[url] = relayConnectivity;
       }
-      globalState.relays[url]!.relay.tryingToConnect();
+      ;
+      relayConnectivity.relay.tryingToConnect();
 
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
       if (url.startsWith("wss://brb.io")) {
-        globalState.relays[url]!.relay.failedToConnect();
+        relayConnectivity.relay.failedToConnect();
         return Tuple(false, "bad relay");
       }
 
       Logger.log.f("connecting to relay $dirtyUrl");
 
-      globalState.relays[url]!.relayTransport = nostrTransportFactory(url);
-      await globalState.relays[url]!.relayTransport!.ready
+      relayConnectivity.relayTransport = nostrTransportFactory(url);
+      await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: connectTimeout), onTimeout: () {
         print("timed out connecting to relay $url");
         return Tuple(false, "timed out connecting to relay $url");
       });
 
-      _startListeningToSocket(globalState.relays[url]!);
+      _startListeningToSocket(relayConnectivity);
 
       developer.log("connected to relay: $url");
-      globalState.relays[url]!.relay.succeededToConnect();
-      globalState.relays[url]!.stats.connections++;
-      getRelayInfo(url);
+      relayConnectivity.relay.succeededToConnect();
+      relayConnectivity.stats.connections++;
+      getRelayInfo(url).then((info) {
+        relayConnectivity!.relayInfo = info;
+      });
       return Tuple(true, "");
     } catch (e) {
       print("!! could not connect to $url -> $e");
-      globalState.relays[url]!.relayTransport == null;
+      relayConnectivity!.relayTransport == null;
     }
-    globalState.relays[url]!.relay.failedToConnect();
-    globalState.relays[url]!.stats.connectionErrors++;
+    relayConnectivity.relay.failedToConnect();
+    relayConnectivity.stats.connectionErrors++;
     return Tuple(false, "could not connect to $url");
   }
 
@@ -295,13 +300,15 @@ class RelayManager<T> {
       throw Exception("Error in socket");
     }, onDone: () {
       print(
-          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()}), trying to reconnect");
+          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
       if (relayConnectivity.relayTransport!.isOpen()) {
         print("closing ${relayConnectivity.url} webSocket");
         relayConnectivity.relayTransport!.close();
       }
       // reconnect on close
-      if (_allowReconnectRelays && globalState.relays[relayConnectivity.url] != null) {
+      if (_allowReconnectRelays &&
+          globalState.relays[relayConnectivity.url] != null &&
+          globalState.relays[relayConnectivity.url]!.relayTransport != null) {
         print("closed ${relayConnectivity.url}. Reconnecting");
         reconnectRelay(relayConnectivity.url, connectionSource: relayConnectivity.relay.connectionSource).then((connected) {
           if (connected) {
@@ -457,8 +464,7 @@ class RelayManager<T> {
   /// todo: refactor to use http injector and decouple data from fetching
   Future<RelayInfo?> getRelayInfo(String url) async {
     if (globalState.relays[url] != null) {
-      globalState.relays[url]!.relayInfo ??= await RelayInfo.get(url);
-      return globalState.relays[url]!.relayInfo;
+      return await RelayInfo.get(url);
     }
     return null;
   }
