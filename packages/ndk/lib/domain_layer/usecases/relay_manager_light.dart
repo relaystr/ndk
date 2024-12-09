@@ -83,6 +83,11 @@ class RelayManagerLight<T> {
           relay.relayTransport != null && relay.relayTransport!.isOpen())
       .toList();
 
+  /// checks if a relay is connected, avoid using this
+  bool isWebSocketOpen(String url) {
+    return globalState.relays[url]?.relayTransport?.isOpen() ?? false;
+  }
+
   /// Connects to a relay to the relay pool.
   /// Returns a tuple with the first element being a boolean indicating success \\
   /// and the second element being a string with the error message if any.

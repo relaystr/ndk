@@ -15,7 +15,6 @@ import '../domain_layer/usecases/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
-import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_manager_light.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
@@ -41,7 +40,7 @@ class Initialization {
   /// state obj
 
   /// use cases
-  late RelayManager relayManager;
+
   late RelayManagerLight relayManagerLight;
   late CacheWrite cacheWrite;
   late CacheRead cacheRead;
@@ -63,28 +62,29 @@ class Initialization {
     required this.ndkConfig,
     required this.globalState,
   }) {
-    relayManager = RelayManager(
-      nostrTransportFactory: _webSocketNostrTransportFactory,
-      bootstrapRelays: ndkConfig.bootstrapRelays,
-      globalState: globalState,
-    );
-
-    relayManagerLight = RelayManagerLight<JitEngineRelayConnectivityData>(
-      globalState: globalState,
-      nostrTransportFactory: _webSocketNostrTransportFactory,
-      seedRelays: ndkConfig.bootstrapRelays,
-      engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
-    );
-
     switch (ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
+        relayManagerLight = RelayManagerLight(
+          globalState: globalState,
+          nostrTransportFactory: _webSocketNostrTransportFactory,
+          seedRelays: ndkConfig.bootstrapRelays,
+        );
+
         engine = RelaySetsEngine(
           cacheManager: ndkConfig.cache,
           globalState: globalState,
-          relayManager: relayManager,
+          relayManager: relayManagerLight,
+          bootstrapRelays: ndkConfig.bootstrapRelays,
         );
         break;
       case NdkEngine.JIT:
+        relayManagerLight = RelayManagerLight<JitEngineRelayConnectivityData>(
+          globalState: globalState,
+          nostrTransportFactory: _webSocketNostrTransportFactory,
+          seedRelays: ndkConfig.bootstrapRelays,
+          engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
+        );
+
         engine = JitEngine(
           eventSigner: ndkConfig.eventSigner,
           cache: ndkConfig.cache,
@@ -144,13 +144,13 @@ class Initialization {
     lists = Lists(
       requests: requests,
       cacheManager: ndkConfig.cache,
-      relayManager: relayManager,
     );
 
     relaySets = RelaySets(
       cacheManager: ndkConfig.cache,
-      relayManager: relayManager,
       userRelayLists: userRelayLists,
+      relayManager: relayManagerLight,
+      blockedRelays: globalState.blockedRelays,
     );
 
     verifyNip05 = VerifyNip05(

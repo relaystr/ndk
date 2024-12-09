@@ -1,26 +1,32 @@
 import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/logger/logger.dart';
+import '../../entities/connection_source.dart';
 import '../../entities/pubkey_mapping.dart';
 import '../../entities/read_write.dart';
 import '../../entities/read_write_marker.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/user_relay_list.dart';
 import '../../repositories/cache_manager.dart';
-import '../relay_manager.dart';
+
+import '../relay_manager_light.dart';
 import '../user_relay_lists/user_relay_lists.dart';
 
 class RelaySets {
   final CacheManager _cacheManager;
-  final RelayManager _relayManager;
+  final RelayManagerLight _relayManager;
   final UserRelayLists _userRelayLists;
+
+  final Set<String> _blockedRelays;
 
   RelaySets({
     required CacheManager cacheManager,
-    required RelayManager relayManager,
+    required RelayManagerLight relayManager,
     required UserRelayLists userRelayLists,
+    required Set<String> blockedRelays,
   })  : _userRelayLists = userRelayLists,
         _relayManager = relayManager,
-        _cacheManager = cacheManager;
+        _cacheManager = cacheManager,
+        _blockedRelays = blockedRelays;
 
   /// relay -> list of pubKey mappings
   Future<RelaySet> calculateRelaySet(
@@ -49,8 +55,19 @@ class RelaySets {
         pubKey: ownerPubKey,
         relayMinCountPerPubkey: relayMinCountPerPubKey,
         direction: direction,
-        relaysMap: _relayManager.allConnectedRelays(pubKeys),
+        relaysMap: _allConnectedRelays(pubKeys),
         notCoveredPubkeys: []);
+  }
+
+  Map<String, List<PubkeyMapping>> _allConnectedRelays(List<String> pubKeys) {
+    Map<String, List<PubkeyMapping>> map = {};
+    for (final relay in _relayManager.connectedRelays) {
+      map[relay.url] = pubKeys
+          .map((pubKey) => PubkeyMapping(
+              pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite))
+          .toList();
+    }
+    return map;
   }
 
   /// - get missing relay lists for pubKeys from nip65 or nip02 (todo nip05)
@@ -84,7 +101,7 @@ class RelaySets {
       notCoveredPubkeys[pubKey] = relayMinCountPerPubKey;
     }
     for (String url in pubKeysByRelayUrl.keys) {
-      if (_relayManager.blockedRelays.contains(cleanRelayUrl(url))) {
+      if (_blockedRelays.contains(cleanRelayUrl(url))) {
         continue;
       }
       if (!pubKeysByRelayUrl[url]!.any((pubKey) =>
@@ -93,7 +110,11 @@ class RelaySets {
               relayMinCountPerPubKey)) {
         continue;
       }
-      bool connectable = await _relayManager.reconnectRelay(url);
+      bool connectable = (await _relayManager.connectRelay(
+        dirtyUrl: url,
+        connectionSource: ConnectionSource.CONNECTION_PROBE,
+      ))
+          .first;
       Logger.log.d("tried to reconnect to $url = $connectable");
       if (!connectable) {
         continue;

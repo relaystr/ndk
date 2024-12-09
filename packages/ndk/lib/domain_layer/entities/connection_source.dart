@@ -6,4 +6,5 @@ enum ConnectionSource {
   BROADCAST_OTHER,
   BROADCAST_SPECIFIC,
   EXPLICIT,
+  CONNECTION_PROBE,
 }
