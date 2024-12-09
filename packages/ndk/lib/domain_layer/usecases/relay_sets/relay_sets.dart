@@ -200,8 +200,8 @@ class RelaySets {
             int rr = b.value.length.compareTo(a.value.length);
             if (rr == 0) {
               // if amount of pubKeys is equal check for webSocket connected, and prioritize connected
-              bool aC = _relayManager.isWebSocketOpen(a.key);
-              bool bC = _relayManager.isWebSocketOpen(b.key);
+              bool aC = _relayManager.isRelayConnected(a.key);
+              bool bC = _relayManager.isRelayConnected(b.key);
               if (aC != bC) {
                 return aC ? -1 : 1;
               }

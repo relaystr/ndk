@@ -4,6 +4,7 @@ import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
+import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
@@ -16,7 +17,6 @@ import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
 import '../domain_layer/usecases/relay_manager_light.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
-import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
@@ -42,7 +42,7 @@ class Initialization {
 
   /// use cases
 
-  late RelayManagerLight relayManagerLight;
+  late RelayManagerLight relayManager;
   late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
@@ -66,7 +66,7 @@ class Initialization {
   }) {
     switch (ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
-        relayManagerLight = RelayManagerLight(
+        relayManager = RelayManagerLight(
           globalState: globalState,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: ndkConfig.bootstrapRelays,
@@ -75,12 +75,12 @@ class Initialization {
         engine = RelaySetsEngine(
           cacheManager: ndkConfig.cache,
           globalState: globalState,
-          relayManager: relayManagerLight,
+          relayManager: relayManager,
           bootstrapRelays: ndkConfig.bootstrapRelays,
         );
         break;
       case NdkEngine.JIT:
-        relayManagerLight = RelayManagerLight<JitEngineRelayConnectivityData>(
+        relayManager = RelayManagerLight<JitEngineRelayConnectivityData>(
           globalState: globalState,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: ndkConfig.bootstrapRelays,
@@ -91,7 +91,7 @@ class Initialization {
           eventSigner: ndkConfig.eventSigner,
           cache: ndkConfig.cache,
           ignoreRelays: ndkConfig.ignoreRelays,
-          relayManagerLight: relayManagerLight,
+          relayManagerLight: relayManager,
           globalState: globalState,
         );
         break;
@@ -153,7 +153,7 @@ class Initialization {
     relaySets = RelaySets(
       cacheManager: ndkConfig.cache,
       userRelayLists: userRelayLists,
-      relayManager: relayManagerLight,
+      relayManager: relayManager,
       blockedRelays: globalState.blockedRelays,
     );
 

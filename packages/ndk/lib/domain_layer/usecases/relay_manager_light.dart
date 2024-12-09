@@ -84,7 +84,7 @@ class RelayManagerLight<T> {
       .toList();
 
   /// checks if a relay is connected, avoid using this
-  bool isWebSocketOpen(String url) {
+  bool isRelayConnected(String url) {
     return globalState.relays[url]?.relayTransport?.isOpen() ?? false;
   }
 
@@ -364,7 +364,7 @@ class RelayManagerLight<T> {
       if (state.request.closeOnEOSE) {
         _sendCloseToRelay(relayConnectivity, state.id);
         if (state.requests.isEmpty || state.didAllRequestsReceivedEOSE) {
-          _removeInFlightRequestById(id);
+          removeInFlightRequestById(id);
         }
       }
     }
@@ -372,9 +372,17 @@ class RelayManagerLight<T> {
   }
 
   /// sends a close message to a relay
+  void sendCloseToRelay(String url, String id) {
+    RelayConnectivity? connectivity = globalState.relays[url];
+    if (connectivity!=null) {
+      _sendCloseToRelay(connectivity, id);
+    }
+  }
+
   void _sendCloseToRelay(RelayConnectivity relayConnectivity, String id) {
     try {
       send(relayConnectivity, ClientMsg(ClientMsgType.CLOSE, id: id));
+      relayConnectivity.stats.activeRequests--;
     } catch (e) {
       print(e);
     }
@@ -382,7 +390,7 @@ class RelayManagerLight<T> {
 
   /// removes a request from the inFlightRequests \
   /// and closes the network controller
-  void _removeInFlightRequestById(String id) {
+  void removeInFlightRequestById(String id) {
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
       try {
@@ -394,6 +402,30 @@ class RelayManagerLight<T> {
     }
   }
 
+  /// Closes this url transport and removes
+  Future<void> closeTransport(url) async {
+    RelayConnectivity? connectivity = globalState.relays[url];
+    if (connectivity != null && connectivity.relayTransport!=null) {
+      Logger.log.d("Disconnecting $url...");
+      globalState.relays.remove(url);
+      return connectivity.relayTransport!.close().timeout(const Duration(seconds: 3),
+          onTimeout: () {
+            Logger.log.w("timeout while trying to close socket $url");
+          });
+    }
+  }
+
+  /// Closes all transports
+  Future<void> closeAllTransports() async {
+    Iterable<String> keys = globalState.relays.keys.toList();
+    try {
+      await Future.wait(keys.map((url) => closeTransport(url)));
+    } catch (e) {
+      print(e);
+    }
+  }
+
+
   /// fetches relay info
   /// todo: refactor to use http injector and decouple data from fetching
   Future<RelayInfo?> getRelayInfo(String url) async {
@@ -402,5 +434,11 @@ class RelayManagerLight<T> {
       return globalState.relays[url]!.relayInfo;
     }
     return null;
+  }
+
+  /// does relay support given nip
+  bool doesRelaySupportNip(String url, int nip) {
+    RelayConnectivity? connectivity = globalState.relays[cleanRelayUrl(url)];
+    return connectivity != null && connectivity.relayInfo!=null && connectivity.relayInfo!.supportsNip(nip);
   }
 }

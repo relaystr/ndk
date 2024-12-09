@@ -1,3 +1,5 @@
+import 'package:ndk/domain_layer/usecases/relay_manager_light.dart';
+
 import '../data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
@@ -6,6 +8,7 @@ import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
@@ -57,7 +60,9 @@ class Ndk {
   /// Provides access to low-level Nostr broadcast/publish.
   Broadcast get broadcast => _initialization.broadcast;
 
-  RelayManager get relays => _initialization.relayManager;
+  /// to be removed
+  @deprecated
+  RelayManagerLight get relays => _initialization.relayManager;
 
   /// Handles operations related to user follows
   ///

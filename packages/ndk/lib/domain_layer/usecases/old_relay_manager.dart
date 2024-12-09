@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:developer' as developer;
 
+import 'package:ndk/domain_layer/entities/connection_source.dart';
+
 import '../../config/bootstrap_relays.dart';
 import '../../event_filter.dart';
 import '../../shared/helpers/relay_helper.dart';
@@ -20,7 +22,7 @@ import '../repositories/event_signer.dart';
 import '../repositories/event_verifier.dart';
 import '../repositories/nostr_transport.dart';
 
-class RelayManager {
+class OldRelayManager {
   static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
   static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;
   static const int DEFAULT_BEST_RELAYS_MIN_COUNT = 2;
@@ -51,7 +53,7 @@ class RelayManager {
 
   get seedRelaysConnected => _seedRelaysCompleter.future;
 
-  RelayManager({
+  OldRelayManager({
     required this.nostrTransportFactory,
     List<String>? bootstrapRelays,
     GlobalState? globalState,
@@ -132,12 +134,12 @@ class RelayManager {
     }
     try {
       if (relays[url] == null) {
-        relays[url] = Relay(url);
+        relays[url] = Relay(url: url, connectionSource: ConnectionSource.UNKNOWN);
       }
       relays[url]!.tryingToConnect();
       if (url.startsWith("wss://brb.io")) {
         relays[url]!.failedToConnect();
-        relays[url]!.stats.connectionErrors++;
+//        relays[url]!.stats.connectionErrors++;
         return false;
       }
       // var connectionOptions = SocketConnectionOptions(
@@ -164,7 +166,7 @@ class RelayManager {
 
       developer.log("connected to relay: $url");
       relays[url]!.succeededToConnect();
-      relays[url]!.stats.connections++;
+  //    relays[url]!.stats.connections++;
       getRelayInfo(url);
       return true;
     } catch (e) {
@@ -172,7 +174,7 @@ class RelayManager {
       transports.remove(url);
     }
     relays[url]!.failedToConnect();
-    relays[url]!.stats.connectionErrors++;
+    //relays[url]!.stats.connectionErrors++;
     return false;
   }
 
@@ -181,7 +183,7 @@ class RelayManager {
       _handleIncommingMessage(message, url);
     }, onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
-      relays[url]!.stats.connectionErrors++;
+     // relays[url]!.stats.connectionErrors++;
       print("onError $url on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
@@ -316,7 +318,7 @@ class RelayManager {
       try {
         Relay? relay = getRelay(url);
         if (relay != null) {
-          relay.stats.activeRequests--;
+//          relay.stats.activeRequests--;
         }
         send(url, jsonEncode(["CLOSE", id]));
       } catch (e) {
@@ -327,7 +329,7 @@ class RelayManager {
 
   void closeIfAllEventsVerified(
       RelayRequestState request, RequestState state, String url) {
-    if (request.receivedEOSE && request.eventIdsToBeVerified.isEmpty) {
+    if (request.receivedEOSE) {
       if (state.request.closeOnEOSE) {
         sendCloseToRelay(url, state.id);
         if (state.requests.isEmpty || state.didAllRequestsReceivedEOSE) {
@@ -391,11 +393,11 @@ class RelayManager {
     return r;
   }
 
-  /// does relay support given nip
-  bool doesRelaySupportNip(String url, int nip) {
-    Relay? relay = relays[cleanRelayUrl(url)];
-    return relay != null && relay.supportsNip(nip);
-  }
+  // /// does relay support given nip
+  // bool doesRelaySupportNip(String url, int nip) {
+  //   Relay? relay = relays[cleanRelayUrl(url)];
+  //   return relay != null && relay.supportsNip(nip);
+  // }
 
   // =====================================================================================
 
@@ -463,10 +465,10 @@ class RelayManager {
   }
 
   Future<RelayInfo?> getRelayInfo(String url) async {
-    if (relays[url] != null) {
-      relays[url]!.info ??= await RelayInfo.get(url);
-      return relays[url]!.info;
-    }
+    // if (relays[url] != null) {
+    //   relays[url]!.info ??= await RelayInfo.get(url);
+    //   return relays[url]!.info;
+    // }
     return null;
   }
 
@@ -510,7 +512,7 @@ class RelayManager {
           list.addAll(req.filters.map((filter) => filter.toMap()));
           Relay? relay = getRelay(req.url);
           if (relay != null) {
-            relay.stats.activeRequests++;
+            // relay.stats.activeRequests++;
             send(url, jsonEncode(list));
             // TODO not sure if this works, since there are old streams on the ndk response???
           }
