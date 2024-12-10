@@ -12,6 +12,15 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+def keystorePropertiesFile = rootProject.file("key.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+} else {
+    println("Warning: key.properties file not found")
+}
+
+
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
     flutterVersionCode = '1'
@@ -52,6 +61,12 @@ android {
     }
 
     buildTypes {
+//        release {
+//            keyAlias keystoreProperties.getProperty('keyAlias', 'defaultKeyAlias')
+//            keyPassword keystoreProperties.getProperty('keyPassword', 'defaultKeyPassword')
+//            storeFile file(keystoreProperties.getProperty('storeFile', 'defaultStoreFile'))
+//            storePassword keystoreProperties.getProperty('storePassword', 'defaultStorePassword')
+//        }
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
