@@ -1,6 +1,6 @@
 name: ndk_objectbox
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.2.0-dev001
+version: 0.2.0-dev002
 homepage: https://github.com/relaystr/ndk
 
 environment:

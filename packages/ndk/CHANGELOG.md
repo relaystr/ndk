@@ -1,3 +1,7 @@
+## 0.2.0-dev002
+ - unification of RelayManager in JIT
+ - NWC - Nostr Wallet Connect support usecase
+
 ## 0.2.0-dev001
 
  - Bump "ndk" to `0.2.0-dev001`.
