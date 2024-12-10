@@ -20,7 +20,6 @@ class MultiPayInvoiceRequest extends NwcRequest {
   }
 }
 
-
 class MultiPayInvoiceRequestInvoicesElement {
   final String invoice;
   final int amountSat;

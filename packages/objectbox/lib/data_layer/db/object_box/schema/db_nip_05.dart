@@ -46,5 +46,4 @@ class DbNip05 {
     );
     return dbM;
   }
-
 }

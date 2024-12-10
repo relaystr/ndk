@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 class NostrWalletConnectUri extends Equatable {
-
   final String walletPubkey;
   final String relay;
   final String secret;

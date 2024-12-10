@@ -27,11 +27,24 @@ class IsarDbDs {
       name: "db_ndk_${debug ? "debug" : "release"}",
       inspector: debug,
       maxSizeMiB: 1024,
-      compactOnLaunch:
-          directory != Isar.sqliteInMemory ? const CompactCondition(minRatio: 2.0, minBytes: 100 * 1024 * 1024, minFileSize: 256 * 1024 * 1024) : null,
+      compactOnLaunch: directory != Isar.sqliteInMemory
+          ? const CompactCondition(
+              minRatio: 2.0,
+              minBytes: 100 * 1024 * 1024,
+              minFileSize: 256 * 1024 * 1024)
+          : null,
       directory: directory ?? Directory.systemTemp.path,
-      engine: directory == Isar.sqliteInMemory ? IsarEngine.sqlite : IsarEngine.isar,
-      schemas: [DbEventSchema, DbUserRelayListSchema, DbRelaySetSchema, DbContactListSchema, DbMetadataSchema, DbNip05Schema],
+      engine: directory == Isar.sqliteInMemory
+          ? IsarEngine.sqlite
+          : IsarEngine.isar,
+      schemas: [
+        DbEventSchema,
+        DbUserRelayListSchema,
+        DbRelaySetSchema,
+        DbContactListSchema,
+        DbMetadataSchema,
+        DbNip05Schema
+      ],
     );
     // isar.write((isar) {
     //   isar.clear();

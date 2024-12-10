@@ -15,7 +15,7 @@ class LookupInvoiceRequest extends NwcRequest {
   Map<String, dynamic> toMap() {
     return {
       ...super.toMap(),
-      'params' : {
+      'params': {
         if (paymentHash != null) 'payment_hash': paymentHash,
         if (invoice != null) 'invoice': invoice,
       }

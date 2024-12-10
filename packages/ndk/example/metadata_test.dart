@@ -28,7 +28,6 @@ void main() async {
     print(response?.name ?? "no name");
 
     expect(response, isNotNull, reason: 'response is Null');
-    expect(response!.nip05, isNotEmpty,
-        reason: 'nip05 is empty');
+    expect(response!.nip05, isNotEmpty, reason: 'nip05 is empty');
   });
 }

@@ -47,7 +47,9 @@ class NwcNotification {
       createdAt: map['created_at'] as int,
       expiresAt: map['expires_at'] as int?,
       settledAt: map['settled_at'] as int,
-      metadata: map.containsKey('metadata') && map['metadata']!=null ? Map<String, dynamic>.from(map['metadata']): null,
+      metadata: map.containsKey('metadata') && map['metadata'] != null
+          ? Map<String, dynamic>.from(map['metadata'])
+          : null,
     );
   }
 }

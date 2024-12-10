@@ -13,8 +13,8 @@ void main() async {
   final nwcUri = Platform.environment['NWC_URI']!;
   final connection = await ndk.nwc.connect(nwcUri);
 
-  ListTransactionsResponse response = await ndk.nwc.listTransactions(connection,
-      unpaid: false);
+  ListTransactionsResponse response =
+      await ndk.nwc.listTransactions(connection, unpaid: false);
 
   response.transactions.forEach((transaction) {
     print(

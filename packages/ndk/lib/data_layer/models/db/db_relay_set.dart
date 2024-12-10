@@ -4,7 +4,6 @@ import 'package:isar/isar.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
-
 part 'db_relay_set.g.dart';
 
 @Collection(inheritance: false)

@@ -284,7 +284,6 @@ void main() async {
       //List<Nip01Event> expectedAllNotes = [...key1TextNotes.values, ...key2TextNotes.values, ...key3TextNotes.values, ...key4TextNotes.values];
       //expect(query, emitsInAnyOrder(key1TextNotes.values));
       await ndk.destroy();
-
     });
 
     // ================================================================================================
@@ -370,7 +369,6 @@ void main() async {
       expect(relaySet.urls.contains(relay4.url), true);
       expect(relaySet.notCoveredPubkeys.isEmpty, true);
       await ndk.destroy();
-
     });
 
     test(
@@ -600,7 +598,6 @@ void main() async {
             "===== run #$i, time took ${t1.difference(t0).inMilliseconds} ms");
         i++;
         await ndk.destroy();
-
       }
     }
 

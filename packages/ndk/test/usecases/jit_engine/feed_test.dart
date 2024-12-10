@@ -26,8 +26,7 @@ void main() async {
 
         final key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
-        final contactsResponse =
-            ndk.requests.query(name: "contacts", filters: [
+        final contactsResponse = ndk.requests.query(name: "contacts", filters: [
           Filter(authors: [key.publicKey], kinds: [ContactList.KIND]),
         ]);
 

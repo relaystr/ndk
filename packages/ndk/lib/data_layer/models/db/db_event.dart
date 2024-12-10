@@ -31,7 +31,7 @@ class DbEvent extends Nip01Event {
       if (a.isNotEmpty && a.first.toString() == "p") {
         return true;
       }
-          return false;
+      return false;
     }).map((e) {
       List<dynamic> list = e as List;
       return list.length == 2 ? list[1].toString() : "";

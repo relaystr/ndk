@@ -13,8 +13,8 @@ void main() async {
 
   final amount = 1000;
   final description = "hello";
-  final response = await ndk.nwc.makeInvoice(connection,
-      amountSats: amount, description: description);
+  final response = await ndk.nwc
+      .makeInvoice(connection, amountSats: amount, description: description);
 
   print("invoice: ${response.invoice}");
 

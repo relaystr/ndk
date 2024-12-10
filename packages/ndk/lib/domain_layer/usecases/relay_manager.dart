@@ -107,7 +107,6 @@ class RelayManager<T> {
     return relay != null && relay.connecting;
   }
 
-
   /// Connects to a relay to the relay pool.
   /// Returns a tuple with the first element being a boolean indicating success \\
   /// and the second element being a string with the error message if any.
@@ -181,7 +180,7 @@ class RelayManager<T> {
   Future<bool> reconnectRelay(String url,
       {required ConnectionSource connectionSource, bool force = false}) async {
     RelayConnectivity? relayConnectivity = globalState.relays[url];
-    if (relayConnectivity!=null && relayConnectivity.relayTransport != null) {
+    if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
           .onError((error, stackTrace) {
@@ -189,10 +188,12 @@ class RelayManager<T> {
         return []; // Return an empty list in case of error
       });
     }
-    if (relayConnectivity==null || !relayConnectivity.relayTransport!.isOpen()) {
+    if (relayConnectivity == null ||
+        !relayConnectivity.relayTransport!.isOpen()) {
       if (!force &&
-          (relayConnectivity==null || !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
-              FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS))) {
+          (relayConnectivity == null ||
+              !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
+                  FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS))) {
         // don't try too often
         return false;
       }
@@ -206,7 +207,8 @@ class RelayManager<T> {
         return false;
       }
       relayConnectivity = globalState.relays[url];
-      if (relayConnectivity==null || !relayConnectivity.relayTransport!.isOpen()) {
+      if (relayConnectivity == null ||
+          !relayConnectivity.relayTransport!.isOpen()) {
         // web socket is not open
         return false;
       }
@@ -218,8 +220,10 @@ class RelayManager<T> {
   Future<void> reconnectRelays(Iterable<String> urls) async {
     final startTime = DateTime.now();
     Logger.log.d("connecting ${urls.length} relays in parallel");
-    List<bool> connected =
-    await Future.wait(urls.map((url) => reconnectRelay(url, connectionSource: ConnectionSource.EXPLICIT, force: true)));
+    List<bool> connected = await Future.wait(urls.map((url) => reconnectRelay(
+        url,
+        connectionSource: ConnectionSource.EXPLICIT,
+        force: true)));
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.d(
@@ -325,7 +329,9 @@ class RelayManager<T> {
           globalState.relays[relayConnectivity.url] != null &&
           globalState.relays[relayConnectivity.url]!.relayTransport != null) {
         print("closed ${relayConnectivity.url}. Reconnecting");
-        reconnectRelay(relayConnectivity.url, connectionSource: relayConnectivity.relay.connectionSource).then((connected) {
+        reconnectRelay(relayConnectivity.url,
+                connectionSource: relayConnectivity.relay.connectionSource)
+            .then((connected) {
           if (connected) {
             _reSubscribeInFlightSubscriptions(relayConnectivity);
           }
@@ -425,7 +431,7 @@ class RelayManager<T> {
   /// sends a close message to a relay
   void sendCloseToRelay(String url, String id) {
     RelayConnectivity? connectivity = globalState.relays[url];
-    if (connectivity!=null) {
+    if (connectivity != null) {
       _sendCloseToRelay(connectivity, id);
     }
   }
@@ -480,13 +486,14 @@ class RelayManager<T> {
   /// Closes this url transport and removes
   Future<void> closeTransport(url) async {
     RelayConnectivity? connectivity = globalState.relays[url];
-    if (connectivity != null && connectivity.relayTransport!=null) {
+    if (connectivity != null && connectivity.relayTransport != null) {
       Logger.log.d("Disconnecting $url...");
       globalState.relays.remove(url);
-      return connectivity.relayTransport!.close().timeout(const Duration(seconds: 3),
-          onTimeout: () {
-            Logger.log.w("timeout while trying to close socket $url");
-          });
+      return connectivity.relayTransport!
+          .close()
+          .timeout(const Duration(seconds: 3), onTimeout: () {
+        Logger.log.w("timeout while trying to close socket $url");
+      });
     }
   }
 
@@ -512,7 +519,9 @@ class RelayManager<T> {
   /// does relay support given nip
   bool doesRelaySupportNip(String url, int nip) {
     RelayConnectivity? connectivity = globalState.relays[cleanRelayUrl(url)];
-    return connectivity != null && connectivity.relayInfo!=null && connectivity.relayInfo!.supportsNip(nip);
+    return connectivity != null &&
+        connectivity.relayInfo != null &&
+        connectivity.relayInfo!.supportsNip(nip);
   }
 
   /// return [RelayConnectivity] by url

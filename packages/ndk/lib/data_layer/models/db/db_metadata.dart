@@ -1,7 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:ndk/ndk.dart';
 
-
 part 'db_metadata.g.dart';
 
 @Collection(inheritance: true)

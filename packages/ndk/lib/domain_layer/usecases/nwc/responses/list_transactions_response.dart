@@ -9,7 +9,8 @@ class ListTransactionsResponse extends NwcResponse {
   /// A list of transaction results.
   final List<TransactionResult> transactions;
 
-  ListTransactionsResponse({required this.transactions, required super.resultType});
+  ListTransactionsResponse(
+      {required this.transactions, required super.resultType});
 
   factory ListTransactionsResponse.deserialize(Map<String, dynamic> input) {
     if (!input.containsKey('result')) {
@@ -23,7 +24,9 @@ class ListTransactionsResponse extends NwcResponse {
         .map((transaction) => TransactionResult.deserialize(transaction))
         .toList();
 
-    return ListTransactionsResponse(transactions: transactions, resultType: NwcMethod.LIST_TRANSACTIONS.name);
+    return ListTransactionsResponse(
+        transactions: transactions,
+        resultType: NwcMethod.LIST_TRANSACTIONS.name);
   }
 }
 

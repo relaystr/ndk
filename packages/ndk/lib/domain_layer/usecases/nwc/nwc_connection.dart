@@ -14,14 +14,10 @@ class NwcConnection {
   GetInfoResponse? info;
   NdkResponse? subscription;
   StreamController<NwcResponse> responseStream =
-      StreamController<NwcResponse>
-          .broadcast
-  ();
+      StreamController<NwcResponse>.broadcast();
 
   StreamController<NwcNotification> notificationStream =
-      StreamController<NwcNotification>
-          .broadcast
-        ();
+      StreamController<NwcNotification>.broadcast();
 
   List<String> supportedVersions = ["0.0"];
 
@@ -48,7 +44,11 @@ class NwcConnection {
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is NwcConnection && runtimeType == other.runtimeType && uri == other.uri;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NwcConnection &&
+          runtimeType == other.runtimeType &&
+          uri == other.uri;
 
   @override
   int get hashCode => uri.hashCode;

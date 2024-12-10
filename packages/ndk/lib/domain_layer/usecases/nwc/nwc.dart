@@ -39,11 +39,11 @@ class Nwc {
   Set<NwcConnection> _connections = {};
 
   /// Connects to a given nostr+walletconnect:// uri,
-  /// checking for 13194 event info, 
+  /// checking for 13194 event info,
   /// and optionally doing a `get_info` request (default false).
-  /// It subscribes for notifications 
+  /// It subscribes for notifications
   Future<NwcConnection> connect(String uri,
-      {bool doGetInfoMethod=false, Function(String?)? onError}) async {
+      {bool doGetInfoMethod = false, Function(String?)? onError}) async {
     var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
     var relay = Uri.decodeFull(parsedUri.relay);
     var filter =
@@ -78,7 +78,8 @@ class Nwc {
 
         await _subscribeToNotificationsAndResponses(connection);
 
-        if (doGetInfoMethod && connection.permissions.contains(NwcMethod.GET_INFO.name)) {
+        if (doGetInfoMethod &&
+            connection.permissions.contains(NwcMethod.GET_INFO.name)) {
           await getInfo(connection).then((info) {
             connection.info = info;
           });
@@ -153,7 +154,7 @@ class Nwc {
         var eId = event.getEId();
         if (eId != null) {
           Timer? timer = _inflighRequestTimers[eId];
-          if (timer!=null) {
+          if (timer != null) {
             timer.cancel();
           }
           Completer<NwcResponse>? completer = _inflighRequests[eId];
@@ -175,7 +176,8 @@ class Nwc {
       data = json.decode(decrypted);
       if (data.containsKey("notification_type") &&
           data['notification'] != null) {
-        NwcNotification notification = NwcNotification.fromMap(data['notification']);
+        NwcNotification notification =
+            NwcNotification.fromMap(data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
         // TODO ??
@@ -186,18 +188,18 @@ class Nwc {
   Future<void> _onNotification(
       Nip01Event event, NwcConnection connection) async {
     if (event.content != "") {
-    // TODO
-    //   var decrypted = Nip44.decrypt(
-    //       connection.uri.secret, connection.uri.walletPubkey, event.content);
-    //   Map<String, dynamic> data;
-    //   data = json.decode(decrypted);
-    //   if (data.containsKey("notification_type") &&
-    //       data['notification'] != null) {
-    //     NwcNotification notification = NwcNotification.fromMap(data['notification']);
-    //     connection.notificationStream.add(notification);
-    //   } else if (data.containsKey("error")) {
-    //     // TODO ??
-    //   }
+      // TODO
+      //   var decrypted = Nip44.decrypt(
+      //       connection.uri.secret, connection.uri.walletPubkey, event.content);
+      //   Map<String, dynamic> data;
+      //   data = json.decode(decrypted);
+      //   if (data.containsKey("notification_type") &&
+      //       data['notification'] != null) {
+      //     NwcNotification notification = NwcNotification.fromMap(data['notification']);
+      //     connection.notificationStream.add(notification);
+      //   } else if (data.containsKey("error")) {
+      //     // TODO ??
+      //   }
     }
   }
 
@@ -217,16 +219,15 @@ class Nwc {
           ],
           content: encrypted);
       await _broadcast.broadcast(
-        nostrEvent: event,
-        specificRelays: [connection.uri.relay],
-        customSigner: connection.signer
-      );
+          nostrEvent: event,
+          specificRelays: [connection.uri.relay],
+          customSigner: connection.signer);
       Completer<T> completer = Completer();
       _inflighRequests[event.id] = completer;
       _inflighRequestTimers[event.id] = Timer(Duration(seconds: 3), () {
         if (!completer.isCompleted) {
-          final error = "Timed out while executing NWC request ${request.method
-              .name} with relay ${connection.uri.relay}";
+          final error =
+              "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relay}";
           completer.completeError(error);
           _inflighRequests.remove(event.id);
           Logger.log.w(error);

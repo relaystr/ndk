@@ -13,7 +13,7 @@ import '../../../rust_bridge/frb_generated.dart';
 class RustEventVerifier implements EventVerifier {
   /// A completer that tracks the initialization status of the Rust library
   final Completer<bool> _isInitialized = Completer<bool>();
-  static bool calledInit=false;
+  static bool calledInit = false;
 
   /// Creates a new instance of [RustEventVerifier] and initializes the Rust library
   RustEventVerifier() {

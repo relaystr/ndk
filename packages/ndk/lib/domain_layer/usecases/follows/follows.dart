@@ -19,8 +19,7 @@ class Follows {
     required Broadcast broadcast,
     required CacheManager cacheManager,
     required EventSigner? signer,
-  })  :
-        _cacheManager = cacheManager,
+  })  : _cacheManager = cacheManager,
         _requests = requests,
         _signer = signer,
         _broadcast = broadcast;

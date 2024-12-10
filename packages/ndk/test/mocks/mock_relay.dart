@@ -45,7 +45,8 @@ class MockRelay {
       this.textNotes = textNotes;
     }
 
-    var server = await HttpServer.bind(InternetAddress.loopbackIPv4, port!, shared: true);
+    var server = await HttpServer.bind(InternetAddress.loopbackIPv4, port!,
+        shared: true);
 
     this.server = server;
 

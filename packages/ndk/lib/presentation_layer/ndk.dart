@@ -45,10 +45,9 @@ class Ndk {
   /// Creates a new instance of [Ndk] with default configuration and empty bootstrap relays
   Ndk.emptyBootstrapRelaysConfig()
       : this(NdkConfig(
-    cache: MemCacheManager(),
-    eventVerifier: Bip340EventVerifier(),
-    bootstrapRelays: []
-  ));
+            cache: MemCacheManager(),
+            eventVerifier: Bip340EventVerifier(),
+            bootstrapRelays: []));
 
   /// Provides access to low-level Nostr requests.
   ///

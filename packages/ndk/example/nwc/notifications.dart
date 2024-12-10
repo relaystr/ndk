@@ -13,7 +13,8 @@ void main() async {
 
   await for (final notification in connection.notificationStream.stream) {
     print('notification ${notification.type} amount: ${notification.amount}');
-  };
+  }
+  ;
 
   ndk.destroy();
 }
