@@ -6,7 +6,6 @@ import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../entities/broadcast_response.dart';
 import '../entities/broadcast_state.dart';
-import '../entities/connection_source.dart';
 import '../entities/global_state.dart';
 import '../entities/jit_engine_relay_connectivity_data.dart';
 import '../entities/nip_01_event.dart';

@@ -2,6 +2,7 @@ import '../../../domain_layer/entities/read_write_marker.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 
+/// relay ranking
 RelayRankingResult rankRelays({
   required List<CoveragePubkey> searchingPubkeys,
   required ReadWriteMarker direction,

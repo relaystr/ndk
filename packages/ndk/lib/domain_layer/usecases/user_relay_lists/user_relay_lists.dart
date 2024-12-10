@@ -207,9 +207,7 @@ class UserRelayLists {
       specificRelays: broadcastRelays,
     );
     await Future.wait([
-      //todo: broadcastResponse.publishDone,
-      //broadcastResponse.publishDone,
-      // placeholder
+      broadcastResponse.broadcastDoneFuture,
       Future.delayed(Duration(seconds: 1)),
       _cacheManager.saveUserRelayList(userRelayList)
     ]);
@@ -233,9 +231,7 @@ class UserRelayLists {
       nostrEvent: newUserRelayList.toNip65().toEvent(),
     );
 
-    //todo: broadcastResponse.publishDone,
-    //broadcastResponse.publishDone,
-    // placeholder
+    await broadcastResponse.broadcastDoneFuture;
     await Future.delayed(Duration(seconds: 1));
 
     await _cacheManager.saveUserRelayList(newUserRelayList);
@@ -261,9 +257,7 @@ class UserRelayLists {
         specificRelays: specificRelays,
       );
       await Future.wait([
-        //todo: broadcastResponse.publishDone,
-        //broadcastResponse.publishDone,
-        // placeholder
+        broadcastResponse.broadcastDoneFuture,
         Future.delayed(Duration(seconds: 1)),
         _cacheManager.saveUserRelayList(userRelayList)
       ]);
@@ -301,9 +295,7 @@ class UserRelayLists {
         nostrEvent: userRelayList.toNip65().toEvent(),
       );
 
-      //todo: broadcastResponse.publishDone,
-      // await broadcastResponse.publishDone,
-      // placeholder
+      await broadcastResponse.broadcastDoneFuture;
       await Future.delayed(Duration(seconds: 1));
 
       await _cacheManager.saveUserRelayList(userRelayList);

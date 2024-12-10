@@ -8,6 +8,7 @@ import 'domain_layer/entities/nip_65.dart';
 class PTagCountEventFilter extends EventFilter {
   int maxTagCount;
 
+  /// ..
   PTagCountEventFilter(this.maxTagCount);
 
   @override

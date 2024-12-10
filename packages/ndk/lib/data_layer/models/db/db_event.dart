@@ -21,7 +21,6 @@ class DbEvent extends Nip01Event {
   int get createdAt => super.createdAt;
 
   @override
-  @embedded
   List<List<String>> get tags => super.tags;
 
   @override
@@ -43,15 +42,12 @@ class DbEvent extends Nip01Event {
   String get content => super.content;
 
   @override
-  @embedded
   String get sig => super.sig;
 
   @override
-  @embedded
   bool? get validSig => super.validSig;
 
   @override
-  @embedded
   List<String> get sources => super.sources;
 
   DbEvent(
