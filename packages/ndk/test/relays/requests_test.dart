@@ -72,21 +72,24 @@ void main() async {
 
   group('immutable filters', () {
     test('Filters are cloned and immutable in query method', () {
+      final cache = MemCacheManager();
+      final eventVerifier = MockEventVerifier();
+      final globalState = GlobalState();
       final init = Initialization(
-        globalState: GlobalState(),
+        globalState: globalState,
         ndkConfig: NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: MemCacheManager(),
+          eventVerifier: eventVerifier,
+          cache: cache,
         ),
       );
 
       // Create a Requests instance
       final requests = Requests(
-        globalState: init.globalState,
-        cacheRead: MockCacheRead(init.ndkConfig.cache),
+        globalState: globalState,
+        cacheRead: MockCacheRead(cache),
         cacheWrite: init.cacheWrite,
         networkEngine: init.engine,
-        eventVerifier: init.ndkConfig.eventVerifier,
+        eventVerifier: eventVerifier,
         eventOutFilters: [],
       );
 

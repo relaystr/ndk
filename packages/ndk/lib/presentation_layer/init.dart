@@ -26,8 +26,8 @@ import 'ndk_config.dart';
 /// this class is used to inject all the dependencies \
 /// its like playing lego ;)
 class Initialization {
-  final NdkConfig ndkConfig;
-  final GlobalState globalState;
+  final NdkConfig _ndkConfig;
+  final GlobalState _globalState;
 
   /// data sources
 
@@ -61,38 +61,38 @@ class Initialization {
   /// [NdkConfig] is user defined
   /// [GlobalState] global state object that schuld stay in memory
   Initialization({
-    required this.ndkConfig,
-    required this.globalState,
-  }) {
-    switch (ndkConfig.engine) {
+    required NdkConfig ndkConfig,
+    required GlobalState globalState,
+  }) : _globalState = globalState, _ndkConfig = ndkConfig {
+    switch (_ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
         relayManager = RelayManager(
-          globalState: globalState,
+          globalState: _globalState,
           nostrTransportFactory: _webSocketNostrTransportFactory,
-          bootstrapRelays: ndkConfig.bootstrapRelays,
+          bootstrapRelays: _ndkConfig.bootstrapRelays,
         );
 
         engine = RelaySetsEngine(
-          cacheManager: ndkConfig.cache,
-          globalState: globalState,
+          cacheManager: _ndkConfig.cache,
+          globalState: _globalState,
           relayManager: relayManager,
-          bootstrapRelays: ndkConfig.bootstrapRelays,
+          bootstrapRelays: _ndkConfig.bootstrapRelays,
         );
         break;
       case NdkEngine.JIT:
         relayManager = RelayManager<JitEngineRelayConnectivityData>(
-          globalState: globalState,
+          globalState: _globalState,
           nostrTransportFactory: _webSocketNostrTransportFactory,
-          bootstrapRelays: ndkConfig.bootstrapRelays,
+          bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
         );
 
         engine = JitEngine(
-          eventSigner: ndkConfig.eventSigner,
-          cache: ndkConfig.cache,
-          ignoreRelays: ndkConfig.ignoreRelays,
+          eventSigner: _ndkConfig.eventSigner,
+          cache: _ndkConfig.cache,
+          ignoreRelays: _ndkConfig.ignoreRelays,
           relayManagerLight: relayManager,
-          globalState: globalState,
+          globalState: _globalState,
         );
         break;
       default:
@@ -104,62 +104,62 @@ class Initialization {
         Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
 
     ///   use cases
-    cacheWrite = CacheWrite(ndkConfig.cache);
-    cacheRead = CacheRead(ndkConfig.cache);
+    cacheWrite = CacheWrite(_ndkConfig.cache);
+    cacheRead = CacheRead(_ndkConfig.cache);
 
     requests = Requests(
-      globalState: globalState,
+      globalState: _globalState,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
       networkEngine: engine,
-      eventVerifier: ndkConfig.eventVerifier,
-      eventOutFilters: ndkConfig.eventOutFilters,
+      eventVerifier: _ndkConfig.eventVerifier,
+      eventOutFilters: _ndkConfig.eventOutFilters,
     );
 
     broadcast = Broadcast(
-      globalState: globalState,
+      globalState: _globalState,
       cacheRead: cacheRead,
       networkEngine: engine,
-      signer: ndkConfig.eventSigner,
+      signer: _ndkConfig.eventSigner,
     );
 
     follows = Follows(
       requests: requests,
-      cacheManager: ndkConfig.cache,
+      cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
-      signer: ndkConfig.eventSigner,
+      signer: _ndkConfig.eventSigner,
     );
 
     metadatas = Metadatas(
       requests: requests,
-      cacheManager: ndkConfig.cache,
+      cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
-      signer: ndkConfig.eventSigner,
+      signer: _ndkConfig.eventSigner,
     );
 
     userRelayLists = UserRelayLists(
       requests: requests,
-      cacheManager: ndkConfig.cache,
+      cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
-      signer: ndkConfig.eventSigner,
+      signer: _ndkConfig.eventSigner,
     );
 
     lists = Lists(
       requests: requests,
-      cacheManager: ndkConfig.cache,
+      cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
-      eventSigner: ndkConfig.eventSigner,
+      eventSigner: _ndkConfig.eventSigner,
     );
 
     relaySets = RelaySets(
-      cacheManager: ndkConfig.cache,
+      cacheManager: _ndkConfig.cache,
       userRelayLists: userRelayLists,
       relayManager: relayManager,
-      blockedRelays: globalState.blockedRelays,
+      blockedRelays: _globalState.blockedRelays,
     );
 
     verifyNip05 = VerifyNip05(
-      database: ndkConfig.cache,
+      database: _ndkConfig.cache,
       nip05Repository: nip05repository,
     );
 
