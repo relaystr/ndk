@@ -222,7 +222,7 @@ class Nwc {
           nostrEvent: event,
           specificRelays: [connection.uri.relay],
           customSigner: connection.signer);
-      Completer<T> completer = Completer();
+      Completer<NwcResponse> completer = Completer();
       _inflighRequests[event.id] = completer;
       _inflighRequestTimers[event.id] = Timer(Duration(seconds: 3), () {
         if (!completer.isCompleted) {
@@ -233,7 +233,11 @@ class Nwc {
           Logger.log.w(error);
         }
       });
-      return completer.future;
+      NwcResponse response = await completer.future;
+      if (response is T) {
+        return response;
+      }
+      throw Exception("error ${response.resultType} code: ${response.errorCode} ${response.errorMessage}");
     }
     throw Exception("${request.method.name} method not in permissions");
   }

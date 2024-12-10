@@ -6,10 +6,13 @@ import 'nwc_response.dart';
 class PayInvoiceResponse extends NwcResponse {
   /// The preimage of the paid invoice.
   final String preimage;
+  /// The fees paid for the invoice (in MSATs).
+  final int feesPaid;
 
   PayInvoiceResponse({
     required this.preimage,
     required super.resultType,
+    required this.feesPaid
   });
 
   factory PayInvoiceResponse.deserialize(Map<String, dynamic> input) {
@@ -22,6 +25,7 @@ class PayInvoiceResponse extends NwcResponse {
     return PayInvoiceResponse(
       preimage: result['preimage'] as String,
       resultType: input['result_type'] as String,
+      feesPaid: result['fees_paid'] as int,
     );
   }
 }
