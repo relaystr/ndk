@@ -1,16 +1,20 @@
 import 'dart:developer';
 
+import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport.dart';
+import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/connection_source.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/domain_layer/repositories/nostr_transport.dart';
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/presentation_layer/init.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit.dart';
+
 import 'package:test/test.dart';
 import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
@@ -49,33 +53,6 @@ void main() async {
   MockRelay relay22 = MockRelay(name: "relay 22", explicitPort: 5022);
   MockRelay relay23 = MockRelay(name: "relay 23", explicitPort: 5023);
   MockRelay relay24 = MockRelay(name: "relay 24", explicitPort: 5024);
-
-  group('connection tests', () {
-    onMessage(Nip01Event event, RequestState requestState) async {
-      log("onMessage(${event.content}, ${requestState.id})");
-    }
-
-    test('Connect to relay', () async {
-      await relay1.startServer();
-
-      RelayJit relayJit = RelayJit(url: relay1.url, onMessage: onMessage);
-      var result =
-          await relayJit.connect(connectionSource: ConnectionSource.UNKNOWN);
-
-      expect(result, true);
-
-      //await Future.delayed(Duration(seconds: 5));
-      await relay1.stopServer();
-    });
-
-    test('Try to connect to dead relay', () async {
-      RelayJit relayJit = RelayJit(url: relay2.url, onMessage: onMessage);
-      var result =
-          await relayJit.connect(connectionSource: ConnectionSource.UNKNOWN);
-
-      expect(result, false);
-    });
-  });
 
   group("Calculate best relays (internal MOCKs)", () {
     Map<String, String> relayNames = {
@@ -145,11 +122,19 @@ void main() async {
 
       EventVerifier eventVerifier = MockEventVerifier();
       GlobalState globalState = GlobalState();
+      NostrTransportFactory nostrTransportFactory =
+          WebSocketNostrTransportFactory();
+
+      RelayManager relayManagerLight = RelayManager(
+        bootstrapRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
+        globalState: globalState,
+        nostrTransportFactory: nostrTransportFactory,
+      );
 
       JitEngine manager = JitEngine(
+        relayManagerLight: relayManagerLight,
         cache: cacheManager,
         ignoreRelays: [],
-        seedRelays: [relay21.url, relay22.url, relay23.url, relay24.url],
         globalState: globalState,
       );
 

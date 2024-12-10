@@ -1,82 +1,87 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'dart:convert';
-import 'dart:core';
 import 'dart:developer' as developer;
 
 import '../../config/bootstrap_relays.dart';
-import '../../event_filter.dart';
+import '../../config/relay_defaults.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/client_msg.dart';
+import '../entities/broadcast_state.dart';
+import '../entities/connection_source.dart';
+import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
-import '../entities/pubkey_mapping.dart';
-import '../entities/read_write_marker.dart';
 import '../entities/relay.dart';
+import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
-import '../repositories/event_signer.dart';
-import '../repositories/event_verifier.dart';
+import '../entities/tuple.dart';
 import '../repositories/nostr_transport.dart';
+import 'engines/network_engine.dart';
 
-class RelayManager {
-  static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
-  static const int DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT = 3;
-  static const int DEFAULT_BEST_RELAYS_MIN_COUNT = 2;
-  static const int FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS = 60;
-  static const int WEB_SOCKET_PING_INTERVAL_SECONDS = 3;
-
-  late List<String> bootstrapRelays;
-  late EventVerifier eventVerifier;
-  late GlobalState globalState;
-
-  final NostrTransportFactory nostrTransportFactory;
-
-  /// Global relay registry by url
-  Map<String, Relay> relays = {};
-
-  /// Global transport registry by url
-  Map<String, NostrTransport> transports = {};
-
-  List<String> blockedRelays = [];
-
-  int get blockedRelaysCount => blockedRelays.length;
-
-  List<EventFilter> eventFilters = [];
-
-  bool allowReconnectRelays = true;
-
+///  relay manager, responsible for lifecycle of relays, sending messages, \
+///  and help with tracking of requests
+class RelayManager<T> {
   final Completer<void> _seedRelaysCompleter = Completer<void>();
 
-  get seedRelaysConnected => _seedRelaysCompleter.future;
+  /// completes when all seed relays are connected
+  Future<void> get seedRelaysConnected => _seedRelaysCompleter.future;
 
-  RelayManager({
-    required this.nostrTransportFactory,
-    List<String>? bootstrapRelays,
-    GlobalState? globalState,
-  }) {
-    this.bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS;
-    this.globalState = globalState ?? GlobalState();
+  /// global state obj
+  GlobalState globalState;
+
+  /// nostr transport factory, to create new transports (usually websocket)
+  final NostrTransportFactory nostrTransportFactory;
+
+  /// factory for creating additional data for the engine
+  final EngineAdditionalDataFactory? engineAdditionalDataFactory;
+
+  /// Are reconnects allowed when a connection drops?
+  bool _allowReconnectRelays = true;
+
+  /// Creates a new relay manager.
+  RelayManager(
+      {required this.globalState,
+      required this.nostrTransportFactory,
+      this.engineAdditionalDataFactory,
+      List<String>? bootstrapRelays,
+      allowReconnect = true}) {
+    _allowReconnectRelays = allowReconnect;
+    _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
 
-  // ====================================================================================================================
+  /// gets allowed to reconnectRelays
+  bool get allowReconnectRelays => _allowReconnectRelays;
+
+  /// sets allowed to reconnectRelays
+  void set allowReconnectRelays(bool b) {
+    _allowReconnectRelays = b;
+  }
 
   /// This will initialize the manager with bootstrap relays.
   /// If you don't give any, will use some predefined
-  Future<void> connect(
-      {Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS}) async {
-    bootstrapRelays = [];
+  Future<void> _connectSeedRelays({
+    Iterable<String> urls = DEFAULT_BOOTSTRAP_RELAYS,
+  }) async {
+    List<String> bootstrapRelays = [];
     for (String url in urls) {
       String? clean = cleanRelayUrl(url);
       if (clean != null) {
         bootstrapRelays.add(clean);
       }
     }
-    // if (bootstrapRelays.isEmpty) {
-    //   bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
-    // }
-    await Future.wait(urls.map((url) => connectRelay(url)).toList())
+    if (bootstrapRelays.isEmpty) {
+      bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
+    }
+    await Future.wait(urls
+            .map(
+              (url) => connectRelay(
+                dirtyUrl: url,
+                connectionSource: ConnectionSource.SEED,
+              ),
+            )
+            .toList())
         .whenComplete(() {
       if (!_seedRelaysCompleter.isCompleted) {
         _seedRelaysCompleter.complete();
@@ -84,166 +89,358 @@ class RelayManager {
     });
   }
 
-  void send(String url, dynamic data) {
-    transports[url]!.send(data);
-    Logger.log.d("send message to $url: $data");
+  /// Returns a list of fully connected relays, excluding connecting ones.
+  /// DO NOT USE THIS FOR CHECKING A SINGLE RELAY, use [isRelayConnected] INSTEAD
+  List<RelayConnectivity> get connectedRelays => globalState.relays.values
+      .where((relay) =>
+          relay.relayTransport != null && relay.relayTransport!.isOpen())
+      .toList();
+
+  /// checks if a relay is connected, avoid using this
+  bool isRelayConnected(String url) {
+    return globalState.relays[url]?.relayTransport?.isOpen() ?? false;
   }
 
-  Future<void> closeTransport(url) async {
-    NostrTransport? transport = transports[url];
-    if (transport != null) {
-      Logger.log.d("Disconnecting $url...");
-      transports.remove(url);
-      return transport.close().timeout(const Duration(seconds: 3),
-          onTimeout: () {
-        Logger.log.w("timeout while trying to close socket $url");
-      });
-    }
-  }
-
-  Future<void> closeAllTransports() async {
-    Iterable<String> keys = transports.keys.toList();
-    try {
-      await Future.wait(keys.map((url) => closeTransport(url)));
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  bool isWebSocketOpen(String url) {
-    NostrTransport? transport = transports[cleanRelayUrl(url)];
-    return transport != null && transport.isOpen();
-  }
-
+  /// checks if a relay is connecting
   bool isRelayConnecting(String url) {
-    Relay? relay = relays[url];
+    Relay? relay = globalState.relays[url]?.relay ?? null;
     return relay != null && relay.connecting;
   }
 
-  /// Connect a new relay
-  Future<bool> connectRelay(String dirtyUrl,
-      {int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT}) async {
+
+  /// Connects to a relay to the relay pool.
+  /// Returns a tuple with the first element being a boolean indicating success \\
+  /// and the second element being a string with the error message if any.
+  Future<Tuple<bool, String>> connectRelay({
+    required String dirtyUrl,
+    required ConnectionSource connectionSource,
+    int connectTimeout = DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
+  }) async {
     String? url = cleanRelayUrl(dirtyUrl);
     if (url == null) {
-      return false;
+      return Tuple(false, "unclean url");
     }
-    if (blockedRelays.contains(url)) {
-      return false;
+    if (globalState.blockedRelays.contains(url)) {
+      return Tuple(false, "relay is blocked");
     }
-    try {
-      if (relays[url] == null) {
-        relays[url] = Relay(url);
-      }
-      relays[url]!.tryingToConnect();
-      if (url.startsWith("wss://brb.io")) {
-        relays[url]!.failedToConnect();
-        relays[url]!.stats.connectionErrors++;
-        return false;
-      }
-      // var connectionOptions = SocketConnectionOptions(
-      //   timeoutConnectionMs: connectTimeout*1000,
-      //   skipPingMessages: true,
-      //   pingRestrictionForce: true,
-      //   reconnectionDelay: const Duration(seconds:5),
-      // );
-      // webSockets[url] = IWebSocketHandler<String, String>.createClient(
-      //   url,
-      //   SocketSimpleTextProcessor(),
-      //   connectionOptions: connectionOptions
-      // );
 
-      transports[url] = nostrTransportFactory(url);
-      await transports[url]!
-          .ready
-          .timeout(Duration(seconds: connectTimeout),
-              onTimeout: () {
+    if (isRelayConnected(url)) {
+      Logger.log.t("relay already connected: $url");
+      return Tuple(true, "");
+    }
+    RelayConnectivity? relayConnectivity = globalState.relays[url];
+
+    try {
+      if (relayConnectivity == null) {
+        relayConnectivity = RelayConnectivity<T>(
+          relay: Relay(
+            url: url,
+            connectionSource: connectionSource,
+          ),
+          specificEngineData: engineAdditionalDataFactory?.call(),
+        );
+        globalState.relays[url] = relayConnectivity;
+      }
+      ;
+      relayConnectivity.relay.tryingToConnect();
+
+      /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
+      if (url.startsWith("wss://brb.io")) {
+        relayConnectivity.relay.failedToConnect();
+        return Tuple(false, "bad relay");
+      }
+
+      Logger.log.f("connecting to relay $dirtyUrl");
+
+      relayConnectivity.relayTransport = nostrTransportFactory(url);
+      await relayConnectivity.relayTransport!.ready
+          .timeout(Duration(seconds: connectTimeout), onTimeout: () {
         print("timed out connecting to relay $url");
+        return Tuple(false, "timed out connecting to relay $url");
       });
 
-      startListeningToSocket(url);
+      _startListeningToSocket(relayConnectivity);
 
       developer.log("connected to relay: $url");
-      relays[url]!.succeededToConnect();
-      relays[url]!.stats.connections++;
-      getRelayInfo(url);
-      return true;
+      relayConnectivity.relay.succeededToConnect();
+      relayConnectivity.stats.connections++;
+      getRelayInfo(url).then((info) {
+        relayConnectivity!.relayInfo = info;
+      });
+      return Tuple(true, "");
     } catch (e) {
       print("!! could not connect to $url -> $e");
-      transports.remove(url);
+      relayConnectivity!.relayTransport == null;
     }
-    relays[url]!.failedToConnect();
-    relays[url]!.stats.connectionErrors++;
-    return false;
+    relayConnectivity.relay.failedToConnect();
+    relayConnectivity.stats.connectionErrors++;
+    return Tuple(false, "could not connect to $url");
   }
 
-  void startListeningToSocket(String url) {
-    transports[url]!.listen((message) {
-      _handleIncommingMessage(message, url);
+  /// Reconnects to a relay, if the relay is not connected or the connection is closed.
+  Future<bool> reconnectRelay(String url,
+      {required ConnectionSource connectionSource, bool force = false}) async {
+    RelayConnectivity? relayConnectivity = globalState.relays[url];
+    if (relayConnectivity!=null && relayConnectivity.relayTransport != null) {
+      await relayConnectivity.relayTransport!.ready
+          .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
+          .onError((error, stackTrace) {
+        print("error connecting to relay ${url}: $error");
+        return []; // Return an empty list in case of error
+      });
+    }
+    if (relayConnectivity==null || !relayConnectivity.relayTransport!.isOpen()) {
+      if (!force &&
+          (relayConnectivity==null || !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
+              FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS))) {
+        // don't try too often
+        return false;
+      }
+
+      if (!(await connectRelay(
+        dirtyUrl: url,
+        connectionSource: connectionSource,
+      ))
+          .first) {
+        // could not connect
+        return false;
+      }
+      relayConnectivity = globalState.relays[url];
+      if (relayConnectivity==null || !relayConnectivity.relayTransport!.isOpen()) {
+        // web socket is not open
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Reconnects all given relays
+  Future<void> reconnectRelays(Iterable<String> urls) async {
+    final startTime = DateTime.now();
+    Logger.log.d("connecting ${urls.length} relays in parallel");
+    List<bool> connected =
+    await Future.wait(urls.map((url) => reconnectRelay(url, connectionSource: ConnectionSource.EXPLICIT, force: true)));
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    Logger.log.d(
+        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED, took ${duration.inMilliseconds} ms");
+  }
+
+  void _reSubscribeInFlightSubscriptions(RelayConnectivity relayConnectivity) {
+    globalState.inFlightRequests.forEach((key, state) {
+      state.requests.values
+          .where((req) => req.url == relayConnectivity.url)
+          .forEach((req) {
+        if (!state.request.closeOnEOSE) {
+          List<dynamic> list = ["REQ", state.id];
+          list.addAll(req.filters.map((filter) => filter.toMap()));
+
+          relayConnectivity.stats.activeRequests++;
+          _sendRaw(relayConnectivity, jsonEncode(list));
+        }
+      });
+    });
+  }
+
+  void _sendRaw(RelayConnectivity relayConnectivity, dynamic data) {
+    relayConnectivity.relayTransport!.send(data);
+    Logger.log.d("send message to ${relayConnectivity.url}: $data");
+  }
+
+  /// sends a [ClientMsg] to relay transport sink, throw an error if relay not connected
+  void send(RelayConnectivity relayConnectivity, ClientMsg msg) async {
+    if (relayConnectivity.relayTransport == null) {
+      throw Exception("relay not connected");
+    }
+
+    /// wait until rdy
+    await relayConnectivity.relayTransport!.ready;
+
+    final String encodedMsg = jsonEncode(msg.toJson());
+    _sendRaw(relayConnectivity, encodedMsg);
+  }
+
+  /// use this to register your request against a relay, \
+  /// this is needed so the response from a relay can be tracked back
+  void registerRelayRequest({
+    required String reqId,
+    required String relayUrl,
+    required List<Filter> filters,
+  }) {
+    // new tracking
+    if (globalState.inFlightRequests[reqId]!.requests[relayUrl] == null) {
+      globalState.inFlightRequests[reqId]!.requests[relayUrl] =
+          RelayRequestState(
+        relayUrl,
+        filters,
+      );
+    } else {
+      // do not overwrite and add new filters
+      globalState.inFlightRequests[reqId]!.requests[relayUrl]!.filters
+          .addAll(filters);
+    }
+  }
+
+  /// use this to register your broadcast against a relay, \
+  /// this is needed so the response from a relay can be tracked back
+  void registerRelayBroadcast({
+    required String relayUrl,
+    required Nip01Event eventToPublish,
+  }) {
+    // new tracking
+    if (globalState
+            .inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] ==
+        null) {
+      globalState.inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] =
+          RelayBroadcastResponse(
+        relayUrl: relayUrl,
+      );
+    } else {
+      // do not overwrite
+      Logger.log.w(
+          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} ${relayUrl}, skipping");
+    }
+  }
+
+  void _startListeningToSocket(RelayConnectivity relayConnectivity) {
+    relayConnectivity.relayTransport!.listen((message) {
+      _handleIncomingMessage(
+        message,
+        relayConnectivity,
+      );
     }, onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
-      relays[url]!.stats.connectionErrors++;
-      print("onError $url on listen $error");
+      relayConnectivity.stats.connectionErrors++;
+      print("onError ${relayConnectivity.url} on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
-      if (allowReconnectRelays && transports[url] != null) {
-        print(
-            "onDone $url on listen (close: ${transports[url]!.closeCode()} ${transports[url]!.closeReason()}), trying to reconnect");
-        if (isWebSocketOpen(url)) {
-          print("closing $url webSocket");
-          transports[url]!.close();
-          print("closed $url. Reconnecting");
-        }
-        reconnectRelay(url).then((connected) {
+      print(
+          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
+      if (relayConnectivity.relayTransport!.isOpen()) {
+        print("closing ${relayConnectivity.url} webSocket");
+        relayConnectivity.relayTransport!.close();
+      }
+      // reconnect on close
+      if (_allowReconnectRelays &&
+          globalState.relays[relayConnectivity.url] != null &&
+          globalState.relays[relayConnectivity.url]!.relayTransport != null) {
+        print("closed ${relayConnectivity.url}. Reconnecting");
+        reconnectRelay(relayConnectivity.url, connectionSource: relayConnectivity.relay.connectionSource).then((connected) {
           if (connected) {
-            _reSubscribeInFlightSubscriptions(url);
+            _reSubscribeInFlightSubscriptions(relayConnectivity);
           }
         });
       }
     });
   }
 
-  List<Relay> getConnectedRelays(Iterable<String> urls) {
-    return urls
-        .where((url) => isRelayConnected(url))
-        .map((url) => relays[url]!)
-        .toList();
-  }
+  void _handleIncomingMessage(
+      dynamic message, RelayConnectivity relayConnectivity) {
+    List<dynamic> eventJson = json.decode(message);
 
-  Future<void> broadcastEvent(
-      Nip01Event event, Iterable<String> relays, EventSigner signer) async {
-    await signer.sign(event);
-    await Future.wait(relays.map((url) => broadcastSignedEvent(event, url)));
-  }
-
-  Future<void> broadcastSignedEvent(Nip01Event event, String url) async {
-    if (isWebSocketOpen(url) && (!blockedRelays.contains(url))) {
-      try {
-        Logger.log.i(
-            "🛈 BROADCASTING to $url : kind: ${event.kind} author: ${event.pubKey}");
-        var webSocket = transports[url];
-        if (webSocket != null) {
-          send(url, jsonEncode(["EVENT", event.toJson()]));
-        }
-      } catch (e) {
-        print("ERROR BROADCASTING $url -> $e");
+    if (eventJson[0] == 'OK') {
+      //nip 20 used to notify clients if an EVENT was successful
+      if (eventJson.length >= 2 && eventJson[2] == false) {
+        Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
       }
+      globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
+        RelayBroadcastResponse(
+          relayUrl: relayConnectivity.url,
+          okReceived: true,
+          broadcastSuccessful: eventJson[2],
+          msg: eventJson[3] ?? '',
+        ),
+      );
+
+      return;
+    }
+    if (eventJson[0] == 'NOTICE') {
+      Logger.log.w("NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
+      _logActiveRequests();
+    } else if (eventJson[0] == 'EVENT') {
+      _handleIncomingEvent(eventJson, relayConnectivity.url);
+      Logger.log.d("EVENT from ${relayConnectivity.url}: $eventJson");
+    } else if (eventJson[0] == 'EOSE') {
+      Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
+      _handleEOSE(eventJson, relayConnectivity);
+    } else if (eventJson[0] == 'CLOSED') {
+      Logger.log.w(
+          " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
+      globalState.inFlightRequests.remove(eventJson[1]);
     }
   }
 
-  void removeInFlightRequest(RequestState state) async {
-    return removeInFlightRequestById(state.id);
-  }
+  void _handleIncomingEvent(List<dynamic> eventJson, String url) {
+    var id = eventJson[1];
+    if (globalState.inFlightRequests[id] == null) {
+      Logger.log.w(
+          "RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
+      // send(url, jsonEncode(["CLOSE", id]));
+      return;
+    }
 
-  void closeSubscription(String subscriptionId) async {
-    RequestState? state = globalState.inFlightRequests[subscriptionId];
+    Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+
+    RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
-      for (var url in state.requests.keys) {
-        sendCloseToRelay(url, state.id);
+      RelayRequestState? request = state.requests[url];
+      if (request == null) {
+        Logger.log.w("No RelayRequestState found for id ${id}");
+        return;
       }
-      await removeInFlightRequestById(subscriptionId);
+      event.sources.add(url);
+
+      if (state.networkController.isClosed) {
+        Logger.log.e(
+            "TRIED to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
+      } else {
+        state.networkController.add(event);
+      }
     }
   }
 
+  /// handles EOSE messages
+  void _handleEOSE(
+      List<dynamic> eventJson, RelayConnectivity relayConnectivity) {
+    String id = eventJson[1];
+    RequestState? state = globalState.inFlightRequests[id];
+    if (state != null && state.request.closeOnEOSE) {
+      Logger.log.t(
+          "⛁ received EOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+      RelayRequestState? request = state.requests[relayConnectivity.url];
+      if (request != null) {
+        request.receivedEOSE = true;
+      }
+
+      if (state.request.closeOnEOSE) {
+        _sendCloseToRelay(relayConnectivity, state.id);
+        if (state.requests.isEmpty || state.didAllRequestsReceivedEOSE) {
+          removeInFlightRequestById(id);
+        }
+      }
+    }
+    return;
+  }
+
+  /// sends a close message to a relay
+  void sendCloseToRelay(String url, String id) {
+    RelayConnectivity? connectivity = globalState.relays[url];
+    if (connectivity!=null) {
+      _sendCloseToRelay(connectivity, id);
+    }
+  }
+
+  void _sendCloseToRelay(RelayConnectivity relayConnectivity, String id) {
+    try {
+      send(relayConnectivity, ClientMsg(ClientMsgType.CLOSE, id: id));
+      relayConnectivity.stats.activeRequests--;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// removes a request from the inFlightRequests \
+  /// and closes the network controller
   Future<void> removeInFlightRequestById(String id) async {
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
@@ -254,232 +451,10 @@ class RelayManager {
       }
       globalState.inFlightRequests.remove(id);
     }
-    logActiveRequests();
+    _logActiveRequests();
   }
 
-  // =====================================================================================
-
-  _handleIncommingMessage(dynamic message, String url) {
-    List<dynamic> eventJson = json.decode(message);
-
-    if (eventJson[0] == 'OK') {
-      //nip 20 used to notify clients if an EVENT was successful
-      if (eventJson.length >= 2 && eventJson[2] == false) {
-        Logger.log.e("NOT OK from $url: $eventJson");
-      }
-      return;
-    }
-
-    if (eventJson[0] == 'NOTICE') {
-      Logger.log.w("NOTICE from $url: ${eventJson[1]}");
-      logActiveRequests();
-    } else if (eventJson[0] == 'EVENT') {
-      handleIncomingEvent(eventJson, url, message);
-    } else if (eventJson[0] == 'EOSE') {
-      handleEOSE(eventJson, url);
-    } else if (eventJson[0] == 'CLOSED') {
-      Logger.log.w(
-          " CLOSED subscription url: $url id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
-      globalState.inFlightRequests.remove(eventJson[1]);
-    }
-    // TODO
-    // if (eventJson[0] == 'AUTH') {
-    //   log("AUTH: ${eventJson[1]}");
-    //   // nip 42 used to send authentication challenges
-    //   return;
-    // }
-    //
-    // if (eventJson[0] == 'COUNT') {
-    //   log("COUNT: ${eventJson[1]}");
-    //   // nip 45 used to send requested event counts to clients
-    //   return;
-    // }
-  }
-
-  void handleEOSE(List<dynamic> eventJson, String url) {
-    String id = eventJson[1];
-    RequestState? state = globalState.inFlightRequests[id];
-    if (state != null && state.request.closeOnEOSE) {
-      Logger.log.t(
-          "⛁ received EOSE from $url for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
-      RelayRequestState? request = state.requests[url];
-      if (request != null) {
-        request.receivedEOSE = true;
-        closeIfAllEventsVerified(request, state, url);
-      }
-    }
-    return;
-  }
-
-  void sendCloseToRelay(String url, String id) {
-    if (isWebSocketOpen(url)) {
-      try {
-        Relay? relay = getRelay(url);
-        if (relay != null) {
-          relay.stats.activeRequests--;
-        }
-        send(url, jsonEncode(["CLOSE", id]));
-      } catch (e) {
-        print(e);
-      }
-    }
-  }
-
-  void closeIfAllEventsVerified(
-      RelayRequestState request, RequestState state, String url) {
-    if (request.receivedEOSE && request.eventIdsToBeVerified.isEmpty) {
-      if (state.request.closeOnEOSE) {
-        sendCloseToRelay(url, state.id);
-        if (state.requests.isEmpty || state.didAllRequestsReceivedEOSE) {
-          removeInFlightRequest(state);
-        }
-      }
-      state.requests.remove(url);
-    }
-  }
-
-  void handleIncomingEvent(List<dynamic> eventJson, String url, message) {
-    var id = eventJson[1];
-    if (globalState.inFlightRequests[id] == null) {
-      Logger.log.w(
-          "RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
-      // send(url, jsonEncode(["CLOSE", id]));
-      return;
-    }
-
-    Nip01Event event = Nip01Event.fromJson(eventJson[2]);
-    if (!filterEvent(event)) {
-      return;
-    }
-    // check signature is valid
-    // if (!event.isIdValid) {
-    //   Logger.log.e("RECEIVED $id INVALID EVENT $event");
-    //   return;
-    // }
-    RequestState? state = globalState.inFlightRequests[id];
-    if (state != null) {
-      RelayRequestState? request = state.requests[url];
-      if (request != null) {
-        // request.eventIdsToBeVerified.add(event.id);
-        // eventVerifier.verify(event).then((validSig) {
-        //   if (validSig) {
-        event.sources.add(url);
-        // event.validSig = true;
-        // if (relays[url] != null) {
-        //   relays[url]!.incStatsByNewEvent(event, message.toString().codeUnits.length);
-        // }
-        if (state.networkController.isClosed) {
-          Logger.log.e(
-              "TRIED to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
-        } else {
-          state.networkController.add(event);
-        }
-        // } else {
-        //   Logger.log.f("INVALID EVENT SIGNATURE: $event");
-        // }
-        // request.eventIdsToBeVerified.remove(event.id);
-        // closeIfAllEventsVerified(request, state, url);
-        // });
-      }
-    }
-    return;
-  }
-
-  Relay? getRelay(String url) {
-    Relay? r = relays[url];
-    r ??= relays[cleanRelayUrl(url)];
-    return r;
-  }
-
-  /// does relay support given nip
-  bool doesRelaySupportNip(String url, int nip) {
-    Relay? relay = relays[cleanRelayUrl(url)];
-    return relay != null && relay.supportsNip(nip);
-  }
-
-  // =====================================================================================
-
-  Map<String, List<PubkeyMapping>> allConnectedRelays(List<String> pubKeys) {
-    Map<String, List<PubkeyMapping>> map = {};
-    for (var relay in relays.keys) {
-      if (isWebSocketOpen(relay)) {
-        map[relay] = pubKeys
-            .map((pubKey) => PubkeyMapping(
-                pubKey: pubKey, rwMarker: ReadWriteMarker.readWrite))
-            .toList();
-      }
-    }
-    return map;
-  }
-
-  bool isRelayConnected(String url) {
-    Relay? relay = relays[url];
-    return relay != null && isWebSocketOpen(url);
-  }
-
-  Future<void> reconnectRelays(Iterable<String> urls) async {
-    final startTime = DateTime.now();
-    Logger.log.d("connecting ${urls.length} relays in parallel");
-    List<bool> connected =
-        await Future.wait(urls.map((url) => reconnectRelay(url, force: true)));
-    final endTime = DateTime.now();
-    final duration = endTime.difference(startTime);
-    Logger.log.d(
-        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED, took ${duration.inMilliseconds} ms");
-  }
-
-  Future<bool> reconnectRelay(String url, {bool force = false}) async {
-    Relay? relay = getRelay(url);
-    if (allowReconnectRelays) {
-      NostrTransport? transport = transports[cleanRelayUrl(url)];
-      if (transport != null) {
-        await transport.ready
-            .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
-            .onError((error, stackTrace) {
-          print("error connecting to relay $url: $error");
-          return []; // Return an empty list in case of error
-        });
-      }
-      if (!isWebSocketOpen(url)) {
-        if (relay != null &&
-            !force &&
-            !relay.wasLastConnectTryLongerThanSeconds(
-                FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS)) {
-          // don't try too often
-          return false;
-        }
-
-        if (!await connectRelay(url)) {
-          // could not connect
-          return false;
-        }
-        if (!isWebSocketOpen(url)) {
-          // web socket is not open
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  Future<RelayInfo?> getRelayInfo(String url) async {
-    if (relays[url] != null) {
-      relays[url]!.info ??= await RelayInfo.get(url);
-      return relays[url]!.info;
-    }
-    return null;
-  }
-
-  bool filterEvent(Nip01Event event) {
-    for (var filter in eventFilters) {
-      if (!filter.filter(event)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  void logActiveRequests() {
+  void _logActiveRequests() {
     // Map<int?, int> kindsMap = {};
     Map<String?, int> namesMap = {};
     globalState.inFlightRequests.forEach((key, state) {
@@ -502,20 +477,46 @@ class RelayManager {
         "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");
   }
 
-  void _reSubscribeInFlightSubscriptions(String url) {
-    globalState.inFlightRequests.forEach((key, state) {
-      state.requests.values.where((req) => req.url == url).forEach((req) {
-        if (!state.request.closeOnEOSE) {
-          List<dynamic> list = ["REQ", state.id];
-          list.addAll(req.filters.map((filter) => filter.toMap()));
-          Relay? relay = getRelay(req.url);
-          if (relay != null) {
-            relay.stats.activeRequests++;
-            send(url, jsonEncode(list));
-            // TODO not sure if this works, since there are old streams on the ndk response???
-          }
-        }
-      });
-    });
+  /// Closes this url transport and removes
+  Future<void> closeTransport(url) async {
+    RelayConnectivity? connectivity = globalState.relays[url];
+    if (connectivity != null && connectivity.relayTransport!=null) {
+      Logger.log.d("Disconnecting $url...");
+      globalState.relays.remove(url);
+      return connectivity.relayTransport!.close().timeout(const Duration(seconds: 3),
+          onTimeout: () {
+            Logger.log.w("timeout while trying to close socket $url");
+          });
+    }
+  }
+
+  /// Closes all transports
+  Future<void> closeAllTransports() async {
+    Iterable<String> keys = globalState.relays.keys.toList();
+    try {
+      await Future.wait(keys.map((url) => closeTransport(url)));
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// fetches relay info
+  /// todo: refactor to use http injector and decouple data from fetching
+  Future<RelayInfo?> getRelayInfo(String url) async {
+    if (globalState.relays[url] != null) {
+      return await RelayInfo.get(url);
+    }
+    return null;
+  }
+
+  /// does relay support given nip
+  bool doesRelaySupportNip(String url, int nip) {
+    RelayConnectivity? connectivity = globalState.relays[cleanRelayUrl(url)];
+    return connectivity != null && connectivity.relayInfo!=null && connectivity.relayInfo!.supportsNip(nip);
+  }
+
+  /// return [RelayConnectivity] by url
+  RelayConnectivity? getRelayConnectivity(String url) {
+    return globalState.relays[url];
   }
 }

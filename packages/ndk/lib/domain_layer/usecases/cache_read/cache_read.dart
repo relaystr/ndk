@@ -67,7 +67,9 @@ class CacheRead {
         Logger.log.t("found event in cache $event ");
         outController.add(event);
       }
-      outController.close();
     }
+
+    /// close stream even if nothing was found
+    outController.close();
   }
 }

@@ -1,14 +1,16 @@
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/nip_01_event.dart';
+import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/event_signer.dart';
-import '../relay_jit.dart';
+import '../../relay_manager.dart';
 
 /// used to spread gossip information on as many relays as possible
 class RelayJitBroadcastAllStrategy {
   /// broadcasts to all connected relays
   static Future broadcast({
     required Nip01Event eventToPublish,
-    required List<RelayJit> connectedRelays,
+    required List<RelayConnectivity> connectedRelays,
+    required RelayManager relayManger,
     required EventSigner signer,
   }) async {
     // sign event
@@ -21,12 +23,12 @@ class RelayJitBroadcastAllStrategy {
 
     // broadcast event
 
-    List<Future> waitForAll = [];
     for (var relay in connectedRelays) {
-      final result = relay.send(myClientMsg);
-      waitForAll.add(result);
+      relayManger.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relay.url,
+      );
+      relayManger.send(relay, myClientMsg);
     }
-
-    return Future.wait(waitForAll);
   }
 }

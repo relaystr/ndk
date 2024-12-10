@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../../config/request_defaults.dart';
 import '../../../shared/nips/nip01/helpers.dart';
+import '../../entities/event_filter.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
@@ -25,6 +26,7 @@ class Requests {
   final CacheWrite _cacheWrite;
   final NetworkEngine _engine;
   final EventVerifier _eventVerifier;
+  final List<EventFilter> _eventOutFilters;
 
   /// Creates a new [Requests] instance
   ///
@@ -39,11 +41,13 @@ class Requests {
     required CacheWrite cacheWrite,
     required NetworkEngine networkEngine,
     required EventVerifier eventVerifier,
+    required List<EventFilter> eventOutFilters,
   })  : _engine = networkEngine,
         _cacheWrite = cacheWrite,
         _cacheRead = cacheRead,
         _globalState = globalState,
-        _eventVerifier = eventVerifier;
+        _eventVerifier = eventVerifier,
+        _eventOutFilters = eventOutFilters;
 
   /// Performs a low-level Nostr query
   ///
@@ -157,6 +161,7 @@ class Requests {
       trackingSet: state.returnedIds,
       outController: state.controller,
       timeout: request.timeout,
+      eventOutFilters: _eventOutFilters,
     )();
 
     /// avoids sending events to response stream before a listener could be attached
@@ -165,6 +170,9 @@ class Requests {
       final streamWasReplaced = request.cacheRead && concurrency.check(state);
       if (streamWasReplaced) {
         return;
+      } else {
+        // add to in flight
+        _globalState.inFlightRequests[state.id] = state;
       }
 
       // caching should write to response stream and keep track on what is unresolved to send the split filters to the engine
@@ -173,6 +181,9 @@ class Requests {
           requestState: state,
           outController: state.cacheController,
         );
+      } else {
+        /// close cache controller if not used
+        state.cacheController.close();
       }
 
       /// handle request

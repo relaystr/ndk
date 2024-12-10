@@ -1,13 +1,12 @@
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
+import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
-import '../../../entities/request_state.dart';
-
+import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../../repositories/event_signer.dart';
-
+import '../../relay_manager.dart';
 import '../../user_relay_lists/user_relay_lists.dart';
-import '../relay_jit.dart';
 import 'broadcast_strategies_shared.dart';
 
 /// broadcast to own outbox relays
@@ -16,9 +15,10 @@ class RelayJitBroadcastOutboxStrategy {
   /// [onMessage] callback for new connected relays
   static Future broadcast({
     required Nip01Event eventToPublish,
-    required List<RelayJit> connectedRelays,
+    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+        connectedRelays,
     required CacheManager cacheManager,
-    required Function(Nip01Event, RequestState) onMessage,
+    required RelayManager relayManager,
     required EventSigner signer,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(
@@ -45,10 +45,11 @@ class RelayJitBroadcastOutboxStrategy {
 
     // connect missing relays
     final couldNotConnectRelays = await connectRelays(
-        connectedRelays: connectedRelays,
-        onMessage: onMessage,
-        relaysToConnect: notConnectedRelays,
-        connectionSource: ConnectionSource.BROADCAST_OWN);
+      connectedRelays: connectedRelays,
+      relaysToConnect: notConnectedRelays,
+      connectionSource: ConnectionSource.BROADCAST_OWN,
+      relayManager: relayManager,
+    );
 
     // list of relays without the failed ones
     final List<String> actualBroadcastList = writeRelaysUrls
@@ -67,7 +68,12 @@ class RelayJitBroadcastOutboxStrategy {
     for (var relayUrl in actualBroadcastList) {
       final relay =
           connectedRelays.firstWhere((element) => element.url == relayUrl);
-      relay.send(myClientMsg);
+
+      relayManager.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relay.url,
+      );
+      relayManager.send(relay, myClientMsg);
     }
 
     // todo: look into onMessage and decipher different event types

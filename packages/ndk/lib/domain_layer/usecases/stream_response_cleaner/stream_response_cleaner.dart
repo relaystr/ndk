@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
+import '../../entities/event_filter.dart';
 import '../../entities/nip_01_event.dart';
 
 /// given a stream  with Nip01 events it tracks the id and adds the one to the provided stream controller \
@@ -9,6 +10,7 @@ class StreamResponseCleaner {
   final Set<String> _trackingSet;
   final List<Stream<Nip01Event>> _inputStreams;
   final StreamController<Nip01Event> _outController;
+  List<EventFilter> _eventOutFilters;
 
   int get _numStreams => _inputStreams.length;
 
@@ -27,7 +29,12 @@ class StreamResponseCleaner {
     required List<Stream<Nip01Event>> inputStreams,
     required StreamController<Nip01Event> outController,
     required int? timeout,
-  }) : _timeout = timeout, _trackingSet = trackingSet, _outController = outController, _inputStreams = inputStreams {
+    required List<EventFilter> eventOutFilters,
+  })  : _timeout = timeout,
+        _trackingSet = trackingSet,
+        _outController = outController,
+        _inputStreams = inputStreams,
+        _eventOutFilters = eventOutFilters {
     if (_timeout != null) {
       _timeoutTimer = Timer(Duration(seconds: _timeout!), () async {
         if (!_outController.isClosed) {
@@ -55,6 +62,13 @@ class StreamResponseCleaner {
       }
 
       _trackingSet.add(event.id);
+
+      // check against filters
+      for (final filter in _eventOutFilters) {
+        if (!filter.filter(event)) {
+          return;
+        }
+      }
       _outController.add(event);
       Logger.log.t("added event ${event.content}");
     }, onDone: () async {

@@ -1,8 +1,9 @@
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
+import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
-import '../../../entities/request_state.dart';
-import '../relay_jit.dart';
+import '../../../entities/relay_connectivity.dart';
+import '../../relay_manager.dart';
 import 'broadcast_strategies_shared.dart';
 
 /// broadcast to specific relays
@@ -11,8 +12,9 @@ class RelayJitBroadcastSpecificRelaysStrategy {
   /// [returns] list of relays that failed to connect
   static Future<List<String>> broadcast({
     required Nip01Event eventToPublish,
-    required List<RelayJit> connectedRelays,
-    required Function(Nip01Event, RequestState) onMessage,
+    required List<RelayConnectivity<JitEngineRelayConnectivityData>>
+        connectedRelays,
+    required RelayManager relayManager,
     required String privateKey,
     required List<String> specificRelays,
   }) async {
@@ -25,7 +27,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     // connect missing relays
     final couldNotConnectRelays = await connectRelays(
       connectedRelays: connectedRelays,
-      onMessage: onMessage,
+      relayManager: relayManager,
       relaysToConnect: notConnectedRelays,
       connectionSource: ConnectionSource.BROADCAST_SPECIFIC,
     );
@@ -47,7 +49,13 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     for (var relayUrl in actualBroadcastList) {
       final relay =
           connectedRelays.firstWhere((element) => element.url == relayUrl);
-      relay.send(myClientMsg);
+
+      relayManager.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relay.url,
+      );
+
+      relayManager.send(relay, myClientMsg);
     }
 
     return couldNotConnectRelays;

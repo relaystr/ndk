@@ -1,17 +1,20 @@
 // ignore_for_file: avoid_print
 
-import 'dart:convert';
 import 'dart:core';
 
-import 'package:ndk/domain_layer/entities/broadcast_response.dart';
+import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/client_msg.dart';
 import '../../shared/nips/nip01/helpers.dart';
+import '../entities/broadcast_response.dart';
+import '../entities/broadcast_state.dart';
+import '../entities/connection_source.dart';
 import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
-import '../entities/relay.dart';
+import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
 import '../entities/request_response.dart';
 import '../entities/request_state.dart';
@@ -30,29 +33,36 @@ class RelaySetsEngine implements NetworkEngine {
 
   final CacheManager _cacheManager;
 
+  final List<String> _bootstrapRelays;
+
   /// engine that pre-calculates relay sets for gossip
   RelaySetsEngine({
     required RelayManager relayManager,
     required CacheManager cacheManager,
+    required List<String>? bootstrapRelays,
     GlobalState? globalState,
   })  : _cacheManager = cacheManager,
-        _relayManager = relayManager {
+        _relayManager = relayManager,
+        _bootstrapRelays = bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS {
     _globalState = globalState ?? GlobalState();
-    _relayManager.connect(urls: _relayManager.bootstrapRelays);
   }
 
   // ====================================================================================================================
 
   bool doRelayRequest(String id, RelayRequestState request) {
-    if (_relayManager.isWebSocketOpen(request.url) &&
-        (!_relayManager.blockedRelays.contains(request.url))) {
+    if (_relayManager.isRelayConnected(request.url) &&
+        (!_globalState.blockedRelays.contains(request.url))) {
       try {
-        List<dynamic> list = ["REQ", id];
-        list.addAll(request.filters.map((filter) => filter.toMap()));
-        Relay? relay = _relayManager.getRelay(request.url);
+        RelayConnectivity? relay = _globalState.relays[request.url];
         if (relay != null) {
           relay.stats.activeRequests++;
-          _relayManager.send(request.url, jsonEncode(list));
+          _relayManager.send(
+              relay,
+              ClientMsg(
+                ClientMsgType.REQ,
+                id: id,
+                filters: request.filters,
+              ));
         }
         return true;
       } catch (e) {
@@ -61,8 +71,11 @@ class RelaySetsEngine implements NetworkEngine {
     } else {
       print(
           "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
-
-      _relayManager.reconnectRelay(request.url);
+      RelayConnectivity? relay = _globalState.relays[request.url];
+      if (relay != null) {
+        _relayManager.reconnectRelay(relay.url,
+            connectionSource: relay.relay.connectionSource);
+      }
     }
     return false;
   }
@@ -84,13 +97,13 @@ class RelaySetsEngine implements NetworkEngine {
 
       if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
         print(
-            "making fallback requests to ${_relayManager.bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
-        for (var url in _relayManager.bootstrapRelays) {
+            "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
+        for (final url in _bootstrapRelays) {
           state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
         }
       }
     } else {
-      for (var url in relaySet.urls) {
+      for (final url in relaySet.urls) {
         state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
       }
     }
@@ -144,13 +157,14 @@ class RelaySetsEngine implements NetworkEngine {
     }
     if (state.request.explicitRelays != null &&
         state.request.explicitRelays!.isNotEmpty) {
-      for (var url in state.request.explicitRelays!) {
-        await _relayManager.reconnectRelay(url);
+      for (final url in state.request.explicitRelays!) {
+        await _relayManager.connectRelay(
+            dirtyUrl: url, connectionSource: ConnectionSource.EXPLICIT);
         state.addRequest(
             url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
     } else {
-      for (var url in _relayManager.bootstrapRelays) {
+      for (final url in _bootstrapRelays) {
         state.addRequest(
             url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
@@ -204,6 +218,7 @@ class RelaySetsEngine implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner mySigner,
+    required Stream<List<RelayBroadcastResponse>> doneStream,
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
@@ -212,18 +227,33 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
 
       if (specificRelays != null) {
+        // check connectivity
         for (final relayUrl in specificRelays) {
-          final isConnected = _relayManager.isRelayConnected(relayUrl);
-          if (isConnected) {
+          if (_relayManager.isRelayConnected(relayUrl)) {
             continue;
           }
-          await _relayManager.connectRelay(relayUrl);
+          await _relayManager.connectRelay(
+              dirtyUrl: relayUrl,
+              connectionSource: ConnectionSource.BROADCAST_SPECIFIC);
         }
-        _relayManager.broadcastEvent(
-          nostrEvent,
-          specificRelays,
-          mySigner,
-        );
+        // send out request
+        for (final relayUrl in specificRelays) {
+          _relayManager.registerRelayBroadcast(
+            eventToPublish: nostrEvent,
+            relayUrl: relayUrl,
+          );
+
+          final relayConnectivity =
+              _relayManager.getRelayConnectivity(relayUrl);
+          if (relayConnectivity != null) {
+            _relayManager.send(
+                relayConnectivity,
+                ClientMsg(
+                  ClientMsgType.EVENT,
+                  event: nostrEvent,
+                ));
+          }
+        }
         return;
       }
       // =====================================================================================
@@ -240,14 +270,37 @@ class RelaySetsEngine implements NetworkEngine {
           .toList();
 
       for (final relayUrl in writeRelaysUrls) {
-        final isConnected = _relayManager.isRelayConnected(relayUrl);
+        final isConnected =
+            _globalState.relays[relayUrl]?.relayTransport?.isOpen() ?? false;
         if (isConnected) {
           continue;
         }
-        await _relayManager.connectRelay(relayUrl);
+
+        await _relayManager.connectRelay(
+          dirtyUrl: relayUrl,
+          connectionSource: ConnectionSource.BROADCAST_OWN,
+        );
       }
 
-      _relayManager.broadcastEvent(nostrEvent, writeRelaysUrls, mySigner);
+      for (final relayUrl in writeRelaysUrls) {
+        final relay = _globalState.relays[relayUrl];
+        if (relay == null) {
+          Logger.log.w("relay $relayUrl not found");
+          continue;
+        }
+
+        _relayManager.registerRelayBroadcast(
+          eventToPublish: nostrEvent,
+          relayUrl: relayUrl,
+        );
+
+        _relayManager.send(
+            relay,
+            ClientMsg(
+              ClientMsgType.EVENT,
+              event: nostrEvent,
+            ));
+      }
 
       // =====================================================================================
       // other inbox
@@ -276,24 +329,62 @@ class RelaySetsEngine implements NetworkEngine {
         }
 
         for (final relayUrl in myWriteRelayUrlsOthers) {
-          final isConnected = _relayManager.isRelayConnected(relayUrl);
+          final isConnected =
+              _globalState.relays[relayUrl]?.relayTransport?.isOpen() ?? false;
           if (isConnected) {
             continue;
           }
-          await _relayManager.connectRelay(relayUrl);
+          await _relayManager.connectRelay(
+              dirtyUrl: relayUrl,
+              connectionSource: ConnectionSource.BROADCAST_OTHER);
         }
-        _relayManager.broadcastEvent(
-            nostrEvent, myWriteRelayUrlsOthers, mySigner);
+        for (final relayUrl in myWriteRelayUrlsOthers) {
+          final relay = _globalState.relays[relayUrl];
+
+          if (relay == null) {
+            Logger.log.w("relay $relayUrl not found");
+            continue;
+          }
+
+          _relayManager.registerRelayBroadcast(
+            eventToPublish: nostrEvent,
+            relayUrl: relayUrl,
+          );
+
+          _relayManager.send(
+              relay,
+              ClientMsg(
+                ClientMsgType.EVENT,
+                event: nostrEvent,
+              ));
+        }
       }
     }
 
     asyncStuff();
 
-    return NdkBroadcastResponse(publishedEvent: nostrEvent);
+    return NdkBroadcastResponse(
+      publishEvent: nostrEvent,
+      broadcastDoneStream: doneStream,
+    );
   }
 
   @override
   Future<void> closeSubscription(String subId) async {
-    _relayManager.closeSubscription(subId);
+    final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
+    if (relayUrls == null) {
+      Logger.log.w("no relay urls found for subscription $subId, cannot close");
+      return;
+    }
+    Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
+        .whereType<RelayConnectivity>()
+        .where((relay) => relayUrls.contains(relay.url));
+
+    for (final relay in relays) {
+      this._relayManager.send(relay, ClientMsg(ClientMsgType.CLOSE, id: subId));
+    }
+
+    // remove from in flight requests
+    await _relayManager.removeInFlightRequestById(subId);
   }
 }

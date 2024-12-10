@@ -2,9 +2,11 @@
 
 import 'dart:async';
 
+import 'package:ndk/domain_layer/entities/global_state.dart';
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
-import 'package:ndk/ndk.dart';
 
 import '../mocks/mock_relay.dart';
 
@@ -18,11 +20,13 @@ void main() async {
       await relay1.startServer();
 
       RelayManager manager = RelayManager(
+        globalState: GlobalState(),
         bootstrapRelays: [relay1.url],
         nostrTransportFactory: webSocketNostrTransportFactory,
       );
       await manager
-          .connectRelay(relay1.url)
+          .connectRelay(
+              dirtyUrl: relay1.url, connectionSource: ConnectionSource.SEED)
           .then((value) {})
           .onError((error, stackTrace) async {
         await relay1.stopServer();
@@ -33,11 +37,13 @@ void main() async {
     test('Try to connect to dead relay', () async {
       RelayManager manager = RelayManager(
         nostrTransportFactory: webSocketNostrTransportFactory,
+        globalState: GlobalState(),
       );
 
       MockRelay relay1 = MockRelay(name: "relay 1");
       try {
-        await manager.connectRelay(relay1.url);
+        await manager.connectRelay(
+            dirtyUrl: relay1.url, connectionSource: ConnectionSource.SEED);
         fail("should throw exception");
       } catch (e) {
         // success
