@@ -1,7 +1,6 @@
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/client_msg.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/filter.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
@@ -77,11 +76,11 @@ class RelayJitPubkeyStrategy with Logger {
         }
       }
 
-      connectedRelay.specificEngineData!.touched++;
+      connectedRelay.stats.touched++;
       if (coveredPubkeysForRelay.isEmpty) {
         continue;
       }
-      connectedRelay.specificEngineData!.touchUseful++;
+      connectedRelay.stats.touchUseful++;
 
       /// create splitFilter that only contains the pubkeys for the relay
       Filter splitFilter = _splitFilter(filter, coveredPubkeysForRelay);
