@@ -148,7 +148,7 @@ jobs:
 #      - run: cp -r build/linux/x64/release/bundle/* ndk_demo.AppDir/
 #      - run: cp -r assets/imgs/logo/logo-new.png ndk_demo.AppDir/logo.png
 #      - run: ./appimagetool-x86_64.AppImage ndk_demo.AppDir/
-#
+
 #      # LINUX APPIMAGE
 #      - name: Upload appImage to release
 #        id: upload-release-asset-appimage
@@ -226,7 +226,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           draft: true
-#          prerelease: true
+          prerelease: ${{ contains(github.ref, '-dev') }}
 
   publish-release:
     needs: [release,build_android]
