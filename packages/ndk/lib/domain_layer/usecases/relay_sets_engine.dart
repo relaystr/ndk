@@ -225,6 +225,7 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       // specific relays
       // =====================================================================================
+      await mySigner.sign(nostrEvent);
 
       if (specificRelays != null) {
         // check connectivity
@@ -246,7 +247,6 @@ class RelaySetsEngine implements NetworkEngine {
           final relayConnectivity =
               _relayManager.getRelayConnectivity(relayUrl);
           if (relayConnectivity != null) {
-            await mySigner.sign(nostrEvent);
             _relayManager.send(
                 relayConnectivity,
                 ClientMsg(
