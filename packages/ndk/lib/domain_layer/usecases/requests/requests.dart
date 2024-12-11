@@ -140,6 +140,17 @@ class Requests {
 
     final concurrency = ConcurrencyCheck(_globalState);
 
+    // define on timeout behavior
+    state.onTimeout = (RequestState state) {
+      // closing in case relay is alive but not sending events
+      closeSubscription(state.id);
+
+      // call our internal timeout function
+      request.timeoutCallback?.call();
+      // call user defined timeout function
+      response.onTimeout.call();
+    };
+
     // register event verification - removes invalid events from the stream
     final verifiedNetworkStream = VerifyEventStream(
       unverifiedStreamInput: state.networkController.stream,
@@ -165,16 +176,6 @@ class Requests {
 
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
-      state.onTimeout = (RequestState state) {
-        // closing in case relay is alive but not sending events
-        closeSubscription(state.id);
-
-        // call our internal timeout function
-        request.timeoutCallback?.call();
-        // call user defined timeout function
-        response.onTimeout.call();
-      };
-
       /// concurrency check - check if request is inFlight
       final streamWasReplaced = request.cacheRead && concurrency.check(state);
       if (streamWasReplaced) {
