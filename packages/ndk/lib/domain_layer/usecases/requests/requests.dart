@@ -158,7 +158,7 @@ class Requests {
 
   /// Close all subscriptions
   Future<void> closeAllSubscription() async {
-    Future.wait(_globalState.inFlightRequests.values.map((state) => closeSubscription(state.id)));
+    await Future.wait(_globalState.inFlightRequests.values.map((state) => closeSubscription(state.id)));
   }
 
 
