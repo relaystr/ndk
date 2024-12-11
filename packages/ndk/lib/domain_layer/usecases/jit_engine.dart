@@ -134,12 +134,16 @@ class JitEngine with Logger implements NetworkEngine {
   @override
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
-    required EventSigner mySigner,
+    required EventSigner? signer,
     required Stream<List<RelayBroadcastResponse>> doneStream,
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
       await relayManagerLight.seedRelaysConnected;
+
+      if (signer != null) {
+        await signer.sign(nostrEvent);
+      }
 
       if (specificRelays != null) {
         return RelayJitBroadcastAllStrategy.broadcast(
@@ -148,7 +152,6 @@ class JitEngine with Logger implements NetworkEngine {
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
-          signer: mySigner,
         );
       }
 
@@ -160,7 +163,6 @@ class JitEngine with Logger implements NetworkEngine {
             .toList(),
         cacheManager: cache,
         relayManager: relayManagerLight,
-        signer: mySigner,
       );
 
       // check if we need to publish to others inboxes
@@ -172,7 +174,6 @@ class JitEngine with Logger implements NetworkEngine {
               .toList(),
           cacheManager: cache,
           relayManager: relayManagerLight,
-          signer: mySigner,
           pubkeysOfInbox: nostrEvent.pTags,
         );
       }

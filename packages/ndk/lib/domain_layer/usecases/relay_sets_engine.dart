@@ -217,7 +217,7 @@ class RelaySetsEngine implements NetworkEngine {
   @override
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
-    required EventSigner mySigner,
+    required EventSigner? signer,
     required Stream<List<RelayBroadcastResponse>> doneStream,
     Iterable<String>? specificRelays,
   }) {
@@ -225,7 +225,9 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       // specific relays
       // =====================================================================================
-      await mySigner.sign(nostrEvent);
+      if (signer != null) {
+        await signer.sign(nostrEvent);
+      }
 
       if (specificRelays != null) {
         // check connectivity

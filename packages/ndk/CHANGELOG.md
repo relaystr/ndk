@@ -1,3 +1,6 @@
+## 0.2.0-dev004
+ - allow to broadcast already signed events
+
 ## 0.2.0-dev003
  -  add missing export
 

@@ -21,7 +21,6 @@ class RelayJitBroadcastOtherReadStrategy {
         connectedRelays,
     required CacheManager cacheManager,
     required RelayManager relayManager,
-    required EventSigner signer,
     required List<String> pubkeysOfInbox,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
@@ -64,9 +63,6 @@ class RelayJitBroadcastOtherReadStrategy {
     final List<String> actualBroadcastList = myWriteRelayUrls
         .where((element) => !couldNotConnectRelays.contains(element))
         .toList();
-
-    // sign event
-    await signer.sign(eventToPublish);
 
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,

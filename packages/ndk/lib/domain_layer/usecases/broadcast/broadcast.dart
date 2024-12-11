@@ -48,11 +48,11 @@ class Broadcast {
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
 
-    final mySigner = _checkSinger(customSigner: customSigner);
+    final signer = nostrEvent.sig==''? _checkSinger(customSigner: customSigner):null;
 
     return _engine.handleEventBroadcast(
       nostrEvent: nostrEvent,
-      mySigner: mySigner,
+      signer: signer,
       specificRelays: specificRelays,
       doneStream: broadcastState.stateUpdates
           .map((state) => state.broadcasts.values.toList()),

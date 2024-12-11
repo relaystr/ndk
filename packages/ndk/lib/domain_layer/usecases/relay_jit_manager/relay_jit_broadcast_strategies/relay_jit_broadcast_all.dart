@@ -11,10 +11,7 @@ class RelayJitBroadcastAllStrategy {
     required Nip01Event eventToPublish,
     required List<RelayConnectivity> connectedRelays,
     required RelayManager relayManger,
-    required EventSigner signer,
   }) async {
-    // sign event
-    await signer.sign(eventToPublish);
 
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,
