@@ -156,6 +156,12 @@ class Requests {
     await _relayManager.removeInFlightRequestById(subId);
   }
 
+  /// Close all subscriptions
+  Future<void> closeAllSubscription() async {
+    Future.wait(_globalState.inFlightRequests.values.map((state) => closeSubscription(state.id)));
+  }
+
+
   /// Performs a low-level Nostr event request
   ///
   /// This method should be used only if the prebuilt use cases and
@@ -237,4 +243,5 @@ class Requests {
     // Return the response immediately
     return response;
   }
+
 }
