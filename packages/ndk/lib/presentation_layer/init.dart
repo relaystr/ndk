@@ -63,7 +63,8 @@ class Initialization {
   Initialization({
     required NdkConfig ndkConfig,
     required GlobalState globalState,
-  }) : _globalState = globalState, _ndkConfig = ndkConfig {
+  })  : _globalState = globalState,
+        _ndkConfig = ndkConfig {
     switch (_ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
         relayManager = RelayManager(
@@ -108,6 +109,7 @@ class Initialization {
     cacheRead = CacheRead(_ndkConfig.cache);
 
     requests = Requests(
+      defaultQueryTimeout: _ndkConfig.defaultQueryTimeout,
       globalState: _globalState,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,

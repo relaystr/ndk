@@ -1,4 +1,5 @@
 import '../config/bootstrap_relays.dart';
+import '../config/request_defaults.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_signer.dart';
@@ -37,6 +38,10 @@ class NdkConfig {
   /// filters that are applied to the output stream
   List<EventFilter> eventOutFilters;
 
+  /// default timeout for queries \
+  /// this value is used if no individual timeout is set for a query
+  Duration defaultQueryTimeout;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events.
@@ -53,6 +58,7 @@ class NdkConfig {
     this.ignoreRelays = const [],
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
     this.eventOutFilters = const [],
+    this.defaultQueryTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
   });
 }
 

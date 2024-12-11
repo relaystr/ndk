@@ -25,6 +25,7 @@ class Requests {
   final NetworkEngine _engine;
   final EventVerifier _eventVerifier;
   final List<EventFilter> _eventOutFilters;
+  final Duration _defaultQueryTimeout;
 
   /// Creates a new [Requests] instance
   ///
@@ -40,12 +41,14 @@ class Requests {
     required NetworkEngine networkEngine,
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
+    required Duration defaultQueryTimeout,
   })  : _engine = networkEngine,
         _cacheWrite = cacheWrite,
         _cacheRead = cacheRead,
         _globalState = globalState,
         _eventVerifier = eventVerifier,
-        _eventOutFilters = eventOutFilters;
+        _eventOutFilters = eventOutFilters,
+        _defaultQueryTimeout = defaultQueryTimeout;
 
   /// Performs a low-level Nostr query
   ///
@@ -54,7 +57,7 @@ class Requests {
   /// [relaySet] An optional set of relays to query \
   /// [cacheRead] Whether to read from cache \
   /// [cacheWrite] Whether to write results to cache \
-  /// [timeout] An optional timeout in seconds for the query \
+  /// [timeout] An optional timeout in seconds for the query if not set ndk default will be used \
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
   /// [desiredCoverage] The number of relays per pubkey to query, default: 2 \
   ///
@@ -65,10 +68,14 @@ class Requests {
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    Duration timeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
+    Duration? timeout,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
+    if (timeout == null) {
+      timeout = _defaultQueryTimeout;
+    }
+
     return requestNostrEvent(NdkRequest.query(
       '$name-${Helpers.getRandomString(10)}',
       name: name,
