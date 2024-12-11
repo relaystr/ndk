@@ -4,7 +4,6 @@ import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
-import '../../../repositories/event_signer.dart';
 import '../../relay_manager.dart';
 import '../../user_relay_lists/user_relay_lists.dart';
 import 'broadcast_strategies_shared.dart';
