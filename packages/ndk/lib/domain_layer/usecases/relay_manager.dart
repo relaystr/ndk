@@ -92,8 +92,7 @@ class RelayManager<T> {
   /// Returns a list of fully connected relays, excluding connecting ones.
   /// DO NOT USE THIS FOR CHECKING A SINGLE RELAY, use [isRelayConnected] INSTEAD
   List<RelayConnectivity> get connectedRelays => globalState.relays.values
-      .where((relay) =>
-          relay.relayTransport != null && relay.relayTransport!.isOpen())
+      .where((relay) => isRelayConnected(relay.url))
       .toList();
 
   /// checks if a relay is connected, avoid using this
@@ -386,7 +385,6 @@ class RelayManager<T> {
     //   // nip 45 used to send requested event counts to clients
     //   return;
     // }
-
   }
 
   void _handleIncomingEvent(List<dynamic> eventJson, String url) {
