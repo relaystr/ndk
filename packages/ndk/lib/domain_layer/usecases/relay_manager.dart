@@ -374,6 +374,19 @@ class RelayManager<T> {
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
+    // TODO
+    // if (eventJson[0] == 'AUTH') {
+    //   log("AUTH: ${eventJson[1]}");
+    //   // nip 42 used to send authentication challenges
+    //   return;
+    // }
+    //
+    // if (eventJson[0] == 'COUNT') {
+    //   log("COUNT: ${eventJson[1]}");
+    //   // nip 45 used to send requested event counts to clients
+    //   return;
+    // }
+
   }
 
   void _handleIncomingEvent(List<dynamic> eventJson, String url) {
