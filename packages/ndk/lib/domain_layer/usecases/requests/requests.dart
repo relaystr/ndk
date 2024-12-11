@@ -60,6 +60,8 @@ class Requests {
   /// [timeout] An optional timeout in seconds for the query if not set ndk default will be used \
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
   /// [desiredCoverage] The number of relays per pubkey to query, default: 2 \
+  /// [timeoutCallbackUserFacing] A user facing timeout callback, this callback should be given to the lib user \
+  /// [timeoutCallback] An internal timeout callback, this callback should be used for internal error handling \
   ///
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
@@ -69,6 +71,8 @@ class Requests {
     bool cacheRead = true,
     bool cacheWrite = true,
     Duration? timeout,
+    Function()? timeoutCallbackUserFacing,
+    Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
@@ -84,6 +88,8 @@ class Requests {
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
       timeoutDuration: timeout,
+      timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+      timeoutCallback: timeoutCallback,
       explicitRelays: explicitRelays,
       desiredCoverage:
           desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
