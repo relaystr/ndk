@@ -469,7 +469,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.2.0-dev002"
+    version: "0.2.0-dev005"
   package_config:
     dependency: transitive
     description:

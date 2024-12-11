@@ -19,6 +19,7 @@ class NdkResponse {
   /// once the request is complete (EOSE rcv).
   Future<List<Nip01Event>> get future => stream.toList();
 
+  /// Creates a new [NdkResponse] instance.
   NdkResponse(this.requestId, this.stream);
 }
 // coverage:ignore-end

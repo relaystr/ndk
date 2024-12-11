@@ -41,7 +41,7 @@ class Metadatas {
   Future<Metadata?> loadMetadata(
     String pubKey, {
     bool forceRefresh = false,
-    int idleTimeout = METADATA_IDLE_TIMEOUT,
+    Duration idleTimeout = METADATA_IDLE_TIMEOUT,
   }) async {
     Metadata? metadata = await _cacheManager.loadMetadata(pubKey);
     if (metadata == null || forceRefresh) {

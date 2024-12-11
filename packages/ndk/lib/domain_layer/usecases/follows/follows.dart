@@ -1,3 +1,4 @@
+import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/contact_list.dart';
@@ -35,7 +36,7 @@ class Follows {
     String pubKey, {
     /// skips the cache
     bool forceRefresh = false,
-    int idleTimeout = Requests.DEFAULT_QUERY_TIMEOUT,
+    Duration idleTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
   }) async {
     ContactList? contactList = await _cacheManager.loadContactList(pubKey);
 
@@ -46,6 +47,7 @@ class Follows {
     ContactList? loadedContactList;
     try {
       await for (final event in _requests.query(
+        timeout: idleTimeout,
         filters: [
           Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1)
         ],
