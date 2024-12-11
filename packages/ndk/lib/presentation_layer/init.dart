@@ -114,6 +114,7 @@ class Initialization {
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
       networkEngine: engine,
+      relayManager: relayManager,
       eventVerifier: _ndkConfig.eventVerifier,
       eventOutFilters: _ndkConfig.eventOutFilters,
     );

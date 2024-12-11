@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+
 import '../../../config/request_defaults.dart';
+import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/event_filter.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
+import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
@@ -23,6 +27,7 @@ class Requests {
   final CacheRead _cacheRead;
   final CacheWrite _cacheWrite;
   final NetworkEngine _engine;
+  final RelayManager _relayManager;
   final EventVerifier _eventVerifier;
   final List<EventFilter> _eventOutFilters;
   final Duration _defaultQueryTimeout;
@@ -39,10 +44,12 @@ class Requests {
     required CacheRead cacheRead,
     required CacheWrite cacheWrite,
     required NetworkEngine networkEngine,
+    required RelayManager relayManager,
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
     required Duration defaultQueryTimeout,
   })  : _engine = networkEngine,
+        _relayManager = relayManager,
         _cacheWrite = cacheWrite,
         _cacheRead = cacheRead,
         _globalState = globalState,
@@ -132,8 +139,21 @@ class Requests {
   }
 
   /// Closes a Nostr network subscription
-  Future<void> closeSubscription(String subId) {
-    return _engine.closeSubscription(subId);
+  Future<void> closeSubscription(String subId) async {
+    final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
+    if (relayUrls == null) {
+      Logger.log.w("no relay urls found for subscription $subId, cannot close");
+      return;
+    }
+    Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
+        .whereType<RelayConnectivity>()
+        .where((relay) => relayUrls.contains(relay.url));
+
+    for (final relay in relays) {
+      this._relayManager.sendCloseToRelay(relay.url, subId);
+    }
+    // remove from in flight requests
+    await _relayManager.removeInFlightRequestById(subId);
   }
 
   /// Performs a low-level Nostr event request

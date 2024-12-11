@@ -90,6 +90,7 @@ void main() async {
         cacheRead: MockCacheRead(cache),
         cacheWrite: init.cacheWrite,
         networkEngine: init.engine,
+        relayManager: init.relayManager,
         eventVerifier: eventVerifier,
         eventOutFilters: [],
       );

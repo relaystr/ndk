@@ -372,23 +372,4 @@ class RelaySetsEngine implements NetworkEngine {
       broadcastDoneStream: doneStream,
     );
   }
-
-  @override
-  Future<void> closeSubscription(String subId) async {
-    final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
-    if (relayUrls == null) {
-      Logger.log.w("no relay urls found for subscription $subId, cannot close");
-      return;
-    }
-    Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
-        .whereType<RelayConnectivity>()
-        .where((relay) => relayUrls.contains(relay.url));
-
-    for (final relay in relays) {
-      this._relayManager.send(relay, ClientMsg(ClientMsgType.CLOSE, id: subId));
-    }
-
-    // remove from in flight requests
-    await _relayManager.removeInFlightRequestById(subId);
-  }
 }
