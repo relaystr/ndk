@@ -1,3 +1,6 @@
+## 0.2.0-dev003
+ -  add missing export
+
 ## 0.2.0-dev002
  - unification of RelayManager in JIT
  - NWC - Nostr Wallet Connect support usecase
