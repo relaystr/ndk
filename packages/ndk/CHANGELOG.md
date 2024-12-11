@@ -1,3 +1,6 @@
+## 0.2.0-dev005
+ - remove deprecated
+
 ## 0.2.0-dev004
  - allow to broadcast already signed events
 
