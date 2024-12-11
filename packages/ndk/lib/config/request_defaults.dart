@@ -16,4 +16,7 @@ class RequestDefaults {
 
   /// websocket ping interval
   static const int WEB_SOCKET_PING_INTERVAL_SECONDS = 3;
+
+  /// query timeout
+  static const Duration DEFAULT_QUERY_TIMEOUT = Duration(seconds: 10);
 }

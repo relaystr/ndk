@@ -61,6 +61,7 @@ class RequestState {
       timeoutDuration = request.timeoutDuration;
       _timeout = Timer(timeoutDuration!, () {
         onTimeout?.call(this);
+        // call close on all controllers
         close();
       });
     }
@@ -78,11 +79,13 @@ class RequestState {
     }
   }
 
+  /// closes all streams
   Future<void> close() async {
     if (_timeout != null) {
       _timeout!.cancel();
     }
     await networkController.close();
     await cacheController.close();
+    await controller.close();
   }
 }

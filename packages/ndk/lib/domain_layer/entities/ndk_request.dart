@@ -1,7 +1,5 @@
-import '../../config/request_defaults.dart';
 import 'filter.dart';
 import 'relay_set.dart';
-import 'request_state.dart';
 
 // coverage:ignore-start
 class NdkRequest {
@@ -17,6 +15,10 @@ class NdkRequest {
   /// mostly used for internal err handling (e.g. other usecases)
   Function()? timeoutCallback;
 
+  /// user facing timeout callback \
+  /// do not touch only pass it through
+  Function()? timeoutCallbackUserFacing;
+
   final int desiredCoverage;
   List<Filter> filters;
   RelaySet? relaySet;
@@ -31,6 +33,7 @@ class NdkRequest {
     this.name,
     required this.timeoutDuration,
     this.timeoutCallback,
+    this.timeoutCallbackUserFacing,
     required this.filters,
     this.desiredCoverage = 2,
     this.closeOnEOSE = true,

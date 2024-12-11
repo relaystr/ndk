@@ -19,8 +19,6 @@ import 'verify_event_stream.dart';
 
 /// A class that handles low-level Nostr network requests and subscriptions.
 class Requests {
-  static const int DEFAULT_QUERY_TIMEOUT = 5;
-
   final GlobalState _globalState;
   final CacheRead _cacheRead;
   final CacheWrite _cacheWrite;
@@ -67,7 +65,7 @@ class Requests {
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    Duration? timeout,
+    Duration timeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
@@ -147,8 +145,9 @@ class Requests {
 
       // call our internal timeout function
       request.timeoutCallback?.call();
+
       // call user defined timeout function
-      response.onTimeout.call();
+      request.timeoutCallbackUserFacing?.call();
     };
 
     // register event verification - removes invalid events from the stream
