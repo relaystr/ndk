@@ -58,8 +58,7 @@ class Ndk {
   /// Provides access to low-level Nostr broadcast/publish.
   Broadcast get broadcast => _initialization.broadcast;
 
-  /// to be removed
-  @deprecated
+  /// Relay Manager
   RelayManager get relays => _initialization.relayManager;
 
   /// Handles operations related to user follows
