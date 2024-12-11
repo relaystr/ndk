@@ -9,8 +9,14 @@ class NdkRequest {
   String id;
   String? name;
   bool closeOnEOSE;
-  int? timeout;
-  Function(RequestState)? onTimeout;
+
+  /// timeout duration, closes all streams
+  Duration? timeoutDuration;
+
+  /// define a callback that gets called when the timeout is triggered \
+  /// mostly used for internal err handling (e.g. other usecases)
+  Function()? timeoutCallback;
+
   final int desiredCoverage;
   List<Filter> filters;
   RelaySet? relaySet;
@@ -23,6 +29,8 @@ class NdkRequest {
   NdkRequest.query(
     this.id, {
     this.name,
+    required this.timeoutDuration,
+    this.timeoutCallback,
     required this.filters,
     this.desiredCoverage = 2,
     this.closeOnEOSE = true,
@@ -30,8 +38,6 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
-    this.timeout = RequestDefaults.DEFAULT_STREAM_IDLE_TIMEOUT + 1,
-    this.onTimeout,
   });
 
   NdkRequest.subscription(

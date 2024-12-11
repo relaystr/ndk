@@ -1,5 +1,4 @@
 import 'dart:async';
-import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/event_filter.dart';
 import '../../entities/nip_01_event.dart';
@@ -16,33 +15,19 @@ class StreamResponseCleaner {
 
   int _closedStreams = 0;
 
-  Timer? _timeoutTimer;
-
-  int? _timeout;
-
   /// -  [trackingSet] a set of ids that are already returned \
   /// - [inputStreams] a list of streams that are be listened to \
   /// - [outController] the controller that is used to add the events to \
-  /// - [timeout] the timeout for the stream, if null [RequestDefaults.DEFAULT_STREAM_IDLE_TIMEOUT] is used
+
   StreamResponseCleaner({
     required Set<String> trackingSet,
     required List<Stream<Nip01Event>> inputStreams,
     required StreamController<Nip01Event> outController,
-    required int? timeout,
     required List<EventFilter> eventOutFilters,
-  })  : _timeout = timeout,
-        _trackingSet = trackingSet,
+  })  : _trackingSet = trackingSet,
         _outController = outController,
         _inputStreams = inputStreams,
-        _eventOutFilters = eventOutFilters {
-    if (_timeout != null) {
-      _timeoutTimer = Timer(Duration(seconds: _timeout!), () async {
-        if (!_outController.isClosed) {
-          await _outController.close();
-        }
-      });
-    }
-  }
+        _eventOutFilters = eventOutFilters {}
 
   void call() {
     for (final stream in _inputStreams) {
@@ -82,9 +67,6 @@ class StreamResponseCleaner {
   Future<void> _canClose() async {
     _closedStreams++;
     if (_closedStreams >= _numStreams) {
-      if (_timeoutTimer != null) {
-        _timeoutTimer!.cancel();
-      }
       await _outController.close();
     }
   }

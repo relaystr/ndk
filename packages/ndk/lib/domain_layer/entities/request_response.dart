@@ -19,6 +19,11 @@ class NdkResponse {
   /// once the request is complete (EOSE rcv).
   Future<List<Nip01Event>> get future => stream.toList();
 
+  /// called when timeout is triggered \
+  /// does not trigger on subscriptions! \
+  /// you can override this function to handle timeouts
+  Function() onTimeout = () {};
+
   NdkResponse(this.requestId, this.stream);
 }
 // coverage:ignore-end

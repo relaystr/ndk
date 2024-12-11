@@ -67,7 +67,7 @@ class Requests {
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    int? timeout,
+    Duration? timeout,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
@@ -78,7 +78,7 @@ class Requests {
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
-      timeout: timeout,
+      timeoutDuration: timeout,
       explicitRelays: explicitRelays,
       desiredCoverage:
           desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
@@ -160,12 +160,21 @@ class Requests {
       ],
       trackingSet: state.returnedIds,
       outController: state.controller,
-      timeout: request.timeout,
       eventOutFilters: _eventOutFilters,
     )();
 
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
+      state.onTimeout = (RequestState state) {
+        // closing in case relay is alive but not sending events
+        closeSubscription(state.id);
+
+        // call our internal timeout function
+        request.timeoutCallback?.call();
+        // call user defined timeout function
+        response.onTimeout.call();
+      };
+
       /// concurrency check - check if request is inFlight
       final streamWasReplaced = request.cacheRead && concurrency.check(state);
       if (streamWasReplaced) {
