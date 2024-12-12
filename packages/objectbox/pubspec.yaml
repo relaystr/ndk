@@ -4,7 +4,8 @@ version: 0.2.0-dev002
 homepage: https://github.com/relaystr/ndk
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
+resolution: workspace
 
 platforms:
   android:
@@ -20,7 +21,7 @@ dependencies:
   ndk: ^0.2.0-dev001
   flat_buffers: ^23.5.26
   path_provider: ^2.1.5
-  path: ^1.9.1
+  path: ^1.9.0
   http: ^1.2.2
   crypto: ^3.0.6
 

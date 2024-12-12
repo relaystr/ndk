@@ -4,7 +4,8 @@ version: 0.2.0-dev005
 homepage: https://github.com/relaystr/ndk
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
+resolution: workspace
 
 platforms:
   android:
