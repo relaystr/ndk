@@ -156,13 +156,12 @@ class Metadatas {
     } else {
       event = metadata.toEvent();
     }
-    // final bResult =
-    _broadcast.broadcast(
+    final bResult = _broadcast.broadcast(
       nostrEvent: event,
       specificRelays: specificRelays,
     );
-    //todo: implement publishDone
-    //await bResult.publishDone;
+
+    await bResult.broadcastDoneFuture;
 
     _broadcast.broadcast(
       nostrEvent: event,
