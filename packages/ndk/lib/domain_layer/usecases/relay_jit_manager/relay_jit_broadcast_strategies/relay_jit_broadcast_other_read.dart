@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../../../../config/broadcast_defaults.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
@@ -39,7 +41,10 @@ class RelayJitBroadcastOtherReadStrategy {
       // cut list of at a certain threshold
       final maxList = completeList.sublist(
         0,
-        BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST,
+        min(
+          completeList.length,
+          BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST,
+        ),
       );
       myWriteRelayUrls.addAll(maxList);
     }

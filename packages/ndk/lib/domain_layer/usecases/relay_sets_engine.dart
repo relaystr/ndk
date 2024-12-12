@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:core';
+import 'dart:math';
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
@@ -327,7 +328,8 @@ class RelaySetsEngine implements NetworkEngine {
           // cut list of at a certain threshold
           final maxList = completeList.sublist(
             0,
-            BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST,
+            min(completeList.length,
+                BroadcastDefaults.MAX_INBOX_RELAYS_TO_BROADCAST),
           );
           myWriteRelayUrlsOthers.addAll(maxList);
         }
