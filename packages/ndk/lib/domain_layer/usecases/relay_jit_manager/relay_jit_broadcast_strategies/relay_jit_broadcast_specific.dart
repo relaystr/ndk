@@ -9,13 +9,11 @@ import 'broadcast_strategies_shared.dart';
 /// broadcast to specific relays
 class RelayJitBroadcastSpecificRelaysStrategy {
   /// [specificRelays] urls of relays you want to publish to
-  /// [returns] list of relays that failed to connect
-  static Future<List<String>> broadcast({
+  static Future broadcast({
     required Nip01Event eventToPublish,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
         connectedRelays,
     required RelayManager relayManager,
-    required String privateKey,
     required List<String> specificRelays,
   }) async {
     // check connection status
@@ -36,9 +34,6 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     final List<String> actualBroadcastList = specificRelays
         .where((element) => !couldNotConnectRelays.contains(element))
         .toList();
-
-    // sign event
-    eventToPublish.sign(privateKey);
 
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,

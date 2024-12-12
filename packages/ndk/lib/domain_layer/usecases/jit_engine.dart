@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:ndk/shared/nips/nip01/client_msg.dart';
-
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../entities/broadcast_response.dart';
@@ -15,9 +13,9 @@ import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
 import 'engines/network_engine.dart';
-import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_all.dart';
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_other_read.dart';
 import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_own.dart';
+import 'relay_jit_manager/relay_jit_broadcast_strategies/relay_jit_broadcast_specific.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'relay_jit_manager/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'relay_manager.dart';
@@ -146,8 +144,9 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (specificRelays != null) {
-        return RelayJitBroadcastAllStrategy.broadcast(
-          relayManger: relayManagerLight,
+        return RelayJitBroadcastSpecificRelaysStrategy.broadcast(
+          specificRelays: specificRelays.toList(),
+          relayManager: relayManagerLight,
           eventToPublish: nostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
@@ -202,8 +201,6 @@ class JitEngine with Logger implements NetworkEngine {
             return assignedPubkey.direction.isWrite;
           case ReadWriteMarker.readWrite:
             return assignedPubkey.direction == ReadWriteMarker.readWrite;
-          default:
-            return false;
         }
       }
     }
