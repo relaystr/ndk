@@ -28,7 +28,11 @@ class Filter {
   /// List of replaceable event tags to filter by.
   List<String>? aTags;
 
-  List<String>? dTags; // d tags
+  /// ...
+  List<String>? dTags;
+
+  /// other tags
+  List<String>? mTags;
 
   /// Unix timestamp to filter events created after this time.
   int? since;
@@ -49,6 +53,7 @@ class Filter {
     this.tTags,
     this.aTags,
     this.dTags,
+    this.mTags,
     this.since,
     this.until,
     this.limit,
@@ -63,6 +68,7 @@ class Filter {
     tTags = map['#t'] == null ? null : List<String>.from(map['#t']);
     aTags = map['#a'] == null ? null : List<String>.from(map['#a']);
     dTags = map['#d'] == null ? null : List<String>.from(map['#d']);
+    mTags = map['#m'] == null ? null : List<String>.from(map['#m']);
     search = map['search'];
     since = map['since'];
     until = map['until'];
@@ -72,13 +78,14 @@ class Filter {
   Map<String, dynamic> toMap() {
     var body = {
       "ids": ids,
-      "authors": authors,
+      "authors": authors!=null && authors!.isNotEmpty? authors : null,
       "kinds": kinds,
       "#e": eTags,
       "#p": pTags,
       "#t": tTags,
       "#d": dTags,
       "#a": aTags,
+      "#m": mTags,
       "since": since,
       "until": until,
       "search": search,
@@ -138,7 +145,7 @@ class Filter {
   Filter clone() {
     return Filter(
       ids: ids != null ? List<String>.from(ids!) : null,
-      authors: authors != null ? List<String>.from(authors!) : null,
+      authors: authors != null && authors!.isNotEmpty ? List<String>.from(authors!) : null,
       kinds: kinds != null ? List<int>.from(kinds!) : null,
       search: search,
       eTags: eTags != null ? List<String>.from(eTags!) : null,
@@ -146,6 +153,7 @@ class Filter {
       tTags: tTags != null ? List<String>.from(tTags!) : null,
       aTags: aTags != null ? List<String>.from(aTags!) : null,
       dTags: dTags != null ? List<String>.from(dTags!) : null,
+      mTags: mTags != null ? List<String>.from(mTags!) : null,
       since: since,
       until: until,
       limit: limit,
