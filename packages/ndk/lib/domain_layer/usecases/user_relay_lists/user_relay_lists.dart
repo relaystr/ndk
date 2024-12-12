@@ -229,10 +229,12 @@ class UserRelayLists {
 
     final broadcastResponse = _broadcast.broadcast(
       nostrEvent: newUserRelayList.toNip65().toEvent(),
+
+      /// write to the new user relay list
+      specificRelays: newUserRelayList.relays.keys,
     );
 
     await broadcastResponse.broadcastDoneFuture;
-    await Future.delayed(Duration(seconds: 1));
 
     await _cacheManager.saveUserRelayList(newUserRelayList);
     return newUserRelayList;

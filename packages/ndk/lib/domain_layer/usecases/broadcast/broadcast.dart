@@ -48,7 +48,8 @@ class Broadcast {
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
 
-    final signer = nostrEvent.sig==''? _checkSinger(customSigner: customSigner):null;
+    final signer =
+        nostrEvent.sig == '' ? _checkSinger(customSigner: customSigner) : null;
 
     return _engine.handleEventBroadcast(
       nostrEvent: nostrEvent,
