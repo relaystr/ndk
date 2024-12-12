@@ -218,10 +218,13 @@ class Nwc {
             ["p", connection.uri.walletPubkey]
           ],
           content: encrypted);
-      await _broadcast.broadcast(
-          nostrEvent: event,
-          specificRelays: [connection.uri.relay],
-          customSigner: connection.signer);
+      final bResponse = _broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: [connection.uri.relay],
+        customSigner: connection.signer,
+      );
+      await bResponse.broadcastDoneFuture;
+
       Completer<NwcResponse> completer = Completer();
       _inflighRequests[event.id] = completer;
       _inflighRequestTimers[event.id] = Timer(Duration(seconds: 3), () {
