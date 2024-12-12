@@ -158,9 +158,9 @@ class Requests {
 
   /// Close all subscriptions
   Future<void> closeAllSubscription() async {
-    await Future.wait(_globalState.inFlightRequests.values.map((state) => closeSubscription(state.id)));
+    await Future.wait(_globalState.inFlightRequests.values
+        .map((state) => closeSubscription(state.id)));
   }
-
 
   /// Performs a low-level Nostr event request
   ///
@@ -243,5 +243,4 @@ class Requests {
     // Return the response immediately
     return response;
   }
-
 }
