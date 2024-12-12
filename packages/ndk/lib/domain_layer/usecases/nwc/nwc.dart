@@ -56,7 +56,7 @@ class Nwc {
             name: "nwc-info",
             explicitRelays: [relay],
             filters: [filter],
-            timeout: 5,
+            timeout: Duration(seconds: 5),
             cacheRead: false,
             cacheWrite: false)
         .stream
@@ -237,7 +237,8 @@ class Nwc {
       if (response is T) {
         return response;
       }
-      throw Exception("error ${response.resultType} code: ${response.errorCode} ${response.errorMessage}");
+      throw Exception(
+          "error ${response.resultType} code: ${response.errorCode} ${response.errorMessage}");
     }
     throw Exception("${request.method.name} method not in permissions");
   }

@@ -43,20 +43,18 @@ class Lists {
     int kind,
     EventSigner signer, {
     bool forceRefresh = false,
-    int timeout = 5,
+    Duration timeout = const Duration(seconds: 5),
   }) async {
     Nip51List? list =
         !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
     if (list == null) {
       Nip51List? refreshedList;
-      await for (final event in _requests.query(
-        filters: [
-          Filter(
-            authors: [signer.getPublicKey()],
-            kinds: [kind],
-          )
-        ],
-      ).stream) {
+      await for (final event in _requests.query(filters: [
+        Filter(
+          authors: [signer.getPublicKey()],
+          kinds: [kind],
+        )
+      ], timeout: timeout).stream) {
         if (refreshedList == null ||
             refreshedList.createdAt <= event.createdAt) {
           refreshedList = await Nip51List.fromEvent(event, signer);
@@ -382,8 +380,11 @@ class Lists {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51List? list = await getSingleNip51List(kind, _eventSigner,
-        forceRefresh: true, timeout: 2);
+    Nip51List? list = await getSingleNip51List(
+      kind,
+      _eventSigner,
+      forceRefresh: true,
+    );
     if (list == null || list.elements.isEmpty) {
       list = Nip51List(
           kind: kind,
@@ -424,8 +425,11 @@ class Lists {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51List? list = await getSingleNip51List(kind, _eventSigner,
-        forceRefresh: true, timeout: 2);
+    Nip51List? list = await getSingleNip51List(
+      kind,
+      _eventSigner,
+      forceRefresh: true,
+    );
     list ??= Nip51List(
         kind: kind,
         pubKey: _eventSigner.getPublicKey(),

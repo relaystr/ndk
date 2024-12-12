@@ -148,12 +148,12 @@ class RelayManager<T> {
         return Tuple(false, "bad relay");
       }
 
-      Logger.log.f("connecting to relay $dirtyUrl");
+      Logger.log.i("connecting to relay $dirtyUrl");
 
       relayConnectivity.relayTransport = nostrTransportFactory(url);
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: connectTimeout), onTimeout: () {
-        print("timed out connecting to relay $url");
+        Logger.log.w("timed out connecting to relay $url");
         return Tuple(false, "timed out connecting to relay $url");
       });
 
@@ -167,7 +167,7 @@ class RelayManager<T> {
       });
       return Tuple(true, "");
     } catch (e) {
-      print("!! could not connect to $url -> $e");
+      Logger.log.e("!! could not connect to $url -> $e");
       relayConnectivity!.relayTransport == null;
     }
     relayConnectivity.relay.failedToConnect();
@@ -183,7 +183,7 @@ class RelayManager<T> {
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
           .onError((error, stackTrace) {
-        print("error connecting to relay ${url}: $error");
+        Logger.log.e("error connecting to relay ${url}: $error");
         return []; // Return an empty list in case of error
       });
     }
@@ -314,20 +314,20 @@ class RelayManager<T> {
     }, onError: (error) async {
       /// todo: handle this better, should clean subscription stuff
       relayConnectivity.stats.connectionErrors++;
-      print("onError ${relayConnectivity.url} on listen $error");
+      Logger.log.e("onError ${relayConnectivity.url} on listen $error");
       throw Exception("Error in socket");
     }, onDone: () {
-      print(
+      Logger.log.t(
           "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
       if (relayConnectivity.relayTransport!.isOpen()) {
-        print("closing ${relayConnectivity.url} webSocket");
+        Logger.log.t("closing ${relayConnectivity.url} webSocket");
         relayConnectivity.relayTransport!.close();
       }
       // reconnect on close
       if (_allowReconnectRelays &&
           globalState.relays[relayConnectivity.url] != null &&
           globalState.relays[relayConnectivity.url]!.relayTransport != null) {
-        print("closed ${relayConnectivity.url}. Reconnecting");
+        Logger.log.i("closed ${relayConnectivity.url}. Reconnecting");
         reconnectRelay(relayConnectivity.url,
                 connectionSource: relayConnectivity.relay.connectionSource)
             .then((connected) {
@@ -452,7 +452,7 @@ class RelayManager<T> {
       send(relayConnectivity, ClientMsg(ClientMsgType.CLOSE, id: id));
       relayConnectivity.stats.activeRequests--;
     } catch (e) {
-      print(e);
+      Logger.log.e(e);
     }
   }
 
@@ -514,7 +514,7 @@ class RelayManager<T> {
     try {
       await Future.wait(keys.map((url) => closeTransport(url)));
     } catch (e) {
-      print(e);
+      Logger.log.e(e);
     }
   }
 

@@ -85,10 +85,12 @@ void main() async {
 
       // Create a Requests instance
       final requests = Requests(
+        defaultQueryTimeout: Duration(seconds: 10),
         globalState: globalState,
         cacheRead: MockCacheRead(cache),
         cacheWrite: init.cacheWrite,
         networkEngine: init.engine,
+        relayManager: init.relayManager,
         eventVerifier: eventVerifier,
         eventOutFilters: [],
       );

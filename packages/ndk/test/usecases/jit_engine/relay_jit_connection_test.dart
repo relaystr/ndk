@@ -138,10 +138,16 @@ void main() async {
         globalState: globalState,
       );
 
-      RequestState myRequest =
-          RequestState(NdkRequest.query("debug-get-events", filters: [
-        Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key4.publicKey]),
-      ]));
+      RequestState myRequest = RequestState(NdkRequest.query(
+        "debug-get-events",
+        filters: [
+          Filter(
+            kinds: [Nip01Event.TEXT_NODE_KIND],
+            authors: [key4.publicKey],
+          ),
+        ],
+        timeoutDuration: Duration(seconds: 5),
+      ));
 
       //todo: implement EOSE
       myRequest.stream.listen((event) {

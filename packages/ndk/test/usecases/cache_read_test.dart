@@ -23,12 +23,16 @@ void main() async {
     });
 
     test('cache read - all', () async {
-      final NdkRequest myNdkRequest = NdkRequest.query("id", filters: [
-        Filter(
-          authors: ['pubKey1', 'pubKey2'],
-          kinds: [1],
-        )
-      ]);
+      final NdkRequest myNdkRequest = NdkRequest.query(
+        "id",
+        filters: [
+          Filter(
+            authors: ['pubKey1', 'pubKey2'],
+            kinds: [1],
+          )
+        ],
+        timeoutDuration: Duration(seconds: 5),
+      );
       final RequestState myRequestState = RequestState(myNdkRequest);
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
@@ -58,12 +62,14 @@ void main() async {
     });
 
     test('cache read - some missing', () async {
-      final NdkRequest myNdkRequest = NdkRequest.query("id", filters: [
-        Filter(
-          authors: ['pubKey1', 'pubKey2', 'notInCachePubKey'],
-          kinds: [1],
-        )
-      ]);
+      final NdkRequest myNdkRequest = NdkRequest.query("id",
+          filters: [
+            Filter(
+              authors: ['pubKey1', 'pubKey2', 'notInCachePubKey'],
+              kinds: [1],
+            )
+          ],
+          timeoutDuration: Duration(seconds: 5));
       final RequestState myRequestState = RequestState(myNdkRequest);
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
@@ -96,14 +102,15 @@ void main() async {
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
       // Test with limit
-      final NdkRequest myNdkRequestWithLimit =
-          NdkRequest.query("author-remove", filters: [
-        Filter(
-          authors: ['pubKey1', 'pubKey2'],
-          kinds: [1],
-          limit: 2,
-        )
-      ]);
+      final NdkRequest myNdkRequestWithLimit = NdkRequest.query("author-remove",
+          filters: [
+            Filter(
+              authors: ['pubKey1', 'pubKey2'],
+              kinds: [1],
+              limit: 2,
+            )
+          ],
+          timeoutDuration: Duration(seconds: 5));
       final RequestState myRequestStateWithLimit =
           RequestState(myNdkRequestWithLimit);
 
@@ -119,19 +126,22 @@ void main() async {
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
       // Test with limit
-      final NdkRequest myNdkRequestWithLimit =
-          NdkRequest.query("author-not-covered", filters: [
-        Filter(
-          authors: [
-            'pubKey1',
-            'pubKey2',
-            'notInCachePubKey1',
-            'notInCachePubKey2'
-          ],
-          kinds: [1],
-          limit: 200, // some high limit
-        )
-      ]);
+      final NdkRequest myNdkRequestWithLimit = NdkRequest.query(
+        "author-not-covered",
+        filters: [
+          Filter(
+            authors: [
+              'pubKey1',
+              'pubKey2',
+              'notInCachePubKey1',
+              'notInCachePubKey2'
+            ],
+            kinds: [1],
+            limit: 200, // some high limit
+          )
+        ],
+        timeoutDuration: Duration(seconds: 5),
+      );
       final RequestState myRequestStateWithLimit =
           RequestState(myNdkRequestWithLimit);
 
@@ -172,12 +182,16 @@ void main() async {
 
       await myCacheManager.saveEvents(idEvents);
 
-      final NdkRequest myNdkRequest = NdkRequest.query("id-filter", filters: [
-        Filter(
-          ids: ['id0', 'id1', 'id2', 'id3'],
-          kinds: [1],
-        )
-      ]);
+      final NdkRequest myNdkRequest = NdkRequest.query(
+        "id-filter",
+        filters: [
+          Filter(
+            ids: ['id0', 'id1', 'id2', 'id3'],
+            kinds: [1],
+          )
+        ],
+        timeoutDuration: Duration(seconds: 5),
+      );
       final RequestState myRequestState = RequestState(myNdkRequest);
 
       final streamController = StreamController<Nip01Event>();

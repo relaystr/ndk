@@ -14,8 +14,6 @@ abstract class NetworkEngine {
     Iterable<String>? specificRelays,
   });
 
-  /// closes the nostr network subscription
-  Future<void> closeSubscription(String subId);
 }
 
 /// Factory for creating additional data for the engine

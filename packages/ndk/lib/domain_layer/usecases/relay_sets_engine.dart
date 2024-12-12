@@ -4,6 +4,7 @@ import 'dart:core';
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
+import '../../config/request_defaults.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../../shared/nips/nip01/helpers.dart';
@@ -25,7 +26,7 @@ import 'relay_manager.dart';
 import 'user_relay_lists/user_relay_lists.dart';
 
 class RelaySetsEngine implements NetworkEngine {
-  static const int DEFAULT_STREAM_IDLE_TIMEOUT = 5;
+  static const Duration DEFAULT_STREAM_IDLE_TIMEOUT = Duration(seconds: 5);
 
   late GlobalState _globalState;
 
@@ -117,10 +118,11 @@ class RelaySetsEngine implements NetworkEngine {
     Filter filter,
     RelaySet? relaySet, {
     required String name,
-    int idleTimeout = RelaySetsEngine.DEFAULT_STREAM_IDLE_TIMEOUT,
+    Duration idleTimeout = RelaySetsEngine.DEFAULT_STREAM_IDLE_TIMEOUT,
     bool splitRequestsByPubKeyMappings = true,
   }) async {
     RequestState state = RequestState(NdkRequest.query(
+        timeoutDuration: idleTimeout,
         Helpers.getRandomString(10),
         name: name,
         filters: [filter],
@@ -143,14 +145,6 @@ class RelaySetsEngine implements NetworkEngine {
   @override
   Future<void> handleRequest(RequestState state) async {
     await _relayManager.seedRelaysConnected;
-    state.request.onTimeout = (state) {
-      Logger.log.w(
-          "request ${state.request.id} : ${state.request.filters} timed out after ${state.request.timeout}");
-      for (var url in state.requests.keys) {
-        _relayManager.sendCloseToRelay(url, state.id);
-      }
-      _relayManager.removeInFlightRequestById(state.id);
-    };
 
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
@@ -183,13 +177,20 @@ class RelaySetsEngine implements NetworkEngine {
   }
 
   Future<NdkResponse> requestRelays(
-      String name, Iterable<String> urls, Filter filter,
-      {int timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
-      bool closeOnEOSE = true,
-      Function()? onTimeout}) async {
+    String name,
+    Iterable<String> urls,
+    Filter filter, {
+    Duration timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
+    bool closeOnEOSE = true,
+  }) async {
     String id = Helpers.getRandomString(10);
     RequestState state = RequestState(closeOnEOSE
-        ? NdkRequest.query(id, name: name, filters: [filter])
+        ? NdkRequest.query(
+            id,
+            name: name,
+            filters: [filter],
+            timeoutDuration: timeout,
+          )
         : NdkRequest.subscription(
             id,
             name: name,
@@ -370,24 +371,5 @@ class RelaySetsEngine implements NetworkEngine {
       publishEvent: nostrEvent,
       broadcastDoneStream: doneStream,
     );
-  }
-
-  @override
-  Future<void> closeSubscription(String subId) async {
-    final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
-    if (relayUrls == null) {
-      Logger.log.w("no relay urls found for subscription $subId, cannot close");
-      return;
-    }
-    Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
-        .whereType<RelayConnectivity>()
-        .where((relay) => relayUrls.contains(relay.url));
-
-    for (final relay in relays) {
-      this._relayManager.send(relay, ClientMsg(ClientMsgType.CLOSE, id: subId));
-    }
-
-    // remove from in flight requests
-    await _relayManager.removeInFlightRequestById(subId);
   }
 }

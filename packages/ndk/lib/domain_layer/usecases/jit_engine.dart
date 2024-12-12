@@ -186,29 +186,6 @@ class JitEngine with Logger implements NetworkEngine {
     );
   }
 
-  /// close a relay subscription, the relay connection will be kept open and closed automatically (garbage collected)
-  @override
-  closeSubscription(String id) async {
-    final relayUrls = globalState.inFlightRequests[id]?.requests.keys;
-    if (relayUrls == null) {
-      Logger.log.w("no relay urls found for subscription $id, cannot close");
-      return;
-    }
-    Iterable<RelayConnectivity<JitEngineRelayConnectivityData>> relays =
-        relayManagerLight.connectedRelays
-            .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
-            .where((relay) => relayUrls.contains(relay.url));
-
-    for (final relay in relays) {
-      this
-          .relayManagerLight
-          .send(relay, ClientMsg(ClientMsgType.CLOSE, id: id));
-    }
-
-    // remove from in flight requests
-    globalState.inFlightRequests.remove(id);
-  }
-
   /// checks if relay covers given pubkey in given direction
   static bool doesRelayCoverPubkey(
     RelayConnectivity<JitEngineRelayConnectivityData> relay,

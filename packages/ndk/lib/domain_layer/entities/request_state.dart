@@ -32,16 +32,7 @@ class RequestState {
 
   Timer? _timeout;
 
-  Stream<Nip01Event> get stream {
-    if (request.timeout != null && _timeout == null) {
-      _timeout = Timer(Duration(seconds: request.timeout!), () {
-        if (request.onTimeout != null) {
-          request.onTimeout!.call(this);
-        }
-      });
-    }
-    return controller.stream;
-  }
+  Stream<Nip01Event> get stream => controller.stream;
 
   String get id => request.id;
 
@@ -57,7 +48,24 @@ class RequestState {
   /// Then on each step (cache, network) resolved filters get removed/updated
   final List<Filter> unresolvedFilters;
 
-  RequestState(this.request) : unresolvedFilters = request.filters;
+  /// timeout duration, closes all streams
+  Duration? timeoutDuration;
+
+  /// called when timeout is triggered
+  Function(RequestState)? onTimeout;
+
+  /// Creates a new [RequestState] instance
+  RequestState(this.request) : unresolvedFilters = request.filters {
+    // if we have a timeout set, we start it
+    if (request.timeoutDuration != null) {
+      timeoutDuration = request.timeoutDuration;
+      _timeout = Timer(timeoutDuration!, () {
+        onTimeout?.call(this);
+        // call close on all controllers
+        close();
+      });
+    }
+  }
 
   bool get didAllRequestsReceivedEOSE =>
       !requests.values.any((element) => !element.receivedEOSE);
@@ -71,11 +79,13 @@ class RequestState {
     }
   }
 
+  /// closes all streams
   Future<void> close() async {
     if (_timeout != null) {
       _timeout!.cancel();
     }
     await networkController.close();
     await cacheController.close();
+    await controller.close();
   }
 }

@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+
 import '../../../config/request_defaults.dart';
+import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/event_filter.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
+import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/request_response.dart';
 import '../../entities/request_state.dart';
@@ -19,14 +23,14 @@ import 'verify_event_stream.dart';
 
 /// A class that handles low-level Nostr network requests and subscriptions.
 class Requests {
-  static const int DEFAULT_QUERY_TIMEOUT = 5;
-
   final GlobalState _globalState;
   final CacheRead _cacheRead;
   final CacheWrite _cacheWrite;
   final NetworkEngine _engine;
+  final RelayManager _relayManager;
   final EventVerifier _eventVerifier;
   final List<EventFilter> _eventOutFilters;
+  final Duration _defaultQueryTimeout;
 
   /// Creates a new [Requests] instance
   ///
@@ -40,14 +44,18 @@ class Requests {
     required CacheRead cacheRead,
     required CacheWrite cacheWrite,
     required NetworkEngine networkEngine,
+    required RelayManager relayManager,
     required EventVerifier eventVerifier,
     required List<EventFilter> eventOutFilters,
+    required Duration defaultQueryTimeout,
   })  : _engine = networkEngine,
+        _relayManager = relayManager,
         _cacheWrite = cacheWrite,
         _cacheRead = cacheRead,
         _globalState = globalState,
         _eventVerifier = eventVerifier,
-        _eventOutFilters = eventOutFilters;
+        _eventOutFilters = eventOutFilters,
+        _defaultQueryTimeout = defaultQueryTimeout;
 
   /// Performs a low-level Nostr query
   ///
@@ -56,9 +64,11 @@ class Requests {
   /// [relaySet] An optional set of relays to query \
   /// [cacheRead] Whether to read from cache \
   /// [cacheWrite] Whether to write results to cache \
-  /// [timeout] An optional timeout in seconds for the query \
+  /// [timeout] An optional timeout in seconds for the query if not set ndk default will be used \
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
   /// [desiredCoverage] The number of relays per pubkey to query, default: 2 \
+  /// [timeoutCallbackUserFacing] A user facing timeout callback, this callback should be given to the lib user \
+  /// [timeoutCallback] An internal timeout callback, this callback should be used for internal error handling \
   ///
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
@@ -67,10 +77,16 @@ class Requests {
     RelaySet? relaySet,
     bool cacheRead = true,
     bool cacheWrite = true,
-    int? timeout,
+    Duration? timeout,
+    Function()? timeoutCallbackUserFacing,
+    Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
+    if (timeout == null) {
+      timeout = _defaultQueryTimeout;
+    }
+
     return requestNostrEvent(NdkRequest.query(
       '$name-${Helpers.getRandomString(10)}',
       name: name,
@@ -78,7 +94,9 @@ class Requests {
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
-      timeout: timeout,
+      timeoutDuration: timeout,
+      timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+      timeoutCallback: timeoutCallback,
       explicitRelays: explicitRelays,
       desiredCoverage:
           desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
@@ -121,9 +139,28 @@ class Requests {
   }
 
   /// Closes a Nostr network subscription
-  Future<void> closeSubscription(String subId) {
-    return _engine.closeSubscription(subId);
+  Future<void> closeSubscription(String subId) async {
+    final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
+    if (relayUrls == null) {
+      Logger.log.w("no relay urls found for subscription $subId, cannot close");
+      return;
+    }
+    Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
+        .whereType<RelayConnectivity>()
+        .where((relay) => relayUrls.contains(relay.url));
+
+    for (final relay in relays) {
+      this._relayManager.sendCloseToRelay(relay.url, subId);
+    }
+    // remove from in flight requests
+    await _relayManager.removeInFlightRequestById(subId);
   }
+
+  /// Close all subscriptions
+  Future<void> closeAllSubscription() async {
+    await Future.wait(_globalState.inFlightRequests.values.map((state) => closeSubscription(state.id)));
+  }
+
 
   /// Performs a low-level Nostr event request
   ///
@@ -139,6 +176,18 @@ class Requests {
     final response = NdkResponse(state.id, state.stream);
 
     final concurrency = ConcurrencyCheck(_globalState);
+
+    // define on timeout behavior
+    state.onTimeout = (RequestState state) {
+      // closing in case relay is alive but not sending events
+      closeSubscription(state.id);
+
+      // call our internal timeout function
+      request.timeoutCallback?.call();
+
+      // call user defined timeout function
+      request.timeoutCallbackUserFacing?.call();
+    };
 
     // register event verification - removes invalid events from the stream
     final verifiedNetworkStream = VerifyEventStream(
@@ -160,7 +209,6 @@ class Requests {
       ],
       trackingSet: state.returnedIds,
       outController: state.controller,
-      timeout: request.timeout,
       eventOutFilters: _eventOutFilters,
     )();
 
@@ -195,4 +243,5 @@ class Requests {
     // Return the response immediately
     return response;
   }
+
 }
