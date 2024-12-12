@@ -1,6 +1,13 @@
 name: ndk_workspace
+publish_to: none
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 dev_dependencies:
   melos: ^6.2.0
+workspace:
+  - packages/amber
+  - packages/ndk
+  - packages/objectbox
+  - packages/rust_verifier
+  - packages/rust_verifier/rust_builder
