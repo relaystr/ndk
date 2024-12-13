@@ -110,12 +110,11 @@ class Follows {
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
 
-      // final bResult =
-      _broadcast.broadcast(
+      final bResult = _broadcast.broadcast(
         nostrEvent: contactList.toEvent(),
         specificRelays: customRelays,
       );
-      //await bResult.publishDone;
+      await bResult.broadcastDoneFuture;
       await _cacheManager.saveContactList(contactList);
     }
     return contactList;
@@ -128,11 +127,11 @@ class Follows {
     contactList.loadedTimestamp = Helpers.now;
     contactList.createdAt = Helpers.now;
 
-    // final bResult =
-    _broadcast.broadcast(
+    final bResult = _broadcast.broadcast(
       nostrEvent: contactList.toEvent(),
     );
-    //await bResult.publishDone;
+    await bResult.broadcastDoneFuture;
+
     await _cacheManager.saveContactList(contactList);
     return contactList;
   }
@@ -187,12 +186,11 @@ class Follows {
       contactList.loadedTimestamp = Helpers.now;
       contactList.createdAt = Helpers.now;
 
-      // final bResult =
-      _broadcast.broadcast(
+      final bResult = _broadcast.broadcast(
         nostrEvent: contactList.toEvent(),
         specificRelays: customRelays,
       );
-      //await bResult.publishDone;
+      await bResult.broadcastDoneFuture;
       await _cacheManager.saveContactList(contactList);
     }
     return contactList;
