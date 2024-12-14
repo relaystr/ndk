@@ -33,14 +33,27 @@ class CacheRead {
         // remove found authors from unresolved filter if it's not a subscription
         if (!requestState.isSubscription && foundAuthors.isNotEmpty) {
           if (filter.limit == null) {
-            filter.authors!.removeWhere(
-              (author) => foundEvents.any((event) => event.pubKey == author),
-            );
+            // Keep track of whether we've kept one item
+            bool keptOne = false;
+            filter.authors!.removeWhere((author) {
+              if (!keptOne &&
+                  foundEvents.any((event) => event.pubKey == author)) {
+                keptOne = true;
+                return false; // Keep the first matching item
+              }
+              return foundEvents.any((event) => event.pubKey == author);
+            });
           } else if (foundEvents.length >= filter.limit!) {
-            // also ok to remove authors if limit is reached
-            filter.authors!.removeWhere(
-              (author) => foundEvents.any((event) => event.pubKey == author),
-            );
+            // Keep track of whether we've kept one item
+            bool keptOne = false;
+            filter.authors!.removeWhere((author) {
+              if (!keptOne &&
+                  foundEvents.any((event) => event.pubKey == author)) {
+                keptOne = true;
+                return false; // Keep the first matching item
+              }
+              return foundEvents.any((event) => event.pubKey == author);
+            });
           }
         }
       }
@@ -55,9 +68,15 @@ class CacheRead {
           foundIdEvents.add(foundId);
         }
 
-        filter.ids!.removeWhere(
-          (id) => foundIdEvents.any((event) => event.id == id),
-        );
+        // Keep track of whether we've kept one item
+        bool keptOne = false;
+        filter.ids!.removeWhere((id) {
+          if (!keptOne && foundIdEvents.any((event) => event.id == id)) {
+            keptOne = true;
+            return false; // Keep the first matching item
+          }
+          return foundIdEvents.any((event) => event.id == id);
+        });
 
         foundEvents.addAll(foundIdEvents);
       }
