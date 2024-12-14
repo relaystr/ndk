@@ -211,5 +211,37 @@ void main() async {
 
       expect(myRequestState.unresolvedFilters[0].ids, equals(['id3']));
     });
+
+    test('cache read - all in cache, cannot leave unresolved filters with empty authors and kind 1', () async {
+      final NdkRequest myNdkRequest = NdkRequest.query("id", filters: [
+        Filter(
+          authors: ['pubKey1', 'pubKey2'],
+          kinds: [1],
+        )
+      ]);
+      final RequestState myRequestState = RequestState(myNdkRequest);
+      final CacheRead myUsecase = CacheRead(myCacheManager);
+
+      closeStream() async {
+        // wait to add events
+        await Future.delayed(const Duration(seconds: 1));
+        await myRequestState.controller.close();
+      }
+
+      closeStream();
+      final response = myRequestState.stream.toList();
+
+      await myUsecase.resolveUnresolvedFilters(
+        requestState: myRequestState,
+        outController: myRequestState.controller,
+      );
+
+      await response.then((data) {
+        expect(data, equals(myEvens));
+      });
+
+      expect(myRequestState.unresolvedFilters, equals([]));
+    });
+
   });
 }
