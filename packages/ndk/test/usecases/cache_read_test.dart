@@ -218,7 +218,7 @@ void main() async {
           authors: ['pubKey1', 'pubKey2'],
           kinds: [1],
         )
-      ]);
+      ],  timeoutDuration: Duration(seconds: 5));
       final RequestState myRequestState = RequestState(myNdkRequest);
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
