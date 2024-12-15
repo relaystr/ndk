@@ -364,7 +364,7 @@ class RelayManager<T> {
       _logActiveRequests();
     } else if (eventJson[0] == 'EVENT') {
       _handleIncomingEvent(eventJson, relayConnectivity.url);
-      Logger.log.d("EVENT from ${relayConnectivity.url}: $eventJson");
+      Logger.log.t("EVENT from ${relayConnectivity.url}: $eventJson");
     } else if (eventJson[0] == 'EOSE') {
       Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
       _handleEOSE(eventJson, relayConnectivity);
