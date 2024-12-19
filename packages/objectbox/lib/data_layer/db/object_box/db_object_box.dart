@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_objectbox/data_layer/db/object_box/schema/db_nip_05.dart';
