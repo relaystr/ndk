@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:ndk/domain_layer/usecases/nwc/consts/transaction_type.dart';
 import 'package:ndk/ndk.dart';
-import 'package:test/test.dart';
 
 void main() async {
   // We use an empty bootstrap relay list,

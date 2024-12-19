@@ -5,7 +5,6 @@ import 'package:ndk/ndk.dart';
 import 'nostr_wallet_connect_uri.dart';
 import 'nwc_notification.dart';
 
-import 'responses/get_info_response.dart';
 import 'responses/nwc_response.dart';
 
 class NwcConnection {

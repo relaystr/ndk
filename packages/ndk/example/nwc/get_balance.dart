@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/logger/logger.dart';
 import 'package:logger/logger.dart' as lib_logger;
 
 void main() async {

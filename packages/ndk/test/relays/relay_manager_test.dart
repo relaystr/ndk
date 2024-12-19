@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
