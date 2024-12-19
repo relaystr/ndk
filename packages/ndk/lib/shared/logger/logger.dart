@@ -2,9 +2,8 @@ import 'package:logger/logger.dart' as lib_logger;
 
 import '../../config/logger_defaults.dart';
 
-// coverage:ignore-start
 /// A mixin class that provides a logger instance.
-
+// coverage:ignore-start
 mixin class Logger {
   /// Expose the Level enum as a getter
   static const logLevels = LogLevels();
@@ -34,6 +33,7 @@ mixin class Logger {
 }
 
 /// A class that provides log levels.
+// coverage:ignore-start
 class LogLevels {
   ///
   const LogLevels();
@@ -63,7 +63,10 @@ class LogLevels {
   lib_logger.Level get off => lib_logger.Level.off;
 }
 
+// coverage:ignore-end
+
 /// custom console output, includes NDK prefix
+// coverage:ignore-start
 class myConsoleOutput extends lib_logger.LogOutput {
   @override
   void output(lib_logger.OutputEvent event) {
