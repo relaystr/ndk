@@ -169,6 +169,7 @@ class Initialization {
 
     nwc = Nwc(requests: requests, broadcast: broadcast);
 
+    /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
   }
 }
