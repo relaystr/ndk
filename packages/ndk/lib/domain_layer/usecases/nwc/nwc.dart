@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 
 import 'consts/nwc_kind.dart';
