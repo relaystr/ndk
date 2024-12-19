@@ -134,7 +134,6 @@ void main() async {
         timeoutDuration: Duration(seconds: 5),
       ));
 
-      //todo: implement EOSE
       myRequest.stream.listen((event) {
         expectAsync1((event) {
           expect(event, key4TextNotes[key4]);
@@ -154,7 +153,6 @@ void main() async {
 
       CacheManager cacheManager = MemCacheManager();
 
-      // todo: discuss how saveEvents schuld work (saving additional nip65 data?)
       // save nip65 data
       await cacheManager
           .saveEvents(nip65s.values.map((e) => e.toEvent()).toList());
