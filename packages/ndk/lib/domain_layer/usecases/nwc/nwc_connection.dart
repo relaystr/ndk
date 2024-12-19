@@ -19,9 +19,14 @@ class NwcConnection {
   StreamController<NwcNotification> notificationStream =
       StreamController<NwcNotification>.broadcast();
 
-  Stream<NwcNotification> get paymentsReceivedStream => notificationStream.stream.where((notification) => notification.isIncoming).asBroadcastStream();
+  Stream<NwcNotification> get paymentsReceivedStream =>
+      notificationStream.stream
+          .where((notification) => notification.isIncoming)
+          .asBroadcastStream();
 
-  Stream<NwcNotification> get paymentsSentStream => notificationStream.stream.where((notification) => !notification.isIncoming).asBroadcastStream();
+  Stream<NwcNotification> get paymentsSentStream => notificationStream.stream
+      .where((notification) => !notification.isIncoming)
+      .asBroadcastStream();
 
   List<String> supportedVersions = ["0.0"];
 
