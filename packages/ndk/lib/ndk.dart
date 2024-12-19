@@ -65,3 +65,10 @@ export 'domain_layer/usecases/lists/lists.dart';
 export 'domain_layer/usecases/relay_sets/relay_sets.dart';
 export 'domain_layer/usecases/broadcast/broadcast.dart';
 export 'domain_layer/usecases/nwc/nwc.dart';
+
+/**
+ * other stuff
+ * 
+ */
+
+export 'shared/logger/logger.dart';
