@@ -24,7 +24,6 @@ void main() async {
         createdAt: 100,
         refreshedTimestamp: 0);
 
-    late var relay0;
     late var ndk;
 
     setUp(() async {

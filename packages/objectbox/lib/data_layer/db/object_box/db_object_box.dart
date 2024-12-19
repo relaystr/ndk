@@ -67,7 +67,7 @@ class DbObjectBox implements CacheManager {
     var query = kinds != null && kinds.isNotEmpty
         ? eventBox.query(DbNip01Event_.pubKey
             .oneOf(pubKeys!)
-            .and(DbNip01Event_.kind.oneOf(kinds!)))
+            .and(DbNip01Event_.kind.oneOf(kinds)))
         : eventBox.query(DbNip01Event_.pubKey.oneOf(pubKeys!));
 
     query = query.order(DbNip01Event_.createdAt, flags: Order.descending);

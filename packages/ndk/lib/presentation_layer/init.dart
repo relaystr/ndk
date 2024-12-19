@@ -97,8 +97,6 @@ class Initialization {
           globalState: _globalState,
         );
         break;
-      default:
-        throw UnimplementedError("Unknown engine");
     }
 
     /// repositories

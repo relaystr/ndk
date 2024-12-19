@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 
 import 'package:ndk/ndk.dart';
@@ -14,9 +16,9 @@ void main() async {
   ListTransactionsResponse response =
       await ndk.nwc.listTransactions(connection, unpaid: false);
 
-  response.transactions.forEach((transaction) {
+  for (final transaction in response.transactions) {
     print(
         "Transaction ${transaction.type} ${transaction.amountSat} sats ${transaction.description!}");
-  });
+  }
   await ndk.destroy();
 }

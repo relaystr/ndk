@@ -1,4 +1,3 @@
-
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
@@ -42,21 +41,12 @@ void main() async {
   Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
   Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-  MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5001);
-  MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 5002);
-
   MockRelay relay21 = MockRelay(name: "relay 21", explicitPort: 5021);
   MockRelay relay22 = MockRelay(name: "relay 22", explicitPort: 5022);
   MockRelay relay23 = MockRelay(name: "relay 23", explicitPort: 5023);
   MockRelay relay24 = MockRelay(name: "relay 24", explicitPort: 5024);
 
   group("Calculate best relays (internal MOCKs)", () {
-    Map<String, String> relayNames = {
-      relay21.url: relay21.name,
-      relay22.url: relay22.name,
-      relay23.url: relay23.name,
-      relay24.url: relay24.name,
-    };
     Nip65 nip65ForKey1 = Nip65.fromMap(key1.publicKey, {
       relay21.url: ReadWriteMarker.readWrite,
       relay22.url: ReadWriteMarker.readWrite,
@@ -116,7 +106,6 @@ void main() async {
 
       CacheManager cacheManager = MemCacheManager();
 
-      EventVerifier eventVerifier = MockEventVerifier();
       GlobalState globalState = GlobalState();
       NostrTransportFactory nostrTransportFactory =
           WebSocketNostrTransportFactory();
