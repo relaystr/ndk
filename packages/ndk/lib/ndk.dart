@@ -73,3 +73,10 @@ export 'domain_layer/usecases/nwc/nwc.dart';
  */
 
 export 'shared/logger/logger.dart';
+
+/**
+ * event filters
+ * 
+ */
+
+export 'shared/event_filters/tag_count_event_filter.dart';
