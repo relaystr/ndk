@@ -34,10 +34,8 @@ class NwcConnection {
   NwcConnection(this.uri);
 
   EventSigner get signer {
-    if (_signer == null) {
-      _signer = Bip340EventSigner(
+    _signer ??= Bip340EventSigner(
           privateKey: uri.secret, publicKey: getPublicKey(uri.secret));
-    }
     return _signer!;
   }
 

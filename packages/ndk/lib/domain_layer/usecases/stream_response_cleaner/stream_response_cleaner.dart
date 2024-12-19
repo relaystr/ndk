@@ -9,7 +9,7 @@ class StreamResponseCleaner {
   final Set<String> _trackingSet;
   final List<Stream<Nip01Event>> _inputStreams;
   final StreamController<Nip01Event> _outController;
-  List<EventFilter> _eventOutFilters;
+  final List<EventFilter> _eventOutFilters;
 
   int get _numStreams => _inputStreams.length;
 
@@ -27,7 +27,7 @@ class StreamResponseCleaner {
   })  : _trackingSet = trackingSet,
         _outController = outController,
         _inputStreams = inputStreams,
-        _eventOutFilters = eventOutFilters {}
+        _eventOutFilters = eventOutFilters;
 
   void call() {
     for (final stream in _inputStreams) {

@@ -83,9 +83,7 @@ class Requests {
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
-    if (timeout == null) {
-      timeout = _defaultQueryTimeout;
-    }
+    timeout ??= _defaultQueryTimeout;
 
     return requestNostrEvent(NdkRequest.query(
       '$name-${Helpers.getRandomString(10)}',
@@ -150,7 +148,7 @@ class Requests {
         .where((relay) => relayUrls.contains(relay.url));
 
     for (final relay in relays) {
-      this._relayManager.sendCloseToRelay(relay.url, subId);
+      _relayManager.sendCloseToRelay(relay.url, subId);
     }
     // remove from in flight requests
     await _relayManager.removeInFlightRequestById(subId);

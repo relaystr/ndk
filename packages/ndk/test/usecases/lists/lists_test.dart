@@ -38,8 +38,8 @@ void main() async {
               tag: Nip51List.RELAY, value: "wss://bla.com", private: true)
         ]);
 
-    late var relay0;
-    late var ndk;
+    late MockRelay relay0;
+    late Ndk ndk;
 
     setUp(() async {
       relay0 = MockRelay(name: "relay 0", explicitPort: 4096);

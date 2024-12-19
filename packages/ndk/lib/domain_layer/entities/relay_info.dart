@@ -66,6 +66,6 @@ class RelayInfo {
 
   /// does this relay support given nip
   bool supportsNip(int nip) {
-    return this.nips.contains(nip);
+    return nips.contains(nip);
   }
 }

@@ -18,7 +18,7 @@ mixin class Logger {
   static lib_logger.Logger log = lib_logger.Logger(
     printer: _myPrinter,
     level: defaultLogLevel,
-    output: myConsoleOutput(),
+    output: MyConsoleOutput(),
   );
 
   /// Set the log level of the logger.
@@ -27,7 +27,7 @@ mixin class Logger {
     log = lib_logger.Logger(
       printer: _myPrinter,
       level: level,
-      output: myConsoleOutput(),
+      output: MyConsoleOutput(),
     );
   }
 }
@@ -67,13 +67,13 @@ class LogLevels {
 
 /// custom console output, includes NDK prefix
 // coverage:ignore-start
-class myConsoleOutput extends lib_logger.LogOutput {
+class MyConsoleOutput extends lib_logger.LogOutput {
   @override
   void output(lib_logger.OutputEvent event) {
-    event.lines.forEach(
-      /// add prefix in each line
-      (line) => print("NDK: " + line),
-    );
+    for (var line in event.lines) {
+      // ignore: avoid_print
+      print("NDK: $line");
+    }
   }
 }
 // coverage:ignore-end

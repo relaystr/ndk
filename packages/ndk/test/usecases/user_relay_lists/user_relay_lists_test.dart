@@ -24,7 +24,7 @@ void main() async {
         createdAt: 100,
         refreshedTimestamp: 0);
 
-    late var ndk;
+    late Ndk ndk;
 
     setUp(() async {
       final cache = MemCacheManager();

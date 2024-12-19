@@ -45,7 +45,7 @@ class JitEngine with Logger implements NetworkEngine {
     required this.cache,
     required this.ignoreRelays,
     required this.globalState,
-  }) {}
+  });
 
   /// If you request anything from the nostr network put it here and
   /// the relay jit manager will try to find the right relay and use it

@@ -54,7 +54,7 @@ class RelayManager<T> {
   bool get allowReconnectRelays => _allowReconnectRelays;
 
   /// sets allowed to reconnectRelays
-  void set allowReconnectRelays(bool b) {
+  set allowReconnectRelays(bool b) {
     _allowReconnectRelays = b;
   }
 
@@ -101,7 +101,7 @@ class RelayManager<T> {
 
   /// checks if a relay is connecting
   bool isRelayConnecting(String url) {
-    Relay? relay = globalState.relays[url]?.relay ?? null;
+    Relay? relay = globalState.relays[url]?.relay;
     return relay != null && relay.connecting;
   }
 
@@ -138,7 +138,6 @@ class RelayManager<T> {
         );
         globalState.relays[url] = relayConnectivity;
       }
-      ;
       relayConnectivity.relay.tryingToConnect();
 
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
@@ -182,7 +181,7 @@ class RelayManager<T> {
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
           .onError((error, stackTrace) {
-        Logger.log.e("error connecting to relay ${url}: $error");
+        Logger.log.e("error connecting to relay $url: $error");
         return []; // Return an empty list in case of error
       });
     }
@@ -300,7 +299,7 @@ class RelayManager<T> {
     } else {
       // do not overwrite
       Logger.log.w(
-          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} ${relayUrl}, skipping");
+          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} $relayUrl, skipping");
     }
   }
 
@@ -401,7 +400,7 @@ class RelayManager<T> {
     if (state != null) {
       RelayRequestState? request = state.requests[url];
       if (request == null) {
-        Logger.log.w("No RelayRequestState found for id ${id}");
+        Logger.log.w("No RelayRequestState found for id $id");
         return;
       }
       event.sources.add(url);
