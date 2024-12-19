@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
@@ -159,7 +158,7 @@ class RelayManager<T> {
 
       _startListeningToSocket(relayConnectivity);
 
-      developer.log("connected to relay: $url");
+      Logger.log.t("connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
       relayConnectivity.stats.connections++;
       getRelayInfo(url).then((info) {
