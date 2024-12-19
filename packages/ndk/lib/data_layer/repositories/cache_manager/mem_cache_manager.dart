@@ -12,11 +12,22 @@ import '../../../domain_layer/repositories/cache_manager.dart';
 /// benefits: very fast
 /// drawbacks: does not persist
 class MemCacheManager implements CacheManager {
+  /// In memory storage
   Map<String, UserRelayList> userRelayLists = {};
+
+  /// In memory storage
   Map<String, RelaySet> relaySets = {};
+
+  /// In memory storage
   Map<String, ContactList> contactLists = {};
+
+  /// In memory storage
   Map<String, Metadata> metadatas = {};
+
+  /// In memory storage
   Map<String, Nip05> nip05s = {};
+
+  /// In memory storage
   Map<String, Nip01Event> events = {};
 
   @override
@@ -176,8 +187,16 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+
+  /// Search for metadata by name
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
-    /// TODO
+    try {
+      final result = metadatas.values
+          .where((element) => element.name!.contains(search))
+          .take(limit);
+      return result;
+    } catch (_) {}
+
     return [];
   }
 

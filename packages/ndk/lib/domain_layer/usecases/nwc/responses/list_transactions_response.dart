@@ -107,10 +107,10 @@ class TransactionResult extends Equatable {
   get isIncoming => type == TransactionType.incoming.value;
 
   String? get zapperPubKey {
-    if (metadata!=null && metadata?['nostr']!=null) {
+    if (metadata != null && metadata?['nostr'] != null) {
       Map<String, dynamic> nostr = metadata?['nostr'];
       // TODO refactor to nip57
-      if (nostr['kind']==9734 && nostr['pubkey']!=null) {
+      if (nostr['kind'] == 9734 && nostr['pubkey'] != null) {
         return nostr['pubkey'];
       }
     }
@@ -119,18 +119,19 @@ class TransactionResult extends Equatable {
 
   /// creates a transaction result from a [NwcNotification]
   static fromNotification(NwcNotification notification) {
-    return TransactionResult(type: notification.type,
-        invoice: notification.invoice,
-        amount: notification.amount,
-        createdAt: notification.createdAt,
-        description: notification.description,
-        descriptionHash: notification.descriptionHash,
-        preimage: notification.preimage,
-        paymentHash: notification.paymentHash,
-        expiresAt: notification.expiresAt,
-        settledAt: notification.settledAt,
-        metadata: notification.metadata,
-        feesPaid: notification.feesPaid,
+    return TransactionResult(
+      type: notification.type,
+      invoice: notification.invoice,
+      amount: notification.amount,
+      createdAt: notification.createdAt,
+      description: notification.description,
+      descriptionHash: notification.descriptionHash,
+      preimage: notification.preimage,
+      paymentHash: notification.paymentHash,
+      expiresAt: notification.expiresAt,
+      settledAt: notification.settledAt,
+      metadata: notification.metadata,
+      feesPaid: notification.feesPaid,
     );
   }
 

@@ -6,7 +6,7 @@ class NostrWalletConnectUri extends Equatable {
   final String secret;
   final String? lud16;
 
-  NostrWalletConnectUri({
+  const NostrWalletConnectUri({
     required this.walletPubkey,
     required this.relay,
     required this.secret,

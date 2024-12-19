@@ -9,12 +9,15 @@ import '../models/db/db_nip05.dart';
 import '../models/db/db_relay_set.dart';
 import '../models/db/db_user_relay_list.dart';
 
+/// Isar database data source
 class IsarDbDs {
-  // the isar obj
+  /// the isar obj
   late Isar isar;
 
+  /// create instance
   IsarDbDs();
 
+  /// initialize the isar db
   Future<void> init({String? directory, bool debug = false}) async {
     // await Isar.initialize("./libisar_android_armv7.so");//initializeIsarCore(download: true);
 

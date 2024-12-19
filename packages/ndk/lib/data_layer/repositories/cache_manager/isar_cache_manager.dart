@@ -3,7 +3,6 @@ import 'dart:core';
 import 'package:isar/isar.dart';
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/domain_layer/entities/event_filter.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 

@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:test/test.dart';
 import 'package:ndk/ndk.dart';
 
@@ -30,7 +29,7 @@ void main() async {
     print(response!.toNip65());
 
     expect(response, isNotNull, reason: 'response is Null');
-    expect(response!.relays.length, greaterThan(0),
+    expect(response.relays.length, greaterThan(0),
         reason: 'relay list is empty');
   });
 }

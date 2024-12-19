@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 
 import 'package:ndk/ndk.dart';
@@ -14,7 +16,6 @@ void main() async {
   await for (final notification in connection.notificationStream.stream) {
     print('notification ${notification.type} amount: ${notification.amount}');
   }
-  ;
 
   ndk.destroy();
 }

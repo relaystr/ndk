@@ -1,9 +1,10 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:bech32/bech32.dart';
 import 'package:hex/hex.dart';
+
+import '../../logger/logger.dart';
 
 class Helpers {
   static const _chars =
@@ -47,9 +48,10 @@ class Helpers {
       final eightBitWords = _convertBits(bech32.data, 5, 8, false);
       return [HEX.encode(eightBitWords), bech32.hrp];
     } catch (e) {
-      developer.log(
-          'decodeBech32 error: $e, \n \n String is: $bech32String \n \n',
-          error: e);
+      Logger.log.w(
+        'decodeBech32 error: $e, \n \n String is: $bech32String \n \n',
+        error: e,
+      );
     }
     return ["", ""];
   }

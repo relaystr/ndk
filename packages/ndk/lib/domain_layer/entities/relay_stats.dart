@@ -48,7 +48,7 @@ class RelayStats {
   void incStatsByNewEvent(Nip01Event event, int bytes) {
     int eventsRead = this.eventsRead[event.kind] ?? 0;
     this.eventsRead[event.kind] = eventsRead + 1;
-    int bytesRead = this.dataReadBytes[event.kind] ?? 0;
-    this.dataReadBytes[event.kind] = bytesRead + bytes;
+    int bytesRead = dataReadBytes[event.kind] ?? 0;
+    dataReadBytes[event.kind] = bytesRead + bytes;
   }
 }

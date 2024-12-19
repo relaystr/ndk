@@ -55,18 +55,17 @@ final ndk = Ndk(
   NdkConfig(
     eventVerifier: RustEventVerifier(),
     cache: MemCacheManager(),
+
+    // optional:
+    logLevel: Logger.logLevels.debug,
+    bootstrapRelays: ["wss://myrelay.example", "wss://myrelay2.example"],
+    ignoreRelays: ['wss://bad.reputation']
+    engine: NdkEngine.JIT,
+    defaultQueryTimeout: Duration(seconds: 10),
+    eventOutFilters: [MyEventFilter()],
   ),
 );
 ```
-
-**Available configs:**
-
-eventVerifier: `Bip340EventVerifier()` `RustEventVerifier()` \
-cache: `MemCacheManager()` \
-bootstrapRelays: `['wss://myrelay.example']` \
-engine: `NdkEngine.RELAY_SETS` `NdkEngine.JIT` \
-eventSigner: `Bip340EventSigner('nsec1...', 'npub1...')` \
-ignoreRelays: `['wss://bad.reputation']`
 
 $~~~~~~~~~~~$
 

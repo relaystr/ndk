@@ -37,7 +37,7 @@ class RelayBroadcastResponse {
 /// hold state information for a broadcast
 class BroadcastState {
   /// stream controller for state updates
-  BehaviorSubject<BroadcastState> _stateUpdatesController =
+  final BehaviorSubject<BroadcastState> _stateUpdatesController =
       BehaviorSubject<BroadcastState>();
 
   /// [networkController] used by relay manger to write responses

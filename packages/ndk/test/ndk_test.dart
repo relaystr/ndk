@@ -31,9 +31,6 @@ void main() async {
   }
 
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
-  Map<KeyPair, Nip01Event> key2TextNotes = {key2: textNote(key2)};
-  Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
-  Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
   group('Ndk', () {
     test('query simple note LISTS',
