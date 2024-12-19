@@ -26,6 +26,7 @@ export 'domain_layer/entities/read_write.dart';
 export 'domain_layer/entities/relay.dart';
 export 'domain_layer/entities/relay_set.dart';
 export 'domain_layer/entities/metadata.dart';
+export 'domain_layer/entities/event_filter.dart';
 
 export 'domain_layer/usecases/nwc/responses/get_balance_response.dart';
 export 'domain_layer/usecases/nwc/responses/get_info_response.dart';
