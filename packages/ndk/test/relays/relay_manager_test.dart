@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart';
@@ -12,8 +13,8 @@ import '../mocks/mock_relay.dart';
 
 void main() async {
   group('Relay Manager', () {
-    final WebSocketNostrTransportFactory webSocketNostrTransportFactory =
-        WebSocketNostrTransportFactory();
+    final WebSocketClientNostrTransportFactory webSocketNostrTransportFactory =
+        WebSocketClientNostrTransportFactory();
 
     test('Connect to relay', () async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5044);
