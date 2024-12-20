@@ -153,5 +153,64 @@ void main() {
       print(
           'high level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms');
     });
+
+    test('query - nip65 - no data', () async {
+      NdkConfig config = NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [relay1.url, relay2.url],
+      );
+
+      final ndk = Ndk(config);
+
+      bool timeoutTriggered = false;
+      bool timeoutUserTriggered = false;
+      // Start the stopwatch
+      final stopwatch = Stopwatch()..start();
+
+      final response =
+          ndk.userRelayLists.getSingleUserRelayList("notExistingPubkey");
+
+      // wait for completion
+      await response;
+
+      // Stop the stopwatch
+      stopwatch.stop();
+
+      expect(timeoutUserTriggered, isFalse);
+      expect(timeoutTriggered, isFalse);
+
+      expect(stopwatch.elapsedMilliseconds, lessThan(timoutMiliseconds));
+    });
+
+    test('query - metadata - no data', () async {
+      NdkConfig config = NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [relay1.url, relay2.url],
+      );
+
+      final ndk = Ndk(config);
+
+      bool timeoutTriggered = false;
+      bool timeoutUserTriggered = false;
+      // Start the stopwatch
+      final stopwatch = Stopwatch()..start();
+
+      final response = ndk.metadata.loadMetadata("notExistingPubkey");
+
+      // wait for completion
+      await response;
+
+      // Stop the stopwatch
+      stopwatch.stop();
+
+      expect(timeoutUserTriggered, isFalse);
+      expect(timeoutTriggered, isFalse);
+
+      expect(stopwatch.elapsedMilliseconds, lessThan(timoutMiliseconds));
+    });
   });
 }
