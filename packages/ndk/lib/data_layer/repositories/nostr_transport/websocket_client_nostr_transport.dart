@@ -18,7 +18,7 @@ class WebSocketClientNostrTransport implements NostrTransport {
   /// Creates a new WebSocketNostrTransport instance.
   ///
   /// [_websocketDS] is the WebSocket data source to be used for communication.
-  WebSocketClientNostrTransport(this._websocketDS) {
+  WebSocketClientNostrTransport(this._websocketDS, [Function? onReconnect]) {
     Completer completer = Completer();
     ready = completer.future;
     _websocketDS.ws.connection.listen((state) {
@@ -26,6 +26,9 @@ class WebSocketClientNostrTransport implements NostrTransport {
       switch (state) {
         case Connected() || Reconnected():
           completer.complete();
+          if (state == Reconnected && onReconnect!=null) {
+            onReconnect.call();
+          }
         default:
           completer = Completer();
           ready = completer.future;

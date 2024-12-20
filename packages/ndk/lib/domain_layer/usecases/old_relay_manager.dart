@@ -144,7 +144,7 @@ class OldRelayManager {
         return false;
       }
 
-      transports[url] = nostrTransportFactory(url);
+      transports[url] = nostrTransportFactory(url, null);
       await transports[url]!.ready.timeout(Duration(seconds: connectTimeout),
           onTimeout: () {
         print("timed out connecting to relay $url");

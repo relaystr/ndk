@@ -150,7 +150,9 @@ class RelayManager<T> {
 
       Logger.log.i("connecting to relay $dirtyUrl");
 
-      relayConnectivity.relayTransport = nostrTransportFactory(url);
+      relayConnectivity.relayTransport = nostrTransportFactory(url, () {
+        _reSubscribeInFlightSubscriptions(relayConnectivity!);
+      });
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: connectTimeout), onTimeout: () {
         Logger.log.w("timed out connecting to relay $url");
