@@ -13,6 +13,7 @@ class RelaysPage extends StatefulWidget {
 
 class _RelaysPageState extends State<RelaysPage> {
   final amber = Amberflutter();
+  // ignore: unused_field
   String _text = '';
 
   @override

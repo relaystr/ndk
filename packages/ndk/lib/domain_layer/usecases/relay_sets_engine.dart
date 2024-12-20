@@ -5,7 +5,6 @@ import 'dart:math';
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
-import '../../config/request_defaults.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../../shared/nips/nip01/helpers.dart';
