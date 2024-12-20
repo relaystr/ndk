@@ -29,7 +29,7 @@ class WebSocketClientNostrTransport implements NostrTransport {
           if (state == Reconnected && onReconnect!=null) {
             onReconnect.call();
           }
-        default:
+        case Disconnected():
           completer = Completer();
           ready = completer.future;
       }
