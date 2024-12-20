@@ -4,8 +4,8 @@ import 'package:ndk/shared/nips/nip01/client_msg.dart';
 import 'package:ndk/domain_layer/entities/filter.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
-import 'package:ndk/domain_layer/usecases/jit_engine.dart';
-import 'package:ndk/domain_layer/usecases/relay_jit_manager/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
+import 'package:ndk/domain_layer/usecases/jit_engine/jit_engine.dart';
+import 'package:ndk/domain_layer/usecases/jit_engine/relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 
 import '../../../entities/global_state.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';

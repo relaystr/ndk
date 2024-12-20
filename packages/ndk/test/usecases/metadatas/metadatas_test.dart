@@ -25,8 +25,8 @@ void main() async {
         Metadata(pubKey: key1.publicKey, name: "cache1");
     cache1Metadata.updatedAt = 100;
 
-    late var relay0;
-    late var ndk;
+    late MockRelay relay0;
+    late Ndk ndk;
 
     setUp(() async {
       relay0 = MockRelay(name: "relay 0", explicitPort: 5095);

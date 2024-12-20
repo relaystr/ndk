@@ -1,9 +1,11 @@
 import '../config/bootstrap_relays.dart';
+import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
+import 'package:logger/logger.dart' as lib_logger;
 
 /// Configuration class for the Nostr Development Kit (NDK)
 ///
@@ -42,14 +44,19 @@ class NdkConfig {
   /// this value is used if no individual timeout is set for a query
   Duration defaultQueryTimeout;
 
+  lib_logger.Level logLevel;
+
   /// Creates a new instance of [NdkConfig].
   ///
-  /// [eventVerifier] The verifier used to validate Nostr events.
-  /// [eventSigner] Optional signer used to sign Nostr events.
-  /// [cache] The cache manager for storing and retrieving Nostr data.
-  /// [engine] The engine mode to use (defaults to RELAY_SETS).
-  /// [ignoreRelays] A list of relay URLs to ignore (defaults to an empty list).
-  /// [bootstrapRelays] A list of initial relay URLs (defaults to DEFAULT_BOOTSTRAP_RELAYS).
+  /// [eventVerifier] The verifier used to validate Nostr events. \
+  /// [eventSigner] Optional signer used to sign Nostr events. \
+  /// [cache] The cache manager for storing and retrieving Nostr data. \
+  /// [engine] The engine mode to use (defaults to RELAY_SETS). \
+  /// [ignoreRelays] A list of relay URLs to ignore (defaults to an empty list). \
+  /// [bootstrapRelays] A list of initial relay URLs (defaults to DEFAULT_BOOTSTRAP_RELAYS). \
+  /// [eventOutFilters] A list of filters to apply to the output stream (defaults to an empty list). \
+  /// [defaultQueryTimeout] The default timeout for queries (defaults to DEFAULT_QUERY_TIMEOUT). \
+  /// [logLevel] The log level for the NDK (defaults to warning).
   NdkConfig({
     required this.eventVerifier,
     this.eventSigner,
@@ -59,6 +66,9 @@ class NdkConfig {
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
     this.eventOutFilters = const [],
     this.defaultQueryTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
+
+    /// test
+    this.logLevel = defaultLogLevel,
   });
 }
 

@@ -12,7 +12,7 @@ import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/follows/follows.dart';
-import '../domain_layer/usecases/jit_engine.dart';
+import '../domain_layer/usecases/jit_engine/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
@@ -22,6 +22,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+import '../shared/logger/logger.dart';
 import 'ndk_config.dart';
 
 /// this class is used to inject all the dependencies \
@@ -97,8 +98,6 @@ class Initialization {
           globalState: _globalState,
         );
         break;
-      default:
-        throw UnimplementedError("Unknown engine");
     }
 
     /// repositories
@@ -168,5 +167,8 @@ class Initialization {
     );
 
     nwc = Nwc(requests: requests, broadcast: broadcast);
+
+    /// set the user configured log level
+    Logger.setLogLevel(_ndkConfig.logLevel);
   }
 }

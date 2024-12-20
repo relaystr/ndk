@@ -26,6 +26,7 @@ export 'domain_layer/entities/read_write.dart';
 export 'domain_layer/entities/relay.dart';
 export 'domain_layer/entities/relay_set.dart';
 export 'domain_layer/entities/metadata.dart';
+export 'domain_layer/entities/event_filter.dart';
 
 export 'domain_layer/usecases/nwc/responses/get_balance_response.dart';
 export 'domain_layer/usecases/nwc/responses/get_info_response.dart';
@@ -56,7 +57,7 @@ export 'data_layer/repositories/cache_manager/mem_cache_manager.dart';
  * 
  */
 
-export "domain_layer/usecases/jit_engine.dart";
+export "domain_layer/usecases/jit_engine/jit_engine.dart";
 export "domain_layer/usecases/requests/requests.dart";
 export "domain_layer/usecases/follows/follows.dart";
 export 'domain_layer/usecases/metadatas/metadatas.dart';
@@ -65,3 +66,17 @@ export 'domain_layer/usecases/lists/lists.dart';
 export 'domain_layer/usecases/relay_sets/relay_sets.dart';
 export 'domain_layer/usecases/broadcast/broadcast.dart';
 export 'domain_layer/usecases/nwc/nwc.dart';
+
+/**
+ * other stuff
+ * 
+ */
+
+export 'shared/logger/logger.dart';
+
+/**
+ * event filters
+ * 
+ */
+
+export 'shared/event_filters/tag_count_event_filter.dart';

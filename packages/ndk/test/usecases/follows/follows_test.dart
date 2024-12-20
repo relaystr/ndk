@@ -52,8 +52,8 @@ void main() async {
     );
     cache1ContactList.createdAt = 100;
 
-    late var relay0;
-    late var ndk;
+    late MockRelay relay0;
+    late Ndk ndk;
 
     setUp(() async {
       relay0 = MockRelay(name: "relay 0", explicitPort: 5095);

@@ -11,7 +11,6 @@ class RelayJitBroadcastAllStrategy {
     required List<RelayConnectivity> connectedRelays,
     required RelayManager relayManger,
   }) async {
-
     final ClientMsg myClientMsg = ClientMsg(
       ClientMsgType.EVENT,
       event: eventToPublish,

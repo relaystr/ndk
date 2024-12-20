@@ -32,8 +32,8 @@ class GetBalanceResponse extends NwcResponse {
     return GetBalanceResponse(
       resultType: input['result_type'] as String,
       balanceMsats: result['balance'] as int,
-      maxAmount: result['max_amount'] ?? null,
-      budgetRenewal: result['budget_renewal'] ?? null,
+      maxAmount: result['max_amount'],
+      budgetRenewal: result['budget_renewal'],
     );
   }
 }
