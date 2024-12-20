@@ -27,7 +27,7 @@ class WebsocketDSClient {
   }
 
   bool isOpen() {
-    return ws.connection.state == Connected();
+    return ws.connection.state == Connected() || ws.connection.state == Reconnected;
   }
 
   int? closeCode() {
