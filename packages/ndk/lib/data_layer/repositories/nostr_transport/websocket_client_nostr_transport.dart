@@ -22,14 +22,14 @@ class WebSocketClientNostrTransport implements NostrTransport {
     Completer completer = Completer();
     ready = completer.future;
     _websocketDS.ws.connection.listen((state) {
-      Logger.log.t("${_websocketDS.url} connection state changed to $state");
+      Logger.log.d("${_websocketDS.url} connection state changed to $state");
       switch (state) {
         case Connected() || Reconnected():
           completer.complete();
           if (state == Reconnected && onReconnect!=null) {
             onReconnect.call();
           }
-        default:
+        case Disconnected():
           completer = Completer();
           ready = completer.future;
       }
