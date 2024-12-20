@@ -50,15 +50,14 @@ void main() async {
         var nip65events = await nip65Response.stream.toList();
         cacheManager.saveEvents(nip65events);
 
-        var nip65Data = cacheManager.loadEvents(
+        cacheManager.loadEvents(
           pubKeys: myContactList.contacts,
           kinds: [Nip65.KIND],
         );
 
         developer.log('##################################################');
 
-        NdkResponse feedResponse =
-            ndk.requests.query(name: "feed-test", filters: [
+        ndk.requests.query(name: "feed-test", filters: [
           Filter(
             authors: myContactList.contacts,
             kinds: [Nip01Event.TEXT_NODE_KIND],

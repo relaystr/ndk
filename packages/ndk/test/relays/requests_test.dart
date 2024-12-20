@@ -6,8 +6,6 @@ import 'package:test/test.dart';
 import 'package:ndk/domain_layer/entities/global_state.dart';
 import 'package:ndk/domain_layer/entities/request_state.dart';
 import 'package:ndk/domain_layer/usecases/cache_read/cache_read.dart';
-import 'package:ndk/domain_layer/usecases/cache_write/cache_write.dart';
-import 'package:ndk/domain_layer/usecases/engines/network_engine.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/presentation_layer/init.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -39,9 +37,6 @@ void main() async {
   }
 
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
-  Map<KeyPair, Nip01Event> key2TextNotes = {key2: textNote(key2)};
-  Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
-  Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
   group('Requests', () {
     test('Request text note', () async {

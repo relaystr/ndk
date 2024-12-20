@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';

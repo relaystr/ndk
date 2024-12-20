@@ -13,7 +13,6 @@ abstract class NetworkEngine {
     required Stream<List<RelayBroadcastResponse>> doneStream,
     Iterable<String>? specificRelays,
   });
-
 }
 
 /// Factory for creating additional data for the engine

@@ -266,7 +266,7 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      final result = await verifyNip05.check(
+      await verifyNip05.check(
           nip05: 'test_nip05_cache', pubkey: 'test_pubkey_cache');
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;

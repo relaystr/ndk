@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 
 import 'consts/nwc_kind.dart';
@@ -23,8 +22,8 @@ import 'responses/nwc_response.dart';
 class Nwc {
   static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
 
-  Requests _requests;
-  Broadcast _broadcast;
+  final Requests _requests;
+  final Broadcast _broadcast;
 
   /// main constructor
   Nwc({
@@ -33,10 +32,10 @@ class Nwc {
   })  : _requests = requests,
         _broadcast = broadcast;
 
-  Map<String, Completer<NwcResponse>> _inflighRequests = {};
-  Map<String, Timer> _inflighRequestTimers = {};
+  final Map<String, Completer<NwcResponse>> _inflighRequests = {};
+  final Map<String, Timer> _inflighRequestTimers = {};
 
-  Set<NwcConnection> _connections = {};
+  final Set<NwcConnection> _connections = {};
 
   /// Connects to a given nostr+walletconnect:// uri,
   /// checking for 13194 event info,
@@ -148,7 +147,7 @@ class Nwc {
         response = NwcResponse(resultType: data['result_type']);
       }
       if (response != null) {
-        Logger.log.i("nwc response ${data}");
+        Logger.log.i("nwc response $data");
         response.deserializeError(data);
         connection.responseStream.add(response);
         var eId = event.getEId();
@@ -308,10 +307,10 @@ class Nwc {
   /// i.e.: closes response & notification subscription and streams
   disconnect(NwcConnection connection) async {
     if (connection.subscription != null) {
-      Logger.log.d("closing nwc subscription ${connection}....");
+      Logger.log.d("closing nwc subscription $connection....");
       await _requests.closeSubscription(connection.subscription!.requestId);
     }
-    Logger.log.d("closing nwc streams ${connection}....");
+    Logger.log.d("closing nwc streams $connection....");
     await connection.responseStream.close();
     await connection.notificationStream.close();
     _connections.remove(connection);
