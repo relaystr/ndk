@@ -26,6 +26,9 @@ class WebSocketClientNostrTransport implements NostrTransport {
       switch (state) {
         case Connected() || Reconnected():
           completer.complete();
+        default:
+          completer = Completer();
+          ready = completer.future;
       }
     });
   }
