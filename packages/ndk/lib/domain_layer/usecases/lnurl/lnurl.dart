@@ -104,7 +104,7 @@ class Lnurl {
         tags: tags,
         content: eventContent);
     await signer.sign(event);
-    if (event.sig != '') {
+    if (event.sig == '') {
       return null;
     }
     Logger.log.d(jsonEncode(event));
