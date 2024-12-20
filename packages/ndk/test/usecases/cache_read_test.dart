@@ -100,28 +100,28 @@ void main() async {
 
     test('cache read - author removal based on limit - remove - BAD TEST',
         skip: true, () async {
-      final CacheRead myUsecase = CacheRead(myCacheManager);
+          final CacheRead myUsecase = CacheRead(myCacheManager);
 
-      // Test with limit
-      final NdkRequest myNdkRequestWithLimit = NdkRequest.query("author-remove",
-          filters: [
-            Filter(
-              authors: ['pubKey1', 'pubKey2'],
-              kinds: [1],
-              limit: 2,
-            )
-          ],
-          timeoutDuration: Duration(seconds: 5));
-      final RequestState myRequestStateWithLimit =
+          // Test with limit
+          final NdkRequest myNdkRequestWithLimit = NdkRequest.query("author-remove",
+              filters: [
+                Filter(
+                  authors: ['pubKey1', 'pubKey2'],
+                  kinds: [1],
+                  limit: 2,
+                )
+              ],
+              timeoutDuration: Duration(seconds: 5));
+          final RequestState myRequestStateWithLimit =
           RequestState(myNdkRequestWithLimit);
 
-      await myUsecase.resolveUnresolvedFilters(
-        requestState: myRequestStateWithLimit,
-        outController: myRequestStateWithLimit.controller,
-      );
+          await myUsecase.resolveUnresolvedFilters(
+            requestState: myRequestStateWithLimit,
+            outController: myRequestStateWithLimit.controller,
+          );
 
-      expect(myRequestStateWithLimit.unresolvedFilters[0].authors, equals([]));
-    });
+          expect(myRequestStateWithLimit.unresolvedFilters[0].authors, equals([]));
+        });
 
     test('cache read - not all in cache - BAD TEST', skip: true, () async {
       final CacheRead myUsecase = CacheRead(myCacheManager);
@@ -144,7 +144,7 @@ void main() async {
         timeoutDuration: Duration(seconds: 5),
       );
       final RequestState myRequestStateWithLimit =
-          RequestState(myNdkRequestWithLimit);
+      RequestState(myNdkRequestWithLimit);
 
       await myUsecase.resolveUnresolvedFilters(
         requestState: myRequestStateWithLimit,
@@ -166,13 +166,13 @@ void main() async {
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
       final eventId0 =
-          Nip01Event(pubKey: "pubKey0", kind: 1, tags: [], content: "content0");
+      Nip01Event(pubKey: "pubKey0", kind: 1, tags: [], content: "content0");
       eventId0.id = "id0";
       final eventId1 =
-          Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1");
+      Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1");
       eventId1.id = "id1";
       final eventId2 =
-          Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2");
+      Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2");
       eventId2.id = "id2";
 
       final List<Nip01Event> idEvents = [
@@ -218,13 +218,13 @@ void main() async {
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
       final eventId0 =
-          Nip01Event(pubKey: "pubKey0", kind: 1, tags: [], content: "content0");
+      Nip01Event(pubKey: "pubKey0", kind: 1, tags: [], content: "content0");
       eventId0.id = "id0";
       final eventId1 =
-          Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1");
+      Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1");
       eventId1.id = "id1";
       final eventId2 =
-          Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2");
+      Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2");
       eventId2.id = "id2";
 
       final List<Nip01Event> idEvents = [

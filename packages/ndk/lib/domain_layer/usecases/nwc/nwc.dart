@@ -232,6 +232,7 @@ class Nwc {
               "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relay}";
           completer.completeError(error);
           _inflighRequests.remove(event.id);
+          _inflighRequestTimers.remove(event.id);
           Logger.log.w(error);
         }
       });

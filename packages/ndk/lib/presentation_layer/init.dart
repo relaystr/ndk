@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
+import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
@@ -36,8 +37,8 @@ class Initialization {
 
   /// repositories with no dependencies
 
-  final WebSocketNostrTransportFactory _webSocketNostrTransportFactory =
-      WebSocketNostrTransportFactory();
+  final WebSocketClientNostrTransportFactory _webSocketNostrTransportFactory =
+      WebSocketClientNostrTransportFactory();
 
   /// state obj
 
