@@ -4,5 +4,7 @@ class ZapReceipt extends Nip01Event {
 
   static const int KIND = 9735;
 
-  ZapReceipt({required super.pubKey, required super.kind, required super.tags, required super.content});
+  ZapReceipt(
+      {required super.pubKey, required super.tags, required super.content})
+      : super(kind: KIND);
 }
