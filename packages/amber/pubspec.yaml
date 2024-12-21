@@ -30,7 +30,6 @@ dev_dependencies:
   mockito: ^5.0.17
   integration_test:
     sdk: flutter
-  objectbox_generator: any
 
 flutter:
   plugin:
