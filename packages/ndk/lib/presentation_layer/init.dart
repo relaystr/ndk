@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
-import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
@@ -22,6 +21,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+import '../domain_layer/usecases/zaps/zaps.dart';
 import '../shared/logger/logger.dart';
 import 'ndk_config.dart';
 
@@ -55,6 +55,7 @@ class Initialization {
   late RelaySets relaySets;
   late Broadcast broadcast;
   late Nwc nwc;
+  late Zaps zaps;
 
   late VerifyNip05 verifyNip05;
 
@@ -167,6 +168,12 @@ class Initialization {
     );
 
     nwc = Nwc(requests: requests, broadcast: broadcast);
+
+    zaps = Zaps(
+      requests: requests,
+      nwc: nwc,
+      signer: _ndkConfig.eventSigner,
+    );
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);

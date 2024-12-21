@@ -61,7 +61,7 @@ void main() async {
       }
     });
 
-    test('cache read - some missing - BAD TEST', skip: true, () async {
+    test('cache read - some missing - BAD TEST', skip:true,  () async {
       final NdkRequest myNdkRequest = NdkRequest.query("id",
           filters: [
             Filter(
@@ -123,7 +123,7 @@ void main() async {
           expect(myRequestStateWithLimit.unresolvedFilters[0].authors, equals([]));
         });
 
-    test('cache read - not all in cache - BAD TEST', skip: true, () async {
+    test('cache read - not all in cache - BAD TEST', skip:true, () async {
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
       // Test with limit
@@ -271,8 +271,7 @@ void main() async {
         authors: ['pubKey1', 'pubKey2'],
         kinds: [1],
       );
-      final NdkRequest myNdkRequest = NdkRequest.query("id",
-          filters: [filter], timeoutDuration: Duration(seconds: 5));
+      final NdkRequest myNdkRequest = NdkRequest.query("id", filters: [ filter ],  timeoutDuration: Duration(seconds: 5));
       final RequestState myRequestState = RequestState(myNdkRequest);
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
@@ -296,5 +295,6 @@ void main() async {
 
       expect(myRequestState.unresolvedFilters, equals([filter]));
     });
+
   });
 }

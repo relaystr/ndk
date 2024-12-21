@@ -30,7 +30,7 @@ class RelayInfo {
   RelayInfo._(this.name, this.description, this.pubKey, this.contact, this.nips,
       this.software, this.version, this.icon);
 
-  factory RelayInfo.fromJson(Map<dynamic, dynamic> json, String url) {
+  factory RelayInfo.fromJson(Map<String, dynamic> json, String url) {
     final String name = json["name"] ?? '';
     final String description = json["description"] ?? "";
     final String pubKey = json["pubkey"] ?? "";
@@ -56,7 +56,7 @@ class RelayInfo {
         headers: {'Accept': 'application/nostr+json'},
       );
       final decodedResponse =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String,dynamic>;
       return RelayInfo.fromJson(decodedResponse, uri.toString());
     } catch (e) {
       Logger.log.d(e);
