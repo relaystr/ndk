@@ -11,17 +11,14 @@ import '../requests/requests.dart';
 
 /// Zaps
 class Zaps {
-  final EventSigner? _signer;
   final Requests _requests;
   final Nwc _nwc;
 
   Zaps({
     required Requests requests,
     required Nwc nwc,
-    EventSigner? signer,
   })  : _requests = requests,
-        _nwc = nwc,
-        _signer = signer;
+        _nwc = nwc;
 
   /// zap or pay some lnurl, for zap to be created it is necessary:
   /// - that the lnurl has the allowsNostr: true
@@ -32,7 +29,7 @@ class Zaps {
     required NwcConnection nwcConnection,
     required String lnurl,
     required int amount,
-
+    EventSigner? signer,
     Iterable<String>? relays,
     String? pubKey,
     String? eventId,
@@ -43,7 +40,7 @@ class Zaps {
         sats: amount,
         pubKey: pubKey,
         eventId: eventId,
-        signer: _signer,
+        signer: signer,
         relays: relays);
     if (invoice == null) {
       return ZapResponse(error: "couldn't get invoice from $lnurl");
@@ -52,11 +49,23 @@ class Zaps {
       PayInvoiceResponse payResponse =
           await _nwc.payInvoice(nwcConnection, invoice: invoice);
       if (payResponse.preimage.isNotEmpty && payResponse.errorCode != null) {
-        NdkResponse receiptResponse = _requests.query(filters: [
-          Filter(kinds: [ZapReceipt.KIND])
-        ]);
+        NdkResponse? receiptResponse;
+        if (pubKey != null && relays != null && relays.isNotEmpty) {
+          // if it's a zap, try to find the zap receipt
+          receiptResponse = _requests.query(explicitRelays: relays, filters: [
+            eventId != null
+                ? Filter(
+                    kinds: [ZapReceipt.KIND], eTags: [eventId], pTags: [pubKey])
+                : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey]),
+          ]);
+
+          // TODO:
+          //  - The zap receipt event's pubkey MUST be the same as the recipient's lnurl provider's nostrPubkey (retrieved in step 1 of the protocol flow).
+          //  - The invoiceAmount contained in the bolt11 tag of the zap receipt MUST equal the amount tag of the zap request (if present).
+          //  - The lnurl tag of the zap request (if present) SHOULD equal the recipient's lnurl.
+        }
         return ZapResponse(
-            receiptResponse: receiptResponse, payInvoiceResponse: payResponse);
+            zapReceiptResponse: receiptResponse, payInvoiceResponse: payResponse);
       }
       return ZapResponse(error: payResponse.errorMessage);
     } catch (e) {
@@ -67,10 +76,10 @@ class Zaps {
 
 /// zap response
 class ZapResponse {
-  NdkResponse? receiptResponse;
+  NdkResponse? zapReceiptResponse;
   PayInvoiceResponse? payInvoiceResponse;
   String? error;
 
   ///
-  ZapResponse({this.receiptResponse, this.payInvoiceResponse, this.error});
+  ZapResponse({this.zapReceiptResponse, this.payInvoiceResponse, this.error});
 }
