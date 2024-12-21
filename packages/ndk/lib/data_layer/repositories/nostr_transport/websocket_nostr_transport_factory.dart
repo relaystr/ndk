@@ -7,7 +7,7 @@ import 'websocket_nostr_transport.dart';
 
 class WebSocketNostrTransportFactory implements NostrTransportFactory {
   @override
-  NostrTransport call(String url) {
+  NostrTransport call(String url, Function? onReconnect) {
     final myUrl = cleanRelayUrl(url);
 
     if (myUrl == null) {

@@ -51,7 +51,8 @@ class RelaySetsEngine implements NetworkEngine {
   // ====================================================================================================================
 
   bool doRelayRequest(String id, RelayRequestState request) {
-    if (_relayManager.isRelayConnected(request.url) &&
+    if (
+    // _relayManager.isRelayConnected(request.url) &&
         (!_globalState.blockedRelays.contains(request.url))) {
       try {
         RelayConnectivity? relay = _globalState.relays[request.url];
