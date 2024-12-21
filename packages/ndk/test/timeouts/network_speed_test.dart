@@ -98,6 +98,56 @@ void main() {
       print(
           'low level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms');
     });
+
+    test('query - one dead relay', () async {
+      NdkConfig config = NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [
+          relay1.url,
+          relay2.url,
+          'wss://dead-relay.example.com'
+        ],
+      );
+
+      final ndk = Ndk(config);
+
+      bool timeoutTriggered = false;
+      bool timeoutUserTriggered = false;
+      // Start the stopwatch
+      final stopwatch = Stopwatch()..start();
+
+      final response = ndk.requests.query(
+          filters: [
+            Filter(
+              authors: [key1.publicKey],
+              kinds: [Nip01Event.TEXT_NODE_KIND],
+            )
+          ],
+          timeout: Duration(milliseconds: timoutMiliseconds),
+          timeoutCallback: () {
+            timeoutTriggered = true;
+          },
+          timeoutCallbackUserFacing: () {
+            timeoutUserTriggered = true;
+          });
+
+      // wait for completion
+      await response.future;
+
+      // Stop the stopwatch
+      stopwatch.stop();
+
+      expect(timeoutUserTriggered, isFalse);
+      expect(timeoutTriggered, isFalse);
+
+      expect(stopwatch.elapsedMilliseconds, lessThan(timoutMiliseconds));
+
+      // ignore: avoid_print
+      print(
+          'low level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms');
+    });
   });
 
   group('high level - network faster then timeout', () {
