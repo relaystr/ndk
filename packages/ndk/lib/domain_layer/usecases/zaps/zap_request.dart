@@ -4,8 +4,6 @@ class ZapRequest extends Nip01Event {
   static const int KIND = 9734;
 
   ZapRequest(
-      {required String pubKey,
-      required List<List<String>> tags,
-      required String content})
-      : super(kind: KIND, pubKey: pubKey, tags: tags, content: content);
+      {required super.pubKey, required super.tags, required super.content})
+      : super(kind: KIND);
 }
