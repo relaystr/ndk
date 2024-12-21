@@ -5,7 +5,6 @@ homepage: https://github.com/relaystr/ndk
 
 environment:
   sdk: ">=3.2.1 <4.0.0"
-  flutter: ">=3.3.0"
 
 platforms:
   android:
@@ -17,9 +16,14 @@ dependencies:
   hex: ^0.2.0
   plugin_platform_interface: ^2.1.8
   ndk: ^0.2.0-dev002
+  signer_plugin:
+    git:
+      url: https://github.com/chebizarro/flutter-signer-plugin
+      ref: baa5b2fcf7ba8db606a76794582348a1403438b0
+  # signer_plugin: ^1.0.0
 
-#dependency_overrides:
-#  ndk:
+dependency_overrides:
+   ndk:
 #    path: ../ndk
 
 dev_dependencies:
