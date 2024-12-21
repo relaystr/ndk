@@ -58,7 +58,7 @@ void main() {
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay1.url, relay2.url],
-        logLevel: Logger.logLevels.all,
+        logLevel: Logger.logLevels.error,
       );
 
       final ndk = Ndk(config);
@@ -111,6 +111,7 @@ void main() {
           relay2.url,
           'wss://dead-relay.example.com'
         ],
+        logLevel: Logger.logLevels.all,
       );
 
       final ndk = Ndk(config);
