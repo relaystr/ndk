@@ -432,13 +432,14 @@ class RelayManager<T> {
 
       if (state.request.closeOnEOSE) {
         _sendCloseToRelay(relayConnectivity, state.id);
-        _checkNetworkClose(state);
+        _checkNetworkClose(state, relayConnectivity);
       }
     }
     return;
   }
 
-  void _checkNetworkClose(RequestState state) {
+  void _checkNetworkClose(
+      RequestState state, RelayConnectivity relayConnectivity) {
     /// recived everything, close the network controller
     if (state.didAllRequestsReceivedEOSE) {
       state.networkController.close();
@@ -448,28 +449,17 @@ class RelayManager<T> {
     /// check if relays for this request are still connected
     /// if not ignore it and wait for the ones still alive to receive EOSE
     final listOfRelaysForThisRequest = state.requests.keys.toList();
-    final myConnectedRelays = globalState.relays.keys
+    final myNotConnectedRelays = globalState.relays.keys
         .where((url) => listOfRelaysForThisRequest.contains(url))
-        .where((url) => isRelayConnected(url))
+        .where((url) => !isRelayConnected(url))
         .toList();
 
-    if (myConnectedRelays.isEmpty) {
-      state.networkController.close();
-      return;
-    }
+    final bool didAllRelaysFinish = state.requests.values.every(
+      (element) =>
+          element.receivedEOSE || myNotConnectedRelays.contains(element.url),
+    );
 
-    /// if we have connected relays, we wait for them to receive EOSE
-
-    final target = myConnectedRelays.length;
-    int received = 0;
-
-    state.requests.forEach((url, request) {
-      if (myConnectedRelays.contains(url) && !request.receivedEOSE) {
-        received++;
-      }
-    });
-
-    if (received >= target) {
+    if (didAllRelaysFinish) {
       state.networkController.close();
     }
   }
