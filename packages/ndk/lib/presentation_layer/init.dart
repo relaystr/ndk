@@ -172,7 +172,6 @@ class Initialization {
     zaps = Zaps(
       requests: requests,
       nwc: nwc,
-      signer: _ndkConfig.eventSigner,
     );
 
     /// set the user configured log level
