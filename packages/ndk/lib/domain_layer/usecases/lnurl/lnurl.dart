@@ -98,9 +98,8 @@ class Lnurl {
     if (pollOption != null) {
       tags.add(["poll_option", pollOption]);
     }
-    var event = Nip01Event(
+    var event = ZapRequest(
         pubKey: signer.getPublicKey(),
-        kind: ZapRequest.KIND,
         tags: tags,
         content: eventContent);
     await signer.sign(event);
