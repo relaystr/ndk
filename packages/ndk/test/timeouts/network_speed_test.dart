@@ -43,8 +43,7 @@ void main() {
 
     // startup and teardown
     setUp(() async {
-      await relay1.startServer();
-      relay1.textNotes = key1TextNotes;
+      await relay1.startServer(textNotes: key1TextNotes);
       await relay2.startServer();
     });
 
@@ -57,8 +56,9 @@ void main() {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
+        engine: NdkEngine.JIT,
         bootstrapRelays: [relay1.url, relay2.url],
+        logLevel: Logger.logLevels.all,
       );
 
       final ndk = Ndk(config);
@@ -84,10 +84,12 @@ void main() {
           });
 
       // wait for completion
-      await response.future;
+      final responseData = await response.future;
 
       // Stop the stopwatch
       stopwatch.stop();
+
+      expect(responseData, isNotEmpty);
 
       expect(timeoutUserTriggered, isFalse);
       expect(timeoutTriggered, isFalse);
@@ -134,10 +136,12 @@ void main() {
           });
 
       // wait for completion
-      await response.future;
+      final responseData = await response.future;
 
       // Stop the stopwatch
       stopwatch.stop();
+
+      expect(responseData, isNotEmpty);
 
       expect(timeoutUserTriggered, isFalse);
       expect(timeoutTriggered, isFalse);
@@ -159,8 +163,7 @@ void main() {
 
     // startup and teardown
     setUp(() async {
-      await relay1.startServer();
-      relay1.textNotes = key1TextNotes;
+      await relay1.startServer(textNotes: key1TextNotes);
       await relay2.startServer();
     });
 

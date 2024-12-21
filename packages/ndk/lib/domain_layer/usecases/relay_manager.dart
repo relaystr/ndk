@@ -433,6 +433,7 @@ class RelayManager<T> {
       if (state.request.closeOnEOSE) {
         _sendCloseToRelay(relayConnectivity, state.id);
         _checkNetworkClose(state, relayConnectivity);
+        _logActiveRequests();
       }
     }
     return;
