@@ -67,15 +67,20 @@ class RequestState {
     }
   }
 
+  /// checks if all requests received EOSE
   bool get didAllRequestsReceivedEOSE =>
       !requests.values.any((element) => !element.receivedEOSE);
-
-  bool get shouldClose =>
-      request.closeOnEOSE && (requests.isEmpty || didAllRequestsReceivedEOSE);
 
   void addRequest(String url, List<Filter> filters) {
     if (!requests.containsKey(url)) {
       requests[url] = RelayRequestState(url, filters);
+    }
+  }
+
+  /// checks if all relays recieved EOSE or failed and closes the request
+  checkNetworkClose() {
+    if (didAllRequestsReceivedEOSE) {
+      networkController.close();
     }
   }
 
