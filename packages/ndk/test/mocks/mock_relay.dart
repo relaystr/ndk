@@ -101,7 +101,7 @@ class MockRelay {
 
   void _respondeNip65(List<String> authors, String requestId) {
     for (final author in authors) {
-      try {} catch (_) {
+      try {
         KeyPair key =
             nip65s!.keys.where((key) => key.publicKey == author).first;
         Nip65? nip65 = nip65s![key];
@@ -117,7 +117,7 @@ class MockRelay {
           json.add(event.toJson());
           webSocket!.add(jsonEncode(json));
         }
-      }
+      } catch (_) {}
     }
   }
 
