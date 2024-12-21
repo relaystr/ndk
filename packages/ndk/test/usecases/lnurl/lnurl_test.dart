@@ -28,14 +28,6 @@ void main() {
       expect(Lnurl.getLud16LinkFromLud16('invalid'), isNull);
     });
 
-    test('getLnurlFromLud16 returns correct lnurl', () {
-      // Assuming the Nip19.convertBits and Bech32Encoder are working correctly
-      // This test would need to be adjusted based on the actual implementation
-      var lnurl = Lnurl.getLnurlFromLud16('name@domain.com');
-      expect(lnurl, isNotNull);
-      expect(lnurl, startsWith('LNURL'));
-    });
-
     test('getLnurlResponse returns LnurlResponse for valid link', () async {
       final client = MockClient();
       final link = 'https://domain.com/.well-known/lnurlp/name';

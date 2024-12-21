@@ -11,6 +11,7 @@ import 'lnurl_response.dart';
 
 /// LN URL utilities
 abstract class Lnurl {
+
   /// transform a lud16 of format name@domain.com to https://domain.com/.well-known/lnurlp/name
   static String? getLud16LinkFromLud16(String lud16) {
     var strs = lud16.split("@");
@@ -24,17 +25,18 @@ abstract class Lnurl {
     return "https://$domainname/.well-known/lnurlp/$username";
   }
 
-  static String? getLnurlFromLud16(String lud16) {
-    var link = getLud16LinkFromLud16(lud16);
-    var uint8List = utf8.encode(link!);
-    var data = Nip19.convertBits(uint8List, 8, 5, true);
-
-    var encoder = Bech32Encoder();
-    Bech32 input = Bech32("lnurl", data);
-    var lnurl = encoder.convert(input, 2000);
-
-    return lnurl.toUpperCase();
-  }
+  // static String? getLnurlFromLud16(String lud16) {
+  //   var link = getLud16LinkFromLud16(lud16);
+  //   var uint8List = utf8.encode(link!);
+  //   var data = Nip19.convertBits(uint8List, 8, 5, true);
+  //
+  //   var encoder = Bech32Encoder();
+  //   Bech32 input = Bech32("lnurl", data);
+  //   var lnurl = encoder.convert(input, 2000);
+  //
+  //   return lnurl.toUpperCase();
+  // }
+  //
 
   /// fetch LNURL response from given link
   static Future<LnurlResponse?> getLnurlResponse(String link,
