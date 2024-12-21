@@ -13,6 +13,7 @@ import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+import '../domain_layer/usecases/zaps/zaps.dart';
 import 'init.dart';
 import 'ndk_config.dart';
 
@@ -94,6 +95,9 @@ class Ndk {
   /// Nostr Wallet connect
   @experimental
   Nwc get nwc => _initialization.nwc;
+
+  @experimental
+  Zaps get zaps => _initialization.zaps;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
