@@ -41,4 +41,6 @@ class LnurlResponse {
     data['nostrPubkey'] = nostrPubkey;
     return data;
   }
+
+  bool get doesAllowsNostr => allowsNostr!=null && allowsNostr!;
 }

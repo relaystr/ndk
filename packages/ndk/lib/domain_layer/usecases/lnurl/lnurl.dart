@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:bech32/bech32.dart';
 import 'package:http/http.dart' as http;
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart';
@@ -10,8 +9,9 @@ import 'package:ndk/shared/nips/nip19/nip19.dart';
 import '../../../shared/logger/logger.dart';
 import 'lnurl_response.dart';
 
-// TODO make this an instance in ndk/Initialization
-class Lnurl {
+/// LN URL utilities
+abstract class Lnurl {
+  /// transform a lud16 of format name@domain.com to https://domain.com/.well-known/lnurlp/name
   static String? getLud16LinkFromLud16(String lud16) {
     var strs = lud16.split("@");
     if (strs.length < 2) {
@@ -36,13 +36,19 @@ class Lnurl {
     return lnurl.toUpperCase();
   }
 
-  static Future<LnurlResponse?> getLnurlResponse(String link) async {
+  /// fetch LNURL response from given link
+  static Future<LnurlResponse?> getLnurlResponse(String link,
+      {http.Client? client}) async {
     Uri uri = Uri.parse(link).replace(scheme: 'https');
 
     try {
-      var response = await http.get(uri);
+      var response = await (client ?? http.Client()).get(uri);
       final decodedResponse =
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      if (client == null) {
+        // Only close if we created the client
+        client?.close();
+      }
       return LnurlResponse.fromJson(decodedResponse);
     } catch (e) {
       Logger.log.d(e);
@@ -50,17 +56,19 @@ class Lnurl {
     }
   }
 
+  /// creates an invoice with an optional zap request encoded if signer, pubKey & relays are non empty
   static Future<String?> getInvoiceCode({
     required String lud16Link,
     required int sats,
-    required String recipientPubkey,
-    required EventSigner signer,
+    EventSigner? signer,
+    String? pubKey,
     String? eventId,
-    required Iterable<String> relays,
+    Iterable<String>? relays,
     String? pollOption,
     String? comment,
+    http.Client? client
   }) async {
-    var lnurlResponse = await getLnurlResponse(lud16Link);
+    var lnurlResponse = await getLnurlResponse(lud16Link,client: client);
     if (lnurlResponse == null) {
       return null;
     }
@@ -87,35 +95,40 @@ class Lnurl {
       }
     }
 
-    var tags = [
-      ["relays", ...relays],
-      ["amount", amount.toString()],
-      ["p", recipientPubkey],
-    ];
-    if (eventId != null) {
-      tags.add(["e", eventId]);
+    if (lnurlResponse.doesAllowsNostr &&
+        pubKey != null &&
+        pubKey.isNotEmpty &&
+        relays != null &&
+        relays.isNotEmpty &&
+        signer != null) {
+      var tags = [
+        ["relays", ...relays],
+        ["amount", amount.toString()],
+        ["p", pubKey],
+      ];
+      if (eventId != null) {
+        tags.add(["e", eventId]);
+      }
+      if (pollOption != null) {
+        tags.add(["poll_option", pollOption]);
+      }
+      var event = ZapRequest(
+          pubKey: signer.getPublicKey(), tags: tags, content: eventContent);
+      await signer.sign(event);
+      if (event.sig == '') {
+        return null;
+      }
+      Logger.log.d(jsonEncode(event));
+      var eventStr = Uri.encodeQueryComponent(jsonEncode(event));
+      callback += "&nostr=$eventStr";
     }
-    if (pollOption != null) {
-      tags.add(["poll_option", pollOption]);
-    }
-    var event = ZapRequest(
-        pubKey: signer.getPublicKey(),
-        tags: tags,
-        content: eventContent);
-    await signer.sign(event);
-    if (event.sig == '') {
-      return null;
-    }
-    Logger.log.d(jsonEncode(event));
-    var eventStr = Uri.encodeQueryComponent(jsonEncode(event));
-    callback += "&nostr=$eventStr";
 
     Logger.log.d("getInvoice callback $callback");
 
     Uri uri = Uri.parse(callback);
 
     try {
-      var response = await http.get(uri);
+      var response = await (client ?? http.Client()).get(uri);
       final decodedResponse =
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       return decodedResponse["pr"];
@@ -124,44 +137,5 @@ class Lnurl {
     }
 
     return null;
-  }
-
-  static int getNumFromStr(String zapStr) {
-    var numStr = subUntil(zapStr, "lnbc", "1p");
-    if (numStr != '') {
-      var numStrLength = numStr.length;
-      if (numStrLength > 1) {
-        var lastStr = numStr.substring(numStr.length - 1);
-        var pureNumStr = numStr.substring(0, numStr.length - 1);
-        var pureNum = int.tryParse(pureNumStr);
-        if (pureNum != null) {
-          if (lastStr == "p") {
-            return (pureNum * 0.0001).round();
-          } else if (lastStr == "n") {
-            return (pureNum * 0.1).round();
-          } else if (lastStr == "u") {
-            return (pureNum * 100).round();
-          } else if (lastStr == "m") {
-            return (pureNum * 100000).round();
-          }
-        }
-      }
-    }
-    return 0;
-  }
-
-  static String subUntil(String content, String before, String end) {
-    var beforeLength = before.length;
-    var index = content.indexOf(before);
-    if (index < 0) {
-      return "";
-    }
-
-    var index2 = content.indexOf(end, index + beforeLength);
-    if (index2 <= 0) {
-      return "";
-    }
-
-    return content.substring(index + beforeLength, index2);
   }
 }
