@@ -22,7 +22,7 @@ void main() async {
   final connection = await ndk.nwc.connect(nwcUri);
   KeyPair key = Bip340.generatePrivateKey();
   final amount = 21;
-  final lnurl = "fmar@getalby.com";
+  final lnurl = "opensats@vlt.ge";
   final comment = "enjoy this zap from NDK";
 
   ZapResponse response = await ndk.zaps.zap(
@@ -33,8 +33,8 @@ void main() async {
     fetchZapReceipt: true,
     signer: Bip340EventSigner(privateKey: key.privateKey, publicKey: key.publicKey),
     relays: ["wss://relay.damus.io"],
-    pubKey: "30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177",
-    eventId: "d7bc29fa3c55ac525a3d5f2021211edb672b58565225dec423479a0875feea9d"
+    pubKey: "787338757fc25d65cd929394d5e7713cf43638e8d259e8dcf5c73b834eb851f2",
+    eventId: "906a0c5920b59e5754d0df5164bfea2a8d48ce5d73beaa1e854b3e6725e3288a"
   );
 
   if (response.payInvoiceResponse!=null && response.payInvoiceResponse!.preimage.isNotEmpty) {

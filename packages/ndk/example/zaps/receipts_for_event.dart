@@ -8,9 +8,9 @@ void main() async {
   print("fetching zap receipts for single event ");
   final receipts = await ndk.zaps.fetchZappedReceipts(
       pubKey:
-          "30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177",
+          "787338757fc25d65cd929394d5e7713cf43638e8d259e8dcf5c73b834eb851f2",
       eventId:
-          "d7bc29fa3c55ac525a3d5f2021211edb672b58565225dec423479a0875feea9d");
+          "906a0c5920b59e5754d0df5164bfea2a8d48ce5d73beaa1e854b3e6725e3288a");
 
   // Sort eventReceipts by amountSats in descending order
   receipts
