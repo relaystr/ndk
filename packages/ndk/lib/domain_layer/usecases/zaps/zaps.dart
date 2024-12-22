@@ -105,6 +105,23 @@ class Zaps {
       return ZapResponse(error: e.toString());
     }
   }
+
+  /// fetch all zap receipts matching given pubKey and optional event id, in sats
+  Future<List<ZapReceipt>> fetchZappedReceipts({required String pubKey, String? eventId, Duration? timeout} ) async {
+    NdkResponse? response = _requests.query(filters: [
+      eventId!=null?
+      Filter(
+          kinds: [ZapReceipt.KIND],
+          eTags: [eventId],
+          pTags: [pubKey])
+          :
+      Filter(
+          kinds: [ZapReceipt.KIND],
+          pTags: [pubKey])
+    ], timeout: timeout?? Duration(seconds: 20));
+    List<Nip01Event> events = await response.future;
+    return events.map((event) => ZapReceipt.fromEvent(event)).toList();
+  }
 }
 
 /// zap response

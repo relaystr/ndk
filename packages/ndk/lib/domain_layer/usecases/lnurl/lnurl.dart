@@ -142,4 +142,46 @@ abstract class Lnurl {
     await signer.sign(event);
     return event;
   }
+
+  /// extract amount from bolt11 in sats
+  static int getAmountFromBolt11(String bolt11) {
+    final numStr = subUntil(bolt11, "lnbc", "1p");
+    if (numStr.isNotEmpty) {
+      var numStrLength = numStr.length;
+      if (numStrLength > 1) {
+        var lastStr = numStr.substring(numStr.length - 1);
+        var pureNumStr = numStr.substring(0, numStr.length - 1);
+        var pureNum = int.tryParse(pureNumStr);
+        if (pureNum != null) {
+          if (lastStr == "p") {
+            return (pureNum * 0.0001).round();
+          } else if (lastStr == "n") {
+            return (pureNum * 0.1).round();
+          } else if (lastStr == "u") {
+            return (pureNum * 100).round();
+          } else if (lastStr == "m") {
+            return (pureNum * 100000).round();
+          }
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  static String subUntil(String content, String before, String end) {
+    var beforeLength = before.length;
+    var index = content.indexOf(before);
+    if (index < 0) {
+      return "";
+    }
+
+    var index2 = content.indexOf(end, index + beforeLength);
+    if (index2 <= 0) {
+      return "";
+    }
+
+    return content.substring(index + beforeLength, index2);
+  }
+
 }
