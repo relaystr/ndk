@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:ndk/domain_layer/usecases/nwc/nwc_connection.dart';
 import 'package:ndk/domain_layer/usecases/zaps/Invoice_response.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_receipt.dart';
@@ -9,7 +9,6 @@ import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
 
 import '../../../shared/logger/logger.dart';
 import '../../entities/filter.dart';
-import '../../entities/nip_01_event.dart';
 import '../../entities/request_response.dart';
 import '../../repositories/event_signer.dart';
 import '../lnurl/lnurl.dart';
@@ -17,13 +16,12 @@ import '../nwc/nwc.dart';
 import '../nwc/responses/pay_invoice_response.dart';
 import '../requests/requests.dart';
 
-import 'package:http/http.dart' as http;
-
 /// Zaps
 class Zaps {
   final Requests _requests;
   final Nwc _nwc;
 
+  /// .
   Zaps({
     required Requests requests,
     required Nwc nwc,

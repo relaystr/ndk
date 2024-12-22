@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:ndk/config/bootstrap_relays.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_receipt.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zaps.dart';
 import 'package:ndk/ndk.dart';

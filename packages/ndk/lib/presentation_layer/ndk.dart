@@ -93,11 +93,11 @@ class Ndk {
   VerifyNip05 get nip05 => _initialization.verifyNip05;
 
   /// Nostr Wallet connect
-  @experimental
+  @experimental // needs more docs & tests
   Nwc get nwc => _initialization.nwc;
 
   /// Zaps
-  @experimental
+  @experimental // needs more docs & tests
   Zaps get zaps => _initialization.zaps;
 
   /// Close all transports on relay manager

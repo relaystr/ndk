@@ -4,8 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
 import 'lnurl_test.mocks.dart';
@@ -14,7 +12,6 @@ import 'lnurl_test.mocks.dart';
 @GenerateMocks([http.Client])
 void main() {
   group('Lnurl', () {
-    KeyPair key = Bip340.generatePrivateKey();
 
     test('getLud16LinkFromLud16 returns correct URL', () {
       expect(

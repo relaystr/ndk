@@ -1,8 +1,6 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
-import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
 
 import '../../../shared/logger/logger.dart';
 import 'lnurl_response.dart';
