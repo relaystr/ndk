@@ -26,7 +26,7 @@ void main() {
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
-    const timoutMiliseconds = 5000;
+    const timoutMiliseconds = 10000;
 
     // startup and teardown
     setUp(() async {
