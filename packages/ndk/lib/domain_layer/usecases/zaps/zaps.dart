@@ -34,6 +34,7 @@ class Zaps {
     required NwcConnection nwcConnection,
     required String lnurl,
     required int amountSats,
+    bool fetchZapReceipt = false,
     EventSigner? signer,
     Iterable<String>? relays,
     String? pubKey,
@@ -67,36 +68,37 @@ class Zaps {
       PayInvoiceResponse payResponse =
           await _nwc.payInvoice(nwcConnection, invoice: invoice);
       if (payResponse.preimage.isNotEmpty && payResponse.errorCode == null) {
-        NdkResponse? receiptResponse;
-        if (zapRequest != null) {
-          // if it's a zap, try to find the zap receipt
-          receiptResponse = _requests.query(explicitRelays: relays, filters: [
-            Filter(
-                kinds: [ZapReceipt.KIND],
-                eTags: [eventId!],
-                pTags: [pubKey!])
-          ]);
-        }
         ZapResponse zapResponse = ZapResponse(
-            zapReceiptResponse: receiptResponse,
             payInvoiceResponse: payResponse);
-        if (receiptResponse != null) {
-          receiptResponse.future.then((events) {
-            Nip01Event? event = events.where((event) {
-              ZapReceipt receipt = ZapReceipt.fromEvent(event);
-              return receipt.bolt11 == invoice;
-            }).firstOrNull;
-            if (event!=null) {
+        if (zapRequest != null && fetchZapReceipt) {
+          // if it's a zap, try to find the zap receipt
+          zapResponse.receiptResponse = _requests.subscription(filters: [
+            eventId != null
+                ? Filter(kinds: [ZapReceipt.KIND], eTags: [eventId], pTags: [pubKey!])
+                : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey!])
+          ]);
+          // TODO make timeout waiting for receipt parameterizable somehow
+          zapResponse.zapReceiptResponse!.stream.timeout(Duration(seconds: 30)).listen((event) {
+            String? bolt11 = event.getFirstTag("bolt11");
+            String? preimage = event.getFirstTag("preimage");
+            if (bolt11!=null && bolt11 == invoice || preimage!=null && preimage==payResponse.preimage) {
               ZapReceipt receipt = ZapReceipt.fromEvent(event);
               Logger.log.d("Zap Receipt: $receipt");
               if (receipt.isValid(invoice)) {
                 zapResponse.emitReceipt(receipt);
-                return;
+              } else {
+                Logger.log.w("Zap Receipt invalid: $receipt");
               }
-              Logger.log.w("Zap Receipt invalid: $receipt");
+              _requests.closeSubscription(
+                  zapResponse.zapReceiptResponse!.requestId);
             }
-            zapResponse.emitReceipt(null);
+          }).onError((error) {
+            _requests.closeSubscription(
+                zapResponse.zapReceiptResponse!.requestId);
+            Logger.log.w("timed out waiting for zap receipt for invoice $invoice");
           });
+        } else {
+          zapResponse.emitReceipt(null);
         }
         return zapResponse;
       }
@@ -107,18 +109,13 @@ class Zaps {
   }
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
-  Future<List<ZapReceipt>> fetchZappedReceipts({required String pubKey, String? eventId, Duration? timeout} ) async {
-    NdkResponse? response = _requests.query(filters: [
-      eventId!=null?
-      Filter(
-          kinds: [ZapReceipt.KIND],
-          eTags: [eventId],
-          pTags: [pubKey])
-          :
-      Filter(
-          kinds: [ZapReceipt.KIND],
-          pTags: [pubKey])
-    ], timeout: timeout?? Duration(seconds: 20));
+  Future<List<ZapReceipt>> fetchZappedReceipts(
+      {required String pubKey, String? eventId, Duration? timeout}) async {
+    NdkResponse? response = _requests.subscription(filters: [
+      eventId != null
+          ? Filter(kinds: [ZapReceipt.KIND], eTags: [eventId], pTags: [pubKey])
+          : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey])
+    ]);
     List<Nip01Event> events = await response.future;
     return events.map((event) => ZapReceipt.fromEvent(event)).toList();
   }
@@ -146,4 +143,8 @@ class ZapResponse {
 
   ///
   ZapResponse({this.zapReceiptResponse, this.payInvoiceResponse, this.error});
+
+  set receiptResponse(NdkResponse receiptResponse) {
+    zapReceiptResponse = receiptResponse;
+  }
 }

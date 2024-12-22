@@ -16,10 +16,6 @@ void main() async {
   receipts
       .sort((a, b) => (b.amountSats ?? 0).compareTo(a.amountSats ?? 0));
 
-  // Sort profileReceipts by amountSats in descending order
-  receipts
-      .sort((a, b) => (b.amountSats ?? 0).compareTo(a.amountSats ?? 0));
-
   int eventSum = 0;
   for (var receipt in receipts) {
     String? sender;
