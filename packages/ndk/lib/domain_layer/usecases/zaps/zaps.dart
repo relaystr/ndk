@@ -78,7 +78,13 @@ class Zaps {
                 : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey!])
           ]);
           // TODO make timeout waiting for receipt parameterizable somehow
-          zapResponse.zapReceiptResponse!.stream.timeout(Duration(seconds: 30)).listen((event) {
+          final timeout = Timer(Duration(seconds: 30), () {
+            _requests.closeSubscription(
+                zapResponse.zapReceiptResponse!.requestId);
+            Logger.log.w("timed out waiting for zap receipt for invoice $invoice");
+          });
+
+          zapResponse.zapReceiptResponse!.stream.listen((event) {
             String? bolt11 = event.getFirstTag("bolt11");
             String? preimage = event.getFirstTag("preimage");
             if (bolt11!=null && bolt11 == invoice || preimage!=null && preimage==payResponse.preimage) {
@@ -89,13 +95,10 @@ class Zaps {
               } else {
                 Logger.log.w("Zap Receipt invalid: $receipt");
               }
+              timeout.cancel();
               _requests.closeSubscription(
                   zapResponse.zapReceiptResponse!.requestId);
             }
-          }).onError((error) {
-            _requests.closeSubscription(
-                zapResponse.zapReceiptResponse!.requestId);
-            Logger.log.w("timed out waiting for zap receipt for invoice $invoice");
           });
         } else {
           zapResponse.emitReceipt(null);

@@ -15,7 +15,7 @@ void main() async {
   final ndk = Ndk(NdkConfig(
       eventVerifier: Bip340EventVerifier(),
       cache: MemCacheManager(),
-      logLevel: Logger.logLevels.info));
+      logLevel: Logger.logLevels.trace));
 
       // You need an NWC_URI env var or to replace with your NWC uri connection
   final nwcUri = Platform.environment['NWC_URI']!;
