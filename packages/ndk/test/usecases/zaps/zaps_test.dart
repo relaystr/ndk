@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
 import 'package:ndk/presentation_layer/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -16,47 +15,8 @@ import '../lnurl/lnurl_test.mocks.dart';
 // Mock classes
 @GenerateMocks([http.Client])
 void main() {
-  group('Lnurl', () {
+  group('Zaps', () {
     KeyPair key = Bip340.generatePrivateKey();
-
-    test('getLud16LinkFromLud16 returns correct URL', () {
-      expect(
-        Lnurl.getLud16LinkFromLud16('name@domain.com'),
-        'https://domain.com/.well-known/lnurlp/name',
-      );
-    });
-
-    test('getLud16LinkFromLud16 returns null for invalid input', () {
-      expect(Lnurl.getLud16LinkFromLud16('invalid'), isNull);
-    });
-
-    test('getLnurlResponse returns LnurlResponse for valid link', () async {
-      final client = MockClient();
-      final link = 'https://domain.com/.well-known/lnurlp/name';
-      final response = {
-        'callback': 'https://domain.com/callback',
-        'commentAllowed': 100,
-      };
-
-      // Mock the client.get method
-      when(client.get(Uri.parse(link)))
-          .thenAnswer((_) async => http.Response(jsonEncode(response), 200));
-
-      var lnurlResponse = await Lnurl.getLnurlResponse(link, client: client);
-      expect(lnurlResponse, isNotNull);
-      expect(lnurlResponse!.callback, response['callback']);
-    });
-
-    test('getLnurlResponse returns null for invalid link', () async {
-      final client = MockClient();
-      final link = 'https://invalid.com';
-
-      when(client.get(Uri.parse(link)))
-          .thenAnswer((_) async => http.Response('Not Found', 404));
-
-      var lnurlResponse = await Lnurl.getLnurlResponse(link, client: client);
-      expect(lnurlResponse, isNull);
-    });
 
     test('fetchInvoidce returns invoice code for valid input', () async {
       final client = MockClient();
@@ -79,7 +39,7 @@ void main() {
             "status": "OK",
             "successAction": {"tag": "message", "message": "Payment Received!"},
             "routes": [],
-            "pr": "lnbc100...."
+            "pr": "lnbc1000...."
           }),
           200));
       final amount = 1000;
@@ -95,12 +55,13 @@ void main() {
           pubKey: 'pubKey',
           relays: ['relay1', 'relay2']);
 
-      var invoiceCode = await ndk.zaps.fecthInvoice(
+      var invoiceResponse = await ndk.zaps.fecthInvoice(
           lud16Link: link,
-          amountSats: 1000,
+          amountSats: amount,
           zapRequest: zapRequest,
           client: client);
-      expect(invoiceCode, startsWith("lnbc100"));
+      expect(invoiceResponse!.amountSats, amount);
+      expect(invoiceResponse.invoice, startsWith("lnbc$amount"));
     });
 
     test('fetchInvoidce returns null for invalid input', () async {
