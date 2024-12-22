@@ -56,96 +56,9 @@ abstract class Lnurl {
     }
   }
 
-  /// creates an invoice with an optional zap request encoded if signer, pubKey & relays are non empty
-  static Future<String?> getInvoiceCode({
-    required String lud16Link,
-    required int amountSats,
-    ZapRequest? zapRequest,
-    String? comment,
-    http.Client? client
-  }) async {
-    var lnurlResponse = await getLnurlResponse(lud16Link, client: client);
-    if (lnurlResponse == null) {
-      return null;
-    }
-
-    var callback = lnurlResponse.callback!;
-    if (callback.contains("?")) {
-      callback += "&";
-    } else {
-      callback += "?";
-    }
-
-    final amount = amountSats * 1000;
-    callback += "amount=$amount";
-
-    if (comment != null && comment.trim() != '') {
-      var commentNum = lnurlResponse.commentAllowed;
-      if (commentNum != null) {
-        if (commentNum < comment.length) {
-          comment = comment.substring(0, commentNum);
-        }
-        callback += "&comment=${Uri.encodeQueryComponent(comment)}";
-      }
-    }
-
-    // ZAP ?
-    if (lnurlResponse.doesAllowsNostr && zapRequest!=null && zapRequest.sig.isNotEmpty) {
-      Logger.log.d(jsonEncode(zapRequest));
-      var eventStr = Uri.encodeQueryComponent(jsonEncode(zapRequest));
-      callback += "&nostr=$eventStr";
-    }
-
-    Logger.log.d("getInvoice callback $callback");
-
-    Uri uri = Uri.parse(callback);
-
-    try {
-      var response = await (client ?? http.Client()).get(uri);
-      final decodedResponse =
-      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      return decodedResponse["pr"];
-    } catch (e) {
-      Logger.log.d(e);
-    }
-
-    return null;
-  }
-
-  static Future<ZapRequest> zapRequest({
-    required int amountSats,
-    required EventSigner signer,
-    required String pubKey,
-    String? eventId,
-    String? comment,
-    required Iterable<String> relays,
-    String? pollOption,
-  }) async {
-    if (amountSats<0) {
-      throw ArgumentError("amount cannot be < 0");
-    }
-    final amount = amountSats * 1000;
-
-    var tags = [
-      ["relays", ...relays],
-      ["amount", amount.toString()],
-      ["p", pubKey],
-    ];
-    if (eventId != null) {
-      tags.add(["e", eventId]);
-    }
-    if (pollOption != null) {
-      tags.add(["poll_option", pollOption]);
-    }
-    var event = ZapRequest(
-        pubKey: signer.getPublicKey(), tags: tags, content: comment??'');
-    await signer.sign(event);
-    return event;
-  }
-
   /// extract amount from bolt11 in sats
   static int getAmountFromBolt11(String bolt11) {
-    final numStr = subUntil(bolt11, "lnbc", "1p");
+    final numStr = _subUntil(bolt11, "lnbc", "1p");
     if (numStr.isNotEmpty) {
       var numStrLength = numStr.length;
       if (numStrLength > 1) {
@@ -169,7 +82,7 @@ abstract class Lnurl {
     return 0;
   }
 
-  static String subUntil(String content, String before, String end) {
+  static String _subUntil(String content, String before, String end) {
     var beforeLength = before.length;
     var index = content.indexOf(before);
     if (index < 0) {
