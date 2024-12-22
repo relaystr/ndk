@@ -1,6 +1,6 @@
 # running the examples
 
-You need a `nostr+walletconnect://...` uri from your NWC wallet service provider.
+For zapping example `zap.dart` you need a `nostr+walletconnect://...` uri from your NWC wallet service provider.
 
 see https://github.com/getAlby/awesome-nwc for more info how to get a wallet supporting NWC
 
