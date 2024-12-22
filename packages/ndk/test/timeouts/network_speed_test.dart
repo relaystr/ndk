@@ -23,6 +23,7 @@ void main() {
     KeyPair key1 = Bip340.generatePrivateKey();
     MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 8201);
     MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 8202);
+
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
     const timoutMiliseconds = 5000;
@@ -142,14 +143,21 @@ void main() {
 
   group('high level - network faster then timeout', () {
     KeyPair key1 = Bip340.generatePrivateKey();
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 8301);
-    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 8302);
+
+    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 8203);
+    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 8204);
+
+    MockRelay relay5 = MockRelay(name: "relay 3", explicitPort: 8205);
+    MockRelay relay6 = MockRelay(name: "relay 4", explicitPort: 8206);
 
     Nip65 nip65ForKey1 = Nip65.fromMap(key1.publicKey, {
-      relay1.url: ReadWriteMarker.readWrite,
+      relay3.url: ReadWriteMarker.readWrite,
+      relay5.url: ReadWriteMarker.readWrite,
       "dead-gossip-relay1.example.com": ReadWriteMarker.readWrite,
       "dead-gossip-relay2.example.com": ReadWriteMarker.readWrite,
     });
+
+    Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
     Map<KeyPair, Nip65> nip65s = {
       key1: nip65ForKey1,
@@ -159,21 +167,25 @@ void main() {
 
     // startup and teardown
     setUp(() async {
-      await relay1.startServer();
-      await relay2.startServer(nip65s: nip65s);
+      await relay3.startServer(textNotes: key1TextNotes);
+      await relay4.startServer(nip65s: nip65s);
+      await relay5.startServer(textNotes: key1TextNotes);
+      await relay6.startServer(nip65s: nip65s);
     });
 
     tearDown(() async {
-      await relay1.server!.close(force: true);
-      await relay2.server!.close(force: true);
+      await relay3.server!.close(force: true);
+      await relay4.server!.close(force: true);
+      await relay5.server!.close(force: true);
+      await relay6.server!.close(force: true);
     });
 
     test('query - nip65', () async {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
-        bootstrapRelays: [relay1.url, relay2.url],
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay3.url, relay4.url],
       );
 
       final ndk = Ndk(config);
@@ -206,8 +218,8 @@ void main() {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
-        bootstrapRelays: [relay1.url, relay2.url],
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay3.url, relay4.url],
       );
 
       final ndk = Ndk(config);
@@ -236,8 +248,8 @@ void main() {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
-        bootstrapRelays: [relay1.url, relay2.url],
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay3.url, relay4.url],
       );
 
       final ndk = Ndk(config);
@@ -266,7 +278,7 @@ void main() {
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
-        bootstrapRelays: [relay2.url],
+        bootstrapRelays: [relay6.url],
         logLevel: Logger.logLevels.all,
       );
 
