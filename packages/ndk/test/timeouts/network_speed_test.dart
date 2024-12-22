@@ -88,7 +88,7 @@ void main() {
           'low level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms');
     });
 
-    test('query - one dead relay', () async {
+    test('query - one dead seed relay', () async {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
