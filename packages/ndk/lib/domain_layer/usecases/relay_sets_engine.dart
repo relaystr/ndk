@@ -63,7 +63,6 @@ class RelaySetsEngine implements NetworkEngine {
               relay,
               ClientMsg(
                 ClientMsgType.REQ,
-                id: id,
                 filters: request.filters,
               ));
         }

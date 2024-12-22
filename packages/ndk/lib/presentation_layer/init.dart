@@ -70,6 +70,7 @@ class Initialization {
       case NdkEngine.RELAY_SETS:
         relayManager = RelayManager(
           globalState: _globalState,
+          signer: _ndkConfig.eventSigner,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
         );
