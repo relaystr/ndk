@@ -205,16 +205,17 @@ class Zaps {
   }
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
-  Future<List<ZapReceipt>> fetchZappedReceipts(
-      {required String pubKey, String? eventId, Duration? timeout}) async {
+  Stream<ZapReceipt> fetchZappedReceipts(
+      {required String pubKey, String? eventId, Duration? timeout}) {
     NdkResponse? response = _requests.query(timeout: timeout??Duration(seconds:10), filters: [
       eventId != null
           ? Filter(kinds: [ZapReceipt.KIND], eTags: [eventId], pTags: [pubKey])
           : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey])
     ]);
-    List<Nip01Event> events = await response.future;
     // TODO how to check validity of zap receipts without nostrPubKey and recipientLnurl????
-    return events.map((event) => ZapReceipt.fromEvent(event)).toList();
+    return response.stream.map((event) => ZapReceipt.fromEvent(event));
+    // List<Nip01Event> events = await response.future;
+    // return events.map((event) => ZapReceipt.fromEvent(event)).toList();
   }
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
