@@ -66,7 +66,7 @@ class Zaps {
     }
     try {
       PayInvoiceResponse payResponse =
-          await _nwc.payInvoice(nwcConnection, invoice: invoice);
+          await _nwc.payInvoice(nwcConnection, invoice: invoice, timeout: Duration(seconds: 10));
       if (payResponse.preimage.isNotEmpty && payResponse.errorCode == null) {
         ZapResponse zapResponse = ZapResponse(
             payInvoiceResponse: payResponse);
@@ -114,13 +114,24 @@ class Zaps {
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
   Future<List<ZapReceipt>> fetchZappedReceipts(
       {required String pubKey, String? eventId, Duration? timeout}) async {
-    NdkResponse? response = _requests.subscription(filters: [
+    NdkResponse? response = _requests.query(timeout: timeout??Duration(seconds:10), filters: [
       eventId != null
           ? Filter(kinds: [ZapReceipt.KIND], eTags: [eventId], pTags: [pubKey])
           : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey])
     ]);
     List<Nip01Event> events = await response.future;
     return events.map((event) => ZapReceipt.fromEvent(event)).toList();
+  }
+
+  /// fetch all zap receipts matching given pubKey and optional event id, in sats
+  NdkResponse subscribeToZapReceipts(
+      {required String pubKey, String? eventId}) {
+    NdkResponse? response = _requests.subscription(filters: [
+      eventId != null
+          ? Filter(kinds: [ZapReceipt.KIND], eTags: [eventId], pTags: [pubKey])
+          : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey])
+    ]);
+    return response;
   }
 }
 
