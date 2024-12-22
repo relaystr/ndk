@@ -96,6 +96,7 @@ class Ndk {
   @experimental
   Nwc get nwc => _initialization.nwc;
 
+  /// Zaps
   @experimental
   Zaps get zaps => _initialization.zaps;
 

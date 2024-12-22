@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
+import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
@@ -80,16 +82,21 @@ void main() {
             "pr": "lnbc100...."
           }),
           200));
+      final amount = 1000;
+
+      ZapRequest zapRequest = await Lnurl.zapRequest(
+          amountSats: amount,
+          eventId: 'eventId',
+          comment: 'comment',
+          signer: Bip340EventSigner(
+              privateKey: key.privateKey, publicKey: key.publicKey),
+          pubKey: 'pubKey',
+          relays: ['relay1', 'relay2']);
 
       var invoiceCode = await Lnurl.getInvoiceCode(
           lud16Link: link,
-          sats: 1000,
-          signer: Bip340EventSigner(privateKey: key.privateKey, publicKey: key.publicKey),
-          pubKey: 'pubKey',
-          eventId: 'eventId',
-          relays: ['relay1', 'relay2'],
-          pollOption: 'option',
-          comment: 'comment',
+          amountSats: 1000,
+          zapRequest: zapRequest,
           client: client);
       expect(invoiceCode, startsWith("lnbc100"));
     });
@@ -97,9 +104,66 @@ void main() {
     test('getInvoiceCode returns null for invalid input', () async {
       var invoiceCode = await Lnurl.getInvoiceCode(
         lud16Link: 'invalid',
-        sats: 1000,
+        amountSats: 1000,
       );
       expect(invoiceCode, isNull);
+    });
+
+    test('zapRequest returns valid ZapRequest for correct inputs', () async {
+      final amount = 1000;
+      final eventId = 'eventId';
+      final comment = 'comment';
+      final pubKey = 'pubKey';
+      final relays = ['relay1', 'relay2'];
+
+      ZapRequest zapRequest = await Lnurl.zapRequest(
+        amountSats: amount,
+        eventId: eventId,
+        comment: comment,
+        signer: Bip340EventSigner(
+            privateKey: key.privateKey, publicKey: key.publicKey),
+        pubKey: pubKey,
+        relays: relays,
+      );
+
+      expect(zapRequest, isNotNull);
+      expect(zapRequest.tags, containsAll([
+        ['amount', (amount*1000).toString()],
+        ['e', eventId],
+        ['p', pubKey],
+        ['relays', ...relays]
+      ]));
+      expect(zapRequest.content, comment);
+      expect(zapRequest.sig, isNotEmpty);
+    });
+
+    test('zapRequest throws error for negative amount', () async {
+      expect(
+        () async => await Lnurl.zapRequest(
+          amountSats: -1000,
+          eventId: 'eventId',
+          comment: 'comment',
+          signer: Bip340EventSigner(
+              privateKey: key.privateKey, publicKey: key.publicKey),
+          pubKey: 'pubKey',
+          relays: ['relay1', 'relay2'],
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('zapRequest handles empty relays list', () async {
+      ZapRequest zapRequest = await Lnurl.zapRequest(
+        amountSats: 1000,
+        eventId: 'eventId',
+        comment: 'comment',
+        signer: Bip340EventSigner(
+            privateKey: key.privateKey, publicKey: key.publicKey),
+        pubKey: 'pubKey',
+        relays: [],
+      );
+
+      expect(zapRequest, isNotNull);
     });
   });
 }

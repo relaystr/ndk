@@ -1,10 +1,8 @@
 import 'dart:convert';
 
-import 'package:bech32/bech32.dart';
 import 'package:http/http.dart' as http;
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
-import 'package:ndk/shared/nips/nip19/nip19.dart';
 
 import '../../../shared/logger/logger.dart';
 import 'lnurl_response.dart';
@@ -46,7 +44,7 @@ abstract class Lnurl {
     try {
       var response = await (client ?? http.Client()).get(uri);
       final decodedResponse =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       if (client == null) {
         // Only close if we created the client
         client?.close();
@@ -61,16 +59,12 @@ abstract class Lnurl {
   /// creates an invoice with an optional zap request encoded if signer, pubKey & relays are non empty
   static Future<String?> getInvoiceCode({
     required String lud16Link,
-    required int sats,
-    EventSigner? signer,
-    String? pubKey,
-    String? eventId,
-    Iterable<String>? relays,
-    String? pollOption,
+    required int amountSats,
+    ZapRequest? zapRequest,
     String? comment,
     http.Client? client
   }) async {
-    var lnurlResponse = await getLnurlResponse(lud16Link,client: client);
+    var lnurlResponse = await getLnurlResponse(lud16Link, client: client);
     if (lnurlResponse == null) {
       return null;
     }
@@ -82,10 +76,9 @@ abstract class Lnurl {
       callback += "?";
     }
 
-    var amount = sats * 1000;
+    final amount = amountSats * 1000;
     callback += "amount=$amount";
 
-    String eventContent = "";
     if (comment != null && comment.trim() != '') {
       var commentNum = lnurlResponse.commentAllowed;
       if (commentNum != null) {
@@ -93,35 +86,13 @@ abstract class Lnurl {
           comment = comment.substring(0, commentNum);
         }
         callback += "&comment=${Uri.encodeQueryComponent(comment)}";
-        eventContent = comment;
       }
     }
 
-    if (lnurlResponse.doesAllowsNostr &&
-        pubKey != null &&
-        pubKey.isNotEmpty &&
-        relays != null &&
-        relays.isNotEmpty &&
-        signer != null) {
-      var tags = [
-        ["relays", ...relays],
-        ["amount", amount.toString()],
-        ["p", pubKey],
-      ];
-      if (eventId != null) {
-        tags.add(["e", eventId]);
-      }
-      if (pollOption != null) {
-        tags.add(["poll_option", pollOption]);
-      }
-      var event = ZapRequest(
-          pubKey: signer.getPublicKey(), tags: tags, content: eventContent);
-      await signer.sign(event);
-      if (event.sig == '') {
-        return null;
-      }
-      Logger.log.d(jsonEncode(event));
-      var eventStr = Uri.encodeQueryComponent(jsonEncode(event));
+    // ZAP ?
+    if (lnurlResponse.doesAllowsNostr && zapRequest!=null && zapRequest.sig.isNotEmpty) {
+      Logger.log.d(jsonEncode(zapRequest));
+      var eventStr = Uri.encodeQueryComponent(jsonEncode(zapRequest));
       callback += "&nostr=$eventStr";
     }
 
@@ -132,12 +103,43 @@ abstract class Lnurl {
     try {
       var response = await (client ?? http.Client()).get(uri);
       final decodedResponse =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       return decodedResponse["pr"];
     } catch (e) {
       Logger.log.d(e);
     }
 
     return null;
+  }
+
+  static Future<ZapRequest> zapRequest({
+    required int amountSats,
+    required EventSigner signer,
+    required String pubKey,
+    String? eventId,
+    String? comment,
+    required Iterable<String> relays,
+    String? pollOption,
+  }) async {
+    if (amountSats<0) {
+      throw ArgumentError("amount cannot be < 0");
+    }
+    final amount = amountSats * 1000;
+
+    var tags = [
+      ["relays", ...relays],
+      ["amount", amount.toString()],
+      ["p", pubKey],
+    ];
+    if (eventId != null) {
+      tags.add(["e", eventId]);
+    }
+    if (pollOption != null) {
+      tags.add(["poll_option", pollOption]);
+    }
+    var event = ZapRequest(
+        pubKey: signer.getPublicKey(), tags: tags, content: comment??'');
+    await signer.sign(event);
+    return event;
   }
 }
