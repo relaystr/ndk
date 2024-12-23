@@ -35,7 +35,8 @@ class Zaps {
       ZapRequest? zapRequest,
       String? comment,
       http.Client? client}) async {
-    var lnurlResponse = await Lnurl.getLnurlResponse(lud16Link, client: client);
+    final lnurlResponse =
+        await Lnurl.getLnurlResponse(lud16Link, client: client);
     if (lnurlResponse == null) {
       return null;
     }
