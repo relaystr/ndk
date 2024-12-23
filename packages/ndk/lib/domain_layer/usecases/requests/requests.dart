@@ -4,6 +4,7 @@ import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
+import '../../../dev/simple_profiler.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/event_filter.dart';
@@ -178,6 +179,7 @@ class Requests {
   ///
   /// Returns an [NdkResponse] containing the request results
   NdkResponse requestNostrEvent(NdkRequest request) {
+    final profiler = SimpleProfiler('requestNostrEventProfiler-${request.id}');
     final state = RequestState(request);
 
     final response = NdkResponse(state.id, state.stream);
@@ -194,6 +196,7 @@ class Requests {
 
       // call user defined timeout function
       request.timeoutCallbackUserFacing?.call();
+      profiler.checkpoint("onTimeout");
     };
 
     // register event verification - removes invalid events from the stream
@@ -210,6 +213,7 @@ class Requests {
 
     // register listener
     StreamResponseCleaner(
+      profiler: profiler,
       inputStreams: [
         verifiedNetworkStream,
         state.cacheController.stream,
@@ -219,8 +223,13 @@ class Requests {
       eventOutFilters: _eventOutFilters,
     )();
 
+    state.controller.onCancel = () {
+      profiler.checkpoint('onCancel');
+    };
+
     /// cleanup on close
     state.stream.doOnDone(() {
+      profiler.checkpoint('onDone');
       _globalState.inFlightRequests.remove(state.id);
     });
 
@@ -248,6 +257,8 @@ class Requests {
 
       /// handle request
       _engine.handleRequest(state);
+
+      profiler.checkpoint('send to engine');
     }
 
     asyncStuff();
