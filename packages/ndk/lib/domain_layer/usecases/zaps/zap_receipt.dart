@@ -1,23 +1,44 @@
 import 'dart:convert';
 
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
-
 import '../../../shared/logger/logger.dart';
+import '../../entities/nip_01_event.dart';
+import '../lnurl/lnurl.dart';
 
 class ZapReceipt {
+  /// zap receipt kind
   static const KIND = 9735;
 
+  /// time payment happend
   int? paidAt;
+
+  /// amount in sats
   int? amountSats;
+
+  /// pubKey
   String? pubKey;
+
+  /// invoice
   String? bolt11;
+
+  /// invoice preimage
   String? preimage;
+
+  /// pubkey of recipient
   String? recipient;
+
+  /// nostr eventId
   String? eventId;
+
+  /// user defined comment
   String? comment;
+
+  /// pubkey sender
   String? sender;
+
+  ///
   String? anon;
+
+  /// lnurl
   String? lnurl;
 
   ZapReceipt.fromEvent(Nip01Event event) {
@@ -70,13 +91,13 @@ class ZapReceipt {
       return false;
     }
     //  - The invoiceAmount contained in the bolt11 tag of the zap receipt MUST equal the amount tag of the zap request (if present).
-    if (bolt11!=null && bolt11!.isNotEmpty) {
+    if (bolt11 != null && bolt11!.isNotEmpty) {
       if (amountSats != Lnurl.getAmountFromBolt11(bolt11!)) {
         return false;
       }
     }
     //  - The lnurl tag of the zap request (if present) SHOULD equal the recipient's lnurl.
-    if (lnurl!=null && lnurl!.isNotEmpty) {
+    if (lnurl != null && lnurl!.isNotEmpty) {
       if (lnurl != recipientLnurl) {
         return false;
       }

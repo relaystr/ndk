@@ -12,7 +12,7 @@ import '../nwc/nwc.dart';
 import '../nwc/nwc_connection.dart';
 import '../nwc/responses/pay_invoice_response.dart';
 import '../requests/requests.dart';
-import 'Invoice_response.dart';
+import 'invoice_response.dart';
 import 'zap_receipt.dart';
 import 'zap_request.dart';
 
