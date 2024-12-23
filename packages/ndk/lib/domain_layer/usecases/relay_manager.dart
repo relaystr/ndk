@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
+
+import 'package:ndk/domain_layer/repositories/event_signer.dart';
+import 'package:ndk/domain_layer/usecases/nip42/auth_event.dart';
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
@@ -30,6 +34,9 @@ class RelayManager<T> {
   /// global state obj
   GlobalState globalState;
 
+  /// signer for nip-42 AUTH challenges from relays
+  EventSigner? signer;
+
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
 
@@ -40,12 +47,12 @@ class RelayManager<T> {
   bool _allowReconnectRelays = true;
 
   /// Creates a new relay manager.
-  RelayManager(
-      {required this.globalState,
-      required this.nostrTransportFactory,
-      this.engineAdditionalDataFactory,
-      List<String>? bootstrapRelays,
-      allowReconnect = true}) {
+  RelayManager({required this.globalState,
+    required this.nostrTransportFactory,
+    this.signer,
+    this.engineAdditionalDataFactory,
+    List<String>? bootstrapRelays,
+    allowReconnect = true}) {
     _allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
@@ -54,7 +61,7 @@ class RelayManager<T> {
   bool get allowReconnectRelays => _allowReconnectRelays;
 
   /// sets allowed to reconnectRelays
-  set allowReconnectRelays(bool b) {
+  void set allowReconnectRelays(bool b) {
     _allowReconnectRelays = b;
   }
 
@@ -74,13 +81,14 @@ class RelayManager<T> {
       bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS;
     }
     await Future.wait(urls
-            .map(
-              (url) => connectRelay(
-                dirtyUrl: url,
-                connectionSource: ConnectionSource.SEED,
-              ),
-            )
-            .toList())
+        .map(
+          (url) =>
+          connectRelay(
+            dirtyUrl: url,
+            connectionSource: ConnectionSource.SEED,
+          ),
+    )
+        .toList())
         .whenComplete(() {
       if (!_seedRelaysCompleter.isCompleted) {
         _seedRelaysCompleter.complete();
@@ -90,9 +98,10 @@ class RelayManager<T> {
 
   /// Returns a list of fully connected relays, excluding connecting ones.
   /// DO NOT USE THIS FOR CHECKING A SINGLE RELAY, use [isRelayConnected] INSTEAD
-  List<RelayConnectivity> get connectedRelays => globalState.relays.values
-      .where((relay) => isRelayConnected(relay.url))
-      .toList();
+  List<RelayConnectivity> get connectedRelays =>
+      globalState.relays.values
+          .where((relay) => isRelayConnected(relay.url))
+          .toList();
 
   /// checks if a relay is connected, avoid using this
   bool isRelayConnected(String url) {
@@ -101,7 +110,7 @@ class RelayManager<T> {
 
   /// checks if a relay is connecting
   bool isRelayConnecting(String url) {
-    Relay? relay = globalState.relays[url]?.relay;
+    Relay? relay = globalState.relays[url]?.relay ?? null;
     return relay != null && relay.connecting;
   }
 
@@ -138,6 +147,7 @@ class RelayManager<T> {
         );
         globalState.relays[url] = relayConnectivity;
       }
+      ;
       relayConnectivity.relay.tryingToConnect();
 
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
@@ -159,7 +169,7 @@ class RelayManager<T> {
 
       _startListeningToSocket(relayConnectivity);
 
-      Logger.log.t("connected to relay: $url");
+      developer.log("connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
       relayConnectivity.stats.connections++;
       getRelayInfo(url).then((info) {
@@ -183,7 +193,7 @@ class RelayManager<T> {
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
           .onError((error, stackTrace) {
-        Logger.log.e("error connecting to relay $url: $error");
+        Logger.log.e("error connecting to relay ${url}: $error");
         return []; // Return an empty list in case of error
       });
     }
@@ -219,14 +229,19 @@ class RelayManager<T> {
   Future<void> reconnectRelays(Iterable<String> urls) async {
     final startTime = DateTime.now();
     Logger.log.d("connecting ${urls.length} relays in parallel");
-    List<bool> connected = await Future.wait(urls.map((url) => reconnectRelay(
-        url,
-        connectionSource: ConnectionSource.EXPLICIT,
-        force: true)));
+    List<bool> connected = await Future.wait(urls.map((url) =>
+        reconnectRelay(
+            url,
+            connectionSource: ConnectionSource.EXPLICIT,
+            force: true)));
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log.d(
-        "CONNECTED ${connected.where((element) => element).length} , ${connected.where((element) => !element).length} FAILED, took ${duration.inMilliseconds} ms");
+        "CONNECTED ${connected
+            .where((element) => element)
+            .length} , ${connected
+            .where((element) => !element)
+            .length} FAILED, took ${duration.inMilliseconds} ms");
   }
 
   void _reSubscribeInFlightSubscriptions(RelayConnectivity relayConnectivity) {
@@ -274,9 +289,9 @@ class RelayManager<T> {
     if (globalState.inFlightRequests[reqId]!.requests[relayUrl] == null) {
       globalState.inFlightRequests[reqId]!.requests[relayUrl] =
           RelayRequestState(
-        relayUrl,
-        filters,
-      );
+            relayUrl,
+            filters,
+          );
     } else {
       // do not overwrite and add new filters
       globalState.inFlightRequests[reqId]!.requests[relayUrl]!.filters
@@ -292,16 +307,17 @@ class RelayManager<T> {
   }) {
     // new tracking
     if (globalState
-            .inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] ==
+        .inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] ==
         null) {
       globalState.inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] =
           RelayBroadcastResponse(
-        relayUrl: relayUrl,
-      );
+            relayUrl: relayUrl,
+          );
     } else {
       // do not overwrite
       Logger.log.w(
-          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} $relayUrl, skipping");
+          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish
+              .id} ${relayUrl}, skipping");
     }
   }
 
@@ -318,7 +334,9 @@ class RelayManager<T> {
       throw Exception("Error in socket");
     }, onDone: () {
       Logger.log.t(
-          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
+          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity
+              .relayTransport!.closeCode()} ${relayConnectivity.relayTransport!
+              .closeReason()})");
       if (relayConnectivity.relayTransport!.isOpen()) {
         Logger.log.t("closing ${relayConnectivity.url} webSocket");
         relayConnectivity.relayTransport!.close();
@@ -329,7 +347,7 @@ class RelayManager<T> {
           globalState.relays[relayConnectivity.url]!.relayTransport != null) {
         Logger.log.i("closed ${relayConnectivity.url}. Reconnecting");
         reconnectRelay(relayConnectivity.url,
-                connectionSource: relayConnectivity.relay.connectionSource)
+            connectionSource: relayConnectivity.relay.connectionSource)
             .then((connected) {
           if (connected) {
             _reSubscribeInFlightSubscriptions(relayConnectivity);
@@ -339,8 +357,8 @@ class RelayManager<T> {
     });
   }
 
-  void _handleIncomingMessage(
-      dynamic message, RelayConnectivity relayConnectivity) {
+  void _handleIncomingMessage(dynamic message,
+      RelayConnectivity relayConnectivity) {
     List<dynamic> eventJson = json.decode(message);
 
     if (eventJson[0] == 'OK') {
@@ -370,15 +388,36 @@ class RelayManager<T> {
       _handleEOSE(eventJson, relayConnectivity);
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
-          " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
+          " CLOSED subscription url: ${relayConnectivity
+              .url} id: ${eventJson[1]} msg: ${eventJson.length > 2
+              ? eventJson[2]
+              : ''}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
-    // TODO
-    // if (eventJson[0] == 'AUTH') {
-    //   log("AUTH: ${eventJson[1]}");
-    //   // nip 42 used to send authentication challenges
-    //   return;
-    // }
+    if (eventJson[0] == ClientMsgType.AUTH) {
+      // nip 42 used to send authentication challenges
+      final challenge = eventJson[1];
+      Logger.log.d("AUTH: ${challenge}");
+      if (signer != null) {
+        final auth = AuthEvent(
+            pubKey: signer!.getPublicKey(),
+            tags:
+            [
+              ["relay", relayConnectivity.url],
+              ["challenge", challenge]
+            ]
+        );
+        signer!.sign(auth);
+        send(
+            relayConnectivity,
+            ClientMsg(
+              ClientMsgType.AUTH,
+              event: auth
+            )
+        );
+      }
+      return;
+    }
     //
     // if (eventJson[0] == 'COUNT') {
     //   log("COUNT: ${eventJson[1]}");
@@ -402,14 +441,15 @@ class RelayManager<T> {
     if (state != null) {
       RelayRequestState? request = state.requests[url];
       if (request == null) {
-        Logger.log.w("No RelayRequestState found for id $id");
+        Logger.log.w("No RelayRequestState found for id ${id}");
         return;
       }
       event.sources.add(url);
 
       if (state.networkController.isClosed) {
         Logger.log.e(
-            "TRIED to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
+            "TRIED to add event to an already closed STREAM ${state.request
+                .id} ${state.request.filters}");
       } else {
         state.networkController.add(event);
       }
@@ -417,13 +457,15 @@ class RelayManager<T> {
   }
 
   /// handles EOSE messages
-  void _handleEOSE(
-      List<dynamic> eventJson, RelayConnectivity relayConnectivity) {
+  void _handleEOSE(List<dynamic> eventJson,
+      RelayConnectivity relayConnectivity) {
     String id = eventJson[1];
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null && state.request.closeOnEOSE) {
       Logger.log.t(
-          "⛁ received EOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+          "⛁ received EOSE from ${relayConnectivity
+              .url} for REQ id $id, remaining requests from :${state.requests
+              .keys} kind:${state.requests.values.first.filters.first.kinds}");
       RelayRequestState? request = state.requests[relayConnectivity.url];
       if (request != null) {
         request.receivedEOSE = true;
@@ -491,7 +533,8 @@ class RelayManager<T> {
       namesMap[state.request.name] = nameCount;
     });
     Logger.log.d(
-        "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests.length} || $namesMap");
+        "------------ IN FLIGHT REQUESTS: ${globalState.inFlightRequests
+            .length} || $namesMap");
   }
 
   /// Closes this url transport and removes
