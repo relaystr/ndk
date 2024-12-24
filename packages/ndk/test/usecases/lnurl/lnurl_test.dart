@@ -6,7 +6,6 @@ import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
-import 'package:ndk/presentation_layer/ndk.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:test/test.dart';
 
@@ -16,7 +15,6 @@ import 'lnurl_test.mocks.dart';
 @GenerateMocks([http.Client])
 void main() {
   group('Lnurl', () {
-
     test('getLud16LinkFromLud16 returns correct URL', () {
       expect(
         Lnurl.getLud16LinkFromLud16('name@domain.com'),
@@ -58,6 +56,17 @@ void main() {
 
       var lnurlResponse = await lnurl.getLnurlResponse(link);
       expect(lnurlResponse, isNull);
+    });
+
+    test('getAmountFromBolt11 returns correct amount for valid input', () {
+      final amount = Lnurl.getAmountFromBolt11(
+          'lnbc15u1p3xnhl2pp5jptserfk3zk4qy42tlucycrfwxhydvlemu9pqr93tuzlv9cc7g3sdqsvfhkcap3xyhx7un8cqzpgxqzjcsp5f8c52y2stc300gl6s4xswtjpc37hrnnr3c9wvtgjfuvqmpm35evq9qyyssqy4lgd8tj637qcjp05rdpxxykjenthxftej7a2zzmwrmrl70fyj9hvj0rewhzj7jfyuwkwcg9g2jpwtk3wkjtwnkdks84hsnu8xps5vsq4gj5hs'); // Replace with a valid Bolt11 string
+      expect(amount, 1500); // Replace with the expected amount
+    });
+
+    test('getAmountFromBolt11 returns null for invalid input', () {
+      final amount = Lnurl.getAmountFromBolt11('invalid_bolt11_string');
+      expect(amount, 0);
     });
   });
 }
