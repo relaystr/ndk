@@ -44,6 +44,7 @@ class NdkConfig {
   /// this value is used if no individual timeout is set for a query
   Duration defaultQueryTimeout;
 
+  /// log level
   lib_logger.Level logLevel;
 
   /// Creates a new instance of [NdkConfig].

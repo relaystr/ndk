@@ -1,12 +1,18 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:ndk/domain_layer/repositories/lnurl_transport.dart';
+import 'package:ndk/ndk.dart';
 
-import '../../../shared/logger/logger.dart';
 import 'lnurl_response.dart';
 
 /// LN URL utilities
-abstract class Lnurl {
+class Lnurl {
+  LnurlTransport _transport;
+
+  ///
+  Lnurl({
+    required LnurlTransport transport,
+  }) : _transport = transport;
 
   /// transform a lud16 of format name@domain.com to https://domain.com/.well-known/lnurlp/name
   static String? getLud16LinkFromLud16(String lud16) {
@@ -35,23 +41,49 @@ abstract class Lnurl {
   //
 
   /// fetch LNURL response from given link
-  static Future<LnurlResponse?> getLnurlResponse(String link,
-      {http.Client? client}) async {
-    Uri uri = Uri.parse(link).replace(scheme: 'https');
+  Future<LnurlResponse?> getLnurlResponse(String link) async {
+    return await _transport.requestLnurlResponse(link);
+  }
+
+  /// fetch invoice from callback
+  Future<InvoiceResponse?> fetchInvoice({required LnurlResponse lnurlResponse, required int amountSats, ZapRequest? zapRequest, String? comment}) async {
+    var callback = lnurlResponse.callback!;
+    if (callback.contains("?")) {
+      callback += "&";
+    } else {
+      callback += "?";
+    }
+
+    final amount = amountSats * 1000;
+    callback += "amount=$amount";
+
+    if (comment != null && comment.trim() != '') {
+      var commentNum = lnurlResponse.commentAllowed;
+      if (commentNum != null) {
+        if (commentNum < comment.length) {
+          comment = comment.substring(0, commentNum);
+        }
+        callback += "&comment=${Uri.encodeQueryComponent(comment)}";
+      }
+    }
+
+    // ZAP ?
+    if (lnurlResponse.doesAllowsNostr && zapRequest != null && zapRequest.sig.isNotEmpty) {
+      Logger.log.d(jsonEncode(zapRequest));
+      var eventStr = Uri.encodeQueryComponent(jsonEncode(zapRequest));
+      callback += "&nostr=$eventStr";
+    }
+
+    Logger.log.d("getInvoice callback $callback");
 
     try {
-      var response = await (client ?? http.Client()).get(uri);
-      final decodedResponse =
-      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      if (client == null) {
-        // Only close if we created the client
-        client?.close();
-      }
-      return LnurlResponse.fromJson(decodedResponse);
+      var response = await _transport.fetchInvoice(callback);
+      String invoice = response!["pr"];
+      return InvoiceResponse(invoice: invoice, amountSats: amountSats, nostrPubkey: lnurlResponse.nostrPubkey);
     } catch (e) {
       Logger.log.d(e);
-      return null;
     }
+    return null;
   }
 
   /// extract amount from bolt11 in sats
@@ -94,5 +126,4 @@ abstract class Lnurl {
 
     return content.substring(index + beforeLength, index2);
   }
-
 }

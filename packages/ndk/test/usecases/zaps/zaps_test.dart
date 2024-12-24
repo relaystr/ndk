@@ -3,9 +3,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
+import 'package:ndk/domain_layer/usecases/zaps/zaps.dart';
 import 'package:ndk/presentation_layer/ndk.dart';
+import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
@@ -28,13 +33,13 @@ void main() {
       final link = 'https://domain.com/.well-known/lnurlp/name';
 
       // Mock the client.get method
-      when(client.get(Uri.parse(link)))
+      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
           .thenAnswer((_) async => http.Response(jsonEncode(response), 200));
 
       when(client.get(argThat(
         TypeMatcher<Uri>().having((uri) => uri.toString(), 'uri',
             startsWith('https://domain.com/callback')),
-      ))).thenAnswer((_) async => http.Response(
+      ), headers: {"Accept": "application/json"})).thenAnswer((_) async => http.Response(
           jsonEncode({
             "status": "OK",
             "successAction": {"tag": "message", "message": "Payment Received!"},
@@ -44,9 +49,13 @@ void main() {
           200));
       final amount = 1000;
 
-      Ndk ndk = Ndk.defaultConfig();
+      final ndk = Ndk.defaultConfig();
+      final transport = LnurlTransportHttpImpl(HttpRequestDS(client));
+      final Lnurl lnurl = Lnurl(transport: transport);
+      final zaps = Zaps(requests: ndk.requests, nwc: ndk.nwc, lnurl: lnurl);
+      Logger.setLogLevel(Logger.logLevels.trace);
 
-      ZapRequest zapRequest = await ndk.zaps.createZapRequest(
+      ZapRequest zapRequest = await zaps.createZapRequest(
           amountSats: amount,
           eventId: 'eventId',
           comment: 'comment',
@@ -55,11 +64,11 @@ void main() {
           pubKey: 'pubKey',
           relays: ['relay1', 'relay2']);
 
-      var invoiceResponse = await ndk.zaps.fecthInvoice(
+      var invoiceResponse = await zaps.fecthInvoice(
           lud16Link: link,
           amountSats: amount,
           zapRequest: zapRequest,
-          client: client);
+      );
       expect(invoiceResponse!.amountSats, amount);
       expect(invoiceResponse.invoice, startsWith("lnbc$amount"));
     });
