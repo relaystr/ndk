@@ -170,9 +170,9 @@ await for (final event in response.stream) {
 - [x] Lists ([NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md))
 - [x] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
 - [x] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
+- [X] Zaps ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
 - [x] Authentication of clients to relays ([NIP-42](https://github.com/nostr-protocol/nips/blob/master/42.md))
 - [ ] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))
-- [ ] Zaps (private, public, anon, non-zap) ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
 - [ ] Badges ([NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md))
 
 ## Performance
