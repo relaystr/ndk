@@ -172,6 +172,7 @@ await for (final event in response.stream) {
 - [x] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
 - [X] Zaps ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
 - [x] Authentication of clients to relays ([NIP-42](https://github.com/nostr-protocol/nips/blob/master/42.md))
+- [x] Encrypted Payloads (Versioned) ([NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md))
 - [ ] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))
 - [ ] Badges ([NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md))
 
