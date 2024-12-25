@@ -867,6 +867,12 @@ class MockNip01Event extends _i1.Mock implements _i3.Nip01Event {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  String? getFirstTag(String? name) => (super.noSuchMethod(Invocation.method(
+        #getFirstTag,
+        [name],
+      )) as String?);
 }
 
 /// A class which mocks [Nip05].
