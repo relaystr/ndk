@@ -16,6 +16,7 @@ import '../tlv_record.dart';
 
 import '../consts/transaction_type.dart';
 
+/// NWC request
 class NwcRequest {
   final NwcMethod method;
 

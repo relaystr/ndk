@@ -4,8 +4,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:bip340/bip340.dart';
-import 'package:ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
-import 'package:ndk/domain_layer/repositories/event_verifier.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
