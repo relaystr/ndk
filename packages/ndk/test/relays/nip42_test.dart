@@ -50,7 +50,7 @@ void main() async {
             bootstrapRelays: [relay1.url]),
       );
 
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(seconds: 1));
       final response = ndk.requests.query(filters: [
         Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey])
       ]);

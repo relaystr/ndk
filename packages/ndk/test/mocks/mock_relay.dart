@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:bip340/bip340.dart';
+import 'package:ndk/data_layer/repositories/verifiers/bip340_event_verifier.dart';
+import 'package:ndk/domain_layer/repositories/event_verifier.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -54,7 +57,8 @@ class MockRelay {
     this.server = server;
 
     var stream = server.transform(WebSocketTransformer());
-    String challenge;
+
+    String challenge='';
 
     bool signedChallenge=false;
     stream.listen((webSocket) {
@@ -71,10 +75,15 @@ class MockRelay {
         var eventJson = json.decode(message);
         if (eventJson[0] == "AUTH") {
           Nip01Event event = Nip01Event.fromJson(eventJson[1]);
-          // TODO check signature
-          if (event.)
-          signedChallenge = true;
-          print(event);
+          if (verify(event.pubKey, event.id, event.sig)) {
+            String? relay = event.getFirstTag("relay");
+            String? eventChallenge = event.getFirstTag("challenge");
+            if (eventChallenge==challenge && relay==url) {
+              signedChallenge = true;
+            }
+          }
+          webSocket.add(jsonEncode(["OK", event.id, signedChallenge, signedChallenge?"":"auth-required: we can't serve requests to unauthenticated users"]));
+          return;
         }
         if (requireAuthForRequests && !signedChallenge) {
           webSocket.add(jsonEncode(["CLOSED", "sub_1","auth-required: we can't serve requests to unauthenticated users"]));

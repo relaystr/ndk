@@ -384,7 +384,7 @@ class RelayManager<T> {
     if (eventJson[0] == ClientMsgType.AUTH) {
       // nip 42 used to send authentication challenges
       final challenge = eventJson[1];
-      Logger.log.d("AUTH: ${challenge}");
+      Logger.log.d("AUTH: $challenge");
       if (signer != null && signer!.canSign()) {
         final auth = AuthEvent(pubKey: signer!.getPublicKey(), tags: [
           ["relay", relayConnectivity.url],
