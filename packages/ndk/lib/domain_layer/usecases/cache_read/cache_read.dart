@@ -31,33 +31,33 @@ class CacheRead {
         foundEvents.addAll(cached);
         // WE CANNOT DO THIS, BECAUSE 1) kinds.length > 1,  2) only replaceable events have 1 event per pubKey+kind, normal events can have many per pubKey+kind
         // TODO if kind.length == 1 and kind IS replaceable AND there is not limit/until/since AND it is NOT a subscription, then we can do some shit
-        //
-        //   // remove found authors from unresolved filter if it's not a subscription
-        //   if (!requestState.isSubscription && cached.isNotEmpty) {
-        //     if (filter.limit == null) {
-        //       // Keep track of whether we've kept one item
-        //       bool keptOne = false;
-        //       filter.authors!.removeWhere((author) {
-        //         if (!keptOne &&
-        //             foundEvents.any((event) => event.pubKey == author)) {
-        //           keptOne = true;
-        //           return false; // Keep the first matching item
-        //         }
-        //         return foundEvents.any((event) => event.pubKey == author);
-        //       });
-        //     } else if (foundEvents.length >= filter.limit!) {
-        //       // Keep track of whether we've kept one item
-        //       bool keptOne = false;
-        //       filter.authors!.removeWhere((author) {
-        //         if (!keptOne &&
-        //             foundEvents.any((event) => event.pubKey == author)) {
-        //           keptOne = true;
-        //           return false; // Keep the first matching item
-        //         }
-        //         return foundEvents.any((event) => event.pubKey == author);
-        //       });
-        //     }
-        //   }
+      //
+      //   // remove found authors from unresolved filter if it's not a subscription
+      //   if (!requestState.isSubscription && cached.isNotEmpty) {
+      //     if (filter.limit == null) {
+      //       // Keep track of whether we've kept one item
+      //       bool keptOne = false;
+      //       filter.authors!.removeWhere((author) {
+      //         if (!keptOne &&
+      //             foundEvents.any((event) => event.pubKey == author)) {
+      //           keptOne = true;
+      //           return false; // Keep the first matching item
+      //         }
+      //         return foundEvents.any((event) => event.pubKey == author);
+      //       });
+      //     } else if (foundEvents.length >= filter.limit!) {
+      //       // Keep track of whether we've kept one item
+      //       bool keptOne = false;
+      //       filter.authors!.removeWhere((author) {
+      //         if (!keptOne &&
+      //             foundEvents.any((event) => event.pubKey == author)) {
+      //           keptOne = true;
+      //           return false; // Keep the first matching item
+      //         }
+      //         return foundEvents.any((event) => event.pubKey == author);
+      //       });
+      //     }
+      //   }
       }
 
       if (filter.ids != null) {
@@ -73,6 +73,7 @@ class CacheRead {
         filter.ids!.removeWhere((id) {
           return foundIdEvents.any((event) => event.id == id);
         });
+
 
         foundEvents.addAll(foundIdEvents);
         if (filter.ids!.isEmpty) {
