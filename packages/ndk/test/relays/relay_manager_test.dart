@@ -36,6 +36,7 @@ void main() async {
     test('Try to connect to dead relay', () async {
       RelayManager manager = RelayManager(
         nostrTransportFactory: webSocketNostrTransportFactory,
+        bootstrapRelays: [],
         globalState: GlobalState(),
       );
 
