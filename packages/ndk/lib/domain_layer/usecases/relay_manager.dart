@@ -385,13 +385,15 @@ class RelayManager<T> {
       // nip 42 used to send authentication challenges
       final challenge = eventJson[1];
       Logger.log.d("AUTH: ${challenge}");
-      if (signer != null) {
+      if (signer != null && signer!.canSign()) {
         final auth = AuthEvent(pubKey: signer!.getPublicKey(), tags: [
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);
         signer!.sign(auth);
         send(relayConnectivity, ClientMsg(ClientMsgType.AUTH, event: auth));
+      } else {
+        Logger.log.w("Received an AUTH challenge but don't have a signer configured");
       }
       return;
     }

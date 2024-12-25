@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:ndk/entities.dart';
+import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 
 class MockRelay {
@@ -14,6 +15,7 @@ class MockRelay {
   Map<KeyPair, Nip65>? nip65s;
   Map<KeyPair, Nip01Event>? textNotes;
   bool signEvents;
+  bool requireAuthForRequests;
 
   static int startPort = 4040;
 
@@ -23,6 +25,7 @@ class MockRelay {
     required this.name,
     this.nip65s,
     this.signEvents = true,
+    this.requireAuthForRequests = false,
     int? explicitPort,
   }) {
     if (explicitPort != null) {
@@ -51,15 +54,32 @@ class MockRelay {
     this.server = server;
 
     var stream = server.transform(WebSocketTransformer());
+    String challenge;
 
+    bool signedChallenge=false;
     stream.listen((webSocket) {
       this.webSocket = webSocket;
+      if (requireAuthForRequests && !signedChallenge) {
+        challenge = Helpers.getRandomString(10);
+        webSocket.add(jsonEncode(["AUTH", challenge]));
+      }
       webSocket.listen((message) {
         if (message == "ping") {
           webSocket.add("pong");
           return;
         }
         var eventJson = json.decode(message);
+        if (eventJson[0] == "AUTH") {
+          Nip01Event event = Nip01Event.fromJson(eventJson[1]);
+          // TODO check signature
+          if (event.)
+          signedChallenge = true;
+          print(event);
+        }
+        if (requireAuthForRequests && !signedChallenge) {
+          webSocket.add(jsonEncode(["CLOSED", "sub_1","auth-required: we can't serve requests to unauthenticated users"]));
+          return;
+        }
         if (eventJson[0] == "REQ") {
           String requestId = eventJson[1];
           log('Received: $eventJson');
