@@ -87,7 +87,6 @@ void main() {
             'content':'',
             'tags': [
               ['lnurl', 'testLnurl'],
-              ['amount', '1500000']
             ]
           })
         ]

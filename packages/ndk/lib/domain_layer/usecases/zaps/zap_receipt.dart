@@ -105,8 +105,10 @@ class ZapReceipt {
     return true;
   }
 
+  // coverage:ignore-start
   @override
   String toString() {
     return 'ZapReceipt(paidAt: $paidAt, pubKey: $pubKey, bolt11: $bolt11, preimage: $preimage, amount: $amountSats, recipient: $recipient, eventId: $eventId, comment: $comment, sender: $sender, anon: $anon)';
   }
+  // coverage:ignore-end
 }
