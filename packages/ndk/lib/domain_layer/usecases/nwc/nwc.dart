@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:elliptic/elliptic.dart' as elliptic;
+
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
+import 'package:ndk/shared/nips/nip44/nip44.dart';
 
 import 'consts/nwc_kind.dart';
 import 'consts/nwc_method.dart';
@@ -187,18 +190,21 @@ class Nwc {
   Future<void> _onNotification(
       Nip01Event event, NwcConnection connection) async {
     if (event.content != "") {
-      // TODO
-      //   var decrypted = Nip44.decrypt(
-      //       connection.uri.secret, connection.uri.walletPubkey, event.content);
-      //   Map<String, dynamic> data;
-      //   data = json.decode(decrypted);
-      //   if (data.containsKey("notification_type") &&
-      //       data['notification'] != null) {
-      //     NwcNotification notification = NwcNotification.fromMap(data['notification']);
-      //     connection.notificationStream.add(notification);
-      //   } else if (data.containsKey("error")) {
-      //     // TODO ??
-      //   }
+      final decrypted = await Nip44.decryptMessage(
+        event.content,
+        connection.uri.secret,
+        connection.uri.walletPubkey,
+      );
+      Map<String, dynamic> data;
+      data = json.decode(decrypted);
+      if (data.containsKey("notification_type") &&
+          data['notification'] != null) {
+        NwcNotification notification =
+            NwcNotification.fromMap(data['notification']);
+        connection.notificationStream.add(notification);
+      } else if (data.containsKey("error")) {
+        // TODO ??
+      }
     }
   }
 

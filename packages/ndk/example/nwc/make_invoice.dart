@@ -13,7 +13,7 @@ void main() async {
   final nwcUri = Platform.environment['NWC_URI']!;
   final connection = await ndk.nwc.connect(nwcUri);
 
-  final amount = 1000;
+  final amount = 21;
   final description = "hello";
   final response = await ndk.nwc
       .makeInvoice(connection, amountSats: amount, description: description);

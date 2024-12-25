@@ -13,6 +13,7 @@ void main() async {
   var nwcUri = Platform.environment['NWC_URI']!;
   final connection = await ndk.nwc.connect(nwcUri);
 
+  print("waiting for ${connection.isLegacyNotifications()?"legacy ":""}notifications");
   await for (final notification in connection.notificationStream.stream) {
     print('notification ${notification.type} amount: ${notification.amount}');
   }
