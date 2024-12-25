@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
@@ -16,8 +17,10 @@ import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
 import '../entities/tuple.dart';
+import '../repositories/event_signer.dart';
 import '../repositories/nostr_transport.dart';
 import 'engines/network_engine.dart';
+import 'nip42/auth_event.dart';
 
 ///  relay manager, responsible for lifecycle of relays, sending messages, \
 ///  and help with tracking of requests
@@ -29,6 +32,9 @@ class RelayManager<T> {
 
   /// global state obj
   GlobalState globalState;
+
+  /// signer for nip-42 AUTH challenges from relays
+  EventSigner? signer;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -43,6 +49,7 @@ class RelayManager<T> {
   RelayManager(
       {required this.globalState,
       required this.nostrTransportFactory,
+      this.signer,
       this.engineAdditionalDataFactory,
       List<String>? bootstrapRelays,
       allowReconnect = true}) {
@@ -54,7 +61,7 @@ class RelayManager<T> {
   bool get allowReconnectRelays => _allowReconnectRelays;
 
   /// sets allowed to reconnectRelays
-  set allowReconnectRelays(bool b) {
+  void set allowReconnectRelays(bool b) {
     _allowReconnectRelays = b;
   }
 
@@ -101,7 +108,7 @@ class RelayManager<T> {
 
   /// checks if a relay is connecting
   bool isRelayConnecting(String url) {
-    Relay? relay = globalState.relays[url]?.relay;
+    Relay? relay = globalState.relays[url]?.relay ?? null;
     return relay != null && relay.connecting;
   }
 
@@ -138,6 +145,7 @@ class RelayManager<T> {
         );
         globalState.relays[url] = relayConnectivity;
       }
+      ;
       relayConnectivity.relay.tryingToConnect();
 
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
@@ -159,7 +167,7 @@ class RelayManager<T> {
 
       _startListeningToSocket(relayConnectivity);
 
-      Logger.log.t("connected to relay: $url");
+      developer.log("connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
       relayConnectivity.stats.connections++;
       getRelayInfo(url).then((info) {
@@ -183,7 +191,7 @@ class RelayManager<T> {
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
           .onError((error, stackTrace) {
-        Logger.log.e("error connecting to relay $url: $error");
+        Logger.log.e("error connecting to relay ${url}: $error");
         return []; // Return an empty list in case of error
       });
     }
@@ -301,7 +309,7 @@ class RelayManager<T> {
     } else {
       // do not overwrite
       Logger.log.w(
-          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} $relayUrl, skipping");
+          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} ${relayUrl}, skipping");
     }
   }
 
@@ -373,12 +381,22 @@ class RelayManager<T> {
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
-    // TODO
-    // if (eventJson[0] == 'AUTH') {
-    //   log("AUTH: ${eventJson[1]}");
-    //   // nip 42 used to send authentication challenges
-    //   return;
-    // }
+    if (eventJson[0] == ClientMsgType.AUTH) {
+      // nip 42 used to send authentication challenges
+      final challenge = eventJson[1];
+      Logger.log.d("AUTH: $challenge");
+      if (signer != null && signer!.canSign()) {
+        final auth = AuthEvent(pubKey: signer!.getPublicKey(), tags: [
+          ["relay", relayConnectivity.url],
+          ["challenge", challenge]
+        ]);
+        signer!.sign(auth);
+        send(relayConnectivity, ClientMsg(ClientMsgType.AUTH, event: auth));
+      } else {
+        Logger.log.w("Received an AUTH challenge but don't have a signer configured");
+      }
+      return;
+    }
     //
     // if (eventJson[0] == 'COUNT') {
     //   log("COUNT: ${eventJson[1]}");
@@ -402,7 +420,7 @@ class RelayManager<T> {
     if (state != null) {
       RelayRequestState? request = state.requests[url];
       if (request == null) {
-        Logger.log.w("No RelayRequestState found for id $id");
+        Logger.log.w("No RelayRequestState found for id ${id}");
         return;
       }
       event.sources.add(url);

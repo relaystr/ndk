@@ -48,6 +48,11 @@ class ClientMsg {
     if (type == ClientMsgType.COUNT) {
       throw Exception("COUNT is not implemented yet");
     }
+    if (type == ClientMsgType.AUTH) {
+      if (event == null) {
+        throw Exception("event is required for type AUTH");
+      }
+    }
   }
 
   _eventToJson() {
@@ -74,6 +79,8 @@ class ClientMsg {
         return _reqToJson();
       case ClientMsgType.CLOSE:
         return _closeToJson();
+      case ClientMsgType.AUTH:
+        return _eventToJson();
       case ClientMsgType.COUNT:
         throw Exception("COUNT is not implemented yet");
     }
@@ -90,4 +97,5 @@ class ClientMsgType {
   static const String CLOSE = "CLOSE";
   static const String EVENT = "EVENT";
   static const String COUNT = "COUNT";
+  static const String AUTH = "AUTH";
 }
