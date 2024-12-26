@@ -207,7 +207,8 @@ class Nwc {
   }
 
   Future<T> _executeRequest<T extends NwcResponse>(
-      NwcConnection connection, NwcRequest request, {Duration? timeout}) async {
+      NwcConnection connection, NwcRequest request,
+      {Duration? timeout}) async {
     if (connection.permissions.contains(request.method.name)) {
       var json = request.toMap();
       var content = jsonEncode(json);
@@ -230,7 +231,8 @@ class Nwc {
 
       Completer<NwcResponse> completer = Completer();
       _inflighRequests[event.id] = completer;
-      _inflighRequestTimers[event.id] = Timer(timeout??Duration(seconds: 5), () {
+      _inflighRequestTimers[event.id] =
+          Timer(timeout ?? Duration(seconds: 5), () {
         if (!completer.isCompleted) {
           final error =
               "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relay}";
@@ -279,7 +281,8 @@ class Nwc {
   Future<PayInvoiceResponse> payInvoice(NwcConnection connection,
       {required String invoice, Duration? timeout}) async {
     return _executeRequest<PayInvoiceResponse>(
-        connection, PayInvoiceRequest(invoice: invoice), timeout: timeout);
+        connection, PayInvoiceRequest(invoice: invoice),
+        timeout: timeout);
   }
 
   /// Does a `lookup_invoice` request
@@ -310,7 +313,7 @@ class Nwc {
 
   /// Disconnects everything related to this connection,
   /// i.e.: closes response & notification subscription and streams
-  disconnect(NwcConnection connection) async {
+  Future<void> disconnect(NwcConnection connection) async {
     if (connection.subscription != null) {
       Logger.log.d("closing nwc subscription $connection....");
       await _requests.closeSubscription(connection.subscription!.requestId);
@@ -322,10 +325,7 @@ class Nwc {
   }
 
   /// Disconnects all NWC connections
-  disconnectAll() async {
-    List<NwcConnection> list = _connections.toList();
-    list.forEach((connection) async {
-      await disconnect(connection);
-    });
+  Future<void> disconnectAll() async {
+    await Future.wait(_connections.map(disconnect));
   }
 }
