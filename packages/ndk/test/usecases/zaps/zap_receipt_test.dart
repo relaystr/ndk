@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
