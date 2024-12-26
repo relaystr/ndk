@@ -2,7 +2,7 @@ import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 
 import 'nwc_request.dart';
 
-// Subclass for requests to make a bolt11 invoice
+/// Subclass for requests to make a bolt11 invoice
 class MakeInvoiceRequest extends NwcRequest {
   final int amountSat;
   final String? description;

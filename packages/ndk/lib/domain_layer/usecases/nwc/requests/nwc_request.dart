@@ -20,10 +20,12 @@ import '../consts/transaction_type.dart';
 class NwcRequest {
   final NwcMethod method;
 
+  ///
   const NwcRequest({
     required this.method,
   });
 
+  ///
   factory NwcRequest.fromEvent(
       Nip01Event event, String contentDecryptionPrivateKey) {
     final connectionPubkey = event.pubKey;
@@ -44,6 +46,7 @@ class NwcRequest {
     });
   }
 
+  ///
   factory NwcRequest.fromMap(Map<String, dynamic> map) {
     final method = NwcMethod.fromPlaintext(map['method'] as String);
 
