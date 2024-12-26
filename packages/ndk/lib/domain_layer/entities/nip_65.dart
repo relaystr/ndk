@@ -3,7 +3,7 @@ import 'nip_01_event.dart';
 import 'read_write_marker.dart';
 
 class Nip65 {
-  static const int KIND = 10002;
+  static const int kKind = 10002;
 
   late String pubKey;
 
@@ -61,7 +61,7 @@ class Nip65 {
   Nip01Event toEvent() {
     return Nip01Event(
       pubKey: pubKey,
-      kind: Nip65.KIND,
+      kind: Nip65.kKind,
       tags: relays.entries.map((entry) {
         ReadWriteMarker marker = entry.value;
         List<String> list = ["r", entry.key];

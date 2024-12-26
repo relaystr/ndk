@@ -9,7 +9,7 @@ import '../mocks/mock_relay.dart';
 void main() {
   Nip01Event textNote(KeyPair key2) {
     return Nip01Event(
-        kind: Nip01Event.TEXT_NODE_KIND,
+        kind: Nip01Event.kKind,
         pubKey: key2.publicKey,
         content: "some note from key $key2}",
         tags: [],

@@ -10,7 +10,7 @@ import '../mocks/mock_relay.dart';
 void main() {
   Nip01Event textNote(KeyPair myKey) {
     return Nip01Event(
-      kind: Nip01Event.TEXT_NODE_KIND,
+      kind: Nip01Event.kKind,
       pubKey: myKey.publicKey,
       content: "some note from key $myKey}",
       tags: [],
@@ -72,7 +72,7 @@ void main() {
           filters: [
             Filter(
               authors: [key1.publicKey],
-              kinds: [Nip01Event.TEXT_NODE_KIND],
+              kinds: [Nip01Event.kKind],
             )
           ],
           timeout: Duration(milliseconds: timoutMiliseconds),

@@ -7,59 +7,59 @@ import '../repositories/event_signer.dart';
 import 'nip_01_event.dart';
 
 class Nip51List {
-  static const int MUTE = 10000;
-  static const int PIN = 10001;
-  static const int BOOKMARKS = 10003;
-  static const int COMMUNITIES = 10004;
-  static const int PUBLIC_CHATS = 10005;
-  static const int BLOCKED_RELAYS = 10006;
-  static const int SEARCH_RELAYS = 10007;
-  static const int INTERESTS = 10015;
-  static const int EMOJIS = 10030;
+  static const int kMute = 10000;
+  static const int kPin = 10001;
+  static const int kBookmarks = 10003;
+  static const int kCommunities = 10004;
+  static const int kPublicChats = 10005;
+  static const int kBlockedRelays = 10006;
+  static const int kSearchRelays = 10007;
+  static const int kInterests = 10015;
+  static const int kEmojis = 10030;
 
-  static const int FOLLOW_SET = 30000;
-  static const int RELAY_SET = 30002;
-  static const int BOOKMARKS_SET = 30003;
-  static const int CURATION_SET = 30004;
-  static const int INTERESTS_SET = 30015;
-  static const int EMOJIS_SET = 30030;
+  static const int kFollowSet = 30000;
+  static const int kRelaySet = 30002;
+  static const int kBookmarksSet = 30003;
+  static const int kCurationSet = 30004;
+  static const int kInterestsSet = 30015;
+  static const int kEmojisSet = 30030;
 
-  static const String RELAY = "relay";
-  static const String PUB_KEY = "p";
-  static const String HASHTAG = "t";
-  static const String WORD = "word";
-  static const String THREAD = "e";
-  static const String RESOURCE = "r";
-  static const String EMOJI = "emoji";
-  static const String A = "a";
+  static const String kRelay = "relay";
+  static const String kPubkey = "p";
+  static const String kHashtag = "t";
+  static const String kWord = "word";
+  static const String kThread = "e";
+  static const String kResource = "r";
+  static const String kEmoji = "emoji";
+  static const String kA = "a";
 
-  static const List<int> POSSIBLE_KINDS = [
-    MUTE,
-    PIN,
-    BOOKMARKS,
-    COMMUNITIES,
-    PUBLIC_CHATS,
-    BLOCKED_RELAYS,
-    SEARCH_RELAYS,
-    INTERESTS,
-    EMOJIS,
-    FOLLOW_SET,
-    RELAY_SET,
-    BOOKMARKS_SET,
-    CURATION_SET,
-    INTERESTS_SET,
-    EMOJIS_SET
+  static const List<int> kPossibleKinds = [
+    kMute,
+    kPin,
+    kBookmarks,
+    kCommunities,
+    kPublicChats,
+    kBlockedRelays,
+    kSearchRelays,
+    kInterests,
+    kEmojis,
+    kFollowSet,
+    kRelaySet,
+    kBookmarksSet,
+    kCurationSet,
+    kInterestsSet,
+    kEmojisSet
   ];
 
-  static const List<String> POSSIBLE_TAGS = [
-    RELAY,
-    PUB_KEY,
-    HASHTAG,
-    WORD,
-    THREAD,
-    RESOURCE,
-    EMOJI,
-    A
+  static const List<String> kPossibleTags = [
+    kRelay,
+    kPubkey,
+    kHashtag,
+    kWord,
+    kThread,
+    kResource,
+    kEmoji,
+    kA
   ];
 
   late String id;
@@ -71,11 +71,11 @@ class Nip51List {
   List<Nip51ListElement> byTag(String tag) =>
       elements.where((element) => element.tag == tag).toList();
 
-  List<Nip51ListElement> get relays => byTag(RELAY);
-  List<Nip51ListElement> get pubKeys => byTag(PUB_KEY);
-  List<Nip51ListElement> get hashtags => byTag(HASHTAG);
-  List<Nip51ListElement> get words => byTag(WORD);
-  List<Nip51ListElement> get threads => byTag(THREAD);
+  List<Nip51ListElement> get relays => byTag(kRelay);
+  List<Nip51ListElement> get pubKeys => byTag(kPubkey);
+  List<Nip51ListElement> get hashtags => byTag(kHashtag);
+  List<Nip51ListElement> get words => byTag(kWord);
+  List<Nip51ListElement> get threads => byTag(kThread);
 
   List<String> get publicRelays =>
       relays.where((element) => !element.private).map((e) => e.value).toList();
@@ -83,15 +83,16 @@ class Nip51List {
       relays.where((element) => !element.private).map((e) => e.value).toList();
 
   set privateRelays(List<String> list) {
-    elements.removeWhere((element) => element.tag == RELAY && element.private);
-    elements.addAll(list
-        .map((url) => Nip51ListElement(tag: RELAY, value: url, private: true)));
+    elements.removeWhere((element) => element.tag == kRelay && element.private);
+    elements.addAll(list.map(
+        (url) => Nip51ListElement(tag: kRelay, value: url, private: true)));
   }
 
   set publicRelays(List<String> list) {
-    elements.removeWhere((element) => element.tag == RELAY && !element.private);
+    elements
+        .removeWhere((element) => element.tag == kRelay && !element.private);
     elements.addAll(list.map(
-        (url) => Nip51ListElement(tag: RELAY, value: url, private: false)));
+        (url) => Nip51ListElement(tag: kRelay, value: url, private: false)));
   }
 
   late int createdAt;
@@ -104,13 +105,13 @@ class Nip51List {
   // coverage:ignore-end
 
   String get displayTitle {
-    if (kind == Nip51List.SEARCH_RELAYS) {
+    if (kind == Nip51List.kSearchRelays) {
       return "Search";
     }
-    if (kind == Nip51List.BLOCKED_RELAYS) {
+    if (kind == Nip51List.kBlockedRelays) {
       return "Blocked";
     }
-    if (kind == Nip51List.MUTE) {
+    if (kind == Nip51List.kMute) {
       return "Mute";
     }
     return "kind $kind";
@@ -160,7 +161,7 @@ class Nip51List {
       if (length <= 1) continue;
       final tagName = tag[0];
       final value = tag[1];
-      if (POSSIBLE_TAGS.contains(tagName)) {
+      if (kPossibleTags.contains(tagName)) {
         elements.add(
             Nip51ListElement(tag: tagName, value: value, private: private));
       }
@@ -192,7 +193,7 @@ class Nip51List {
 
   void addRelay(String relayUrl, bool private) {
     elements
-        .add(Nip51ListElement(tag: RELAY, value: relayUrl, private: private));
+        .add(Nip51ListElement(tag: kRelay, value: relayUrl, private: private));
   }
 
   void addElement(String tag, String value, bool private) {
@@ -201,7 +202,7 @@ class Nip51List {
 
   void removeRelay(String relayUrl) {
     elements.removeWhere(
-        (element) => element.tag == RELAY && element.value == relayUrl);
+        (element) => element.tag == kRelay && element.value == relayUrl);
   }
 
   void removeElement(String tag, String value) {

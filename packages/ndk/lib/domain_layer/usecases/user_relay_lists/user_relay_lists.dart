@@ -73,10 +73,10 @@ class UserRelayLists {
             filters: [
               Filter(
                   authors: missingPubKeys,
-                  kinds: [Nip65.KIND, ContactList.KIND])
+                  kinds: [Nip65.kKind, ContactList.kKind])
             ])).stream) {
           switch (event.kind) {
-            case Nip65.KIND:
+            case Nip65.kKind:
               Nip65 nip65 = Nip65.fromEvent(event);
               if (nip65.relays.isNotEmpty) {
                 UserRelayList fromNip65 = UserRelayList.fromNip65(nip65);
@@ -90,7 +90,7 @@ class UserRelayLists {
                       missingPubKeys.length);
                 }
               }
-            case ContactList.KIND:
+            case ContactList.kKind:
               ContactList contactList = ContactList.fromEvent(event);
               contactLists.add(contactList);
               if (event.content.isNotEmpty) {

@@ -27,7 +27,7 @@ void main() async {
         final key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
         final contactsResponse = ndk.requests.query(name: "contacts", filters: [
-          Filter(authors: [key.publicKey], kinds: [ContactList.KIND]),
+          Filter(authors: [key.publicKey], kinds: [ContactList.kKind]),
         ]);
 
         var responseList = await contactsResponse.stream.toList();
@@ -44,7 +44,7 @@ void main() async {
         // get nip65 data
 
         NdkResponse nip65Response = ndk.requests.query(name: "nip65", filters: [
-          Filter(authors: myContactList!.contacts, kinds: [Nip65.KIND]),
+          Filter(authors: myContactList!.contacts, kinds: [Nip65.kKind]),
         ]);
 
         var nip65events = await nip65Response.stream.toList();
@@ -52,7 +52,7 @@ void main() async {
 
         cacheManager.loadEvents(
           pubKeys: myContactList.contacts,
-          kinds: [Nip65.KIND],
+          kinds: [Nip65.kKind],
         );
 
         developer.log('##################################################');
@@ -60,7 +60,7 @@ void main() async {
         ndk.requests.query(name: "feed-test", filters: [
           Filter(
             authors: myContactList.contacts,
-            kinds: [Nip01Event.TEXT_NODE_KIND],
+            kinds: [Nip01Event.kKind],
             since:
                 (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 1,
           ),
@@ -72,7 +72,7 @@ void main() async {
             ndk.requests.subscription(id: "feed-test2", filters: [
           Filter(
             authors: myContactList.contacts,
-            kinds: [Nip01Event.TEXT_NODE_KIND],
+            kinds: [Nip01Event.kKind],
             since:
                 (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
           ),

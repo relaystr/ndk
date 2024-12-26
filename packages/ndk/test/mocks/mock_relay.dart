@@ -56,9 +56,9 @@ class MockRelay {
 
     var stream = server.transform(WebSocketTransformer());
 
-    String challenge='';
+    String challenge = '';
 
-    bool signedChallenge=false;
+    bool signedChallenge = false;
     stream.listen((webSocket) {
       this.webSocket = webSocket;
       if (requireAuthForRequests && !signedChallenge) {
@@ -76,15 +76,26 @@ class MockRelay {
           if (verify(event.pubKey, event.id, event.sig)) {
             String? relay = event.getFirstTag("relay");
             String? eventChallenge = event.getFirstTag("challenge");
-            if (eventChallenge==challenge && relay==url) {
+            if (eventChallenge == challenge && relay == url) {
               signedChallenge = true;
             }
           }
-          webSocket.add(jsonEncode(["OK", event.id, signedChallenge, signedChallenge?"":"auth-required: we can't serve requests to unauthenticated users"]));
+          webSocket.add(jsonEncode([
+            "OK",
+            event.id,
+            signedChallenge,
+            signedChallenge
+                ? ""
+                : "auth-required: we can't serve requests to unauthenticated users"
+          ]));
           return;
         }
         if (requireAuthForRequests && !signedChallenge) {
-          webSocket.add(jsonEncode(["CLOSED", "sub_1","auth-required: we can't serve requests to unauthenticated users"]));
+          webSocket.add(jsonEncode([
+            "CLOSED",
+            "sub_1",
+            "auth-required: we can't serve requests to unauthenticated users"
+          ]));
           return;
         }
         if (eventJson[0] == "REQ") {
@@ -92,21 +103,21 @@ class MockRelay {
           log('Received: $eventJson');
           Filter filter = Filter.fromMap(eventJson[2]);
           if (filter.kinds != null && filter.authors != null) {
-            if (filter.kinds!.contains(Nip65.KIND) && nip65s != null) {
+            if (filter.kinds!.contains(Nip65.kKind) && nip65s != null) {
               _respondeNip65(filter.authors!, requestId);
             }
-            if (filter.kinds!.contains(Nip01Event.TEXT_NODE_KIND) &&
+            if (filter.kinds!.contains(Nip01Event.kKind) && textNotes != null) {
+              _respondeTextNote(filter.authors!, requestId);
+            }
+            if (filter.kinds!.contains(ContactList.kKind) &&
                 textNotes != null) {
               _respondeTextNote(filter.authors!, requestId);
             }
-            if (filter.kinds!.contains(ContactList.KIND) && textNotes != null) {
-              _respondeTextNote(filter.authors!, requestId);
-            }
-            if (filter.kinds!.contains(Metadata.KIND) && textNotes != null) {
+            if (filter.kinds!.contains(Metadata.kKind) && textNotes != null) {
               _respondeTextNote(filter.authors!, requestId);
             }
             if (filter.kinds!
-                .any((el) => Nip51List.POSSIBLE_KINDS.contains(el))) {
+                .any((el) => Nip51List.kPossibleKinds.contains(el))) {
               _respondeTextNote(filter.authors!, requestId);
             }
           }

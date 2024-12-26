@@ -21,13 +21,13 @@ class ClientMsg {
     this.filters,
   }) {
     // verify based on type
-    if (type == ClientMsgType.EVENT) {
+    if (type == ClientMsgType.kEvent) {
       if (event == null) {
         throw Exception("event is required for type EVENT");
       }
     }
 
-    if (type == ClientMsgType.REQ) {
+    if (type == ClientMsgType.kReq) {
       if (filters == null) {
         throw Exception("filters are required for type REQ");
       }
@@ -40,15 +40,15 @@ class ClientMsg {
       }
     }
 
-    if (type == ClientMsgType.CLOSE) {
+    if (type == ClientMsgType.kClose) {
       if (id == null) {
         throw Exception("id is required for type CLOSE");
       }
     }
-    if (type == ClientMsgType.COUNT) {
+    if (type == ClientMsgType.kCount) {
       throw Exception("COUNT is not implemented yet");
     }
-    if (type == ClientMsgType.AUTH) {
+    if (type == ClientMsgType.kAuth) {
       if (event == null) {
         throw Exception("event is required for type AUTH");
       }
@@ -73,15 +73,15 @@ class ClientMsg {
 
   toJson() {
     switch (type) {
-      case ClientMsgType.EVENT:
+      case ClientMsgType.kEvent:
         return _eventToJson();
-      case ClientMsgType.REQ:
+      case ClientMsgType.kReq:
         return _reqToJson();
-      case ClientMsgType.CLOSE:
+      case ClientMsgType.kClose:
         return _closeToJson();
-      case ClientMsgType.AUTH:
+      case ClientMsgType.kAuth:
         return _eventToJson();
-      case ClientMsgType.COUNT:
+      case ClientMsgType.kCount:
         throw Exception("COUNT is not implemented yet");
     }
   }
@@ -93,9 +93,9 @@ class ClientMsg {
 }
 
 class ClientMsgType {
-  static const String REQ = "REQ";
-  static const String CLOSE = "CLOSE";
-  static const String EVENT = "EVENT";
-  static const String COUNT = "COUNT";
-  static const String AUTH = "AUTH";
+  static const String kReq = "REQ";
+  static const String kClose = "CLOSE";
+  static const String kEvent = "EVENT";
+  static const String kCount = "COUNT";
+  static const String kAuth = "AUTH";
 }

@@ -1,3 +1,3 @@
 class Deletion {
-  static const int KIND = 5;
+  static const int kKind = 5;
 }

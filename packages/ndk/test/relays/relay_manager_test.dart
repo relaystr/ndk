@@ -25,7 +25,7 @@ void main() async {
       );
       await manager
           .connectRelay(
-              dirtyUrl: relay1.url, connectionSource: ConnectionSource.SEED)
+              dirtyUrl: relay1.url, connectionSource: ConnectionSource.seed)
           .then((value) {})
           .onError((error, stackTrace) async {
         await relay1.stopServer();
@@ -43,7 +43,7 @@ void main() async {
       MockRelay relay1 = MockRelay(name: "relay 1");
       try {
         await manager.connectRelay(
-            dirtyUrl: relay1.url, connectionSource: ConnectionSource.SEED);
+            dirtyUrl: relay1.url, connectionSource: ConnectionSource.seed);
         fail("should throw exception");
       } catch (e) {
         // success

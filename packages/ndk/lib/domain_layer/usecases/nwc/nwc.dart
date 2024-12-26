@@ -21,7 +21,7 @@ import 'responses/nwc_response.dart';
 
 /// Main entry point for the NWC (Nostr Wallet Connect - NIP47 ) usecase
 class Nwc {
-  static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
+  static const kNWCProtocolPrefix = "nostr+walletconnect://";
 
   final Requests _requests;
   final Broadcast _broadcast;
@@ -180,7 +180,7 @@ class Nwc {
             NwcNotification.fromMap(data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
-        // TODO ??
+        // TODO: Define what to do when data has an error
       }
     }
   }
@@ -201,13 +201,14 @@ class Nwc {
             NwcNotification.fromMap(data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
-        // TODO ??
+        // TODO: Define what to do when data has an error
       }
     }
   }
 
   Future<T> _executeRequest<T extends NwcResponse>(
-      NwcConnection connection, NwcRequest request, {Duration? timeout}) async {
+      NwcConnection connection, NwcRequest request,
+      {Duration? timeout}) async {
     if (connection.permissions.contains(request.method.name)) {
       var json = request.toMap();
       var content = jsonEncode(json);
@@ -230,7 +231,8 @@ class Nwc {
 
       Completer<NwcResponse> completer = Completer();
       _inflighRequests[event.id] = completer;
-      _inflighRequestTimers[event.id] = Timer(timeout??Duration(seconds: 5), () {
+      _inflighRequestTimers[event.id] =
+          Timer(timeout ?? Duration(seconds: 5), () {
         if (!completer.isCompleted) {
           final error =
               "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relay}";
@@ -279,7 +281,8 @@ class Nwc {
   Future<PayInvoiceResponse> payInvoice(NwcConnection connection,
       {required String invoice, Duration? timeout}) async {
     return _executeRequest<PayInvoiceResponse>(
-        connection, PayInvoiceRequest(invoice: invoice), timeout: timeout);
+        connection, PayInvoiceRequest(invoice: invoice),
+        timeout: timeout);
   }
 
   /// Does a `lookup_invoice` request

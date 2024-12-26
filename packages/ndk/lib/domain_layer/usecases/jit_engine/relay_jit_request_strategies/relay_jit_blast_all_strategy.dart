@@ -21,7 +21,7 @@ class RelayJitBlastAllStrategy {
   }) {
     for (final connectedRelay in connectedRelays) {
       final clientMsg = ClientMsg(
-        ClientMsgType.REQ,
+        ClientMsgType.kReq,
         id: requestState.id,
         filters: [filter],
       );

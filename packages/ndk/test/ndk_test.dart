@@ -23,7 +23,7 @@ void main() async {
 
   Nip01Event textNote(KeyPair key2) {
     return Nip01Event(
-        kind: Nip01Event.TEXT_NODE_KIND,
+        kind: Nip01Event.kKind,
         pubKey: key2.publicKey,
         content: "some note from key ${keyNames[key2]}",
         tags: [],
@@ -51,14 +51,14 @@ void main() async {
       );
 
       final response = ndk.requests.query(filters: [
-        Filter(kinds: [Nip01Event.TEXT_NODE_KIND], authors: [key1.publicKey])
+        Filter(kinds: [Nip01Event.kKind], authors: [key1.publicKey])
       ]);
 
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
 
       final response2 = ndk.requests.query(filters: [
         Filter(
-          kinds: [Nip01Event.TEXT_NODE_KIND],
+          kinds: [Nip01Event.kKind],
           authors: [key1.publicKey, key2.publicKey],
         )
       ]);
@@ -85,7 +85,7 @@ void main() async {
 
       final response = ndk.requests.query(
         filters: [
-          Filter(authors: [key1.publicKey], kinds: [Nip01Event.TEXT_NODE_KIND])
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kKind])
         ],
       );
       // ignore: unused_local_variable

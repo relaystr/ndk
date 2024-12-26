@@ -1,8 +1,8 @@
 import 'consts/transaction_type.dart';
 
 class NwcNotification {
-  static const String PAYMENT_RECEIVED = "payment_received";
-  static const String PAYMENT_SENT = "payment_sent";
+  static const kPaymentReceived = "payment_received";
+  static const kPaymentSent = "payment_sent";
 
   String type;
   String invoice;
