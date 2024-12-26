@@ -147,6 +147,9 @@ await for (final event in response.stream) {
 - contact list support, you can convert nostr_event to contact_list
 - nip51 list support, you can convert nostr_event to nip51_list
 - nip05 caching
+- nip-47 [Nostr wallet connect](https://github.com/relaystr/ndk/blob/master/packages/ndk/lib/domain_layer/usecases/nwc/README.md)
+- nip-42 Authentication of clients to relays
+- nip-57 Zaps
 
 ## not Included
 
