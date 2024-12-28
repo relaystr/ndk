@@ -35,11 +35,11 @@ class RelayConnectivity<T> {
   /// cancels stream subscription and closes relay transport
   Future<void> close() async {
     if (_streamSubscription != null) {
-      _streamSubscription!.cancel();
+      await _streamSubscription!.cancel();
     }
     if (relayTransport != null && relayTransport!.isOpen()) {
       Logger.log.t("closing $url webSocket");
-      relayTransport!
+      await relayTransport!
           .close()
           .timeout(const Duration(seconds: 3), onTimeout: () {
         Logger.log.w("timeout while trying to close socket $url");
