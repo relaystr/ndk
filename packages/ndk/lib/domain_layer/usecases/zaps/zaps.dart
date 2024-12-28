@@ -112,7 +112,7 @@ class Zaps {
           relays: relays,
           eventId: eventId);
     }
-    InvoiceResponse? invoice = await fecthInvoice(
+    final invoice = await fecthInvoice(
       lud16Link: lud16Link!,
       comment: comment,
       amountSats: amountSats,
@@ -122,10 +122,10 @@ class Zaps {
       return ZapResponse(error: "couldn't get invoice from $lnurl");
     }
     try {
-      PayInvoiceResponse payResponse = await _nwc.payInvoice(nwcConnection,
+      final payResponse = await _nwc.payInvoice(nwcConnection,
           invoice: invoice.invoice, timeout: Duration(seconds: 10));
       if (payResponse.preimage.isNotEmpty && payResponse.errorCode == null) {
-        ZapResponse zapResponse = ZapResponse(payInvoiceResponse: payResponse);
+        final zapResponse = ZapResponse(payInvoiceResponse: payResponse);
         if (zapRequest != null &&
             fetchZapReceipt &&
             invoice.nostrPubkey != null &&
@@ -143,6 +143,9 @@ class Zaps {
           final timeout = Timer(Duration(seconds: 30), () {
             _requests
                 .closeSubscription(zapResponse.zapReceiptResponse!.requestId);
+            if (zapResponse.streamSubscription!=null) {
+              zapResponse.streamSubscription!.cancel();
+            }
             Logger.log
                 .w("timed out waiting for zap receipt for invoice $invoice");
           });
