@@ -111,7 +111,7 @@ class Nwc {
         ],
         cacheRead: false,
         cacheWrite: false);
-    connection.subscription!.stream.listen((event) async {
+    connection.listen((event) async {
       if (event.kind == NwcKind.LEGACY_NOTIFICATION.value) {
         await _onLegacyNotification(event, connection);
       } else if (event.kind == NwcKind.RESPONSE.value) {
@@ -319,8 +319,7 @@ class Nwc {
       await _requests.closeSubscription(connection.subscription!.requestId);
     }
     Logger.log.d("closing nwc streams $connection....");
-    await connection.responseStream.close();
-    await connection.notificationStream.close();
+    await connection.close();
     _connections.remove(connection);
   }
 

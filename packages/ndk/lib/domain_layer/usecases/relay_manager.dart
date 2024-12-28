@@ -314,23 +314,20 @@ class RelayManager<T> {
   }
 
   void _startListeningToSocket(RelayConnectivity relayConnectivity) {
-    relayConnectivity.relayTransport!.listen((message) {
+    relayConnectivity.listen((message) {
       _handleIncomingMessage(
         message,
         relayConnectivity,
       );
     }, onError: (error) async {
-      /// todo: handle this better, should clean subscription stuff
+      await relayConnectivity.close();
       relayConnectivity.stats.connectionErrors++;
       Logger.log.e("onError ${relayConnectivity.url} on listen $error");
       throw Exception("Error in socket");
-    }, onDone: () {
+    }, onDone: () async {
       Logger.log.t(
           "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
-      if (relayConnectivity.relayTransport!.isOpen()) {
-        Logger.log.t("closing ${relayConnectivity.url} webSocket");
-        relayConnectivity.relayTransport!.close();
-      }
+      await relayConnectivity.close();
       // reconnect on close
       if (_allowReconnectRelays &&
           globalState.relays[relayConnectivity.url] != null &&
@@ -518,11 +515,7 @@ class RelayManager<T> {
     if (connectivity != null && connectivity.relayTransport != null) {
       Logger.log.d("Disconnecting $url...");
       globalState.relays.remove(url);
-      return connectivity.relayTransport!
-          .close()
-          .timeout(const Duration(seconds: 3), onTimeout: () {
-        Logger.log.w("timeout while trying to close socket $url");
-      });
+      return connectivity.close();
     }
   }
 

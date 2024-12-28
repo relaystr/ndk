@@ -7,11 +7,14 @@ import 'nwc_notification.dart';
 
 import 'responses/nwc_response.dart';
 
+/// NWC Connection
 class NwcConnection {
   NostrWalletConnectUri uri;
   EventSigner? _signer;
   GetInfoResponse? info;
   NdkResponse? subscription;
+  StreamSubscription<Nip01Event>? _streamSubscription;
+
   StreamController<NwcResponse> responseStream =
       StreamController<NwcResponse>.broadcast();
 
@@ -26,6 +29,20 @@ class NwcConnection {
   Stream<NwcNotification> get paymentsSentStream => notificationStream.stream
       .where((notification) => !notification.isIncoming)
       .asBroadcastStream();
+
+  /// listen
+  void listen(void Function(Nip01Event event)? onData) {
+    _streamSubscription = subscription!.stream.listen(onData);
+  }
+
+  /// cancels subscription and closes stream controllers
+  Future<void> close() async {
+    if (_streamSubscription!=null) {
+      await _streamSubscription!.cancel();
+    }
+    await responseStream.close();
+    await notificationStream.close();
+  }
 
   List<String> supportedVersions = ["0.0"];
 
@@ -59,4 +76,5 @@ class NwcConnection {
 
   @override
   int get hashCode => uri.hashCode;
+
 }
