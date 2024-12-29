@@ -313,7 +313,7 @@ class Nwc {
 
   /// Disconnects everything related to this connection,
   /// i.e.: closes response & notification subscription and streams
-  disconnect(NwcConnection connection) async {
+  Future<void> disconnect(NwcConnection connection) async {
     if (connection.subscription != null) {
       Logger.log.d("closing nwc subscription $connection....");
       await _requests.closeSubscription(connection.subscription!.requestId);
@@ -325,10 +325,7 @@ class Nwc {
   }
 
   /// Disconnects all NWC connections
-  disconnectAll() async {
-    List<NwcConnection> list = _connections.toList();
-    list.forEach((connection) async {
-      await disconnect(connection);
-    });
+  Future<void> disconnectAll() async {
+    await Future.wait(_connections.map(disconnect));
   }
 }

@@ -148,8 +148,7 @@ class Zaps {
           zapResponse.zapReceiptResponse!.stream.listen((event) {
             String? bolt11 = event.getFirstTag("bolt11");
             String? preimage = event.getFirstTag("preimage");
-            // TODO: Potential bug here comparing different types
-            if (bolt11 != null && bolt11 == invoice ||
+            if (bolt11 != null && bolt11 == invoice.invoice ||
                 preimage != null && preimage == payResponse.preimage) {
               ZapReceipt receipt = ZapReceipt.fromEvent(event);
               Logger.log.d("Zap Receipt: $receipt");
