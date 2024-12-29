@@ -40,7 +40,8 @@ class Initialization {
 
   /// repositories with no dependencies
 
-  final WebSocketClientNostrTransportFactory _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory();
+  final WebSocketClientNostrTransportFactory _webSocketNostrTransportFactory =
+      WebSocketClientNostrTransportFactory();
 
   /// state obj
 
@@ -75,7 +76,6 @@ class Initialization {
       case NdkEngine.RELAY_SETS:
         relayManager = RelayManager(
           globalState: _globalState,
-          signer: _ndkConfig.eventSigner,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
         );
@@ -106,7 +106,8 @@ class Initialization {
     }
 
     /// repositories
-    final Nip05Repository nip05repository = Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
+    final Nip05Repository nip05repository =
+        Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
 
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
@@ -172,7 +173,8 @@ class Initialization {
 
     nwc = Nwc(requests: requests, broadcast: broadcast);
 
-    final LnurlTransport lnurlTransport = LnurlTransportHttpImpl(_httpRequestDS);
+    final LnurlTransport lnurlTransport =
+        LnurlTransportHttpImpl(_httpRequestDS);
 
     lnurl = Lnurl(transport: lnurlTransport);
     zaps = Zaps(
