@@ -2,8 +2,6 @@
 
 import 'dart:io';
 
-import 'package:ndk/domain_layer/usecases/zaps/zap_receipt.dart';
-import 'package:ndk/domain_layer/usecases/zaps/zaps.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
