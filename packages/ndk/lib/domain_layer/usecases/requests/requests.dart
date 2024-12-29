@@ -1,10 +1,7 @@
 import 'dart:async';
-
-import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
-import '../../../dev/simple_profiler.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/event_filter.dart';
@@ -19,6 +16,7 @@ import '../../repositories/event_verifier.dart';
 import '../cache_read/cache_read.dart';
 import '../cache_write/cache_write.dart';
 import '../engines/network_engine.dart';
+import '../relay_manager.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
 import 'verify_event_stream.dart';
@@ -179,7 +177,6 @@ class Requests {
   ///
   /// Returns an [NdkResponse] containing the request results
   NdkResponse requestNostrEvent(NdkRequest request) {
-    final profiler = SimpleProfiler('requestNostrEventProfiler-${request.id}');
     final state = RequestState(request);
 
     final response = NdkResponse(state.id, state.stream);
@@ -196,7 +193,6 @@ class Requests {
 
       // call user defined timeout function
       request.timeoutCallbackUserFacing?.call();
-      profiler.checkpoint("onTimeout");
     };
 
     // register event verification - removes invalid events from the stream
@@ -213,7 +209,6 @@ class Requests {
 
     // register listener
     StreamResponseCleaner(
-      profiler: profiler,
       inputStreams: [
         verifiedNetworkStream,
         state.cacheController.stream,
@@ -223,13 +218,8 @@ class Requests {
       eventOutFilters: _eventOutFilters,
     )();
 
-    state.controller.onCancel = () {
-      profiler.checkpoint('onCancel');
-    };
-
     /// cleanup on close
     state.stream.doOnDone(() {
-      profiler.checkpoint('onDone');
       _globalState.inFlightRequests.remove(state.id);
     });
 
@@ -257,8 +247,6 @@ class Requests {
 
       /// handle request
       _engine.handleRequest(state);
-
-      profiler.checkpoint('send to engine');
     }
 
     asyncStuff();

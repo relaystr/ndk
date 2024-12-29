@@ -1,5 +1,4 @@
 import 'dart:async';
-import '../../../dev/simple_profiler.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/event_filter.dart';
 import '../../entities/nip_01_event.dart';
@@ -11,7 +10,6 @@ class StreamResponseCleaner {
   final List<Stream<Nip01Event>> _inputStreams;
   final StreamController<Nip01Event> _outController;
   final List<EventFilter> _eventOutFilters;
-  final SimpleProfiler profiler;
 
   int get _numStreams => _inputStreams.length;
 
@@ -26,7 +24,6 @@ class StreamResponseCleaner {
     required List<Stream<Nip01Event>> inputStreams,
     required StreamController<Nip01Event> outController,
     required List<EventFilter> eventOutFilters,
-    required this.profiler,
   })  : _trackingSet = trackingSet,
         _outController = outController,
         _inputStreams = inputStreams,
@@ -40,7 +37,6 @@ class StreamResponseCleaner {
 
   _addStreamListener(Stream<Nip01Event> stream) {
     stream.listen((event) {
-      profiler.checkpoint("onEvent");
       // check if event id is in the set
       if (_trackingSet.contains(event.id)) {
         return;
@@ -60,7 +56,6 @@ class StreamResponseCleaner {
       }
       _outController.add(event);
       Logger.log.t("added event ${event.content}");
-      profiler.checkpoint("added event");
     }, onDone: () async {
       _canClose();
     }, onError: (error) {
