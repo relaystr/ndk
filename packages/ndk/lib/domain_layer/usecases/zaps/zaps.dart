@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-
+import '../../entities/nip_01_event.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/filter.dart';
 import '../../entities/request_response.dart';
@@ -143,14 +142,15 @@ class Zaps {
           final timeout = Timer(Duration(seconds: 30), () {
             _requests
                 .closeSubscription(zapResponse.zapReceiptResponse!.requestId);
-            if (zapResponse.streamSubscription!=null) {
+            if (zapResponse.streamSubscription != null) {
               zapResponse.streamSubscription!.cancel();
             }
             Logger.log
                 .w("timed out waiting for zap receipt for invoice $invoice");
           });
 
-          zapResponse.streamSubscription = zapResponse.zapReceiptResponse!.stream.listen((event) {
+          zapResponse.streamSubscription =
+              zapResponse.zapReceiptResponse!.stream.listen((event) {
             String? bolt11 = event.getFirstTag("bolt11");
             String? preimage = event.getFirstTag("preimage");
             if (bolt11 != null && bolt11 == invoice.invoice ||
@@ -166,7 +166,7 @@ class Zaps {
               timeout.cancel();
               _requests
                   .closeSubscription(zapResponse.zapReceiptResponse!.requestId);
-              if (zapResponse.streamSubscription!=null) {
+              if (zapResponse.streamSubscription != null) {
                 zapResponse.streamSubscription!.cancel();
               }
             }
