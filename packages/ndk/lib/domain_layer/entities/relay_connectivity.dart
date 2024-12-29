@@ -37,8 +37,7 @@ class RelayConnectivity<T> {
     if (_streamSubscription != null) {
       await _streamSubscription!.cancel();
     }
-    if (relayTransport != null && relayTransport!.isOpen()) {
-      Logger.log.t("closing $url webSocket");
+    if (relayTransport != null) {
       await relayTransport!
           .close()
           .timeout(const Duration(seconds: 3), onTimeout: () {

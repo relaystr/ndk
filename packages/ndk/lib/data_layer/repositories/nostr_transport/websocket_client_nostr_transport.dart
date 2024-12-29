@@ -27,7 +27,7 @@ class WebSocketClientNostrTransport implements NostrTransport {
       switch (state) {
         case Connected() || Reconnected():
           completer.complete();
-          if (state == Reconnected && onReconnect!=null) {
+          if (state == Reconnected() && onReconnect!=null) {
             onReconnect.call();
           }
         case Disconnected():
