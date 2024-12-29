@@ -19,7 +19,7 @@ void main() async {
 
     Nip01Event textNote(KeyPair key2) {
       return Nip01Event(
-          kind: Nip01Event.kKind,
+          kind: Nip01Event.kTextNodeKind,
           pubKey: key2.publicKey,
           content: "some note from key ${keyNames[key1]}",
           tags: [],
@@ -47,7 +47,7 @@ void main() async {
 
       await Future.delayed(Duration(seconds: 1));
       final response = ndk.requests.query(filters: [
-        Filter(kinds: [Nip01Event.kKind], authors: [key1.publicKey])
+        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey])
       ]);
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
 
@@ -72,7 +72,7 @@ void main() async {
 
       await Future.delayed(Duration(seconds: 1));
       final response = ndk.requests.query(filters: [
-        Filter(kinds: [Nip01Event.kKind], authors: [key1.publicKey])
+        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey])
       ]);
       List<Nip01Event> events = await response.future;
       expect(events, isEmpty);

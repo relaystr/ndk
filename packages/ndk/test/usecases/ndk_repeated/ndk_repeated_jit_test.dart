@@ -25,7 +25,7 @@ void main() async {
 
     Nip01Event textNote(KeyPair key2) {
       return Nip01Event(
-          kind: Nip01Event.kKind,
+          kind: Nip01Event.kTextNodeKind,
           pubKey: key2.publicKey,
           content: "some note from key ${keyNames[key2]}",
           tags: [],
@@ -46,20 +46,23 @@ void main() async {
 
     final myFilters = [
       Filter(
-        kinds: [Nip01Event.kKind],
+        kinds: [Nip01Event.kTextNodeKind],
         authors: [key1.publicKey],
       ),
       Filter(
-          kinds: [Nip01Event.kKind], authors: [key1.publicKey, key2.publicKey]),
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key1.publicKey, key2.publicKey]),
       Filter(
-          kinds: [Nip01Event.kKind], authors: [key4.publicKey, key3.publicKey]),
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key4.publicKey, key3.publicKey]),
       Filter(
-          kinds: [Nip01Event.kKind], authors: [key4.publicKey, key2.publicKey]),
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [key4.publicKey, key2.publicKey]),
       Filter(
-          kinds: [Nip01Event.kKind],
+          kinds: [Nip01Event.kTextNodeKind],
           authors: [key1.publicKey, key2.publicKey, key3.publicKey]),
       Filter(kinds: [
-        Nip01Event.kKind
+        Nip01Event.kTextNodeKind
       ], authors: [
         key1.publicKey,
         key2.publicKey,

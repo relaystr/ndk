@@ -29,7 +29,7 @@ void main() async {
 
   Nip01Event textNote(KeyPair key2) {
     return Nip01Event(
-        kind: Nip01Event.kKind,
+        kind: Nip01Event.kTextNodeKind,
         pubKey: key2.publicKey,
         content: "some note from key ${keyNames[key2]}",
         tags: [],
@@ -55,7 +55,7 @@ void main() async {
       ));
 
       final filter =
-          Filter(kinds: [Nip01Event.kKind], authors: [key1.publicKey]);
+          Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
 
       final query = ndk.requests.query(filters: [filter]);
 

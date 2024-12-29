@@ -7,7 +7,7 @@ import '../../shared/nips/nip01/bip340.dart';
 
 /// basic nostr nip01 event data structure
 class Nip01Event {
-  static const int kKind = 1;
+  static const int kTextNodeKind = 1;
 
   /// Creates a new Nostr event.
   ///

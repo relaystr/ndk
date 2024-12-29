@@ -60,7 +60,7 @@ void main() async {
         ndk.requests.query(name: "feed-test", filters: [
           Filter(
             authors: myContactList.contacts,
-            kinds: [Nip01Event.kKind],
+            kinds: [Nip01Event.kTextNodeKind],
             since:
                 (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 1,
           ),
@@ -72,7 +72,7 @@ void main() async {
             ndk.requests.subscription(id: "feed-test2", filters: [
           Filter(
             authors: myContactList.contacts,
-            kinds: [Nip01Event.kKind],
+            kinds: [Nip01Event.kTextNodeKind],
             since:
                 (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
           ),

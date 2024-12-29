@@ -106,7 +106,8 @@ class MockRelay {
             if (filter.kinds!.contains(Nip65.kKind) && nip65s != null) {
               _respondeNip65(filter.authors!, requestId);
             }
-            if (filter.kinds!.contains(Nip01Event.kKind) && textNotes != null) {
+            if (filter.kinds!.contains(Nip01Event.kTextNodeKind) &&
+                textNotes != null) {
               _respondeTextNote(filter.authors!, requestId);
             }
             if (filter.kinds!.contains(ContactList.kKind) &&
