@@ -1,9 +1,10 @@
 import 'package:http/http.dart' as http;
+import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
+import 'package:ndk/domain_layer/repositories/lnurl_transport.dart';
 
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
-import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
@@ -14,6 +15,7 @@ import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/jit_engine/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
+import '../domain_layer/usecases/lnurl/lnurl.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
@@ -22,6 +24,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+import '../domain_layer/usecases/zaps/zaps.dart';
 import '../shared/logger/logger.dart';
 import 'ndk_config.dart';
 
@@ -37,8 +40,7 @@ class Initialization {
 
   /// repositories with no dependencies
 
-  final WebSocketClientNostrTransportFactory _webSocketNostrTransportFactory =
-      WebSocketClientNostrTransportFactory();
+  final WebSocketClientNostrTransportFactory _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory();
 
   /// state obj
 
@@ -55,6 +57,8 @@ class Initialization {
   late RelaySets relaySets;
   late Broadcast broadcast;
   late Nwc nwc;
+  late Zaps zaps;
+  late Lnurl lnurl;
 
   late VerifyNip05 verifyNip05;
 
@@ -71,6 +75,7 @@ class Initialization {
       case NdkEngine.RELAY_SETS:
         relayManager = RelayManager(
           globalState: _globalState,
+          signer: _ndkConfig.eventSigner,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
         );
@@ -101,8 +106,7 @@ class Initialization {
     }
 
     /// repositories
-    final Nip05Repository nip05repository =
-        Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
+    final Nip05Repository nip05repository = Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
 
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
@@ -167,6 +171,15 @@ class Initialization {
     );
 
     nwc = Nwc(requests: requests, broadcast: broadcast);
+
+    final LnurlTransport lnurlTransport = LnurlTransportHttpImpl(_httpRequestDS);
+
+    lnurl = Lnurl(transport: lnurlTransport);
+    zaps = Zaps(
+      requests: requests,
+      nwc: nwc,
+      lnurl: lnurl,
+    );
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);

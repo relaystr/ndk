@@ -125,6 +125,8 @@ class Lists {
     return relaySet;
   }
 
+  // coverage:ignore-start
+
   /// return list of all nip51 relay sets that match a given kind
   Future<List<Nip51Set>?> getNip51RelaySets(
     int kind,
@@ -180,8 +182,6 @@ class Lists {
     final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
     return getNip51RelaySets(kind, mySigner, forceRefresh: forceRefresh);
   }
-
-  // coverage:ignore-start
 
   Future<Nip51Set> broadcastAddNip51SetRelay(
     String relayUrl,

@@ -5,7 +5,6 @@ homepage: https://github.com/relaystr/ndk
 
 environment:
   sdk: ">=3.2.1 <4.0.0"
-  flutter: ">=3.3.0"
 
 platforms:
   android:
@@ -19,7 +18,7 @@ dependencies:
   ndk: ^0.2.0-dev002
 
 #dependency_overrides:
-#  ndk:
+#   ndk:
 #    path: ../ndk
 
 dev_dependencies:
@@ -30,7 +29,6 @@ dev_dependencies:
   mockito: ^5.0.17
   integration_test:
     sdk: flutter
-  objectbox_generator: any
 
 flutter:
   plugin:

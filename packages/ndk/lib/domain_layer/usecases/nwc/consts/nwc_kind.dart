@@ -1,3 +1,6 @@
+// ignore_for_file: constant_identifier_names
+
+/// Nwc Kinds
 enum NwcKind {
   INFO(13194),
   REQUEST(23194),
@@ -5,6 +8,7 @@ enum NwcKind {
   LEGACY_NOTIFICATION(23196),
   NOTIFICATION(23197);
 
+  /// int value
   final int value;
 
   const NwcKind(this.value);

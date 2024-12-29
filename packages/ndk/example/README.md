@@ -138,6 +138,8 @@ final ndkProvider = Provider<Ndk>((ref) {
 
 ## more examples
 
+- [Nostr wallet Connect](https://github.com/relaystr/ndk/tree/master/packages/ndk/example/nwc)
+- [Zaps](https://github.com/relaystr/ndk/tree/master/packages/ndk/example/zaps)
 - [example folder github](https://github.com/relaystr/ndk/tree/master/packages/ndk/example)
 - [example app](https://github.com/relaystr/ndk/tree/master/packages/sample-app)
 - [yana](https://github.com/frnandu/yana)

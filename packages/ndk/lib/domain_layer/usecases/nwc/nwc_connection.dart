@@ -39,6 +39,7 @@ class NwcConnection {
     return _signer!;
   }
 
+  /// does this connection only support legacy notifications
   bool isLegacyNotifications() {
     return supportedVersions.length == 1 && supportedVersions.first == "0.0" ||
         !supportedVersions.any((e) => e != "0.0");

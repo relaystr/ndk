@@ -131,17 +131,7 @@ class Nip01Event {
 
   /// return first `e` tag found
   String? getEId() {
-    for (var tag in tags) {
-      if (tag.length > 1) {
-        var key = tag[0];
-        var value = tag[1];
-
-        if (key == "e") {
-          return value;
-        }
-      }
-    }
-    return null;
+    return getFirstTag("e");
   }
 
   /// return all tags that match given `tag`
@@ -189,12 +179,17 @@ class Nip01Event {
 
   /// return first found `d` tag
   String? getDtag() {
+    return getFirstTag("d");
+  }
+
+  /// Get first tag matching given name
+  String? getFirstTag(String name) {
     for (var tag in tags) {
       if (tag.length > 1) {
         var key = tag[0];
         var value = tag[1];
 
-        if (key == "d") {
+        if (key == name) {
           return value;
         }
       }

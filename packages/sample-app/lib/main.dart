@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/relays_page.dart';
+import 'package:ndk_demo/zaps_page.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 
 import 'amber_page.dart';
@@ -55,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Nostr Development Kit Demo'),
@@ -65,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Tab(text: 'Amber'),
               Tab(text: 'Relays'),
               Tab(text: 'NWC'),
+              Tab(text: 'Zaps'),
             ],
           ),
         ),
@@ -76,7 +78,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 : const AmberPage()
             ,
             const RelaysPage(),
-            const NwcPage()
+            const NwcPage(),
+            const ZapsPage()
           ],
         ),
       ),

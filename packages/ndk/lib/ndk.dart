@@ -66,6 +66,10 @@ export 'domain_layer/usecases/lists/lists.dart';
 export 'domain_layer/usecases/relay_sets/relay_sets.dart';
 export 'domain_layer/usecases/broadcast/broadcast.dart';
 export 'domain_layer/usecases/nwc/nwc.dart';
+export 'domain_layer/usecases/zaps/zaps.dart';
+export 'domain_layer/usecases/zaps/zap_request.dart';
+export 'domain_layer/usecases/zaps/zap_receipt.dart';
+export 'domain_layer/usecases/zaps/invoice_response.dart';
 
 /**
  * other stuff

@@ -3,15 +3,22 @@ import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 import '../consts/transaction_type.dart';
 import 'nwc_request.dart';
 
-// Subclass for requests to get a list of transactions
+/// Subclass for requests to get a list of transactions
 class ListTransactionsRequest extends NwcRequest {
+  /// from
   final int? from;
+  /// until
   final int? until;
+  /// limit
   final int? limit;
+  /// offset
   final int? offset;
+  /// unpaid
   final bool unpaid;
+  /// type
   final TransactionType? type;
 
+  ///
   const ListTransactionsRequest({
     this.from,
     this.until,

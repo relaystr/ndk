@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
+import 'package:ndk/shared/nips/nip44/nip44.dart';
 
 import 'consts/nwc_kind.dart';
 import 'consts/nwc_method.dart';
@@ -187,23 +188,27 @@ class Nwc {
   Future<void> _onNotification(
       Nip01Event event, NwcConnection connection) async {
     if (event.content != "") {
-      // TODO
-      //   var decrypted = Nip44.decrypt(
-      //       connection.uri.secret, connection.uri.walletPubkey, event.content);
-      //   Map<String, dynamic> data;
-      //   data = json.decode(decrypted);
-      //   if (data.containsKey("notification_type") &&
-      //       data['notification'] != null) {
-      //     NwcNotification notification = NwcNotification.fromMap(data['notification']);
-      //     connection.notificationStream.add(notification);
-      //   } else if (data.containsKey("error")) {
-      //     // TODO ??
-      //   }
+      final decrypted = await Nip44.decryptMessage(
+        event.content,
+        connection.uri.secret,
+        connection.uri.walletPubkey,
+      );
+      Map<String, dynamic> data;
+      data = json.decode(decrypted);
+      if (data.containsKey("notification_type") &&
+          data['notification'] != null) {
+        NwcNotification notification =
+            NwcNotification.fromMap(data['notification']);
+        connection.notificationStream.add(notification);
+      } else if (data.containsKey("error")) {
+        // TODO ??
+      }
     }
   }
 
   Future<T> _executeRequest<T extends NwcResponse>(
-      NwcConnection connection, NwcRequest request) async {
+      NwcConnection connection, NwcRequest request,
+      {Duration? timeout}) async {
     if (connection.permissions.contains(request.method.name)) {
       var json = request.toMap();
       var content = jsonEncode(json);
@@ -226,7 +231,8 @@ class Nwc {
 
       Completer<NwcResponse> completer = Completer();
       _inflighRequests[event.id] = completer;
-      _inflighRequestTimers[event.id] = Timer(Duration(seconds: 3), () {
+      _inflighRequestTimers[event.id] =
+          Timer(timeout ?? Duration(seconds: 5), () {
         if (!completer.isCompleted) {
           final error =
               "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relay}";
@@ -273,9 +279,10 @@ class Nwc {
 
   /// Does a `pay_invoice` request
   Future<PayInvoiceResponse> payInvoice(NwcConnection connection,
-      {required String invoice}) async {
+      {required String invoice, Duration? timeout}) async {
     return _executeRequest<PayInvoiceResponse>(
-        connection, PayInvoiceRequest(invoice: invoice));
+        connection, PayInvoiceRequest(invoice: invoice),
+        timeout: timeout);
   }
 
   /// Does a `lookup_invoice` request
@@ -306,7 +313,7 @@ class Nwc {
 
   /// Disconnects everything related to this connection,
   /// i.e.: closes response & notification subscription and streams
-  disconnect(NwcConnection connection) async {
+  Future<void> disconnect(NwcConnection connection) async {
     if (connection.subscription != null) {
       Logger.log.d("closing nwc subscription $connection....");
       await _requests.closeSubscription(connection.subscription!.requestId);
@@ -318,10 +325,7 @@ class Nwc {
   }
 
   /// Disconnects all NWC connections
-  disconnectAll() async {
-    List<NwcConnection> list = _connections.toList();
-    list.forEach((connection) async {
-      await disconnect(connection);
-    });
+  Future<void> disconnectAll() async {
+    await Future.wait(_connections.map(disconnect));
   }
 }

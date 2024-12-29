@@ -147,6 +147,9 @@ await for (final event in response.stream) {
 - contact list support, you can convert nostr_event to contact_list
 - nip51 list support, you can convert nostr_event to nip51_list
 - nip05 caching
+- nip-47 [Nostr wallet connect](https://github.com/relaystr/ndk/blob/master/packages/ndk/lib/domain_layer/usecases/nwc/README.md)
+- nip-42 Authentication of clients to relays
+- nip-57 Zaps
 
 ## not Included
 
@@ -170,8 +173,10 @@ await for (final event in response.stream) {
 - [x] Lists ([NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md))
 - [x] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
 - [x] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
+- [X] Zaps ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
+- [x] Authentication of clients to relays ([NIP-42](https://github.com/nostr-protocol/nips/blob/master/42.md))
+- [x] Encrypted Payloads (Versioned) ([NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md))
 - [ ] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))
-- [ ] Zaps (private, public, anon, non-zap) ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
 - [ ] Badges ([NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md))
 
 ## Performance

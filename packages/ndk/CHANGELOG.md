@@ -1,19 +1,14 @@
-## 0.2.0-dev005
- - remove deprecated
-
-## 0.2.0-dev004
- - allow to broadcast already signed events
-
-## 0.2.0-dev003
- -  add missing export
-
-## 0.2.0-dev002
- - unification of RelayManager in JIT
- - NWC - Nostr Wallet Connect support usecase
-
-## 0.2.0-dev001
-
- - Bump "ndk" to `0.2.0-dev001`.
+## 0.2.0
+ - NIP-47 Nostr Wallet Connect
+ - NIP-57 Zaps support
+ - NIP-42 Authentication of clients to relays
+ - NIP-44 Encrypted Payloads (Versioned)
+ - Unification of RelayManager in JIT
+ - Web_socket_client nostr transport implementation with backoff reconnects
+ - Melos support, separated monorepos
+ - Objectbox cache initial support of basic models
+ - Isar cache support
+ - many bugfixes and improvements in relay timeout handling
 
 ## 0.1.3
 

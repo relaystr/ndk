@@ -1,6 +1,10 @@
+// ignore_for_file: constant_identifier_names
+/// NWC method
 class NwcMethod {
+  /// name
   final String name;
 
+  ///
   const NwcMethod(this.name);
 
   static const NwcMethod GET_INFO = NwcMethod('get_info');
@@ -28,7 +32,7 @@ class NwcMethod {
     UNKNOWN.name: UNKNOWN,
   };
 
-  // Factory method to get Method by plaintext
+  /// Factory method to get Method by plaintext
   factory NwcMethod.fromPlaintext(String plaintext) {
     return _methodsRegistry[plaintext] ?? NwcMethod.UNKNOWN;
   }
