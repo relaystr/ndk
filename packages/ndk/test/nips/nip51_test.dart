@@ -12,7 +12,7 @@ void main() {
       final event = Nip01Event(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
-        kind: Nip51List.RELAY_SET,
+        kind: Nip51List.kRelaySet,
         content: "",
         tags: [
           ['d', 'test'],
@@ -42,7 +42,7 @@ void main() {
 
       Nip51Set relaySet = Nip51Set(
           pubKey: key1.publicKey,
-          kind: Nip51List.RELAY_SET,
+          kind: Nip51List.kRelaySet,
           name: "test",
           createdAt: Helpers.now,
           elements: []);
@@ -58,7 +58,7 @@ void main() {
       final event = Nip01Event(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
-        kind: Nip51List.SEARCH_RELAYS,
+        kind: Nip51List.kSearchRelays,
         content: "",
         tags: [
           ['relay', 'wss://example.com'],
@@ -87,7 +87,7 @@ void main() {
 
       Nip51List relayList = Nip51List(
           pubKey: key1.publicKey,
-          kind: Nip51List.SEARCH_RELAYS,
+          kind: Nip51List.kSearchRelays,
           createdAt: Helpers.now,
           elements: []);
       relayList.privateRelays = ['wss://example.com', 'wss://example.org'];

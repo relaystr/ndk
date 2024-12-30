@@ -1,10 +1,11 @@
+// TODO: What does Hrps mean?
 class Hrps {
-  static const String PUBLIC_KEY = "npub";
-  static const String PRIVATE_KEY = "nsec";
-  static const String NOTE_ID = "note";
+  static const String kPublicKey = "npub";
+  static const String kPrivateKey = "nsec";
+  static const String kNoteId = "note";
 
-  static const String NPROFILE = "nprofile";
-  static const String NEVENT = "nevent";
-  static const String NRELAY = "nrelay";
-  static const String NADDR = "naddr";
+  static const String kNprofile = "nprofile";
+  static const String kNevent = "nevent";
+  static const String kNrelay = "nrelay";
+  static const String kNaddr = "naddr";
 }

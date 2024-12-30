@@ -45,7 +45,7 @@ class RelayJitBroadcastOutboxStrategy {
     final couldNotConnectRelays = await connectRelays(
       connectedRelays: connectedRelays,
       relaysToConnect: notConnectedRelays,
-      connectionSource: ConnectionSource.BROADCAST_OWN,
+      connectionSource: ConnectionSource.broadcastOwn,
       relayManager: relayManager,
     );
 
@@ -55,7 +55,7 @@ class RelayJitBroadcastOutboxStrategy {
         .toList();
 
     final ClientMsg myClientMsg = ClientMsg(
-      ClientMsgType.EVENT,
+      ClientMsgType.kEvent,
       event: eventToPublish,
     );
 

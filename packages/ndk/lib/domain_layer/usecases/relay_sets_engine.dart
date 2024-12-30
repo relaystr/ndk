@@ -26,7 +26,7 @@ import 'relay_manager.dart';
 import 'user_relay_lists/user_relay_lists.dart';
 
 class RelaySetsEngine implements NetworkEngine {
-  static const Duration DEFAULT_STREAM_IDLE_TIMEOUT = Duration(seconds: 5);
+  static const Duration kDefaultStreamIdleTimeout = Duration(seconds: 5);
 
   late GlobalState _globalState;
 
@@ -52,7 +52,7 @@ class RelaySetsEngine implements NetworkEngine {
 
   bool doRelayRequest(String id, RelayRequestState request) {
     if (
-    // _relayManager.isRelayConnected(request.url) &&
+        // _relayManager.isRelayConnected(request.url) &&
         (!_globalState.blockedRelays.contains(request.url))) {
       try {
         RelayConnectivity? relay = _globalState.relays[request.url];
@@ -61,7 +61,7 @@ class RelaySetsEngine implements NetworkEngine {
           _relayManager.send(
               relay,
               ClientMsg(
-                ClientMsgType.REQ,
+                ClientMsgType.kReq,
                 id: id,
                 filters: request.filters,
               ));
@@ -119,7 +119,7 @@ class RelaySetsEngine implements NetworkEngine {
     Filter filter,
     RelaySet? relaySet, {
     required String name,
-    Duration idleTimeout = RelaySetsEngine.DEFAULT_STREAM_IDLE_TIMEOUT,
+    Duration idleTimeout = RelaySetsEngine.kDefaultStreamIdleTimeout,
     bool splitRequestsByPubKeyMappings = true,
   }) async {
     RequestState state = RequestState(NdkRequest.query(
@@ -154,7 +154,7 @@ class RelaySetsEngine implements NetworkEngine {
         state.request.explicitRelays!.isNotEmpty) {
       for (final url in state.request.explicitRelays!) {
         await _relayManager.connectRelay(
-            dirtyUrl: url, connectionSource: ConnectionSource.EXPLICIT);
+            dirtyUrl: url, connectionSource: ConnectionSource.explicit);
         state.addRequest(
             url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
@@ -181,7 +181,7 @@ class RelaySetsEngine implements NetworkEngine {
     String name,
     Iterable<String> urls,
     Filter filter, {
-    Duration timeout = DEFAULT_STREAM_IDLE_TIMEOUT,
+    Duration timeout = kDefaultStreamIdleTimeout,
     bool closeOnEOSE = true,
   }) async {
     String id = Helpers.getRandomString(10);
@@ -239,7 +239,7 @@ class RelaySetsEngine implements NetworkEngine {
           }
           await _relayManager.connectRelay(
               dirtyUrl: relayUrl,
-              connectionSource: ConnectionSource.BROADCAST_SPECIFIC);
+              connectionSource: ConnectionSource.broadcastSpecific);
         }
         // send out request
         for (final relayUrl in specificRelays) {
@@ -254,7 +254,7 @@ class RelaySetsEngine implements NetworkEngine {
             _relayManager.send(
                 relayConnectivity,
                 ClientMsg(
-                  ClientMsgType.EVENT,
+                  ClientMsgType.kEvent,
                   event: nostrEvent,
                 ));
           }
@@ -283,7 +283,7 @@ class RelaySetsEngine implements NetworkEngine {
 
         await _relayManager.connectRelay(
           dirtyUrl: relayUrl,
-          connectionSource: ConnectionSource.BROADCAST_OWN,
+          connectionSource: ConnectionSource.broadcastOwn,
         );
       }
 
@@ -302,7 +302,7 @@ class RelaySetsEngine implements NetworkEngine {
         _relayManager.send(
             relay,
             ClientMsg(
-              ClientMsgType.EVENT,
+              ClientMsgType.kEvent,
               event: nostrEvent,
             ));
       }
@@ -342,7 +342,7 @@ class RelaySetsEngine implements NetworkEngine {
           }
           await _relayManager.connectRelay(
               dirtyUrl: relayUrl,
-              connectionSource: ConnectionSource.BROADCAST_OTHER);
+              connectionSource: ConnectionSource.broadcastOther);
         }
         for (final relayUrl in myWriteRelayUrlsOthers) {
           final relay = _globalState.relays[relayUrl];
@@ -360,7 +360,7 @@ class RelaySetsEngine implements NetworkEngine {
           _relayManager.send(
               relay,
               ClientMsg(
-                ClientMsgType.EVENT,
+                ClientMsgType.kEvent,
                 event: nostrEvent,
               ));
         }

@@ -187,7 +187,7 @@ class RelayJitPubkeyStrategy with Logger {
         relayManger
             .connectRelay(
                 dirtyUrl: relayCandidate.relayUrl,
-                connectionSource: ConnectionSource.PUBKEY_STRATEGY)
+                connectionSource: ConnectionSource.pubkeyStrategy)
             .then((success) {
           if (success.first) {
             final myRelayConnectivity =
@@ -318,7 +318,7 @@ void _sendRequestToSocket(
   relayManager.send(
       connectedRelay,
       ClientMsg(
-        ClientMsgType.REQ,
+        ClientMsgType.kReq,
         id: requestState.id,
         filters: filters,
       ));

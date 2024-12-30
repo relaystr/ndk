@@ -1,5 +1,3 @@
-// ignore_for_file: file_names
-
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -25,7 +23,7 @@ void main() async {
 
     Nip01Event textNote(KeyPair key2) {
       return Nip01Event(
-          kind: Nip01Event.TEXT_NODE_KIND,
+          kind: Nip01Event.kTextNodeKind,
           pubKey: key2.publicKey,
           content: "some note from key ${keyNames[key2]}",
           tags: [],
@@ -37,32 +35,32 @@ void main() async {
     Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
     Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 4140);
-    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 4141);
-    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 4142);
-    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 4143);
+    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 4240);
+    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 4241);
+    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 4242);
+    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 4243);
 
     final myRelayUrls = [relay1.url, relay2.url, relay3.url, relay4.url];
 
     final myFilters = [
       Filter(
-        kinds: [Nip01Event.TEXT_NODE_KIND],
+        kinds: [Nip01Event.kTextNodeKind],
         authors: [key1.publicKey],
       ),
       Filter(
-          kinds: [Nip01Event.TEXT_NODE_KIND],
+          kinds: [Nip01Event.kTextNodeKind],
           authors: [key1.publicKey, key2.publicKey]),
       Filter(
-          kinds: [Nip01Event.TEXT_NODE_KIND],
+          kinds: [Nip01Event.kTextNodeKind],
           authors: [key4.publicKey, key3.publicKey]),
       Filter(
-          kinds: [Nip01Event.TEXT_NODE_KIND],
+          kinds: [Nip01Event.kTextNodeKind],
           authors: [key4.publicKey, key2.publicKey]),
       Filter(
-          kinds: [Nip01Event.TEXT_NODE_KIND],
+          kinds: [Nip01Event.kTextNodeKind],
           authors: [key1.publicKey, key2.publicKey, key3.publicKey]),
       Filter(kinds: [
-        Nip01Event.TEXT_NODE_KIND
+        Nip01Event.kTextNodeKind
       ], authors: [
         key1.publicKey,
         key2.publicKey,
@@ -85,8 +83,9 @@ void main() async {
       await relay4.stopServer();
     });
 
-    test('JIT Engine', timeout: const Timeout(Duration(seconds: 3)), () async {
-      final ndkJit = Ndk(
+    test('Lists Engine', timeout: const Timeout(Duration(seconds: 3)),
+        () async {
+      final ndkLists = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
           eventSigner: Bip340EventSigner(
@@ -94,13 +93,13 @@ void main() async {
             publicKey: key1.publicKey,
           ),
           cache: MemCacheManager(),
-          engine: NdkEngine.JIT,
+          engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: myRelayUrls,
         ),
       );
 
       await testNdk(
-        myNdk: ndkJit,
+        myNdk: ndkLists,
         coverage: 1,
         myFilters: myFilters,
         key1TextNotes: key1TextNotes,

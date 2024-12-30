@@ -1,3 +1,3 @@
 class Reaction {
-  static const int KIND = 7;
+  static const int kKind = 7;
 }

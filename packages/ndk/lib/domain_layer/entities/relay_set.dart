@@ -38,7 +38,7 @@ class RelaySet {
     return "$name,$pubKey";
   }
 
-  static const int MAX_AUTHORS_PER_REQUEST = 100;
+  static const int kMaxAuthorsPerRequest = 100;
 
   void splitIntoRequests(Filter filter, RequestState groupRequest) {
     for (var entry in relaysMap.entries) {
@@ -79,16 +79,16 @@ class RelaySet {
       } else if (filter.eTags != null && direction == RelayDirection.inbox) {
         groupRequest.addRequest(url, [filter]);
       } else {
-        /// TODO ????
+        /// TODO: Define what to do in this edge case
       }
     }
   }
 
   static List<Filter> sliceFilterAuthors(Filter filter) {
     if (filter.authors != null &&
-        filter.authors!.length > MAX_AUTHORS_PER_REQUEST) {
+        filter.authors!.length > kMaxAuthorsPerRequest) {
       return filter.authors!
-          .slices(MAX_AUTHORS_PER_REQUEST)
+          .slices(kMaxAuthorsPerRequest)
           .map((slice) => filter.cloneWithAuthors(slice))
           .toList();
     } else {

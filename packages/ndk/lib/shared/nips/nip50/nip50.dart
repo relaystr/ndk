@@ -1,3 +1,3 @@
 class Nip50 {
-  static const int NIP = 50;
+  static const int kNip = 50;
 }

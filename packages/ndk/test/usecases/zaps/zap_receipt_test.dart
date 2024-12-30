@@ -26,11 +26,11 @@ void main() {
         [
           'description',
           jsonEncode({
-            'id':'duparomana',
+            'id': 'duparomana',
             'pubkey': 'testSender',
-            'kind': ZapRequest.KIND,
+            'kind': ZapRequest.kZapRequestKind,
             'sig': "sig",
-            'created_at':DateTime.now().millisecondsSinceEpoch,
+            'created_at': DateTime.now().millisecondsSinceEpoch,
             'content': 'testComment',
             'pubKey': 'testSender',
             'tags': [
@@ -78,12 +78,12 @@ void main() {
         [
           'description',
           jsonEncode({
-            'id':'duparomana',
+            'id': 'duparomana',
             'pubkey': 'testSender',
-            'kind': ZapRequest.KIND,
+            'kind': ZapRequest.kZapRequestKind,
             'sig': "sig",
-            'created_at':DateTime.now().millisecondsSinceEpoch,
-            'content':'',
+            'created_at': DateTime.now().millisecondsSinceEpoch,
+            'content': '',
             'tags': [
               ['lnurl', 'testLnurl'],
             ]
@@ -108,12 +108,12 @@ void main() {
         [
           'description',
           jsonEncode({
-            'id':'duparomana',
+            'id': 'duparomana',
             'pubkey': 'testSender',
-            'kind': ZapRequest.KIND,
+            'kind': ZapRequest.kZapRequestKind,
             'sig': "sig",
-            'created_at':DateTime.now().millisecondsSinceEpoch,
-            'content':'',
+            'created_at': DateTime.now().millisecondsSinceEpoch,
+            'content': '',
             'tags': [
               ['lnurl', 'testLnurl'],
               ['amount', '1500000']
@@ -138,12 +138,12 @@ void main() {
         [
           'description',
           jsonEncode({
-            'id':'duparomana',
+            'id': 'duparomana',
             'pubkey': 'testSender',
-            'kind': ZapRequest.KIND,
+            'kind': ZapRequest.kZapRequestKind,
             'sig': "sig",
-            'created_at':DateTime.now().millisecondsSinceEpoch,
-            'content':'',
+            'created_at': DateTime.now().millisecondsSinceEpoch,
+            'content': '',
             'tags': [
               ['lnurl', 'testLnurl'],
               ['amount', '2000000']
@@ -168,12 +168,12 @@ void main() {
         [
           'description',
           jsonEncode({
-            'id':'duparomana',
+            'id': 'duparomana',
             'pubkey': 'testSender',
-            'kind': ZapRequest.KIND,
+            'kind': ZapRequest.kZapRequestKind,
             'sig': "sig",
-            'created_at':DateTime.now().millisecondsSinceEpoch,
-            'content':'',
+            'created_at': DateTime.now().millisecondsSinceEpoch,
+            'content': '',
             'tags': [
               ['lnurl', 'wrongLnurl'],
               ['amount', '1500000']

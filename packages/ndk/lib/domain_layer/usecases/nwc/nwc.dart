@@ -21,7 +21,7 @@ import 'responses/nwc_response.dart';
 
 /// Main entry point for the NWC (Nostr Wallet Connect - NIP47 ) usecase
 class Nwc {
-  static const String NWC_PROTOCOL_PREFIX = "nostr+walletconnect://";
+  static const kNWCProtocolPrefix = "nostr+walletconnect://";
 
   final Requests _requests;
   final Broadcast _broadcast;
@@ -180,7 +180,7 @@ class Nwc {
             NwcNotification.fromMap(data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
-        // TODO ??
+        // TODO: Define what to do when data has an error
       }
     }
   }
@@ -201,7 +201,7 @@ class Nwc {
             NwcNotification.fromMap(data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
-        // TODO ??
+        // TODO: Define what to do when data has an error
       }
     }
   }
