@@ -15,14 +15,9 @@ platforms:
   windows:
 
 dependencies:
-  objectbox: ^4.0.3
-  objectbox_flutter_libs: ^4.0.3
   ndk: ^0.2.0-dev001
-  flat_buffers: ^23.5.26
-  path_provider: ^2.1.5
-  path: ^1.9.1
-  http: ^1.2.2
-  crypto: ^3.0.6
+  isar: ^4.0.0-dev.14
+
 
 
 #dependency_overrides:
@@ -31,6 +26,4 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.4.11
-  mockito: ^5.0.17
-  objectbox_generator: any
   test: any

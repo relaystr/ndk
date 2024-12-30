@@ -1,6 +1,5 @@
 import 'package:isar/isar.dart';
-
-import '../../../entities.dart';
+import 'package:ndk/entities.dart';
 
 part 'db_nip05.g.dart';
 

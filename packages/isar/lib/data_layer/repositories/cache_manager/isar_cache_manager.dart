@@ -5,14 +5,14 @@ import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
+import 'package:ndk_isar/data_layer/models/db/db_contact_list.dart';
+import 'package:ndk_isar/data_layer/models/db/db_event.dart';
+import 'package:ndk_isar/data_layer/models/db/db_metadata.dart';
+import 'package:ndk_isar/data_layer/models/db/db_nip05.dart';
+import 'package:ndk_isar/data_layer/models/db/db_relay_set.dart';
+import 'package:ndk_isar/data_layer/models/db/db_user_relay_list.dart';
 
 import '../../data_sources/isar_db.dart';
-import '../../models/db/db_contact_list.dart';
-import '../../models/db/db_event.dart';
-import '../../models/db/db_metadata.dart';
-import '../../models/db/db_nip05.dart';
-import '../../models/db/db_relay_set.dart';
-import '../../models/db/db_user_relay_list.dart';
 
 class IsarCacheManager extends CacheManager {
   late IsarDbDs isar_ds;
