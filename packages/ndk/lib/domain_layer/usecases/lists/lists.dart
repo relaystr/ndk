@@ -75,7 +75,7 @@ class Lists {
     EventSigner signer,
   ) async {
     List<Nip01Event>? events = await _cacheManager.loadEvents(
-        pubKeys: [signer.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
+        pubKeys: [signer.getPublicKey()], kinds: [Nip51List.kRelaySet]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
         return true;
@@ -102,7 +102,7 @@ class Lists {
       await for (final event in _requests.query(filters: [
         Filter(
           authors: [signer.getPublicKey()],
-          kinds: [Nip51List.RELAY_SET],
+          kinds: [Nip51List.kRelaySet],
           dTags: [name],
         )
       ], cacheRead: !forceRefresh).stream) {
@@ -198,7 +198,7 @@ class Lists {
     list ??= Nip51Set(
         name: name,
         pubKey: _eventSigner.getPublicKey(),
-        kind: Nip51List.RELAY_SET,
+        kind: Nip51List.kRelaySet,
         createdAt: Helpers.now,
         elements: []);
     list.addRelay(relayUrl, private);
@@ -214,7 +214,7 @@ class Lists {
     await broadcastResponse.broadcastDoneFuture;
 
     List<Nip01Event>? events = await _cacheManager.loadEvents(
-        pubKeys: [_eventSigner.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
+        pubKeys: [_eventSigner.getPublicKey()], kinds: [Nip51List.kRelaySet]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
         return true;
@@ -250,7 +250,7 @@ class Lists {
         defaultRelaysIfEmpty.isNotEmpty) {
       relaySet = Nip51Set(
           name: name,
-          kind: Nip51List.RELAY_SET,
+          kind: Nip51List.kRelaySet,
           pubKey: _eventSigner.getPublicKey(),
           createdAt: Helpers.now,
           elements: []);
@@ -269,7 +269,7 @@ class Lists {
       await broadcastResponse.broadcastDoneFuture;
 
       List<Nip01Event>? events = await _cacheManager.loadEvents(
-          pubKeys: [_eventSigner.getPublicKey()], kinds: [Nip51List.RELAY_SET]);
+          pubKeys: [_eventSigner.getPublicKey()], kinds: [Nip51List.kRelaySet]);
       events = events.where((event) {
         if (event.getDtag() != null && event.getDtag() == name) {
           return true;

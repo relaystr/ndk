@@ -10,8 +10,8 @@ class Nip19 {
   //   data = Bech32.convertBits(data, 8, 5, true);
   //   return Bech32.encode(Hrps.PUBLIC_KEY, data);
   // }
-  static const int NPUB_LENGTH = 63;
-  static const int NOTEID_LENGTH = 63;
+  static const int kNpubLength = 63;
+  static const int kNoteIdLength = 63;
 
   static RegExp nip19regex = RegExp(
       r'@?(nostr:)?@?(nsec1|npub1|nevent1|naddr1|note1|nprofile1|nrelay1)([qpzry9x8gf2tvdw0s3jn54khce6mua7l]+)([\\S]*)',
@@ -30,7 +30,7 @@ class Nip19 {
   }
 
   static bool isPubkey(String str) {
-    return isKey(Hrps.PUBLIC_KEY, str);
+    return isKey(Hrps.kPublicKey, str);
   }
 
   static String encodePubKey(String pubkey) {
@@ -40,7 +40,7 @@ class Nip19 {
     // var encoder = Bech32Encoder();
     // Bech32 input = Bech32(Hrps.PUBLIC_KEY, data);
     // return encoder.convert(input);
-    return _encodeKey(Hrps.PUBLIC_KEY, pubkey);
+    return _encodeKey(Hrps.kPublicKey, pubkey);
   }
 
   static String encodeSimplePubKey(String pubKey) {
@@ -80,20 +80,20 @@ class Nip19 {
   }
 
   static bool isPrivateKey(String str) {
-    return isKey(Hrps.PRIVATE_KEY, str);
+    return isKey(Hrps.kPrivateKey, str);
   }
 
   static String encodePrivateKey(String pubkey) {
-    return _encodeKey(Hrps.PRIVATE_KEY, pubkey);
+    return _encodeKey(Hrps.kPrivateKey, pubkey);
   }
 
   static bool isNoteId(String str) {
-    return isKey(Hrps.NOTE_ID, str);
+    return isKey(Hrps.kNoteId, str);
   }
 
   /// encode note id
   static String encodeNoteId(String id) {
-    return _encodeKey(Hrps.NOTE_ID, id);
+    return _encodeKey(Hrps.kNoteId, id);
   }
 
   static List<int> convertBits(List<int> data, int from, int to, bool pad) {

@@ -7,7 +7,7 @@ import 'lnurl_response.dart';
 
 /// LN URL utilities
 class Lnurl {
-  LnurlTransport _transport;
+  final LnurlTransport _transport;
 
   ///
   Lnurl({
@@ -46,7 +46,11 @@ class Lnurl {
   }
 
   /// fetch invoice from callback
-  Future<InvoiceResponse?> fetchInvoice({required LnurlResponse lnurlResponse, required int amountSats, ZapRequest? zapRequest, String? comment}) async {
+  Future<InvoiceResponse?> fetchInvoice(
+      {required LnurlResponse lnurlResponse,
+      required int amountSats,
+      ZapRequest? zapRequest,
+      String? comment}) async {
     var callback = lnurlResponse.callback!;
     if (callback.contains("?")) {
       callback += "&";
@@ -68,7 +72,9 @@ class Lnurl {
     }
 
     // ZAP ?
-    if (lnurlResponse.doesAllowsNostr && zapRequest != null && zapRequest.sig.isNotEmpty) {
+    if (lnurlResponse.doesAllowsNostr &&
+        zapRequest != null &&
+        zapRequest.sig.isNotEmpty) {
       Logger.log.d(jsonEncode(zapRequest));
       var eventStr = Uri.encodeQueryComponent(jsonEncode(zapRequest));
       callback += "&nostr=$eventStr";
@@ -79,7 +85,10 @@ class Lnurl {
     try {
       var response = await _transport.fetchInvoice(callback);
       String invoice = response!["pr"];
-      return InvoiceResponse(invoice: invoice, amountSats: amountSats, nostrPubkey: lnurlResponse.nostrPubkey);
+      return InvoiceResponse(
+          invoice: invoice,
+          amountSats: amountSats,
+          nostrPubkey: lnurlResponse.nostrPubkey);
     } catch (e) {
       Logger.log.d(e);
     }

@@ -14,6 +14,7 @@ import '../../data_sources/websocket_client.dart';
 class WebSocketClientNostrTransport implements NostrTransport {
   /// The underlying WebSocket data source.
   final WebsocketDSClient _websocketDS;
+  late StreamSubscription<ConnectionState> _stateStreamSubscription;
 
   /// Creates a new WebSocketNostrTransport instance.
   ///
@@ -21,12 +22,12 @@ class WebSocketClientNostrTransport implements NostrTransport {
   WebSocketClientNostrTransport(this._websocketDS, [Function? onReconnect]) {
     Completer completer = Completer();
     ready = completer.future;
-    _websocketDS.ws.connection.listen((state) {
+    _stateStreamSubscription = _websocketDS.ws.connection.listen((state) {
       Logger.log.t("${_websocketDS.url} connection state changed to $state");
       switch (state) {
         case Connected() || Reconnected():
           completer.complete();
-          if (state == Reconnected && onReconnect!=null) {
+          if (state == Reconnected() && onReconnect!=null) {
             onReconnect.call();
           }
         case Disconnected():
@@ -45,6 +46,7 @@ class WebSocketClientNostrTransport implements NostrTransport {
   /// Returns a Future that completes when the connection has been closed.
   @override
   Future<void> close() async {
+    await _stateStreamSubscription.cancel();
     return _websocketDS.close();
   }
 

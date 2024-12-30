@@ -40,8 +40,7 @@ class Initialization {
 
   /// repositories with no dependencies
 
-  final WebSocketClientNostrTransportFactory _webSocketNostrTransportFactory =
-      WebSocketClientNostrTransportFactory();
+  final _webSocketNostrTransportFactory = WebSocketClientNostrTransportFactory();
 
   /// state obj
 

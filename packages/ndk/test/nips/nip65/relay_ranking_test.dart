@@ -24,7 +24,7 @@ void main() {
       final event = Nip01Event(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser$i',
-        kind: Nip65.KIND,
+        kind: Nip65.kKind,
         content: "",
         tags: [
           ['r', 'wss://relayA.read', 'read'],
@@ -43,7 +43,7 @@ void main() {
       final event = Nip01Event(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser$i',
-        kind: Nip65.KIND,
+        kind: Nip65.kKind,
         content: "",
         tags: getRandomTags(),
       );

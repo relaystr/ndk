@@ -51,7 +51,7 @@ class Metadatas {
           name: 'metadata',
           timeout: idleTimeout,
           filters: [
-            Filter(kinds: [Metadata.KIND], authors: [pubKey], limit: 1)
+            Filter(kinds: [Metadata.kKind], authors: [pubKey], limit: 1)
           ],
         ).stream) {
           if (loadedMetadata == null ||
@@ -96,7 +96,7 @@ class Metadatas {
         await for (final event in (_requests.query(
                 name: "load-metadatas",
                 filters: [
-                  Filter(authors: missingPubKeys, kinds: [Metadata.KIND])
+                  Filter(authors: missingPubKeys, kinds: [Metadata.kKind])
                 ],
                 relaySet: relaySet))
             .stream
@@ -127,7 +127,7 @@ class Metadatas {
     Nip01Event? loaded;
     await for (final event in _requests.query(filters: [
       Filter(
-          kinds: [Metadata.KIND], authors: [_signer!.getPublicKey()], limit: 1)
+          kinds: [Metadata.kKind], authors: [_signer!.getPublicKey()], limit: 1)
     ]).stream) {
       if (loaded == null || loaded.createdAt < event.createdAt) {
         loaded = event;

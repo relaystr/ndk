@@ -29,7 +29,7 @@ void main() async {
 
   Nip01Event textNote(KeyPair key2) {
     return Nip01Event(
-        kind: Nip01Event.TEXT_NODE_KIND,
+        kind: Nip01Event.kTextNodeKind,
         pubKey: key2.publicKey,
         content: "some note from key ${keyNames[key2]}",
         tags: [],
@@ -127,7 +127,7 @@ void main() async {
         "debug-get-events",
         filters: [
           Filter(
-            kinds: [Nip01Event.TEXT_NODE_KIND],
+            kinds: [Nip01Event.kTextNodeKind],
             authors: [key4.publicKey],
           ),
         ],
@@ -172,7 +172,7 @@ void main() async {
         name: "qInOut",
         filters: [
           Filter(kinds: [
-            Nip01Event.TEXT_NODE_KIND
+            Nip01Event.kTextNodeKind
           ], authors: [
             key1.publicKey,
             key2.publicKey,

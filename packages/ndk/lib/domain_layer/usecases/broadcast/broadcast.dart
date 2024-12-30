@@ -76,7 +76,7 @@ class Broadcast {
     final signer = _checkSinger();
     Nip01Event event = Nip01Event(
         pubKey: signer.getPublicKey(),
-        kind: Reaction.KIND,
+        kind: Reaction.kKind,
         tags: [
           ["e", eventId]
         ],
@@ -98,7 +98,7 @@ class Broadcast {
 
     Nip01Event event = Nip01Event(
         pubKey: mySigner.getPublicKey(),
-        kind: Deletion.KIND,
+        kind: Deletion.kKind,
         tags: [
           ["e", eventId]
         ],

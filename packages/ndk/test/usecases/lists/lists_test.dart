@@ -21,21 +21,21 @@ void main() async {
 
     final Nip51List bookmarkListKey0 = Nip51List(
         pubKey: key0.publicKey,
-        kind: Nip51List.BOOKMARKS,
+        kind: Nip51List.kBookmarks,
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         elements: [
           Nip51ListElement(
-              tag: Nip51List.PUB_KEY, value: key1.publicKey, private: false)
+              tag: Nip51List.kPubkey, value: key1.publicKey, private: false)
         ]);
 
     final Nip51Set favoriteRelaysKey1 = Nip51Set(
         pubKey: key1.publicKey,
-        kind: Nip51List.RELAY_SET,
+        kind: Nip51List.kRelaySet,
         name: "my favorite relays",
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         elements: [
           Nip51ListElement(
-              tag: Nip51List.RELAY, value: "wss://bla.com", private: true)
+              tag: Nip51List.kRelay, value: "wss://bla.com", private: true)
         ]);
 
     late MockRelay relay0;
@@ -67,7 +67,7 @@ void main() async {
 
     test('lists get bookmarks', () async {
       Nip51List? bookmarks =
-          await ndk.lists.getSingleNip51List(Nip51List.BOOKMARKS, signer0);
+          await ndk.lists.getSingleNip51List(Nip51List.kBookmarks, signer0);
       expect(bookmarkListKey0.kind, bookmarks!.kind);
       expect(bookmarkListKey0.elements.length, bookmarks.elements.length);
       expect(bookmarkListKey0.elements.first.value,

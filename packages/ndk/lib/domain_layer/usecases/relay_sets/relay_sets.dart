@@ -112,7 +112,7 @@ class RelaySets {
       }
       bool connectable = (await _relayManager.connectRelay(
         dirtyUrl: url,
-        connectionSource: ConnectionSource.CONNECTION_PROBE,
+        connectionSource: ConnectionSource.connectionProbe,
       ))
           .first;
       Logger.log.d("tried to reconnect to $url = $connectable");

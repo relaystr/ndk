@@ -1,11 +1,11 @@
 enum ConnectionSource {
-  UNKNOWN,
-  SEED,
-  PUBKEY_STRATEGY,
-  BROADCAST_OWN,
-  BROADCAST_OTHER,
-  BROADCAST_SPECIFIC,
-  EXPLICIT,
-  CONNECTION_PROBE,
-  NIP_51_SEARCH
+  unknown,
+  seed,
+  pubkeyStrategy,
+  broadcastOwn,
+  broadcastOther,
+  broadcastSpecific,
+  explicit,
+  connectionProbe,
+  nip51Search
 }
