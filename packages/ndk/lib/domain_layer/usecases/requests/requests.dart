@@ -1,6 +1,5 @@
 import 'dart:async';
-
-import 'package:ndk/domain_layer/usecases/relay_manager.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
@@ -17,6 +16,7 @@ import '../../repositories/event_verifier.dart';
 import '../cache_read/cache_read.dart';
 import '../cache_write/cache_write.dart';
 import '../engines/network_engine.dart';
+import '../relay_manager.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
 import 'verify_event_stream.dart';
@@ -150,8 +150,16 @@ class Requests {
     for (final relay in relays) {
       _relayManager.sendCloseToRelay(relay.url, subId);
     }
-    // remove from in flight requests
-    await _relayManager.removeInFlightRequestById(subId);
+
+    final state = _globalState.inFlightRequests[subId];
+
+    if (state == null) {
+      Logger.log
+          .w("no request state found for subscription $subId, cannot close");
+      return;
+    }
+
+    state.close();
   }
 
   /// Close all subscriptions
@@ -209,6 +217,11 @@ class Requests {
       outController: state.controller,
       eventOutFilters: _eventOutFilters,
     )();
+
+    /// cleanup on close
+    state.stream.doOnDone(() {
+      _globalState.inFlightRequests.remove(state.id);
+    });
 
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {

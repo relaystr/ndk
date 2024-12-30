@@ -1,3 +1,4 @@
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -18,33 +19,18 @@ void main() {
     );
   }
 
-  Nip01Event nip65Note(KeyPair myKey) {
-    return Nip01Event(
-      kind: 10002,
-      pubKey: myKey.publicKey,
-      content: "",
-      tags: [
-        ["r", "wss://alicerelay.example.com"],
-        ["r", "wss://brando-relay.com"],
-        ["r", "wss://expensive-relay.example2.com", "write"],
-        ["r", "wss://nostr-relay.example.com", "read"]
-      ],
-      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-    );
-  }
-
   group('low level - network faster then timeout', () {
     KeyPair key1 = Bip340.generatePrivateKey();
     MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 8201);
     MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 8202);
+
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
-    const timoutMiliseconds = 5000;
+    const timoutMiliseconds = 10000;
 
     // startup and teardown
     setUp(() async {
-      await relay1.startServer();
-      relay1.textNotes = key1TextNotes;
+      await relay1.startServer(textNotes: key1TextNotes);
       await relay2.startServer();
     });
 
@@ -57,8 +43,9 @@ void main() {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
+        engine: NdkEngine.JIT,
         bootstrapRelays: [relay1.url, relay2.url],
+        logLevel: Logger.logLevels.error,
       );
 
       final ndk = Ndk(config);
@@ -84,10 +71,12 @@ void main() {
           });
 
       // wait for completion
-      await response.future;
+      final responseData = await response.future;
 
       // Stop the stopwatch
       stopwatch.stop();
+
+      expect(responseData, isNotEmpty);
 
       expect(timeoutUserTriggered, isFalse);
       expect(timeoutTriggered, isFalse);
@@ -98,34 +87,105 @@ void main() {
       print(
           'low level - network faster then timeout Query took: ${stopwatch.elapsedMilliseconds}ms');
     });
+
+    test('query - one dead seed relay', () async {
+      NdkConfig config = NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [
+          relay1.url,
+          relay2.url,
+          'wss://dead-relay.example.com'
+        ],
+        logLevel: Logger.logLevels.all,
+      );
+
+      final ndk = Ndk(config);
+
+      bool timeoutTriggered = false;
+      bool timeoutUserTriggered = false;
+      // Start the stopwatch
+      final stopwatch = Stopwatch()..start();
+
+      final response = ndk.requests.query(
+          filters: [
+            Filter(
+              authors: [key1.publicKey],
+              kinds: [Nip01Event.kTextNodeKind],
+            )
+          ],
+          timeout: Duration(milliseconds: timoutMiliseconds),
+          timeoutCallback: () {
+            timeoutTriggered = true;
+          },
+          timeoutCallbackUserFacing: () {
+            timeoutUserTriggered = true;
+          });
+
+      // wait for completion
+      final responseData = await response.future;
+
+      // Stop the stopwatch
+      stopwatch.stop();
+
+      expect(responseData, isNotEmpty);
+
+      expect(timeoutUserTriggered, isFalse);
+      expect(timeoutTriggered, isFalse);
+
+      expect(stopwatch.elapsedMilliseconds, lessThan(timoutMiliseconds));
+
+      // ignore: avoid_print
+      print('low level - dead relay took: ${stopwatch.elapsedMilliseconds}ms');
+    });
   });
 
   group('high level - network faster then timeout', () {
     KeyPair key1 = Bip340.generatePrivateKey();
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 8301);
-    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 8302);
-    Map<KeyPair, Nip01Event> key1TextNotes = {key1: nip65Note(key1)};
+
+    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 8203);
+    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 8204);
+
+    MockRelay relay5 = MockRelay(name: "relay 3", explicitPort: 8205);
+    MockRelay relay6 = MockRelay(name: "relay 4", explicitPort: 8206);
+
+    Nip65 nip65ForKey1 = Nip65.fromMap(key1.publicKey, {
+      relay3.url: ReadWriteMarker.readWrite,
+      relay5.url: ReadWriteMarker.readWrite,
+      "dead-gossip-relay1.example.com": ReadWriteMarker.readWrite,
+      "dead-gossip-relay2.example.com": ReadWriteMarker.readWrite,
+    });
+
+    Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
+
+    Map<KeyPair, Nip65> nip65s = {
+      key1: nip65ForKey1,
+    };
 
     const timoutMiliseconds = 5000;
 
     // startup and teardown
     setUp(() async {
-      await relay1.startServer();
-      relay1.textNotes = key1TextNotes;
-      await relay2.startServer();
+      await relay3.startServer(textNotes: key1TextNotes);
+      await relay4.startServer(nip65s: nip65s);
+      await relay5.startServer(textNotes: key1TextNotes);
+      await relay6.startServer(nip65s: nip65s);
     });
 
     tearDown(() async {
-      await relay1.server!.close(force: true);
-      await relay2.server!.close(force: true);
+      await relay3.server!.close(force: true);
+      await relay4.server!.close(force: true);
+      await relay5.server!.close(force: true);
+      await relay6.server!.close(force: true);
     });
 
     test('query - nip65', () async {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
-        bootstrapRelays: [relay1.url, relay2.url],
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay3.url, relay4.url],
       );
 
       final ndk = Ndk(config);
@@ -158,8 +218,8 @@ void main() {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
-        bootstrapRelays: [relay1.url, relay2.url],
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay3.url, relay4.url],
       );
 
       final ndk = Ndk(config);
@@ -188,8 +248,8 @@ void main() {
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
-        engine: NdkEngine.RELAY_SETS,
-        bootstrapRelays: [relay1.url, relay2.url],
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay3.url, relay4.url],
       );
 
       final ndk = Ndk(config);
@@ -203,6 +263,49 @@ void main() {
 
       // wait for completion
       await response;
+
+      // Stop the stopwatch
+      stopwatch.stop();
+
+      expect(timeoutUserTriggered, isFalse);
+      expect(timeoutTriggered, isFalse);
+
+      expect(stopwatch.elapsedMilliseconds, lessThan(timoutMiliseconds));
+    });
+
+    test('query - repeated - nip65 data with dead relays', () async {
+      NdkConfig config = NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay6.url],
+        logLevel: Logger.logLevels.all,
+      );
+
+      final ndk = Ndk(config);
+
+      bool timeoutTriggered = false;
+      bool timeoutUserTriggered = false;
+      // Start the stopwatch
+      final stopwatch = Stopwatch()..start();
+
+      final response1 =
+          ndk.userRelayLists.getSingleUserRelayList(key1.publicKey);
+
+      // wait for completion
+      final response1Data = await response1;
+
+      expect(response1Data, isNotNull);
+
+      final response2 = ndk.requests.query(filters: [
+        Filter(
+          authors: [key1.publicKey],
+          kinds: [Nip01Event.kTextNodeKind],
+        )
+      ]);
+
+      final responseData = await response2.future;
+      expect(responseData, isNotEmpty);
 
       // Stop the stopwatch
       stopwatch.stop();

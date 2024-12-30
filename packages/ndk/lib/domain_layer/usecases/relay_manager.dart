@@ -441,12 +441,37 @@ class RelayManager<T> {
 
       if (state.request.closeOnEOSE) {
         _sendCloseToRelay(relayConnectivity, state.id);
-        if (state.requests.isEmpty || state.didAllRequestsReceivedEOSE) {
-          removeInFlightRequestById(id);
-        }
+        _checkNetworkClose(state, relayConnectivity);
+        _logActiveRequests();
       }
     }
     return;
+  }
+
+  void _checkNetworkClose(
+      RequestState state, RelayConnectivity relayConnectivity) {
+    /// recived everything, close the network controller
+    if (state.didAllRequestsReceivedEOSE) {
+      state.networkController.close();
+      return;
+    }
+
+    /// check if relays for this request are still connected
+    /// if not ignore it and wait for the ones still alive to receive EOSE
+    final listOfRelaysForThisRequest = state.requests.keys.toList();
+    final myNotConnectedRelays = globalState.relays.keys
+        .where((url) => listOfRelaysForThisRequest.contains(url))
+        .where((url) => !isRelayConnected(url))
+        .toList();
+
+    final bool didAllRelaysFinish = state.requests.values.every(
+      (element) =>
+          element.receivedEOSE || myNotConnectedRelays.contains(element.url),
+    );
+
+    if (didAllRelaysFinish) {
+      state.networkController.close();
+    }
   }
 
   /// sends a close message to a relay
@@ -464,21 +489,6 @@ class RelayManager<T> {
     } catch (e) {
       Logger.log.e(e);
     }
-  }
-
-  /// removes a request from the inFlightRequests \
-  /// and closes the network controller
-  Future<void> removeInFlightRequestById(String id) async {
-    RequestState? state = globalState.inFlightRequests[id];
-    if (state != null) {
-      try {
-        await state.close();
-      } catch (e) {
-        Logger.log.e(e);
-      }
-      globalState.inFlightRequests.remove(id);
-    }
-    _logActiveRequests();
   }
 
   void _logActiveRequests() {

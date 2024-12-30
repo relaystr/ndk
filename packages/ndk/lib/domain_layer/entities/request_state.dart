@@ -7,14 +7,17 @@ import 'filter.dart';
 import 'ndk_request.dart';
 import 'nip_01_event.dart';
 
+/// Single relay request state
 class RelayRequestState {
   String url;
   bool receivedEOSE = false;
   List<Filter> filters;
 
+  /// default const
   RelayRequestState(this.url, this.filters);
 }
 
+/// State per request for multiple relays
 class RequestState {
   ReplaySubject<Nip01Event> controller = ReplaySubject<Nip01Event>(
     maxSize: RX_REPLAYSUBJECT_MAX_EVENTS,
@@ -27,21 +30,24 @@ class RequestState {
   /// [cacheController] is the controller cacheRead writes to
   StreamController<Nip01Event> cacheController = StreamController<Nip01Event>();
 
-  // ids that got already returned by this request
+  /// ids that got already returned by this request
   Set<String> returnedIds = {};
 
   Timer? _timeout;
 
   Stream<Nip01Event> get stream => controller.stream;
 
+  /// request id
   String get id => request.id;
 
+  /// is this a subscription?
   bool get isSubscription => !request.closeOnEOSE;
 
-  //! our requests tracking obj
+  ///! our requests tracking obj
   // key is relay url, value is RelayRequestState
   Map<String, RelayRequestState> requests = {};
 
+  /// the original request
   NdkRequest request;
 
   /// this is the working filter obj, gets initialized with user provided filters.
@@ -67,15 +73,21 @@ class RequestState {
     }
   }
 
+  /// checks if all requests received EOSE
   bool get didAllRequestsReceivedEOSE =>
       !requests.values.any((element) => !element.receivedEOSE);
 
-  bool get shouldClose =>
-      request.closeOnEOSE && (requests.isEmpty || didAllRequestsReceivedEOSE);
-
+  /// Adds single relay request to the state
   void addRequest(String url, List<Filter> filters) {
     if (!requests.containsKey(url)) {
       requests[url] = RelayRequestState(url, filters);
+    }
+  }
+
+  /// checks if all relays recieved EOSE or failed and closes the request
+  checkNetworkClose() {
+    if (didAllRequestsReceivedEOSE) {
+      networkController.close();
     }
   }
 

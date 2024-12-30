@@ -2,10 +2,13 @@ import 'filter.dart';
 import 'relay_set.dart';
 
 // coverage:ignore-start
+/// Ndk request
 class NdkRequest {
   /// nostr id
   String id;
+  /// request name (for better debugging / logging
   String? name;
+  /// should it close on receiving EOSE?
   bool closeOnEOSE;
 
   /// timeout duration, closes all streams
@@ -19,15 +22,22 @@ class NdkRequest {
   /// do not touch only pass it through
   Function()? timeoutCallbackUserFacing;
 
+  /// desired coverage
   final int desiredCoverage;
+  /// filters
   List<Filter> filters;
+  /// optional [RelaySet] for outbox/inbox pre-calculated
   RelaySet? relaySet;
 
   /// when specified only these relays are used and inbox/outbox get ignored
   Iterable<String>? explicitRelays;
+
+  /// use cache for read?
   bool cacheRead;
+  /// use cache for write
   bool cacheWrite;
 
+  /// query
   NdkRequest.query(
     this.id, {
     this.name,
@@ -43,6 +53,7 @@ class NdkRequest {
     this.cacheWrite = true,
   });
 
+  /// subscription
   NdkRequest.subscription(
     this.id, {
     this.name,

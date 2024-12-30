@@ -106,7 +106,8 @@ class Initialization {
     }
 
     /// repositories
-    final Nip05Repository nip05repository = Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
+    final Nip05Repository nip05repository =
+        Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
 
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
@@ -172,7 +173,8 @@ class Initialization {
 
     nwc = Nwc(requests: requests, broadcast: broadcast);
 
-    final LnurlTransport lnurlTransport = LnurlTransportHttpImpl(_httpRequestDS);
+    final LnurlTransport lnurlTransport =
+        LnurlTransportHttpImpl(_httpRequestDS);
 
     lnurl = Lnurl(transport: lnurlTransport);
     zaps = Zaps(
