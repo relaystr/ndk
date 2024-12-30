@@ -112,7 +112,7 @@ void main() {
           filters: [
             Filter(
               authors: [key1.publicKey],
-              kinds: [Nip01Event.TEXT_NODE_KIND],
+              kinds: [Nip01Event.kTextNodeKind],
             )
           ],
           timeout: Duration(milliseconds: timoutMiliseconds),
@@ -300,7 +300,7 @@ void main() {
       final response2 = ndk.requests.query(filters: [
         Filter(
           authors: [key1.publicKey],
-          kinds: [Nip01Event.TEXT_NODE_KIND],
+          kinds: [Nip01Event.kTextNodeKind],
         )
       ]);
 
