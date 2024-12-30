@@ -115,34 +115,6 @@ class RelaySetsEngine implements NetworkEngine {
     }
   }
 
-  Future<NdkResponse> query(
-    Filter filter,
-    RelaySet? relaySet, {
-    required String name,
-    Duration idleTimeout = RelaySetsEngine.kDefaultStreamIdleTimeout,
-    bool splitRequestsByPubKeyMappings = true,
-  }) async {
-    RequestState state = RequestState(NdkRequest.query(
-        timeoutDuration: idleTimeout,
-        Helpers.getRandomString(10),
-        name: name,
-        filters: [filter],
-        relaySet: relaySet));
-    await _doQuery(state);
-    return NdkResponse(state.id, state.stream);
-  }
-
-  Future<void> _doQuery(RequestState state) async {
-    handleRequest(state);
-    state.networkController.stream.listen((event) {
-      state.controller.add(event);
-    }, onDone: () {
-      state.controller.close();
-    }, onError: (error) {
-      Logger.log.e("⛔ $error ");
-    });
-  }
-
   @override
   Future<void> handleRequest(RequestState state) async {
     await _relayManager.seedRelaysConnected;
