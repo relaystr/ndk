@@ -60,7 +60,7 @@ class RelayJitBroadcastOtherReadStrategy {
       connectedRelays: connectedRelays,
       relayManager: relayManager,
       relaysToConnect: notConnectedRelays,
-      connectionSource: ConnectionSource.BROADCAST_OTHER,
+      connectionSource: ConnectionSource.broadcastOther,
     );
 
     // list of relays without the failed ones
@@ -69,7 +69,7 @@ class RelayJitBroadcastOtherReadStrategy {
         .toList();
 
     final ClientMsg myClientMsg = ClientMsg(
-      ClientMsgType.EVENT,
+      ClientMsgType.kEvent,
       event: eventToPublish,
     );
 

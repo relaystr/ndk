@@ -5,7 +5,7 @@ import 'nip_01_event.dart';
 
 /// basic nostr metadata
 class Metadata {
-  static const int KIND = 0;
+  static const int kKind = 0;
 
   /// public key
   late String pubKey;
@@ -125,7 +125,7 @@ class Metadata {
     return Nip01Event(
         pubKey: pubKey,
         content: jsonEncode(toJson()),
-        kind: KIND,
+        kind: kKind,
         tags: [],
         createdAt: updatedAt ?? 0);
   }

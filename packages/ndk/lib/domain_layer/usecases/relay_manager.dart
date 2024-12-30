@@ -43,7 +43,7 @@ class RelayManager<T> {
   final EngineAdditionalDataFactory? engineAdditionalDataFactory;
 
   /// Are reconnects allowed when a connection drops?
-  bool _allowReconnectRelays = true;
+  bool allowReconnectRelays = true;
 
   /// Creates a new relay manager.
   RelayManager(
@@ -53,16 +53,8 @@ class RelayManager<T> {
       this.engineAdditionalDataFactory,
       List<String>? bootstrapRelays,
       allowReconnect = true}) {
-    _allowReconnectRelays = allowReconnect;
+    allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
-  }
-
-  /// gets allowed to reconnectRelays
-  bool get allowReconnectRelays => _allowReconnectRelays;
-
-  /// sets allowed to reconnectRelays
-  void set allowReconnectRelays(bool b) {
-    _allowReconnectRelays = b;
   }
 
   /// This will initialize the manager with bootstrap relays.
@@ -84,7 +76,7 @@ class RelayManager<T> {
             .map(
               (url) => connectRelay(
                 dirtyUrl: url,
-                connectionSource: ConnectionSource.SEED,
+                connectionSource: ConnectionSource.seed,
               ),
             )
             .toList())
@@ -108,7 +100,7 @@ class RelayManager<T> {
 
   /// checks if a relay is connecting
   bool isRelayConnecting(String url) {
-    Relay? relay = globalState.relays[url]?.relay ?? null;
+    final relay = globalState.relays[url]?.relay;
     return relay != null && relay.connecting;
   }
 
@@ -145,7 +137,7 @@ class RelayManager<T> {
         );
         globalState.relays[url] = relayConnectivity;
       }
-      ;
+
       relayConnectivity.relay.tryingToConnect();
 
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
@@ -159,11 +151,12 @@ class RelayManager<T> {
       relayConnectivity.relayTransport = nostrTransportFactory(url, () {
         _reSubscribeInFlightSubscriptions(relayConnectivity!);
       });
-      await relayConnectivity.relayTransport!.ready
-          .timeout(Duration(seconds: connectTimeout), onTimeout: () {
-        Logger.log.w("timed out connecting to relay $url");
-        return Tuple(false, "timed out connecting to relay $url");
-      });
+      await relayConnectivity.relayTransport!.ready.timeout(
+        Duration(seconds: connectTimeout),
+        onTimeout: () {
+          Logger.log.w("timed out connecting to relay $url");
+        },
+      );
 
       _startListeningToSocket(relayConnectivity);
 
@@ -190,10 +183,11 @@ class RelayManager<T> {
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
-          .onError((error, stackTrace) {
-        Logger.log.e("error connecting to relay ${url}: $error");
-        return []; // Return an empty list in case of error
-      });
+          .onError(
+        (error, stackTrace) {
+          Logger.log.e("error connecting to relay $url: $error");
+        },
+      );
     }
     if (relayConnectivity == null ||
         !relayConnectivity.relayTransport!.isOpen()) {
@@ -229,7 +223,7 @@ class RelayManager<T> {
     Logger.log.d("connecting ${urls.length} relays in parallel");
     List<bool> connected = await Future.wait(urls.map((url) => reconnectRelay(
         url,
-        connectionSource: ConnectionSource.EXPLICIT,
+        connectionSource: ConnectionSource.explicit,
         force: true)));
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
@@ -309,7 +303,7 @@ class RelayManager<T> {
     } else {
       // do not overwrite
       Logger.log.w(
-          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} ${relayUrl}, skipping");
+          "registerRelayBroadcast: relay broadcast already registered for ${eventToPublish.id} $relayUrl, skipping");
     }
   }
 
@@ -329,7 +323,7 @@ class RelayManager<T> {
           "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
       await relayConnectivity.close();
       // reconnect on close
-      if (_allowReconnectRelays &&
+      if (allowReconnectRelays &&
           globalState.relays[relayConnectivity.url] != null &&
           globalState.relays[relayConnectivity.url]!.relayTransport != null) {
         Logger.log.i("closed ${relayConnectivity.url}. Reconnecting");
@@ -378,7 +372,7 @@ class RelayManager<T> {
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
       globalState.inFlightRequests.remove(eventJson[1]);
     }
-    if (eventJson[0] == ClientMsgType.AUTH) {
+    if (eventJson[0] == ClientMsgType.kAuth) {
       // nip 42 used to send authentication challenges
       final challenge = eventJson[1];
       Logger.log.d("AUTH: $challenge");
@@ -388,9 +382,10 @@ class RelayManager<T> {
           ["challenge", challenge]
         ]);
         signer!.sign(auth);
-        send(relayConnectivity, ClientMsg(ClientMsgType.AUTH, event: auth));
+        send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
       } else {
-        Logger.log.w("Received an AUTH challenge but don't have a signer configured");
+        Logger.log
+            .w("Received an AUTH challenge but don't have a signer configured");
       }
       return;
     }
@@ -417,7 +412,7 @@ class RelayManager<T> {
     if (state != null) {
       RelayRequestState? request = state.requests[url];
       if (request == null) {
-        Logger.log.w("No RelayRequestState found for id ${id}");
+        Logger.log.w("No RelayRequestState found for id $id");
         return;
       }
       event.sources.add(url);
@@ -464,7 +459,7 @@ class RelayManager<T> {
 
   void _sendCloseToRelay(RelayConnectivity relayConnectivity, String id) {
     try {
-      send(relayConnectivity, ClientMsg(ClientMsgType.CLOSE, id: id));
+      send(relayConnectivity, ClientMsg(ClientMsgType.kClose, id: id));
       relayConnectivity.stats.activeRequests--;
     } catch (e) {
       Logger.log.e(e);

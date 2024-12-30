@@ -12,7 +12,7 @@ class RelayJitBroadcastAllStrategy {
     required RelayManager relayManger,
   }) async {
     final ClientMsg myClientMsg = ClientMsg(
-      ClientMsgType.EVENT,
+      ClientMsgType.kEvent,
       event: eventToPublish,
     );
 

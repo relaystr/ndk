@@ -6,7 +6,7 @@ import '../lnurl/lnurl.dart';
 
 class ZapReceipt {
   /// zap receipt kind
-  static const KIND = 9735;
+  static const kKind = 9735;
 
   /// time payment happend
   int? paidAt;

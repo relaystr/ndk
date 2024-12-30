@@ -27,7 +27,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       connectedRelays: connectedRelays,
       relayManager: relayManager,
       relaysToConnect: notConnectedRelays,
-      connectionSource: ConnectionSource.BROADCAST_SPECIFIC,
+      connectionSource: ConnectionSource.broadcastSpecific,
     );
 
     // list of relays without the failed ones
@@ -36,7 +36,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
         .toList();
 
     final ClientMsg myClientMsg = ClientMsg(
-      ClientMsgType.EVENT,
+      ClientMsgType.kEvent,
       event: eventToPublish,
     );
 

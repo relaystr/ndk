@@ -73,7 +73,7 @@ void main() {
       final event = Nip01Event(
         pubKey: 'testPubKey',
         content: '{"name":"John","display_name":"John Doe"}',
-        kind: Metadata.KIND,
+        kind: Metadata.kKind,
         tags: [],
         createdAt: 1234567890,
       );
@@ -97,7 +97,7 @@ void main() {
       final event = metadata.toEvent();
 
       expect(event.pubKey, 'testPubKey');
-      expect(event.kind, Metadata.KIND);
+      expect(event.kind, Metadata.kKind);
       expect(event.createdAt, 1234567890);
 
       final content = jsonDecode(event.content);

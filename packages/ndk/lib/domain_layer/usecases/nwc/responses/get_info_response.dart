@@ -10,8 +10,8 @@ class GetInfoResponse extends NwcResponse {
   final String color;
   final String pubkey;
   final BitcoinNetwork network;
-  final int block_height;
-  final String block_hash;
+  final int blockHeight;
+  final String blockHash;
   final List<String> methods;
   final List<String> notifications;
 
@@ -21,8 +21,8 @@ class GetInfoResponse extends NwcResponse {
       required this.color,
       required this.pubkey,
       required this.network,
-      required this.block_height,
-      required this.block_hash,
+      required this.blockHeight,
+      required this.blockHash,
       required this.methods,
       required this.notifications});
 
@@ -48,8 +48,8 @@ class GetInfoResponse extends NwcResponse {
         color: result['color'] as String,
         pubkey: result['pubkey'] as String,
         network: BitcoinNetwork.fromPlaintext(result['network'] as String),
-        block_height: result['block_height'] as int,
-        block_hash: result['block_hash'] as String,
+        blockHeight: result['block_height'] as int,
+        blockHash: result['block_hash'] as String,
         methods: methods,
         notifications: notifications);
   }

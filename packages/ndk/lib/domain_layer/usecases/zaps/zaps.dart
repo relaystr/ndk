@@ -133,10 +133,10 @@ class Zaps {
           zapResponse.receiptResponse = _requests.subscription(filters: [
             eventId != null
                 ? Filter(
-                    kinds: [ZapReceipt.KIND],
+                    kinds: [ZapReceipt.kKind],
                     eTags: [eventId],
                     pTags: [pubKey!])
-                : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey!])
+                : Filter(kinds: [ZapReceipt.kKind], pTags: [pubKey!])
           ]);
           // TODO make timeout waiting for receipt parameterizable somehow
           StreamSubscription<Nip01Event>? streamSubscription;
@@ -188,8 +188,8 @@ class Zaps {
     NdkResponse? response =
         _requests.query(timeout: timeout ?? Duration(seconds: 10), filters: [
       eventId != null
-          ? Filter(kinds: [ZapReceipt.KIND], eTags: [eventId], pTags: [pubKey])
-          : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey])
+          ? Filter(kinds: [ZapReceipt.kKind], eTags: [eventId], pTags: [pubKey])
+          : Filter(kinds: [ZapReceipt.kKind], pTags: [pubKey])
     ]);
     // TODO how to check validity of zap receipts without nostrPubKey and recipientLnurl????
     return response.stream.map((event) => ZapReceipt.fromEvent(event));
@@ -202,8 +202,8 @@ class Zaps {
       {required String pubKey, String? eventId}) {
     NdkResponse? response = _requests.subscription(filters: [
       eventId != null
-          ? Filter(kinds: [ZapReceipt.KIND], eTags: [eventId], pTags: [pubKey])
-          : Filter(kinds: [ZapReceipt.KIND], pTags: [pubKey])
+          ? Filter(kinds: [ZapReceipt.kKind], eTags: [eventId], pTags: [pubKey])
+          : Filter(kinds: [ZapReceipt.kKind], pTags: [pubKey])
     ]);
     return response;
   }

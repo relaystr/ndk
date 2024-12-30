@@ -49,7 +49,7 @@ class Follows {
       await for (final event in _requests.query(
         timeout: idleTimeout,
         filters: [
-          Filter(kinds: [ContactList.KIND], authors: [pubKey], limit: 1)
+          Filter(kinds: [ContactList.kKind], authors: [pubKey], limit: 1)
         ],
       ).stream) {
         if (loadedContactList == null ||
@@ -77,13 +77,13 @@ class Follows {
 
   // if cached contact list is older that now minus this duration that we should go refresh it,
   // otherwise we risk adding/removing contacts to a list that is out of date and thus loosing contacts other client has added/removed since.
-  static const Duration REFRESH_CONTACT_LIST_DURATION = Duration(minutes: 10);
+  static const kRefreshContactListDuration = Duration(minutes: 10);
   Future<ContactList> _ensureUpToDateContactListOrEmpty(
     String pubkey,
   ) async {
     ContactList? contactList = await _cacheManager.loadContactList(pubkey);
     int sometimeAgo = DateTime.now()
-            .subtract(REFRESH_CONTACT_LIST_DURATION)
+            .subtract(kRefreshContactListDuration)
             .millisecondsSinceEpoch ~/
         1000;
     bool refresh = contactList == null ||
