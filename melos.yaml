@@ -4,6 +4,7 @@ repository: https://github.com/relaystr/ndk
 
 packages:
   - packages/amber
+  - packages/isar
   - packages/ndk
   - packages/objectbox
   - packages/rust_verifier
