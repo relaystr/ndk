@@ -16,7 +16,7 @@ platforms:
 
 dependencies:
   isar: ^4.0.0-dev.14
-  ndk: 0.2.0
+  ndk: ^0.2.0
 
 dev_dependencies:
   build_runner: ^2.4.11
