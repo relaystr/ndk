@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Nostr Development Kit Demo'),
@@ -66,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Tab(text: 'Amber'),
               Tab(text: 'Relays'),
               Tab(text: 'NWC'),
-              Tab(text: 'Zaps'),
+              // Tab(text: 'Zaps'),
             ],
           ),
         ),
@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ,
             const RelaysPage(),
             const NwcPage(),
-            const ZapsPage()
+            // const ZapsPage()
           ],
         ),
       ),
