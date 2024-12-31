@@ -1,6 +1,5 @@
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
-import 'dart:developer' as developer;
 
 import '../mocks/mock_event_verifier.dart';
 import '../tools/simple_profiler.dart';
