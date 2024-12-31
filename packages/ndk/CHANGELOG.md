@@ -1,4 +1,4 @@
-## 0.2.0
+## 0.2.1
  - NIP-47 Nostr Wallet Connect
  - NIP-57 Zaps support
  - NIP-42 Authentication of clients to relays
