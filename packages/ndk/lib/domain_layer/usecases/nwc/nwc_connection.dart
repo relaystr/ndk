@@ -37,7 +37,7 @@ class NwcConnection {
 
   /// cancels subscription and closes stream controllers
   Future<void> close() async {
-    if (_streamSubscription!=null) {
+    if (_streamSubscription != null) {
       await _streamSubscription!.cancel();
     }
     await responseStream.close();
@@ -52,7 +52,7 @@ class NwcConnection {
 
   EventSigner get signer {
     _signer ??= Bip340EventSigner(
-          privateKey: uri.secret, publicKey: getPublicKey(uri.secret));
+        privateKey: uri.secret, publicKey: getPublicKey(uri.secret));
     return _signer!;
   }
 
@@ -76,5 +76,4 @@ class NwcConnection {
 
   @override
   int get hashCode => uri.hashCode;
-
 }

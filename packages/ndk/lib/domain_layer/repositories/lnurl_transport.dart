@@ -6,5 +6,5 @@ abstract class LnurlTransport {
   Future<LnurlResponse?> requestLnurlResponse(String lnurl);
 
   /// fetch an invoice from lnurl callback endpoint
-  Future<Map<String,dynamic>?> fetchInvoice(String callbacklink);
+  Future<Map<String, dynamic>?> fetchInvoice(String callbacklink);
 }

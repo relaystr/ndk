@@ -143,14 +143,15 @@ class Zaps {
           final timeout = Timer(Duration(seconds: 30), () {
             _requests
                 .closeSubscription(zapResponse.zapReceiptResponse!.requestId);
-            if (streamSubscription!=null) {
+            if (streamSubscription != null) {
               streamSubscription.cancel();
             }
             Logger.log
                 .w("timed out waiting for zap receipt for invoice $invoice");
           });
 
-          streamSubscription = zapResponse.zapReceiptResponse!.stream.listen((event) {
+          streamSubscription =
+              zapResponse.zapReceiptResponse!.stream.listen((event) {
             String? bolt11 = event.getFirstTag("bolt11");
             String? preimage = event.getFirstTag("preimage");
             if (bolt11 != null && bolt11 == invoice.invoice ||
@@ -166,7 +167,7 @@ class Zaps {
               timeout.cancel();
               _requests
                   .closeSubscription(zapResponse.zapReceiptResponse!.requestId);
-              if (streamSubscription!=null) {
+              if (streamSubscription != null) {
                 streamSubscription.cancel();
               }
             }

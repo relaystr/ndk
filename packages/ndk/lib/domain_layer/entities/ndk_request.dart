@@ -6,8 +6,10 @@ import 'relay_set.dart';
 class NdkRequest {
   /// nostr id
   String id;
+
   /// request name (for better debugging / logging
   String? name;
+
   /// should it close on receiving EOSE?
   bool closeOnEOSE;
 
@@ -24,8 +26,10 @@ class NdkRequest {
 
   /// desired coverage
   final int desiredCoverage;
+
   /// filters
   List<Filter> filters;
+
   /// optional [RelaySet] for outbox/inbox pre-calculated
   RelaySet? relaySet;
 
@@ -34,6 +38,7 @@ class NdkRequest {
 
   /// use cache for read?
   bool cacheRead;
+
   /// use cache for write
   bool cacheWrite;
 

@@ -18,7 +18,7 @@ class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
         initial: Duration(seconds: 1), maximumStep: 10);
     final client = WebSocket(Uri.parse(myUrl), backoff: backoff);
 
-    final WebsocketDSClient myDataSource = WebsocketDSClient(client,myUrl);
-    return WebSocketClientNostrTransport(myDataSource,onReconnect);
+    final WebsocketDSClient myDataSource = WebsocketDSClient(client, myUrl);
+    return WebSocketClientNostrTransport(myDataSource, onReconnect);
   }
 }

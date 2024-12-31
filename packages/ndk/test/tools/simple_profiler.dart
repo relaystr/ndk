@@ -36,7 +36,6 @@ class SimpleProfiler {
   }
 }
 
-
 /**
 // Usage:
 Future<void> someFunction() async {

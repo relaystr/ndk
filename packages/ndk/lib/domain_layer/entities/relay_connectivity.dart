@@ -25,11 +25,12 @@ class RelayConnectivity<T> {
 
   /// starts listening on nostr transport
   void listen(
-      void Function(dynamic) onData, {
-        Function? onError,
-        void Function()? onDone,
-      }) {
-    _streamSubscription = relayTransport!.listen(onData, onDone: onDone, onError: onError);
+    void Function(dynamic) onData, {
+    Function? onError,
+    void Function()? onDone,
+  }) {
+    _streamSubscription =
+        relayTransport!.listen(onData, onDone: onDone, onError: onError);
   }
 
   /// cancels stream subscription and closes relay transport
@@ -38,9 +39,8 @@ class RelayConnectivity<T> {
       await _streamSubscription!.cancel();
     }
     if (relayTransport != null) {
-      await relayTransport!
-          .close()
-          .timeout(const Duration(seconds: 3), onTimeout: () {
+      await relayTransport!.close().timeout(const Duration(seconds: 3),
+          onTimeout: () {
         Logger.log.w("timeout while trying to close socket $url");
       });
     }
@@ -60,5 +60,4 @@ class RelayConnectivity<T> {
     this.relayTransport,
     this.specificEngineData,
   });
-
 }

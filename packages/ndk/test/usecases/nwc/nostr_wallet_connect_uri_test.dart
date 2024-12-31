@@ -4,7 +4,8 @@ import 'package:test/test.dart';
 void main() {
   group('NostrWalletConnectUri', () {
     test('should parse a valid connection URI', () {
-      final uri = 'nostr://pubkey123?relay=wss://relay.example.com&secret=secret123&lud16=lud16value';
+      final uri =
+          'nostr://pubkey123?relay=wss://relay.example.com&secret=secret123&lud16=lud16value';
       final nostrUri = NostrWalletConnectUri.parseConnectionUri(uri);
 
       expect(nostrUri.walletPubkey, equals('pubkey123'));
@@ -17,7 +18,7 @@ void main() {
       final uri = 'nostr://pubkey123?relay=wss://relay.example.com';
 
       expect(
-            () => NostrWalletConnectUri.parseConnectionUri(uri),
+        () => NostrWalletConnectUri.parseConnectionUri(uri),
         throwsA(isA<Exception>()),
       );
     });

@@ -39,7 +39,7 @@ void main() {
       final input = {'invalid_key': {}};
 
       expect(
-            () => ListTransactionsResponse.deserialize(input),
+        () => ListTransactionsResponse.deserialize(input),
         throwsA(isA<Exception>()),
       );
     });

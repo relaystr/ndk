@@ -11,8 +11,9 @@ class HttpRequestDS {
 
   /// make a get request to the given url
   Future<Map<String, dynamic>> jsonRequest(String url) async {
-    http.Response response = await _client
-        .get(Uri.parse(url).replace(scheme: 'https'), headers: {"Accept": "application/json"});
+    http.Response response = await _client.get(
+        Uri.parse(url).replace(scheme: 'https'),
+        headers: {"Accept": "application/json"});
 
     if (response.statusCode != 200) {
       return throw Exception(

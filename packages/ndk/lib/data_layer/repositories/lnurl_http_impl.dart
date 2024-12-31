@@ -24,7 +24,7 @@ class LnurlTransportHttpImpl implements LnurlTransport {
   }
 
   @override
-  Future<Map<String,dynamic>?> fetchInvoice(String callbacklink) async {
+  Future<Map<String, dynamic>?> fetchInvoice(String callbacklink) async {
     try {
       return await httpDS.jsonRequest(callbacklink);
     } catch (e) {
@@ -32,5 +32,4 @@ class LnurlTransportHttpImpl implements LnurlTransport {
       return null;
     }
   }
-
 }

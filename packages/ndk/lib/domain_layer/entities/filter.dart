@@ -78,7 +78,7 @@ class Filter {
   Map<String, dynamic> toMap() {
     var body = {
       "ids": ids,
-      "authors": authors!=null && authors!.isNotEmpty? authors : null,
+      "authors": authors != null && authors!.isNotEmpty ? authors : null,
       "kinds": kinds,
       "#e": eTags,
       "#p": pTags,
@@ -145,7 +145,9 @@ class Filter {
   Filter clone() {
     return Filter(
       ids: ids != null ? List<String>.from(ids!) : null,
-      authors: authors != null && authors!.isNotEmpty ? List<String>.from(authors!) : null,
+      authors: authors != null && authors!.isNotEmpty
+          ? List<String>.from(authors!)
+          : null,
       kinds: kinds != null ? List<int>.from(kinds!) : null,
       search: search,
       eTags: eTags != null ? List<String>.from(eTags!) : null,

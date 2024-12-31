@@ -56,7 +56,7 @@ class RelayInfo {
         headers: {'Accept': 'application/nostr+json'},
       );
       final decodedResponse =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String,dynamic>;
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       return RelayInfo.fromJson(decodedResponse, uri.toString());
     } catch (e) {
       Logger.log.d(e);

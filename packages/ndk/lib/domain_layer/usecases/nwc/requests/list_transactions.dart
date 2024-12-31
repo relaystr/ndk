@@ -7,14 +7,19 @@ import 'nwc_request.dart';
 class ListTransactionsRequest extends NwcRequest {
   /// from
   final int? from;
+
   /// until
   final int? until;
+
   /// limit
   final int? limit;
+
   /// offset
   final int? offset;
+
   /// unpaid
   final bool unpaid;
+
   /// type
   final TransactionType? type;
 

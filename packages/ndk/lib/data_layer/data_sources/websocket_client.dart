@@ -14,8 +14,7 @@ class WebsocketDSClient {
     Function? onError,
     void Function()? onDone,
   }) {
-    return ws.messages
-        .listen(onData, onDone: onDone, onError: onError);
+    return ws.messages.listen(onData, onDone: onDone, onError: onError);
   }
 
   void send(dynamic data) {
@@ -27,15 +26,20 @@ class WebsocketDSClient {
   }
 
   bool isOpen() {
-    return ws.connection.state == Connected() || ws.connection.state == Reconnected();
+    return ws.connection.state == Connected() ||
+        ws.connection.state == Reconnected();
   }
 
   int? closeCode() {
-    return ws.connection.state == Disconnected() ? (ws.connection.state as Disconnected).code : null;
+    return ws.connection.state == Disconnected()
+        ? (ws.connection.state as Disconnected).code
+        : null;
   }
 
   String? closeReason() {
-    return ws.connection.state == Disconnected() ? (ws.connection.state as Disconnected).reason : null;
+    return ws.connection.state == Disconnected()
+        ? (ws.connection.state as Disconnected).reason
+        : null;
   }
 }
 // coverage:ignore-end

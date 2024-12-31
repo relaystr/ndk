@@ -36,17 +36,23 @@ void main() {
       when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
           .thenAnswer((_) async => http.Response(jsonEncode(response), 200));
 
-      when(client.get(argThat(
-        TypeMatcher<Uri>().having((uri) => uri.toString(), 'uri',
-            startsWith('https://domain.com/callback')),
-      ), headers: {"Accept": "application/json"})).thenAnswer((_) async => http.Response(
-          jsonEncode({
-            "status": "OK",
-            "successAction": {"tag": "message", "message": "Payment Received!"},
-            "routes": [],
-            "pr": "lnbc1000...."
-          }),
-          200));
+      when(client.get(
+              argThat(
+                TypeMatcher<Uri>().having((uri) => uri.toString(), 'uri',
+                    startsWith('https://domain.com/callback')),
+              ),
+              headers: {"Accept": "application/json"}))
+          .thenAnswer((_) async => http.Response(
+              jsonEncode({
+                "status": "OK",
+                "successAction": {
+                  "tag": "message",
+                  "message": "Payment Received!"
+                },
+                "routes": [],
+                "pr": "lnbc1000...."
+              }),
+              200));
       final amount = 1000;
 
       final ndk = Ndk.defaultConfig();
@@ -65,9 +71,9 @@ void main() {
           relays: ['relay1', 'relay2']);
 
       var invoiceResponse = await zaps.fecthInvoice(
-          lud16Link: link,
-          amountSats: amount,
-          zapRequest: zapRequest,
+        lud16Link: link,
+        amountSats: amount,
+        zapRequest: zapRequest,
       );
       expect(invoiceResponse!.amountSats, amount);
       expect(invoiceResponse.invoice, startsWith("lnbc$amount"));
@@ -101,12 +107,14 @@ void main() {
       );
 
       expect(zapRequest, isNotNull);
-      expect(zapRequest.tags, containsAll([
-        ['amount', (amount*1000).toString()],
-        ['e', eventId],
-        ['p', pubKey],
-        ['relays', ...relays]
-      ]));
+      expect(
+          zapRequest.tags,
+          containsAll([
+            ['amount', (amount * 1000).toString()],
+            ['e', eventId],
+            ['p', pubKey],
+            ['relays', ...relays]
+          ]));
       expect(zapRequest.content, comment);
       expect(zapRequest.sig, isNotEmpty);
     });

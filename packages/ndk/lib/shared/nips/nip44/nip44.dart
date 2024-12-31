@@ -85,11 +85,11 @@ class Nip44 {
     return utf8.decode(plaintextBytes);
   }
 
-  static Uint8List computeSharedSecret(String privateKeyHex, String publicKeyHex) {
+  static Uint8List computeSharedSecret(
+      String privateKeyHex, String publicKeyHex) {
     final ec = getS256();
     final privateKey = PrivateKey.fromHex(ec, privateKeyHex);
-    final publicKey =
-        PublicKey.fromHex(ec, checkPublicKey(publicKeyHex));
+    final publicKey = PublicKey.fromHex(ec, checkPublicKey(publicKeyHex));
     final sec = computeSecret(privateKey, publicKey);
     return Uint8List.fromList(sec);
   }

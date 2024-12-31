@@ -19,5 +19,5 @@ class LnurlResponse {
     nostrPubkey = json['nostrPubkey'];
   }
 
-  bool get doesAllowsNostr => allowsNostr!=null && allowsNostr!;
+  bool get doesAllowsNostr => allowsNostr != null && allowsNostr!;
 }
