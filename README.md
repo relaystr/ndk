@@ -27,6 +27,10 @@ Amber signer compatible with the NDK.
 
 ObjectBox database implementation.
 
+### [🔗 Isar](./packages/isar/)
+
+Isar database implementation.
+
 ### [🔗 rust verifier](./packages/rust_verifier/)
 
 Event verifier written in Rust.
