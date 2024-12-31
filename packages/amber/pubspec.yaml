@@ -17,10 +17,6 @@ dependencies:
   plugin_platform_interface: ^2.1.8
   ndk: ^0.2.0
 
-#dependency_overrides:
-#   ndk:
-#    path: ../ndk
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
