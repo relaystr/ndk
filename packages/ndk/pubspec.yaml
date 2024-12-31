@@ -26,7 +26,6 @@ dependencies:
   pointycastle: ^3.9.1
   logger: ^2.4.0
   rxdart: ^0.28.0
-  isar: ^4.0.0-dev.14
   equatable: ^2.0.7
   meta: any
   web_socket_client: ^0.1.5
