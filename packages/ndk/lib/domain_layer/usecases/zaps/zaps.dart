@@ -42,7 +42,7 @@ class Zaps {
 
     try {
       return _lnurl.fetchInvoice(
-          lnurlResponse: lnurlResponse, amountSats: amountSats);
+          lnurlResponse: lnurlResponse, amountSats: amountSats, zapRequest: zapRequest);
     } catch (e) {
       Logger.log.d(e);
       return null;
