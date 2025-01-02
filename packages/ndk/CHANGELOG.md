@@ -1,3 +1,6 @@
+## 0.2.2
+ - fix passing ZapRequest to lnurl nostr param 
+
 ## 0.2.1
  - NIP-47 Nostr Wallet Connect
  - NIP-57 Zaps support
