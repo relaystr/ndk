@@ -42,7 +42,9 @@ class Zaps {
 
     try {
       return _lnurl.fetchInvoice(
-          lnurlResponse: lnurlResponse, amountSats: amountSats, zapRequest: zapRequest);
+          lnurlResponse: lnurlResponse,
+          amountSats: amountSats,
+          zapRequest: zapRequest);
     } catch (e) {
       Logger.log.d(e);
       return null;
@@ -130,7 +132,8 @@ class Zaps {
             invoice.nostrPubkey != null &&
             invoice.nostrPubkey!.isNotEmpty) {
           // if it's a zap, try to find the zap receipt
-          zapResponse.receiptResponse = _requests.subscription(explicitRelays: relays, filters: [
+          zapResponse.receiptResponse =
+              _requests.subscription(explicitRelays: relays, filters: [
             eventId != null
                 ? Filter(
                     kinds: [ZapReceipt.kKind],
