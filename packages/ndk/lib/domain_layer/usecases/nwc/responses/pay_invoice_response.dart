@@ -25,7 +25,7 @@ class PayInvoiceResponse extends NwcResponse {
     return PayInvoiceResponse(
       preimage: result['preimage'] as String,
       resultType: input['result_type'] as String,
-      feesPaid: result['fees_paid'] as int,
+      feesPaid: result.containsKey('fees_paid')? result['fees_paid'] as int:0,
     );
   }
 }

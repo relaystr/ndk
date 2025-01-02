@@ -60,6 +60,8 @@ class RequestState {
   /// called when timeout is triggered
   Function(RequestState)? onTimeout;
 
+  late StreamSubscription<Nip01Event> _streamSubscription;
+
   /// Creates a new [RequestState] instance
   RequestState(this.request) : unresolvedFilters = request.filters {
     // if we have a timeout set, we start it
@@ -71,6 +73,12 @@ class RequestState {
         close();
       });
     }
+    _streamSubscription = controller.listen((e) {}, onDone: () {
+      if (_timeout != null) {
+        _timeout!.cancel();
+      }
+      _streamSubscription.cancel();
+    });
   }
 
   /// checks if all requests received EOSE
@@ -93,9 +101,6 @@ class RequestState {
 
   /// closes all streams
   Future<void> close() async {
-    if (_timeout != null) {
-      _timeout!.cancel();
-    }
     await networkController.close();
     await cacheController.close();
     await controller.close();

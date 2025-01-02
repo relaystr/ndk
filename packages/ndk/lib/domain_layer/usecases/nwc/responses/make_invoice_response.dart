@@ -35,7 +35,7 @@ class MakeInvoiceResponse extends NwcResponse {
   final int createdAt;
 
   /// The timestamp when the invoice/payment expires.
-  final int expiresAt;
+  final int? expiresAt;
 
   /// The timestamp when the invoice was settled (optional).
 
@@ -51,7 +51,7 @@ class MakeInvoiceResponse extends NwcResponse {
     required this.amountMsat,
     required this.feesPaid,
     required this.createdAt,
-    required this.expiresAt,
+    this.expiresAt,
     this.settledAt,
     required super.resultType,
   });
@@ -67,13 +67,13 @@ class MakeInvoiceResponse extends NwcResponse {
       type: result['type'] as String,
       invoice: result['invoice'] as String,
       description: result['description'] as String,
-      descriptionHash: result['description_hash'] as String,
-      preimage: result['preimage'] as String,
-      paymentHash: result['payment_hash'] as String,
+      descriptionHash: result.containsKey('description_hash')? result['description_hash'] as String:'',
+      preimage: result.containsKey('preimage')? result['preimage'] as String:'',
+      paymentHash: result.containsKey('payment_hash')?result['payment_hash'] as String:'',
       amountMsat: result['amount'] as int,
-      feesPaid: result['fees_paid'] as int,
+      feesPaid: result.containsKey('feeds_paid')?result['fees_paid'] as int:0,
       createdAt: result['created_at'] as int,
-      expiresAt: result['expires_at'] as int,
+      expiresAt: result['expires_at'] as int?,
       settledAt: result['settled_at'] as int?, // optional
       resultType: input['result_type'] as String,
     );
