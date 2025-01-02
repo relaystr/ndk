@@ -130,7 +130,7 @@ class Zaps {
             invoice.nostrPubkey != null &&
             invoice.nostrPubkey!.isNotEmpty) {
           // if it's a zap, try to find the zap receipt
-          zapResponse.receiptResponse = _requests.subscription(filters: [
+          zapResponse.receiptResponse = _requests.subscription(explicitRelays: relays, filters: [
             eventId != null
                 ? Filter(
                     kinds: [ZapReceipt.kKind],
