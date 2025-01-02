@@ -1,3 +1,7 @@
+## 0.2.3
+ - fix wrongly timeouts being triggered
+ - fix using same relays from zap request for zap receipts 
+
 ## 0.2.2
  - fix passing ZapRequest to lnurl nostr param 
 
