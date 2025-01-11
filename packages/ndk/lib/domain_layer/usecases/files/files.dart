@@ -5,9 +5,4 @@ class Files {
   final Blossom blossom;
 
   Files(this.blossom);
-
-
-
-  getFile({})
-
 }

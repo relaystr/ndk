@@ -53,8 +53,14 @@ class HttpRequestDS {
     return response;
   }
 
-  Future<http.Response> delete(Uri url) async {
-    http.Response response = await _client.delete(url);
+  Future<http.Response> delete({
+    required Uri url,
+    required headers,
+  }) async {
+    http.Response response = await _client.delete(
+      url,
+      headers: headers,
+    );
 
     if (response.statusCode != 200) {
       throw Exception(

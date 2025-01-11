@@ -75,7 +75,7 @@ class Blossom {
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
   }) async {
-    late final Nip01Event myAuthorization;
+    Nip01Event? myAuthorization;
 
     if (useAuth) {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -114,7 +114,7 @@ class Blossom {
     DateTime? since,
     DateTime? until,
   }) async {
-    late final Nip01Event myAuthorization;
+    Nip01Event? myAuthorization;
 
     if (useAuth) {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;

@@ -41,12 +41,14 @@ class MockBlossomServer {
     router.put('/upload', (Request request) async {
       // Check for authorization header
       final authHeader = request.headers['authorization'];
+
       if (authHeader == null) {
         return Response.forbidden('Missing authorization');
       }
 
       try {
-        final authEvent = json.decode(authHeader);
+        final authEvent =
+            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
         if (!_verifyAuthEvent(authEvent, 'upload')) {
           return Response.forbidden('Invalid authorization event');
         }

@@ -228,16 +228,25 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required List<String> serverUrls,
     required Nip01Event authorization,
   }) async {
-    final results = await Future.wait(
-        serverUrls.map((url) => _deleteFromServer(url, sha256)));
+    final results = await Future.wait(serverUrls.map((url) => _deleteFromServer(
+          serverUrl: url,
+          sha256: sha256,
+          authorization: authorization,
+        )));
     return results;
   }
 
-  Future<BlobDeleteResult> _deleteFromServer(
-      String serverUrl, String sha256) async {
+  Future<BlobDeleteResult> _deleteFromServer({
+    required String serverUrl,
+    required String sha256,
+    required Nip01Event authorization,
+  }) async {
     try {
       final response = await client.delete(
-        Uri.parse('$serverUrl/$sha256'),
+        url: Uri.parse('$serverUrl/$sha256'),
+        headers: {
+          'Authorization': "Nostr ${authorization.toBase64()}",
+        },
       );
 
       return BlobDeleteResult(
