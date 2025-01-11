@@ -23,8 +23,12 @@ class Blossom {
     this.signer,
   );
 
+  /// upload a blob to the server
+  /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// if the pukey has no UserServerList (kind: 10063), throws an error
   Future<List<BlobUploadResult>> uploadBlob({
     required Uint8List data,
+    List<String>? serverUrls,
     String? contentType,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
   }) async {
@@ -47,15 +51,30 @@ class Blossom {
 
     await signer.sign(myAuthorization);
 
+    // todo: fetch user server list from nostr
+
+    if (serverUrls == null) {
+      throw UnimplementedError();
+    }
+
     return repository.uploadBlob(
       data: data,
+      serverUrls: serverUrls,
       authorization: myAuthorization,
       contentType: contentType,
       strategy: strategy,
     );
   }
 
-  Future<Uint8List> getBlob(String sha256, {bool useAuth = false}) async {
+  /// downloads a blob
+  /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// if the pukey has no UserServerList (kind: 10063), throws an error
+  Future<Uint8List> getBlob({
+    required String sha256,
+    bool useAuth = false,
+    List<String>? serverUrls,
+    String? pubkeyToFetchUserServerList,
+  }) async {
     late final Nip01Event myAuthorization;
 
     if (useAuth) {
@@ -75,18 +94,63 @@ class Blossom {
       await signer.sign(myAuthorization);
     }
 
-    return repository.getBlob(sha256, authorization: myAuthorization);
+    // todo: fetch user server list from nostr for user [pubkeyToFetchUserServerList]
+
+    if (serverUrls == null) {
+      throw UnimplementedError();
+    }
+
+    return repository.getBlob(
+      sha256: sha256,
+      authorization: myAuthorization,
+      serverUrls: serverUrls,
+    );
   }
 
-  Future<List<BlobDescriptor>> listBlobs(
-    String pubkey, {
+  Future<List<BlobDescriptor>> listBlobs({
+    required String pubkey,
+    List<String>? serverUrls,
+    bool useAuth = true,
     DateTime? since,
     DateTime? until,
-  }) {
-    return repository.listBlobs(pubkey, since: since, until: until);
+  }) async {
+    late final Nip01Event myAuthorization;
+
+    if (useAuth) {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      myAuthorization = Nip01Event(
+        content: "List Blobs",
+        pubKey: signer.getPublicKey(),
+        kind: kBlossom,
+        createdAt: now,
+        tags: [
+          ["t", "list"],
+          ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
+        ],
+      );
+
+      await signer.sign(myAuthorization);
+    }
+
+    // todo: fetch user server list from nostr for user [pubkeyToFetchUserServerList]
+
+    if (serverUrls == null) {
+      throw UnimplementedError();
+    }
+
+    return repository.listBlobs(
+      pubkey: pubkey,
+      since: since,
+      until: until,
+      serverUrls: serverUrls,
+      authorization: myAuthorization,
+    );
   }
 
-  Future<List<BlobDeleteResult>> delteBlob(String sha256) async {
+  Future<List<BlobDeleteResult>> delteBlob({
+    required String sha256,
+    List<String>? serverUrls,
+  }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     final Nip01Event myAuthorization = Nip01Event(
@@ -103,9 +167,16 @@ class Blossom {
 
     await signer.sign(myAuthorization);
 
+    // todo: fetch user server list from nostr for user [pubkeyToFetchUserServerList]
+
+    if (serverUrls == null) {
+      throw UnimplementedError();
+    }
+
     return repository.deleteBlob(
       sha256: sha256,
       authorization: myAuthorization,
+      serverUrls: serverUrls,
     );
   }
 }
