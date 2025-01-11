@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/repositories/blossom.dart';
 import '../../data_sources/http_request.dart';
 
@@ -18,82 +19,119 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<List<BlobUploadResult>> uploadBlob(
-    Uint8List data, {
+  Future<List<BlobUploadResult>> uploadBlob({
+    required Uint8List data,
+    required Nip01Event authorization,
     String? contentType,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
   }) async {
     switch (strategy) {
       case UploadStrategy.mirrorAfterSuccess:
-        return _uploadWithMirroring(data, contentType);
+        return _uploadWithMirroring(
+          data: data,
+          contentType: contentType,
+          authorization: authorization,
+        );
       case UploadStrategy.allSimultaneous:
-        return _uploadToAllServers(data, contentType);
+        return _uploadToAllServers(
+          data: data,
+          contentType: contentType,
+          authorization: authorization,
+        );
       case UploadStrategy.firstSuccess:
-        return _uploadToFirstSuccess(data, contentType);
+        return _uploadToFirstSuccess(
+          data: data,
+          contentType: contentType,
+          authorization: authorization,
+        );
     }
   }
 
-  Future<List<BlobUploadResult>> _uploadWithMirroring(
-    Uint8List data,
+  Future<List<BlobUploadResult>> _uploadWithMirroring({
+    required Uint8List data,
+    required Nip01Event authorization,
     String? contentType,
-  ) async {
+  }) async {
     final results = <BlobUploadResult>[];
 
     // Try primary upload
     final primaryResult = await _uploadToServer(
-      serverUrls.first,
-      data,
-      contentType,
+      serverUrl: serverUrls.first,
+      data: data,
+      contentType: contentType,
+      authorization: authorization,
     );
     results.add(primaryResult);
 
     if (primaryResult.success) {
       // Mirror to other servers
-      final mirrorResults = await Future.wait(serverUrls
-          .skip(1)
-          .map((url) => _uploadToServer(url, data, contentType)));
+      final mirrorResults =
+          await Future.wait(serverUrls.skip(1).map((url) => _uploadToServer(
+                serverUrl: url,
+                data: data,
+                contentType: contentType,
+                authorization: authorization,
+              )));
       results.addAll(mirrorResults);
     }
 
     return results;
   }
 
-  Future<List<BlobUploadResult>> _uploadToAllServers(
-    Uint8List data,
+  Future<List<BlobUploadResult>> _uploadToAllServers({
+    required Uint8List data,
+    required Nip01Event authorization,
     String? contentType,
-  ) async {
-    final results = await Future.wait(
-        serverUrls.map((url) => _uploadToServer(url, data, contentType)));
+  }) async {
+    final results = await Future.wait(serverUrls.map((url) => _uploadToServer(
+          serverUrl: url,
+          data: data,
+          contentType: contentType,
+          authorization: authorization,
+        )));
     return results;
   }
 
-  Future<List<BlobUploadResult>> _uploadToFirstSuccess(
-    Uint8List data,
+  Future<List<BlobUploadResult>> _uploadToFirstSuccess({
+    required Uint8List data,
+    required Nip01Event authorization,
     String? contentType,
-  ) async {
+  }) async {
     for (final url in serverUrls) {
-      final result = await _uploadToServer(url, data, contentType);
+      final result = await _uploadToServer(
+        serverUrl: url,
+        data: data,
+        contentType: contentType,
+        authorization: authorization,
+      );
       if (result.success) {
         return [result];
       }
     }
 
     // If all servers failed, return all errors
-    final results = await _uploadToAllServers(data, contentType);
+    final results = await _uploadToAllServers(
+      data: data,
+      contentType: contentType,
+      authorization: authorization,
+    );
     return results;
   }
 
-  Future<BlobUploadResult> _uploadToServer(
-    String serverUrl,
-    Uint8List data,
+  Future<BlobUploadResult> _uploadToServer({
+    required String serverUrl,
+    required Uint8List data,
+    Nip01Event? authorization,
     String? contentType,
-  ) async {
+  }) async {
     try {
       final response = await client.put(
         url: Uri.parse('$serverUrl/upload'),
         body: data,
         headers: {
           if (contentType != null) 'Content-Type': contentType,
+          if (authorization != null)
+            'Authorization': "Nostr ${authorization.toBase64()}",
           'Content-Length': '${data.length}',
         },
       );
@@ -121,7 +159,10 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<Uint8List> getBlob(String sha256) async {
+  Future<Uint8List> getBlob(
+    String sha256, {
+    Nip01Event? authorization,
+  }) async {
     Exception? lastError;
 
     for (final url in serverUrls) {
@@ -148,6 +189,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     String pubkey, {
     DateTime? since,
     DateTime? until,
+    Nip01Event? authorization,
   }) async {
     Exception? lastError;
 
@@ -177,7 +219,10 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<List<BlobDeleteResult>> deleteBlob(String sha256) async {
+  Future<List<BlobDeleteResult>> deleteBlob({
+    required String sha256,
+    required Nip01Event authorization,
+  }) async {
     final results = await Future.wait(
         serverUrls.map((url) => _deleteFromServer(url, sha256)));
     return results;

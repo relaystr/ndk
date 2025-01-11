@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+
 enum UploadStrategy {
   /// Upload to first server, then mirror to others
   mirrorAfterSuccess,
@@ -13,21 +15,32 @@ enum UploadStrategy {
 
 abstract class BlossomRepository {
   /// Uploads a blob using the specified strategy
-  Future<List<BlobUploadResult>> uploadBlob(
-    Uint8List data, {
+  Future<List<BlobUploadResult>> uploadBlob({
+    required Uint8List data,
+    required Nip01Event authorization,
     String? contentType,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
   });
 
   /// Gets a blob by trying servers sequentially until success
-  Future<Uint8List> getBlob(String sha256);
+  Future<Uint8List> getBlob(
+    String sha256, {
+    Nip01Event? authorization,
+  });
 
   /// Lists blobs from the first successful server
-  Future<List<BlobDescriptor>> listBlobs(String pubkey,
-      {DateTime? since, DateTime? until});
+  Future<List<BlobDescriptor>> listBlobs(
+    String pubkey, {
+    DateTime? since,
+    DateTime? until,
+    Nip01Event? authorization,
+  });
 
   /// Attempts to delete blob from all servers
-  Future<List<BlobDeleteResult>> deleteBlob(String sha256);
+  Future<List<BlobDeleteResult>> deleteBlob({
+    required String sha256,
+    required Nip01Event authorization,
+  });
 }
 
 class BlobDescriptor {

@@ -119,7 +119,9 @@ class MockBlossomServer {
       }
 
       try {
-        final authEvent = json.decode(authHeader);
+        final authEvent =
+            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+
         if (!_verifyAuthEvent(authEvent, 'delete')) {
           return Response.forbidden('Invalid authorization event');
         }
