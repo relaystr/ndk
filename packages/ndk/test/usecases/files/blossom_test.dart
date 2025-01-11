@@ -15,11 +15,14 @@ import '../../mocks/mock_blossom_server.dart';
 
 void main() {
   late MockBlossomServer server;
+  late MockBlossomServer server2;
   late Blossom client;
 
   setUp(() async {
     server = MockBlossomServer(port: 3000);
+    server2 = MockBlossomServer(port: 3001);
     await server.start();
+    await server2.start();
 
     final blossomRepo = BlossomRepositoryImpl(
       client: HttpRequestDS(http.Client()),
@@ -33,6 +36,7 @@ void main() {
 
   tearDown(() async {
     await server.stop();
+    await server2.stop();
   });
 
   group('Blossom Client Integration Tests', () {
@@ -54,6 +58,30 @@ void main() {
         serverUrls: ['http://localhost:3000'],
       );
       expect(utf8.decode(getResponse), equals('Hello, Blossom!'));
+    });
+
+    test('Upload and retrieve blob - one out of three', () async {
+      final testData = Uint8List.fromList(utf8.encode('Hello World!'));
+
+      // Upload blob
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Retrieve blob
+      final getResponse = await client.getBlob(
+        sha256: sha256,
+        serverUrls: [
+          'http://dead.example.com',
+          'http://localhost:3001',
+          'http://localhost:3000',
+        ],
+      );
+      expect(utf8.decode(getResponse), equals('Hello World!'));
     });
 
     test('List blobs for user', () async {
