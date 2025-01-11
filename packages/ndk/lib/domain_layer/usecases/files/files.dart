@@ -1,10 +1,13 @@
-import 'dart:typed_data';
-
-import '../../repositories/blossom.dart';
+import 'blossom.dart';
 
 /// high level usecase to manage files on nostr
 class Files {
-  final BlossomRepository repository;
+  final Blossom blossom;
 
-  Files(this.repository);
+  Files(this.blossom);
+
+
+
+  getFile({})
+
 }

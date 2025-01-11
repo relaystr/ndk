@@ -7,40 +7,38 @@ import '../../data_sources/http_request.dart';
 
 class BlossomRepositoryImpl implements BlossomRepository {
   final HttpRequestDS client;
-  final List<String> serverUrls;
 
   BlossomRepositoryImpl({
     required this.client,
-    required this.serverUrls,
-  }) {
-    if (serverUrls.isEmpty) {
-      throw ArgumentError('At least one server URL must be provided');
-    }
-  }
+  });
 
   @override
   Future<List<BlobUploadResult>> uploadBlob({
     required Uint8List data,
     required Nip01Event authorization,
     String? contentType,
+    required List<String> serverUrls,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
   }) async {
     switch (strategy) {
       case UploadStrategy.mirrorAfterSuccess:
         return _uploadWithMirroring(
           data: data,
+          serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
         );
       case UploadStrategy.allSimultaneous:
         return _uploadToAllServers(
           data: data,
+          serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
         );
       case UploadStrategy.firstSuccess:
         return _uploadToFirstSuccess(
           data: data,
+          serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
         );
@@ -50,6 +48,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   Future<List<BlobUploadResult>> _uploadWithMirroring({
     required Uint8List data,
     required Nip01Event authorization,
+    required List<String> serverUrls,
     String? contentType,
   }) async {
     final results = <BlobUploadResult>[];
@@ -80,6 +79,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
   Future<List<BlobUploadResult>> _uploadToAllServers({
     required Uint8List data,
+    required List<String> serverUrls,
     required Nip01Event authorization,
     String? contentType,
   }) async {
@@ -94,6 +94,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
   Future<List<BlobUploadResult>> _uploadToFirstSuccess({
     required Uint8List data,
+    required List<String> serverUrls,
     required Nip01Event authorization,
     String? contentType,
   }) async {
@@ -112,6 +113,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     // If all servers failed, return all errors
     final results = await _uploadToAllServers(
       data: data,
+      serverUrls: serverUrls,
       contentType: contentType,
       authorization: authorization,
     );
@@ -159,8 +161,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<Uint8List> getBlob(
-    String sha256, {
+  Future<Uint8List> getBlob({
+    required String sha256,
+    required List<String> serverUrls,
     Nip01Event? authorization,
   }) async {
     Exception? lastError;
@@ -185,8 +188,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<List<BlobDescriptor>> listBlobs(
-    String pubkey, {
+  Future<List<BlobDescriptor>> listBlobs({
+    required pubkey,
+    required List<String> serverUrls,
     DateTime? since,
     DateTime? until,
     Nip01Event? authorization,
@@ -221,6 +225,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   @override
   Future<List<BlobDeleteResult>> deleteBlob({
     required String sha256,
+    required List<String> serverUrls,
     required Nip01Event authorization,
   }) async {
     final results = await Future.wait(

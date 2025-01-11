@@ -19,18 +19,21 @@ abstract class BlossomRepository {
     required Uint8List data,
     required Nip01Event authorization,
     String? contentType,
+    required List<String> serverUrls,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
   });
 
   /// Gets a blob by trying servers sequentially until success
-  Future<Uint8List> getBlob(
-    String sha256, {
+  Future<Uint8List> getBlob({
+    required String sha256,
+    required List<String> serverUrls,
     Nip01Event? authorization,
   });
 
   /// Lists blobs from the first successful server
-  Future<List<BlobDescriptor>> listBlobs(
-    String pubkey, {
+  Future<List<BlobDescriptor>> listBlobs({
+    required String pubkey,
+    required List<String> serverUrls,
     DateTime? since,
     DateTime? until,
     Nip01Event? authorization,
@@ -39,6 +42,7 @@ abstract class BlossomRepository {
   /// Attempts to delete blob from all servers
   Future<List<BlobDeleteResult>> deleteBlob({
     required String sha256,
+    required List<String> serverUrls,
     required Nip01Event authorization,
   });
 }
