@@ -5,6 +5,7 @@ import '../../../config/blossom_config.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/blossom.dart';
 import '../../repositories/event_signer.dart';
+import 'blossom_user_server_list.dart';
 
 /// direct access usecase to blossom \
 /// use files usecase for a more convinent way to manage files
@@ -15,13 +16,15 @@ class Blossom {
   /// kind for blossom user server list
   static const kBlossomUserServerList = 10063;
 
-  final BlossomRepository repository;
+  final BlossomUserServerList userServerList;
+  final BlossomRepository blossomImpl;
   final EventSigner signer;
 
-  Blossom(
-    this.repository,
-    this.signer,
-  );
+  Blossom({
+    required this.userServerList,
+    required this.blossomImpl,
+    required this.signer,
+  });
 
   /// upload a blob to the server
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
@@ -51,13 +54,14 @@ class Blossom {
 
     await signer.sign(myAuthorization);
 
-    // todo: fetch user server list from nostr
+    serverUrls ??= await userServerList
+        .getUserServerList(pubkeys: [signer.getPublicKey()]);
 
     if (serverUrls == null) {
-      throw UnimplementedError();
+      throw "User has no server list";
     }
 
-    return repository.uploadBlob(
+    return blossomImpl.uploadBlob(
       data: data,
       serverUrls: serverUrls,
       authorization: myAuthorization,
@@ -94,13 +98,20 @@ class Blossom {
       await signer.sign(myAuthorization);
     }
 
-    // todo: fetch user server list from nostr for user [pubkeyToFetchUserServerList]
-
     if (serverUrls == null) {
-      throw UnimplementedError();
+      if (pubkeyToFetchUserServerList == null) {
+        throw "pubkeyToFetchUserServerList is null and serverUrls is null";
+      }
+
+      serverUrls ??= await userServerList
+          .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
     }
 
-    return repository.getBlob(
+    if (serverUrls == null) {
+      throw "User has no server list";
+    }
+
+    return blossomImpl.getBlob(
       sha256: sha256,
       authorization: myAuthorization,
       serverUrls: serverUrls,
@@ -132,13 +143,14 @@ class Blossom {
       await signer.sign(myAuthorization);
     }
 
-    // todo: fetch user server list from nostr for user [pubkeyToFetchUserServerList]
+    /// fetch user server list from nostr
+    serverUrls ??= await userServerList.getUserServerList(pubkeys: [pubkey]);
 
     if (serverUrls == null) {
-      throw UnimplementedError();
+      throw "User has no server list: $pubkey";
     }
 
-    return repository.listBlobs(
+    return blossomImpl.listBlobs(
       pubkey: pubkey,
       since: since,
       until: until,
@@ -167,13 +179,14 @@ class Blossom {
 
     await signer.sign(myAuthorization);
 
-    // todo: fetch user server list from nostr for user [pubkeyToFetchUserServerList]
+    /// fetch user server list from nostr
+    serverUrls ??= await userServerList
+        .getUserServerList(pubkeys: [signer.getPublicKey()]);
 
     if (serverUrls == null) {
-      throw UnimplementedError();
+      throw "User has no server list";
     }
-
-    return repository.deleteBlob(
+    return blossomImpl.deleteBlob(
       sha256: sha256,
       authorization: myAuthorization,
       serverUrls: serverUrls,
