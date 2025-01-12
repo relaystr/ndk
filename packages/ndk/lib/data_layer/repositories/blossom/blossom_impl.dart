@@ -264,7 +264,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     }
 
     throw Exception(
-        'Failed to get blob from all servers. Last error: $lastError');
+        'Failed to get blob from any of the servers. Last error: $lastError');
   }
 
   /// first value is whether the server supports range requests \
