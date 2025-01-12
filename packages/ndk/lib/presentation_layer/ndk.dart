@@ -4,6 +4,8 @@ import '../data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/files/blossom.dart';
+import '../domain_layer/usecases/files/files.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
@@ -91,6 +93,16 @@ class Ndk {
 
   /// Verifies NIP-05 events
   VerifyNip05 get nip05 => _initialization.verifyNip05;
+
+  /// manage files on nostr \
+  /// upload, download, delete files \
+  /// high level usecase, recommended for most users
+  Files get files => _initialization.files;
+
+  /// Blossom usecase \
+  /// upload, download, delete, list files \
+  /// low level usecase, recommended for advanced users
+  Blossom get blossom => _initialization.blossom;
 
   /// Nostr Wallet connect
   @experimental // needs more docs & tests

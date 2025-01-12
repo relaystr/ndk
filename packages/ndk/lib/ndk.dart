@@ -35,6 +35,7 @@ export 'domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
 export 'domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
+export 'domain_layer/entities/blossom_blobs.dart';
 
 /**
  *  export classes that need to be injected
@@ -70,6 +71,8 @@ export 'domain_layer/usecases/zaps/zaps.dart';
 export 'domain_layer/usecases/zaps/zap_request.dart';
 export 'domain_layer/usecases/zaps/zap_receipt.dart';
 export 'domain_layer/usecases/zaps/invoice_response.dart';
+export 'domain_layer/usecases/files/files.dart';
+export 'domain_layer/usecases/files/blossom.dart';
 
 /**
  * other stuff
