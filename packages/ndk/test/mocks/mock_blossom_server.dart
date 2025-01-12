@@ -139,6 +139,87 @@ class MockBlossomServer {
       return Response(200);
     });
 
+    router.post('/mirror/<sha256>', (Request request, String sha256) async {
+      // Check for authorization header
+      final authHeader = request.headers['authorization'];
+
+      if (authHeader == null) {
+        return Response.forbidden('Missing authorization');
+      }
+
+      try {
+        final authEvent =
+            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        if (!_verifyAuthEvent(authEvent, 'upload')) {
+          return Response.forbidden('Invalid authorization event');
+        }
+      } catch (e) {
+        return Response.forbidden('Invalid authorization format');
+      }
+
+      // Parse the request body to get the URL
+      final String body = await request.readAsString();
+      Map<String, dynamic> requestData;
+      try {
+        requestData = json.decode(body);
+        if (!requestData.containsKey('url')) {
+          return Response.badRequest(
+              body: 'Request body must contain a "url" field');
+        }
+      } catch (e) {
+        return Response.badRequest(body: 'Invalid JSON body');
+      }
+
+      // Download the blob from the provided URL
+      try {
+        final sourceUrl = requestData['url'];
+        final httpClient = HttpClient();
+        final request = await httpClient.getUrl(Uri.parse(sourceUrl));
+        final response = await request.close();
+
+        if (response.statusCode != 200) {
+          return Response.internalServerError(
+              body:
+                  'Failed to download from source URL: ${response.statusCode}');
+        }
+
+        // Read the response data
+        final bytes = await response.expand((chunk) => chunk).toList();
+        final data = Uint8List.fromList(bytes);
+
+        // Verify the SHA256 matches
+        final computedSha256 = _computeSha256(data);
+        if (computedSha256 != sha256) {
+          return Response.badRequest(
+              body: 'SHA256 mismatch: expected $sha256, got $computedSha256');
+        }
+
+        // Store the blob
+        _blobs[sha256] = _BlobEntry(
+          data: data,
+          contentType: response.headers.contentType?.toString() ??
+              'application/octet-stream',
+          uploader: 'test_pubkey',
+          uploadedAt: DateTime.now(),
+        );
+
+        // Return the same descriptor format as upload
+        return Response.ok(
+          json.encode({
+            'url': 'http://localhost:$port/$sha256',
+            'sha256': sha256,
+            'size': data.length,
+            'type': _blobs[sha256]!.contentType,
+            'uploaded': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          }),
+          headers: {'Content-Type': 'application/json'},
+        );
+      } catch (e) {
+        return Response.internalServerError(
+            body: 'Failed to mirror blob: ${e.toString()}');
+      }
+    });
+
     return router;
   }
 

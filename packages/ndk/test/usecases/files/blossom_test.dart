@@ -203,9 +203,9 @@ void main() {
         ],
         strategy: UploadStrategy.mirrorAfterSuccess,
       );
-      expect(uploadResponse.first.success, true);
+      expect(uploadResponse[1].success, true);
 
-      final sha256 = uploadResponse.first.descriptor!.sha256;
+      final sha256 = uploadResponse[1].descriptor!.sha256;
 
       final deadServer = client.getBlob(sha256: sha256, serverUrls: [
         'http://dead.example.com',

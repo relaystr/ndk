@@ -55,26 +55,42 @@ class BlossomRepositoryImpl implements BlossomRepository {
     String? contentType,
   }) async {
     final results = <BlobUploadResult>[];
+    BlobUploadResult? successfulUpload;
 
-    // Try primary upload
-    final primaryResult = await _uploadToServer(
-      serverUrl: serverUrls.first,
-      data: data,
-      contentType: contentType,
-      authorization: authorization,
-    );
-    results.add(primaryResult);
+    // Try servers until we get a successful upload
+    for (final serverUrl in serverUrls) {
+      final result = await _uploadToServer(
+        serverUrl: serverUrl,
+        data: data,
+        contentType: contentType,
+        authorization: authorization,
+      );
+      results.add(result);
 
-    if (primaryResult.success) {
-      // Mirror to other servers
-      final mirrorResults =
-          await Future.wait(serverUrls.skip(1).map((url) => _uploadToServer(
+      if (result.success) {
+        successfulUpload = result;
+        break;
+      }
+    }
+
+    // If we found a working server, mirror to all other servers that haven't been tried yet
+    if (successfulUpload != null) {
+      // Get the index where we succeeded
+      final successIndex = serverUrls.indexOf(successfulUpload.serverUrl);
+
+      // Mirror to remaining servers (ones we haven't tried yet)
+      final remainingServers = serverUrls.sublist(successIndex + 1);
+      if (remainingServers.isNotEmpty) {
+        final mirrorResults = await Future.wait(
+          remainingServers.map((url) => _mirrorToServer(
+                fileUrl: successfulUpload!.descriptor!.url,
                 serverUrl: url,
-                data: data,
-                contentType: contentType,
+                sha256: successfulUpload.descriptor!.sha256,
                 authorization: authorization,
-              )));
-      results.addAll(mirrorResults);
+              )),
+        );
+        results.addAll(mirrorResults);
+      }
     }
 
     return results;
@@ -138,6 +154,48 @@ class BlossomRepositoryImpl implements BlossomRepository {
           if (authorization != null)
             'Authorization': "Nostr ${authorization.toBase64()}",
           'Content-Length': '${data.length}',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        return BlobUploadResult(
+          serverUrl: serverUrl,
+          success: false,
+          error: 'HTTP ${response.statusCode}',
+        );
+      }
+
+      return BlobUploadResult(
+        serverUrl: serverUrl,
+        success: true,
+        descriptor: BlobDescriptor.fromJson(jsonDecode(response.body)),
+      );
+    } catch (e) {
+      return BlobUploadResult(
+        serverUrl: serverUrl,
+        success: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  Future<BlobUploadResult> _mirrorToServer({
+    required String fileUrl,
+    required String serverUrl,
+    required String sha256,
+    required Nip01Event authorization,
+  }) async {
+    final jsonMsg = {"url": fileUrl};
+
+    final Uint8List myBody =
+        Uint8List.fromList(utf8.encode(jsonEncode(jsonMsg)));
+    try {
+      // Mirror endpoint is POST /mirror/<sha256>
+      final response = await client.post(
+        url: Uri.parse('$serverUrl/mirror/$sha256'),
+        body: myBody,
+        headers: {
+          'Authorization': "Nostr ${authorization.toBase64()}",
         },
       );
 
