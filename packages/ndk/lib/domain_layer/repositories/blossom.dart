@@ -2,6 +2,9 @@ import 'dart:typed_data';
 
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 
+import '../entities/blossom_blobs.dart';
+import '../entities/tuple.dart';
+
 enum UploadStrategy {
   /// Upload to first server, then mirror to others
   mirrorAfterSuccess,
@@ -24,10 +27,32 @@ abstract class BlossomRepository {
   });
 
   /// Gets a blob by trying servers sequentially until success
-  Future<Uint8List> getBlob({
+  /// If [authorization] is null, the server must be public
+  /// If [start] and [end] are null, the entire blob is returned
+  /// [start] and [end] are used to download a range of bytes, @see MDN HTTP range requests
+  Future<BlossomBlobResponse> getBlob({
     required String sha256,
     required List<String> serverUrls,
     Nip01Event? authorization,
+    int? start,
+    int? end,
+  });
+
+  /// checks if the server supports range requests, if no server supports range requests, the entire blob is returned
+  /// otherwise, the blob is returned in chunks. @see MDN HTTP range requests
+  Future<Stream<BlossomBlobResponse>> getBlobStream({
+    required String sha256,
+    required List<String> serverUrls,
+    Nip01Event? authorization,
+    int chunkSize = 1024 * 1024, // 1MB chunks
+  });
+
+  /// Checks if the server supports range requests and gets the content length \
+  /// first value is whether the server supports range requests \
+  /// second value is the content length of the blob in bytes
+  Future<Tuple<bool, int?>> supportsRangeRequests({
+    required String sha256,
+    required String serverUrl,
   });
 
   /// Lists blobs from the first successful server
@@ -44,55 +69,5 @@ abstract class BlossomRepository {
     required String sha256,
     required List<String> serverUrls,
     required Nip01Event authorization,
-  });
-}
-
-class BlobDescriptor {
-  final String url;
-  final String sha256;
-  final int size;
-  final String? type;
-  final DateTime uploaded;
-
-  BlobDescriptor(
-      {required this.url,
-      required this.sha256,
-      required this.size,
-      this.type,
-      required this.uploaded});
-
-  factory BlobDescriptor.fromJson(Map<String, dynamic> json) {
-    return BlobDescriptor(
-        url: json['url'],
-        sha256: json['sha256'],
-        size: json['size'],
-        type: json['type'],
-        uploaded: DateTime.fromMillisecondsSinceEpoch(json['uploaded'] * 1000));
-  }
-}
-
-class BlobUploadResult {
-  final String serverUrl;
-  final bool success;
-  final BlobDescriptor? descriptor;
-  final String? error;
-
-  BlobUploadResult({
-    required this.serverUrl,
-    required this.success,
-    this.descriptor,
-    this.error,
-  });
-}
-
-class BlobDeleteResult {
-  final String serverUrl;
-  final bool success;
-  final String? error;
-
-  BlobDeleteResult({
-    required this.serverUrl,
-    required this.success,
-    this.error,
   });
 }

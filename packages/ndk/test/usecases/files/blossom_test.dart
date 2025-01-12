@@ -74,7 +74,7 @@ void main() {
         sha256: sha256,
         serverUrls: ['http://localhost:3000'],
       );
-      expect(utf8.decode(getResponse), equals('Hello, Blossom!'));
+      expect(utf8.decode(getResponse.data), equals('Hello, Blossom!'));
     });
 
     test('Upload and retrieve blob - one out of three', () async {
@@ -98,7 +98,7 @@ void main() {
           'http://localhost:3000',
         ],
       );
-      expect(utf8.decode(getResponse), equals('Hello World!'));
+      expect(utf8.decode(getResponse.data), equals('Hello World!'));
     });
 
     test('List blobs for user', () async {

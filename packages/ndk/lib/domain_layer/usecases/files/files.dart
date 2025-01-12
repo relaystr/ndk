@@ -5,4 +5,8 @@ class Files {
   final Blossom blossom;
 
   Files(this.blossom);
+
+  upload() {}
+
+  download() {}
 }

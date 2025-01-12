@@ -42,8 +42,31 @@ class HttpRequestDS {
     return response;
   }
 
-  Future<http.Response> get(Uri url) async {
-    http.Response response = await _client.get(url);
+  Future<http.Response> head({
+    required Uri url,
+    headers,
+  }) async {
+    http.Response response = await _client.head(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+          "error fetching STATUS: ${response.statusCode}, Link: $url");
+    }
+
+    return response;
+  }
+
+  Future<http.Response> get({
+    required Uri url,
+    headers,
+  }) async {
+    http.Response response = await _client.get(
+      url,
+      headers: headers,
+    );
 
     if (response.statusCode != 200) {
       throw Exception(

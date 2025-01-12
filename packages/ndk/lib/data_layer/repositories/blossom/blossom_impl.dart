@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../../../domain_layer/entities/blossom_blobs.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
+import '../../../domain_layer/entities/tuple.dart';
 import '../../../domain_layer/repositories/blossom.dart';
 import '../../data_sources/http_request.dart';
 
@@ -161,21 +164,35 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<Uint8List> getBlob({
+  Future<BlossomBlobResponse> getBlob({
     required String sha256,
     required List<String> serverUrls,
     Nip01Event? authorization,
+    int? start,
+    int? end,
   }) async {
     Exception? lastError;
 
     for (final url in serverUrls) {
       try {
+        final headers = <String, String>{};
+        if (start != null) {
+          // Create range header in format "bytes=start-end"
+          // If end is null, it means "until the end of the file"
+          headers['range'] = 'bytes=$start-${end ?? ''}';
+        }
+
         final response = await client.get(
-          Uri.parse('$url/$sha256'),
+          url: Uri.parse('$url/$sha256'),
+          headers: headers,
         );
 
-        if (response.statusCode == 200) {
-          return response.bodyBytes;
+        // Check for both 200 (full content) and 206 (partial content) status codes
+        if (response.statusCode == 200 || response.statusCode == 206) {
+          return BlossomBlobResponse(
+            data: response.bodyBytes,
+            mimeType: response.headers['content-type'],
+          );
         }
         lastError = Exception('HTTP ${response.statusCode}');
       } catch (e) {
@@ -185,6 +202,87 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     throw Exception(
         'Failed to get blob from all servers. Last error: $lastError');
+  }
+
+  /// first value is whether the server supports range requests \
+  /// second value is the content length of the blob in bytes
+  @override
+  Future<Tuple<bool, int?>> supportsRangeRequests({
+    required String sha256,
+    required String serverUrl,
+  }) async {
+    try {
+      final response = await client.head(
+        url: Uri.parse('$serverUrl/$sha256'),
+      );
+
+      final acceptRanges = response.headers['accept-ranges'];
+      final contentLength =
+          int.tryParse(response.headers['content-length'] ?? '');
+      return Tuple(acceptRanges?.toLowerCase() == 'bytes', contentLength);
+    } catch (e) {
+      return Tuple(false, null);
+    }
+  }
+
+  @override
+  Future<Stream<BlossomBlobResponse>> getBlobStream({
+    required String sha256,
+    required List<String> serverUrls,
+    Nip01Event? authorization,
+    int chunkSize = 1024 * 1024, // 1MB chunks
+  }) async {
+    // Find a server that supports range requests
+    String? supportedServer;
+    int? contentLength;
+
+    for (final url in serverUrls) {
+      try {
+        final rangeResponse = await supportsRangeRequests(
+          sha256: sha256,
+          serverUrl: url,
+        );
+        if (rangeResponse.first) {
+          supportedServer = url;
+          contentLength = rangeResponse.second;
+          break;
+        }
+      } catch (_) {
+        continue;
+      }
+    }
+
+    if (supportedServer == null || contentLength == null) {
+      // Fallback to regular download if no server supports range requests
+      final bytes = await getBlob(sha256: sha256, serverUrls: serverUrls);
+      return Stream.value(bytes);
+    }
+
+    // Create a stream controller to manage the chunks
+    final controller = StreamController<BlossomBlobResponse>();
+
+    // Start downloading chunks
+    int offset = 0;
+    while (offset < contentLength) {
+      final end = (offset + chunkSize - 1).clamp(0, contentLength - 1);
+
+      try {
+        final chunk = await getBlob(
+          sha256: sha256,
+          serverUrls: [supportedServer],
+          start: offset,
+          end: end,
+        );
+        controller.add(chunk);
+        offset = end + 1;
+      } catch (e) {
+        await controller.close();
+        rethrow;
+      }
+    }
+
+    await controller.close();
+    return controller.stream;
   }
 
   @override
@@ -205,7 +303,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
         };
 
         final response = await client.get(
-          Uri.parse('$url/list/$pubkey').replace(queryParameters: queryParams),
+          url: Uri.parse('$url/list/$pubkey')
+              .replace(queryParameters: queryParams),
         );
 
         if (response.statusCode == 200) {

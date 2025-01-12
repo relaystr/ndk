@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
+import 'package:ndk/domain_layer/entities/blossom_blobs.dart';
 
 import '../../../config/blossom_config.dart';
 import '../../entities/nip_01_event.dart';
@@ -73,7 +74,7 @@ class Blossom {
   /// downloads a blob
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error
-  Future<Uint8List> getBlob({
+  Future<BlossomBlobResponse> getBlob({
     required String sha256,
     bool useAuth = false,
     List<String>? serverUrls,
