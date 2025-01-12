@@ -139,6 +139,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     return results;
   }
 
+  /// Upload a file to a server
   Future<BlobUploadResult> _uploadToServer({
     required String serverUrl,
     required Uint8List data,
@@ -179,6 +180,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     }
   }
 
+  /// Mirror a file from one server to another, based on the file URL
   Future<BlobUploadResult> _mirrorToServer({
     required String fileUrl,
     required String serverUrl,
