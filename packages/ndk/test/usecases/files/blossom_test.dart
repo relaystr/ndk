@@ -265,4 +265,125 @@ void main() {
       expect(utf8.decode(server2.data), equals(myData));
     });
   });
+
+  group("stream blobs", () {
+    final BlossomRepository blossomRepo = BlossomRepositoryImpl(
+      client: HttpRequestDS(http.Client()),
+    );
+    test('getBlobStream should properly stream large files with range requests',
+        () async {
+      // First upload a test file to the mock server
+      final testData = Uint8List.fromList(
+          List.generate(5 * 1024 * 1024, (i) => i % 256)); // 5MB test file
+
+      // Upload the test file
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      expect(uploadResponse.first.success, true);
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Now test the streaming download
+      final stream = await blossomRepo.getBlobStream(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+        chunkSize: 1024 * 1024, // 1MB chunks
+      );
+
+      // Collect all chunks and verify the data
+      final chunks = <Uint8List>[];
+      int totalSize = 0;
+
+      await for (final response in stream) {
+        chunks.add(response.data);
+        totalSize += response.data.length;
+
+        // Verify chunk metadata
+        expect(response.mimeType, isNotNull);
+        expect(response.contentLength, equals(testData.length));
+        //expect(response.contentRange, matches(RegExp(r'bytes \d+-\d+/\d+')));
+      }
+
+      // Combine chunks and verify the complete file
+      final resultData = Uint8List(totalSize);
+      int offset = 0;
+      for (final chunk in chunks) {
+        resultData.setRange(offset, offset + chunk.length, chunk);
+        offset += chunk.length;
+      }
+
+      expect(resultData, equals(testData));
+      expect(totalSize, equals(testData.length));
+    });
+
+    test(
+        'getBlobStream should fallback to regular download if range requests not supported',
+        () async {
+      // Upload a smaller test file
+      final testData = Uint8List.fromList(
+          List.generate(1024, (i) => i % 256)); // 1KB test file
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      expect(uploadResponse.first.success, true);
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Test the streaming download
+      final stream = await blossomRepo.getBlobStream(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      // Should receive exactly one chunk with the complete file
+      final chunks = await stream.toList();
+      expect(chunks.length, equals(1));
+      expect(chunks.first.data, equals(testData));
+    });
+
+    test('getBlobStream should handle server errors gracefully', () async {
+      expect(
+        () => blossomRepo.getBlobStream(
+          sha256: 'nonexistent_sha256',
+          serverUrls: ['http://localhost:3000'],
+        ),
+        throwsException,
+      );
+    });
+
+    test(
+        'getBlobStream should try multiple servers until finding one that works',
+        () async {
+      final testData = Uint8List.fromList(
+          List.generate(2 * 1024 * 1024, (i) => i % 256)); // 2MB test file
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Test with multiple servers, including non-existent ones
+      final stream = await blossomRepo.getBlobStream(
+        sha256: sha256,
+        serverUrls: [
+          'http://nonexistent-server:3000',
+          'http://localhost:3000',
+          'http://another-nonexistent:3000',
+        ],
+      );
+
+      final receivedData = await stream
+          .map((response) => response.data)
+          .expand((chunk) => chunk)
+          .toList();
+
+      expect(Uint8List.fromList(receivedData), equals(testData));
+    });
+  });
 }
