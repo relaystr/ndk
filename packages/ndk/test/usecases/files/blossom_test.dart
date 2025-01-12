@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/blossom/blossom_impl.dart';
 import 'package:ndk/domain_layer/repositories/blossom.dart';
-import 'package:ndk/domain_layer/usecases/files/blossom_user_server_list.dart';
+
 import 'package:ndk/ndk.dart';
 
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -26,10 +26,6 @@ void main() {
     await server.start();
     await server2.start();
 
-    final blossomRepo = BlossomRepositoryImpl(
-      client: HttpRequestDS(http.Client()),
-    );
-
     KeyPair key1 = Bip340.generatePrivateKey();
     final signer = Bip340EventSigner(
         privateKey: key1.privateKey, publicKey: key1.publicKey);
@@ -39,16 +35,11 @@ void main() {
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
+        eventSigner: signer,
       ),
     );
 
-    final BlossomUserServerList blossomUserServerList =
-        BlossomUserServerList(ndk.requests);
-    client = Blossom(
-      blossomImpl: blossomRepo,
-      signer: signer,
-      userServerList: blossomUserServerList,
-    );
+    client = ndk.blossom;
   });
 
   tearDown(() async {
