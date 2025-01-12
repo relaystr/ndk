@@ -6,6 +6,9 @@ import 'blossom.dart';
 class Files {
   final Blossom blossom;
 
+  /// Regular expression to match SHA256 in URLs
+  static final sha256Regex = RegExp(r'/([a-fA-F0-9]{64})(?:/|$)');
+
   Files(this.blossom);
 
   /// upload a file to the server(s) \
@@ -47,7 +50,7 @@ class Files {
     String? pubkey,
   ) async {
     // Regular expression to match SHA256 in URLs
-    final sha256Match = RegExp(r'/([a-fA-F0-9]{64})(?:/|$)').firstMatch(url);
+    final sha256Match = sha256Regex.firstMatch(url);
 
     if (sha256Match != null) {
       // This is a blossom URL, handle it using blossom protocol
