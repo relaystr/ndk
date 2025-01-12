@@ -164,7 +164,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<BlossomBlobResponse> getBlob({
+  Future<BlobResponse> getBlob({
     required String sha256,
     required List<String> serverUrls,
     Nip01Event? authorization,
@@ -189,12 +189,12 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
         // Check for both 200 (full content) and 206 (partial content) status codes
         if (response.statusCode == 200 || response.statusCode == 206) {
-          return BlossomBlobResponse(
+          return BlobResponse(
             data: response.bodyBytes,
             mimeType: response.headers['content-type'],
             contentLength:
                 int.tryParse(response.headers['content-length'] ?? ''),
-            contentRange: response.headers['content-range'],
+            contentRange: response.headers['content-range'] ?? '',
           );
         }
         lastError = Exception('HTTP ${response.statusCode}');
@@ -229,7 +229,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<Stream<BlossomBlobResponse>> getBlobStream({
+  Future<Stream<BlobResponse>> getBlobStream({
     required String sha256,
     required List<String> serverUrls,
     Nip01Event? authorization,
@@ -262,7 +262,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     }
 
     // Create a stream controller to manage the chunks
-    final controller = StreamController<BlossomBlobResponse>();
+    final controller = StreamController<BlobResponse>();
 
     // Start downloading chunks
     int offset = 0;
@@ -364,5 +364,18 @@ class BlossomRepositoryImpl implements BlossomRepository {
         error: e.toString(),
       );
     }
+  }
+
+  @override
+  Future<BlobResponse> directDownload({
+    required Uri url,
+  }) async {
+    final response = await client.get(url: url);
+    return BlobResponse(
+      data: response.bodyBytes,
+      mimeType: response.headers['content-type'],
+      contentLength: int.tryParse(response.headers['content-length'] ?? ''),
+      contentRange: response.headers['content-range'] ?? '',
+    );
   }
 }

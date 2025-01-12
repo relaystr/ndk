@@ -30,7 +30,7 @@ abstract class BlossomRepository {
   /// If [authorization] is null, the server must be public
   /// If [start] and [end] are null, the entire blob is returned
   /// [start] and [end] are used to download a range of bytes, @see MDN HTTP range requests
-  Future<BlossomBlobResponse> getBlob({
+  Future<BlobResponse> getBlob({
     required String sha256,
     required List<String> serverUrls,
     Nip01Event? authorization,
@@ -38,9 +38,14 @@ abstract class BlossomRepository {
     int? end,
   });
 
+  /// Directly downloads a blob from the url, without blossom
+  Future<BlobResponse> directDownload({
+    required Uri url,
+  });
+
   /// checks if the server supports range requests, if no server supports range requests, the entire blob is returned
   /// otherwise, the blob is returned in chunks. @see MDN HTTP range requests
-  Future<Stream<BlossomBlobResponse>> getBlobStream({
+  Future<Stream<BlobResponse>> getBlobStream({
     required String sha256,
     required List<String> serverUrls,
     Nip01Event? authorization,

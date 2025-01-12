@@ -51,13 +51,13 @@ class BlobDeleteResult {
   });
 }
 
-class BlossomBlobResponse {
+class BlobResponse {
   final Uint8List data;
   final String? mimeType;
   final int? contentLength;
   final String? contentRange;
 
-  BlossomBlobResponse({
+  BlobResponse({
     required this.data,
     this.mimeType,
     this.contentLength,

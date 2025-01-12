@@ -136,7 +136,7 @@ void main() {
       final sha256 = uploadResponse.first.descriptor!.sha256;
 
       // Delete blob
-      final deleteResponse = await client.delteBlob(
+      final deleteResponse = await client.deleteBlob(
         sha256: sha256,
         serverUrls: ['http://localhost:3000'],
       );

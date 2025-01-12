@@ -74,7 +74,7 @@ class Blossom {
   /// downloads a blob
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error
-  Future<BlossomBlobResponse> getBlob({
+  Future<BlobResponse> getBlob({
     required String sha256,
     bool useAuth = false,
     List<String>? serverUrls,
@@ -160,7 +160,7 @@ class Blossom {
     );
   }
 
-  Future<List<BlobDeleteResult>> delteBlob({
+  Future<List<BlobDeleteResult>> deleteBlob({
     required String sha256,
     List<String>? serverUrls,
   }) async {
@@ -192,5 +192,12 @@ class Blossom {
       authorization: myAuthorization,
       serverUrls: serverUrls,
     );
+  }
+
+  /// Directly downloads a blob from the url, without blossom
+  Future<BlobResponse> directDownload({
+    required Uri url,
+  }) {
+    return blossomImpl.directDownload(url: url);
   }
 }
