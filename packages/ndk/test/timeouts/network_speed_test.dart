@@ -21,8 +21,8 @@ void main() {
 
   group('low level - network faster then timeout', () {
     KeyPair key1 = Bip340.generatePrivateKey();
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 8201);
-    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 8202);
+    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 8221);
+    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 8222);
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
