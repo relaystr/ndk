@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
-import 'package:ndk/domain_layer/entities/blossom_blobs.dart';
 
 import '../../../config/blossom_config.dart';
+import '../../entities/blossom_blobs.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/blossom.dart';
 import '../../repositories/event_signer.dart';

@@ -1,8 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-
 import '../entities/blossom_blobs.dart';
+import '../entities/nip_01_event.dart';
 import '../entities/tuple.dart';
 
 enum UploadStrategy {
