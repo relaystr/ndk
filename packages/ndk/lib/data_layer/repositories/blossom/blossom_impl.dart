@@ -192,6 +192,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
           return BlossomBlobResponse(
             data: response.bodyBytes,
             mimeType: response.headers['content-type'],
+            contentLength:
+                int.tryParse(response.headers['content-length'] ?? ''),
+            contentRange: response.headers['content-range'],
           );
         }
         lastError = Exception('HTTP ${response.statusCode}');

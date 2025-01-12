@@ -7,12 +7,13 @@ class BlobDescriptor {
   final String? type;
   final DateTime uploaded;
 
-  BlobDescriptor(
-      {required this.url,
-      required this.sha256,
-      required this.size,
-      this.type,
-      required this.uploaded});
+  BlobDescriptor({
+    required this.url,
+    required this.sha256,
+    required this.size,
+    this.type,
+    required this.uploaded,
+  });
 
   factory BlobDescriptor.fromJson(Map<String, dynamic> json) {
     return BlobDescriptor(
@@ -53,6 +54,13 @@ class BlobDeleteResult {
 class BlossomBlobResponse {
   final Uint8List data;
   final String? mimeType;
+  final int? contentLength;
+  final String? contentRange;
 
-  BlossomBlobResponse({required this.data, this.mimeType});
+  BlossomBlobResponse({
+    required this.data,
+    this.mimeType,
+    this.contentLength,
+    this.contentRange,
+  });
 }
