@@ -45,7 +45,7 @@ Multiple websocket connections are expensive, over the lifetime of the app we mi
 
 # Complexity
 
-The most complex part is the relay ranking with a complexity of O(e \* r). \
+The most complex part "../../jit_engine""../../jit_engine"is the relay ranking with a complexity of O(e \* r). \
 e = number of events \
 r = maximum number of relays per event \
 
