@@ -1,8 +1,7 @@
 ---
 label: Home
-layout: page
-order: 1
-icon: rocket
+order: 101
+icon: home
 
 ---
 

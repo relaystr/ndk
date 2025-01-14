@@ -1,6 +1,6 @@
 ---
 label: ADR
-order: 100
+order: -1
 icon: file-diff	
 
 ---
