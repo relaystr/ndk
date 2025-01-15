@@ -208,7 +208,7 @@ void main() async {
     //     eventVerifier: eventVerifier,
     //     filters: [
     //       Filter(kinds: [
-    //         Nip01Event.TEXT_NODE_KIND
+    //         Nip01Event.kTextNodeKind
     //       ], authors: [
     //         key4.publicKey,
     //       ]),
@@ -302,7 +302,7 @@ void main() async {
     //     eventVerifier: eventVerifier,
     //     filters: [
     //       Filter(kinds: [
-    //         Nip01Event.TEXT_NODE_KIND
+    //         Nip01Event.kTextNodeKind
     //       ], authors: [
     //         key1.publicKey,
     //         key2.publicKey,

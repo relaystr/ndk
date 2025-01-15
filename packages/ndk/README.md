@@ -115,7 +115,7 @@ final response = ndk.requests.query(
   filters: [
     Filter(
       authors: ['hexPubkey']
-      kinds: [Nip01Event.TEXT_NODE_KIND],
+      kinds: [`Nip01Event`.kTextNodeKind],
       limit: 10,
     ),
   ],
