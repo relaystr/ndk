@@ -3,9 +3,9 @@ import 'package:ndk/domain_layer/entities/filter.dart';
 
 /// this class is used to send messages from the client to the relay
 ///
-/// "EVENT", <event JSON as defined above>
-/// "REQ", <subscription_id>, <filters1>, <filters2>, ...
-/// "CLOSE", <subscription_id>
+/// "EVENT", &lt;event JSON as defined above&gt;
+/// "REQ", &lt;subscription_id&gt;, &lt;filters1&gt;, &lt;filters2&gt;, ...
+/// "CLOSE", &lt;subscription_id&gt;
 ///
 ///
 class ClientMsg {
