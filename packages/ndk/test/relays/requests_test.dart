@@ -66,7 +66,7 @@ void main() async {
       // }
 
       await ndk.destroy();
-      // expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
       await relay1.stopServer();
     });
   });
