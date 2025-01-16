@@ -1,17 +1,22 @@
 import 'package:http/http.dart' as http;
-import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
-import 'package:ndk/domain_layer/repositories/lnurl_transport.dart';
 
 import '../data_layer/data_sources/http_request.dart';
+import '../data_layer/repositories/blossom/blossom_impl.dart';
+import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
+import '../domain_layer/repositories/blossom.dart';
+import '../domain_layer/repositories/lnurl_transport.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
+import '../domain_layer/usecases/files/blossom.dart';
+import '../domain_layer/usecases/files/blossom_user_server_list.dart';
+import '../domain_layer/usecases/files/files.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/jit_engine/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
@@ -60,6 +65,9 @@ class Initialization {
   late Nwc nwc;
   late Zaps zaps;
   late Lnurl lnurl;
+  late Files files;
+  late Blossom blossom;
+  late BlossomUserServerList blossomUserServerList;
 
   late VerifyNip05 verifyNip05;
 
@@ -109,6 +117,10 @@ class Initialization {
     /// repositories
     final Nip05Repository nip05repository =
         Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
+
+    final BlossomRepository blossomRepository = BlossomRepositoryImpl(
+      client: _httpRequestDS,
+    );
 
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
@@ -183,6 +195,16 @@ class Initialization {
       nwc: nwc,
       lnurl: lnurl,
     );
+
+    blossomUserServerList = BlossomUserServerList(requests);
+
+    blossom = Blossom(
+      blossomImpl: blossomRepository,
+      signer: _ndkConfig.eventSigner,
+      userServerList: blossomUserServerList,
+    );
+
+    files = Files(blossom);
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);

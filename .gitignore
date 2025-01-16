@@ -30,7 +30,7 @@ migrate_working_dir/
 build/
 /coverage/*
 /lcov_badge_generator
-/.flutter-plugins
-/.flutter-plugins-dependencies
+.flutter-plugins
+.flutter-plugins-dependencies
 /packages/ndk/coverage/*
 /packages/ndk/coverage.lcov

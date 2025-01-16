@@ -37,3 +37,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   mockito: ^5.0.17
   test: any
+  # shelf used for blossom mock server
+  shelf: ^1.4.2
+  shelf_router: ^1.1.4
+  
