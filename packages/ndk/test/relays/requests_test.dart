@@ -61,6 +61,12 @@ void main() async {
 
       await expectLater(query.stream, emitsInAnyOrder(key1TextNotes.values));
 
+      // await for (final event in query.stream) {
+      //   print(event);
+      // }
+
+      await ndk.destroy();
+      // expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
       await relay1.stopServer();
     });
   });

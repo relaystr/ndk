@@ -1,3 +1,6 @@
+## 0.2.5
+ - fix async of send auth challenge after signing
+
 ## 0.2.4
  - fix wrongly timeouts being triggered
  - fix using same relays from zap request for zap receipts 

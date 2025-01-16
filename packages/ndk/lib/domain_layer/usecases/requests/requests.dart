@@ -222,6 +222,9 @@ class Requests {
     state.stream.doOnDone(() {
       _globalState.inFlightRequests.remove(state.id);
     });
+    state.stream.doOnError((error, stacktrace) {
+      _globalState.inFlightRequests.remove(state.id);
+    });
 
     /// avoids sending events to response stream before a listener could be attached
     Future<void> asyncStuff() async {
