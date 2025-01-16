@@ -159,7 +159,8 @@ class Requests {
       return;
     }
 
-    state.close();
+    await state.close();
+    _globalState.inFlightRequests.remove(subId);
   }
 
   /// Close all subscriptions
