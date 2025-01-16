@@ -14,6 +14,7 @@ final ndk = Ndk(
   NdkConfig(
     eventVerifier: RustEventVerifier(),
     cache: MemCacheManager(),
+    logLevel: Logger.logLevels.trace
   ),
 );
 
