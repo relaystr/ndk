@@ -381,8 +381,9 @@ class RelayManager<T> {
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);
-        signer!.sign(auth);
-        send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
+        signer!.sign(auth).then((e) {
+          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
+        });
       } else {
         Logger.log
             .w("Received an AUTH challenge but don't have a signer configured");
