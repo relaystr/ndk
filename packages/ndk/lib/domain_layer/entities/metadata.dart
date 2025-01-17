@@ -43,6 +43,8 @@ class Metadata {
   /// refreshed timestamp
   int? refreshedTimestamp;
 
+  List<String> sources = [];
+
   /// basic metadata nostr
   Metadata(
       {this.pubKey = "",
@@ -117,6 +119,7 @@ class Metadata {
     }
     metadata.pubKey = event.pubKey;
     metadata.updatedAt = event.createdAt;
+    metadata.sources = event.sources;
     return metadata;
   }
 

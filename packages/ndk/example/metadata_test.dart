@@ -25,7 +25,9 @@ void main() async {
 
     // read entity
     print("METADATA:");
-    print(response?.name ?? "no name");
+    print("name: ${response?.name ?? 'no name'}");
+    print("lud16: ${response?.lud16 ?? 'no lud16'}");
+    print("sources: ${response?.sources ?? 'no sources'}");
 
     expect(response, isNotNull, reason: 'response is Null');
     expect(response!.nip05, isNotEmpty, reason: 'nip05 is empty');
