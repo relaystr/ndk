@@ -6,7 +6,7 @@ icon: arrow-down-left
 
 ## Usage Example
 
-:::code source="../../../ndk/packages/ndk/example/basic_test.dart" language="dart" range="23-46" :::
+:::code source="../../packages/ndk/example/basic_test.dart" language="dart" range="23-46" :::
 
 ## When to use
 
