@@ -1,0 +1,3 @@
+---
+icon: arrow-up-right
+---
