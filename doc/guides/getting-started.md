@@ -1,7 +1,7 @@
 ---
 
 icon: rocket
-
+level: 100
 ---
 # Getting started
 
