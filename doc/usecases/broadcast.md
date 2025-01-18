@@ -4,7 +4,7 @@ icon: arrow-up-right
 
 [!badge variant="primary" text="low level"]
 
-## Usage Example
+## Example
 
 ```dart
   final myBroadcast = ndk.broadcast.broadcast(

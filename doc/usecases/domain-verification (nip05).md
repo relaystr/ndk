@@ -4,6 +4,7 @@ icon: verified
 
 [!badge variant="primary" text="high level"]
 
+## Example
 ```dart
 final result = await ndk.nip05.check(
   nip05: "username@domain.example",
