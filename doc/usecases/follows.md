@@ -11,6 +11,6 @@ icon: people
 
 Gives you the list of contacts for a given pubKey.
 
-Use ´broadcastSetContactList()´ to set the list initally (e.g. on signup) \
-´broadcastAddContact()´ to add a contact to the list \
-´broadcastRemoveContact()´ to remove a contact from the list
+Use `broadcastSetContactList()` to set the list initally (e.g. on signup) \
+`broadcastAddContact()` to add a contact to the list \
+`broadcastRemoveContact()` to remove a contact from the list
