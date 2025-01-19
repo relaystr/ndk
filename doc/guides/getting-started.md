@@ -1,8 +1,8 @@
 ---
-
 icon: rocket
 level: 100
 ---
+
 # Getting started
 
 ## Prerequisites
@@ -66,8 +66,6 @@ import 'package:ndk_amber/ndk_amber.dart';
 
 ## Usage
 
-> **more [examples 🔗](https://pub.dev/packages/ndk/example)**
-
 ```dart
 import 'package:ndk/ndk.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
@@ -80,7 +78,7 @@ final ndk = Ndk(
   ),
 );
 
-// query
+// usecase - query
 final response = ndk.requests.query(
   filters: [
     Filter(
