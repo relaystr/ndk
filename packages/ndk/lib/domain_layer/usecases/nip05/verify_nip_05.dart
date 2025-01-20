@@ -37,7 +37,7 @@ class VerifyNip05 {
     if (databaseResult != null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       int lastCheck = databaseResult.networkFetchTime ?? 0;
-      if (now - lastCheck < NIP_05_VALID_DURATION) {
+      if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
         return databaseResult;
       }
     }
