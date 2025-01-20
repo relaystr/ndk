@@ -16,8 +16,8 @@ void main() {
   late Files client;
 
   setUp(() async {
-    server = MockBlossomServer(port: 3010);
-    server2 = MockBlossomServer(port: 3011);
+    server = MockBlossomServer(port: 3008);
+    server2 = MockBlossomServer(port: 3009);
     await server.start();
     await server2.start();
 
