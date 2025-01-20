@@ -93,6 +93,11 @@ class Nip01Event {
     };
   }
 
+  /// Returns the Event object as a base64-encoded JSON string
+  String toBase64() {
+    return base64Encode(utf8.encode(json.encode(toJson())));
+  }
+
   /// sign the event with given privateKey
   /// [WARN] only for testing! Use [EventSigner] to sign events in production
   void sign(String privateKey) {

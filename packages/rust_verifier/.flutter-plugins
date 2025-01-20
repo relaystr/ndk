@@ -1,8 +1,0 @@
-# This is a generated file; do not edit or check into version control.
-integration_test=/usr/bin/flutter/packages/integration_test/
-path_provider=/home/fmar/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
-path_provider_android=/home/fmar/.pub-cache/hosted/pub.dev/path_provider_android-2.2.12/
-path_provider_foundation=/home/fmar/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.0/
-path_provider_linux=/home/fmar/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
-path_provider_windows=/home/fmar/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
-rust_lib_ndk=/home/fmar/workspace/ndk/packages/rust_verifier/rust_builder/
