@@ -1,6 +1,6 @@
 ---
 icon: rocket
-level: 100
+order: 100
 ---
 
 # Getting started
@@ -66,6 +66,10 @@ import 'package:ndk_amber/ndk_amber.dart';
 
 ## Usage
 
+!!!
+We strongly recommend using `RustEventVerifier()` for client applications. It uses a separate thread for signature verification and is therefore more performant.
+!!!
+
 ```dart
 import 'package:ndk/ndk.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
@@ -95,5 +99,5 @@ await for (final event in response.stream) {
 }
 ```
 
-> We strongly recommend using `RustEventVerifier()` for client applications. It uses a separate thread for signature verification and is therefore more performant.
-> $~~~~~~~~~~~$
+
+

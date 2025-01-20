@@ -1,3 +1,8 @@
+---
+icon: info
+order: 0
+---
+
 ## how to keep the ndk obj global
 
 If you have a relatively simple app you can initialize ndk in your main method and pass down ndk on the widget tree.\
