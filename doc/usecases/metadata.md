@@ -11,6 +11,6 @@ icon: tag
 ## How to use
 
 Gives you the metadata for a given pubkey. \
-Uses caching so repeaded calls are ok.
+Uses caching, so repeated calls are ok.
 
 Use `broadcastMetadata()` to update or set metadata.

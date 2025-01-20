@@ -12,8 +12,8 @@ icon: file-zip
 
 ## How to use
 
-Files uses blossum under the hood to get, upload and delete files. \
-The default user server list, specified by kind `10063` is used for upload and delete 
+Files uses blossom under the hood to get, upload and delete files. \
+The default user server list, specified by kind `10063` is used for upload and delete
 
 If you need more granular control check out:
 [!ref](/usecases/blossom.md)

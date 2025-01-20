@@ -10,7 +10,7 @@ icon: file-zip
 
 ## When to use
 
-For a simpler more genric api check out
+For a simpler more generic api check out
 [!ref](/usecases/files.md)
 
 If no servers are specified the default user server list (kind `10063`) is used for upload and delete.

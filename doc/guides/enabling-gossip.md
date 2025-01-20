@@ -3,7 +3,7 @@ icon: broadcast
 order: 99
 ---
 
-The simplest way to enable inbox/outbox (gossip) is to use the `JIT` engine as it does everything automatically.
+The simplest way to enable inbox/outbox (gossip) is to use the `JIT` engine, as it does everything automatically.
 
 ```dart
   final ndkConfig = NdkConfig(

@@ -11,5 +11,5 @@ icon: list-ordered
 ## When to use
 
 User relay lists provides you with the relays for a given user. \
-It orients itself on nip65 but used also data from nip02 in case nip65 is not available. \
-Its used by inbox/outbox only use this if you are doing something custom that is not direcly handled by inbox/outbox.
+It orients itself on nip65 but also uses data from nip02 in case nip65 is not available. \
+It's used by inbox/outbox; only use this if you are doing something custom that is not directly handled by inbox/outbox.

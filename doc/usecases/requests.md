@@ -10,5 +10,5 @@ icon: arrow-down-left
 
 ## When to use
 
-Requests schould be used when no other usecase fits your needs. \
-Ther is `.query` and `.subscription` representing the nostr equivalent, `.subscription` schould only be used when absolutely necessary. Many relays limit the amout of simultanious subscriptions.
+Requests should be used when no other use case fits your needs. \
+There is `.query` and `.subscription` representing the nostr equivalent, `.subscription` should only be used when absolutely necessary. Many relays limit the amount of simultaneous subscriptions.
