@@ -14,10 +14,10 @@ class Files {
   /// upload a file to the server(s) \
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if no serverUrls (param or nostr) are found, throws an error
-  Future<List<BlobUploadResult>> upload(
-    NdkFile file,
+  Future<List<BlobUploadResult>> upload({
+    required NdkFile file,
     List<String>? serverUrls,
-  ) {
+  }) {
     return blossom.uploadBlob(
       data: file.data,
       serverUrls: serverUrls,
@@ -44,11 +44,11 @@ class Files {
   /// [serverUrls] and [pubkey] are used to download from blossom \
   /// if [serverUrls] is null, the userServerList is fetched from nostr (using the pubkey). \
   /// if both [serverUrls] and [pubkey] are null, throws an error.
-  Future<BlobResponse> download(
-    String url,
+  Future<BlobResponse> download({
+    required String url,
     List<String>? serverUrls,
     String? pubkey,
-  ) async {
+  }) async {
     // Regular expression to match SHA256 in URLs
     final sha256Match = sha256Regex.firstMatch(url);
 

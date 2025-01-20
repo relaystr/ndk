@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 class NdkFile {
   final Uint8List data;
-  final String sha256;
+  final String? sha256;
   final String? mimeType;
   final int? size;
 
@@ -10,6 +10,6 @@ class NdkFile {
     required this.data,
     this.mimeType,
     this.size,
-    required this.sha256,
+    this.sha256,
   });
 }
