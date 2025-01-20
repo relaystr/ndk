@@ -26,6 +26,6 @@ icon: arrow-up-right
 
 ## When to use
 
-Broadcast schould be used when your usecase has no broadcasting method. \
+Broadcast should be used when your use case has no broadcasting method. \
 Signing is done automatically, and you can specify a custom signer just for one broadcast. \
-By default the inbox/outbox model is used for broadcasting looking at the event data (e.g. if its a reply) you can also specify specific relays to broadcast to.
+By default, the inbox/outbox model is used for broadcasting looking at the event data (e.g. if it's a reply) you can also specify specific relays to broadcast to.

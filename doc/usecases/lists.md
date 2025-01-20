@@ -24,6 +24,6 @@ icon: list-unordered
 
 ## How to use
 
-We destinguish between public and private lists/sets. \
+We distinguish between public and private lists/sets. \
 The methods are prefixed with public or private. \
-Editing lists schould be done via the provided broadcast methods. 
+Editing lists should be done via the provided broadcast methods.
