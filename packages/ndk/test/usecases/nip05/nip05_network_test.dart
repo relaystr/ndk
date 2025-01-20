@@ -169,7 +169,7 @@ void main() {
       final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
       // Create a Nip05 object with an old updatedAt timestamp
       final oldTimestamp = (DateTime.now()
-              .subtract(Duration(seconds: NIP_05_VALID_DURATION - 1))
+              .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds - 1))
               .millisecondsSinceEpoch ~/
           1000);
 
@@ -207,7 +207,8 @@ void main() {
 
       // Create a Nip05 object with a recent updatedAt timestamp
       final recentTimestamp = (DateTime.now()
-              .subtract(Duration(seconds: NIP_05_VALID_DURATION + 200))
+              .subtract(
+                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 200))
               .millisecondsSinceEpoch ~/
           1000);
       final oldNip05 = Nip05(
@@ -237,7 +238,7 @@ void main() {
 
       // Create a Nip05 object with an updatedAt timestamp exactly equal to the duration
       final exactTimestamp = (DateTime.now()
-              .subtract(Duration(seconds: NIP_05_VALID_DURATION))
+              .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds))
               .millisecondsSinceEpoch ~/
           1000);
       final oldNip05 = Nip05(
