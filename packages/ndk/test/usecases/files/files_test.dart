@@ -16,8 +16,8 @@ void main() {
   late Files client;
 
   setUp(() async {
-    server = MockBlossomServer(port: 3008);
-    server2 = MockBlossomServer(port: 3009);
+    server = MockBlossomServer(port: 3010);
+    server2 = MockBlossomServer(port: 3011);
     await server.start();
     await server2.start();
 
@@ -47,18 +47,18 @@ void main() {
       // download
       final getResponse = client.download(
         url: 'http://localhost:3000/no_file',
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:3010'],
       );
       expect(getResponse, throwsA(isA<Exception>()));
     });
 
     test('Upload and retrieve file', () async {
-      final testData = Uint8List.fromList(utf8.encode('Hello, File'));
+      final testData = Uint8List.fromList(utf8.encode('Hello, File2'));
 
       // Upload
       final uploadResponse = await client.upload(
         file: NdkFile(data: testData, mimeType: 'text/plain'),
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:3010'],
       );
       expect(uploadResponse.first.success, true);
 
@@ -66,19 +66,20 @@ void main() {
 
       // download
       final getResponse = await client.download(
-        url: 'http://localhost:3000/$sha256',
-        serverUrls: ['http://localhost:3000'],
+        url: 'http://localhost:3010/$sha256',
+        serverUrls: ['http://localhost:3010'],
       );
-      expect(utf8.decode(getResponse.data), equals('Hello, File'));
+
+      expect(utf8.decode(getResponse.data), equals('Hello, File2'));
     });
 
     test('Upload and delete file', () async {
-      final testData = Uint8List.fromList(utf8.encode('Hello, File'));
+      final testData = Uint8List.fromList(utf8.encode('Hello, File2'));
 
       // Upload
       final uploadResponse = await client.upload(
         file: NdkFile(data: testData, mimeType: 'text/plain'),
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:3010'],
       );
       expect(uploadResponse.first.success, true);
 
@@ -86,15 +87,18 @@ void main() {
 
       final deleteResponse = await client.delete(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:3010', 'http://localhost:3011'],
       );
 
       expect(deleteResponse.first.success, true);
 
       // download
       final getResponse = client.download(
-        url: 'http://localhost:3000/$sha256',
-        serverUrls: ['http://localhost:3000'],
+        url: 'http://localhost:3010/$sha256',
+        serverUrls: [
+          'https://localhost:3011',
+          'http://localhost:3010',
+        ],
       );
       expect(getResponse, throwsA(isA<Exception>()));
     });
