@@ -1,6 +1,8 @@
 # NDK
 
-## Basic example
+## ➡️ [DOCUMENTATION 🔗](https://dart-nostr.com/guides/getting-started/)
+
+## Basic example - query
 
 This example uses a generic low level nostr request
 
@@ -41,5 +43,3 @@ await for (final event in response.stream) {
   print(event);
 }
 ```
-
-# [DOCUMENTATION 🔗](https://dart-nostr.com/)
