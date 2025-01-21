@@ -9,7 +9,7 @@ NDK (Nostr Development Kit) is a Dart library that enhances the Nostr developmen
 NDK supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.\
 Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.
 
-# Get started here ➡️ [pub.dev/packages/ndk](https://pub.dev/packages/ndk)
+# Get started here ➡️ [Documentation](https://dart-nostr.com/)
 
 ## Monorepo Packages
 
