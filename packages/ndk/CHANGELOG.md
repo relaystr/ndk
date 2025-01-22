@@ -1,24 +1,33 @@
+## 0.2.6
+
+- full blossom support
+- new docs
+
 ## 0.2.5
- - fix async of send auth challenge after signing
+
+- fix async of send auth challenge after signing
 
 ## 0.2.4
- - fix wrongly timeouts being triggered
- - fix using same relays from zap request for zap receipts 
+
+- fix wrongly timeouts being triggered
+- fix using same relays from zap request for zap receipts
 
 ## 0.2.2
- - fix passing ZapRequest to lnurl nostr param 
+
+- fix passing ZapRequest to lnurl nostr param
 
 ## 0.2.1
- - NIP-47 Nostr Wallet Connect
- - NIP-57 Zaps support
- - NIP-42 Authentication of clients to relays
- - NIP-44 Encrypted Payloads (Versioned)
- - Unification of RelayManager in JIT
- - Web_socket_client nostr transport implementation with backoff reconnects
- - Melos support, separated monorepos
- - Objectbox cache initial support of basic models
- - Isar cache support
- - many bugfixes and improvements in relay timeout handling
+
+- NIP-47 Nostr Wallet Connect
+- NIP-57 Zaps support
+- NIP-42 Authentication of clients to relays
+- NIP-44 Encrypted Payloads (Versioned)
+- Unification of RelayManager in JIT
+- Web_socket_client nostr transport implementation with backoff reconnects
+- Melos support, separated monorepos
+- Objectbox cache initial support of basic models
+- Isar cache support
+- many bugfixes and improvements in relay timeout handling
 
 ## 0.1.3
 
