@@ -6,9 +6,9 @@ icon: file-zip
 
 ## Example
 
-:::code source="../../packages/ndk/example/files/files_example_test.dart" language="dart" range="10-15" title="blossum url" :::
+:::code source="../../packages/ndk/example/files/files_example_test.dart" language="dart" range="10-15" title="blossom" :::
 
-:::code source="../../packages/ndk/example/files/files_example_test.dart" language="dart" range="23-27" title="non blossum url" :::
+:::code source="../../packages/ndk/example/files/files_example_test.dart" language="dart" range="23-27" title="non blossom url" :::
 
 ## How to use
 
