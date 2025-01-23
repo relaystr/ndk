@@ -30,10 +30,3 @@ final ndkProvider = Provider<Ndk>((ref) {
   return ndk;
 });
 ```
-
-## apps using ndk
-
-- [example app](https://github.com/relaystr/ndk/tree/master/packages/sample-app)
-- [yana](https://github.com/frnandu/yana)
-- [camelus](https://github.com/leo-lox/camelus)
-- [zapstore](https://github.com/zapstore)
