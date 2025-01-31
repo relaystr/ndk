@@ -50,8 +50,11 @@ class RelayJitBroadcastOutboxStrategy {
     );
 
     // list of relays without the failed ones
+
     final List<String> actualBroadcastList = writeRelaysUrls
-        .where((element) => !couldNotConnectRelays.contains(element))
+        .where((element) =>
+            !couldNotConnectRelays.contains(element) &&
+            connectedRelays.any((relay) => relay.url == element))
         .toList();
 
     final ClientMsg myClientMsg = ClientMsg(
@@ -60,7 +63,7 @@ class RelayJitBroadcastOutboxStrategy {
     );
 
     // broadcast event
-    for (var relayUrl in actualBroadcastList) {
+    for (final relayUrl in actualBroadcastList) {
       final relay =
           connectedRelays.firstWhere((element) => element.url == relayUrl);
 
