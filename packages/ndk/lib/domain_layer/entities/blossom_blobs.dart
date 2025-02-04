@@ -17,11 +17,12 @@ class BlobDescriptor {
 
   factory BlobDescriptor.fromJson(Map<String, dynamic> json) {
     return BlobDescriptor(
-        url: json['url'],
-        sha256: json['sha256'],
-        size: json['size'],
-        type: json['type'],
-        uploaded: DateTime.fromMillisecondsSinceEpoch(json['uploaded'] * 1000));
+      url: json['url'],
+      sha256: json['sha256'],
+      size: json['size'],
+      type: json['type'],
+      uploaded: DateTime.fromMillisecondsSinceEpoch(json['uploaded'] * 1000),
+    );
   }
 }
 

@@ -196,7 +196,11 @@ class Initialization {
       lnurl: lnurl,
     );
 
-    blossomUserServerList = BlossomUserServerList(requests);
+    blossomUserServerList = BlossomUserServerList(
+      requests: requests,
+      broadcast: broadcast,
+      signer: _ndkConfig.eventSigner,
+    );
 
     blossom = Blossom(
       blossomImpl: blossomRepository,
