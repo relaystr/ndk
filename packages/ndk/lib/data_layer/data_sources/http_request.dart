@@ -25,7 +25,7 @@ class HttpRequestDS {
 
   Future<http.Response> put({
     required Uri url,
-    required Uint8List body,
+    required Object body,
     required headers,
   }) async {
     http.Response response = await _client.put(

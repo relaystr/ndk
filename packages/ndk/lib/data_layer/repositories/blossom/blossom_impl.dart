@@ -189,15 +189,15 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }) async {
     final jsonMsg = {"url": fileUrl};
 
-    final Uint8List myBody =
-        Uint8List.fromList(utf8.encode(jsonEncode(jsonMsg)));
+    final String myBody = jsonEncode(jsonMsg);
     try {
-      // Mirror endpoint is POST /mirror/<sha256>
-      final response = await client.post(
-        url: Uri.parse('$serverUrl/mirror/$sha256'),
+      // Mirror endpoint is POST /mirror/
+      final response = await client.put(
+        url: Uri.parse('$serverUrl/mirror'),
         body: myBody,
         headers: {
           'Authorization': "Nostr ${authorization.toBase64()}",
+          'Content-Type': 'application/json',
         },
       );
 
@@ -205,7 +205,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
         return BlobUploadResult(
           serverUrl: serverUrl,
           success: false,
-          error: 'HTTP ${response.statusCode}',
+          error: 'HTTP ${response.statusCode}, ${response.body}',
         );
       }
 

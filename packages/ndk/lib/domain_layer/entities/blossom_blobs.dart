@@ -3,7 +3,7 @@ import 'dart:typed_data';
 class BlobDescriptor {
   final String url;
   final String sha256;
-  final int size;
+  final int? size;
   final String? type;
   final DateTime uploaded;
 
@@ -17,11 +17,13 @@ class BlobDescriptor {
 
   factory BlobDescriptor.fromJson(Map<String, dynamic> json) {
     return BlobDescriptor(
-      url: json['url'],
-      sha256: json['sha256'],
+      url: json['url'] ?? '',
+      sha256: json['sha256'] ?? '',
       size: json['size'],
       type: json['type'],
-      uploaded: DateTime.fromMillisecondsSinceEpoch(json['uploaded'] * 1000),
+      uploaded: json['uploaded'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(json['uploaded'] * 1000)
+          : DateTime.now(),
     );
   }
 }
