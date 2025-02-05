@@ -191,7 +191,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     final String myBody = jsonEncode(jsonMsg);
     try {
-      // Mirror endpoint is POST /mirror/
+      // Mirror endpoint is PUT /mirror/
       final response = await client.put(
         url: Uri.parse('$serverUrl/mirror'),
         body: myBody,
