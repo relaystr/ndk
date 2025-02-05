@@ -216,7 +216,7 @@ void main() {
       ]);
 
       expect(utf8.decode(server2.data), equals(myData));
-    }, timeout: Timeout(Duration(seconds: 60)));
+    });
 
     test('Upload to first successful server only - allSimultaneous', () async {
       final myData = "strategy test allSimultaneous";
@@ -254,7 +254,7 @@ void main() {
       ]);
 
       expect(utf8.decode(server2.data), equals(myData));
-    }, timeout: Timeout(Duration(seconds: 60)));
+    });
   });
 
   group("stream blobs", () {
