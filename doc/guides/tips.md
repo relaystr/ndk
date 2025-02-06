@@ -60,7 +60,7 @@ myquery.stream
     .bufferTime(const Duration(milliseconds: 500))
     // if no events are received in 500ms, an empty list is emitted => filter out
     .where((events) => events.isNotEmpty)
-    .listen((events) {
+    .listen((events) { // List<Nip01Event>
     // update UI
     print(events.toString());
 });
