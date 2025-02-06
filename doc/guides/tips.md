@@ -33,7 +33,7 @@ final ndkProvider = Provider<Ndk>((ref) {
 
 ## avoid layout shifts
 
-Sometimes, it can make sense to buffer the response from a query and only update the UI periodically.
+Sometimes, it makes sense to buffer the response from a query and only update the UI periodically.
 
 The package used to achieve this is [rxdart](https://pub.dev/packages/rxdart).
 
@@ -60,7 +60,7 @@ myquery.stream
     .bufferTime(const Duration(milliseconds: 500))
     // if no events are received in 500ms, an empty list is emitted => filter out
     .where((events) => events.isNotEmpty)
-    .listen((events) {
+    .listen((events) { // List<Nip01Event>
     // update UI
     print(events.toString());
 });
