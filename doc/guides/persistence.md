@@ -11,7 +11,7 @@ Available databases:
 - [`DbObjectBox`](https://pub.dev/packages/ndk_objectbox)
 - [`IsarCacheManager`](https://pub.dev/packages/ndk_isar)
 
-If you want your own database you need to implement the `CacheManager` interface. Contributions for more database implementations are welcome!
+If you want your own database, you need to implement the `CacheManager` interface. Contributions for more database implementations are welcome!
 
 Its recommended to use the database only for ndk and spin up a secondary db for your own app data.
 

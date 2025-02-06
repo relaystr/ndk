@@ -33,9 +33,9 @@ final ndkProvider = Provider<Ndk>((ref) {
 
 ## avoid layout shifts
 
-Sometimes it can make sense to buffer the response from a query and only update the UI periodically.
+Sometimes, it can make sense to buffer the response from a query and only update the UI periodically.
 
-The package used to achive this is [rxdart](https://pub.dev/packages/rxdart).
+The package used to achieve this is [rxdart](https://pub.dev/packages/rxdart).
 
 ```dart
 import 'package:rxdart/rxdart.dart';
