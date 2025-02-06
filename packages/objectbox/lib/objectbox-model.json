@@ -231,7 +231,7 @@
     },
     {
       "id": "5:1189162834702422075",
-      "lastPropertyId": "5:4248118904091022656",
+      "lastPropertyId": "6:5240456446636403236",
       "name": "DbNip05",
       "properties": [
         {
@@ -256,15 +256,49 @@
           "type": 1
         },
         {
-          "id": "5:4248118904091022656",
-          "name": "updatedAt",
+          "id": "6:5240456446636403236",
+          "name": "networkFetchTime",
           "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:263734506821907740",
+      "lastPropertyId": "5:745081192237571667",
+      "name": "DbUserRelayList",
+      "properties": [
+        {
+          "id": "1:1592738392109903014",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4136737139372327801",
+          "name": "pubKey",
+          "type": 9
+        },
+        {
+          "id": "3:3907673358109208090",
+          "name": "createdAt",
+          "type": 6
+        },
+        {
+          "id": "4:6745786677378578982",
+          "name": "refreshedTimestamp",
+          "type": 6
+        },
+        {
+          "id": "5:745081192237571667",
+          "name": "relaysJson",
+          "type": 9
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "5:1189162834702422075",
+  "lastEntityId": "6:263734506821907740",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
@@ -272,7 +306,9 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    4248118904091022656
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

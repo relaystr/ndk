@@ -9,10 +9,11 @@ import 'db_init_object_box.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
+import 'schema/db_user_relay_list.dart';
 
 class DbObjectBox implements CacheManager {
   final Completer _initCompleter = Completer();
-  Future get _dbRdy => _initCompleter.future;
+  Future get dbRdy => _initCompleter.future;
   late ObjectBoxInit _objectBox;
 
   DbObjectBox() {
@@ -27,7 +28,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<ContactList?> loadContactList(String pubKey) async {
-    await _dbRdy;
+    await dbRdy;
     final contactListBox = _objectBox.store.box<DbContactList>();
     final existingContact = contactListBox
         .query(DbContactList_.pubKey.equals(pubKey))
@@ -42,7 +43,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<Nip01Event?> loadEvent(String id) async {
-    await _dbRdy;
+    await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
     final existingEvent =
         eventBox.query(DbNip01Event_.nostrId.equals(id)).build().findFirst();
@@ -60,7 +61,7 @@ class DbObjectBox implements CacheManager {
     int? since,
     int? until,
   }) async {
-    await _dbRdy;
+    await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
 
     var query = kinds != null && kinds.isNotEmpty
@@ -94,7 +95,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<Metadata?> loadMetadata(String pubKey) async {
-    await _dbRdy;
+    await dbRdy;
     final metadataBox = _objectBox.store.box<DbMetadata>();
     final existingMetadata = metadataBox
         .query(DbMetadata_.pubKey.equals(pubKey))
@@ -109,7 +110,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
-    await _dbRdy;
+    await dbRdy;
     final metadataBox = _objectBox.store.box<DbMetadata>();
     final existingMetadatas = metadataBox
         .query(DbMetadata_.pubKey.oneOf(pubKeys))
@@ -121,21 +122,21 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> removeAllContactLists() async {
-    await _dbRdy;
+    await dbRdy;
     final contactListBox = _objectBox.store.box<DbContactList>();
     contactListBox.removeAll();
   }
 
   @override
   Future<void> removeAllEvents() async {
-    await _dbRdy;
+    await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
     eventBox.removeAll();
   }
 
   @override
   Future<void> removeAllEventsByPubKey(String pubKey) async {
-    await _dbRdy;
+    await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
     final events =
         eventBox.query(DbNip01Event_.pubKey.equals(pubKey)).build().find();
@@ -144,14 +145,14 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> removeAllMetadatas() async {
-    await _dbRdy;
+    await dbRdy;
     final metadataBox = _objectBox.store.box<DbMetadata>();
     metadataBox.removeAll();
   }
 
   @override
   Future<void> saveContactList(ContactList contactList) async {
-    await _dbRdy;
+    await dbRdy;
     final contactListBox = _objectBox.store.box<DbContactList>();
     final existingContact = contactListBox
         .query(DbContactList_.pubKey.equals(contactList.pubKey))
@@ -166,7 +167,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveContactLists(List<ContactList> contactLists) async {
-    await _dbRdy;
+    await dbRdy;
     final contactListBox = _objectBox.store.box<DbContactList>();
     contactListBox
         .putMany(contactLists.map((cl) => DbContactList.fromNdk(cl)).toList());
@@ -174,7 +175,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveEvent(Nip01Event event) async {
-    await _dbRdy;
+    await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
     final existingEvent = eventBox
         .query(DbNip01Event_.nostrId.equals(event.id))
@@ -188,14 +189,14 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveEvents(List<Nip01Event> events) async {
-    await _dbRdy;
+    await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
     eventBox.putMany(events.map((e) => DbNip01Event.fromNdk(e)).toList());
   }
 
   @override
   Future<void> saveMetadata(Metadata metadata) async {
-    await _dbRdy;
+    await dbRdy;
     final metadataBox = _objectBox.store.box<DbMetadata>();
     final existingMetadatas = metadataBox
         .query(DbMetadata_.pubKey.equals(metadata.pubKey))
@@ -214,7 +215,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveMetadatas(List<Metadata> metadatas) async {
-    await _dbRdy;
+    await dbRdy;
     for (final metadata in metadatas) {
       await saveMetadata(metadata);
     }
@@ -222,11 +223,11 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<Nip05?> loadNip05(String pubKey) async {
-    await _dbRdy;
+    await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
     final existing = box
         .query(DbNip05_.pubKey.equals(pubKey))
-        .order(DbNip05_.updatedAt, flags: Order.descending)
+        .order(DbNip05_.networkFetchTime, flags: Order.descending)
         .build()
         .findFirst();
     if (existing == null) {
@@ -237,11 +238,11 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
-    await _dbRdy;
+    await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
     final existing = box
         .query(DbNip05_.pubKey.oneOf(pubKeys))
-        .order(DbNip05_.updatedAt, flags: Order.descending)
+        .order(DbNip05_.networkFetchTime, flags: Order.descending)
         .build()
         .find();
     return existing.map((dbMetadata) => dbMetadata.toNdk()).toList();
@@ -254,7 +255,17 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<UserRelayList?> loadUserRelayList(String pubKey) async {
-    return null;
+    await dbRdy;
+    final userRelayListBox = _objectBox.store.box<DbUserRelayList>();
+    final existingUserRelayList = userRelayListBox
+        .query(DbUserRelayList_.pubKey.equals(pubKey))
+        .order(DbUserRelayList_.createdAt, flags: Order.descending)
+        .build()
+        .findFirst();
+    if (existingUserRelayList == null) {
+      return null;
+    }
+    return existingUserRelayList.toNdk();
   }
 
   @override
@@ -304,11 +315,11 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveNip05(Nip05 nip05) async {
-    await _dbRdy;
+    await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
     final existing = box
         .query(DbNip05_.pubKey.equals(nip05.pubKey))
-        .order(DbNip05_.updatedAt, flags: Order.descending)
+        .order(DbNip05_.networkFetchTime, flags: Order.descending)
         .build()
         .find();
     if (existing.length > 1) {
@@ -323,7 +334,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveNip05s(List<Nip05> nip05s) async {
-    await _dbRdy;
+    await dbRdy;
     for (final nip05 in nip05s) {
       await saveNip05(nip05);
     }
@@ -336,12 +347,26 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
-    // No operation for unimplemented method
+    await dbRdy;
+    final userRelayListBox = _objectBox.store.box<DbUserRelayList>();
+    final existingUserRelayList = userRelayListBox
+        .query(DbUserRelayList_.pubKey.equals(userRelayList.pubKey))
+        .order(DbUserRelayList_.createdAt, flags: Order.descending)
+        .build()
+        .findFirst();
+    if (existingUserRelayList != null) {
+      userRelayListBox.remove(existingUserRelayList.dbId);
+    }
+    userRelayListBox.put(DbUserRelayList.fromNdk(userRelayList));
   }
 
   @override
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
-    // No operation for unimplemented method
+    final wait = <Future>[];
+    for (final userRelayList in userRelayLists) {
+      wait.add(saveUserRelayList(userRelayList));
+    }
+    await Future.wait(wait);
   }
 
   @override
