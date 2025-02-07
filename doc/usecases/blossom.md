@@ -32,27 +32,31 @@ Download the blob and use fallback if the blob is not found or the server is off
 
 :::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="87-95" title="" :::
 
+#### checkBlob
+
+:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="137-148" title="" :::
+
 #### getBlobStream
 
 Similar to `getBlob`, it streams the data, which is helpful for video files.
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="137-146" title="" :::
+:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="190-199" title="" :::
 
 #### listBlobs
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="193-199" title="" :::
+:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="242-252" title="" :::
 
 #### deleteBlob
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="236-243" title="" :::
+:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="289-296" title="" :::
 
 #### directDownload
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="276-279" title="" :::
+:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="329-332" title="" :::
 
 #### report
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="283-297" title="" :::
+:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="336-350" title="" :::
 
 ### methods - BlossomUserServerList
 
@@ -60,7 +64,7 @@ To get and set the user server list e.g. on settings page, you can use `BlossomU
 
 #### getUserServerList
 
-:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom_user_server_list.dart" language="dart" range="20-23" title="" :::
+:::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom_user_server_list.dart" language="dart" range="20-25" title="" :::
 
 #### publishUserServerList
 
