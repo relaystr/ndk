@@ -51,6 +51,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
         serverUrls: [
           'https://blossom.f7z.io',
           "https://nostr.download",
+          "https://cdn.hzrd149.com"
         ],
         useAuth: false,
       );
@@ -82,6 +83,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
         serverUrls: [
           'https://blossom.f7z.io',
           "https://nostr.download",
+          "https://cdn.hzrd149.com"
         ],
         useAuth: false,
       );
