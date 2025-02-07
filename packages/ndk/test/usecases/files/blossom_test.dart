@@ -68,6 +68,36 @@ void main() {
       expect(utf8.decode(getResponse.data), equals('Hello, Blossom!'));
     });
 
+    test('Upload and check blob', () async {
+      final testData = Uint8List.fromList(utf8.encode('Hello, Blossom!'));
+
+      // Upload blob
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Retrieve blob
+      final getResponse = client.checkBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      /// expect not to throw
+
+      expect(getResponse, completion('http://localhost:3000/$sha256'));
+
+      final getResponseVoid = client.checkBlob(
+        sha256: "nonexistent_sha256",
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      expect(getResponseVoid, throwsException);
+    });
+
     test('Upload and retrieve blob - one out of three', () async {
       final testData = Uint8List.fromList(utf8.encode('Hello World!'));
 
