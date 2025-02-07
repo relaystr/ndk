@@ -1,49 +1,54 @@
-import 'package:ndk/entities.dart';
 import 'package:objectbox/objectbox.dart';
+import 'package:ndk/entities.dart' as ndk_entities;
 
 @Entity()
 class DbNip05 {
-  DbNip05({
-    required this.pubKey,
-    required this.nip05,
-    required this.valid,
-    required this.networkFetchTime,
-    int createdAt = 0,
-  });
-
   @Id()
   int dbId = 0;
 
   @Property()
-  String pubKey;
+  late String pubKey;
 
   @Property()
-  String nip05;
+  late String nip05;
 
   @Property()
-  bool valid;
+  bool valid = false;
 
   @Property()
   int? networkFetchTime;
 
-  Nip05 toNdk() {
-    final ndkM = Nip05(
+  @Property()
+  List<String> relays = [];
+
+  DbNip05({
+    required this.pubKey,
+    required this.nip05,
+    this.valid = false,
+    this.networkFetchTime,
+    this.relays = const [],
+  });
+
+  ndk_entities.Nip05 toNdk() {
+    final ndkNip05 = ndk_entities.Nip05(
       pubKey: pubKey,
       nip05: nip05,
       valid: valid,
       networkFetchTime: networkFetchTime,
+      relays: relays,
     );
 
-    return ndkM;
+    return ndkNip05;
   }
 
-  factory DbNip05.fromNdk(Nip05 ndkM) {
-    final dbM = DbNip05(
-      pubKey: ndkM.pubKey,
-      nip05: ndkM.nip05,
-      valid: ndkM.valid,
-      networkFetchTime: ndkM.networkFetchTime,
+  factory DbNip05.fromNdk(ndk_entities.Nip05 ndkNip05) {
+    final dbNip05 = DbNip05(
+      pubKey: ndkNip05.pubKey,
+      nip05: ndkNip05.nip05,
+      valid: ndkNip05.valid,
+      networkFetchTime: ndkNip05.networkFetchTime,
+      relays: ndkNip05.relays ?? [],
     );
-    return dbM;
+    return dbNip05;
   }
 }
