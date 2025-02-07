@@ -22,6 +22,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     String? contentType,
     required List<String> serverUrls,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+    bool mediaOptimisation = false,
   }) async {
     switch (strategy) {
       case UploadStrategy.mirrorAfterSuccess:
@@ -53,6 +54,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required Nip01Event authorization,
     required List<String> serverUrls,
     String? contentType,
+    bool mediaOptimisation = false,
   }) async {
     final results = <BlobUploadResult>[];
     BlobUploadResult? successfulUpload;
@@ -64,6 +66,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
         data: data,
         contentType: contentType,
         authorization: authorization,
+        mediaOptimisation: mediaOptimisation,
       );
       results.add(result);
 
@@ -101,12 +104,14 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required List<String> serverUrls,
     required Nip01Event authorization,
     String? contentType,
+    bool mediaOptimisation = false,
   }) async {
     final results = await Future.wait(serverUrls.map((url) => _uploadToServer(
           serverUrl: url,
           data: data,
           contentType: contentType,
           authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
         )));
     return results;
   }
@@ -116,6 +121,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required List<String> serverUrls,
     required Nip01Event authorization,
     String? contentType,
+    bool mediaOptimisation = false,
   }) async {
     for (final url in serverUrls) {
       final result = await _uploadToServer(
@@ -123,6 +129,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
         data: data,
         contentType: contentType,
         authorization: authorization,
+        mediaOptimisation: mediaOptimisation,
       );
       if (result.success) {
         return [result];
@@ -135,20 +142,26 @@ class BlossomRepositoryImpl implements BlossomRepository {
       serverUrls: serverUrls,
       contentType: contentType,
       authorization: authorization,
+      mediaOptimisation: mediaOptimisation,
     );
     return results;
   }
 
-  /// Upload a file to a server
+  /// Upload a file to a server \
+  /// If [mediaOptimisation] is true, the server will optimise the file for media streaming using the /media endpoint [BUD-05]
   Future<BlobUploadResult> _uploadToServer({
     required String serverUrl,
     required Uint8List data,
     Nip01Event? authorization,
     String? contentType,
+    bool mediaOptimisation = false,
   }) async {
+    final endpointUrl =
+        mediaOptimisation ? '$serverUrl/media' : '$serverUrl/upload';
+
     try {
       final response = await client.put(
-        url: Uri.parse('$serverUrl/upload'),
+        url: Uri.parse(endpointUrl),
         body: data,
         headers: {
           if (contentType != null) 'Content-Type': contentType,
@@ -437,5 +450,23 @@ class BlossomRepositoryImpl implements BlossomRepository {
       contentLength: int.tryParse(response.headers['content-length'] ?? ''),
       contentRange: response.headers['content-range'] ?? '',
     );
+  }
+
+  @override
+  Future<int> report({
+    required String serverUrl,
+    required String sha256,
+    required Nip01Event reportEvent,
+  }) async {
+    final String myBody = jsonEncode(reportEvent.toJson());
+
+    final response = await client.put(
+      url: Uri.parse('$serverUrl/report/'),
+      body: myBody, //reportEvent.toBase64(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+    return response.statusCode;
   }
 }

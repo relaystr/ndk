@@ -35,12 +35,16 @@ class Blossom {
 
   /// upload a blob to the server
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
-  /// if the pukey has no UserServerList (kind: 10063), throws an error
+  /// if the pukey has no UserServerList (kind: 10063), throws an error \
+  /// the current signer is used to sign the request \
+  /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
+  /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
   Future<List<BlobUploadResult>> uploadBlob({
     required Uint8List data,
     List<String>? serverUrls,
     String? contentType,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+    bool serverMediaOptimisation = false,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -76,10 +80,11 @@ class Blossom {
       authorization: myAuthorization,
       contentType: contentType,
       strategy: strategy,
+      mediaOptimisation: serverMediaOptimisation,
     );
   }
 
-  /// downloads a blob
+  /// downloads a blob using the sha256 with fallback stragegy \
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error
   Future<BlobResponse> getBlob({
@@ -129,6 +134,62 @@ class Blossom {
     );
   }
 
+  /// downloads a blob as a stream, useful for large files like videos \
+  /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// if the pukey has no UserServerList (kind: 10063), throws an error
+  Future<Stream<BlobResponse>> getBlobStream({
+    required String sha256,
+    bool useAuth = false,
+    List<String>? serverUrls,
+    String? pubkeyToFetchUserServerList,
+    int chunkSize = 1024 * 1024, // 1MB chunks,
+  }) async {
+    Nip01Event? myAuthorization;
+
+    if (useAuth) {
+      _checkSigner();
+
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      myAuthorization = Nip01Event(
+        content: "get",
+        pubKey: signer!.getPublicKey(),
+        kind: kBlossom,
+        createdAt: now,
+        tags: [
+          ["t", "get"],
+          ["x", sha256],
+          ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
+        ],
+      );
+
+      await signer!.sign(myAuthorization);
+    }
+
+    if (serverUrls == null) {
+      if (pubkeyToFetchUserServerList == null) {
+        throw "pubkeyToFetchUserServerList is null and serverUrls is null";
+      }
+
+      serverUrls ??= await userServerList
+          .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
+    }
+
+    if (serverUrls == null) {
+      throw "User has no server list";
+    }
+
+    return blossomImpl.getBlobStream(
+      sha256: sha256,
+      authorization: myAuthorization,
+      serverUrls: serverUrls,
+      chunkSize: chunkSize,
+    );
+  }
+
+  /// list the [pubkey] blobs \
+  /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// if the pukey has no UserServerList (kind: 10063), throws an error
+  ///
   Future<List<BlobDescriptor>> listBlobs({
     required String pubkey,
     List<String>? serverUrls,
@@ -172,6 +233,10 @@ class Blossom {
     );
   }
 
+  /// delete a blob
+  /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// if the pukey has no UserServerList (kind: 10063), throws an error \
+  /// the current signer is used to sign the request
   Future<List<BlobDeleteResult>> deleteBlob({
     required String sha256,
     List<String>? serverUrls,
@@ -213,5 +278,45 @@ class Blossom {
     required Uri url,
   }) {
     return blossomImpl.directDownload(url: url);
+  }
+
+  /// Reports a blob to the server
+  /// [sha256] is the hash of the blob
+  /// [eventId] is the event id where the blob was mentioned
+  /// [reportType] is the type of report, e.g. malware @see nip56
+  /// [reportMsg] is the message to send to the server
+  /// [serverUrl] server url to report to
+  ///
+  /// returns the http status code of the rcv server
+  Future<int> report({
+    required String sha256,
+    required String eventId,
+    required String reportType,
+    required String reportMsg,
+    required String serverUrl,
+  }) async {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    _checkSigner();
+
+    final Nip01Event reportEvent = Nip01Event(
+      content: reportMsg,
+      pubKey: signer!.getPublicKey(),
+      kind: 1984,
+      createdAt: now,
+      tags: [
+        ["x", sha256, reportType.toLowerCase()],
+        ["e", eventId, reportType.toLowerCase()],
+        ["server", serverUrl],
+      ],
+    );
+
+    await signer!.sign(reportEvent);
+
+    return blossomImpl.report(
+      sha256: sha256,
+      reportEvent: reportEvent,
+      serverUrl: serverUrl,
+    );
   }
 }

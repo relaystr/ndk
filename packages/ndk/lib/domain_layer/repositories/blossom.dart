@@ -23,6 +23,7 @@ abstract class BlossomRepository {
     String? contentType,
     required List<String> serverUrls,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+    bool mediaOptimisation = false,
   });
 
   /// Gets a blob by trying servers sequentially until success
@@ -73,5 +74,16 @@ abstract class BlossomRepository {
     required String sha256,
     required List<String> serverUrls,
     required Nip01Event authorization,
+  });
+
+  /// Reports a blob to the server \
+  /// [sha256] is the hash of the blob \
+  /// [reportEvent] is the report event
+  ///
+  /// returns the http status code of the rcv server
+  Future<int> report({
+    required String sha256,
+    required Nip01Event reportEvent,
+    required String serverUrl,
   });
 }
