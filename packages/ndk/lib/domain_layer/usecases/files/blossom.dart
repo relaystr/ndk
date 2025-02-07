@@ -134,6 +134,59 @@ class Blossom {
     );
   }
 
+  /// checks if the blob exists on the server without downloading, useful to check before streaming a video via url \
+  /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// if the pukey has no UserServerList (kind: 10063), throws an error
+  ///
+  /// returns the url of one server that has the blob e.g. https://myserver.com/hash.pdf \
+  /// otherwise  throws an error
+  Future<String> checkBlob({
+    required String sha256,
+    bool useAuth = false,
+    List<String>? serverUrls,
+    String? pubkeyToFetchUserServerList,
+  }) async {
+    Nip01Event? myAuthorization;
+
+    if (useAuth) {
+      _checkSigner();
+
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      myAuthorization = Nip01Event(
+        content: "get",
+        pubKey: signer!.getPublicKey(),
+        kind: kBlossom,
+        createdAt: now,
+        tags: [
+          ["t", "get"],
+          ["x", sha256],
+          ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
+        ],
+      );
+
+      await signer!.sign(myAuthorization);
+    }
+
+    if (serverUrls == null) {
+      if (pubkeyToFetchUserServerList == null) {
+        throw "pubkeyToFetchUserServerList is null and serverUrls is null";
+      }
+
+      serverUrls ??= await userServerList
+          .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
+    }
+
+    if (serverUrls == null) {
+      throw "User has no server list";
+    }
+
+    return blossomImpl.checkBlob(
+      sha256: sha256,
+      authorization: myAuthorization,
+      serverUrls: serverUrls,
+    );
+  }
+
   /// downloads a blob as a stream, useful for large files like videos \
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error

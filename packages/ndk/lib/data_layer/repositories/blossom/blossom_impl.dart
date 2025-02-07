@@ -255,6 +255,10 @@ class BlossomRepositoryImpl implements BlossomRepository {
           headers['range'] = 'bytes=$start-${end ?? ''}';
         }
 
+        if (authorization != null) {
+          headers['Authorization'] = "Nostr ${authorization.toBase64()}";
+        }
+
         final response = await client.get(
           url: Uri.parse('$url/$sha256'),
           headers: headers,
@@ -278,6 +282,39 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     throw Exception(
         'Failed to get blob from any of the servers. Last error: $lastError');
+  }
+
+  @override
+  Future<String> checkBlob({
+    required String sha256,
+    required List<String> serverUrls,
+    Nip01Event? authorization,
+  }) async {
+    Exception? lastError;
+
+    final headers = <String, String>{};
+
+    if (authorization != null) {
+      headers['Authorization'] = "Nostr ${authorization.toBase64()}";
+    }
+
+    for (final url in serverUrls) {
+      try {
+        final response = await client.head(
+          url: Uri.parse('$url/$sha256'),
+        );
+
+        if (response.statusCode == 200) {
+          return '$url/$sha256';
+        }
+        lastError = Exception('HTTP ${response.statusCode}');
+      } catch (e) {
+        lastError = e is Exception ? e : Exception(e.toString());
+      }
+    }
+
+    throw Exception(
+        'Failed to check blob from any of the servers. Last error: $lastError');
   }
 
   /// first value is whether the server supports range requests \

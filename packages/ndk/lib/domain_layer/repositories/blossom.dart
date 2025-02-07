@@ -38,6 +38,16 @@ abstract class BlossomRepository {
     int? end,
   });
 
+  /// Checks if the blob exists on the server
+  /// If [authorization] is null, the server must be public
+  ///
+  /// returns one server that has the blob
+  Future<String> checkBlob({
+    required String sha256,
+    required List<String> serverUrls,
+    Nip01Event? authorization,
+  });
+
   /// Directly downloads a blob from the url, without blossom
   Future<BlobResponse> directDownload({
     required Uri url,
