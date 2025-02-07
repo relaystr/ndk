@@ -34,6 +34,10 @@ Download the blob and use fallback if the blob is not found or the server is off
 
 #### checkBlob
 
+!!!
+if you have a video player that uses a url you can use check to get a valid url first. Example can be found in NDK demo app
+!!!
+
 :::code source="../../packages/ndk/lib/domain_layer/usecases/files/blossom.dart" language="dart" range="137-148" title="" :::
 
 #### getBlobStream
