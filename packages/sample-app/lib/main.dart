@@ -1,5 +1,6 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/relays_page.dart';
@@ -21,6 +22,7 @@ final ndk = Ndk(
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
   try {
     final amber = Amberflutter();
     amberAvailable = await amber.isAppInstalled();
@@ -81,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const RelaysPage(),
             const NwcPage(),
             // const ZapsPage()
-            BlossomPage(ndk: ndk),
+            BlossomMediaPage(ndk: ndk),
           ],
         ),
       ),
