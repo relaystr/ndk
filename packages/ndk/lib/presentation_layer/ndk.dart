@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import '../data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
+import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/files.dart';
@@ -64,6 +65,9 @@ class Ndk {
   /// Use this to directly query or subscribe to notes from the Nostr network. \
   /// Available methods include query() and subscription()
   Requests get requests => _initialization.requests;
+
+  /// Accounts
+  Accounts get accounts => _initialization.accounts;
 
   /// Provides access to low-level Nostr broadcast/publish.
   ///

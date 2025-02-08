@@ -2,20 +2,23 @@ import '../../entities/broadcast_state.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
+import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 import 'blossom.dart';
 
 class BlossomUserServerList {
-  final Requests requests;
-  final Broadcast broadcast;
-  final EventSigner? signer;
+  final Requests _requests;
+  final Broadcast _broadcast;
+  final Accounts _accounts;
 
   BlossomUserServerList({
-    required this.requests,
-    required this.broadcast,
-    this.signer,
-  });
+    required Requests requests,
+    required Broadcast broadcast,
+    required Accounts accounts,
+  })  : _accounts = accounts,
+        _broadcast = broadcast,
+        _requests = requests;
 
   /// Get user server list \
   /// returns list of server urls \
@@ -23,7 +26,7 @@ class BlossomUserServerList {
   Future<List<String>?> getUserServerList({
     required List<String> pubkeys,
   }) async {
-    final rsp = requests.query(
+    final rsp = _requests.query(
       timeout: Duration(seconds: 5),
       filters: [
         Filter(
@@ -60,15 +63,15 @@ class BlossomUserServerList {
       throw "serverUrlsOrdered is empty";
     }
 
-    if (signer == null) {
-      throw "Signer is null";
+    if (_accounts.isNotLoggedIn) {
+      throw "Not logged in";
     }
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     final Nip01Event myServerList = Nip01Event(
       content: "",
-      pubKey: signer!.getPublicKey(),
+      pubKey: _accounts.getLoggedAccount()!.pubkey,
       kind: Blossom.kBlossomUserServerList,
       createdAt: now,
       tags: [
@@ -77,7 +80,7 @@ class BlossomUserServerList {
       ],
     );
 
-    final bResponse = broadcast.broadcast(nostrEvent: myServerList);
+    final bResponse = _broadcast.broadcast(nostrEvent: myServerList);
 
     return bResponse.broadcastDoneFuture;
   }

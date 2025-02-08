@@ -9,6 +9,7 @@ import '../../entities/nip_01_event.dart';
 import '../../entities/relay_set.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
+import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 
@@ -17,23 +18,27 @@ class Metadatas {
   final Requests _requests;
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
-  final EventSigner? _signer;
+  final Accounts _accounts;
 
   /// create a new instance of Metadatas
   Metadatas({
     required Requests requests,
     required CacheManager cacheManager,
     required Broadcast broadcast,
-    required EventSigner? signer,
+    required Accounts accounts,
   })  : _cacheManager = cacheManager,
         _requests = requests,
-        _signer = signer,
+        _accounts = accounts,
         _broadcast = broadcast;
 
   _checkSigner() {
-    if (_signer == null) {
-      throw "cannot sign without a signer";
+    if (!_accounts.canSign) {
+      throw "Not logged in";
     }
+  }
+
+  EventSigner get _signer {
+    return _accounts.getLoggedAccount()!.signer;
   }
 
   /// load metadata for a pubkey
@@ -127,7 +132,7 @@ class Metadatas {
     Nip01Event? loaded;
     await for (final event in _requests.query(filters: [
       Filter(
-          kinds: [Metadata.kKind], authors: [_signer!.getPublicKey()], limit: 1)
+          kinds: [Metadata.kKind], authors: [_signer.getPublicKey()], limit: 1)
     ]).stream) {
       if (loaded == null || loaded.createdAt < event.createdAt) {
         loaded = event;

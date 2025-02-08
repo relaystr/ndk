@@ -5,6 +5,7 @@ import '../../entities/broadcast_state.dart';
 import '../../entities/global_state.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
+import '../accounts/accounts.dart';
 import '../cache_read/cache_read.dart';
 import '../engines/network_engine.dart';
 
@@ -12,7 +13,7 @@ import '../engines/network_engine.dart';
 /// wraps the engines to inject singer
 class Broadcast {
   final NetworkEngine _engine;
-  final EventSigner? _signer;
+  final Accounts _accounts;
   final GlobalState _globalState;
 
   /// creates a new [Broadcast] instance
@@ -21,18 +22,18 @@ class Broadcast {
     required GlobalState globalState,
     required CacheRead cacheRead,
     required NetworkEngine networkEngine,
-    required EventSigner? signer,
-  })  : _signer = signer,
+    required Accounts accounts,
+  })  : _accounts = accounts,
         _engine = networkEngine,
         _globalState = globalState;
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
   EventSigner _checkSinger({EventSigner? customSigner}) {
-    if (_signer == null && customSigner == null) {
+    if (_accounts.isNotLoggedIn && customSigner == null) {
       throw "cannot broadcast without a signer!";
     }
-    return customSigner ?? _signer!;
+    return customSigner ?? _accounts.getLoggedAccount()!.signer;
   }
 
   /// low level nostr broadcast using inbox/outbox (gossip) \
