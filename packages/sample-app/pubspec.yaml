@@ -30,13 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  video_player: ^2.9.2
   media_kit: ^1.1.11
   media_kit_video: ^1.2.5
-  media_kit_libs_video: ^1.0.5 
+  media_kit_libs_video: ^1.0.5
 
- 
   ndk: 0.2.6
   ndk_amber: 0.2.0
   ndk_rust_verifier: 0.2.1
