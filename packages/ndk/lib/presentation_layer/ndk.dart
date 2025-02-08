@@ -5,6 +5,7 @@ import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/files/blossom.dart';
+import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
 import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/lists/lists.dart';
@@ -103,6 +104,12 @@ class Ndk {
   /// upload, download, delete, list files \
   /// low level usecase, recommended for advanced users
   Blossom get blossom => _initialization.blossom;
+
+  /// Blossom User Server list \
+  /// used to manage the list of blossom servers for a user
+  /// low level usecase, recommended for advanced users
+  BlossomUserServerList get blossomUserServerList =>
+      _initialization.blossomUserServerList;
 
   /// Nostr Wallet connect
   @experimental // needs more docs & tests

@@ -6,16 +6,18 @@ import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 import 'blossom.dart';
 
+/// Blossom User Server List used to manage the blossom servers of a user
 class BlossomUserServerList {
-  final Requests requests;
-  final Broadcast broadcast;
+  final Requests _requests;
+  final Broadcast _broadcast;
   final EventSigner? signer;
 
   BlossomUserServerList({
-    required this.requests,
-    required this.broadcast,
+    required Requests requests,
+    required Broadcast broadcast,
     this.signer,
-  });
+  })  : _requests = requests,
+        _broadcast = broadcast;
 
   /// Get user server list \
   /// returns list of server urls \
@@ -23,7 +25,7 @@ class BlossomUserServerList {
   Future<List<String>?> getUserServerList({
     required List<String> pubkeys,
   }) async {
-    final rsp = requests.query(
+    final rsp = _requests.query(
       timeout: Duration(seconds: 5),
       filters: [
         Filter(
@@ -77,7 +79,7 @@ class BlossomUserServerList {
       ],
     );
 
-    final bResponse = broadcast.broadcast(nostrEvent: myServerList);
+    final bResponse = _broadcast.broadcast(nostrEvent: myServerList);
 
     return bResponse.broadcastDoneFuture;
   }
