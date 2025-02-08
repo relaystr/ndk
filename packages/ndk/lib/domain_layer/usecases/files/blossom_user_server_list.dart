@@ -59,11 +59,11 @@ class BlossomUserServerList {
     required List<String> serverUrlsOrdered,
   }) async {
     if (serverUrlsOrdered.isEmpty) {
-      throw "serverUrlsOrdered is empty";
+      throw Exception("serverUrlsOrdered is empty");
     }
 
     if (signer == null) {
-      throw "Signer is null";
+      throw Exception("Signer is null");
     }
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;

@@ -30,7 +30,7 @@ class Blossom {
 
   _checkSigner() {
     if (signer == null) {
-      throw "Signer is null";
+      throw Exception("Signer is null");
     }
   }
 
@@ -72,7 +72,7 @@ class Blossom {
         .getUserServerList(pubkeys: [signer!.getPublicKey()]);
 
     if (serverUrls == null) {
-      throw "User has no server list";
+      throw Exception("User has no server list");
     }
 
     return _blossomImpl.uploadBlob(
@@ -117,7 +117,8 @@ class Blossom {
 
     if (serverUrls == null) {
       if (pubkeyToFetchUserServerList == null) {
-        throw "pubkeyToFetchUserServerList is null and serverUrls is null";
+        throw Exception(
+            "pubkeyToFetchUserServerList is null and serverUrls is null");
       }
 
       serverUrls ??= await _userServerList
@@ -125,7 +126,7 @@ class Blossom {
     }
 
     if (serverUrls == null) {
-      throw "User has no server list";
+      throw Exception("User has no server list");
     }
 
     return _blossomImpl.getBlob(
@@ -170,7 +171,8 @@ class Blossom {
 
     if (serverUrls == null) {
       if (pubkeyToFetchUserServerList == null) {
-        throw "pubkeyToFetchUserServerList is null and serverUrls is null";
+        throw Exception(
+            "pubkeyToFetchUserServerList is null and serverUrls is null");
       }
 
       serverUrls ??= await _userServerList
@@ -178,7 +180,7 @@ class Blossom {
     }
 
     if (serverUrls == null) {
-      throw "User has no server list";
+      throw Exception("User has no server list");
     }
 
     return _blossomImpl.checkBlob(
@@ -229,7 +231,7 @@ class Blossom {
     }
 
     if (serverUrls == null) {
-      throw "User has no server list";
+      throw Exception("User has no server list");
     }
 
     return _blossomImpl.getBlobStream(
@@ -275,7 +277,7 @@ class Blossom {
     serverUrls ??= await _userServerList.getUserServerList(pubkeys: [pubkey]);
 
     if (serverUrls == null) {
-      throw "User has no server list: $pubkey";
+      throw Exception("User has no server list: $pubkey");
     }
 
     return _blossomImpl.listBlobs(
@@ -318,7 +320,7 @@ class Blossom {
         .getUserServerList(pubkeys: [signer!.getPublicKey()]);
 
     if (serverUrls == null) {
-      throw "User has no server list";
+      throw Exception("User has no server list");
     }
     return _blossomImpl.deleteBlob(
       sha256: sha256,
