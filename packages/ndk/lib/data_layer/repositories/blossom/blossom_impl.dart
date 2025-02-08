@@ -498,7 +498,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
     final String myBody = jsonEncode(reportEvent.toJson());
 
     final response = await client.put(
-      url: Uri.parse('$serverUrl/report/'),
+      url: Uri.parse('$serverUrl/report'),
       body: myBody, //reportEvent.toBase64(),
       headers: {
         'Content-Type': 'application/json',

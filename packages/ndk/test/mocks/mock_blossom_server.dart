@@ -220,6 +220,21 @@ class MockBlossomServer {
       }
     });
 
+    router.put('/report', (Request request) async {
+      final String body = await request.readAsString();
+      Map<String, dynamic> requestData;
+      try {
+        requestData = json.decode(body);
+      } catch (e) {
+        return Response.badRequest(body: 'Invalid JSON body');
+      }
+      if (requestData['kind'] != 1984) {
+        return Response.badRequest(body: 'Invalid kind');
+      }
+      return Response.ok('{"status": "ok"}',
+          headers: {'Content-Type': 'application/json'});
+    });
+
     return router;
   }
 
