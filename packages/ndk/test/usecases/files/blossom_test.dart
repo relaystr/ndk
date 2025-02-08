@@ -420,6 +420,39 @@ void main() {
       expect(Uint8List.fromList(receivedData), equals(testData));
     });
 
+    test('getBlobStream with auth', () async {
+      final testData = Uint8List.fromList(
+          List.generate(2 * 1024 * 1024, (i) => i % 256)); // 2MB test file
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Test with multiple servers, including non-existent ones
+      final stream = await client.getBlobStream(
+        sha256: sha256,
+        serverUrls: [
+          'http://nonexistent-server:3000',
+          'http://localhost:3000',
+          'http://another-nonexistent:3000',
+        ],
+        useAuth: true,
+        chunkSize: 1024,
+      );
+
+      final receivedData = await stream
+          .map((response) => response.data)
+          .expand((chunk) => chunk)
+          .toList();
+
+      expect(Uint8List.fromList(receivedData), equals(testData));
+    });
+  });
+
+  group("report", () {
     test('report', () async {
       final reportRsp = await client.report(
           serverUrl: 'http://localhost:3000',
