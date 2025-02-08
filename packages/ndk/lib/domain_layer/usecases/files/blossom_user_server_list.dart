@@ -10,14 +10,15 @@ import 'blossom.dart';
 class BlossomUserServerList {
   final Requests _requests;
   final Broadcast _broadcast;
-  final EventSigner? signer;
+  final EventSigner? _signer;
 
   BlossomUserServerList({
+    required EventSigner? signer,
     required Requests requests,
     required Broadcast broadcast,
-    this.signer,
   })  : _requests = requests,
-        _broadcast = broadcast;
+        _broadcast = broadcast,
+        _signer = signer;
 
   /// Get user server list \
   /// returns list of server urls \
@@ -62,7 +63,7 @@ class BlossomUserServerList {
       throw Exception("serverUrlsOrdered is empty");
     }
 
-    if (signer == null) {
+    if (_signer == null) {
       throw Exception("Signer is null");
     }
 
@@ -70,7 +71,7 @@ class BlossomUserServerList {
 
     final Nip01Event myServerList = Nip01Event(
       content: "",
-      pubKey: signer!.getPublicKey(),
+      pubKey: _signer.getPublicKey(),
       kind: Blossom.kBlossomUserServerList,
       createdAt: now,
       tags: [

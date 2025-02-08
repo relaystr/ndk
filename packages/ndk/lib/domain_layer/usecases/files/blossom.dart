@@ -19,17 +19,18 @@ class Blossom {
 
   final BlossomUserServerList _userServerList;
   final BlossomRepository _blossomImpl;
-  final EventSigner? signer;
+  final EventSigner? _signer;
 
   Blossom({
-    required this.signer,
+    required EventSigner? signer,
     required BlossomUserServerList userServerList,
     required BlossomRepository blossomImpl,
   })  : _blossomImpl = blossomImpl,
-        _userServerList = userServerList;
+        _userServerList = userServerList,
+        _signer = signer;
 
   _checkSigner() {
-    if (signer == null) {
+    if (_signer == null) {
       throw Exception("Signer is null");
     }
   }
@@ -56,7 +57,7 @@ class Blossom {
 
     final Nip01Event myAuthorization = Nip01Event(
       content: "upload",
-      pubKey: signer!.getPublicKey(),
+      pubKey: _signer!.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
@@ -66,10 +67,10 @@ class Blossom {
       ],
     );
 
-    await signer!.sign(myAuthorization);
+    await _signer!.sign(myAuthorization);
 
     serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [signer!.getPublicKey()]);
+        .getUserServerList(pubkeys: [_signer!.getPublicKey()]);
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -102,7 +103,7 @@ class Blossom {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: signer!.getPublicKey(),
+        pubKey: _signer!.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -112,7 +113,7 @@ class Blossom {
         ],
       );
 
-      await signer!.sign(myAuthorization);
+      await _signer!.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -156,7 +157,7 @@ class Blossom {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: signer!.getPublicKey(),
+        pubKey: _signer!.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -166,7 +167,7 @@ class Blossom {
         ],
       );
 
-      await signer!.sign(myAuthorization);
+      await _signer!.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -208,7 +209,7 @@ class Blossom {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: signer!.getPublicKey(),
+        pubKey: _signer!.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -218,7 +219,7 @@ class Blossom {
         ],
       );
 
-      await signer!.sign(myAuthorization);
+      await _signer!.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -261,7 +262,7 @@ class Blossom {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "List Blobs",
-        pubKey: signer!.getPublicKey(),
+        pubKey: _signer!.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -270,7 +271,7 @@ class Blossom {
         ],
       );
 
-      await signer!.sign(myAuthorization);
+      await _signer!.sign(myAuthorization);
     }
 
     /// fetch user server list from nostr
@@ -303,7 +304,7 @@ class Blossom {
 
     final Nip01Event myAuthorization = Nip01Event(
       content: "delete",
-      pubKey: signer!.getPublicKey(),
+      pubKey: _signer!.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
@@ -313,11 +314,11 @@ class Blossom {
       ],
     );
 
-    await signer!.sign(myAuthorization);
+    await _signer!.sign(myAuthorization);
 
     /// fetch user server list from nostr
     serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [signer!.getPublicKey()]);
+        .getUserServerList(pubkeys: [_signer!.getPublicKey()]);
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -357,7 +358,7 @@ class Blossom {
 
     final Nip01Event reportEvent = Nip01Event(
       content: reportMsg,
-      pubKey: signer!.getPublicKey(),
+      pubKey: _signer!.getPublicKey(),
       kind: 1984,
       createdAt: now,
       tags: [
@@ -367,7 +368,7 @@ class Blossom {
       ],
     );
 
-    await signer!.sign(reportEvent);
+    await _signer!.sign(reportEvent);
 
     return _blossomImpl.report(
       sha256: sha256,
