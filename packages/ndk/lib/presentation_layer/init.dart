@@ -208,7 +208,7 @@ class Initialization {
       userServerList: blossomUserServerList,
     );
 
-    files = Files(blossom);
+    files = Files(blossom: blossom);
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);

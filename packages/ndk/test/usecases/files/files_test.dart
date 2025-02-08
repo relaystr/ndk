@@ -102,5 +102,38 @@ void main() {
       );
       expect(getResponse, throwsA(isA<Exception>()));
     });
+
+    test('checkUrl - no blossom', () async {
+      // download
+      final response = client.checkUrl(
+        url: 'http://localhost:3000/no_blossom',
+        serverUrls: ['http://localhost:3010'],
+      );
+      expect(response, completion('http://localhost:3000/no_blossom'));
+    });
+
+    test('checkUrl - blossom', () async {
+      final testData = Uint8List.fromList(utf8.encode('check test'));
+
+      // Upload
+      final uploadResponse = await client.upload(
+        file: NdkFile(data: testData, mimeType: 'text/plain'),
+        serverUrls: ['http://localhost:3010'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      // check
+      final response = client.checkUrl(
+        url: 'http://localhost:3010/${uploadResponse.first.descriptor!.sha256}',
+        serverUrls: [
+          'https://localhost:3011',
+          'http://localhost:3010',
+        ],
+      );
+      expect(
+          response,
+          completion(
+              'http://localhost:3010/${uploadResponse.first.descriptor!.sha256}'));
+    });
   });
 }
