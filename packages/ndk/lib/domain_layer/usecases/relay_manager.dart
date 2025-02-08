@@ -35,7 +35,7 @@ class RelayManager<T> {
   GlobalState globalState;
 
   /// signer for nip-42 AUTH challenges from relays
-  Accounts _accounts;
+  final Accounts? _accounts;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -50,7 +50,7 @@ class RelayManager<T> {
   RelayManager(
       {required this.globalState,
       required this.nostrTransportFactory,
-      required Accounts accounts,
+      Accounts? accounts,
       this.engineAdditionalDataFactory,
       List<String>? bootstrapRelays,
       allowReconnect = true}) : _accounts = accounts {
@@ -377,7 +377,7 @@ class RelayManager<T> {
       // nip 42 used to send authentication challenges
       final challenge = eventJson[1];
       Logger.log.d("AUTH: $challenge");
-      if (_accounts.canSign) {
+      if (_accounts!=null && _accounts.canSign) {
         final auth = AuthEvent(pubKey: _accounts.getLoggedAccount()!.pubkey, tags: [
           ["relay", relayConnectivity.url],
           ["challenge", challenge]

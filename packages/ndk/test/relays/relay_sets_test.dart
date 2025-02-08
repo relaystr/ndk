@@ -45,14 +45,12 @@ void main() async {
 
       final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
-        eventSigner: Bip340EventSigner(
-          privateKey: key1.privateKey,
-          publicKey: key1.publicKey,
-        ),
         cache: MemCacheManager(),
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url],
       ));
+
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       Filter filter =
           Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
@@ -167,14 +165,11 @@ void main() async {
     test('query events from key that writes only on one relay', () async {
       final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
-        eventSigner: Bip340EventSigner(
-          privateKey: key1.privateKey,
-          publicKey: key1.publicKey,
-        ),
         cache: MemCacheManager(),
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       ));
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       RelaySet relaySet = await ndk.relaySets.calculateRelaySet(
         name: "test",
@@ -231,14 +226,12 @@ void main() async {
         'query all keys and do not use redundant relays', () async {
       final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
-        eventSigner: Bip340EventSigner(
-          privateKey: key1.privateKey,
-          publicKey: key1.publicKey,
-        ),
         cache: MemCacheManager(),
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       ));
+
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       /// query text notes for all keys, should discover where each key keeps its notes (according to nip65) and return all notes
       /// only relay 1,2 & 4 should be used, since relay 3 keys are all also kept on relay 1 so should not be needed
@@ -332,14 +325,12 @@ void main() async {
         () async {
       final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
-        eventSigner: Bip340EventSigner(
-          privateKey: key1.privateKey,
-          publicKey: key1.publicKey,
-        ),
         cache: MemCacheManager(),
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       ));
+
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       // relayMinCountPerPubKey: 1
       RelaySet relaySet = await ndk.relaySets.calculateRelaySet(
@@ -376,14 +367,12 @@ void main() async {
         () async {
       final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
-        eventSigner: Bip340EventSigner(
-          privateKey: key1.privateKey,
-          publicKey: key1.publicKey,
-        ),
         cache: MemCacheManager(),
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url, relay2.url, relay3.url, relay4.url],
       ));
+
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       RelaySet relaySet = await ndk.relaySets.calculateRelaySet(
           name: "feed",
@@ -549,13 +538,11 @@ void main() async {
         required int relayMinCountPerPubKey}) async {
       final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
-        eventSigner: Bip340EventSigner(
-          privateKey: key1.privateKey,
-          publicKey: key1.publicKey,
-        ),
         cache: MemCacheManager(),
         engine: NdkEngine.RELAY_SETS,
       ));
+
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       int i = 1;
       while (i <= iterations) {

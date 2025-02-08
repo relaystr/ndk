@@ -88,15 +88,12 @@ void main() async {
       final ndkLists = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
-          eventSigner: Bip340EventSigner(
-            privateKey: key1.privateKey,
-            publicKey: key1.publicKey,
-          ),
           cache: MemCacheManager(),
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: myRelayUrls,
         ),
       );
+      ndkLists.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       await testNdk(
         myNdk: ndkLists,
