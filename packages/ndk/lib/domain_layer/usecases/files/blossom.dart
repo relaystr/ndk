@@ -17,15 +17,16 @@ class Blossom {
   /// kind for blossom user server list
   static const kBlossomUserServerList = 10063;
 
-  final BlossomUserServerList userServerList;
-  final BlossomRepository blossomImpl;
+  final BlossomUserServerList _userServerList;
+  final BlossomRepository _blossomImpl;
   final EventSigner? signer;
 
   Blossom({
-    required this.userServerList,
-    required this.blossomImpl,
     required this.signer,
-  });
+    required BlossomUserServerList userServerList,
+    required BlossomRepository blossomImpl,
+  })  : _blossomImpl = blossomImpl,
+        _userServerList = userServerList;
 
   _checkSigner() {
     if (signer == null) {
@@ -67,14 +68,14 @@ class Blossom {
 
     await signer!.sign(myAuthorization);
 
-    serverUrls ??= await userServerList
+    serverUrls ??= await _userServerList
         .getUserServerList(pubkeys: [signer!.getPublicKey()]);
 
     if (serverUrls == null) {
       throw "User has no server list";
     }
 
-    return blossomImpl.uploadBlob(
+    return _blossomImpl.uploadBlob(
       data: data,
       serverUrls: serverUrls,
       authorization: myAuthorization,
@@ -119,7 +120,7 @@ class Blossom {
         throw "pubkeyToFetchUserServerList is null and serverUrls is null";
       }
 
-      serverUrls ??= await userServerList
+      serverUrls ??= await _userServerList
           .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
     }
 
@@ -127,7 +128,7 @@ class Blossom {
       throw "User has no server list";
     }
 
-    return blossomImpl.getBlob(
+    return _blossomImpl.getBlob(
       sha256: sha256,
       authorization: myAuthorization,
       serverUrls: serverUrls,
@@ -172,7 +173,7 @@ class Blossom {
         throw "pubkeyToFetchUserServerList is null and serverUrls is null";
       }
 
-      serverUrls ??= await userServerList
+      serverUrls ??= await _userServerList
           .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
     }
 
@@ -180,7 +181,7 @@ class Blossom {
       throw "User has no server list";
     }
 
-    return blossomImpl.checkBlob(
+    return _blossomImpl.checkBlob(
       sha256: sha256,
       authorization: myAuthorization,
       serverUrls: serverUrls,
@@ -223,7 +224,7 @@ class Blossom {
         throw "pubkeyToFetchUserServerList is null and serverUrls is null";
       }
 
-      serverUrls ??= await userServerList
+      serverUrls ??= await _userServerList
           .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
     }
 
@@ -231,7 +232,7 @@ class Blossom {
       throw "User has no server list";
     }
 
-    return blossomImpl.getBlobStream(
+    return _blossomImpl.getBlobStream(
       sha256: sha256,
       authorization: myAuthorization,
       serverUrls: serverUrls,
@@ -271,13 +272,13 @@ class Blossom {
     }
 
     /// fetch user server list from nostr
-    serverUrls ??= await userServerList.getUserServerList(pubkeys: [pubkey]);
+    serverUrls ??= await _userServerList.getUserServerList(pubkeys: [pubkey]);
 
     if (serverUrls == null) {
       throw "User has no server list: $pubkey";
     }
 
-    return blossomImpl.listBlobs(
+    return _blossomImpl.listBlobs(
       pubkey: pubkey,
       since: since,
       until: until,
@@ -313,13 +314,13 @@ class Blossom {
     await signer!.sign(myAuthorization);
 
     /// fetch user server list from nostr
-    serverUrls ??= await userServerList
+    serverUrls ??= await _userServerList
         .getUserServerList(pubkeys: [signer!.getPublicKey()]);
 
     if (serverUrls == null) {
       throw "User has no server list";
     }
-    return blossomImpl.deleteBlob(
+    return _blossomImpl.deleteBlob(
       sha256: sha256,
       authorization: myAuthorization,
       serverUrls: serverUrls,
@@ -330,7 +331,7 @@ class Blossom {
   Future<BlobResponse> directDownload({
     required Uri url,
   }) {
-    return blossomImpl.directDownload(url: url);
+    return _blossomImpl.directDownload(url: url);
   }
 
   /// Reports a blob to the server
@@ -366,7 +367,7 @@ class Blossom {
 
     await signer!.sign(reportEvent);
 
-    return blossomImpl.report(
+    return _blossomImpl.report(
       sha256: sha256,
       reportEvent: reportEvent,
       serverUrl: serverUrl,
