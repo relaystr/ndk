@@ -38,7 +38,7 @@ class Broadcast {
 
   /// low level nostr broadcast using inbox/outbox (gossip) \
   /// [specificRelays] disables inbox/outbox (gossip) and broadcasts to the relays specified. Useful for NostrWalletConnect \
-  /// [customSigner] if you want to use a different signer than the default specified in [NdkConfig] \
+  /// [customSigner] if you want to use a different signer than the one from currently logged in user in [Accounts] \
   /// [returns] a [NdkBroadcastResponse] object containing the result => success per relay
   NdkBroadcastResponse broadcast({
     required Nip01Event nostrEvent,
