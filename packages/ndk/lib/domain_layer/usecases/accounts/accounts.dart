@@ -1,11 +1,11 @@
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
 
 import '../../entities/nip_01_event.dart';
 
 enum AccountType { privateKey, publicKey, externalSigner }
 
+/// Account model
 class Account {
   final AccountType type;
   final String pubkey;
@@ -14,7 +14,7 @@ class Account {
   Account({required this.type, required this.pubkey, required this.signer});
 }
 
-/// A class that handles accounts
+/// A usecase that handles accounts
 class Accounts {
   /// pubKey -> Account
   final Map<String,Account> accounts = {};
@@ -87,6 +87,7 @@ class Accounts {
     accounts.remove(pubkey);
   }
 
+  /// low-level method, should not be used directly in most cases, use broadcast instead which calls signing on the signer
   Future<void> sign(Nip01Event event) async {
     Account? account = getLoggedAccount();
     if (account!=null && account.signer.canSign()) {
