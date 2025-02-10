@@ -2,7 +2,6 @@
 label: Home
 order: 101
 icon: home
-
 ---
 
 # Dart Nostr Development Kit (NDK)
@@ -13,10 +12,7 @@ NDK (Nostr Development Kit) is a Dart library that enhances the Nostr developmen
 NDK supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.\
 Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.
 
-
 [!ref](/guides/getting-started.md)
-
-
 
 # Features / what does NDK do?
 
@@ -36,12 +32,12 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - nip-47 [Nostr wallet connect](https://github.com/relaystr/ndk/blob/master/packages/ndk/lib/domain_layer/usecases/nwc/README.md)
 - nip-42 Authentication of clients to relays
 - nip-57 Zaps
+- blossom file support
 
 ## not Included
 
 - ready to use feeds, you have to build them on your own (🚫 not planned)
 - create && manage keypairs. You have to provide them (🚫 not planned)
-- file upload (🔜 planned)
 - threading, you can do this on your own if you move ndk or only the event_verifier into its own thread (🔜 planned)
 - support for request overrides (you have to close and reopen requests) (🤔 unsure)
 
@@ -59,7 +55,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - [x] Lists ([NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md))
 - [x] Relay List Metadata ([NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md))
 - [x] Wallet Connect API ([NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md))
-- [X] Zaps ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
+- [x] Zaps ([NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md))
 - [x] Authentication of clients to relays ([NIP-42](https://github.com/nostr-protocol/nips/blob/master/42.md))
 - [x] Encrypted Payloads (Versioned) ([NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md))
 - [ ] Bech Encoding support ([NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md))

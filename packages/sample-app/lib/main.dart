@@ -1,5 +1,6 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/relays_page.dart';
@@ -7,6 +8,7 @@ import 'package:ndk_demo/zaps_page.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 
 import 'amber_page.dart';
+import 'blossom_page.dart';
 
 bool amberAvailable = false;
 
@@ -14,12 +16,13 @@ final ndk = Ndk(
   NdkConfig(
     eventVerifier: RustEventVerifier(),
     cache: MemCacheManager(),
-    logLevel: Logger.logLevels.trace
+    logLevel: Logger.logLevels.trace,
   ),
 );
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
   try {
     final amber = Amberflutter();
     amberAvailable = await amber.isAppInstalled();
@@ -40,7 +43,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: SafeArea(child: const MyHomePage(), top: false),
     );
   }
 }
@@ -53,11 +56,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Nostr Development Kit Demo'),
@@ -68,6 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Tab(text: 'Relays'),
               Tab(text: 'NWC'),
               // Tab(text: 'Zaps'),
+              Tab(text: "Blossom")
             ],
           ),
         ),
@@ -76,11 +79,11 @@ class _MyHomePageState extends State<MyHomePage> {
             metadata(ndk),
             !amberAvailable
                 ? const Center(child: Text("Amber not available"))
-                : const AmberPage()
-            ,
+                : const AmberPage(),
             const RelaysPage(),
             const NwcPage(),
             // const ZapsPage()
+            BlossomMediaPage(ndk: ndk),
           ],
         ),
       ),

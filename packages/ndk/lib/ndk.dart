@@ -75,6 +75,7 @@ export 'domain_layer/usecases/zaps/invoice_response.dart';
 export 'domain_layer/usecases/files/files.dart';
 export 'domain_layer/usecases/files/blossom.dart';
 export 'domain_layer/usecases/accounts/accounts.dart';
+export 'domain_layer/usecases/files/blossom_user_server_list.dart';
 
 /**
  * other stuff

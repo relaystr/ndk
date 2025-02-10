@@ -63,7 +63,50 @@ void main() {
         sha256: sha256,
         serverUrls: ['http://localhost:3000'],
       );
+
+      final getResponseAuth = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+        useAuth: true,
+      );
       expect(utf8.decode(getResponse.data), equals('Hello, Blossom!'));
+      expect(utf8.decode(getResponseAuth.data), equals('Hello, Blossom!'));
+    });
+
+    test('Upload and check blob', () async {
+      final testData = Uint8List.fromList(utf8.encode('Hello, Blossom!'));
+
+      // Upload blob
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Retrieve blob
+      final getResponse = client.checkBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+      );
+      final getResponseAuth = client.checkBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+        useAuth: true,
+      );
+
+      /// expect not to throw
+
+      expect(getResponse, completion('http://localhost:3000/$sha256'));
+      expect(getResponseAuth, completion('http://localhost:3000/$sha256'));
+
+      final getResponseVoid = client.checkBlob(
+        sha256: "nonexistent_sha256",
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      expect(getResponseVoid, throwsException);
     });
 
     test('Upload and retrieve blob - one out of three', () async {
@@ -373,6 +416,50 @@ void main() {
           .toList();
 
       expect(Uint8List.fromList(receivedData), equals(testData));
+    });
+
+    test('getBlobStream with auth', () async {
+      final testData = Uint8List.fromList(
+          List.generate(2 * 1024 * 1024, (i) => i % 256)); // 2MB test file
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Test with multiple servers, including non-existent ones
+      final stream = await client.getBlobStream(
+        sha256: sha256,
+        serverUrls: [
+          'http://nonexistent-server:3000',
+          'http://localhost:3000',
+          'http://another-nonexistent:3000',
+        ],
+        useAuth: true,
+        chunkSize: 1024,
+      );
+
+      final receivedData = await stream
+          .map((response) => response.data)
+          .expand((chunk) => chunk)
+          .toList();
+
+      expect(Uint8List.fromList(receivedData), equals(testData));
+    });
+  });
+
+  group("report", () {
+    test('report', () async {
+      final reportRsp = await client.report(
+          serverUrl: 'http://localhost:3000',
+          sha256: "some_sha256",
+          eventId: "some_event_id",
+          reportMsg: "some_report_msg",
+          reportType: "malware");
+
+      expect(reportRsp, equals(200));
     });
   });
 }

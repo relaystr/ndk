@@ -7,6 +7,7 @@ import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 import 'blossom.dart';
 
+/// Blossom User Server List used to manage the blossom servers of a user
 class BlossomUserServerList {
   final Requests _requests;
   final Broadcast _broadcast;
@@ -60,7 +61,7 @@ class BlossomUserServerList {
     required List<String> serverUrlsOrdered,
   }) async {
     if (serverUrlsOrdered.isEmpty) {
-      throw "serverUrlsOrdered is empty";
+      throw Exception("serverUrlsOrdered is empty");
     }
 
     if (_accounts.isNotLoggedIn) {
