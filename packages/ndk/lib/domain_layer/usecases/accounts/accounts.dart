@@ -1,17 +1,7 @@
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
-
-enum AccountType { privateKey, publicKey, externalSigner }
-
-/// Account model
-class Account {
-  final AccountType type;
-  final String pubkey;
-  final EventSigner signer;
-
-  Account({required this.type, required this.pubkey, required this.signer});
-}
 
 /// A usecase that handles accounts
 class Accounts {
