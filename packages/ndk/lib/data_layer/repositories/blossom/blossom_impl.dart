@@ -31,6 +31,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
           serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
         );
       case UploadStrategy.allSimultaneous:
         return _uploadToAllServers(
@@ -38,6 +39,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
           serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
         );
       case UploadStrategy.firstSuccess:
         return _uploadToFirstSuccess(
@@ -45,6 +47,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
           serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
         );
     }
   }
