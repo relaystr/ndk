@@ -1,5 +1,4 @@
 import 'package:http/http.dart' as http;
-import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
 
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
@@ -11,6 +10,7 @@ import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
+import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
@@ -74,7 +74,6 @@ class Initialization {
   late VerifyNip05 verifyNip05;
 
   late final NetworkEngine engine;
-
 
   /// [NdkConfig] is user defined
   /// [GlobalState] global state object that schuld stay in memory

@@ -1,11 +1,10 @@
-import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
-
 import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/contact_list.dart';
 import '../../entities/filter.dart';
 import '../../repositories/cache_manager.dart';
+import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 

@@ -1,5 +1,3 @@
-import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
-
 import '../../../config/user_relay_list_defaults.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/logger/logger.dart';
@@ -11,6 +9,7 @@ import '../../entities/read_write_marker.dart';
 import '../../entities/user_relay_list.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
+import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 

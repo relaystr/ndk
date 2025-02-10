@@ -1,7 +1,6 @@
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
-import 'package:ndk/domain_layer/repositories/event_signer.dart';
-
+import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/nip_01_event.dart';
+import '../../repositories/event_signer.dart';
 
 enum AccountType { privateKey, publicKey, externalSigner }
 
@@ -17,7 +16,7 @@ class Account {
 /// A usecase that handles accounts
 class Accounts {
   /// pubKey -> Account
-  final Map<String,Account> accounts = {};
+  final Map<String, Account> accounts = {};
   String? _loggedPubkey;
 
   /// adds a new Account and sets the logged pubkey
@@ -51,14 +50,12 @@ class Accounts {
       throw Exception("Cannot login, pubkey already logged in");
     }
     addAccount(
-        pubkey: pubkey,
-        type: AccountType.externalSigner,
-        signer: signer);
+        pubkey: pubkey, type: AccountType.externalSigner, signer: signer);
     _loggedPubkey = pubkey;
   }
 
   void logout() {
-    if (_loggedPubkey!=null) {
+    if (_loggedPubkey != null) {
       accounts.remove(_loggedPubkey);
       _loggedPubkey = null;
     }
@@ -74,7 +71,10 @@ class Accounts {
   }
 
   /// adds an Account
-  void addAccount({required String pubkey, required AccountType type, required EventSigner signer}) {
+  void addAccount(
+      {required String pubkey,
+      required AccountType type,
+      required EventSigner signer}) {
     accounts[pubkey] = Account(type: type, pubkey: pubkey, signer: signer);
   }
 
@@ -82,6 +82,7 @@ class Accounts {
   void clearLoggedPubkey() {
     _loggedPubkey = null;
   }
+
   /// removes an Account
   void removeAccount({required String pubkey}) {
     accounts.remove(pubkey);
@@ -90,7 +91,7 @@ class Accounts {
   /// low-level method, should not be used directly in most cases, use broadcast instead which calls signing on the signer
   Future<void> sign(Nip01Event event) async {
     Account? account = getLoggedAccount();
-    if (account!=null && account.signer.canSign()) {
+    if (account != null && account.signer.canSign()) {
       return account.signer.sign(event);
     }
     throw Exception("Cannot sign");
@@ -98,19 +99,19 @@ class Accounts {
 
   /// returns currently logged in account
   Account? getLoggedAccount() {
-    return _loggedPubkey!=null? accounts[_loggedPubkey] : null;
+    return _loggedPubkey != null ? accounts[_loggedPubkey] : null;
   }
 
   /// is currently logged in account able to sign events
   bool get canSign {
     Account? account = getLoggedAccount();
-    return account!=null && account.signer.canSign();
+    return account != null && account.signer.canSign();
   }
 
   bool get cannotSign => !canSign;
 
   /// is logged in
-  bool get isLoggedIn => getLoggedAccount()!=null;
+  bool get isLoggedIn => getLoggedAccount() != null;
 
   /// is not logged in
   bool get isNotLoggedIn => !isLoggedIn;
