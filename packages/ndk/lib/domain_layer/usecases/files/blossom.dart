@@ -21,8 +21,8 @@ class Blossom {
   /// kind for blossom user server list
   static const kBlossomUserServerList = 10063;
 
-  final BlossomUserServerList userServerList;
-  final BlossomRepository blossomImpl;
+  final BlossomUserServerList _userServerList;
+  final BlossomRepository _blossomImpl;
   final Accounts _accounts;
 
   Blossom({
@@ -30,8 +30,8 @@ class Blossom {
     required BlossomRepository blossomRepository,
     required Accounts accounts,
   })  : _accounts = accounts,
-        userServerList = blossomUserServerList,
-        blossomImpl = blossomRepository;
+        _userServerList = blossomUserServerList,
+        _blossomImpl = blossomRepository;
 
   _checkSigner() {
     if (!_accounts.canSign) {
@@ -77,7 +77,7 @@ class Blossom {
 
     await _signer.sign(myAuthorization);
 
-    serverUrls ??= await userServerList
+    serverUrls ??= await _userServerList
         .getUserServerList(pubkeys: [_signer.getPublicKey()]);
 
     if (serverUrls == null) {
@@ -325,7 +325,7 @@ class Blossom {
     await _signer.sign(myAuthorization);
 
     /// fetch user server list from nostr
-    serverUrls ??= await userServerList
+    serverUrls ??= await _userServerList
         .getUserServerList(pubkeys: [_signer.getPublicKey()]);
 
     if (serverUrls == null) {
