@@ -21,6 +21,11 @@ class Accounts {
     _loggedPubkey = pubkey;
   }
 
+  /// do we have the account for this pubkey?
+  bool hasAccount(String pubkey) {
+    return accounts.containsKey(pubkey);
+  }
+
   /// adds a new read-only Account and sets the logged pubkey
   void loginPublicKey({required String pubkey}) {
     if (accounts.containsKey(pubkey)) {
