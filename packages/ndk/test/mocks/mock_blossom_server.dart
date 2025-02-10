@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
+
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -11,6 +12,9 @@ class MockBlossomServer {
   final Map<String, _BlobEntry> _blobs = {};
   final int port;
   HttpServer? _server;
+
+  /// report kind
+  static const int kReport = 1984;
 
   MockBlossomServer({this.port = 3000});
 
@@ -218,6 +222,21 @@ class MockBlossomServer {
         return Response.internalServerError(
             body: 'Failed to mirror blob: ${e.toString()}');
       }
+    });
+
+    router.put('/report', (Request request) async {
+      final String body = await request.readAsString();
+      Map<String, dynamic> requestData;
+      try {
+        requestData = json.decode(body);
+      } catch (e) {
+        return Response.badRequest(body: 'Invalid JSON body');
+      }
+      if (requestData['kind'] != kReport) {
+        return Response.badRequest(body: 'Invalid kind');
+      }
+      return Response.ok('{"status": "ok"}',
+          headers: {'Content-Type': 'application/json'});
     });
 
     return router;

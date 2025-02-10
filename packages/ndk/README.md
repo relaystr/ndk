@@ -40,12 +40,12 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - nip-47 [Nostr wallet connect](https://github.com/relaystr/ndk/blob/master/packages/ndk/lib/domain_layer/usecases/nwc/README.md)
 - nip-42 Authentication of clients to relays
 - nip-57 Zaps
+- blossom file support
 
 ## not Included
 
 - ready to use feeds, you have to build them on your own (🚫 not planned)
 - create && manage keypairs. You have to provide them (🚫 not planned)
-- file upload (🔜 planned)
 - threading, you can do this on your own if you move ndk or only the event_verifier into its own thread (🔜 planned)
 - support for request overrides (you have to close and reopen requests) (🤔 unsure)
 
