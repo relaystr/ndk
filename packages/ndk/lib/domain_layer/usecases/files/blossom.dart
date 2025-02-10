@@ -86,7 +86,7 @@ class Blossom {
     );
   }
 
-  /// downloads a blob using the sha256 with fallback stragegy \
+  /// Gets a blob by trying servers sequentially until success (fallback) \
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error
   Future<BlobResponse> getBlob({
