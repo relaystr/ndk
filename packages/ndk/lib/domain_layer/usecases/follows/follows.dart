@@ -4,7 +4,7 @@ import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/contact_list.dart';
 import '../../entities/filter.dart';
 import '../../repositories/cache_manager.dart';
-import '../../repositories/event_signer.dart';
+import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 
@@ -13,20 +13,20 @@ class Follows {
   final Requests _requests;
   final Broadcast _broadcast;
   final CacheManager _cacheManager;
-  final EventSigner? _signer;
+  final Accounts _accounts;
 
   Follows({
     required Requests requests,
     required Broadcast broadcast,
     required CacheManager cacheManager,
-    required EventSigner? signer,
+    required Accounts accounts,
   })  : _cacheManager = cacheManager,
         _requests = requests,
-        _signer = signer,
+        _accounts = accounts,
         _broadcast = broadcast;
 
   _checkSigner() {
-    if (_signer == null) {
+    if (_accounts.cannotSign) {
       throw "cannot sign without a signer";
     }
   }
@@ -103,7 +103,7 @@ class Follows {
   ) async {
     _checkSigner();
     ContactList contactList =
-        await _ensureUpToDateContactListOrEmpty(_signer!.getPublicKey());
+        await _ensureUpToDateContactListOrEmpty(_accounts.getPublicKey()!);
     List<String> collection = collectionAccessor(contactList);
     if (!collection.contains(toAdd)) {
       collection.add(toAdd);
@@ -179,7 +179,7 @@ class Follows {
   ) async {
     _checkSigner();
     ContactList? contactList =
-        await _ensureUpToDateContactListOrEmpty(_signer!.getPublicKey());
+        await _ensureUpToDateContactListOrEmpty(_accounts.getPublicKey()!);
     List<String> collection = collectionAccessor(contactList);
     if (collection.contains(toRemove)) {
       collection.remove(toRemove);

@@ -6,6 +6,7 @@ import '../../entities/blossom_blobs.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/blossom.dart';
 import '../../repositories/event_signer.dart';
+import '../accounts/accounts.dart';
 import 'blossom_user_server_list.dart';
 
 /// direct access usecase to blossom \
@@ -22,20 +23,24 @@ class Blossom {
 
   final BlossomUserServerList _userServerList;
   final BlossomRepository _blossomImpl;
-  final EventSigner? _signer;
+  final Accounts _accounts;
 
   Blossom({
-    required EventSigner? signer,
-    required BlossomUserServerList userServerList,
-    required BlossomRepository blossomImpl,
-  })  : _blossomImpl = blossomImpl,
-        _userServerList = userServerList,
-        _signer = signer;
+    required BlossomUserServerList blossomUserServerList,
+    required BlossomRepository blossomRepository,
+    required Accounts accounts,
+  })  : _accounts = accounts,
+        _userServerList = blossomUserServerList,
+        _blossomImpl = blossomRepository;
 
   _checkSigner() {
-    if (_signer == null) {
-      throw Exception("Signer is null");
+    if (!_accounts.canSign) {
+      throw "Not logged in";
     }
+  }
+
+  EventSigner get _signer {
+    return _accounts.getLoggedAccount()!.signer;
   }
 
   /// upload a blob to the server
@@ -60,7 +65,7 @@ class Blossom {
 
     final Nip01Event myAuthorization = Nip01Event(
       content: "upload",
-      pubKey: _signer!.getPublicKey(),
+      pubKey: _signer.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
@@ -70,10 +75,10 @@ class Blossom {
       ],
     );
 
-    await _signer!.sign(myAuthorization);
+    await _signer.sign(myAuthorization);
 
     serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [_signer!.getPublicKey()]);
+        .getUserServerList(pubkeys: [_signer.getPublicKey()]);
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -106,7 +111,7 @@ class Blossom {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: _signer!.getPublicKey(),
+        pubKey: _signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -265,7 +270,7 @@ class Blossom {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "List Blobs",
-        pubKey: _signer!.getPublicKey(),
+        pubKey: _signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -274,7 +279,7 @@ class Blossom {
         ],
       );
 
-      await _signer!.sign(myAuthorization);
+      await _signer.sign(myAuthorization);
     }
 
     /// fetch user server list from nostr
@@ -307,7 +312,7 @@ class Blossom {
 
     final Nip01Event myAuthorization = Nip01Event(
       content: "delete",
-      pubKey: _signer!.getPublicKey(),
+      pubKey: _signer.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
@@ -317,11 +322,11 @@ class Blossom {
       ],
     );
 
-    await _signer!.sign(myAuthorization);
+    await _signer.sign(myAuthorization);
 
     /// fetch user server list from nostr
     serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [_signer!.getPublicKey()]);
+        .getUserServerList(pubkeys: [_signer.getPublicKey()]);
 
     if (serverUrls == null) {
       throw Exception("User has no server list");

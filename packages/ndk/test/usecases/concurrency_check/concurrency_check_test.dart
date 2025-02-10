@@ -60,15 +60,12 @@ void main() async {
       final ndkJit = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
-          eventSigner: Bip340EventSigner(
-            privateKey: key1.privateKey,
-            publicKey: key1.publicKey,
-          ),
           cache: MemCacheManager(),
           engine: NdkEngine.JIT,
           bootstrapRelays: myRelayUrls,
         ),
       );
+      ndkJit.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       final myfilter = Filter(
           kinds: [Nip01Event.kTextNodeKind],

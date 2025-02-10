@@ -23,8 +23,6 @@ import '../relay_manager.dart';
 /// Just In Time Network Engine
 /// This engine is responsible for handling all nostr network requests
 class JitEngine with Logger implements NetworkEngine {
-  /// event signer for signing events
-  EventSigner? eventSigner;
 
   /// cache manager for caching events
   CacheManager cache;
@@ -40,7 +38,6 @@ class JitEngine with Logger implements NetworkEngine {
 
   /// Creates a new JIT engine.
   JitEngine({
-    this.eventSigner,
     required this.relayManagerLight,
     required this.cache,
     required this.ignoreRelays,

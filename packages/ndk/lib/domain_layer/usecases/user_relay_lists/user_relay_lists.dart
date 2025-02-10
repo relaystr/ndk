@@ -9,6 +9,7 @@ import '../../entities/read_write_marker.dart';
 import '../../entities/user_relay_list.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
+import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 
@@ -20,24 +21,24 @@ class UserRelayLists {
   final Requests _requests;
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
-  final EventSigner? _signer;
+  final Accounts _accounts;
 
   /// user relay lists usecase
   UserRelayLists({
     required Requests requests,
     required CacheManager cacheManager,
     required Broadcast broadcast,
-    EventSigner? signer,
+    required Accounts accounts,
   })  : _cacheManager = cacheManager,
         _requests = requests,
         _broadcast = broadcast,
-        _signer = signer;
+        _accounts = accounts;
 
-  EventSigner get _eventSigner {
-    if (_signer == null) {
+  EventSigner get _signer {
+    if (_accounts.isNotLoggedIn) {
       throw "cannot sign without a signer";
     }
-    return _signer;
+    return _accounts.getLoggedAccount()!.signer;
   }
 
   // TODO try to use generic query with cacheRead/Write mechanism
@@ -162,7 +163,7 @@ class UserRelayLists {
 
   Future<UserRelayList?> _ensureUpToDateUserRelayList() async {
     UserRelayList? userRelayList = await _cacheManager.loadUserRelayList(
-      _eventSigner.getPublicKey(),
+      _signer.getPublicKey(),
     );
 
     /// if cached user relay list is older that now minus this duration that we should go refresh it,
@@ -176,7 +177,7 @@ class UserRelayLists {
 
     if (refresh) {
       userRelayList = await getSingleUserRelayList(
-        _eventSigner.getPublicKey(),
+        _signer.getPublicKey(),
         forceRefresh: true,
       );
     }
@@ -193,7 +194,7 @@ class UserRelayLists {
     if (userRelayList == null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       userRelayList = UserRelayList(
-          pubKey: _eventSigner.getPublicKey(),
+          pubKey: _signer.getPublicKey(),
           relays: {
             for (String url in broadcastRelays) url: ReadWriteMarker.readWrite
           },

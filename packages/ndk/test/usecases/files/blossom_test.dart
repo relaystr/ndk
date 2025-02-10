@@ -27,17 +27,15 @@ void main() {
     await server2.start();
 
     KeyPair key1 = Bip340.generatePrivateKey();
-    final signer = Bip340EventSigner(
-        privateKey: key1.privateKey, publicKey: key1.publicKey);
 
     final ndk = Ndk(
       NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
-        eventSigner: signer,
       ),
     );
+    ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
     client = ndk.blossom;
   });

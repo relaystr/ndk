@@ -3,7 +3,6 @@ import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
-import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import 'package:logger/logger.dart' as lib_logger;
 
@@ -14,11 +13,6 @@ import 'package:logger/logger.dart' as lib_logger;
 class NdkConfig {
   /// The verifier used to validate Nostr events. E.g. RustEventVerifier(), Bip340EventVerifier
   EventVerifier eventVerifier;
-
-  /// The signer used to sign Nostr events.
-  ///
-  /// This can be null if event signing is not required.
-  EventSigner? eventSigner;
 
   /// The cache manager (DB) used to store and retrieve Nostr data. E.g MemCacheManager()
   CacheManager cache;
@@ -50,7 +44,6 @@ class NdkConfig {
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
-  /// [eventSigner] Optional signer used to sign Nostr events. \
   /// [cache] The cache manager for storing and retrieving Nostr data. \
   /// [engine] The engine mode to use (defaults to RELAY_SETS). \
   /// [ignoreRelays] A list of relay URLs to ignore (defaults to an empty list). \
@@ -60,7 +53,6 @@ class NdkConfig {
   /// [logLevel] The log level for the NDK (defaults to warning).
   NdkConfig({
     required this.eventVerifier,
-    this.eventSigner,
     required this.cache,
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],

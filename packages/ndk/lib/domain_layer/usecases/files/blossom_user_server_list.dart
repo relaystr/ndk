@@ -2,6 +2,7 @@ import '../../entities/broadcast_state.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
+import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 import 'blossom.dart';
@@ -10,15 +11,15 @@ import 'blossom.dart';
 class BlossomUserServerList {
   final Requests _requests;
   final Broadcast _broadcast;
-  final EventSigner? _signer;
+  final Accounts _accounts;
 
   BlossomUserServerList({
-    required EventSigner? signer,
     required Requests requests,
     required Broadcast broadcast,
-  })  : _requests = requests,
+    required Accounts accounts,
+  })  : _accounts = accounts,
         _broadcast = broadcast,
-        _signer = signer;
+        _requests = requests;
 
   /// Get user server list \
   /// returns list of server urls \
@@ -63,15 +64,15 @@ class BlossomUserServerList {
       throw Exception("serverUrlsOrdered is empty");
     }
 
-    if (_signer == null) {
-      throw Exception("Signer is null");
+    if (_accounts.isNotLoggedIn) {
+      throw "Not logged in";
     }
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     final Nip01Event myServerList = Nip01Event(
       content: "",
-      pubKey: _signer.getPublicKey(),
+      pubKey: _accounts.getLoggedAccount()!.pubkey,
       kind: Blossom.kBlossomUserServerList,
       createdAt: now,
       tags: [

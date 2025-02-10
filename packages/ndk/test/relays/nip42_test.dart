@@ -36,14 +36,12 @@ void main() async {
       final ndk = Ndk(
         NdkConfig(
             eventVerifier: Bip340EventVerifier(),
-            eventSigner: Bip340EventSigner(
-              privateKey: key1.privateKey,
-              publicKey: key1.publicKey,
-            ),
             cache: MemCacheManager(),
             logLevel: Logger.logLevels.trace,
             bootstrapRelays: [relay1.url]),
       );
+
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       await Future.delayed(Duration(seconds: 1));
       final response = ndk.requests.query(filters: [

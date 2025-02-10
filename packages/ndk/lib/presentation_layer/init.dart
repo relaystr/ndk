@@ -10,6 +10,7 @@ import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
+import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
@@ -56,6 +57,7 @@ class Initialization {
   late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
+  late Accounts accounts;
   late Follows follows;
   late Metadatas metadatas;
   late UserRelayLists userRelayLists;
@@ -80,11 +82,13 @@ class Initialization {
     required GlobalState globalState,
   })  : _globalState = globalState,
         _ndkConfig = ndkConfig {
+    accounts = Accounts();
+
     switch (_ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
         relayManager = RelayManager(
           globalState: _globalState,
-          signer: _ndkConfig.eventSigner,
+          accounts: accounts,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
         );
@@ -99,13 +103,13 @@ class Initialization {
       case NdkEngine.JIT:
         relayManager = RelayManager<JitEngineRelayConnectivityData>(
           globalState: _globalState,
+          accounts: accounts,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
         );
 
         engine = JitEngine(
-          eventSigner: _ndkConfig.eventSigner,
           cache: _ndkConfig.cache,
           ignoreRelays: _ndkConfig.ignoreRelays,
           relayManagerLight: relayManager,
@@ -141,35 +145,35 @@ class Initialization {
       globalState: _globalState,
       cacheRead: cacheRead,
       networkEngine: engine,
-      signer: _ndkConfig.eventSigner,
+      accounts: accounts,
     );
 
     follows = Follows(
       requests: requests,
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
-      signer: _ndkConfig.eventSigner,
+      accounts: accounts,
     );
 
     metadatas = Metadatas(
       requests: requests,
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
-      signer: _ndkConfig.eventSigner,
+      accounts: accounts,
     );
 
     userRelayLists = UserRelayLists(
       requests: requests,
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
-      signer: _ndkConfig.eventSigner,
+      accounts: accounts,
     );
 
     lists = Lists(
       requests: requests,
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
-      eventSigner: _ndkConfig.eventSigner,
+      accounts: accounts,
     );
 
     relaySets = RelaySets(
@@ -199,13 +203,13 @@ class Initialization {
     blossomUserServerList = BlossomUserServerList(
       requests: requests,
       broadcast: broadcast,
-      signer: _ndkConfig.eventSigner,
+      accounts: accounts,
     );
 
     blossom = Blossom(
-      blossomImpl: blossomRepository,
-      signer: _ndkConfig.eventSigner,
-      userServerList: blossomUserServerList,
+      blossomRepository: blossomRepository,
+      accounts: accounts,
+      blossomUserServerList: blossomUserServerList,
     );
 
     files = Files(blossom: blossom);

@@ -19,6 +19,7 @@ import '../entities/request_state.dart';
 import '../entities/tuple.dart';
 import '../repositories/event_signer.dart';
 import '../repositories/nostr_transport.dart';
+import 'accounts/accounts.dart';
 import 'engines/network_engine.dart';
 import 'nip42/auth_event.dart';
 
@@ -34,7 +35,7 @@ class RelayManager<T> {
   GlobalState globalState;
 
   /// signer for nip-42 AUTH challenges from relays
-  EventSigner? signer;
+  final Accounts? _accounts;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -49,10 +50,10 @@ class RelayManager<T> {
   RelayManager(
       {required this.globalState,
       required this.nostrTransportFactory,
-      this.signer,
+      Accounts? accounts,
       this.engineAdditionalDataFactory,
       List<String>? bootstrapRelays,
-      allowReconnect = true}) {
+      allowReconnect = true}) : _accounts = accounts {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
@@ -376,12 +377,12 @@ class RelayManager<T> {
       // nip 42 used to send authentication challenges
       final challenge = eventJson[1];
       Logger.log.d("AUTH: $challenge");
-      if (signer != null && signer!.canSign()) {
-        final auth = AuthEvent(pubKey: signer!.getPublicKey(), tags: [
+      if (_accounts!=null && _accounts.canSign) {
+        final auth = AuthEvent(pubKey: _accounts.getLoggedAccount()!.pubkey, tags: [
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);
-        signer!.sign(auth).then((e) {
+        _accounts.sign(auth).then((e) {
           send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
         });
       } else {

@@ -45,14 +45,11 @@ void main() async {
 
       final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
-        eventSigner: Bip340EventSigner(
-          privateKey: key1.privateKey,
-          publicKey: key1.publicKey,
-        ),
         cache: MemCacheManager(),
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url],
       ));
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       final filter =
           Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
