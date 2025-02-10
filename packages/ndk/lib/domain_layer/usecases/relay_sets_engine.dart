@@ -236,15 +236,20 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       // own outbox
       // =====================================================================================
-      final nip65Data = (await UserRelayLists.getUserRelayListCacheLatest(
+      // TODO should not only depend on cached, but go fetch it if not present in cache
+      final nip65List = (await UserRelayLists.getUserRelayListCacheLatest(
         pubkeys: [nostrEvent.pubKey],
         cacheManager: _cacheManager,
-      ))
-          .first;
-      final writeRelaysUrls = nip65Data.relays.entries
-          .where((element) => element.value.isWrite)
-          .map((e) => e.key)
-          .toList();
+      ));
+      var writeRelaysUrls = DEFAULT_BOOTSTRAP_RELAYS;
+      if (nip65List.isNotEmpty) {
+        writeRelaysUrls = nip65List.first.relays.entries
+            .where((element) => element.value.isWrite)
+            .map((e) => e.key)
+            .toList();
+      } else {
+        Logger.log.w("could not find user relay list from nip65, using default bootstrap relays");
+      }
 
       for (final relayUrl in writeRelaysUrls) {
         final isConnected =
