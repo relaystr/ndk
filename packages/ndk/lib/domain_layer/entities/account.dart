@@ -2,7 +2,7 @@ import '../repositories/event_signer.dart';
 
 enum AccountType { privateKey, publicKey, externalSigner }
 
-/// Account enitity
+/// Account entity
 class Account {
   final AccountType type;
   final String pubkey;
