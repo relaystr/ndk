@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
+
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -11,6 +12,9 @@ class MockBlossomServer {
   final Map<String, _BlobEntry> _blobs = {};
   final int port;
   HttpServer? _server;
+
+  /// report kind
+  static const int kReport = 1984;
 
   MockBlossomServer({this.port = 3000});
 
@@ -228,7 +232,7 @@ class MockBlossomServer {
       } catch (e) {
         return Response.badRequest(body: 'Invalid JSON body');
       }
-      if (requestData['kind'] != 1984) {
+      if (requestData['kind'] != kReport) {
         return Response.badRequest(body: 'Invalid kind');
       }
       return Response.ok('{"status": "ok"}',

@@ -14,6 +14,9 @@ class Blossom {
   /// kind for all most of blossom
   static const kBlossom = 24242;
 
+  /// kind for reports NIP56
+  static const int kReport = 1984;
+
   /// kind for blossom user server list
   static const kBlossomUserServerList = 10063;
 
@@ -359,7 +362,7 @@ class Blossom {
     final Nip01Event reportEvent = Nip01Event(
       content: reportMsg,
       pubKey: _signer!.getPublicKey(),
-      kind: 1984,
+      kind: kReport,
       createdAt: now,
       tags: [
         ["x", sha256, reportType.toLowerCase()],
