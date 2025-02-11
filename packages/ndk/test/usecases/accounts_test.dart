@@ -23,6 +23,8 @@ void main() async {
       ndk.accounts.loginPublicKey(pubkey: key0.publicKey);
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.cannotSign, true);
+      expect(ndk.accounts.getPublicKey(), key0.publicKey);
+      expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       expect(ndk.accounts.hasAccount(key0.publicKey), true);
       ndk.accounts.logout();
       expect(ndk.accounts.isNotLoggedIn, true);
