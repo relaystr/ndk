@@ -117,6 +117,9 @@ void main() async {
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
 
+      expect(() => ndk.accounts.switchAccount(pubkey: key0.publicKey),
+          throwsA(isA<Exception>()));
+
       ndk.accounts.logout();
       expect(ndk.accounts.isNotLoggedIn, true);
     });
