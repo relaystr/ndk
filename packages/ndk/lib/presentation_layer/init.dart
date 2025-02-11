@@ -143,8 +143,8 @@ class Initialization {
 
     broadcast = Broadcast(
       globalState: _globalState,
-      cacheRead: cacheRead,
       networkEngine: engine,
+      cacheManager: _ndkConfig.cache,
       accounts: accounts,
     );
 

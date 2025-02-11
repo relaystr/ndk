@@ -1,12 +1,9 @@
+import 'package:ndk/ndk.dart';
+
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
-import '../../entities/broadcast_response.dart';
 import '../../entities/broadcast_state.dart';
 import '../../entities/global_state.dart';
-import '../../entities/nip_01_event.dart';
-import '../../repositories/event_signer.dart';
-import '../accounts/accounts.dart';
-import '../cache_read/cache_read.dart';
 import '../engines/network_engine.dart';
 
 /// class for low level nostr broadcasts / publish \
@@ -14,16 +11,18 @@ import '../engines/network_engine.dart';
 class Broadcast {
   final NetworkEngine _engine;
   final Accounts _accounts;
+  final CacheManager _cacheManager;
   final GlobalState _globalState;
 
   /// creates a new [Broadcast] instance
   ///
   Broadcast({
     required GlobalState globalState,
-    required CacheRead cacheRead,
+    required CacheManager cacheManager,
     required NetworkEngine networkEngine,
     required Accounts accounts,
   })  : _accounts = accounts,
+        _cacheManager = cacheManager,
         _engine = networkEngine,
         _globalState = globalState;
 
@@ -105,6 +104,8 @@ class Broadcast {
         ],
         content: "delete",
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    // TODO not bulletproof, think of better way
+    _cacheManager.removeEvent(eventId);
     return broadcast(
       nostrEvent: event,
       specificRelays: customRelays,

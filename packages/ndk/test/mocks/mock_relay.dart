@@ -7,6 +7,7 @@ import 'package:bip340/bip340.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/shared/nips/nip09/deletion.dart';
 
 class MockRelay {
   String name;
@@ -115,6 +116,9 @@ class MockRelay {
               _contactLists[newEvent.pubKey] = newEvent;
             } else if (newEvent.kind == Metadata.kKind) {
               _metadatas[newEvent.pubKey] = newEvent;
+            } else if (newEvent.kind == Deletion.kKind) {
+              // TODO: should handle more kinds (nip65, metadatas, contact lists, etc)
+              _storedEvents.removeWhere((e) => newEvent.getEId() == e.id);
             } else {
               _storedEvents.add(newEvent);
             }
