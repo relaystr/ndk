@@ -22,12 +22,14 @@ void main() async {
   };
 
   Nip01Event textNote(KeyPair key2) {
-    return Nip01Event(
+    Nip01Event event = Nip01Event(
         kind: Nip01Event.kTextNodeKind,
         pubKey: key2.publicKey,
         content: "some note from key ${keyNames[key2]}",
         tags: [],
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    event.sign(key2.privateKey!);
+    return event;
   }
 
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
@@ -35,7 +37,7 @@ void main() async {
   group('Ndk', () {
     test('query simple note LISTS',
         timeout: const Timeout(Duration(seconds: 3)), () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 3900);
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 3900, signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
       final ndk = Ndk(
@@ -45,6 +47,7 @@ void main() async {
             engine: NdkEngine.RELAY_SETS,
             bootstrapRelays: [relay1.url]),
       );
+      await ndk.relays.seedRelaysConnected;
       ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       final response = ndk.requests.query(filters: [

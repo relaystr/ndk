@@ -16,6 +16,7 @@ class MockRelay {
   Map<KeyPair, Nip65>? _nip65s;
   Map<KeyPair, Nip01Event>? textNotes;
   Map<String, Nip01Event> _contactLists = {};
+  Map<String, Nip01Event> _metadatas = {};
   List<Nip01Event> _storedEvents = []; // Store received events
   bool signEvents;
   bool requireAuthForRequests;
@@ -43,17 +44,21 @@ class MockRelay {
     Map<KeyPair, Nip65>? nip65s,
     Map<KeyPair, Nip01Event>? textNotes,
     Map<String, Nip01Event>? contactLists,
+    Map<String, Nip01Event>? metadatas,
   }) async {
     var myPromise = Completer<void>();
 
     if (nip65s != null) {
-      this._nip65s = nip65s;
+      _nip65s = nip65s;
     }
     if (textNotes != null) {
       this.textNotes = textNotes;
     }
-    if (contactLists!=null) {
-      this._contactLists = contactLists;
+    if (contactLists != null) {
+      _contactLists = contactLists;
+    }
+    if (metadatas != null) {
+      _metadatas = metadatas;
     }
 
     var server = await HttpServer.bind(InternetAddress.loopbackIPv4, _port!,
@@ -107,7 +112,9 @@ class MockRelay {
           Nip01Event newEvent = Nip01Event.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig)) {
             if (newEvent.kind == ContactList.kKind) {
-              this._contactLists[newEvent.pubKey] = newEvent;
+              _contactLists[newEvent.pubKey] = newEvent;
+            } else if (newEvent.kind == Metadata.kKind) {
+              _metadatas[newEvent.pubKey] = newEvent;
             } else {
               _storedEvents.add(newEvent);
             }
@@ -144,8 +151,15 @@ class MockRelay {
       matchingEvents = _contactLists.values
           .where((e) => filter.authors!.contains(e.pubKey))
           .toList();
+    } else if (filter.kinds != null &&
+        filter.kinds!.contains(Metadata.kKind) &&
+        filter.authors != null &&
+        filter.authors!.isNotEmpty) {
+      matchingEvents = _metadatas.values
+          .where((e) => filter.authors!.contains(e.pubKey))
+          .toList();
     } else {
-      List<Nip01Event> matchingEvents = _storedEvents.where((event) {
+      matchingEvents = _storedEvents.where((event) {
         bool kindMatches =
             filter.kinds == null || filter.kinds!.contains(event.kind);
         bool authorMatches =
@@ -153,35 +167,33 @@ class MockRelay {
         return kindMatches && authorMatches;
       }).toList();
 
-      if (_nip65s != null) {
-        for (var entry in _nip65s!.entries) {
-          if (filter.authors != null &&
-              filter.authors!.contains(entry.key.publicKey) &&
-              (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
-            if (signEvents) {
-              Nip01Event event = entry.value.toEvent();
-              event.sign(entry.key.privateKey!);
-            }
-            matchingEvents.add(entry.value.toEvent());
+    }
+    if (_nip65s != null) {
+      for (var entry in _nip65s!.entries) {
+        if (filter.authors != null &&
+            filter.authors!.contains(entry.key.publicKey) &&
+            (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
+          if (signEvents) {
+            Nip01Event event = entry.value.toEvent();
+            event.sign(entry.key.privateKey!);
           }
+          matchingEvents.add(entry.value.toEvent());
         }
       }
+    }
 
-      if (textNotes != null) {
-        for (var entry in textNotes!.entries) {
-          if (filter.authors != null &&
-              filter.authors!.contains(entry.key.publicKey) &&
-              (filter.kinds == null ||
-                  filter.kinds!.contains(Nip01Event.kTextNodeKind) ||
-                  filter.kinds!
-                      .any((k) => Nip51List.kPossibleKinds.contains(k)) ||
-                  filter.kinds!.contains(ContactList.kKind) ||
-                  filter.kinds!.contains(Metadata.kKind))) {
-            if (signEvents) {
-              entry.value.sign(entry.key.privateKey!);
-            }
-            matchingEvents.add(entry.value);
+    if (textNotes != null) {
+      for (var entry in textNotes!.entries) {
+        if (filter.authors != null &&
+            filter.authors!.contains(entry.key.publicKey) &&
+            (filter.kinds == null ||
+                filter.kinds!.contains(Nip01Event.kTextNodeKind) ||
+                filter.kinds!
+                    .any((k) => Nip51List.kPossibleKinds.contains(k)))) {
+          if (signEvents) {
+            entry.value.sign(entry.key.privateKey!);
           }
+          matchingEvents.add(entry.value);
         }
       }
     }

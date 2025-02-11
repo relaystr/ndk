@@ -30,9 +30,9 @@ void main() async {
 
     setUp(() async {
       relay0 = MockRelay(name: "relay 0", explicitPort: 5095);
-      await relay0.startServer(textNotes: {
-        key0: network0Metadata.toEvent(),
-        key1: network1Metadata.toEvent(),
+      await relay0.startServer(metadatas: {
+        key0.publicKey: network0Metadata.toEvent(),
+        key1.publicKey: network1Metadata.toEvent(),
       });
 
       final cache = MemCacheManager();
@@ -44,6 +44,7 @@ void main() async {
 
       ndk = Ndk(config);
 
+      await ndk.relays.seedRelaysConnected;
       cache.saveMetadata(cache0Metadata);
       //cache.saveContactList(cache1ContactList);
     });
