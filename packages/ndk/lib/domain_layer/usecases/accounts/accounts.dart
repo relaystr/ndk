@@ -73,13 +73,16 @@ class Accounts {
     accounts[pubkey] = Account(type: type, pubkey: pubkey, signer: signer);
   }
 
-  /// clears the logged pubkey
-  void clearLoggedPubkey() {
+  // /// clears the logged pubkey
+  void _clearLoggedPubkey() {
     _loggedPubkey = null;
   }
 
   /// removes an Account
   void removeAccount({required String pubkey}) {
+    if (_loggedPubkey == pubkey) {
+      _clearLoggedPubkey();
+    }
     accounts.remove(pubkey);
   }
 
