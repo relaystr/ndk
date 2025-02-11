@@ -121,7 +121,7 @@ class Blossom {
         ],
       );
 
-      await _signer!.sign(myAuthorization);
+      await _signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -165,7 +165,7 @@ class Blossom {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: _signer!.getPublicKey(),
+        pubKey: _signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -175,7 +175,7 @@ class Blossom {
         ],
       );
 
-      await _signer!.sign(myAuthorization);
+      await _signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -217,7 +217,7 @@ class Blossom {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: _signer!.getPublicKey(),
+        pubKey: _signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -227,7 +227,7 @@ class Blossom {
         ],
       );
 
-      await _signer!.sign(myAuthorization);
+      await _signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -366,7 +366,7 @@ class Blossom {
 
     final Nip01Event reportEvent = Nip01Event(
       content: reportMsg,
-      pubKey: _signer!.getPublicKey(),
+      pubKey: _signer.getPublicKey(),
       kind: kReport,
       createdAt: now,
       tags: [
@@ -376,7 +376,7 @@ class Blossom {
       ],
     );
 
-    await _signer!.sign(reportEvent);
+    await _signer.sign(reportEvent);
 
     return _blossomImpl.report(
       sha256: sha256,

@@ -1,7 +1,6 @@
 import '../../entities/broadcast_state.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
-import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';

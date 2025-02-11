@@ -3,8 +3,6 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 
-import '../mocks/mock_event_verifier.dart';
-
 void main() async {
   group('accounts', () {
     KeyPair key0 = Bip340.generatePrivateKey();
@@ -32,7 +30,7 @@ void main() async {
     test('loginPrivateKey', () {
       expect(ndk.accounts.isNotLoggedIn, true);
       ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      expect(ndk.accounts.getLoggedAccount()!.pubkey, key0);
+      expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
       ndk.accounts.logout();
@@ -51,11 +49,11 @@ void main() async {
     test('do not allow duplicated login', () {
       expect(ndk.accounts.isNotLoggedIn, true);
       ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      expect(ndk.accounts.getLoggedAccount()!.pubkey, key0);
+      expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
       expect(() => ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!), throwsA(isA<Exception>()));
-      expect(ndk.accounts.getLoggedAccount()!.pubkey, key0);
+      expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       ndk.accounts.logout();
       expect(ndk.accounts.isNotLoggedIn, true);
     });

@@ -17,7 +17,6 @@ import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
 import '../entities/tuple.dart';
-import '../repositories/event_signer.dart';
 import '../repositories/nostr_transport.dart';
 import 'accounts/accounts.dart';
 import 'engines/network_engine.dart';
@@ -53,7 +52,8 @@ class RelayManager<T> {
       Accounts? accounts,
       this.engineAdditionalDataFactory,
       List<String>? bootstrapRelays,
-      allowReconnect = true}) : _accounts = accounts {
+      allowReconnect = true})
+      : _accounts = accounts {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
@@ -377,8 +377,9 @@ class RelayManager<T> {
       // nip 42 used to send authentication challenges
       final challenge = eventJson[1];
       Logger.log.d("AUTH: $challenge");
-      if (_accounts!=null && _accounts.canSign) {
-        final auth = AuthEvent(pubKey: _accounts.getLoggedAccount()!.pubkey, tags: [
+      if (_accounts != null && _accounts.canSign) {
+        final auth =
+            AuthEvent(pubKey: _accounts.getLoggedAccount()!.pubkey, tags: [
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);

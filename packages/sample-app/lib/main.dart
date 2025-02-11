@@ -4,7 +4,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/relays_page.dart';
-import 'package:ndk_demo/zaps_page.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 
 import 'amber_page.dart';
