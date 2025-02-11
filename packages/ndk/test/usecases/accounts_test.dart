@@ -64,7 +64,12 @@ void main() async {
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
-      expect(() => ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!), throwsA(isA<Exception>()));
+      expect(() => ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!),
+          throwsA(isA<Exception>()));
+      expect(() => ndk.accounts.loginPublicKey(pubkey: key0.publicKey),
+          throwsA(isA<Exception>()));
+      expect(() => ndk.accounts.loginExternalSigner( signer: Bip340EventSigner(privateKey: key0.privateKey, publicKey: key0.publicKey)),
+          throwsA(isA<Exception>()));
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       ndk.accounts.logout();
       expect(ndk.accounts.isNotLoggedIn, true);
