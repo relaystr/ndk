@@ -31,6 +31,7 @@ mixin class Logger {
     );
   }
 }
+// coverage:ignore-end
 
 /// A class that provides log levels.
 // coverage:ignore-start
