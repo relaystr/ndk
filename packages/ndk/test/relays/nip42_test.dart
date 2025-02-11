@@ -17,20 +17,22 @@ void main() async {
       key1: "key1",
     };
 
-    Nip01Event textNote(KeyPair key2) {
-      return Nip01Event(
+    Nip01Event textNote(KeyPair key) {
+      Nip01Event event = Nip01Event(
           kind: Nip01Event.kTextNodeKind,
-          pubKey: key2.publicKey,
+          pubKey: key.publicKey,
           content: "some note from key ${keyNames[key1]}",
           tags: [],
           createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
+      event.sign(key.privateKey!);
+      return event;
     }
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
     test('respond to auth challenge', () async {
       MockRelay relay1 = MockRelay(
-          name: "relay 1", explicitPort: 3900, requireAuthForRequests: true);
+          name: "relay 1", explicitPort: 3900, requireAuthForRequests: true, signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
       final ndk = Ndk(
@@ -47,6 +49,7 @@ void main() async {
       final response = ndk.requests.query(filters: [
         Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey])
       ]);
+      List<Nip01Event> events = await response.future;
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
 
       // TODO: Create events and do some requests

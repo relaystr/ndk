@@ -10,57 +10,62 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 
 class MockRelay {
   String name;
-  int? port;
+  int? _port;
   HttpServer? server;
-  WebSocket? webSocket;
-  Map<KeyPair, Nip65>? nip65s;
+  WebSocket? _webSocket;
+  Map<KeyPair, Nip65>? _nip65s;
   Map<KeyPair, Nip01Event>? textNotes;
+  Map<String, Nip01Event> _contactLists = {};
+  List<Nip01Event> _storedEvents = []; // Store received events
   bool signEvents;
   bool requireAuthForRequests;
 
-  static int startPort = 4040;
+  static int _startPort = 4040;
 
-  String get url => "ws://localhost:$port";
+  String get url => "ws://localhost:$_port";
 
   MockRelay({
     required this.name,
-    this.nip65s,
+    Map<KeyPair, Nip65>? nip65s,
     this.signEvents = true,
     this.requireAuthForRequests = false,
     int? explicitPort,
-  }) {
+  }) : _nip65s = nip65s {
     if (explicitPort != null) {
-      port = explicitPort;
+      _port = explicitPort;
     } else {
-      port = startPort;
-      startPort++;
+      _port = _startPort;
+      _startPort++;
     }
   }
 
-  Future<void> startServer(
-      {Map<KeyPair, Nip65>? nip65s,
-      Map<KeyPair, Nip01Event>? textNotes}) async {
+  Future<void> startServer({
+    Map<KeyPair, Nip65>? nip65s,
+    Map<KeyPair, Nip01Event>? textNotes,
+    Map<String, Nip01Event>? contactLists,
+  }) async {
     var myPromise = Completer<void>();
 
     if (nip65s != null) {
-      this.nip65s = nip65s;
+      this._nip65s = nip65s;
     }
     if (textNotes != null) {
       this.textNotes = textNotes;
     }
+    if (contactLists!=null) {
+      this._contactLists = contactLists;
+    }
 
-    var server = await HttpServer.bind(InternetAddress.loopbackIPv4, port!,
+    var server = await HttpServer.bind(InternetAddress.loopbackIPv4, _port!,
         shared: true);
-
     this.server = server;
-
     var stream = server.transform(WebSocketTransformer());
 
     String challenge = '';
-
     bool signedChallenge = false;
+
     stream.listen((webSocket) {
-      this.webSocket = webSocket;
+      this._webSocket = webSocket;
       if (requireAuthForRequests && !signedChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
@@ -71,6 +76,7 @@ class MockRelay {
           return;
         }
         var eventJson = json.decode(message);
+
         if (eventJson[0] == "AUTH") {
           Nip01Event event = Nip01Event.fromJson(eventJson[1]);
           if (verify(event.pubKey, event.id, event.sig)) {
@@ -84,9 +90,7 @@ class MockRelay {
             "OK",
             event.id,
             signedChallenge,
-            signedChallenge
-                ? ""
-                : "auth-required: we can't serve requests to unauthenticated users"
+            signedChallenge ? "" : "auth-required"
           ]));
           return;
         }
@@ -98,38 +102,31 @@ class MockRelay {
           ]));
           return;
         }
+
+        if (eventJson[0] == "EVENT") {
+          Nip01Event newEvent = Nip01Event.fromJson(eventJson[1]);
+          if (verify(newEvent.pubKey, newEvent.id, newEvent.sig)) {
+            if (newEvent.kind == ContactList.kKind) {
+              this._contactLists[newEvent.pubKey] = newEvent;
+            } else {
+              _storedEvents.add(newEvent);
+            }
+            webSocket.add(jsonEncode(["OK", newEvent.id, true, ""]));
+          } else {
+            webSocket.add(
+                jsonEncode(["OK", newEvent.id, false, "invalid signature"]));
+          }
+          return;
+        }
+
         if (eventJson[0] == "REQ") {
           String requestId = eventJson[1];
-          log('Received: $eventJson');
           Filter filter = Filter.fromMap(eventJson[2]);
-          if (filter.kinds != null && filter.authors != null) {
-            if (filter.kinds!.contains(Nip65.kKind) && nip65s != null) {
-              _respondeNip65(filter.authors!, requestId);
-            }
-            if (filter.kinds!.contains(Nip01Event.kTextNodeKind) &&
-                textNotes != null) {
-              _respondeTextNote(filter.authors!, requestId);
-            }
-            if (filter.kinds!.contains(ContactList.kKind) &&
-                textNotes != null) {
-              _respondeTextNote(filter.authors!, requestId);
-            }
-            if (filter.kinds!.contains(Metadata.kKind) && textNotes != null) {
-              _respondeTextNote(filter.authors!, requestId);
-            }
-            if (filter.kinds!
-                .any((el) => Nip51List.kPossibleKinds.contains(el))) {
-              _respondeTextNote(filter.authors!, requestId);
-            }
-          }
-          List<dynamic> eose = [];
-          eose.add("EOSE");
-          eose.add(requestId);
-          webSocket.add(jsonEncode(eose));
+          _respondToRequest(filter, requestId);
         }
       });
     }, onError: (error) {
-      log(' error: $error');
+      log('Error: $error');
     });
 
     log('Listening on localhost:${server.port}');
@@ -138,52 +135,67 @@ class MockRelay {
     return myPromise.future;
   }
 
-  void _respondeNip65(List<String> authors, String requestId) {
-    for (final author in authors) {
-      try {
-        KeyPair key =
-            nip65s!.keys.where((key) => key.publicKey == author).first;
-        Nip65? nip65 = nip65s![key];
-        if (nip65 != null && nip65.relays.isNotEmpty) {
-          List<dynamic> json = [];
-          json.add("EVENT");
-          json.add(requestId);
+  void _respondToRequest(Filter filter, String requestId) {
+    List<Nip01Event> matchingEvents = [];
+    if (filter.kinds != null &&
+        filter.kinds!.contains(ContactList.kKind) &&
+        filter.authors != null &&
+        filter.authors!.isNotEmpty) {
+      matchingEvents = _contactLists.values
+          .where((e) => filter.authors!.contains(e.pubKey))
+          .toList();
+    } else {
+      List<Nip01Event> matchingEvents = _storedEvents.where((event) {
+        bool kindMatches =
+            filter.kinds == null || filter.kinds!.contains(event.kind);
+        bool authorMatches =
+            filter.authors == null || filter.authors!.contains(event.pubKey);
+        return kindMatches && authorMatches;
+      }).toList();
 
-          Nip01Event event = nip65.toEvent();
-          if (signEvents) {
-            event.sign(key.privateKey!);
+      if (_nip65s != null) {
+        for (var entry in _nip65s!.entries) {
+          if (filter.authors != null &&
+              filter.authors!.contains(entry.key.publicKey) &&
+              (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
+            if (signEvents) {
+              Nip01Event event = entry.value.toEvent();
+              event.sign(entry.key.privateKey!);
+            }
+            matchingEvents.add(entry.value.toEvent());
           }
-          json.add(event.toJson());
-          webSocket!.add(jsonEncode(json));
         }
-      } catch (_) {}
-    }
-  }
+      }
 
-  void _respondeTextNote(List<String> authors, String requestId) {
-    for (var author in authors) {
-      List<KeyPair> keys =
-          textNotes!.keys.where((key) => key.publicKey == author).toList();
-      if (keys.isNotEmpty) {
-        KeyPair key = keys.first;
-        Nip01Event? textNote = Nip01Event.fromJson(textNotes![key]!.toJson());
-        List<dynamic> json = [];
-        json.add("EVENT");
-        json.add(requestId);
-
-        if (signEvents) {
-          textNote.sign(key.privateKey!);
+      if (textNotes != null) {
+        for (var entry in textNotes!.entries) {
+          if (filter.authors != null &&
+              filter.authors!.contains(entry.key.publicKey) &&
+              (filter.kinds == null ||
+                  filter.kinds!.contains(Nip01Event.kTextNodeKind) ||
+                  filter.kinds!
+                      .any((k) => Nip51List.kPossibleKinds.contains(k)) ||
+                  filter.kinds!.contains(ContactList.kKind) ||
+                  filter.kinds!.contains(Metadata.kKind))) {
+            if (signEvents) {
+              entry.value.sign(entry.key.privateKey!);
+            }
+            matchingEvents.add(entry.value);
+          }
         }
-        json.add(textNote.toJson());
-        webSocket!.add(jsonEncode(json));
       }
     }
+    for (var event in matchingEvents) {
+      _webSocket!.add(jsonEncode(["EVENT", requestId, event.toJson()]));
+    }
+
+    _webSocket!.add(jsonEncode(["EOSE", requestId]));
   }
 
   Future<void> stopServer() async {
     if (server != null) {
-      log('closing server on localhost:$url');
-      return await server!.close();
+      log('Closing server on localhost:$url');
+      await server!.close();
     }
   }
 }
