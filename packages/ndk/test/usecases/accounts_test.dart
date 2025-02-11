@@ -30,6 +30,18 @@ void main() async {
       expect(ndk.accounts.isNotLoggedIn, true);
     });
 
+    test('cannot sign', () {
+      expect(ndk.accounts.isNotLoggedIn, true);
+      ndk.accounts.loginPublicKey(pubkey: key0.publicKey);
+      expect(ndk.accounts.isLoggedIn, true);
+      expect(ndk.accounts.cannotSign, true);
+      expect(ndk.accounts.getPublicKey(), key0.publicKey);
+      expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
+      expect(ndk.accounts.hasAccount(key0.publicKey), true);
+      expect(() => ndk.accounts.sign(Nip01Event(pubKey: key0.publicKey, kind: Nip01Event.kTextNodeKind, tags: [], content: "")),
+          throwsA(isA<Exception>()));
+    });
+
     test('loginPrivateKey', () {
       expect(ndk.accounts.isNotLoggedIn, true);
       ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
