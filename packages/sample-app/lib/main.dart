@@ -2,6 +2,7 @@ import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
@@ -58,12 +59,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Nostr Development Kit Demo'),
           bottom: const TabBar(
             tabs: [
+              Tab(text: 'Accounts'),
               Tab(text: 'Metadata'),
               Tab(text: 'Amber'),
               Tab(text: 'Relays'),
@@ -75,6 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: TabBarView(
           children: [
+            AccountsPage(),
             metadata(ndk),
             !amberAvailable
                 ? const Center(child: Text("Amber not available"))
