@@ -82,5 +82,20 @@ void main() async {
 
       expect(rcvMetadatas.length, 1); // only one is missing
     });
+
+    test('broadcast metadata', () async {
+      ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      Metadata metadata = Metadata(pubKey: key0.publicKey);
+      await ndk.metadata.broadcastMetadata(metadata);
+
+      Metadata? result = await ndk.metadata.loadMetadata(key0.publicKey, forceRefresh: true);
+      expect(result!.pubKey, metadata.pubKey);
+
+      metadata.name = "my name";
+      await ndk.metadata.broadcastMetadata(metadata);
+      result = await ndk.metadata.loadMetadata(key0.publicKey, forceRefresh: true);
+      expect(result!.name, metadata.name);
+    });
+
   });
 }

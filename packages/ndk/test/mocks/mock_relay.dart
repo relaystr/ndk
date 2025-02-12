@@ -18,7 +18,7 @@ class MockRelay {
   Map<KeyPair, Nip01Event>? textNotes;
   Map<String, Nip01Event> _contactLists = {};
   Map<String, Nip01Event> _metadatas = {};
-  final List<Nip01Event> _storedEvents = []; // Store received events
+  final Set<Nip01Event> _storedEvents = {}; // Store received events
   bool signEvents;
   bool requireAuthForRequests;
 
@@ -117,7 +117,6 @@ class MockRelay {
             } else if (newEvent.kind == Metadata.kKind) {
               _metadatas[newEvent.pubKey] = newEvent;
             } else if (newEvent.kind == Deletion.kKind) {
-              // TODO: should handle more kinds (nip65, metadatas, contact lists, etc)
               _storedEvents.removeWhere((e) => newEvent.getEId() == e.id);
             } else {
               _storedEvents.add(newEvent);

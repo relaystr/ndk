@@ -132,7 +132,9 @@ class RelaySetsEngine implements NetworkEngine {
       }
     } else {
       for (final url in _bootstrapRelays) {
-        // TODO doesn't handle filter with ids only
+        if (state.request.filters.isEmpty) {
+          throw Exception("cannot do request with empty filters");
+        }
         state.addRequest(
             url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }

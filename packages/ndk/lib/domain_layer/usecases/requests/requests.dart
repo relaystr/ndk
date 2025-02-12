@@ -249,8 +249,11 @@ class Requests {
         state.cacheController.close();
       }
 
-      /// handle request
-      _engine.handleRequest(state);
+      /// if there are any more filters left (not served by cacheRead)
+      if (state.request.filters.isNotEmpty) {
+        /// handle request
+        _engine.handleRequest(state);
+      }
     }
 
     asyncStuff();

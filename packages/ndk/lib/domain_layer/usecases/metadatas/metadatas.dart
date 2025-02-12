@@ -48,12 +48,13 @@ class Metadatas {
     bool forceRefresh = false,
     Duration idleTimeout = METADATA_IDLE_TIMEOUT,
   }) async {
-    Metadata? metadata = await _cacheManager.loadMetadata(pubKey);
+    Metadata? metadata = !forceRefresh? await _cacheManager.loadMetadata(pubKey): null;
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
         await for (final event in _requests.query(
           name: 'metadata',
+          cacheRead: !forceRefresh,
           timeout: idleTimeout,
           filters: [
             Filter(kinds: [Metadata.kKind], authors: [pubKey], limit: 1)
@@ -126,7 +127,6 @@ class Metadatas {
     return metadatas.values.toList();
   }
 
-  // coverage:ignore-start
   Future<Nip01Event?> _refreshMetadataEvent() async {
     _checkSigner();
     Nip01Event? loaded;
@@ -168,18 +168,12 @@ class Metadatas {
 
     await bResult.broadcastDoneFuture;
 
-    _broadcast.broadcast(
-      nostrEvent: event,
-      specificRelays: specificRelays,
-    );
-
     metadata.updatedAt = Helpers.now;
     metadata.refreshedTimestamp = Helpers.now;
     await _cacheManager.saveMetadata(metadata);
 
     return metadata;
   }
-  // coverage:ignore-end
 
   /// *******************************************************************************************************************
 }
