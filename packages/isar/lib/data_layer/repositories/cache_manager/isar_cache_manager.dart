@@ -336,7 +336,7 @@ class IsarCacheManager extends CacheManager {
   @override
   Future<Nip01Event?> loadEvent(String id) async {
     Nip01Event? event = isar_ds.isar.dbEvents.get(id);
-    return eventFilter == null || (eventFilter!.filter(event)) ? event : null;
+    return event!=null && (eventFilter == null || (eventFilter!.filter(event))) ? event : null;
   }
 
   @override

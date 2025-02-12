@@ -18,7 +18,7 @@ class MockRelay {
   Map<KeyPair, Nip01Event>? textNotes;
   Map<String, Nip01Event> _contactLists = {};
   Map<String, Nip01Event> _metadatas = {};
-  List<Nip01Event> _storedEvents = []; // Store received events
+  final List<Nip01Event> _storedEvents = []; // Store received events
   bool signEvents;
   bool requireAuthForRequests;
 
@@ -71,7 +71,7 @@ class MockRelay {
     bool signedChallenge = false;
 
     stream.listen((webSocket) {
-      this._webSocket = webSocket;
+      _webSocket = webSocket;
       if (requireAuthForRequests && !signedChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));

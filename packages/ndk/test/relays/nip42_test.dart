@@ -49,7 +49,6 @@ void main() async {
       final response = ndk.requests.query(filters: [
         Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey])
       ]);
-      List<Nip01Event> events = await response.future;
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
 
       // TODO: Create events and do some requests

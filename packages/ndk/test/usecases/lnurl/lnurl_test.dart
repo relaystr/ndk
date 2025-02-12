@@ -6,7 +6,6 @@ import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
-import 'package:ndk/shared/logger/logger.dart';
 import 'package:test/test.dart';
 
 import 'lnurl_test.mocks.dart';
