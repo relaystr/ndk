@@ -39,7 +39,7 @@ void main() async {
         NdkConfig(
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
-            logLevel: Logger.logLevels.trace,
+            // logLevel: Logger.logLevels.trace,
             bootstrapRelays: [relay1.url]),
       );
 
@@ -67,7 +67,7 @@ void main() async {
         NdkConfig(
             eventVerifier: Bip340EventVerifier(),
             cache: MemCacheManager(),
-            logLevel: Logger.logLevels.trace,
+            // logLevel: Logger.logLevels.trace,
             bootstrapRelays: [relay1.url]),
       );
 

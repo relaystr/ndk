@@ -59,7 +59,7 @@ void main() {
       final transport = LnurlTransportHttpImpl(HttpRequestDS(client));
       final Lnurl lnurl = Lnurl(transport: transport);
       final zaps = Zaps(requests: ndk.requests, nwc: ndk.nwc, lnurl: lnurl);
-      Logger.setLogLevel(Logger.logLevels.trace);
+      // Logger.setLogLevel(Logger.logLevels.trace);
 
       ZapRequest zapRequest = await zaps.createZapRequest(
           amountSats: amount,

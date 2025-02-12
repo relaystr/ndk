@@ -30,7 +30,7 @@ void main() {
       final client = MockClient();
       final transport = LnurlTransportHttpImpl(HttpRequestDS(client));
       final Lnurl lnurl = Lnurl(transport: transport);
-      Logger.setLogLevel(Logger.logLevels.trace);
+      // Logger.setLogLevel(Logger.logLevels.trace);
 
       final link = 'https://domain.com/.well-known/lnurlp/name';
       final response = {
