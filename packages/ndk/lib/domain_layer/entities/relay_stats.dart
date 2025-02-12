@@ -20,7 +20,7 @@ class RelayStats {
   int touchUseful = 0;
 
   /// describes how often the relay was used and returned something useful
-  double get relayUsefulness => touchUseful / touched;
+  // double get relayUsefulness => touchUseful / touched;
 
   /// kind as keys, count as values
   Map<int, int> eventsRead = {};
