@@ -78,10 +78,10 @@ class Nip65 {
     );
   }
 
+// coverage:ignore-start
   @override
-  // coverage:ignore-start
   String toString() {
     return 'Nip65{urls: $relays}';
   }
-  // coverage:ignore-end
+// coverage:ignore-end
 }

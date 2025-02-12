@@ -13,7 +13,7 @@ class PubkeyMapping {
     required this.rwMarker,
   });
 
-  // coverage:ignore-start
+// coverage:ignore-start
   @override
   String toString() {
     String result = '$pubKey ';
@@ -25,7 +25,7 @@ class PubkeyMapping {
     }
     return result;
   }
-  // coverage:ignore-end
+// coverage:ignore-end
 
   @override
   bool operator ==(Object other) =>
