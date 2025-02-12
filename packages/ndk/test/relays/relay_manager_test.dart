@@ -33,6 +33,34 @@ void main() async {
       await relay1.stopServer();
     });
 
+    test('Reconnect to relay', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5044);
+      await relay1.startServer();
+
+      RelayManager manager = RelayManager(
+        globalState: GlobalState(),
+        bootstrapRelays: [relay1.url],
+        nostrTransportFactory: webSocketNostrTransportFactory,
+      );
+      await manager
+          .connectRelay(
+          dirtyUrl: relay1.url, connectionSource: ConnectionSource.seed)
+          .then((value) {})
+          .onError((error, stackTrace) async {
+        await relay1.stopServer();
+      });
+
+      await manager.globalState.relays[relay1.url]!.relayTransport!.close();
+      await manager
+          .reconnectRelay(
+          relay1.url, connectionSource: ConnectionSource.seed)
+          .then((value) {})
+          .onError((error, stackTrace) async {
+        await relay1.stopServer();
+      });
+      await relay1.stopServer();
+    });
+
     test('Try to connect to dead relay', () async {
       RelayManager manager = RelayManager(
         nostrTransportFactory: webSocketNostrTransportFactory,
