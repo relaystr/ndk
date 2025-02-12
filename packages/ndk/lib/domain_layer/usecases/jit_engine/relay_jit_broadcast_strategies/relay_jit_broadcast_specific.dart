@@ -42,6 +42,9 @@ class RelayJitBroadcastSpecificRelaysStrategy {
 
     // broadcast event
     for (var relayUrl in actualBroadcastList) {
+      if (connectedRelays.isEmpty) {
+        throw Exception("No connected relays");
+      }
       final relay =
           connectedRelays.firstWhere((element) => element.url == relayUrl);
 

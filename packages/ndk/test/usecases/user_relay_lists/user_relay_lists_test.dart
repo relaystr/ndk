@@ -1,8 +1,8 @@
-import 'package:test/test.dart';
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:test/test.dart';
 
 import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
@@ -25,15 +25,14 @@ void main() async {
         createdAt: 100,
         refreshedTimestamp: 0);
 
+    KeyPair key3 = Bip340.generatePrivateKey();
+
     late MockRelay relay0;
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 5095);
-      await relay0.startServer(nip65s: {
-        key0: cache0.toNip65(),
-        key1: cache1.toNip65(),
-      });
+      relay0 = MockRelay(name: "relay 0", explicitPort: 5097);
+      await relay0.startServer();
 
       final cache = MemCacheManager();
       final NdkConfig config = NdkConfig(
@@ -41,25 +40,13 @@ void main() async {
         cache: cache,
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay0.url],
+        // logLevel: Logger.logLevels.trace,
         ignoreRelays: [],
       );
 
       ndk = Ndk(config);
 
       await ndk.relays.seedRelaysConnected;
-
-      cache.saveUserRelayList(cache0);
-    });
-
-    setUp(() async {
-      final cache = MemCacheManager();
-      final NdkConfig config = NdkConfig(
-        eventVerifier: MockEventVerifier(),
-        cache: cache,
-        bootstrapRelays: [],
-      );
-
-      ndk = Ndk(config);
 
       cache.saveUserRelayList(cache0);
     });
@@ -79,6 +66,40 @@ void main() async {
 
       // cache
       expect(rcv, equals(cache0));
+    });
+    test('broadcastAdd/RemoveNip65Relay', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key3.publicKey, privkey: key3.privateKey!);
+      final r1 = "wss://bla1.com";
+      // add
+      await ndk.userRelayLists.broadcastAddNip65Relay(
+          relayUrl: r1,
+          marker: ReadWriteMarker.readWrite,
+          broadcastRelays: [relay0.url]);
+
+      UserRelayList? list = await ndk.userRelayLists
+          .getSingleUserRelayList(key3.publicKey, forceRefresh: true);
+      expect(list!.relays.keys.contains(r1), true);
+      expect(list.relays[r1], ReadWriteMarker.readWrite);
+
+      // update marker
+      await ndk.userRelayLists.broadcastUpdateNip65RelayMarker(
+          relayUrl: r1,
+          marker: ReadWriteMarker.readOnly,
+          broadcastRelays: [relay0.url]);
+
+      list = await ndk.userRelayLists
+          .getSingleUserRelayList(key3.publicKey, forceRefresh: true);
+      expect(list!.relays[r1], ReadWriteMarker.readOnly);
+
+      // remove
+      await ndk.userRelayLists.broadcastRemoveNip65Relay(
+          relayUrl: r1,
+          broadcastRelays: [relay0.url]);
+
+      list = await ndk.userRelayLists
+          .getSingleUserRelayList(key3.publicKey, forceRefresh: true);
+      expect(list!.relays.containsKey(r1), false);
     });
   });
 }

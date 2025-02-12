@@ -29,7 +29,7 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 5095);
+      relay0 = MockRelay(name: "relay 0", explicitPort: 5096);
       await relay0.startServer(metadatas: {
         key0.publicKey: network0Metadata.toEvent(),
         key1.publicKey: network1Metadata.toEvent(),

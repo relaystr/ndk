@@ -244,7 +244,7 @@ class UserRelayLists {
   /// broadcast removal of nip65 relay
   Future<UserRelayList?> broadcastRemoveNip65Relay({
     required String relayUrl,
-    Iterable<String>? specificRelays,
+    required Iterable<String> broadcastRelays,
   }) async {
     UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
 
@@ -257,7 +257,7 @@ class UserRelayLists {
 
       final broadcastResponse = _broadcast.broadcast(
         nostrEvent: userRelayList.toNip65().toEvent(),
-        specificRelays: specificRelays,
+        specificRelays: broadcastRelays,
       );
       await Future.wait([
         broadcastResponse.broadcastDoneFuture,
@@ -272,6 +272,7 @@ class UserRelayLists {
   Future<UserRelayList?> broadcastUpdateNip65RelayMarker({
     required String relayUrl,
     required ReadWriteMarker marker,
+    required Iterable<String> broadcastRelays,
   }) async {
     UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
 
@@ -296,6 +297,7 @@ class UserRelayLists {
 
       final broadcastResponse = _broadcast.broadcast(
         nostrEvent: userRelayList.toNip65().toEvent(),
+        specificRelays: broadcastRelays
       );
 
       await broadcastResponse.broadcastDoneFuture;
