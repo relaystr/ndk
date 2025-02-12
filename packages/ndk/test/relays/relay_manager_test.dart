@@ -33,7 +33,7 @@ void main() async {
       await relay1.stopServer();
     });
 
-    test('Reconnect to relay', () async {
+    test('wasLastConnectTryLongerThanSeconds', () async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5044);
       await relay1.startServer();
 
@@ -50,14 +50,8 @@ void main() async {
         await relay1.stopServer();
       });
 
-      await manager.globalState.relays[relay1.url]!.relayTransport!.close();
-      await manager
-          .reconnectRelay(
-          relay1.url, connectionSource: ConnectionSource.seed)
-          .then((value) {})
-          .onError((error, stackTrace) async {
-        await relay1.stopServer();
-      });
+
+      expect(manager.globalState.relays[relay1.url]!.relay.wasLastConnectTryLongerThanSeconds(120), false);
       await relay1.stopServer();
     });
 
@@ -72,6 +66,21 @@ void main() async {
       try {
         await manager.connectRelay(
             dirtyUrl: relay1.url, connectionSource: ConnectionSource.seed);
+        fail("should throw exception");
+      } catch (e) {
+        // success
+      }
+    });
+    test('Try to connect to wss://brb.io', () async {
+      RelayManager manager = RelayManager(
+        nostrTransportFactory: webSocketNostrTransportFactory,
+        bootstrapRelays: [],
+        globalState: GlobalState(),
+      );
+
+      try {
+        await manager.connectRelay(
+            dirtyUrl: "wss://brb.io", connectionSource: ConnectionSource.seed);
         fail("should throw exception");
       } catch (e) {
         // success
