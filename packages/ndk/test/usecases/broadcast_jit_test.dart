@@ -1,23 +1,22 @@
-import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/shared/nips/nip25/reactions.dart';
-import 'package:test/test.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/shared/nips/nip25/reactions.dart';
+import 'package:test/test.dart';
 
 import '../mocks/mock_event_verifier.dart';
 import '../mocks/mock_relay.dart';
 
 void main() async {
-  group('broadcast', () {
+  group('broadcast JIT', () {
     KeyPair key0 = Bip340.generatePrivateKey();
 
     late MockRelay relay0;
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 5098);
+      relay0 = MockRelay(name: "relay 0", explicitPort: 5095);
       await relay0.startServer(nip65s: {
         key0: Nip65(pubKey: key0.publicKey, relays: {relay0.url: ReadWriteMarker.readWrite},createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 )
       });
@@ -26,7 +25,7 @@ void main() async {
       final NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: cache,
-        engine: NdkEngine.RELAY_SETS,
+        engine: NdkEngine.JIT,
         bootstrapRelays: [relay0.url],
         ignoreRelays: [],
       );
