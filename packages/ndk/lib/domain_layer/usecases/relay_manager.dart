@@ -363,7 +363,7 @@ class RelayManager<T> {
       Logger.log.w("NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
       _logActiveRequests();
     } else if (eventJson[0] == 'EVENT') {
-      _handleIncomingEvent(eventJson, relayConnectivity.url);
+      _handleIncomingEvent(eventJson, relayConnectivity, message.toString().codeUnits.length);
       Logger.log.t("EVENT from ${relayConnectivity.url}: $eventJson");
     } else if (eventJson[0] == 'EOSE') {
       Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
@@ -400,25 +400,26 @@ class RelayManager<T> {
     // }
   }
 
-  void _handleIncomingEvent(List<dynamic> eventJson, String url) {
+  void _handleIncomingEvent(List<dynamic> eventJson, RelayConnectivity connectivity, int messageSize) {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
       Logger.log.w(
-          "RECEIVED EVENT from $url for id $id, not in globalState inFlightRequests");
+          "RECEIVED EVENT from ${connectivity.url} for id $id, not in globalState inFlightRequests");
       // send(url, jsonEncode(["CLOSE", id]));
       return;
     }
 
     Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+    connectivity.stats.incStatsByNewEvent(event, messageSize);
 
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
-      RelayRequestState? request = state.requests[url];
+      RelayRequestState? request = state.requests[connectivity.url];
       if (request == null) {
         Logger.log.w("No RelayRequestState found for id $id");
         return;
       }
-      event.sources.add(url);
+      event.sources.add(connectivity.url);
 
       if (state.networkController.isClosed) {
         // this might happen because relays even after we send a CLOSE subscription.id, they'll still send more events
