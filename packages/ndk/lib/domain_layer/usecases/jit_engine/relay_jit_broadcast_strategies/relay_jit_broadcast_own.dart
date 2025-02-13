@@ -29,7 +29,7 @@ class RelayJitBroadcastOutboxStrategy {
     List<String> writeRelaysUrls;
 
     if (nip65Data == null) {
-      Logger.log.e(
+      Logger.log.w(
           "broadcast - could not find nip65 data for ${eventToPublish.pubKey}, using DEFAULT_BOOTSTRAP_RELAYS for now. \nPlease ensure nip65Data exists to use outbox model => UserRelayLists usecase");
 
       writeRelaysUrls = bootstrapRelays;
