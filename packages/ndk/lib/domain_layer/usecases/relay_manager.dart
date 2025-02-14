@@ -363,7 +363,8 @@ class RelayManager<T> {
       Logger.log.w("NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
       _logActiveRequests();
     } else if (eventJson[0] == 'EVENT') {
-      _handleIncomingEvent(eventJson, relayConnectivity, message.toString().codeUnits.length);
+      _handleIncomingEvent(
+          eventJson, relayConnectivity, message.toString().codeUnits.length);
       Logger.log.t("EVENT from ${relayConnectivity.url}: $eventJson");
     } else if (eventJson[0] == 'EOSE') {
       Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
@@ -400,7 +401,8 @@ class RelayManager<T> {
     // }
   }
 
-  void _handleIncomingEvent(List<dynamic> eventJson, RelayConnectivity connectivity, int messageSize) {
+  void _handleIncomingEvent(List<dynamic> eventJson,
+      RelayConnectivity connectivity, int messageSize) {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
       Logger.log.w(
