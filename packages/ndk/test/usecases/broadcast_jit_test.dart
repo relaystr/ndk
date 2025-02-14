@@ -133,6 +133,7 @@ void main() async {
 
   group('broadcast JIT - strategies', () {
     KeyPair key1 = Bip340.generatePrivateKey();
+    KeyPair keyOther = Bip340.generatePrivateKey();
 
     late MockRelay relay1;
     late MockRelay relay2;
@@ -160,7 +161,17 @@ void main() async {
 
       ndk = Ndk(config);
 
-      //cache.saveUserRelayList(UserRelayList.fromNip65(Nip65(pubKey: key0.publicKey, relays: {relay0.url: ReadWriteMarker.readWrite},createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 )));
+      // own
+      cache.saveUserRelayList(UserRelayList.fromNip65(Nip65(
+          pubKey: key1.publicKey,
+          relays: {relay1.url: ReadWriteMarker.readWrite},
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)));
+
+      // other
+      cache.saveUserRelayList(UserRelayList.fromNip65(Nip65(
+          pubKey: keyOther.publicKey,
+          relays: {relay2.url: ReadWriteMarker.readWrite},
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)));
       await ndk.relays.seedRelaysConnected;
     });
 
@@ -181,6 +192,31 @@ void main() async {
       await ndk.broadcast.broadcast(
           nostrEvent: event,
           specificRelays: [relay1.url, relay2.url]).broadcastDoneFuture;
+
+      List<Nip01Event> result = await ndk.requests.query(
+        explicitRelays: [relay2.url],
+        filters: [
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
+        ],
+      ).future;
+      expect(result.length, 1);
+    });
+
+    test('broadcast JIT - other read', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      Nip01Event event = Nip01Event(
+          pubKey: key1.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [
+            ["p", keyOther.publicKey]
+          ],
+          content: "hi other");
+      await ndk.broadcast
+          .broadcast(
+            nostrEvent: event,
+          )
+          .broadcastDoneFuture;
 
       List<Nip01Event> result = await ndk.requests.query(
         explicitRelays: [relay2.url],

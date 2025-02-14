@@ -155,7 +155,7 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       // default publish to own outbox
-      await RelayJitBroadcastOutboxStrategy.broadcast(
+      RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: nostrEvent,
         connectedRelays: relayManagerLight.connectedRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
@@ -167,7 +167,7 @@ class JitEngine with Logger implements NetworkEngine {
 
       // check if we need to publish to others inboxes
       if (nostrEvent.pTags.isNotEmpty) {
-        await RelayJitBroadcastOtherReadStrategy.broadcast(
+        RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: nostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
