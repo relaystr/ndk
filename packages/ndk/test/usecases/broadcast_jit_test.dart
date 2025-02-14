@@ -130,4 +130,65 @@ void main() async {
       expect(list.first.content, reaction);
     });
   });
+
+  group('broadcast JIT - strategies', () {
+    KeyPair key1 = Bip340.generatePrivateKey();
+
+    late MockRelay relay1;
+    late MockRelay relay2;
+    late Ndk ndk;
+
+    setUp(() async {
+      relay1 = MockRelay(name: "relay 1", explicitPort: 5096);
+      relay2 = MockRelay(name: "relay 2", explicitPort: 5097);
+      await relay1.startServer(nip65s: {
+        key1: Nip65(
+            pubKey: key1.publicKey,
+            relays: {relay1.url: ReadWriteMarker.readWrite},
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)
+      });
+      await relay2.startServer();
+
+      final cache = MemCacheManager();
+      final NdkConfig config = NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: cache,
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay1.url],
+        ignoreRelays: [],
+      );
+
+      ndk = Ndk(config);
+
+      //cache.saveUserRelayList(UserRelayList.fromNip65(Nip65(pubKey: key0.publicKey, relays: {relay0.url: ReadWriteMarker.readWrite},createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 )));
+      await ndk.relays.seedRelaysConnected;
+    });
+
+    tearDown(() async {
+      await ndk.destroy();
+      await relay1.stopServer();
+      await relay2.stopServer();
+    });
+
+    test('broadcast JIT - specific', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      Nip01Event event = Nip01Event(
+          pubKey: key1.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "hi there");
+      await ndk.broadcast.broadcast(
+          nostrEvent: event,
+          specificRelays: [relay1.url, relay2.url]).broadcastDoneFuture;
+
+      List<Nip01Event> result = await ndk.requests.query(
+        explicitRelays: [relay2.url],
+        filters: [
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
+        ],
+      ).future;
+      expect(result.length, 1);
+    });
+  });
 }

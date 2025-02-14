@@ -34,7 +34,9 @@ Future<List<String>> connectRelays({
   final List<String> couldNotConnectRelays = [];
   for (final relayUrl in relaysToConnect) {
     final success = await relayManager.connectRelay(
-        connectionSource: connectionSource, dirtyUrl: relayUrl);
+      connectionSource: connectionSource,
+      dirtyUrl: relayUrl,
+    );
 
     if (!success.first) {
       couldNotConnectRelays.add(relayUrl);
