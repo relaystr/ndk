@@ -114,6 +114,7 @@ class Initialization {
           ignoreRelays: _ndkConfig.ignoreRelays,
           relayManagerLight: relayManager,
           globalState: _globalState,
+          bootstrapRelays: _ndkConfig.bootstrapRelays,
         );
         break;
     }

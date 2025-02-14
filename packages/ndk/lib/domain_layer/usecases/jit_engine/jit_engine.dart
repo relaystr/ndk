@@ -23,7 +23,6 @@ import '../relay_manager.dart';
 /// Just In Time Network Engine
 /// This engine is responsible for handling all nostr network requests
 class JitEngine with Logger implements NetworkEngine {
-
   /// cache manager for caching events
   CacheManager cache;
 
@@ -36,12 +35,16 @@ class JitEngine with Logger implements NetworkEngine {
   /// global state of the ndk
   GlobalState globalState;
 
+  /// ndk config
+  List<String> bootstrapRelays;
+
   /// Creates a new JIT engine.
   JitEngine({
     required this.relayManagerLight,
     required this.cache,
     required this.ignoreRelays,
     required this.globalState,
+    required this.bootstrapRelays,
   });
 
   /// If you request anything from the nostr network put it here and
@@ -159,6 +162,7 @@ class JitEngine with Logger implements NetworkEngine {
             .toList(),
         cacheManager: cache,
         relayManager: relayManagerLight,
+        bootstrapRelays: bootstrapRelays,
       );
 
       // check if we need to publish to others inboxes

@@ -1,3 +1,4 @@
+import '../../../../shared/logger/logger.dart';
 import '../../../../shared/nips/nip01/client_msg.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
@@ -18,22 +19,28 @@ class RelayJitBroadcastOutboxStrategy {
         connectedRelays,
     required CacheManager cacheManager,
     required RelayManager relayManager,
+    required List<String> bootstrapRelays,
   }) async {
     final nip65Data = await UserRelayLists.getUserRelayListCacheLatestSingle(
       pubkey: eventToPublish.pubKey,
       cacheManager: cacheManager,
     );
 
+    List<String> writeRelaysUrls;
+
     if (nip65Data == null) {
-      throw "could not find nip65 data for event";
+      Logger.log.w(
+          "broadcast - could not find nip65 data for ${eventToPublish.pubKey}, using DEFAULT_BOOTSTRAP_RELAYS for now. \nPlease ensure nip65Data exists to use outbox model => UserRelayLists usecase");
+
+      writeRelaysUrls = bootstrapRelays;
+    } else {
+      /// get all relays where write marker is write
+
+      writeRelaysUrls = nip65Data.relays.entries
+          .where((element) => element.value.isWrite)
+          .map((e) => e.key)
+          .toList();
     }
-
-    /// get all relays where write marker is write
-
-    final writeRelaysUrls = nip65Data.relays.entries
-        .where((element) => element.value.isWrite)
-        .map((e) => e.key)
-        .toList();
 
     // check connection status
     final notConnectedRelays = checkConnectionStatus(

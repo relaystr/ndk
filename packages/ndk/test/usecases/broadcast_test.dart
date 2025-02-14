@@ -1,4 +1,3 @@
-import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:test/test.dart';
@@ -19,7 +18,10 @@ void main() async {
     setUp(() async {
       relay0 = MockRelay(name: "relay 0", explicitPort: 5098);
       await relay0.startServer(nip65s: {
-        key0: Nip65(pubKey: key0.publicKey, relays: {relay0.url: ReadWriteMarker.readWrite},createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 )
+        key0: Nip65(
+            pubKey: key0.publicKey,
+            relays: {relay0.url: ReadWriteMarker.readWrite},
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)
       });
 
       final cache = MemCacheManager();
@@ -33,7 +35,10 @@ void main() async {
 
       ndk = Ndk(config);
 
-      cache.saveUserRelayList(UserRelayList.fromNip65(Nip65(pubKey: key0.publicKey, relays: {relay0.url: ReadWriteMarker.readWrite},createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 )));
+      cache.saveUserRelayList(UserRelayList.fromNip65(Nip65(
+          pubKey: key0.publicKey,
+          relays: {relay0.url: ReadWriteMarker.readWrite},
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)));
       await ndk.relays.seedRelaysConnected;
     });
 

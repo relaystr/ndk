@@ -121,6 +121,7 @@ void main() async {
         cache: cacheManager,
         ignoreRelays: [],
         globalState: globalState,
+        bootstrapRelays: [relay21.url],
       );
 
       RequestState myRequest = RequestState(NdkRequest.query(
