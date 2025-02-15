@@ -43,6 +43,11 @@ class Filter {
   /// Maximum number of events to return.
   int? limit;
 
+  /// Map to store arbitrary/unsupported tags \
+  /// Key is the tag name, value is a list of tag values
+  /// Unsupported tags dont offer caching support
+  Map<String, List<String>>? arbitraryTags;
+
   Filter({
     this.ids,
     this.authors,
@@ -57,6 +62,7 @@ class Filter {
     this.since,
     this.until,
     this.limit,
+    this.arbitraryTags,
   });
 
   Filter.fromMap(Map<String, dynamic> map) {
@@ -73,6 +79,23 @@ class Filter {
     since = map['since'];
     until = map['until'];
     limit = map['limit'];
+
+    // Handle arbitrary tags
+    arbitraryTags = {};
+    map.forEach((key, value) {
+      if (key.startsWith('#') &&
+          ![
+            '#e',
+            '#p',
+            '#t',
+            '#a',
+            '#d',
+            '#m',
+          ].contains(key)) {
+        arbitraryTags![key] = List<String>.from(value);
+      }
+    });
+    if (arbitraryTags!.isEmpty) arbitraryTags = null;
   }
 
   Map<String, dynamic> toMap() {
@@ -91,6 +114,12 @@ class Filter {
       "search": search,
       "limit": limit,
     };
+
+    // Add arbitrary tags to the map
+    if (arbitraryTags != null) {
+      body.addAll(arbitraryTags!);
+    }
+
     // remove null values
     body.removeWhere((key, value) => value == null);
 
@@ -159,6 +188,21 @@ class Filter {
       since: since,
       until: until,
       limit: limit,
+      arbitraryTags: arbitraryTags != null
+          ? Map<String, List<String>>.from(arbitraryTags!)
+          : null,
     );
+  }
+
+  // set an arbitrary tag
+  void setArbitraryTag(String tagName, List<String> values) {
+    arbitraryTags ??= {};
+    arbitraryTags![tagName.startsWith('#') ? tagName : '#$tagName'] = values;
+  }
+
+  // get an arbitrary tag
+  List<String>? getArbitraryTag(String tagName) {
+    if (arbitraryTags == null) return null;
+    return arbitraryTags![tagName.startsWith('#') ? tagName : '#$tagName'];
   }
 }
