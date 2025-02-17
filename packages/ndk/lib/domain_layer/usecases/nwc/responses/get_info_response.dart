@@ -33,7 +33,7 @@ class GetInfoResponse extends NwcResponse {
 
     Map<String, dynamic> result = input['result'] as Map<String, dynamic>;
     final methodsList = result["methods"] as List;
-    final notificationsList = result["notifications"] as List;
+    final notificationsList = result["notifications"] as List? ?? [];
 
     List<String> methods =
         methodsList.map((method) => method.toString()).toList();
