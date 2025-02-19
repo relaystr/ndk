@@ -15,6 +15,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - [yana](https://github.com/frnandu/yana)
 - [camelus](https://github.com/leo-lox/camelus)
 - [zapstore](https://github.com/zapstore/zapstore)
+- [freeflow](https://github.com/nostrlabs-io/freeflow)
 
 # ➡️ [Getting Started 🔗](https://dart-nostr.com/guides/getting-started/)
 
