@@ -15,7 +15,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 NDK ships in small packages to allow granular control of dependencies in your dart/flutter projects.
 
-### [🔗 Dart Nostr Development Kit (NDK)](./packages/ndk/)
+### [🔗 Dart Nostr Development Kit (NDK)](./packages/ndk/#readme)
 
 Core package of the NDK. Go here for instructions on how to use the NDK. 📜
 
