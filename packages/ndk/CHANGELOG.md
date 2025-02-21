@@ -1,3 +1,9 @@
+## 0.3.0
+
+- blossom improvmements
+- accounts usecase (switch signer)
+- docs: enable gossip guide, accounts
+
 ## 0.2.6
 
 - full blossom support
