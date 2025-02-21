@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.6.0.792158840885">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.6.0.793456148694">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.6.0">
@@ -11,7 +11,7 @@
     <!-- Primary Meta Tags -->
     <title>Blossom</title>
     <meta name="title" content="Blossom">
-    <meta name="description" content="For a simpler more generic api check out Blossom">
+    <meta name="description" content="For a simpler, more generic API, check out Blossom">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/usecases/blossom/">
@@ -20,22 +20,22 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dart-nostr.com/usecases/blossom/">
     <meta property="og:title" content="Blossom">
-    <meta property="og:description" content="For a simpler more generic api check out Blossom">
+    <meta property="og:description" content="For a simpler, more generic API, check out Blossom">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://dart-nostr.com/usecases/blossom/">
     <meta property="twitter:title" content="Blossom">
-    <meta property="twitter:description" content="For a simpler more generic api check out Blossom">
+    <meta property="twitter:description" content="For a simpler, more generic API, check out Blossom">
 
     <script data-cfasync="false">(function () { var el = document.documentElement, m = localStorage.getItem("doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../resources/css/retype.css?v=3.6.0.792158840885" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=3.6.0.793456148694" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=3.6.0.792158840885" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=3.6.0.793456148694" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=3.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.6.0.792158840885" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.6.0.792158840885" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.6.0.793456148694" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.6.0.793456148694" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -52,7 +52,7 @@
                     <div class="flex items-center px-2 md:px-6">
                         <a id="docs-site-logo" href="../../" class="flex items-center leading-snug text-2xl">
                             <span class="dark:text-white font-semibold line-clamp-1 md:line-clamp-2">NDK</span>
-                        </a><span class="hidden px-2 py-1 ml-4 text-sm font-semibold leading-none text-root-logo-label-text bg-root-logo-label-bg rounded-sm md:inline-block">v0.2.6</span>
+                        </a><span class="hidden px-2 py-1 ml-4 text-sm font-semibold leading-none text-root-logo-label-text bg-root-logo-label-bg rounded-sm md:inline-block">v0.3.0</span>
                     </div>
         
                     <span class="hidden h-8 border-r md:inline-block dark:border-dark-650"></span>
@@ -203,7 +203,7 @@ print(
         <span>When to use</span>
     </h2>
 </doc-anchor-target>
-<p>For a simpler more generic api check out
+<p>For a simpler, more generic API, check out
 <div class="mb-6 px-5 py-4 flex justify-between relative border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded transition-colors duration-150">
     <div class="flex items-center text-blue-500 dark:text-blue-400">
         <span class="inline-block mb-px">
@@ -222,6 +222,212 @@ print(
 <div class="codeblock-wrapper"><doc-codeblock>
 <pre class="language-dart"><code v-pre class="language-dart">const Duration BLOSSOM_AUTH_EXPIRATION = Duration(minutes: 5);</code></pre>
 </doc-codeblock></div>
+<doc-anchor-target id="methods---blossom">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#methods---blossom">#</doc-anchor-trigger>
+        <span>methods - Blossom</span>
+    </h3>
+</doc-anchor-target>
+<doc-anchor-target id="uploadblob">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#uploadblob">#</doc-anchor-trigger>
+        <span>uploadBlob</span>
+    </h4>
+</doc-anchor-target>
+<p>upload a blob, if serverMediaOptimisation is set to <code v-pre>true</code> the <code v-pre>/media</code> endpoint is used.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// upload a blob to the server
+/// if [serverUrls] is null, the userServerList is fetched from nostr. \
+/// if the pukey has no UserServerList (kind: 10063), throws an error \
+/// the current signer is used to sign the request \
+/// [strategy] is the upload strategy, default is mirrorAfterSuccess \
+/// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
+Future&lt;List&lt;BlobUploadResult&gt;&gt; uploadBlob({
+  required Uint8List data,
+  List&lt;String&gt;? serverUrls,
+  String? contentType,
+  UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+  bool serverMediaOptimisation = false,
+}) async {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="getblob">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#getblob">#</doc-anchor-trigger>
+        <span>getBlob</span>
+    </h4>
+</doc-anchor-target>
+<p>Download the blob and use fallback if the blob is not found or the server is offline.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// Gets a blob by trying servers sequentially until success (fallback) \
+/// if [serverUrls] is null, the userServerList is fetched from nostr. \
+/// if the pukey has no UserServerList (kind: 10063), throws an error
+Future&lt;BlobResponse&gt; getBlob({
+  required String sha256,
+  bool useAuth = false,
+  List&lt;String&gt;? serverUrls,
+  String? pubkeyToFetchUserServerList,
+}) async {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="checkblob">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#checkblob">#</doc-anchor-trigger>
+        <span>checkBlob</span>
+    </h4>
+</doc-anchor-target>
+<div class="flex mb-6">
+    <div class="shrink-0 w-1 rounded-tl rounded-bl bg-blue-500 dark:bg-blue-400"></div>
+    <div class="flex w-full py-4 border border-l-0 border-gray-300 rounded-tr rounded-br doc-alert bg-white dark:bg-dark-700 dark:border-dark-700" role="alert">
+        <div class="flex items-center ml-4 h-7">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mb-px text-blue-500 dark:text-blue-400" width="22" height="22" viewBox="0 0 24 24" role="presentation">
+                <g fill="currentColor"><g>
+                    <path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm0 20c-4.96 0-9-4.04-9-9s4.04-9 9-9 9 4.04 9 9-4.04 9-9 9z"></path>
+                    <path d="M12 11c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1s1-.45 1-1v-4c0-.55-.45-1-1-1zM12.01 7c-.56 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path>
+                    <path fill="none" d="M0 0h24v24H0z"></path>
+                </g></g>
+            </svg>
+        </div>
+        <div class="pr-5 ml-3 w-full">
+<p>if you have a video player that uses a url you can use check to get a valid url first. Example can be found in NDK demo app</p>
+        </div>
+    </div>
+</div>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// checks if the blob exists on the server without downloading, useful to check before streaming a video via url \
+/// if [serverUrls] is null, the userServerList is fetched from nostr. \
+/// if the pukey has no UserServerList (kind: 10063), throws an error
+///
+/// returns the url of one server that has the blob e.g. https://myserver.com/hash.pdf \
+/// otherwise  throws an error
+Future&lt;String&gt; checkBlob({
+  required String sha256,
+  bool useAuth = false,
+  List&lt;String&gt;? serverUrls,
+  String? pubkeyToFetchUserServerList,
+}) async {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="getblobstream">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#getblobstream">#</doc-anchor-trigger>
+        <span>getBlobStream</span>
+    </h4>
+</doc-anchor-target>
+<p>Similar to <code v-pre>getBlob</code>, it streams the data, which is helpful for video files.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// downloads a blob as a stream, useful for large files like videos \
+/// if [serverUrls] is null, the userServerList is fetched from nostr. \
+/// if the pukey has no UserServerList (kind: 10063), throws an error
+Future&lt;Stream&lt;BlobResponse&gt;&gt; getBlobStream({
+  required String sha256,
+  bool useAuth = false,
+  List&lt;String&gt;? serverUrls,
+  String? pubkeyToFetchUserServerList,
+  int chunkSize = 1024 * 1024, // 1MB chunks,
+}) async {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="listblobs">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#listblobs">#</doc-anchor-trigger>
+        <span>listBlobs</span>
+    </h4>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// list the [pubkey] blobs \
+/// if [serverUrls] is null, the userServerList is fetched from nostr. \
+/// if the pukey has no UserServerList (kind: 10063), throws an error
+///
+Future&lt;List&lt;BlobDescriptor&gt;&gt; listBlobs({
+  required String pubkey,
+  List&lt;String&gt;? serverUrls,
+  bool useAuth = true,
+  DateTime? since,
+  DateTime? until,
+}) async {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="deleteblob">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#deleteblob">#</doc-anchor-trigger>
+        <span>deleteBlob</span>
+    </h4>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// delete a blob
+/// if [serverUrls] is null, the userServerList is fetched from nostr. \
+/// if the pukey has no UserServerList (kind: 10063), throws an error \
+/// the current signer is used to sign the request
+Future&lt;List&lt;BlobDeleteResult&gt;&gt; deleteBlob({
+  required String sha256,
+  List&lt;String&gt;? serverUrls,
+}) async {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="directdownload">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#directdownload">#</doc-anchor-trigger>
+        <span>directDownload</span>
+    </h4>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// Directly downloads a blob from the url, without blossom
+Future&lt;BlobResponse&gt; directDownload({
+  required Uri url,
+}) {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="report">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#report">#</doc-anchor-trigger>
+        <span>report</span>
+    </h4>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// Reports a blob to the server
+/// [sha256] is the hash of the blob
+/// [eventId] is the event id where the blob was mentioned
+/// [reportType] is the type of report, e.g. malware @see nip56
+/// [reportMsg] is the message to send to the server
+/// [serverUrl] server url to report to
+///
+/// returns the http status code of the rcv server
+Future&lt;int&gt; report({
+  required String sha256,
+  required String eventId,
+  required String reportType,
+  required String reportMsg,
+  required String serverUrl,
+}) async {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="methods---blossomuserserverlist">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#methods---blossomuserserverlist">#</doc-anchor-trigger>
+        <span>methods - BlossomUserServerList</span>
+    </h3>
+</doc-anchor-target>
+<p>To get and set the user server list e.g. on settings page, you can use <code v-pre>BlossomUserServerList</code></p>
+<doc-anchor-target id="getuserserverlist">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#getuserserverlist">#</doc-anchor-trigger>
+        <span>getUserServerList</span>
+    </h4>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// Get user server list \
+/// returns list of server urls \
+/// returns null if the user has no server list
+Future&lt;List&lt;String&gt;?&gt; getUserServerList({
+  required List&lt;String&gt; pubkeys,
+}) async {</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="publishuserserverlist">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#publishuserserverlist">#</doc-anchor-trigger>
+        <span>publishUserServerList</span>
+    </h4>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// Publish user server list \
+/// order of [serverUrlsOrdered] is important, the first server is the most trusted server
+Future&lt;List&lt;RelayBroadcastResponse&gt;&gt; publishUserServerList({
+  required List&lt;String&gt; serverUrlsOrdered,
+}) async {</code></pre>
+</doc-codeblock></div>
 
                                 
                                 <!-- Required only on API pages -->
@@ -231,11 +437,11 @@ print(
                             
                                 <nav class="flex mt-14">
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/">
+                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/accounts/">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="mr-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19 11H7.41l5.29-5.29a.996.996 0 10-1.41-1.41l-7 7a1 1 0 000 1.42l7 7a1.024 1.024 0 001.42-.01.996.996 0 000-1.41L7.41 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                             <span>
                                                 <span class="block text-xs font-normal text-gray-400 dark:text-dark-400">Previous</span>
-                                                <span class="block mt-1">Use Cases</span>
+                                                <span class="block mt-1">Accounts</span>
                                             </span>
                                         </a>
                                     </div>

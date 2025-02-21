@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.6.0.792158840885">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.6.0.793456148694">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.6.0">
@@ -32,11 +32,11 @@
 
     <script data-cfasync="false">(function () { var el = document.documentElement, m = localStorage.getItem("doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="resources/css/retype.css?v=3.6.0.792158840885" rel="stylesheet">
+    <link href="resources/css/retype.css?v=3.6.0.793456148694" rel="stylesheet">
 
-    <script data-cfasync="false" src="resources/js/config.js?v=3.6.0.792158840885" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="resources/js/config.js?v=3.6.0.793456148694" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="resources/js/retype.js?v=3.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="resources/js/lunr.js?v=3.6.0.792158840885" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="resources/js/lunr.js?v=3.6.0.793456148694" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -53,7 +53,7 @@
                     <div class="flex items-center px-2 md:px-6">
                         <a id="docs-site-logo" href="" class="flex items-center leading-snug text-2xl">
                             <span class="dark:text-white font-semibold line-clamp-1 md:line-clamp-2">NDK</span>
-                        </a><span class="hidden px-2 py-1 ml-4 text-sm font-semibold leading-none text-root-logo-label-text bg-root-logo-label-bg rounded-sm md:inline-block">v0.2.6</span>
+                        </a><span class="hidden px-2 py-1 ml-4 text-sm font-semibold leading-none text-root-logo-label-text bg-root-logo-label-bg rounded-sm md:inline-block">v0.3.0</span>
                     </div>
         
                     <span class="hidden h-8 border-r md:inline-block dark:border-dark-650"></span>
@@ -181,6 +181,19 @@
 <p>NDK (Nostr Development Kit) is a Dart library that enhances the Nostr development experience.<br />
 NDK supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.<br />
 Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.</p>
+<doc-anchor-target id="apps-using-ndk">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#apps-using-ndk">#</doc-anchor-trigger>
+        <span>Apps using NDK</span>
+    </h2>
+</doc-anchor-target>
+<ul>
+<li><a href="https://github.com/relaystr/ndk/releases">sample app</a></li>
+<li><a href="https://github.com/frnandu/yana">yana</a></li>
+<li><a href="https://github.com/leo-lox/camelus">camelus</a></li>
+<li><a href="https://github.com/zapstore/zapstore">zapstore</a></li>
+<li><a href="https://github.com/nostrlabs-io/freeflow">freeflow</a></li>
+</ul>
 <p>
 <div class="mb-6 px-5 py-4 flex justify-between relative border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded transition-colors duration-150">
     <div class="flex items-center text-blue-500 dark:text-blue-400">
@@ -218,6 +231,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 <li>nip-47 <a href="https://github.com/relaystr/ndk/blob/master/packages/ndk/lib/domain_layer/usecases/nwc/README.md">Nostr wallet connect</a></li>
 <li>nip-42 Authentication of clients to relays</li>
 <li>nip-57 Zaps</li>
+<li>blossom file support</li>
 </ul>
 <doc-anchor-target id="not-included">
     <h2>
@@ -228,7 +242,6 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 <ul>
 <li>ready to use feeds, you have to build them on your own (<span class="docs-emoji">&#x1F6AB;</span> not planned)</li>
 <li>create &amp;&amp; manage keypairs. You have to provide them (<span class="docs-emoji">&#x1F6AB;</span> not planned)</li>
-<li>file upload (<span class="docs-emoji">&#x1F51C;</span> planned)</li>
 <li>threading, you can do this on your own if you move ndk or only the event_verifier into its own thread (<span class="docs-emoji">&#x1F51C;</span> planned)</li>
 <li>support for request overrides (you have to close and reopen requests) (<span class="docs-emoji">&#x1F914;</span> unsure)</li>
 </ul>

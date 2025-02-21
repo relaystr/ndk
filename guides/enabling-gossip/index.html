@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.6.0.792158840885">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.6.0.793456148694">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.6.0">
@@ -30,12 +30,12 @@
 
     <script data-cfasync="false">(function () { var el = document.documentElement, m = localStorage.getItem("doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../resources/css/retype.css?v=3.6.0.792158840885" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=3.6.0.793456148694" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=3.6.0.792158840885" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=3.6.0.793456148694" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=3.6.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.6.0.792158840885" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.6.0.792158840885" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.6.0.793456148694" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.6.0.793456148694" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -52,7 +52,7 @@
                     <div class="flex items-center px-2 md:px-6">
                         <a id="docs-site-logo" href="../../" class="flex items-center leading-snug text-2xl">
                             <span class="dark:text-white font-semibold line-clamp-1 md:line-clamp-2">NDK</span>
-                        </a><span class="hidden px-2 py-1 ml-4 text-sm font-semibold leading-none text-root-logo-label-text bg-root-logo-label-bg rounded-sm md:inline-block">v0.2.6</span>
+                        </a><span class="hidden px-2 py-1 ml-4 text-sm font-semibold leading-none text-root-logo-label-text bg-root-logo-label-bg rounded-sm md:inline-block">v0.3.0</span>
                     </div>
         
                     <span class="hidden h-8 border-r md:inline-block dark:border-dark-650"></span>
@@ -206,6 +206,42 @@
     <a href="../../usecases/relay-sets/" class="absolute block inset-0"></a>
 </div>
 </p>
+<doc-anchor-target id="broadcast-using-outbox">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#broadcast-using-outbox">#</doc-anchor-trigger>
+        <span>Broadcast using Outbox</span>
+    </h2>
+</doc-anchor-target>
+<p>When you use ndk without getting <code v-pre>nip65</code> data first, you will get a warning like:</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-none"><code v-pre class="language-none">broadcast - could not find nip65 data for ${eventToPublish.pubKey}, using DEFAULT_BOOTSTRAP_RELAYS for now.
+Please ensure nip65Data exists to use the outbox model =&gt; UserRelayLists use case</code></pre>
+</doc-codeblock></div>
+<p>When nip65 data is in the cache ndk picks it up automatically. To populate the cache, you can use the <code v-pre>UserRelayLists</code> use case.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">await ndk.userRelayLists.getSingleUserRelayList(&quot;&lt;pubKey&gt;&quot;);</code></pre>
+</doc-codeblock></div>
+<p>You don&#x27;t have to save the result, it&#x27;s enough to call the method so the data is in the cache.</p>
+<doc-anchor-target id="new-account">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#new-account">#</doc-anchor-trigger>
+        <span>new account</span>
+    </h3>
+</doc-anchor-target>
+<p>If you are creating a new account, you can use the <code v-pre>UserRelayLists</code> use case to set the <code v-pre>RelaySet</code> for the new account.<br />
+The data will be published to the nostr network and saved in the cache.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">await ndk.userRelayLists.setInitialUserRelayList(UserRelayList(
+ refreshedTimestamp: 0, // ok to init with 0
+ createdAt: 0, // ok to init with 0
+ pubKey: &quot;&lt;pubKey&gt;&quot;,
+ relays: {
+      &quot;wss://relay.readonly.example&quot;: ReadWriteMarker.readOnly,
+      &quot;wss://relay.writeonly.example&quot;: ReadWriteMarker.writeOnly,
+      &quot;wss://relay.readwrite.example&quot;: ReadWriteMarker.readWrite,
+ },
+))</code></pre>
+</doc-codeblock></div>
 
                                 
                                 <!-- Required only on API pages -->
