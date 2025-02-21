@@ -24,6 +24,11 @@ icon: arrow-up-right
 
 ```
 
+!!!
+You might encounter a warning about missing `nip65` data. You can ignore this warning to use NDK with your specified/default relays.\
+If you want to use the outbox model, check out the [enabling gossip](/guides/enabling-gossip.md#broadcast-using-outbox) guide (recommended).
+!!!
+
 ## When to use
 
 Broadcast should be used when your use case has no broadcasting method. \

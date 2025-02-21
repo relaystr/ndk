@@ -56,6 +56,8 @@ await for (final event in response.stream) {
 }
 ```
 
+[!ref create user accounts/login](/usecases/accounts.md)
+
 $~~~~~~~~~~~$
 
 ## Getting started with NDK helper packages
