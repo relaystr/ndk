@@ -30,7 +30,8 @@ void main() {
         engine: NdkEngine.JIT,
       ),
     );
-    ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+    ndk.accounts
+        .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
     client = ndk.files;
   });

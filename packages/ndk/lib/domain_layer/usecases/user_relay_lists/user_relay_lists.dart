@@ -296,9 +296,8 @@ class UserRelayLists {
       userRelayList.refreshedTimestamp = Helpers.now;
 
       final broadcastResponse = _broadcast.broadcast(
-        nostrEvent: userRelayList.toNip65().toEvent(),
-        specificRelays: broadcastRelays
-      );
+          nostrEvent: userRelayList.toNip65().toEvent(),
+          specificRelays: broadcastRelays);
 
       await broadcastResponse.broadcastDoneFuture;
       await Future.delayed(Duration(seconds: 1));

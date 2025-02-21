@@ -32,7 +32,10 @@ void main() async {
 
     test('respond to auth challenge', () async {
       MockRelay relay1 = MockRelay(
-          name: "relay 1", explicitPort: 3900, requireAuthForRequests: true, signEvents: false);
+          name: "relay 1",
+          explicitPort: 3900,
+          requireAuthForRequests: true,
+          signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
       final ndk = Ndk(
@@ -43,7 +46,8 @@ void main() async {
             bootstrapRelays: [relay1.url]),
       );
 
-      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       await Future.delayed(Duration(seconds: 1));
       final response = ndk.requests.query(filters: [

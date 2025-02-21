@@ -38,13 +38,19 @@ void main() async {
       expect(ndk.accounts.getPublicKey(), key0.publicKey);
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       expect(ndk.accounts.hasAccount(key0.publicKey), true);
-      expect(() => ndk.accounts.sign(Nip01Event(pubKey: key0.publicKey, kind: Nip01Event.kTextNodeKind, tags: [], content: "")),
+      expect(
+          () => ndk.accounts.sign(Nip01Event(
+              pubKey: key0.publicKey,
+              kind: Nip01Event.kTextNodeKind,
+              tags: [],
+              content: "")),
           throwsA(isA<Exception>()));
     });
 
     test('loginPrivateKey', () {
       expect(ndk.accounts.isNotLoggedIn, true);
-      ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
@@ -54,7 +60,9 @@ void main() async {
 
     test('loginExternalSigner', () {
       expect(ndk.accounts.isNotLoggedIn, true);
-      ndk.accounts.loginExternalSigner(signer: Bip340EventSigner(privateKey: key0.privateKey, publicKey: key0.publicKey));
+      ndk.accounts.loginExternalSigner(
+          signer: Bip340EventSigner(
+              privateKey: key0.privateKey, publicKey: key0.publicKey));
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
       ndk.accounts.logout();
@@ -63,7 +71,9 @@ void main() async {
 
     test('remove account', () {
       expect(ndk.accounts.isNotLoggedIn, true);
-      ndk.accounts.loginExternalSigner(signer: Bip340EventSigner(privateKey: key0.privateKey, publicKey: key0.publicKey));
+      ndk.accounts.loginExternalSigner(
+          signer: Bip340EventSigner(
+              privateKey: key0.privateKey, publicKey: key0.publicKey));
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
       ndk.accounts.removeAccount(pubkey: key0.publicKey);
@@ -72,15 +82,21 @@ void main() async {
 
     test('do not allow duplicated login', () {
       expect(ndk.accounts.isNotLoggedIn, true);
-      ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
-      expect(() => ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!),
+      expect(
+          () => ndk.accounts.loginPrivateKey(
+              pubkey: key0.publicKey, privkey: key0.privateKey!),
           throwsA(isA<Exception>()));
       expect(() => ndk.accounts.loginPublicKey(pubkey: key0.publicKey),
           throwsA(isA<Exception>()));
-      expect(() => ndk.accounts.loginExternalSigner( signer: Bip340EventSigner(privateKey: key0.privateKey, publicKey: key0.publicKey)),
+      expect(
+          () => ndk.accounts.loginExternalSigner(
+              signer: Bip340EventSigner(
+                  privateKey: key0.privateKey, publicKey: key0.publicKey)),
           throwsA(isA<Exception>()));
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       ndk.accounts.logout();
@@ -89,13 +105,15 @@ void main() async {
 
     test('switchAccount', () {
       expect(ndk.accounts.isNotLoggedIn, true);
-      ndk.accounts.loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
       expect(ndk.accounts.isLoggedIn, true);
       expect(ndk.accounts.canSign, true);
       expect(ndk.accounts.hasAccount(key0.publicKey), true);
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
 
-      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
       expect(ndk.accounts.hasAccount(key1.publicKey), true);
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key1.publicKey);
 

@@ -169,7 +169,6 @@ class MockRelay {
             filter.authors == null || filter.authors!.contains(event.pubKey);
         return kindMatches && authorMatches;
       }).toList();
-
     }
     if (_nip65s != null) {
       for (var entry in _nip65s!.entries) {

@@ -94,7 +94,8 @@ void main() async {
           bootstrapRelays: myRelayUrls,
         ),
       );
-      ndkJit.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndkJit.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       await testNdk(
         myNdk: ndkJit,

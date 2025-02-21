@@ -37,7 +37,8 @@ void main() async {
   group('Ndk', () {
     test('query simple note LISTS',
         timeout: const Timeout(Duration(seconds: 3)), () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 3900, signEvents: false);
+      MockRelay relay1 =
+          MockRelay(name: "relay 1", explicitPort: 3900, signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
       final ndk = Ndk(
@@ -48,7 +49,8 @@ void main() async {
             bootstrapRelays: [relay1.url]),
       );
       await ndk.relays.seedRelaysConnected;
-      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       final response = ndk.requests.query(filters: [
         Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey])

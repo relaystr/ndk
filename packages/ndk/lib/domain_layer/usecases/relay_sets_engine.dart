@@ -251,7 +251,8 @@ class RelaySetsEngine implements NetworkEngine {
             .map((e) => e.key)
             .toList();
       } else {
-        Logger.log.w("could not find user relay list from nip65, using default bootstrap relays");
+        Logger.log.w(
+            "could not find user relay list from nip65, using default bootstrap relays");
       }
 
       for (final relayUrl in writeRelaysUrls) {

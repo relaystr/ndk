@@ -44,14 +44,16 @@ void main() async {
       );
       await manager
           .connectRelay(
-          dirtyUrl: relay1.url, connectionSource: ConnectionSource.seed)
+              dirtyUrl: relay1.url, connectionSource: ConnectionSource.seed)
           .then((value) {})
           .onError((error, stackTrace) async {
         await relay1.stopServer();
       });
 
-
-      expect(manager.globalState.relays[relay1.url]!.relay.wasLastConnectTryLongerThanSeconds(120), false);
+      expect(
+          manager.globalState.relays[relay1.url]!.relay
+              .wasLastConnectTryLongerThanSeconds(120),
+          false);
       await relay1.stopServer();
     });
 

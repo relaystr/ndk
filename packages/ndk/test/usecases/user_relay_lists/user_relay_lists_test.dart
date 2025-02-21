@@ -94,8 +94,7 @@ void main() async {
 
       // remove
       await ndk.userRelayLists.broadcastRemoveNip65Relay(
-          relayUrl: r1,
-          broadcastRelays: [relay0.url]);
+          relayUrl: r1, broadcastRelays: [relay0.url]);
 
       list = await ndk.userRelayLists
           .getSingleUserRelayList(key3.publicKey, forceRefresh: true);

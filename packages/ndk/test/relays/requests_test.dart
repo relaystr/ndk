@@ -49,7 +49,8 @@ void main() async {
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url],
       ));
-      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       final filter =
           Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);

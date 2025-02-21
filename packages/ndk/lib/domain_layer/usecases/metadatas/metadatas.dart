@@ -48,7 +48,8 @@ class Metadatas {
     bool forceRefresh = false,
     Duration idleTimeout = METADATA_IDLE_TIMEOUT,
   }) async {
-    Metadata? metadata = !forceRefresh? await _cacheManager.loadMetadata(pubKey): null;
+    Metadata? metadata =
+        !forceRefresh ? await _cacheManager.loadMetadata(pubKey) : null;
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
