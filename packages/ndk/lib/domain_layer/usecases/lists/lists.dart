@@ -104,7 +104,9 @@ class Lists {
         Filter(
           authors: [signer.getPublicKey()],
           kinds: [Nip51List.kRelaySet],
-          dTags: [name],
+          tags: {
+            "#d": [name]
+          },
         )
       ], cacheRead: !forceRefresh).stream) {
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
@@ -274,7 +276,8 @@ class Lists {
       await broadcastResponse.broadcastDoneFuture;
 
       List<Nip01Event>? events = await _cacheManager.loadEvents(
-          pubKeys: [_eventSigner!.getPublicKey()], kinds: [Nip51List.kRelaySet]);
+          pubKeys: [_eventSigner!.getPublicKey()],
+          kinds: [Nip51List.kRelaySet]);
       events = events.where((event) {
         if (event.getDtag() != null && event.getDtag() == name) {
           return true;

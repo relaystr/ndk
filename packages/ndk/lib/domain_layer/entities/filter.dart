@@ -17,22 +17,22 @@ class Filter {
   String? search;
 
   /// List of event tags to filter by.
-  List<String>? eTags;
+  List<String>? get eTags => getTag("e");
 
   /// List of pubkey tags to filter by.
-  List<String>? pTags;
+  List<String>? get pTags => getTag("p");
 
   /// List of hashtag tags to filter by.
-  List<String>? tTags;
+  List<String>? get tTags => getTag("t");
 
   /// List of replaceable event tags to filter by.
-  List<String>? aTags;
+  List<String>? get aTags => getTag("a");
 
   /// ...
-  List<String>? dTags;
+  List<String>? get dTags => getTag("d");
 
   /// other tags
-  List<String>? mTags;
+  List<String>? get mTags => getTag("m");
 
   /// Unix timestamp to filter events created after this time.
   int? since;
@@ -43,59 +43,51 @@ class Filter {
   /// Maximum number of events to return.
   int? limit;
 
-  /// Map to store arbitrary/unsupported tags \
-  /// Key is the tag name, value is a list of tag values
-  /// Unsupported tags dont offer caching support
-  Map<String, List<String>>? arbitraryTags;
+  /// Map to store tags \
+  /// Key is the tag name (# prefixed), value is a list of tag values
+  Map<String, List<String>>? tags;
 
   Filter({
     this.ids,
     this.authors,
     this.kinds,
     this.search,
-    this.eTags,
-    this.pTags,
-    this.tTags,
-    this.aTags,
-    this.dTags,
-    this.mTags,
+    this.tags,
+    List<String>? eTags,
+    List<String>? pTags,
+    List<String>? tTags,
+    List<String>? aTags,
+    List<String>? dTags,
+    List<String>? mTags,
     this.since,
     this.until,
     this.limit,
-    this.arbitraryTags,
-  });
+  }) {
+    if (eTags != null) setTag("e", eTags);
+    if (pTags != null) setTag("p", pTags);
+    if (tTags != null) setTag("t", tTags);
+    if (aTags != null) setTag("a", aTags);
+    if (dTags != null) setTag("d", dTags);
+    if (mTags != null) setTag("m", mTags);
+  }
 
   Filter.fromMap(Map<String, dynamic> map) {
     ids = map['ids'] == null ? null : List<String>.from(map['ids']);
     authors = map['authors'] == null ? null : List<String>.from(map['authors']);
     kinds = map['kinds'] == null ? null : List<int>.from(map['kinds']);
-    eTags = map['#e'] == null ? null : List<String>.from(map['#e']);
-    pTags = map['#p'] == null ? null : List<String>.from(map['#p']);
-    tTags = map['#t'] == null ? null : List<String>.from(map['#t']);
-    aTags = map['#a'] == null ? null : List<String>.from(map['#a']);
-    dTags = map['#d'] == null ? null : List<String>.from(map['#d']);
-    mTags = map['#m'] == null ? null : List<String>.from(map['#m']);
     search = map['search'];
     since = map['since'];
     until = map['until'];
     limit = map['limit'];
 
     // Handle arbitrary tags
-    arbitraryTags = {};
+    tags = {};
     map.forEach((key, value) {
-      if (key.startsWith('#') &&
-          ![
-            '#e',
-            '#p',
-            '#t',
-            '#a',
-            '#d',
-            '#m',
-          ].contains(key)) {
-        arbitraryTags![key] = List<String>.from(value);
+      if (key.startsWith('#') && key.length == 2) {
+        tags![key] = List<String>.from(value);
       }
     });
-    if (arbitraryTags!.isEmpty) arbitraryTags = null;
+    if (tags!.isEmpty) tags = null;
   }
 
   Map<String, dynamic> toMap() {
@@ -103,12 +95,6 @@ class Filter {
       "ids": ids,
       "authors": authors != null && authors!.isNotEmpty ? authors : null,
       "kinds": kinds,
-      "#e": eTags,
-      "#p": pTags,
-      "#t": tTags,
-      "#d": dTags,
-      "#a": aTags,
-      "#m": mTags,
       "since": since,
       "until": until,
       "search": search,
@@ -116,8 +102,8 @@ class Filter {
     };
 
     // Add arbitrary tags to the map
-    if (arbitraryTags != null) {
-      body.addAll(arbitraryTags!);
+    if (tags != null) {
+      body.addAll(tags!);
     }
 
     // remove null values
@@ -130,10 +116,12 @@ class Filter {
 
   factory Filter.fromJson(Map<String, dynamic> json) => Filter.fromMap(json);
 
+  // coverage:ignore-start
   @override
   String toString() {
     return toMap().toString();
   }
+  // coverage:ignore-end
 
   /// Creates a new [Filter] with updated authors.
   ///
@@ -160,7 +148,7 @@ class Filter {
   ///
   /// Throws an exception if either filter doesn't contain authors.
   /// [filter1] is used as a basis
-  Filter.mergeAuthors(Filter filter1, Filter filter2) {
+  static Filter mergeAuthors(Filter filter1, Filter filter2) {
     Map<String, dynamic> map = filter1.toMap();
     if (filter1.authors == null || filter2.authors == null) {
       throw Exception("Filter does not contain authors");
@@ -168,7 +156,7 @@ class Filter {
     map['authors'] = [...filter1.authors!, ...filter2.authors!];
     // remove duplicates
     map['authors'] = map['authors'].toSet().toList();
-    Filter.fromMap(map);
+    return Filter.fromMap(map);
   }
 
   Filter clone() {
@@ -179,30 +167,23 @@ class Filter {
           : null,
       kinds: kinds != null ? List<int>.from(kinds!) : null,
       search: search,
-      eTags: eTags != null ? List<String>.from(eTags!) : null,
-      pTags: pTags != null ? List<String>.from(pTags!) : null,
-      tTags: tTags != null ? List<String>.from(tTags!) : null,
-      aTags: aTags != null ? List<String>.from(aTags!) : null,
-      dTags: dTags != null ? List<String>.from(dTags!) : null,
-      mTags: mTags != null ? List<String>.from(mTags!) : null,
       since: since,
       until: until,
       limit: limit,
-      arbitraryTags: arbitraryTags != null
-          ? Map<String, List<String>>.from(arbitraryTags!)
-          : null,
+      tags: tags != null ? Map<String, List<String>>.from(tags!) : null,
     );
   }
 
   // set an arbitrary tag
-  void setArbitraryTag(String tagName, List<String> values) {
-    arbitraryTags ??= {};
-    arbitraryTags![tagName.startsWith('#') ? tagName : '#$tagName'] = values;
+  void setTag(String tagName, List<String> values) {
+    if (tagName.length > 2) return;
+    tags ??= {};
+    tags![tagName.startsWith('#') ? tagName : '#$tagName'] = values;
   }
 
   // get an arbitrary tag
-  List<String>? getArbitraryTag(String tagName) {
-    if (arbitraryTags == null) return null;
-    return arbitraryTags![tagName.startsWith('#') ? tagName : '#$tagName'];
+  List<String>? getTag(String tagName) {
+    if (tags == null || tagName.length > 2) return null;
+    return tags![tagName.startsWith('#') ? tagName : '#$tagName'];
   }
 }
