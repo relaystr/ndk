@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 /// Descriptor of a blob - when getting a blob from a server
 class BlobDescriptor {
-  /// server url e.g. https://example.com/<sha256>
+  /// server url e.g. https://example.com/&lt;sha256&gt;
   final String url;
 
   /// SHA-256 hexencoded string of the file
@@ -110,7 +110,7 @@ class BlobNip94 {
   /// size of file in bytes
   final int? size;
 
-  /// size of file in pixels in the form <width>x<height>
+  /// size of file in pixels in the form &lt;width&gt;x&lt;height&gt;
   final int? dimenssions;
 
   /// URI to torrent magnet
