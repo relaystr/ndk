@@ -167,8 +167,21 @@ class MockRelay {
             filter.kinds == null || filter.kinds!.contains(event.kind);
         bool authorMatches =
             filter.authors == null || filter.authors!.contains(event.pubKey);
-        return kindMatches && authorMatches;
+        bool idsMatches = filter.ids == null || filter.ids!.contains(event.id);
+        return kindMatches && authorMatches && idsMatches;
       }).toList();
+
+      if (textNotes!=null) {
+        matchingEvents.addAll(textNotes!.values.where((event) {
+          bool kindMatches =
+              filter.kinds == null || filter.kinds!.contains(event.kind);
+          bool authorMatches =
+              filter.authors == null || filter.authors!.contains(event.pubKey);
+          bool idsMatches = filter.ids == null ||
+              filter.ids!.contains(event.id);
+          return kindMatches && authorMatches && idsMatches;
+        }).toList());
+      }
     }
     if (_nip65s != null) {
       for (var entry in _nip65s!.entries) {
