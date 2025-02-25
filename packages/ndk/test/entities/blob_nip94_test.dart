@@ -55,5 +55,36 @@ void main() async {
       expect(result.size, equals(512));
       expect(result.type, equals('notype'));
     });
+
+    test(
+        'NIP92 - should handle malformed server response gracefully - dim 1920x1080',
+        () {
+      final Map<String, dynamic> malformedJson = {
+        "url": '',
+        "sha256": '',
+        "size": "512",
+        "type": "notype",
+        "nip94": {
+          "dim": "1920x1080",
+        },
+      };
+
+      final Map<String, dynamic> malformedJson2 = {
+        "url": '',
+        "sha256": '',
+        "size": "512",
+        "dim": 100,
+        "type": "notype",
+        "nip94": {
+          "dim": 100,
+        },
+      };
+
+      final result = BlobDescriptor.fromJson(malformedJson);
+      final result2 = BlobDescriptor.fromJson(malformedJson2);
+
+      expect(result.nip94!.dimenssions, equals("1920x1080"));
+      expect(result2.nip94!.dimenssions, equals("100"));
+    });
   });
 }

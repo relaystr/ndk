@@ -120,8 +120,8 @@ class BlobNip94 {
   /// size of file in bytes
   final int? size;
 
-  /// size of file in pixels in the form &lt;width&gt;x&lt;height&gt;
-  final int? dimenssions;
+  /// size of file in pixels as String in the form &lt;width&gt;x&lt;height&gt;
+  final String? dimenssions;
 
   /// URI to torrent magnet
   final String? magnet;
@@ -181,7 +181,7 @@ class BlobNip94 {
       originalsha256: json['ox'] ?? '',
       // parse int from string
       size: _parseSize(json['size']),
-      dimenssions: json['dim'],
+      dimenssions: json['dim'].toString(),
       magnet: json['magnet'],
       torrentInfoHash: json['i'],
       blurhash: json['blurhash'],
