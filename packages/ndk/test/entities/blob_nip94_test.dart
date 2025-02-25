@@ -22,7 +22,7 @@ void main() async {
       final Map<String, dynamic> malformedJson = {
         "url": '',
         "sha256": '',
-        "size": 0,
+        "size": 4897,
         "type": "notype",
         "nip94": {"evil": "field"},
       };
@@ -32,7 +32,27 @@ void main() async {
       expect(result, isA<BlobDescriptor>());
       expect(result.url, isEmpty);
       expect(result.sha256, isEmpty);
-      expect(result.size, equals(0));
+      expect(result.size, equals(4897));
+      expect(result.type, equals('notype'));
+    });
+
+    test(
+        'NIP92 - should handle malformed server response gracefully - string int',
+        () {
+      final Map<String, dynamic> malformedJson = {
+        "url": '',
+        "sha256": '',
+        "size": "512",
+        "type": "notype",
+        "nip94": {"evil": "field"},
+      };
+
+      final result = BlobDescriptor.fromJson(malformedJson);
+
+      expect(result, isA<BlobDescriptor>());
+      expect(result.url, isEmpty);
+      expect(result.sha256, isEmpty);
+      expect(result.size, equals(512));
       expect(result.type, equals('notype'));
     });
   });
