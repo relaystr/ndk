@@ -104,7 +104,9 @@ class Lists {
         Filter(
           authors: [signer.getPublicKey()],
           kinds: [Nip51List.kRelaySet],
-          dTags: [name],
+          tags: {
+            "#d": [name]
+          },
         )
       ], cacheRead: !forceRefresh).stream) {
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
