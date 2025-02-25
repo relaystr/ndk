@@ -1,5 +1,15 @@
 import 'dart:typed_data';
 
+_parseSize(dynamic size) {
+  if (size is int) {
+    return size;
+  } else if (size is String) {
+    return int.tryParse(size) ?? 0;
+  } else {
+    return 0;
+  }
+}
+
 /// Descriptor of a blob - when getting a blob from a server
 class BlobDescriptor {
   /// server url e.g. https://example.com/&lt;sha256&gt;
@@ -34,7 +44,7 @@ class BlobDescriptor {
     return BlobDescriptor(
       url: json['url'] ?? '',
       sha256: json['sha256'] ?? '',
-      size: json['size'],
+      size: _parseSize(json['size']),
       type: json['type'],
       uploaded: json['uploaded'] != null
           ? DateTime.fromMillisecondsSinceEpoch(json['uploaded'] * 1000)
@@ -110,8 +120,8 @@ class BlobNip94 {
   /// size of file in bytes
   final int? size;
 
-  /// size of file in pixels in the form &lt;width&gt;x&lt;height&gt;
-  final int? dimenssions;
+  /// size of file in pixels as String in the form &lt;width&gt;x&lt;height&gt;
+  final String? dimenssions;
 
   /// URI to torrent magnet
   final String? magnet;
@@ -169,8 +179,9 @@ class BlobNip94 {
       mimeType: json['m'] ?? '',
       sha256: json['x'] ?? '',
       originalsha256: json['ox'] ?? '',
-      size: json['size'] ?? 0,
-      dimenssions: json['dim'],
+      // parse int from string
+      size: _parseSize(json['size']),
+      dimenssions: json['dim'].toString(),
       magnet: json['magnet'],
       torrentInfoHash: json['i'],
       blurhash: json['blurhash'],
