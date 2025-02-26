@@ -114,9 +114,6 @@ class BlobNip94 {
   /// SHA-256 hexencoded string of the file
   final String sha256;
 
-  /// SHA-256 hexencoded string of the original file
-  final String originalsha256;
-
   /// size of file in bytes
   final int? size;
 
@@ -145,7 +142,7 @@ class BlobNip94 {
   final String? alt;
 
   /// zero or more fallback file sources in case url fails
-  final String? fallback;
+  final List<String>? fallback;
 
   /// service type which is serving the file (eg. NIP-96)
   final String? service;
@@ -155,7 +152,6 @@ class BlobNip94 {
     required this.url,
     required this.mimeType,
     required this.sha256,
-    required this.originalsha256,
     required this.size,
     this.magnet,
     this.torrentInfoHash,
@@ -178,18 +174,17 @@ class BlobNip94 {
       url: json['url'] ?? '',
       mimeType: json['m'] ?? '',
       sha256: json['x'] ?? '',
-      originalsha256: json['ox'] ?? '',
       // parse int from string
       size: _parseSize(json['size']),
       dimenssions: json['dim'].toString(),
       magnet: json['magnet'],
       torrentInfoHash: json['i'],
       blurhash: json['blurhash'],
-      thumbnail: json['thumb'],
-      image: json['image'],
+      thumbnail: json['thumb'] != null ? [json['thumb'] as String] : null,
+      image: json['image'] != null ? [json['image'] as String] : null,
       summary: json['summary'],
       alt: json['alt'],
-      fallback: json['fallback'],
+      fallback: json['fallback'] != null ? [json['fallback'] as String] : null,
       service: json['service'],
     );
   }
