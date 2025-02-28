@@ -1,3 +1,6 @@
+## 0.2.3
+- upgrade flutter_rust_bridge to 2.8.0
+
 ## 0.2.2
 - upgrade flutter_rust_bridge to 2.7.1
 
