@@ -1,3 +1,8 @@
+## 0.3.1
+- improvement: generic filter tags
+- fix: blossom parsing issues
+- fix: log invalid signed events
+
 ## 0.3.0
 
 - blossom improvmements
