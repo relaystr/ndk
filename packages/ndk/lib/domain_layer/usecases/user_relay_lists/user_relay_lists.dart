@@ -189,6 +189,8 @@ class UserRelayLists {
     required String relayUrl,
     required ReadWriteMarker marker,
     required Iterable<String> broadcastRelays,
+    double? considerDonePercent,
+    Duration? timeout,
   }) async {
     UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
     if (userRelayList == null) {
@@ -221,8 +223,10 @@ class UserRelayLists {
   /// [newUserRelayList] the new user relay list
   /// [returns] the new user relay list
   Future<UserRelayList> setInitialUserRelayList(
-    UserRelayList newUserRelayList,
-  ) async {
+    UserRelayList newUserRelayList, {
+    double? considerDonePercent,
+    Duration? timeout,
+  }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     // set created at and refreshed timestamp
     newUserRelayList.refreshedTimestamp = now;
@@ -245,6 +249,8 @@ class UserRelayLists {
   Future<UserRelayList?> broadcastRemoveNip65Relay({
     required String relayUrl,
     required Iterable<String> broadcastRelays,
+    double? considerDonePercent,
+    Duration? timeout,
   }) async {
     UserRelayList? userRelayList = await _ensureUpToDateUserRelayList();
 

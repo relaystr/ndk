@@ -1,3 +1,5 @@
+import 'package:ndk/config/broadcast_defaults.dart';
+
 import '../config/bootstrap_relays.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
@@ -38,6 +40,13 @@ class NdkConfig {
   /// this value is used if no individual timeout is set for a query
   Duration defaultQueryTimeout;
 
+  /// timeout for broadcasts
+  Duration defaultBroadcastTimeout;
+
+  /// percentage of relays that need to respond with "OK" for the broadcast to be considered done \
+  /// value between 0.0 and 1.0
+  double defaultBroadcastConsiderDonePercent;
+
   /// log level
   lib_logger.Level logLevel;
 
@@ -59,8 +68,9 @@ class NdkConfig {
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
     this.eventOutFilters = const [],
     this.defaultQueryTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
-
-    /// test
+    this.defaultBroadcastTimeout = BroadcastDefaults.TIMEOUT,
+    this.defaultBroadcastConsiderDonePercent =
+        BroadcastDefaults.CONSIDER_DONE_PERCENT,
     this.logLevel = defaultLogLevel,
   });
 }

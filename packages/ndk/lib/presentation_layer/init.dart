@@ -147,6 +147,8 @@ class Initialization {
       networkEngine: engine,
       cacheManager: _ndkConfig.cache,
       accounts: accounts,
+      considerDonePercent: _ndkConfig.defaultBroadcastConsiderDonePercent,
+      timeout: _ndkConfig.defaultBroadcastTimeout,
     );
 
     follows = Follows(

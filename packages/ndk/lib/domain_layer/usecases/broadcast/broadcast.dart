@@ -1,6 +1,5 @@
 import 'package:ndk/ndk.dart';
 
-import '../../../config/broadcast_defaults.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
 import '../../entities/broadcast_state.dart';
@@ -14,6 +13,8 @@ class Broadcast {
   final Accounts _accounts;
   final CacheManager _cacheManager;
   final GlobalState _globalState;
+  final double _considerDonePercent;
+  final Duration _timeout;
 
   /// creates a new [Broadcast] instance
   ///
@@ -22,10 +23,14 @@ class Broadcast {
     required CacheManager cacheManager,
     required NetworkEngine networkEngine,
     required Accounts accounts,
+    required double considerDonePercent,
+    required Duration timeout,
   })  : _accounts = accounts,
         _cacheManager = cacheManager,
         _engine = networkEngine,
-        _globalState = globalState;
+        _globalState = globalState,
+        _considerDonePercent = considerDonePercent,
+        _timeout = timeout;
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
@@ -39,18 +44,22 @@ class Broadcast {
   /// low level nostr broadcast using inbox/outbox (gossip) \
   /// [specificRelays] disables inbox/outbox (gossip) and broadcasts to the relays specified. Useful for NostrWalletConnect \
   /// [customSigner] if you want to use a different signer than the one from currently logged in user in [Accounts] \
-  /// [considerDonePercent] the percentage (0.0, 1.0) of relays that need to respond with "OK" for the broadcast to be considered done \
+  /// [considerDonePercent] the percentage (0.0, 1.0) of relays that need to respond with "OK" for the broadcast to be considered done (overrides the default value) \
+  /// [timeout] the timeout for the broadcast (overrides the default timeout) \
   /// [returns] a [NdkBroadcastResponse] object containing the result => success per relay
   NdkBroadcastResponse broadcast({
     required Nip01Event nostrEvent,
     Iterable<String>? specificRelays,
     EventSigner? customSigner,
-    double considerDonePercent = BroadcastDefaults.CONSIDER_DONE_PERCENT,
-    Duration timeout = BroadcastDefaults.TIMEOUT,
+    double? considerDonePercent,
+    Duration? timeout,
   }) {
+    final myConsiderDonePercent = considerDonePercent ?? _considerDonePercent;
+    final myTimeout = timeout ?? _timeout;
+
     final broadcastState = BroadcastState(
-      considerDonePercent: considerDonePercent,
-      timeout: timeout,
+      considerDonePercent: myConsiderDonePercent,
+      timeout: myTimeout,
     );
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
