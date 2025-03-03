@@ -46,6 +46,7 @@ class MockRelay {
     Map<KeyPair, Nip01Event>? textNotes,
     Map<String, Nip01Event>? contactLists,
     Map<String, Nip01Event>? metadatas,
+    Duration? delayResponse,
   }) async {
     var myPromise = Completer<void>();
 
@@ -76,7 +77,10 @@ class MockRelay {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
-      webSocket.listen((message) {
+      webSocket.listen((message) async {
+        if (delayResponse != null) {
+          await Future.delayed(delayResponse);
+        }
         if (message == "ping") {
           webSocket.add("pong");
           return;
@@ -92,6 +96,7 @@ class MockRelay {
               signedChallenge = true;
             }
           }
+
           webSocket.add(jsonEncode([
             "OK",
             event.id,
@@ -171,14 +176,14 @@ class MockRelay {
         return kindMatches && authorMatches && idsMatches;
       }).toList();
 
-      if (textNotes!=null) {
+      if (textNotes != null) {
         matchingEvents.addAll(textNotes!.values.where((event) {
           bool kindMatches =
               filter.kinds == null || filter.kinds!.contains(event.kind);
           bool authorMatches =
               filter.authors == null || filter.authors!.contains(event.pubKey);
-          bool idsMatches = filter.ids == null ||
-              filter.ids!.contains(event.id);
+          bool idsMatches =
+              filter.ids == null || filter.ids!.contains(event.id);
           return kindMatches && authorMatches && idsMatches;
         }).toList());
       }
