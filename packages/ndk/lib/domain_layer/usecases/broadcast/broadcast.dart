@@ -1,5 +1,6 @@
 import 'package:ndk/ndk.dart';
 
+import '../../../config/broadcast_defaults.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
 import '../../entities/broadcast_state.dart';
@@ -44,10 +45,13 @@ class Broadcast {
     required Nip01Event nostrEvent,
     Iterable<String>? specificRelays,
     EventSigner? customSigner,
-    double considerDonePercent = 1.0,
+    double considerDonePercent = BroadcastDefaults.CONSIDER_DONE_PERCENT,
+    Duration timeout = BroadcastDefaults.TIMEOUT,
   }) {
-    final broadcastState =
-        BroadcastState(considerDonePercent: considerDonePercent);
+    final broadcastState = BroadcastState(
+      considerDonePercent: considerDonePercent,
+      timeout: timeout,
+    );
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
 

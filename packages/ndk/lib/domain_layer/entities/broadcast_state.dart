@@ -39,6 +39,8 @@ class BroadcastState {
   /// value between 0 and 1, 1 =>  all relays have responded with "OK" the broadcast is considered done
   final double considerDonePercent;
 
+  final Duration timeout;
+
   /// stream controller for state updates
   final BehaviorSubject<BroadcastState> _stateUpdatesController =
       BehaviorSubject<BroadcastState>();
@@ -74,6 +76,7 @@ class BroadcastState {
 
   /// creates a new [BroadcastState] instance
   BroadcastState({
+    required this.timeout,
     this.considerDonePercent = 1,
   }) {
     _networkSubscription = networkController.stream.listen((response) {
@@ -83,6 +86,13 @@ class BroadcastState {
       _stateUpdatesController.add(this);
       // check if all relays responded
       _checkBroadcastDone();
+    });
+
+    Future.delayed(timeout, () {
+      if (!publishDone) {
+        _stateUpdatesController.add(this);
+        _dispose();
+      }
     });
   }
 
