@@ -38,13 +38,16 @@ class Broadcast {
   /// low level nostr broadcast using inbox/outbox (gossip) \
   /// [specificRelays] disables inbox/outbox (gossip) and broadcasts to the relays specified. Useful for NostrWalletConnect \
   /// [customSigner] if you want to use a different signer than the one from currently logged in user in [Accounts] \
+  /// [considerDonePercent] the percentage (0.0, 1.0) of relays that need to respond with "OK" for the broadcast to be considered done \
   /// [returns] a [NdkBroadcastResponse] object containing the result => success per relay
   NdkBroadcastResponse broadcast({
     required Nip01Event nostrEvent,
     Iterable<String>? specificRelays,
     EventSigner? customSigner,
+    double considerDonePercent = 1.0,
   }) {
-    final broadcastState = BroadcastState();
+    final broadcastState =
+        BroadcastState(considerDonePercent: considerDonePercent);
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
 

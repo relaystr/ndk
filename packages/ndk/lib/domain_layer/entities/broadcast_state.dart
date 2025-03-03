@@ -36,6 +36,9 @@ class RelayBroadcastResponse {
 
 /// hold state information for a broadcast
 class BroadcastState {
+  /// value between 0 and 1, 1 =>  all relays have responded with "OK" the broadcast is considered done
+  final double considerDonePercent;
+
   /// stream controller for state updates
   final BehaviorSubject<BroadcastState> _stateUpdatesController =
       BehaviorSubject<BroadcastState>();
@@ -55,8 +58,14 @@ class BroadcastState {
 
   /// completes when all relays have responded or timed out
   /// first string is the relay url, second is the response
-  bool get publishDone =>
-      broadcasts.values.every((element) => element.okReceived);
+  bool get publishDone {
+    final doneCount = broadcasts.values
+        .where((element) => element.okReceived)
+        .length
+        .toDouble();
+    final totalCount = broadcasts.length.toDouble();
+    return doneCount / totalCount >= considerDonePercent;
+  }
 
   /// completes when state update controller closes
   Future<BroadcastState> get publishDoneFuture => _stateUpdatesController.last;
@@ -64,7 +73,9 @@ class BroadcastState {
   late final StreamSubscription _networkSubscription;
 
   /// creates a new [BroadcastState] instance
-  BroadcastState() {
+  BroadcastState({
+    this.considerDonePercent = 1,
+  }) {
     _networkSubscription = networkController.stream.listen((response) {
       // got a response from a relay
       broadcasts[response.relayUrl] = response;
