@@ -1,3 +1,7 @@
+## 0.3.2
+- improvement: add NWC get_budget method support
+- improvement: adds percent consider broadcast done
+
 ## 0.3.1
 - improvement: generic filter tags
 - fix: blossom parsing issues
