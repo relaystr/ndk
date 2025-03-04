@@ -9,6 +9,7 @@ class NwcMethod {
 
   static const NwcMethod GET_INFO = NwcMethod('get_info');
   static const NwcMethod GET_BALANCE = NwcMethod('get_balance');
+  static const NwcMethod GET_BUDGET = NwcMethod('get_budget');
   static const NwcMethod PAY_INVOICE = NwcMethod('pay_invoice');
   static const NwcMethod MULTI_PAY_INVOICE = NwcMethod('multi_pay_invoice');
   static const NwcMethod PAY_KEYSEND = NwcMethod('pay_keysend');
@@ -28,6 +29,7 @@ class NwcMethod {
     LOOKUP_INVOICE.name: LOOKUP_INVOICE,
     LIST_TRANSACTIONS.name: LIST_TRANSACTIONS,
     GET_BALANCE.name: GET_BALANCE,
+    GET_BUDGET.name: GET_BUDGET,
     GET_INFO.name: GET_INFO,
     UNKNOWN.name: UNKNOWN,
   };

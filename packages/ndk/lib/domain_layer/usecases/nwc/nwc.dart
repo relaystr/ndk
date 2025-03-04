@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:ndk/domain_layer/usecases/nwc/requests/get_budget.dart';
+import 'package:ndk/domain_layer/usecases/nwc/responses/get_budget_response.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
@@ -135,6 +137,8 @@ class Nwc {
           response = GetInfoResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.GET_BALANCE.name) {
           response = GetBalanceResponse.deserialize(data);
+        } else if (data['result_type'] == NwcMethod.GET_BUDGET.name) {
+          response = GetBudgetResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.MAKE_INVOICE.name) {
           response = MakeInvoiceResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.PAY_INVOICE.name) {
@@ -260,6 +264,11 @@ class Nwc {
   /// Does a `get_balance` request
   Future<GetBalanceResponse> getBalance(NwcConnection connection) async {
     return _executeRequest<GetBalanceResponse>(connection, GetBalanceRequest());
+  }
+
+  /// Does a `get_balance` request
+  Future<GetBudgetResponse> getBudget(NwcConnection connection) async {
+    return _executeRequest<GetBudgetResponse>(connection, GetBudgetRequest());
   }
 
   /// Does a `make_invoie` request
