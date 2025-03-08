@@ -43,6 +43,8 @@ abstract class CacheManager {
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys);
   Future<void> removeMetadata(String pubKey);
   Future<void> removeAllMetadatas();
+
+  // Search by name, nip05
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit);
 
   Future<void> saveNip05(Nip05 nip05);

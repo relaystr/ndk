@@ -369,8 +369,22 @@ class DbObjectBox implements CacheManager {
     await Future.wait(wait);
   }
 
+  // Search by name, nip05
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
-    return [];
+    await dbRdy;
+    final metadataBox = _objectBox.store.box<DbMetadata>();
+
+    // Create a query with OR condition
+    final query = metadataBox
+        .query(DbMetadata_.name
+            .contains(search)
+            .or(DbMetadata_.nip05.contains(search)))
+        .order(DbMetadata_.name, flags: Order.descending)
+        .build();
+
+    final results = query.find();
+
+    return results.map((dbMetadata) => dbMetadata.toNdk()).take(limit);
   }
 }
