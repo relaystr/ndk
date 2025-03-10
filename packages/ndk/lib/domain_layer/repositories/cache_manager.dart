@@ -44,8 +44,29 @@ abstract class CacheManager {
   Future<void> removeMetadata(String pubKey);
   Future<void> removeAllMetadatas();
 
-  // Search by name, nip05
+  /// Search by name, nip05
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit);
+
+  /// search events \
+  /// [ids] - list of event ids \
+  /// [authors] - list of authors pubKeys \
+  /// [kinds] - list of kinds \
+  /// [tags] - map of tags \
+  /// [since] - timestamp \
+  /// [until] - timestamp \
+  /// [search] - search string to match against content \
+  /// [limit] - limit of results \
+  /// returns list of events
+  Future<Iterable<Nip01Event>> searchEvents({
+    List<String>? ids,
+    List<String>? authors,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int limit = 100,
+  });
 
   Future<void> saveNip05(Nip05 nip05);
   Future<void> saveNip05s(List<Nip05> nip05s);
