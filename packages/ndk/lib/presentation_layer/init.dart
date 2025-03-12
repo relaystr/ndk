@@ -219,7 +219,10 @@ class Initialization {
 
     files = Files(blossom: blossom);
 
-    search = Search(_ndkConfig.cache);
+    search = Search(
+      cacheManager: _ndkConfig.cache,
+      requests: requests,
+    );
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
