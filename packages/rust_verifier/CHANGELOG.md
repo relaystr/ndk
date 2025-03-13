@@ -1,3 +1,6 @@
+## 0.2.4
+- upgrade rust_lib_ndk to 0.1.4
+
 ## 0.2.3
 - upgrade flutter_rust_bridge to 2.8.0
 
