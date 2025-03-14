@@ -30,7 +30,7 @@ class Zaps {
         _lnurl = lnurl;
 
   /// creates an invoice with an optional zap request encoded if signer, pubKey & relays are non empty
-  Future<InvoiceResponse?> fecthInvoice(
+  Future<InvoiceResponse?> fetchInvoice(
       {required String lud16Link,
       required int amountSats,
       ZapRequest? zapRequest,
@@ -113,7 +113,7 @@ class Zaps {
           relays: relays,
           eventId: eventId);
     }
-    final invoice = await fecthInvoice(
+    final invoice = await fetchInvoice(
       lud16Link: lud16Link!,
       comment: comment,
       amountSats: amountSats,

@@ -69,7 +69,7 @@ void main() {
           pubKey: 'pubKey',
           relays: ['relay1', 'relay2']);
 
-      var invoiceResponse = await zaps.fecthInvoice(
+      var invoiceResponse = await zaps.fetchInvoice(
         lud16Link: link,
         amountSats: amount,
         zapRequest: zapRequest,
@@ -80,7 +80,7 @@ void main() {
 
     test('fetchInvoidce returns null for invalid input', () async {
       Ndk ndk = Ndk.defaultConfig();
-      var invoiceCode = await ndk.zaps.fecthInvoice(
+      var invoiceCode = await ndk.zaps.fetchInvoice(
         lud16Link: 'invalid',
         amountSats: 1000,
       );
