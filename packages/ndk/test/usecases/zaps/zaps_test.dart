@@ -22,7 +22,7 @@ void main() {
   group('Zaps', () {
     KeyPair key = Bip340.generatePrivateKey();
 
-    test('fetchInvoidce returns invoice code for valid input', () async {
+    test('fetchInvoice returns invoice code for valid input', () async {
       final client = MockClient();
       final response = {
         'callback': 'https://domain.com/callback',
@@ -78,7 +78,7 @@ void main() {
       expect(invoiceResponse.invoice, startsWith("lnbc$amount"));
     });
 
-    test('fetchInvoidce returns null for invalid input', () async {
+    test('fetchInvoice returns null for invalid input', () async {
       Ndk ndk = Ndk.defaultConfig();
       var invoiceCode = await ndk.zaps.fetchInvoice(
         lud16Link: 'invalid',
