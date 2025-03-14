@@ -57,6 +57,7 @@ class Zaps {
     required EventSigner signer,
     required String pubKey,
     String? eventId,
+    String? addressableId,
     String? comment,
     required Iterable<String> relays,
     String? pollOption,
@@ -73,6 +74,9 @@ class Zaps {
     ];
     if (eventId != null) {
       tags.add(["e", eventId]);
+    }
+    if (addressableId != null) {
+      tags.add(["a", addressableId]);
     }
     if (pollOption != null) {
       tags.add(["poll_option", pollOption]);
@@ -98,6 +102,7 @@ class Zaps {
     String? pubKey,
     String? comment,
     String? eventId,
+    String? addressableId,
   }) async {
     String? lud16Link = Lnurl.getLud16LinkFromLud16(lnurl);
     ZapRequest? zapRequest;
@@ -111,7 +116,8 @@ class Zaps {
           pubKey: pubKey,
           comment: comment,
           relays: relays,
-          eventId: eventId);
+          eventId: eventId,
+          addressableId: addressableId);
     }
     final invoice = await fecthInvoice(
       lud16Link: lud16Link!,
@@ -188,12 +194,20 @@ class Zaps {
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
   Stream<ZapReceipt> fetchZappedReceipts(
-      {required String pubKey, String? eventId, Duration? timeout}) {
+      {String? pubKey,
+      String? eventId,
+      String? addressableId,
+      Duration? timeout}) {
+    if ((pubKey ?? eventId ?? addressableId) == null) {
+      throw ArgumentError("pubKey, eventId or addressableId must be non null");
+    }
     NdkResponse? response =
         _requests.query(timeout: timeout ?? Duration(seconds: 10), filters: [
-      eventId != null
-          ? Filter(kinds: [ZapReceipt.kKind], eTags: [eventId], pTags: [pubKey])
-          : Filter(kinds: [ZapReceipt.kKind], pTags: [pubKey])
+      Filter(
+          kinds: [ZapReceipt.kKind],
+          eTags: eventId != null ? [eventId] : null,
+          aTags: addressableId != null ? [addressableId] : null,
+          pTags: pubKey != null ? [pubKey] : null)
     ]);
     // TODO how to check validity of zap receipts without nostrPubKey and recipientLnurl????
     return response.stream.map((event) => ZapReceipt.fromEvent(event));
@@ -203,11 +217,16 @@ class Zaps {
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
   NdkResponse subscribeToZapReceipts(
-      {required String pubKey, String? eventId}) {
+      {String? pubKey, String? eventId, String? addressableId}) {
+    if ((pubKey ?? eventId ?? addressableId) == null) {
+      throw ArgumentError("pubKey, eventId or addressableId must be non null");
+    }
     NdkResponse? response = _requests.subscription(filters: [
-      eventId != null
-          ? Filter(kinds: [ZapReceipt.kKind], eTags: [eventId], pTags: [pubKey])
-          : Filter(kinds: [ZapReceipt.kKind], pTags: [pubKey])
+      Filter(
+          kinds: [ZapReceipt.kKind],
+          eTags: eventId != null ? [eventId] : null,
+          aTags: addressableId != null ? [addressableId] : null,
+          pTags: pubKey != null ? [pubKey] : null)
     ]);
     return response;
   }
