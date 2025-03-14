@@ -1,5 +1,8 @@
+## 0.2.2
+- upgrade to ndk 0.3.2
+
 ## 0.2.1
- - verstion match with ndk
+ - version match with ndk
  - user relay list support
 
 ## 0.2.0
