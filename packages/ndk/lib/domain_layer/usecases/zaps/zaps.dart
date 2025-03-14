@@ -194,20 +194,17 @@ class Zaps {
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
   Stream<ZapReceipt> fetchZappedReceipts(
-      {String? pubKey,
+      {required String pubKey,
       String? eventId,
       String? addressableId,
       Duration? timeout}) {
-    if ((pubKey ?? eventId ?? addressableId) == null) {
-      throw ArgumentError("pubKey, eventId or addressableId must be non null");
-    }
     NdkResponse? response =
         _requests.query(timeout: timeout ?? Duration(seconds: 10), filters: [
       Filter(
           kinds: [ZapReceipt.kKind],
           eTags: eventId != null ? [eventId] : null,
           aTags: addressableId != null ? [addressableId] : null,
-          pTags: pubKey != null ? [pubKey] : null)
+          pTags: [pubKey])
     ]);
     // TODO how to check validity of zap receipts without nostrPubKey and recipientLnurl????
     return response.stream.map((event) => ZapReceipt.fromEvent(event));
@@ -217,16 +214,13 @@ class Zaps {
 
   /// fetch all zap receipts matching given pubKey and optional event id, in sats
   NdkResponse subscribeToZapReceipts(
-      {String? pubKey, String? eventId, String? addressableId}) {
-    if ((pubKey ?? eventId ?? addressableId) == null) {
-      throw ArgumentError("pubKey, eventId or addressableId must be non null");
-    }
+      {required String pubKey, String? eventId, String? addressableId}) {
     NdkResponse? response = _requests.subscription(filters: [
       Filter(
           kinds: [ZapReceipt.kKind],
           eTags: eventId != null ? [eventId] : null,
           aTags: addressableId != null ? [addressableId] : null,
-          pTags: pubKey != null ? [pubKey] : null)
+          pTags: [pubKey])
     ]);
     return response;
   }
