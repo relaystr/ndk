@@ -186,18 +186,38 @@ class MemCacheManager implements CacheManager {
     return result;
   }
 
+  /// Search for metadata by name, nip05
   @override
-
-  /// Search for metadata by name
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
-    try {
-      final result = metadatas.values
-          .where((element) => element.name!.contains(search))
-          .take(limit);
-      return result;
-    } catch (_) {}
+    // Use a Set to track unique Metadata objects
+    final Set<Metadata> uniqueResults = {};
 
-    return [];
+    for (final metadata in metadatas.values) {
+      if ((metadata.name != null && metadata.name!.contains(search)) ||
+          (metadata.nip05 != null && metadata.nip05!.contains(search))) {
+        uniqueResults.add(metadata);
+      }
+    }
+
+    // Convert to list, sort by updatedAt, and take the limit
+    final sortedResults = uniqueResults.toList()
+      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+
+    return sortedResults.take(limit);
+  }
+
+  @override
+  Future<Iterable<Nip01Event>> searchEvents({
+    List<String>? ids,
+    List<String>? authors,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int limit = 100,
+  }) async {
+    throw UnimplementedError();
   }
 
   @override
