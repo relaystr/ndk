@@ -1,3 +1,6 @@
+## 0.3.1
+- rollback to flutter_rust_bridge to 2.7.0
+
 ## 0.3.0
 - upgrade flutter_rust_bridge to 2.9.0
 - upgrade ndk 0.3.2
