@@ -53,16 +53,20 @@ class Nwc {
 
     Completer<NwcConnection> completer = Completer();
 
+    List<Nip01Event> infoEvent = await
     _requests
         .query(
             name: "nwc-info",
             explicitRelays: [relay],
             filters: [filter],
             timeout: Duration(seconds: 5),
+            timeoutCallback: () {
+              onError?.call("timeout");
+            },
             cacheRead: false,
-            cacheWrite: false)
-        .stream
-        .listen((event) async {
+            cacheWrite: false).future;
+    if (infoEvent.isNotEmpty) {
+      Nip01Event event = infoEvent.first;
       if (event.kind == NwcKind.INFO.value && event.content != "") {
         final connection = NwcConnection(parsedUri);
 
@@ -82,15 +86,22 @@ class Nwc {
 
         if (doGetInfoMethod &&
             connection.permissions.contains(NwcMethod.GET_INFO.name)) {
-          await getInfo(connection).then((info) {
-            connection.info = info;
-          });
+          try {
+            await getInfo(connection).then((info) {
+              connection.info = info;
+            });
+          } catch (e) {
+            onError?.call("timeout get_info");
+          }
         }
         Logger.log.i("NWC ${connection.uri} connected");
         _connections.add(connection);
         completer.complete(connection);
       }
-    });
+    } else {
+      onError?.call("not found");
+      completer.complete(NwcConnection(parsedUri));
+    }
     return completer.future;
   }
 
