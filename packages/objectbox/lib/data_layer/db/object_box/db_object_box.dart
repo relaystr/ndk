@@ -63,16 +63,22 @@ class DbObjectBox implements CacheManager {
   }) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
+    var query;
 
-    var query = kinds != null && kinds.isNotEmpty
-        ? eventBox.query(DbNip01Event_.pubKey
-            .oneOf(pubKeys!)
-            .and(DbNip01Event_.kind.oneOf(kinds)))
-        : eventBox.query(DbNip01Event_.pubKey.oneOf(pubKeys!));
-
+    if (pubKeys!=null && pubKeys.isNotEmpty) {
+      query = kinds != null && kinds.isNotEmpty
+          ? eventBox.query(DbNip01Event_.pubKey
+          .oneOf(pubKeys)
+          .and(DbNip01Event_.kind.oneOf(kinds)))
+          : eventBox.query(DbNip01Event_.pubKey.oneOf(pubKeys));
+    } else if (kinds!=null && kinds.isNotEmpty) {
+      query = eventBox.query(DbNip01Event_.kind.oneOf(kinds));
+    } else {
+      throw Exception("cannot query without either kinds or pubKeys");
+    }
     query = query.order(DbNip01Event_.createdAt, flags: Order.descending);
 
-    final foundDb = query.build().find();
+    List<DbNip01Event> foundDb = query.build().find();
 
     final foundValid = foundDb.where((event) {
       if (pTag != null && !event.pTags.contains(pTag)) {
