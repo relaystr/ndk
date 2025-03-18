@@ -1,6 +1,6 @@
 use hex::decode;
 use secp256k1::{schnorr::Signature, Message, Secp256k1, XOnlyPublicKey};
-use serde_json::{json, Value};
+use serde_json::json;
 use sha2::{Digest, Sha256};
 
 #[flutter_rust_bridge::frb(init)]

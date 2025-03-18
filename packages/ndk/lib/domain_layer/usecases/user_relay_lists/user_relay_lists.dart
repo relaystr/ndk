@@ -66,7 +66,7 @@ class UserRelayLists {
       Logger.log.d("loading missing relay lists ${missingPubKeys.length}");
       if (onProgress != null) {
         onProgress.call(
-            "loading missing relay lists", 0, missingPubKeys.length);
+            "Loading missing relay lists", 0, missingPubKeys.length);
       }
       try {
         await for (final event in (_requests.query(
@@ -87,7 +87,7 @@ class UserRelayLists {
                 }
                 if (onProgress != null) {
                   found.add(event.pubKey);
-                  onProgress.call("loading missing relay lists", found.length,
+                  onProgress.call("Loading missing relay lists", found.length,
                       missingPubKeys.length);
                 }
               }
@@ -103,7 +103,7 @@ class UserRelayLists {
                 }
                 if (onProgress != null) {
                   found.add(event.pubKey);
-                  onProgress.call("loading missing relay lists", found.length,
+                  onProgress.call("Loading missing relay lists", found.length,
                       missingPubKeys.length);
                 }
               }
@@ -135,7 +135,7 @@ class UserRelayLists {
 
       if (onProgress != null) {
         onProgress.call(
-            "loading missing relay lists", found.length, missingPubKeys.length);
+            "Loading missing relay lists", found.length, missingPubKeys.length);
       }
     }
     Logger.log.d("Loaded ${found.length} relay lists ");
