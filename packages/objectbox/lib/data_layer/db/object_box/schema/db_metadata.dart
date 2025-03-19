@@ -44,10 +44,18 @@ class DbMetadata {
   @Property()
   int? refreshedTimestamp;
 
+  @Property()
+  List<String>? splitDisplayNameWords;
+
+  @Property()
+  List<String>? splitNameWords;
+
   DbMetadata(
       {this.pubKey = "",
       this.name,
       this.displayName,
+      this.splitNameWords,
+      this.splitDisplayNameWords,
       this.picture,
       this.banner,
       this.website,
@@ -78,6 +86,8 @@ class DbMetadata {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['name'] = name;
     data['display_name'] = displayName;
+    data['splitNameWords'] = name?.trim().toLowerCase().split(" ");
+    data['splitDisplayNameWords'] = displayName?.trim().toLowerCase().split(" ");
     data['picture'] = picture;
     data['banner'] = banner;
     data['website'] = website;
@@ -133,6 +143,8 @@ class DbMetadata {
       pubKey: ndkM.pubKey,
       name: ndkM.name,
       displayName: ndkM.displayName,
+      splitDisplayNameWords: ndkM.displayName?.trim().toLowerCase().split(" "),
+      splitNameWords: ndkM.name?.trim().toLowerCase().split(" "),
       picture: ndkM.picture,
       banner: ndkM.banner,
       website: ndkM.website,

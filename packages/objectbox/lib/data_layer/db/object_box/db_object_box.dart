@@ -65,13 +65,13 @@ class DbObjectBox implements CacheManager {
     final eventBox = _objectBox.store.box<DbNip01Event>();
     var query;
 
-    if (pubKeys!=null && pubKeys.isNotEmpty) {
+    if (pubKeys != null && pubKeys.isNotEmpty) {
       query = kinds != null && kinds.isNotEmpty
           ? eventBox.query(DbNip01Event_.pubKey
-          .oneOf(pubKeys)
-          .and(DbNip01Event_.kind.oneOf(kinds)))
+              .oneOf(pubKeys)
+              .and(DbNip01Event_.kind.oneOf(kinds)))
           : eventBox.query(DbNip01Event_.pubKey.oneOf(pubKeys));
-    } else if (kinds!=null && kinds.isNotEmpty) {
+    } else if (kinds != null && kinds.isNotEmpty) {
       query = eventBox.query(DbNip01Event_.kind.oneOf(kinds));
     } else {
       throw Exception("cannot query without either kinds or pubKeys");
@@ -383,9 +383,16 @@ class DbObjectBox implements CacheManager {
 
     // Create a query with OR condition
     final query = metadataBox
-        .query(DbMetadata_.name
-            .contains(search, caseSensitive: false)
-            .or(DbMetadata_.nip05.contains(search, caseSensitive: false)))
+        .query(DbMetadata_.splitNameWords
+            .containsElement(search, caseSensitive: false)
+            .or(DbMetadata_.name
+                .startsWith(search, caseSensitive: false)
+                .or(DbMetadata_.splitDisplayNameWords
+                    .containsElement(search, caseSensitive: false))
+                .or(DbMetadata_.displayName
+                    .startsWith(search, caseSensitive: false))
+                .or(DbMetadata_.nip05
+                    .startsWith(search, caseSensitive: false))))
         .order(DbMetadata_.name, flags: Order.descending)
         .build();
     query..limit = limit;

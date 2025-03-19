@@ -90,7 +90,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(2, 530428573583615038),
       name: 'DbMetadata',
-      lastPropertyId: const obx_int.IdUid(13, 1741276455180885874),
+      lastPropertyId: const obx_int.IdUid(15, 3659729329624536988),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -157,6 +157,16 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(13, 1741276455180885874),
             name: 'refreshedTimestamp',
             type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(14, 1086893591781785038),
+            name: 'splitDisplayNameWords',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(15, 3659729329624536988),
+            name: 'splitNameWords',
+            type: 30,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -252,7 +262,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(5, 1189162834702422075),
       name: 'DbNip05',
-      lastPropertyId: const obx_int.IdUid(6, 5240456446636403236),
+      lastPropertyId: const obx_int.IdUid(7, 8942013022024139638),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -279,6 +289,11 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(6, 5240456446636403236),
             name: 'networkFetchTime',
             type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 8942013022024139638),
+            name: 'relays',
+            type: 30,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -482,7 +497,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
               object.lud16 == null ? null : fbb.writeString(object.lud16!);
           final lud06Offset =
               object.lud06 == null ? null : fbb.writeString(object.lud06!);
-          fbb.startTable(14);
+          final splitDisplayNameWordsOffset =
+              object.splitDisplayNameWords == null
+                  ? null
+                  : fbb.writeList(object.splitDisplayNameWords!
+                      .map(fbb.writeString)
+                      .toList(growable: false));
+          final splitNameWordsOffset = object.splitNameWords == null
+              ? null
+              : fbb.writeList(object.splitNameWords!
+                  .map(fbb.writeString)
+                  .toList(growable: false));
+          fbb.startTable(16);
           fbb.addInt64(0, object.dbId);
           fbb.addOffset(1, pubKeyOffset);
           fbb.addOffset(2, nameOffset);
@@ -496,6 +522,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addOffset(10, lud06Offset);
           fbb.addInt64(11, object.updatedAt);
           fbb.addInt64(12, object.refreshedTimestamp);
+          fbb.addOffset(13, splitDisplayNameWordsOffset);
+          fbb.addOffset(14, splitNameWordsOffset);
           fbb.finish(fbb.endTable());
           return object.dbId;
         },
@@ -509,6 +537,14 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final displayNameParam =
               const fb.StringReader(asciiOptimization: true)
                   .vTableGetNullable(buffer, rootOffset, 10);
+          final splitNameWordsParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGetNullable(buffer, rootOffset, 32);
+          final splitDisplayNameWordsParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGetNullable(buffer, rootOffset, 30);
           final pictureParam = const fb.StringReader(asciiOptimization: true)
               .vTableGetNullable(buffer, rootOffset, 12);
           final bannerParam = const fb.StringReader(asciiOptimization: true)
@@ -531,6 +567,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
               pubKey: pubKeyParam,
               name: nameParam,
               displayName: displayNameParam,
+              splitNameWords: splitNameWordsParam,
+              splitDisplayNameWords: splitDisplayNameWordsParam,
               picture: pictureParam,
               banner: bannerParam,
               website: websiteParam,
@@ -657,12 +695,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
         objectToFB: (DbNip05 object, fb.Builder fbb) {
           final pubKeyOffset = fbb.writeString(object.pubKey);
           final nip05Offset = fbb.writeString(object.nip05);
-          fbb.startTable(7);
+          final relaysOffset = fbb.writeList(
+              object.relays.map(fbb.writeString).toList(growable: false));
+          fbb.startTable(8);
           fbb.addInt64(0, object.dbId);
           fbb.addOffset(1, pubKeyOffset);
           fbb.addOffset(2, nip05Offset);
           fbb.addBool(3, object.valid);
           fbb.addInt64(5, object.networkFetchTime);
+          fbb.addOffset(6, relaysOffset);
           fbb.finish(fbb.endTable());
           return object.dbId;
         },
@@ -677,11 +718,16 @@ obx_int.ModelDefinition getObjectBoxModel() {
               const fb.BoolReader().vTableGet(buffer, rootOffset, 10, false);
           final networkFetchTimeParam =
               const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 14);
+          final relaysParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGet(buffer, rootOffset, 16, []);
           final object = DbNip05(
               pubKey: pubKeyParam,
               nip05: nip05Param,
               valid: validParam,
-              networkFetchTime: networkFetchTimeParam)
+              networkFetchTime: networkFetchTimeParam,
+              relays: relaysParam)
             ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
@@ -831,6 +877,14 @@ class DbMetadata_ {
   /// See [DbMetadata.refreshedTimestamp].
   static final refreshedTimestamp =
       obx.QueryIntegerProperty<DbMetadata>(_entities[1].properties[12]);
+
+  /// See [DbMetadata.splitDisplayNameWords].
+  static final splitDisplayNameWords =
+      obx.QueryStringVectorProperty<DbMetadata>(_entities[1].properties[13]);
+
+  /// See [DbMetadata.splitNameWords].
+  static final splitNameWords =
+      obx.QueryStringVectorProperty<DbMetadata>(_entities[1].properties[14]);
 }
 
 /// [DbNip01Event] entity fields to define ObjectBox queries.
@@ -914,6 +968,10 @@ class DbNip05_ {
   /// See [DbNip05.networkFetchTime].
   static final networkFetchTime =
       obx.QueryIntegerProperty<DbNip05>(_entities[4].properties[4]);
+
+  /// See [DbNip05.relays].
+  static final relays =
+      obx.QueryStringVectorProperty<DbNip05>(_entities[4].properties[5]);
 }
 
 /// [DbUserRelayList] entity fields to define ObjectBox queries.
