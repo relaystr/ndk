@@ -206,4 +206,24 @@ class Nip01Event {
   String toString() {
     return 'Nip01Event{pubKey: $pubKey, createdAt: $createdAt, kind: $kind, tags: $tags, content: $content, sources: $sources}';
   }
+
+  Nip01Event copyWith({
+    String? pubKey,
+    int? createdAt,
+    int? kind,
+    List<List<String>>? tags,
+    String? content,
+    String? sig,
+    List<String>? sources,
+  }) {
+    return Nip01Event._(
+      id,
+      pubKey ?? this.pubKey,
+      createdAt ?? this.createdAt,
+      kind ?? this.kind,
+      tags ?? this.tags,
+      content ?? this.content,
+      sig ?? this.sig,
+    )..sources = sources ?? this.sources;
+  }
 }

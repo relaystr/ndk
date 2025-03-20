@@ -19,4 +19,20 @@ class Nip05 {
     this.networkFetchTime,
     this.relays = const [],
   });
+
+  Nip05 copyWith({
+    String? pubKey,
+    String? nip05,
+    bool? valid,
+    int? networkFetchTime,
+    List<String>? relays,
+  }) {
+    return Nip05(
+      pubKey: pubKey ?? this.pubKey,
+      nip05: nip05 ?? this.nip05,
+      valid: valid ?? this.valid,
+      networkFetchTime: networkFetchTime ?? this.networkFetchTime,
+      relays: relays ?? this.relays,
+    );
+  }
 }
