@@ -16,6 +16,7 @@ import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
+import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import 'init.dart';
@@ -122,6 +123,10 @@ class Ndk {
   /// Zaps
   @experimental // needs more docs & tests
   Zaps get zaps => _initialization.zaps;
+
+  /// Search
+  @experimental
+  Search get search => _initialization.search;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {

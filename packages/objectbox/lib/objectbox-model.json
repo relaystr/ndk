@@ -69,7 +69,7 @@
     },
     {
       "id": "2:530428573583615038",
-      "lastPropertyId": "13:1741276455180885874",
+      "lastPropertyId": "15:3659729329624536988",
       "name": "DbMetadata",
       "properties": [
         {
@@ -137,6 +137,16 @@
           "id": "13:1741276455180885874",
           "name": "refreshedTimestamp",
           "type": 6
+        },
+        {
+          "id": "14:1086893591781785038",
+          "name": "splitDisplayNameWords",
+          "type": 30
+        },
+        {
+          "id": "15:3659729329624536988",
+          "name": "splitNameWords",
+          "type": 30
         }
       ],
       "relations": []
@@ -231,7 +241,7 @@
     },
     {
       "id": "5:1189162834702422075",
-      "lastPropertyId": "6:5240456446636403236",
+      "lastPropertyId": "7:8942013022024139638",
       "name": "DbNip05",
       "properties": [
         {
@@ -259,6 +269,11 @@
           "id": "6:5240456446636403236",
           "name": "networkFetchTime",
           "type": 6
+        },
+        {
+          "id": "7:8942013022024139638",
+          "name": "relays",
+          "type": 30
         }
       ],
       "relations": []

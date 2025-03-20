@@ -29,6 +29,7 @@ import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
+import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import '../shared/logger/logger.dart';
@@ -70,6 +71,7 @@ class Initialization {
   late Files files;
   late Blossom blossom;
   late BlossomUserServerList blossomUserServerList;
+  late Search search;
 
   late VerifyNip05 verifyNip05;
 
@@ -216,6 +218,11 @@ class Initialization {
     );
 
     files = Files(blossom: blossom);
+
+    search = Search(
+      cacheManager: _ndkConfig.cache,
+      requests: requests,
+    );
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);

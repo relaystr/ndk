@@ -355,4 +355,10 @@ class IsarCacheManager extends CacheManager {
       isar.dbEvents.clear();
     });
   }
+
+  @override
+  Future<Iterable<Nip01Event>> searchEvents({List<String>? ids, List<String>? authors, List<int>? kinds, Map<String, List<String>>? tags, int? since, int? until, String? search, int limit = 100}) {
+    // TODO: implement searchEvents
+    throw UnimplementedError();
+  }
 }

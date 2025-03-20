@@ -65,13 +65,13 @@ class DbObjectBox implements CacheManager {
     final eventBox = _objectBox.store.box<DbNip01Event>();
     var query;
 
-    if (pubKeys!=null && pubKeys.isNotEmpty) {
+    if (pubKeys != null && pubKeys.isNotEmpty) {
       query = kinds != null && kinds.isNotEmpty
           ? eventBox.query(DbNip01Event_.pubKey
-          .oneOf(pubKeys)
-          .and(DbNip01Event_.kind.oneOf(kinds)))
+              .oneOf(pubKeys)
+              .and(DbNip01Event_.kind.oneOf(kinds)))
           : eventBox.query(DbNip01Event_.pubKey.oneOf(pubKeys));
-    } else if (kinds!=null && kinds.isNotEmpty) {
+    } else if (kinds != null && kinds.isNotEmpty) {
       query = eventBox.query(DbNip01Event_.kind.oneOf(kinds));
     } else {
       throw Exception("cannot query without either kinds or pubKeys");
@@ -375,8 +375,137 @@ class DbObjectBox implements CacheManager {
     await Future.wait(wait);
   }
 
+  // Search by name, nip05
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
-    return [];
+    await dbRdy;
+    final metadataBox = _objectBox.store.box<DbMetadata>();
+
+    // Create a query with OR condition
+    final query = metadataBox
+        .query(DbMetadata_.splitNameWords
+            .containsElement(search, caseSensitive: false)
+            .or(DbMetadata_.name
+                .startsWith(search, caseSensitive: false)
+                .or(DbMetadata_.splitDisplayNameWords
+                    .containsElement(search, caseSensitive: false))
+                .or(DbMetadata_.displayName
+                    .startsWith(search, caseSensitive: false))
+                .or(DbMetadata_.nip05
+                    .startsWith(search, caseSensitive: false))))
+        .order(DbMetadata_.name, flags: Order.descending)
+        .build();
+    query..limit = limit;
+    final results = query.find();
+
+    return results.map((dbMetadata) => dbMetadata.toNdk()).take(limit);
+  }
+
+  Future<Iterable<Nip01Event>> searchEvents({
+    List<String>? ids,
+    List<String>? authors,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int limit = 100,
+  }) async {
+    await dbRdy;
+    final eventBox = _objectBox.store.box<DbNip01Event>();
+
+    // Build conditions
+    Condition<DbNip01Event>? condition;
+
+    // Add search condition if provided (NIP-50)
+    if (search != null && search.isNotEmpty) {
+      condition = DbNip01Event_.content.contains(search, caseSensitive: false);
+    }
+
+    // Add ids filter
+    if (ids != null && ids.isNotEmpty) {
+      Condition<DbNip01Event> idsCondition = DbNip01Event_.nostrId.oneOf(ids);
+      condition =
+          (condition == null) ? idsCondition : condition.and(idsCondition);
+    }
+
+    // Add authors filter
+    if (authors != null && authors.isNotEmpty) {
+      Condition<DbNip01Event> authorsCondition =
+          DbNip01Event_.pubKey.oneOf(authors);
+      condition = (condition == null)
+          ? authorsCondition
+          : condition.and(authorsCondition);
+    }
+
+    // Add kinds filter
+    if (kinds != null && kinds.isNotEmpty) {
+      Condition<DbNip01Event> kindsCondition = DbNip01Event_.kind.oneOf(kinds);
+      condition =
+          (condition == null) ? kindsCondition : condition.and(kindsCondition);
+    }
+
+    // Add since filter
+    if (since != null) {
+      Condition<DbNip01Event> sinceCondition =
+          DbNip01Event_.createdAt.greaterOrEqual(since);
+      condition =
+          (condition == null) ? sinceCondition : condition.and(sinceCondition);
+    }
+
+    // Add until filter
+    if (until != null) {
+      Condition<DbNip01Event> untilCondition =
+          DbNip01Event_.createdAt.lessOrEqual(until);
+      condition =
+          (condition == null) ? untilCondition : condition.and(untilCondition);
+    }
+
+    // Create and build the query
+    QueryBuilder<DbNip01Event> queryBuilder;
+    if (condition != null) {
+      queryBuilder = eventBox.query(condition);
+    } else {
+      queryBuilder = eventBox.query();
+    }
+
+    // Apply sorting
+    queryBuilder.order(DbNip01Event_.createdAt, flags: Order.descending);
+
+    // Build and execute the query
+    final query = queryBuilder.build();
+    query..limit = limit;
+    final results = query.find();
+
+    // For tag filtering, we need to do it in memory since ObjectBox doesn't support
+    // complex JSON querying within arrays
+    List<DbNip01Event> filteredResults = results;
+
+    // Apply tag filters in memory if needed
+    if (tags != null && tags.isNotEmpty) {
+      filteredResults = results.where((event) {
+        // Check if the event matches all tag filters
+        return tags.entries.every((tagEntry) {
+          String tagKey = tagEntry.key;
+          List<String> tagValues = tagEntry.value;
+
+          // Handle the special case where tag key starts with '#'
+          if (tagKey.startsWith('#') && tagKey.length > 1) {
+            tagKey = tagKey.substring(1); // Remove the '#' prefix
+          }
+
+          // Get all tags with this key
+          List<DbTag> eventTags =
+              event.tags.where((t) => t.key == tagKey).toList();
+
+          // Check if any of the event's tags with this key have a value in the requested values
+          return eventTags.any((tag) =>
+              tagValues.contains(tag.value) ||
+              tagValues.contains(tag.value.toLowerCase()));
+        });
+      }).toList();
+    }
+
+    return filteredResults.map((dbEvent) => dbEvent.toNdk()).take(limit);
   }
 }
