@@ -165,4 +165,38 @@ class Metadata {
 
   @override
   int get hashCode => pubKey.hashCode;
+
+  Metadata copyWith({
+    String? pubKey,
+    String? name,
+    String? displayName,
+    String? picture,
+    String? banner,
+    String? website,
+    String? about,
+    String? nip05,
+    String? lud16,
+    String? lud06,
+    int? updatedAt,
+    int? refreshedTimestamp,
+    List<String>? sources,
+  }) {
+    Metadata metadata = Metadata(
+      pubKey: pubKey ?? this.pubKey,
+      name: name ?? this.name,
+      displayName: displayName ?? this.displayName,
+      picture: picture ?? this.picture,
+      banner: banner ?? this.banner,
+      website: website ?? this.website,
+      about: about ?? this.about,
+      nip05: nip05 ?? this.nip05,
+      lud16: lud16 ?? this.lud16,
+      lud06: lud06 ?? this.lud06,
+      updatedAt: updatedAt ?? this.updatedAt,
+      refreshedTimestamp: refreshedTimestamp ?? this.refreshedTimestamp,
+    );
+
+    metadata.sources = sources ?? List.from(this.sources);
+    return metadata;
+  }
 }
