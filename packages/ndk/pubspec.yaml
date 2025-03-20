@@ -31,6 +31,7 @@ dependencies:
   elliptic: ^0.3.11
   cryptography: ^2.7.0
   meta: ^1.15.0
+  xxh3: ^1.2.0
 
 dev_dependencies:
   build_runner: ^2.4.11
