@@ -76,12 +76,12 @@ class AmberEventSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String userPubkey,
-    required String senderPublicKey,
+    required String senderPubKey,
   }) async {
     final amberResult = await amberFlutterDS.amber.nip44Decrypt(
       ciphertext: ciphertext,
       currentUser: userPubkey,
-      pubKey: senderPublicKey,
+      pubKey: senderPubKey,
     );
 
     return amberResult['signature'];

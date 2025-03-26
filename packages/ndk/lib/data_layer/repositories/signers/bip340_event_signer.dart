@@ -63,12 +63,12 @@ class Bip340EventSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String userPubkey,
-    required String senderPublicKey,
+    required String senderPubKey,
   }) {
     return Nip44.decryptMessage(
       ciphertext,
       privateKey!,
-      senderPublicKey,
+      senderPubKey,
     );
   }
 }
