@@ -56,4 +56,38 @@ class AmberEventSigner implements EventSigner {
   bool canSign() {
     return publicKey.isNotEmpty;
   }
+
+  @override
+  Future<String?> encryptNip44({
+    required String plaintext,
+    required String recipientPubKey,
+  }) async {
+    final userPubkey = publicKey.startsWith('npub')
+        ? publicKey
+        : Nip19.encodePubKey(publicKey);
+    final amberResult = await amberFlutterDS.amber.nip44Encrypt(
+      plaintext: plaintext,
+      currentUser: userPubkey,
+      pubKey: recipientPubKey,
+    );
+
+    return amberResult['signature'];
+  }
+
+  @override
+  Future<String?> decryptNip44({
+    required String ciphertext,
+    required String senderPubKey,
+  }) async {
+    final userPubkey = publicKey.startsWith('npub')
+        ? publicKey
+        : Nip19.encodePubKey(publicKey);
+    final amberResult = await amberFlutterDS.amber.nip44Decrypt(
+      ciphertext: ciphertext,
+      currentUser: userPubkey,
+      pubKey: senderPubKey,
+    );
+
+    return amberResult['signature'];
+  }
 }

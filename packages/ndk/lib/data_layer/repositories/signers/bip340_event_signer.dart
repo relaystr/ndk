@@ -3,6 +3,7 @@ import '../../../shared/nips/nip01/helpers.dart';
 import '../../../shared/nips/nip04/nip04.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
+import '../../../shared/nips/nip44/nip44.dart';
 
 /// Pure Dart Event Signer
 class Bip340EventSigner implements EventSigner {
@@ -43,5 +44,29 @@ class Bip340EventSigner implements EventSigner {
   @override
   bool canSign() {
     return Helpers.isNotBlank(privateKey);
+  }
+
+  @override
+  Future<String?> encryptNip44({
+    required String plaintext,
+    required String recipientPubKey,
+  }) {
+    return Nip44.encryptMessage(
+      plaintext,
+      privateKey!,
+      recipientPubKey,
+    );
+  }
+
+  @override
+  Future<String?> decryptNip44({
+    required String ciphertext,
+    required String senderPubKey,
+  }) {
+    return Nip44.decryptMessage(
+      ciphertext,
+      privateKey!,
+      senderPubKey,
+    );
   }
 }

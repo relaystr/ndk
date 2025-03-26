@@ -9,6 +9,7 @@ import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
 import '../domain_layer/usecases/follows/follows.dart';
+import '../domain_layer/usecases/gift_wrap/gift_wrap.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
@@ -111,10 +112,17 @@ class Ndk {
   Blossom get blossom => _initialization.blossom;
 
   /// Blossom User Server list \
-  /// used to manage the list of blossom servers for a user
+  /// used to manage the list of blossom servers for a user \
   /// low level usecase, recommended for advanced users
   BlossomUserServerList get blossomUserServerList =>
       _initialization.blossomUserServerList;
+
+  /// Gift wrap - NIP-59 \
+  /// crate gift wraps \
+  /// unwrap gift wraps \
+  ///
+  /// low level usecase, recommended for advanced users
+  GiftWrap get giftWrap => _initialization.giftWrap;
 
   /// Nostr Wallet connect
   @experimental // needs more docs & tests

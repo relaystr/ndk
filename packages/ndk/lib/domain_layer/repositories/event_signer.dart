@@ -10,4 +10,14 @@ abstract class EventSigner {
   Future<String?> encrypt(String msg, String destPubKey, {String? id});
 
   bool canSign();
+
+  Future<String?> encryptNip44({
+    required String plaintext,
+    required String recipientPubKey,
+  });
+
+  Future<String?> decryptNip44({
+    required String ciphertext,
+    required String senderPubKey,
+  });
 }
