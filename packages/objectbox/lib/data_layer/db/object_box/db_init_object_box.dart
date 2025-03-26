@@ -18,4 +18,14 @@ class ObjectBoxInit {
         await openStore(directory: p.join(docsDir.path, "ndk-obx-default"));
     return ObjectBoxInit._create(store);
   }
+
+  /// attaches to a existing running db, usefull for isolates
+  static Future<ObjectBoxInit> attach() async {
+    final docsDir = await getApplicationDocumentsDirectory();
+
+    final store = Store.attach(
+        getObjectBoxModel(), p.join(docsDir.path, "ndk-obx-default"));
+
+    return ObjectBoxInit._create(store);
+  }
 }

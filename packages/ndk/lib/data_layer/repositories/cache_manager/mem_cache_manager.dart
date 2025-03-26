@@ -284,4 +284,9 @@ class MemCacheManager implements CacheManager {
       this.events[event.id] = event;
     }
   }
+
+  @override
+  Future<void> close() async {
+    return;
+  }
 }

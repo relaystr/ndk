@@ -16,14 +16,26 @@ class DbObjectBox implements CacheManager {
   Future get dbRdy => _initCompleter.future;
   late ObjectBoxInit _objectBox;
 
-  DbObjectBox() {
-    _init();
+  /// crates objectbox db instace
+  /// [attach] to attach to already open instance (e.g. for isolates)
+  DbObjectBox({bool attach = false}) {
+    _init(attach);
   }
 
-  Future _init() async {
-    final objectbox = await ObjectBoxInit.create();
+  Future _init(bool attach) async {
+    final objectbox;
+    if (attach) {
+      objectbox = await ObjectBoxInit.attach();
+    } else {
+      objectbox = await ObjectBoxInit.create();
+    }
+
     _objectBox = objectbox;
     _initCompleter.complete();
+  }
+
+  close() async {
+    _objectBox.store.close();
   }
 
   @override

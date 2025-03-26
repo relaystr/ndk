@@ -6,6 +6,10 @@ import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
 
 abstract class CacheManager {
+  /// closes the cache manger \
+  /// used to close the db
+  Future<void> close();
+
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Future<Nip01Event?> loadEvent(String id);
