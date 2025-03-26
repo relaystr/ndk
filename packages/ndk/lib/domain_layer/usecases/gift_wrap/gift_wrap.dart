@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/nip_01_event.dart';
 import '../accounts/accounts.dart';
 import '../../../shared/nips/nip01/bip340.dart';
@@ -149,15 +150,19 @@ class GiftWrap {
   }) async {
     // Generate a random one-time-use keypair
     final ephemeralKeys = Bip340.generatePrivateKey();
+    final ephemeralSigner = Bip340EventSigner(
+      privateKey: ephemeralKeys.privateKey,
+      publicKey: ephemeralKeys.publicKey,
+    );
 
     final account = accounts.getLoggedAccount();
     if (account == null) {
       throw Exception("cannot sign without account");
     }
 
-    final encryptedSeal = await account.signer.encryptNip44(
+    final encryptedSeal = await ephemeralSigner.encryptNip44(
       plaintext: jsonEncode(sealEvent),
-      userPubkey: ephemeralKeys.publicKey,
+      userPubkey: account.pubkey,
       recipientPubKey: recipientPublicKey,
     );
 
