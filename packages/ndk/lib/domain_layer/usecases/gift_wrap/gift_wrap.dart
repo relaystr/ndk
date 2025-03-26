@@ -85,7 +85,6 @@ class GiftWrap {
 
     final encryptedContent = await account.signer.encryptNip44(
       plaintext: jsonEncode(rumor),
-      userPubkey: account.pubkey,
       recipientPubKey: recipientPubkey,
     );
 
@@ -113,7 +112,6 @@ class GiftWrap {
     // Now decrypt the seal to get the rumor
     final decryptedRumorJson = await account.signer.decryptNip44(
       ciphertext: sealedEvent.content,
-      userPubkey: account.pubkey,
       senderPubKey: sealedEvent.pubKey,
     );
 
@@ -146,7 +144,6 @@ class GiftWrap {
 
     final encryptedSeal = await ephemeralSigner.encryptNip44(
       plaintext: jsonEncode(sealEvent),
-      userPubkey: ephemeralKeys.publicKey,
       recipientPubKey: recipientPublicKey,
     );
 
@@ -192,7 +189,6 @@ class GiftWrap {
 
     final decryptedEventJson = await account.signer.decryptNip44(
       ciphertext: wrappedEvent.content,
-      userPubkey: account.pubkey,
       senderPubKey: wrappedEvent.pubKey,
     );
 

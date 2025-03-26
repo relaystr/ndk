@@ -49,7 +49,6 @@ class Bip340EventSigner implements EventSigner {
   @override
   Future<String?> encryptNip44({
     required String plaintext,
-    required String userPubkey,
     required String recipientPubKey,
   }) {
     return Nip44.encryptMessage(
@@ -62,7 +61,6 @@ class Bip340EventSigner implements EventSigner {
   @override
   Future<String?> decryptNip44({
     required String ciphertext,
-    required String userPubkey,
     required String senderPubKey,
   }) {
     return Nip44.decryptMessage(

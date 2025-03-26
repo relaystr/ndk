@@ -13,13 +13,11 @@ abstract class EventSigner {
 
   Future<String?> encryptNip44({
     required String plaintext,
-    required String userPubkey,
     required String recipientPubKey,
   });
 
   Future<String?> decryptNip44({
     required String ciphertext,
-    required String userPubkey,
     required String senderPubKey,
   });
 }
