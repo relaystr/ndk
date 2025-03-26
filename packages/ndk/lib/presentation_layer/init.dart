@@ -19,6 +19,7 @@ import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
 import '../domain_layer/usecases/follows/follows.dart';
+import '../domain_layer/usecases/gift_wrap/gift_wrap.dart';
 import '../domain_layer/usecases/jit_engine/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/lnurl/lnurl.dart';
@@ -72,6 +73,7 @@ class Initialization {
   late Blossom blossom;
   late BlossomUserServerList blossomUserServerList;
   late Search search;
+  late GiftWrap giftWrap;
 
   late VerifyNip05 verifyNip05;
 
@@ -223,6 +225,8 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       requests: requests,
     );
+
+    giftWrap = GiftWrap(accounts: accounts);
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);

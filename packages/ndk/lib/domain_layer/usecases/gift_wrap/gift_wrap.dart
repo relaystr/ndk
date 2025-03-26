@@ -1,18 +1,16 @@
 import 'dart:convert';
 
-import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/usecases/accounts/accounts.dart';
-import '../../../presentation_layer/ndk.dart';
-import '../nip01/bip340.dart';
+import '../../entities/nip_01_event.dart';
+import '../accounts/accounts.dart';
+import '../../../shared/nips/nip01/bip340.dart';
 
-class GiftWrapService {
+class GiftWrap {
   static const int kSealEventKind = 13;
   static const int kGiftWrapEventkind = 1059;
-  final Ndk ndk;
 
   final Accounts accounts;
 
-  GiftWrapService(this.ndk, this.accounts);
+  GiftWrap({required this.accounts});
 
   /// converts a Nip01Event to a giftWrap Nip01Event \
   /// [rumor] the event you want to wrap \
