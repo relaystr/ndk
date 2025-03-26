@@ -94,7 +94,7 @@ void main() {
         ['client', 'test_client'],
       ];
 
-      final giftWrap = await giftWrapService.wrapSeal(
+      final giftWrap = await GiftWrap.wrapEvent(
         recipientPublicKey: key2.publicKey,
         sealEvent: seal,
         additionalTags: additionalTags,

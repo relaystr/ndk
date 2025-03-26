@@ -24,7 +24,7 @@ class GiftWrap {
     final sealedRumor =
         await sealRumor(rumor: rumor, recipientPubkey: recipientPubkey);
 
-    final giftWrap = await wrapSeal(
+    final giftWrap = await wrapEvent(
       recipientPublicKey: recipientPubkey,
       sealEvent: sealedRumor,
     );
@@ -41,44 +41,8 @@ class GiftWrap {
       throw Exception("Event is not a gift wrap (kind:1059)");
     }
 
-    final account = accounts.getLoggedAccount();
-    if (account == null) {
-      throw Exception("Cannot decrypt without account");
-    }
-
-    // First, decrypt the gift wrap to get the seal
-    final decryptedSealJson = await account.signer.decryptNip44(
-      ciphertext: giftWrap.content,
-      userPubkey: account.pubkey,
-      senderPubKey: giftWrap.pubKey,
-    );
-
-    if (decryptedSealJson == null) {
-      throw Exception("Failed to decrypt gift wrap");
-    }
-
-    // Parse the seal event
-    final Map<String, dynamic> sealJson = jsonDecode(decryptedSealJson);
-    final sealEvent = Nip01Event.fromJson(sealJson);
-
-    if (sealEvent.kind != kSealEventKind) {
-      throw Exception("Unwrapped event is not a seal (kind:13)");
-    }
-
-    // Now decrypt the seal to get the rumor
-    final decryptedRumorJson = await account.signer.decryptNip44(
-      ciphertext: sealEvent.content,
-      userPubkey: account.pubkey,
-      senderPubKey: sealEvent.pubKey,
-    );
-
-    if (decryptedRumorJson == null) {
-      throw Exception("Failed to decrypt seal");
-    }
-
-    // Parse the rumor event
-    final Map<String, dynamic> rumorJson = jsonDecode(decryptedRumorJson);
-    final rumor = Nip01Event.fromJson(rumorJson);
+    final sealEvent = await unwrapEvent(wrappedEvent: giftWrap);
+    final rumor = await unsealRumor(sealedEvent: sealEvent);
 
     return rumor;
   }
@@ -139,11 +103,36 @@ class GiftWrap {
     return sealEvent;
   }
 
+  Future<Nip01Event> unsealRumor({
+    required Nip01Event sealedEvent,
+  }) async {
+    final account = accounts.getLoggedAccount();
+    if (account == null) {
+      throw Exception("Cannot decrypt without account");
+    }
+    // Now decrypt the seal to get the rumor
+    final decryptedRumorJson = await account.signer.decryptNip44(
+      ciphertext: sealedEvent.content,
+      userPubkey: account.pubkey,
+      senderPubKey: sealedEvent.pubKey,
+    );
+
+    if (decryptedRumorJson == null) {
+      throw Exception("Failed to decrypt seal");
+    }
+
+    // Parse the rumor event
+    final Map<String, dynamic> rumorJson = jsonDecode(decryptedRumorJson);
+    final rumor = Nip01Event.fromJson(rumorJson);
+
+    return rumor;
+  }
+
   /// wraps a sealed msg \
   /// [recipientPublicKey] the reciever of the rumor \
-  /// [sealEvent] sealed event \
+  /// [sealEvent] not wrapped event \
   /// [returns] giftWrapEvent
-  Future<Nip01Event> wrapSeal({
+  static Future<Nip01Event> wrapEvent({
     required String recipientPublicKey,
     required Nip01Event sealEvent,
     List<List<String>>? additionalTags,
@@ -155,14 +144,9 @@ class GiftWrap {
       publicKey: ephemeralKeys.publicKey,
     );
 
-    final account = accounts.getLoggedAccount();
-    if (account == null) {
-      throw Exception("cannot sign without account");
-    }
-
     final encryptedSeal = await ephemeralSigner.encryptNip44(
       plaintext: jsonEncode(sealEvent),
-      userPubkey: account.pubkey,
+      userPubkey: ephemeralKeys.publicKey,
       recipientPubKey: recipientPublicKey,
     );
 
@@ -196,5 +180,29 @@ class GiftWrap {
     giftWrapEvent.sig = signature;
 
     return giftWrapEvent;
+  }
+
+  Future<Nip01Event> unwrapEvent({
+    required Nip01Event wrappedEvent,
+  }) async {
+    final account = accounts.getLoggedAccount();
+    if (account == null) {
+      throw Exception("Cannot decrypt without account");
+    }
+
+    final decryptedEventJson = await account.signer.decryptNip44(
+      ciphertext: wrappedEvent.content,
+      userPubkey: account.pubkey,
+      senderPubKey: wrappedEvent.pubKey,
+    );
+
+    if (decryptedEventJson == null) {
+      throw Exception("Failed to decrypt gift wrap");
+    }
+
+    // Parse the seal event
+    final Map<String, dynamic> sealJson = jsonDecode(decryptedEventJson);
+    final event = Nip01Event.fromJson(sealJson);
+    return event;
   }
 }
