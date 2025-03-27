@@ -53,8 +53,7 @@ class Nwc {
 
     Completer<NwcConnection> completer = Completer();
 
-    List<Nip01Event> infoEvent = await
-    _requests
+    List<Nip01Event> infoEvent = await _requests
         .query(
             name: "nwc-info",
             explicitRelays: [relay],
@@ -64,7 +63,8 @@ class Nwc {
               onError?.call("timeout");
             },
             cacheRead: false,
-            cacheWrite: false).future;
+            cacheWrite: false)
+        .future;
     if (infoEvent.isNotEmpty) {
       Nip01Event event = infoEvent.first;
       if (event.kind == NwcKind.INFO.value && event.content != "") {
@@ -77,7 +77,7 @@ class Nwc {
               connection.permissions.first.split(",").toSet();
         }
 
-        List<String> versionTags = Nip01Event.getTags(event.tags, "v");
+        List<String> versionTags = event.getTags('v');
         if (versionTags.isNotEmpty) {
           connection.supportedVersions = versionTags.first.split(" ");
         }
