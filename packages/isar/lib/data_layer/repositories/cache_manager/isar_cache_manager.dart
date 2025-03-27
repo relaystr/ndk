@@ -357,8 +357,21 @@ class IsarCacheManager extends CacheManager {
   }
 
   @override
-  Future<Iterable<Nip01Event>> searchEvents({List<String>? ids, List<String>? authors, List<int>? kinds, Map<String, List<String>>? tags, int? since, int? until, String? search, int limit = 100}) {
+  Future<Iterable<Nip01Event>> searchEvents(
+      {List<String>? ids,
+      List<String>? authors,
+      List<int>? kinds,
+      Map<String, List<String>>? tags,
+      int? since,
+      int? until,
+      String? search,
+      int limit = 100}) {
     // TODO: implement searchEvents
     throw UnimplementedError();
+  }
+
+  @override
+  Future<void> close() async {
+    isar_ds.isar.close();
   }
 }
