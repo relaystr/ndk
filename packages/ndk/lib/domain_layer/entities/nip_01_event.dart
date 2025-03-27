@@ -139,40 +139,40 @@ class Nip01Event {
     return getFirstTag("e");
   }
 
-  /// return all tags that match given `tag`
-  static List<String> getTags(List<dynamic> list, String tag) {
-    List<String> tags = [];
-    for (var e in list) {
-      if (e is List<String> && e.length > 1) {
-        var key = e[0];
-        var value = e[1];
+  /// return all tags that match given `tag` e.g. 'p'
+  List<String> getTags(String tag) {
+    List<String> foundTags = [];
+    for (final e in tags) {
+      if (e.length > 1) {
+        final key = e[0];
+        final value = e[1];
 
         if (key == tag) {
-          tags.add(value.toString().trim().toLowerCase());
+          foundTags.add(value.toString().trim().toLowerCase());
         }
       }
     }
-    return tags;
+    return foundTags;
   }
 
   /// return all `t` tags in event
   List<String> get tTags {
-    return getTags(tags, "t");
+    return getTags("t");
   }
 
   /// return all `p` tags in event
   List<String> get pTags {
-    return getTags(tags, "p");
+    return getTags("p");
   }
 
-  /// return all e tags in event that have a `mention` marker
+  /// return all e tags in event that have a `reply` marker
   List<String> get replyETags {
     List<String> replyIds = [];
-    for (var tag in tags) {
+    for (final tag in tags) {
       if (tag.length >= 4) {
-        var key = tag[0];
-        var value = tag[1];
-        var marker = tag[3];
+        final key = tag[0];
+        final value = tag[1];
+        final marker = tag[3];
 
         if (key == "e" && marker == "reply") {
           replyIds.add(value.toString().trim().toLowerCase());
@@ -189,10 +189,10 @@ class Nip01Event {
 
   /// Get first tag matching given name
   String? getFirstTag(String name) {
-    for (var tag in tags) {
+    for (final tag in tags) {
       if (tag.length > 1) {
-        var key = tag[0];
-        var value = tag[1];
+        final key = tag[0];
+        final value = tag[1];
 
         if (key == name) {
           return value;
