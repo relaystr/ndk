@@ -32,10 +32,11 @@ class GetBudgetResponse extends NwcResponse {
 
     return GetBudgetResponse(
       resultType: input['result_type'] as String,
-      usedBudget: result['used_budget'] as int,
-      totalBudget: result['total_budget'],
+      usedBudget: (result['used_budget'] as num?)?.toInt() ?? 0,
+      totalBudget: (result['total_budget'] as num?)?.toInt() ?? 0,
       renewsAt: result['renews_at'],
-      renewalPeriod: BudgetRenewalPeriod.fromPlaintext(result['renewal_period']),
+      renewalPeriod: BudgetRenewalPeriod.fromPlaintext(
+          result['renewal_period'] as String? ?? 'none'),
     );
   }
 }
