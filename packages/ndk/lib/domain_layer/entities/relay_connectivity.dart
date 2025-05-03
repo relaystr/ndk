@@ -52,6 +52,10 @@ class RelayConnectivity<T> {
   /// relay url/identifier
   String get url => relay.url;
 
+  /// current connection state if connection is open
+  bool get isConnected =>
+      this.relayTransport != null && this.relayTransport!.isOpen();
+
   /// Creates a new relay connectivity.
   /// relayTransport == null => relay is not connected and is not in connecting state
   RelayConnectivity({
