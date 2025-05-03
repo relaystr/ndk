@@ -45,17 +45,29 @@ class RelayManager<T> {
   /// Are reconnects allowed when a connection drops?
   bool allowReconnectRelays = true;
 
+  /// stream controller for relay updates
+  final _relayUpdatesStreamController =
+      StreamController<Map<String, RelayConnectivity>>.broadcast();
+
+  /// stream of relay updates, used to notify connectivity changes
+  Stream<Map<String, RelayConnectivity>> get relayConnectivityChanges =>
+      _relayUpdatesStreamController.stream;
+
   /// Creates a new relay manager.
-  RelayManager(
-      {required this.globalState,
-      required this.nostrTransportFactory,
-      Accounts? accounts,
-      this.engineAdditionalDataFactory,
-      List<String>? bootstrapRelays,
-      allowReconnect = true})
-      : _accounts = accounts {
+  RelayManager({
+    required this.globalState,
+    required this.nostrTransportFactory,
+    Accounts? accounts,
+    this.engineAdditionalDataFactory,
+    List<String>? bootstrapRelays,
+    allowReconnect = true,
+  }) : _accounts = accounts {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
+  }
+
+  _updateRelayConnectivity() {
+    _relayUpdatesStreamController.add(globalState.relays);
   }
 
   /// This will initialize the manager with bootstrap relays.
@@ -167,6 +179,7 @@ class RelayManager<T> {
       getRelayInfo(url).then((info) {
         relayConnectivity!.relayInfo = info;
       });
+      _updateRelayConnectivity();
       return Tuple(true, "");
     } catch (e) {
       Logger.log.e("!! could not connect to $url -> $e");
@@ -174,6 +187,7 @@ class RelayManager<T> {
     }
     relayConnectivity.relay.failedToConnect();
     relayConnectivity.stats.connectionErrors++;
+    _updateRelayConnectivity();
     return Tuple(false, "could not connect to $url");
   }
 
@@ -197,6 +211,7 @@ class RelayManager<T> {
               !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
                   FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS))) {
         // don't try too often
+        _updateRelayConnectivity();
         return false;
       }
 
@@ -318,11 +333,14 @@ class RelayManager<T> {
       await relayConnectivity.close();
       relayConnectivity.stats.connectionErrors++;
       Logger.log.e("onError ${relayConnectivity.url} on listen $error");
+      _updateRelayConnectivity();
       throw Exception("Error in socket");
     }, onDone: () async {
       Logger.log.t(
           "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
+
       await relayConnectivity.close();
+      _updateRelayConnectivity();
       // reconnect on close
       if (allowReconnectRelays &&
           globalState.relays[relayConnectivity.url] != null &&
@@ -460,6 +478,7 @@ class RelayManager<T> {
     /// recived everything, close the network controller
     if (state.didAllRequestsReceivedEOSE) {
       state.networkController.close();
+      _updateRelayConnectivity();
       return;
     }
 
@@ -478,6 +497,7 @@ class RelayManager<T> {
 
     if (didAllRelaysFinish) {
       state.networkController.close();
+      _updateRelayConnectivity();
     }
   }
 
