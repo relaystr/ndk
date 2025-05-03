@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 
+import 'package:rxdart/rxdart.dart';
+
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
 import '../../shared/helpers/relay_helper.dart';
@@ -47,9 +49,9 @@ class RelayManager<T> {
 
   /// stream controller for relay updates
   final _relayUpdatesStreamController =
-      StreamController<Map<String, RelayConnectivity>>.broadcast();
+      BehaviorSubject<Map<String, RelayConnectivity>>();
 
-  /// stream of relay updates, used to notify connectivity changes
+  /// stream of relay updates, used to notify connectivity changes, latest value is cached
   Stream<Map<String, RelayConnectivity>> get relayConnectivityChanges =>
       _relayUpdatesStreamController.stream;
 
@@ -127,14 +129,17 @@ class RelayManager<T> {
   }) async {
     String? url = cleanRelayUrl(dirtyUrl);
     if (url == null) {
+      _updateRelayConnectivity();
       return Tuple(false, "unclean url");
     }
     if (globalState.blockedRelays.contains(url)) {
+      _updateRelayConnectivity();
       return Tuple(false, "relay is blocked");
     }
 
     if (isRelayConnected(url)) {
       Logger.log.t("relay already connected: $url");
+      _updateRelayConnectivity();
       return Tuple(true, "");
     }
     RelayConnectivity? relayConnectivity = globalState.relays[url];
@@ -156,6 +161,7 @@ class RelayManager<T> {
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
       if (url.startsWith("wss://brb.io")) {
         relayConnectivity.relay.failedToConnect();
+        _updateRelayConnectivity();
         return Tuple(false, "bad relay");
       }
 
@@ -349,6 +355,7 @@ class RelayManager<T> {
         reconnectRelay(relayConnectivity.url,
                 connectionSource: relayConnectivity.relay.connectionSource)
             .then((connected) {
+          _updateRelayConnectivity();
           if (connected) {
             _reSubscribeInFlightSubscriptions(relayConnectivity);
           }
