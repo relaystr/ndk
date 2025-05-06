@@ -6,8 +6,7 @@ import 'dart:math'; // Add import for Random
 import 'dart:typed_data'; // Add import for Uint8List
 import 'package:crypto/crypto.dart'; // Add import for sha256
 import 'package:convert/convert.dart'; // Add import for hex encoding
-import 'package:ascii_qr/ascii_qr.dart'; // Import ascii_qr package
-import 'package:ndk/domain_layer/usecases/nwc/consts/transaction_type.dart';
+// import 'package:ascii_qr/ascii_qr.dart'; // Import ascii_qr package
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 
 import 'package:ndk/ndk.dart';
@@ -50,18 +49,18 @@ void main() async {
       print(
           "Hold invoice created successfully. Invoice: $invoice, Payment Hash: ${makeResponse.paymentHash}");
 
-      if (invoice.isNotEmpty) {
-        print("\nScan QR Code to pay/hold:");
-        try {
-          final asciiQr = AsciiQrGenerator.generate(
-            invoice.toUpperCase(),
-          );
-          print(asciiQr.toString());
-        } catch (e) {
-          print("Error generating ASCII QR code: $e");
-        }
-        print("\nOr copy Bolt11 invoice:\n$invoice\n");
-      }
+      // if (invoice.isNotEmpty) {
+      //   print("\nScan QR Code to pay/hold:");
+      //   try {
+      //     final asciiQr = AsciiQrGenerator.generate(
+      //       invoice.toUpperCase(),
+      //     );
+      //     print(asciiQr.toString());
+      //   } catch (e) {
+      //     print("Error generating ASCII QR code: $e");
+      //   }
+      //   print("\nOr copy Bolt11 invoice:\n$invoice\n");
+      // }
 
       final duration = makeResponse.expiresAt!-DateTime.now().millisecondsSinceEpoch ~/ 1000;
       print(

@@ -32,7 +32,7 @@ class NwcConnection {
       .asBroadcastStream();
 
   Stream<NwcNotification> get holdInvoiceStateStream => notificationStream.stream
-      .where((notification) => notification.isHoldInvoiceAccepted || notification.isHoldInvoiceCanceled)
+      .where((notification) => notification.isHoldInvoiceAccepted)
       .asBroadcastStream();
 
   /// listen
