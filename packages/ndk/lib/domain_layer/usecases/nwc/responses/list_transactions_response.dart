@@ -58,8 +58,8 @@ class TransactionResult extends Equatable {
   /// The amount of the invoice (in SATS)
   get amountSat => amount ~/ 1000;
 
-  /// The fees paid for the transaction (in MSATs).
-  final int feesPaid;
+  /// The fees paid for the transaction (in MSATs). Optional.
+  final int? feesPaid;
 
   /// The timestamp when the transaction was created.
   final int createdAt;
@@ -81,7 +81,7 @@ class TransactionResult extends Equatable {
     this.preimage,
     required this.paymentHash,
     required this.amount,
-    required this.feesPaid,
+    this.feesPaid,
     required this.createdAt,
     this.expiresAt,
     this.settledAt,
@@ -97,7 +97,7 @@ class TransactionResult extends Equatable {
       preimage: input['preimage'] as String?,
       paymentHash: input['payment_hash'] as String,
       amount: input['amount'] as int,
-      feesPaid: input['fees_paid'] as int,
+      feesPaid: input['fees_paid'] as int?,
       createdAt: input['created_at'] as int,
       expiresAt: input['expires_at'] as int?,
       settledAt: input['settled_at'] as int?,
