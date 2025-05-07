@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.8.1.799954321861">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.8.1.799954618769">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.8.1">
@@ -30,11 +30,11 @@
 
     <script data-cfasync="false">(function () { var el = document.documentElement, m = localStorage.getItem("doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../resources/css/retype.css?v=3.8.1.799954321861" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=3.8.1.799954618769" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=3.8.1.799954321861" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=3.8.1.799954618769" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=3.8.1" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.8.1.799954321861" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.8.1.799954618769" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -242,30 +242,78 @@ If you want to work on it yourself, assign it to yourself and start working on i
 <p>The project is structured in a layered architecture.</p>
 <ul>
 <li><code v-pre>lib/</code>
-- <code v-pre>config/</code>
-- <code v-pre># contains configuration files</code>
-- <code v-pre>data_layer/</code>
-- <code v-pre>data_sources/</code>
-- <code v-pre># external apis, websocket impl etc.</code>
-- <code v-pre>models/</code>
-- <code v-pre># type conversion e.g. json to entity</code>
-- <code v-pre>repositories/</code>
-- <code v-pre># repository implementations (implementing domain_layer repos)</code>
-- <code v-pre>domain_layer/</code>
-- <code v-pre>entities/</code>
-- <code v-pre># our entities e.g. data types</code>
-- <code v-pre>repositories/</code>
-- <code v-pre># contracts</code>
-- <code v-pre>usecases/</code>
-- <code v-pre># our main code / business logic</code>
-- <code v-pre>presentation_layer/</code>
-- <code v-pre># contains our api design (makes usecases accessible to outside world)</code>
-- <code v-pre>lib.dart # entrypoint, points to presentation_layer</code></li>
+<ul>
+<li><code v-pre>config/</code>
+<ul>
+<li><code v-pre># contains configuration files</code></li>
+</ul>
+</li>
+<li><code v-pre>shared/</code>
+<ul>
+<li><code v-pre>nipX # folders for nip specific code</code></li>
+<li><code v-pre># only internal code, no external dependencies!</code></li>
+</ul>
+</li>
+<li><code v-pre>data_layer/</code>
+<ul>
+<li><code v-pre>data_sources/</code>
+<ul>
+<li><code v-pre># external apis, websocket impl etc.</code></li>
+</ul>
+</li>
+<li><code v-pre>models/</code>
+<ul>
+<li><code v-pre># type conversion e.g. json to entity</code></li>
+</ul>
+</li>
+<li><code v-pre>repositories/</code>
+<ul>
+<li><code v-pre># repository implementations (implementing domain_layer repos)</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code v-pre>domain_layer/</code>
+<ul>
+<li><code v-pre>entities/</code>
+<ul>
+<li><code v-pre># our entities e.g. data types</code></li>
+</ul>
+</li>
+<li><code v-pre>repositories/</code>
+<ul>
+<li><code v-pre># contracts</code></li>
+</ul>
+</li>
+<li><code v-pre>usecases/</code>
+<ul>
+<li><code v-pre># our main code / business logic</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code v-pre>presentation_layer/</code>
+<ul>
+<li><code v-pre># contains our api design (makes usecases accessible to outside world)</code></li>
+</ul>
+</li>
+<li><code v-pre>lib.dart # entrypoint, points to presentation_layer</code></li>
+</ul>
+</li>
 <li><code v-pre>tests/</code>
-- <code v-pre>usecases/</code>
-- <code v-pre># integration_tests</code>
-- <code v-pre>unit/</code>
-- <code v-pre># unit tests</code></li>
+<ul>
+<li><code v-pre>usecases/</code>
+<ul>
+<li><code v-pre># integration_tests</code></li>
+</ul>
+</li>
+<li><code v-pre>unit/</code>
+<ul>
+<li><code v-pre># unit tests</code></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <p>The decision for this architecture can be viewed <a href="../adrs/layerd-architecture/">here</a>.
 If you are unsure where to put your code, please ask us. We are happy to help you.</p>
