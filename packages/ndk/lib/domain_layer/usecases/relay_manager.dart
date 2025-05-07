@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 
+import 'package:rxdart/rxdart.dart';
+
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
 import '../../shared/helpers/relay_helper.dart';
@@ -45,17 +47,29 @@ class RelayManager<T> {
   /// Are reconnects allowed when a connection drops?
   bool allowReconnectRelays = true;
 
+  /// stream controller for relay updates
+  final _relayUpdatesStreamController =
+      BehaviorSubject<Map<String, RelayConnectivity>>();
+
+  /// stream of relay updates, used to notify connectivity changes, latest value is cached
+  Stream<Map<String, RelayConnectivity>> get relayConnectivityChanges =>
+      _relayUpdatesStreamController.stream;
+
   /// Creates a new relay manager.
-  RelayManager(
-      {required this.globalState,
-      required this.nostrTransportFactory,
-      Accounts? accounts,
-      this.engineAdditionalDataFactory,
-      List<String>? bootstrapRelays,
-      allowReconnect = true})
-      : _accounts = accounts {
+  RelayManager({
+    required this.globalState,
+    required this.nostrTransportFactory,
+    Accounts? accounts,
+    this.engineAdditionalDataFactory,
+    List<String>? bootstrapRelays,
+    allowReconnect = true,
+  }) : _accounts = accounts {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
+  }
+
+  _updateRelayConnectivity() {
+    _relayUpdatesStreamController.add(globalState.relays);
   }
 
   /// This will initialize the manager with bootstrap relays.
@@ -115,14 +129,17 @@ class RelayManager<T> {
   }) async {
     String? url = cleanRelayUrl(dirtyUrl);
     if (url == null) {
+      _updateRelayConnectivity();
       return Tuple(false, "unclean url");
     }
     if (globalState.blockedRelays.contains(url)) {
+      _updateRelayConnectivity();
       return Tuple(false, "relay is blocked");
     }
 
     if (isRelayConnected(url)) {
       Logger.log.t("relay already connected: $url");
+      _updateRelayConnectivity();
       return Tuple(true, "");
     }
     RelayConnectivity? relayConnectivity = globalState.relays[url];
@@ -144,6 +161,7 @@ class RelayManager<T> {
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
       if (url.startsWith("wss://brb.io")) {
         relayConnectivity.relay.failedToConnect();
+        _updateRelayConnectivity();
         return Tuple(false, "bad relay");
       }
 
@@ -167,6 +185,7 @@ class RelayManager<T> {
       getRelayInfo(url).then((info) {
         relayConnectivity!.relayInfo = info;
       });
+      _updateRelayConnectivity();
       return Tuple(true, "");
     } catch (e) {
       Logger.log.e("!! could not connect to $url -> $e");
@@ -174,6 +193,7 @@ class RelayManager<T> {
     }
     relayConnectivity.relay.failedToConnect();
     relayConnectivity.stats.connectionErrors++;
+    _updateRelayConnectivity();
     return Tuple(false, "could not connect to $url");
   }
 
@@ -197,6 +217,7 @@ class RelayManager<T> {
               !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
                   FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS))) {
         // don't try too often
+        _updateRelayConnectivity();
         return false;
       }
 
@@ -318,11 +339,14 @@ class RelayManager<T> {
       await relayConnectivity.close();
       relayConnectivity.stats.connectionErrors++;
       Logger.log.e("onError ${relayConnectivity.url} on listen $error");
+      _updateRelayConnectivity();
       throw Exception("Error in socket");
     }, onDone: () async {
       Logger.log.t(
           "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
+
       await relayConnectivity.close();
+      _updateRelayConnectivity();
       // reconnect on close
       if (allowReconnectRelays &&
           globalState.relays[relayConnectivity.url] != null &&
@@ -331,6 +355,7 @@ class RelayManager<T> {
         reconnectRelay(relayConnectivity.url,
                 connectionSource: relayConnectivity.relay.connectionSource)
             .then((connected) {
+          _updateRelayConnectivity();
           if (connected) {
             _reSubscribeInFlightSubscriptions(relayConnectivity);
           }
@@ -460,6 +485,7 @@ class RelayManager<T> {
     /// recived everything, close the network controller
     if (state.didAllRequestsReceivedEOSE) {
       state.networkController.close();
+      _updateRelayConnectivity();
       return;
     }
 
@@ -478,6 +504,7 @@ class RelayManager<T> {
 
     if (didAllRelaysFinish) {
       state.networkController.close();
+      _updateRelayConnectivity();
     }
   }
 
