@@ -54,30 +54,33 @@ Feel free to reach out to us via the following channels:
 The project is structured in a layered architecture.
 
 - `lib/`
-  - `config/`
-    - `# contains configuration files`
-  - `data_layer/`
-    - `data_sources/`
-      - `# external apis, websocket impl etc.`
-    - `models/`
-      - `# type conversion e.g. json to entity`
-    - `repositories/`
-      - `# repository implementations (implementing domain_layer repos)`
-  - `domain_layer/`
-    - `entities/`
-      - `# our entities e.g. data types`
-    - `repositories/`
-      - `# contracts`
-    - `usecases/`
-      - `# our main code / business logic`
-  - `presentation_layer/`
-    - `# contains our api design (makes usecases accessible to outside world)`
-  - `lib.dart # entrypoint, points to presentation_layer`
+  - `config/`
+    - `# contains configuration files`
+  - `shared/`
+    - `nipX # folders for nip specific code`
+    - `# only internal code, no external dependencies!`
+  - `data_layer/`
+    - `data_sources/`
+      - `# external apis, websocket impl etc.`
+    - `models/`
+      - `# type conversion e.g. json to entity`
+    - `repositories/`
+      - `# repository implementations (implementing domain_layer repos)`
+  - `domain_layer/`
+    - `entities/`
+      - `# our entities e.g. data types`
+    - `repositories/`
+      - `# contracts`
+    - `usecases/`
+      - `# our main code / business logic`
+  - `presentation_layer/`
+    - `# contains our api design (makes usecases accessible to outside world)`
+  - `lib.dart # entrypoint, points to presentation_layer`
 - `tests/`
-  - `usecases/`
-    - `# integration_tests`
-  - `unit/`
-    - `# unit tests`
+  - `usecases/`
+    - `# integration_tests`
+  - `unit/`
+    - `# unit tests`
 
 The decision for this architecture can be viewed [here](/library-development/adrs/layerd-architecture/).
 If you are unsure where to put your code, please ask us. We are happy to help you.
