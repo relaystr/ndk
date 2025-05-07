@@ -11,6 +11,8 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 # Get started here ➡️ [Documentation](https://dart-nostr.com/)
 
+## [🔗 Contributing](https://dart-nostr.com/library-development/contributing/)
+
 ## Monorepo Packages
 
 NDK ships in small packages to allow granular control of dependencies in your dart/flutter projects.
