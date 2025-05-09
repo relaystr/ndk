@@ -34,15 +34,23 @@ dependencies:
   media_kit_video: ^1.2.5
   media_kit_libs_video: ^1.0.5
 
-  ndk: 0.2.6
-  ndk_amber: 0.2.0
-  ndk_rust_verifier: 0.2.1
+  ndk: 0.3.2
+  ndk_amber: 0.3.0
+  ndk_rust_verifier: 0.3.1
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-
+  go_router: ^14.6.2
+  flutter_riverpod: ^2.6.1
+  provider: ^6.0.0 # Added provider package
+#  android_intent_plus: ^5.3.0
+  url_launcher: 6.3.1
+  protocol_handler: ^0.2.0
+  qr_flutter: ^4.1.0
   amberflutter: any
+  zaplab_design:
+    git:
+      url: https://github.com/NielLiesmons/zaplab_design
+
 
 dev_dependencies:
   flutter_test:
@@ -51,7 +59,10 @@ dev_dependencies:
 dependency_overrides:
   ndk:
     path: ../ndk
-
+  ndk_rust_verifier:
+    path: ../rust_verifier
+  ndk_amber:
+    path: ../amber
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your

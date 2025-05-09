@@ -5,7 +5,11 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   media_kit_libs_windows_video
   media_kit_video
+  protocol_handler_windows
   screen_brightness_windows
+  screen_retriever_windows
+  url_launcher_windows
+  window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

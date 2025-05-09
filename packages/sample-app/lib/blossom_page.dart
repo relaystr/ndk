@@ -49,7 +49,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
         sha256:
             'fc0066f8d123cf9cbe2bd95e3439cd91b5401e0560dab65a49695ab932ffec59',
         serverUrls: [
-          'https://blossom.f7z.io',
+          // 'https://blossom.f7z.io',
           "https://nostr.download",
           "https://cdn.hzrd149.com"
         ],

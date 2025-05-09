@@ -5,7 +5,7 @@ void main() {
   group('NwcNotification', () {
     test('should create an instance from a map', () {
       final map = {
-        'type': 'payment_received',
+        'type': 'incoming',
         'invoice': 'invoice_123',
         'description': 'Test payment',
         'description_hash': 'hash_123',
@@ -19,9 +19,10 @@ void main() {
         'metadata': {'key': 'value'},
       };
 
-      final notification = NwcNotification.fromMap(map);
+      final notification = NwcNotification.fromMap(NwcNotification.kPaymentReceived, map);
 
-      expect(notification.type, equals('payment_received'));
+      expect(notification.notificationType, equals('payment_received'));
+      expect(notification.type, equals('incoming'));
       expect(notification.invoice, equals('invoice_123'));
       expect(notification.description, equals('Test payment'));
       expect(notification.descriptionHash, equals('hash_123'));
@@ -37,6 +38,7 @@ void main() {
 
     test('should identify incoming transactions', () {
       final notification = NwcNotification(
+        notificationType: NwcNotification.kPaymentReceived,
         type: 'incoming',
         invoice: 'invoice_123',
         preimage: 'preimage_123',
@@ -53,7 +55,7 @@ void main() {
 
     test('should handle null metadata', () {
       final map = {
-        'type': 'payment_sent',
+        'type': 'outgoing',
         'invoice': 'invoice_123',
         'preimage': 'preimage_123',
         'payment_hash': 'payment_hash_123',
@@ -63,7 +65,7 @@ void main() {
         'settled_at': 1633040400,
       };
 
-      final notification = NwcNotification.fromMap(map);
+      final notification = NwcNotification.fromMap(NwcNotification.kPaymentSent,map);
 
       expect(notification.metadata, isNull);
     });

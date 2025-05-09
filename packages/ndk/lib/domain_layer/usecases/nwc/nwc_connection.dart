@@ -23,11 +23,16 @@ class NwcConnection {
 
   Stream<NwcNotification> get paymentsReceivedStream =>
       notificationStream.stream
-          .where((notification) => notification.isIncoming)
+          .where((notification) => notification.isPaymentReceived)
           .asBroadcastStream();
 
+
   Stream<NwcNotification> get paymentsSentStream => notificationStream.stream
-      .where((notification) => !notification.isIncoming)
+      .where((notification) => notification.isPaymentSent)
+      .asBroadcastStream();
+
+  Stream<NwcNotification> get holdInvoiceStateStream => notificationStream.stream
+      .where((notification) => notification.isHoldInvoiceAccepted)
       .asBroadcastStream();
 
   /// listen

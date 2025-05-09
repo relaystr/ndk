@@ -14,11 +14,11 @@ void main() async {
   final connection = await ndk.nwc.connect(nwcUri);
 
   ListTransactionsResponse response =
-      await ndk.nwc.listTransactions(connection, unpaid: false);
+      await ndk.nwc.listTransactions(connection, unpaid: true);
 
   for (final transaction in response.transactions) {
     print(
-        "Transaction ${transaction.type} ${transaction.amountSat} sats ${transaction.description!}");
+        "Transaction ${transaction.type} state ${transaction.state} ${transaction.amountSat} sats ${transaction.description!}");
   }
   await ndk.destroy();
 }
