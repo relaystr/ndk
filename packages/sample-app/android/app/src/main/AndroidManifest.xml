@@ -30,6 +30,9 @@
                 <data android:scheme="ndk" />
             </intent-filter>
             <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
+            <meta-data
+                    android:name="flutterEmbedding"
+                    android:value="2" />
 
         </activity>
         <!-- Don't delete the meta-data below.

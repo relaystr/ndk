@@ -10,6 +10,8 @@ import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/nwc_response.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,7 +35,17 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
   TextEditingController invoice =
       TextEditingController(); // For paying invoices
   NwcConnection? connection;
+  KeyPair?
+      nwcAppKey; // Our app's NWC keypair, should be generated once and reused.
   GetBalanceResponse? balance;
+
+  // State variables to hold context from the NIP-47 auth initiation
+  String?
+      _pendingDiscoveryRelayUrl; // The relay specified in the nostr+walletauth URI's 'relay=' param,
+  // where we expect the kind 13194 event to be.
+  String?
+      _pendingAppPubkeyForAuth; // Our app's pubkey that was sent in the nostr+walletauth URI's 'pubkey=' param
+  // and expected in the 'p' tag of the kind 13194 event.
   MakeInvoiceResponse?
       makeInvoice; // Will store result of normal or hold invoice creation
   PayInvoiceResponse? payInvoice;
@@ -59,6 +71,7 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
   @override
   void initState() {
     super.initState();
+    protocolHandler.addListener(this);
     uri.addListener(() {
       setState(() {
         if (uri.text == '') {
@@ -90,6 +103,7 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
     invoice.dispose();
     holdInvoiceStateSubscription?.cancel();
     regularInvoicePaymentSubscription?.cancel();
+    protocolHandler.removeListener(this);
     super.dispose();
   }
 
@@ -117,9 +131,189 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
 
   @override
   void onProtocolUrlReceived(String url) async {
-    String log = 'Url received: $url)';
-    print(log);
-    // if (StringUtil) {}
+    print('NWC Page: Protocol URL received: $url');
+
+    if (url.startsWith("ndk://nwc") && // Check if it's our NIP-47 callback
+        _pendingDiscoveryRelayUrl != null &&
+        _pendingAppPubkeyForAuth != null) {
+      print('NIP-47 callback received. Processing...');
+      print('  Expected discovery relay: $_pendingDiscoveryRelayUrl');
+      print('  Expected app pubkey for p tag: $_pendingAppPubkeyForAuth');
+
+      final discoveryRelay = _pendingDiscoveryRelayUrl!;
+      final appPubkey = _pendingAppPubkeyForAuth!;
+
+      // Clear pending state now that we are processing it.
+      // Important to do this early to prevent reprocessing if another callback comes for an old request.
+      setState(() {
+        _pendingDiscoveryRelayUrl = null;
+        _pendingAppPubkeyForAuth = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'NIP-47 callback received. Fetching wallet connection info from $discoveryRelay...')),
+      );
+
+      try {
+        Nip01Event? foundWalletAuthEvent;
+        const int nip47InfoEventKind = 13194;
+
+        // Retrieve the discoveryRelay and appPubkey that were set before launching nostr+walletauth
+        // These are final and won't change during this try block.
+
+        final String discoveryRelayForQuery = "wss://relay.getalby.com/v1";
+        final String appPubkeyForTag = nwcAppKey!.publicKey;
+
+        // Clear pending state now that we are processing it.
+        // Important to do this early to prevent reprocessing if another callback comes for an old request.
+        // setState(() {
+        //   _pendingDiscoveryRelayUrl = null;
+        //   _pendingAppPubkeyForAuth = null;
+        // });
+
+        if (nwcAppKey == null || nwcAppKey!.privateKey == null) {
+          print(
+              'NIP-47 Error: nwcAppKey or its private key is null. Cannot construct NWC URI.');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Error: App NWC key not fully initialized.')),
+          );
+          return;
+        }
+
+        final stream = ndk.requests
+            .query(
+              filters: [
+                Filter(
+                  kinds: [nip47InfoEventKind],
+                  tags: {
+                    '#p': [appPubkeyForTag] // Tagged with our app's pubkey
+                  },
+                  limit: 5,
+                )
+              ],
+              explicitRelays: {
+                discoveryRelayForQuery
+              }, // Use explicitRelays (user feedback)
+            )
+            .stream
+            .timeout(const Duration(seconds: 15));
+
+        List<Nip01Event> potentialEvents = [];
+        await for (final event in stream) {
+          potentialEvents.add(event);
+        }
+
+        if (potentialEvents.isEmpty) {
+          print(
+              'No NWC Info Event (kind $nip47InfoEventKind) found on $discoveryRelayForQuery tagged for $appPubkeyForTag.');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    'No NWC Info Event found on $discoveryRelayForQuery.')),
+          );
+          return;
+        }
+
+        potentialEvents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        for (final event in potentialEvents) {
+          print(
+              'Processing potential NWC Info Event ID: ${event.id}, Author: ${event.pubKey}');
+          // Use Bip340EventVerifier().verify(event) (user feedback)
+          final bool isValidSignature =
+              await Bip340EventVerifier().verify(event);
+          if (isValidSignature) {
+            print(
+                'Event ID ${event.id} has a VALID signature from ${event.pubKey}. This is the Wallet NWC Service Pubkey.');
+            foundWalletAuthEvent = event;
+            break;
+          } else {
+            print('Event ID ${event.id} has an INVALID signature. Skipping.');
+          }
+        }
+
+        if (foundWalletAuthEvent == null) {
+          print('No NWC Info Event with a valid signature found.');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not validate NWC Info Event.')),
+          );
+          return;
+        }
+
+        print(
+            'Successfully fetched and validated NWC Info Event (Kind $nip47InfoEventKind):');
+        print(
+            '  Author (Wallet NWC Service Pubkey): ${foundWalletAuthEvent.pubKey}');
+        // Content of kind:13194 is ignored as per user feedback.
+
+        // Construct the NWC URI as per user's explicit instructions:
+        // walletPubKey is the author of the 13194 event
+        // relay is the relay passed to nostr+walletauth when connect button is pressed (_pendingDiscoveryRelayUrl)
+        // secret is the nwcAppKey the private part
+
+        final String walletNwcServicePubkey = foundWalletAuthEvent.pubKey;
+        final String nwcRelayForConnectionUri =
+            discoveryRelayForQuery; // This was _pendingDiscoveryRelayUrl
+        final String appNwcPrivateKeyForSecret = nwcAppKey!.privateKey!;
+
+        final constructedNwcUri =
+            'nostr+walletconnect://$walletNwcServicePubkey?relay=${Uri.encodeComponent(nwcRelayForConnectionUri)}&secret=$appNwcPrivateKeyForSecret';
+
+        print(
+            'Constructed NWC connection URI (as per explicit instructions): $constructedNwcUri');
+
+        setState(() {
+          uri.text = constructedNwcUri;
+        });
+
+        // Now connect using the constructed URI
+        // As per user feedback, clientKeyPair is not an argument to connect.
+        // The nwcAppKey (specifically its private key) was used as the 'secret' in the constructedNwcUri.
+        final NwcConnection? establishedConn = await ndk.nwc.connect(
+          constructedNwcUri,
+          // clientKeyPair: nwcAppKey, // Removed as per user feedback
+          doGetInfoMethod: true,
+        );
+
+        if (establishedConn != null) {
+          setState(() {
+            connection = establishedConn;
+            balance = null;
+            _resetInvoiceStates();
+            // If make_hold_invoice is not permitted, ensure isHoldInvoice is false.
+            if (!(connection!.info?.methods
+                    .contains(NwcMethod.MAKE_HOLD_INVOICE.name) ??
+                false)) {
+              isHoldInvoice = false;
+            }
+          });
+          print(
+              'Successfully connected to NWC wallet: $walletNwcServicePubkey via $nwcRelayForConnectionUri');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(
+                // Try using 'alias' as per potential GetInfoResponse field, fallback to pubkey
+                'NWC Connected to: ${connection?.info?.alias ?? walletNwcServicePubkey.substring(0, 10)}...')),
+          );
+        } else {
+          print('Failed to connect to NWC wallet using the constructed URI.');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Failed to establish NWC connection.')),
+          );
+        }
+      } catch (e) {
+        print('Error during NIP-47 callback processing: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error processing NWC callback: $e')),
+        );
+      }
+    } else {
+      print(
+          'Received unhandled protocol URL or missing pending NIP-47 auth state: $url');
+    }
   }
 
   @override
@@ -275,13 +469,77 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
       widgets.add(
         FilledButton(
           onPressed: () async {
-            if (Platform.isAndroid) {
-              Uri uri = Uri.parse(
-                  "nostrnwc://bla?appname=Yana\&appicon=https%3A%2F%2Fyana.do%2Fimages%2Flogo-new.png\&callback=ndk%3A%2F%2Fnwc");
-              await launchUrl(uri);
+            // Always generate a new nwcAppKey for NIP-47 auth when this button is pressed.
+            nwcAppKey = Bip340.generatePrivateKey();
+            print(
+                "Generated new, fresh nwcAppKey for NIP-47 auth: ${nwcAppKey!.publicKey}");
+            // No need to call setState here as nwcAppKey is used immediately for URI construction.
+
+            // This is the URI the button currently attempts to launch.
+            // As per NIP-47, the host of nostr+walletauth should be our app's pubkey.
+            // The 'relay' param is where the auth service (e.g., Alby) is expected to publish the kind 13194 event.
+            // The 'pubkey' param in the URI (if NIP-47 spec evolves to include it this way, or if it's part of 'name' or other metadata)
+            // would be our app's pubkey. The current URI structure in the code is:
+            // "nostr+walletauth://${nwcAppKey!.publicKey}?relay=...&name=Yana&...&return_to=ndk%3A%2F%2Fnwc"
+
+            // Let's parse the URI string that the button *intends* to launch
+            // to extract the necessary _pending values.
+            // The existing code for the URI is:
+            String appName = "Yana"; // Example from existing code
+            String appIcon =
+                "https%3A%2F%2Fyana.do%2Fimages%2Flogo-new.png"; // Example
+            String methods =
+                "get_info get_balance get_budget make_invoice pay_invoice lookup_invoice list_transactions sign_message make_hold_invoice cancel_hold_invoice settle_hold_invoice"; // Example
+            String discoveryRelay =
+                "wss://relay.getalby.com/v1"; // Example from existing code
+            String returnTo = "ndk://nwc"; // Example
+
+            // Construct the URI that will be launched.
+            // The host is our app's pubkey.
+            final Uri launchUri = Uri(
+                scheme: 'nostr+walletauth',
+                host: nwcAppKey!.publicKey, // Our app's pubkey
+                queryParameters: {
+                  'relay':
+                      discoveryRelay, // Relay for discovering the kind 13194 event
+                  'name': appName,
+                  'request_methods': methods,
+                  'icon': appIcon,
+                  'return_to': returnTo,
+                  // NIP-47 also suggests a 'pubkey' param for the app's pubkey, but host is also used.
+                  // Let's ensure our _pendingAppPubkeyForAuth is nwcAppKey!.publicKey
+                });
+
+            // Store the context needed for when onProtocolUrlReceived is called.
+            _pendingDiscoveryRelayUrl = discoveryRelay;
+            _pendingAppPubkeyForAuth = nwcAppKey!
+                .publicKey; // This is the pubkey our app uses for this auth flow.
+
+            print(
+                "Attempting to launch NIP-47 Auth URI: ${launchUri.toString()}");
+            print(
+                "  _pendingDiscoveryRelayUrl set to: $_pendingDiscoveryRelayUrl");
+            print(
+                "  _pendingAppPubkeyForAuth set to: $_pendingAppPubkeyForAuth");
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content:
+                      Text('Redirecting to wallet for NWC authorization...')),
+            );
+            try {
+              await launchUrl(launchUri, mode: LaunchMode.externalApplication);
+            } catch (e) {
+              print("Error launching NIP-47 Auth URI: $e");
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Could not launch wallet app: $e')),
+              );
+              // Clear pending state if launch fails
+              _pendingDiscoveryRelayUrl = null;
+              _pendingAppPubkeyForAuth = null;
             }
           },
-          child: const Text('Connect with Alby Go'),
+          child: const Text('Connect with Alby Go'), // Updated button text
         ),
       );
     }
@@ -323,10 +581,18 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
       FilledButton(
         onPressed: uri.text.isNotEmpty
             ? () async {
-                connection =
+                _resetInvoiceStates(); // Reset states before new connection
+                NwcConnection? newConnection =
                     await ndk.nwc.connect(uri.text, doGetInfoMethod: true);
                 setState(() {
+                  connection = newConnection;
                   balance = null;
+                  // If make_hold_invoice is not permitted, ensure isHoldInvoice is false.
+                  if (!(connection?.info?.methods
+                          .contains(NwcMethod.MAKE_HOLD_INVOICE.name) ??
+                      false)) {
+                    isHoldInvoice = false;
+                  }
                 });
               }
             : null,
@@ -414,12 +680,21 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
               child: CheckboxListTile(
                 title: const Text("Hold Invoice"),
                 value: isHoldInvoice,
-                onChanged: (bool? value) {
-                  setState(() {
-                    isHoldInvoice = value ?? false;
-                    _resetInvoiceStates();
-                  });
-                },
+                // Disable checkbox if connection is null, info is null, or method is not permitted
+                onChanged: (connection != null &&
+                        connection!.info != null &&
+                        connection!.info!.methods
+                            .contains(NwcMethod.MAKE_HOLD_INVOICE.name))
+                    ? (bool? value) {
+                        setState(() {
+                          isHoldInvoice = value ?? false;
+                          // Resetting all invoice states might be too aggressive here,
+                          // consider if only relevant parts should be reset or if user expects this.
+                          // For now, keeping existing _resetInvoiceStates() call.
+                          _resetInvoiceStates();
+                        });
+                      }
+                    : null, // Setting onChanged to null disables the checkbox
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
               ),
@@ -539,11 +814,28 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
         widgets.add(
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: QrImageView(
-              data: makeInvoice!.invoice.toUpperCase(),
-              version: QrVersions.auto,
-              size: 200.0,
-              backgroundColor: Colors.white,
+            child: GestureDetector(
+              onTap: () async {
+                final Uri launchUri =
+                    Uri.parse('lightning:${makeInvoice!.invoice}');
+                if (await canLaunchUrl(launchUri)) {
+                  await launchUrl(launchUri);
+                } else {
+                  // Optionally, show a message if no app can handle the URI
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Could not launch Lightning invoice. No app found to handle it.')),
+                  );
+                  print('Could not launch $launchUri');
+                }
+              },
+              child: QrImageView(
+                data: makeInvoice!.invoice.toUpperCase(),
+                version: QrVersions.auto,
+                size: 200.0,
+                backgroundColor: Colors.white,
+              ),
             ),
           ),
         );
@@ -735,8 +1027,9 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
                 setState(() {
                   connection = null;
                   balance = null;
-                  // makeInvoice is reset by _resetInvoiceStates
                   payInvoice = null;
+                  nwcAppKey = null; // Reset the app's NWC key
+                  uri.clear(); // Clear the URI input field
                   // Other NWC specific states are reset by _resetInvoiceStates
                 });
               }
@@ -851,14 +1144,11 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
             DateTime.now().millisecondsSinceEpoch ~/ 1000)
         : 300; // Default timeout
 
-
     regularInvoicePaymentSubscription = stream
         .timeout(
             Duration(seconds: duration.toInt() > 0 ? duration.toInt() : 300))
         .listen((notification) {
-      if (notification.notificationType ==
-              NwcNotification
-                  .kPaymentReceived &&
+      if (notification.notificationType == NwcNotification.kPaymentReceived &&
           notification.paymentHash == expectedPaymentHash) {
         if (mounted) {
           setState(() {

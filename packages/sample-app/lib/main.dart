@@ -43,6 +43,9 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
+  final GlobalKey<_MyHomePageState> _homePageKey =
+      GlobalKey<_MyHomePageState>();
+
   // final _router = GoRouter(
   //   routes: [
   //     GoRoute(
@@ -78,103 +81,151 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      // home: HomePage()
-      home: const SafeArea(top: false, child: MyHomePage()),
+      home: SafeArea(
+          top: false,
+          child: MyHomePage(key: _homePageKey)), // Pass the instance key
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  // Removed static GlobalKey. The key is now passed via constructor by MyApp.
+  // The constructor now implicitly uses super.key for the key passed by MyApp.
   const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-  // Add TickerProviderStateMixin
+class _MyHomePageState extends State<MyHomePage>
+    with TickerProviderStateMixin, ProtocolListener {
   late TabController _tabController;
+  late List<Tab> _tabs;
+  late List<Widget> _tabPages;
+
+  // Define a constant for the NWC tab name to avoid magic strings
+  static const String nwcTabName = 'NWC';
 
   @override
   void initState() {
     super.initState();
-    // Create a TabController and add a listener.
-    // The number of tabs should match the length of the 'tabs' list.
-    // For simplicity, let's assume the number of tabs is fixed for now.
-    // We'll define the tabs list length before initializing _tabController.
-    // The actual tabs list is defined in build(), so we need to ensure length consistency.
-    // Let's define the tabs list here or get its length.
-    final List<Tab> staticTabs = [
-      // Define tabs here to get length for TabController
+
+    // Define tabs and their corresponding pages
+    // This centralizes the tab definitions.
+    _tabs = <Tab>[
       const Tab(text: 'Accounts'),
       const Tab(text: 'Metadata'),
       const Tab(text: 'Relays'),
-      const Tab(text: 'NWC'),
+      const Tab(text: nwcTabName), // Use the constant
       const Tab(text: 'Zaps'),
-      const Tab(text: "Blossom")
+      const Tab(text: "Blossom"),
+      // if (amberAvailable) const Tab(text: 'Amber'), // Conditionally add Amber tab
     ];
-    _tabController = TabController(length: staticTabs.length, vsync: this);
+
+    _tabPages = <Widget>[
+      const AccountsPage(),
+      metadata(ndk, context), // Pass context, assuming metadata is a function
+      const RelaysPage(),
+      const NwcPage(),
+      const ZapsPage(),
+      BlossomMediaPage(ndk: ndk),
+      // if (amberAvailable) const AmberPage(), // Conditionally add Amber page
+    ];
+
+    // Ensure _tabs and _tabPages have the same length if conditional tabs are complex.
+    // For now, assuming Amber is handled consistently or not included for simplicity of this refactor.
+    // If Amber was included, the TabController length and lists would need to adjust.
+    // Let's stick to the original 6 tabs for this refactor to match the problem description.
+
+    _tabController = TabController(length: _tabs.length, vsync: this);
     _tabController.addListener(() {
-      // When the tab changes, call setState to rebuild and refresh the metadata tab
       if (mounted) {
         setState(() {});
       }
     });
+
+    protocolHandler.addListener(this);
+    _handleInitialUri();
+  }
+
+  Future<void> _handleInitialUri() async {
+    try {
+      final String? initialUrl = await protocolHandler.getInitialUrl();
+      if (initialUrl != null && initialUrl.isNotEmpty) {
+        print("_MyHomePageState: Initial URL: $initialUrl");
+        onProtocolUrlReceived(initialUrl);
+      }
+    } catch (e) {
+      print("_MyHomePageState: Error getting initial URL: $e");
+    }
+  }
+
+  void _processUri(Uri uri) {
+    if (uri.scheme == 'ndk' && uri.host == 'nwc') {
+      print(
+          "_MyHomePageState: ndk://nwc URI received, switching to NwcPage tab.");
+      switchToNwcTab();
+    }
+  }
+
+  @override
+  void onProtocolUrlReceived(String url) {
+    print("_MyHomePageState: Received protocol URL: $url");
+    if (!mounted) return;
+    try {
+      final Uri receivedUri = Uri.parse(url);
+      _processUri(receivedUri);
+    } catch (e) {
+      print("_MyHomePageState: Error parsing received protocol URL: $e");
+    }
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    protocolHandler.removeListener(this);
     super.dispose();
+  }
+
+  void switchToNwcTab() {
+    // Find the index of the NWC tab using the centralized _tabs list.
+    int nwcPageIndex = -1;
+    for (int i = 0; i < _tabs.length; i++) {
+      // Tab.text can be null if a child widget is used instead.
+      // We are assuming Tab(text: 'NWC') is used.
+      if (_tabs[i].text == nwcTabName) {
+        // Use the constant
+        nwcPageIndex = i;
+        break;
+      }
+    }
+
+    if (nwcPageIndex != -1) {
+      if (_tabController.index != nwcPageIndex) {
+        _tabController.animateTo(nwcPageIndex);
+        print("_MyHomePageState: Switched to NWC tab (index $nwcPageIndex).");
+      } else {
+        print("_MyHomePageState: Already on NWC tab (index $nwcPageIndex).");
+      }
+    } else {
+      print(
+          "_MyHomePageState: NWC tab not found by name '$nwcTabName'. Cannot switch.");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Use the tabs list defined in initState for consistency or redefine here
-    // but ensure the length matches _tabController.length.
-    List<Tab> tabs = [
-      const Tab(text: 'Accounts'),
-      const Tab(text: 'Metadata'),
-      // Tab(text: 'Amber'),
-      const Tab(text: 'Relays'),
-      const Tab(text: 'NWC'),
-      const Tab(text: 'Zaps'),
-      const Tab(text: "Blossom")
-    ];
-    List<Widget> tabPages = [
-      const AccountsPage(),
-      metadata(ndk, context), // Pass context
-      // !amberAvailable
-      //     ? const Center(child: Text("Amber not available"))
-      //     : const AmberPage(),
-      const RelaysPage(),
-      const NwcPage(),
-      const ZapsPage(),
-      BlossomMediaPage(ndk: ndk),
-    ];
-
-    // Use the same tabs list for TabBar as used for TabController length
-    final List<Tab> displayTabs = [
-      const Tab(text: 'Accounts'),
-      const Tab(text: 'Metadata'),
-      const Tab(text: 'Relays'),
-      const Tab(text: 'NWC'),
-      const Tab(text: 'Zaps'),
-      const Tab(text: "Blossom")
-    ];
-
     return Scaffold(
-      // No longer DefaultTabController, manage it manually
       appBar: AppBar(
         title: const Text('Nostr Development Kit Demo'),
         bottom: TabBar(
-          controller: _tabController, // Use the manually created controller
-          tabs: displayTabs,
+          controller: _tabController,
+          tabs: _tabs, // Use the centralized list
         ),
       ),
       body: TabBarView(
-        controller: _tabController, // Use the manually created controller
-        children: tabPages,
+        controller: _tabController,
+        children: _tabPages, // Use the centralized list
       ),
     );
   }
