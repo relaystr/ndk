@@ -100,7 +100,7 @@ class TransactionResult extends Equatable {
       descriptionHash: input['description_hash'] as String?,
       preimage: input['preimage'] as String?,
       paymentHash: input['payment_hash'] as String,
-      state: input['state'] as String,
+      state: input['state'] as String?,
       amount: input['amount'] as int,
       feesPaid: input['fees_paid'] as int?,
       createdAt: input['created_at'] as int,

@@ -21,7 +21,8 @@ void main() {
 
       final notification = NwcNotification.fromMap(NwcNotification.kPaymentReceived, map);
 
-      expect(notification.type, equals('payment_received'));
+      expect(notification.notificationType, equals('payment_received'));
+      expect(notification.type, equals('incoming'));
       expect(notification.invoice, equals('invoice_123'));
       expect(notification.description, equals('Test payment'));
       expect(notification.descriptionHash, equals('hash_123'));

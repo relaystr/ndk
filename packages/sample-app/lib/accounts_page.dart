@@ -2,15 +2,9 @@ import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart' as bip340_utils;
-// Direct imports for NIP-19 and BIP-340 utilities as they are not exported by ndk_library
 import 'package:ndk/shared/nips/nip19/nip19.dart' as nip19_decoder;
 
-import 'main.dart'; // Import main.dart to access ndk and amberAvailable
-
-// Assuming you have an NdkProvider or similar to access NDK instance
-// and an AmberService for external signer.
-// import 'package:sample_app/providers/ndk_provider.dart';
-// import 'package:sample_app/services/amber_service.dart';
+import 'main.dart';
 
 class AccountsPage extends StatefulWidget {
   const AccountsPage({super.key});
@@ -178,8 +172,8 @@ class _AccountsPageState extends State<AccountsPage> {
       final dynamic amberResult = await _amberService.getPublicKey();
       String? pubkeyFromAmberNpub;
 
-      if (amberResult is Map && amberResult.containsKey('publicKey')) {
-        pubkeyFromAmberNpub = amberResult['publicKey'] as String?;
+      if (amberResult is Map && amberResult.containsKey('signature')) {
+        pubkeyFromAmberNpub = amberResult['signature'] as String?;
       } else if (amberResult is String) {
         // Older versions might return string directly
         pubkeyFromAmberNpub = amberResult;
@@ -343,8 +337,6 @@ class _AccountsPageState extends State<AccountsPage> {
                         backgroundColor: Colors.orange),
                   ),
                 ),
-              Text('Login or Add Private Key (nsec):',
-                  style: Theme.of(context).textTheme.titleMedium),
               TextField(
                 controller: _privateKeyController,
                 decoration:
@@ -361,11 +353,9 @@ class _AccountsPageState extends State<AccountsPage> {
                     });
                   }
                 },
-                child: const Text('Login/Add with Private Key'),
+                child: const Text('Login with Private Key'),
               ),
               const SizedBox(height: 20),
-              Text('Login or Add Public Key (npub, read-only):',
-                  style: Theme.of(context).textTheme.titleMedium),
               TextField(
                 controller: _publicKeyController,
                 decoration:
@@ -382,12 +372,10 @@ class _AccountsPageState extends State<AccountsPage> {
                     });
                   }
                 },
-                child: const Text('Login/Add with Public Key'),
+                child: const Text('Login with Public Key'),
               ),
               if (_amberIsAvailable) ...[
                 const SizedBox(height: 20),
-                Text('Login or Add with External Signer:',
-                    style: Theme.of(context).textTheme.titleMedium),
                 ElevatedButton(
                   onPressed: () async {
                     await _loginWithAmber();
@@ -399,7 +387,7 @@ class _AccountsPageState extends State<AccountsPage> {
                       });
                     }
                   },
-                  child: const Text('Login/Add with Amber'),
+                  child: const Text('Login with Amber'),
                 ),
               ],
             ] else ...[
@@ -431,17 +419,39 @@ class _AccountsPageState extends State<AccountsPage> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _accounts.length,
                 itemBuilder: (context, index) {
-                  final account = _accounts[index];
+                  final accountPubkeyHex = _accounts[index];
+                  final metadata = _userMetadataCache[accountPubkeyHex];
+                  final npub =
+                      nip19_decoder.Nip19.encodePubKey(accountPubkeyHex);
+                  final displayName =
+                      metadata?.name ?? metadata?.displayName ?? npub;
+
+                  ImageProvider? avatarImage;
+                  if (metadata?.picture != null &&
+                      metadata!.picture!.isNotEmpty) {
+                    avatarImage = NetworkImage(metadata.picture!);
+                  }
+
                   return ListTile(
-                    title: Text(_userMetadataCache[account]?.name ??
-                        _userMetadataCache[account]?.displayName ??
-                        nip19_decoder.Nip19.encodePubKey(account)),
-                    subtitle: Text(nip19_decoder.Nip19.encodePubKey(
-                        account)), // Show npub as subtitle
-                    trailing: _currentAccount == account
+                    leading: CircleAvatar(
+                      backgroundImage: avatarImage,
+                      onBackgroundImageError: avatarImage != null
+                          ? (exception, stackTrace) {
+                              print(
+                                  'Error loading avatar for $npub: $exception');
+                              // Optionally update UI to show placeholder if error occurs after initial load attempt
+                              // For simplicity, this example relies on initial null check for placeholder
+                            }
+                          : null,
+                      child:
+                          avatarImage == null ? const Icon(Icons.person) : null,
+                    ),
+                    title: Text(displayName),
+                    subtitle: Text(npub), // Show npub as subtitle
+                    trailing: _currentAccount == accountPubkeyHex
                         ? const Icon(Icons.check_circle, color: Colors.green)
                         : ElevatedButton(
-                            onPressed: () => _switchAccount(account),
+                            onPressed: () => _switchAccount(accountPubkeyHex),
                             child: const Text('Switch'),
                           ),
                   );
