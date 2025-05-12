@@ -1,4 +1,4 @@
-// TODO: What does Hrps mean?
+// TODO: What does Hrps mean? (Human Readable Part)
 class Hrps {
   static const String kPublicKey = "npub";
   static const String kPrivateKey = "nsec";
