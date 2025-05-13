@@ -136,8 +136,28 @@ class MockRelay {
 
         if (eventJson[0] == "REQ") {
           String requestId = eventJson[1];
-          Filter filter = Filter.fromMap(eventJson[2]);
-          _respondToRequest(filter, requestId);
+          List<Filter> filters = [];
+          if (eventJson.length > 2) {
+            for (int i = 2; i < eventJson.length; i++) {
+              if (eventJson[i] is Map<String, dynamic>) {
+                try {
+                  filters.add(Filter.fromMap(eventJson[i]));
+                } catch (e) {
+                  log("MockRelay: Error parsing filter item in REQ: ${eventJson[i]}, error: $e");
+                }
+              } else {
+                log("MockRelay: Malformed filter item in REQ (not a Map): ${eventJson[i]}");
+              }
+            }
+          }
+          if (filters.isNotEmpty) {
+            _respondToRequest(filters, requestId);
+          } else {
+            // If no valid filters are provided, send EOSE immediately for this request ID
+            log("MockRelay: No valid filters provided for REQ $requestId, sending EOSE.");
+            _webSocket!.add(jsonEncode(["EOSE", requestId]));
+          }
+          return;
         }
       });
     }, onError: (error) {
@@ -150,74 +170,104 @@ class MockRelay {
     return myPromise.future;
   }
 
-  void _respondToRequest(Filter filter, String requestId) {
-    List<Nip01Event> matchingEvents = [];
-    if (filter.kinds != null &&
-        filter.kinds!.contains(ContactList.kKind) &&
-        filter.authors != null &&
-        filter.authors!.isNotEmpty) {
-      matchingEvents = _contactLists.values
-          .where((e) => filter.authors!.contains(e.pubKey))
-          .toList();
-    } else if (filter.kinds != null &&
-        filter.kinds!.contains(Metadata.kKind) &&
-        filter.authors != null &&
-        filter.authors!.isNotEmpty) {
-      matchingEvents = _metadatas.values
-          .where((e) => filter.authors!.contains(e.pubKey))
-          .toList();
-    } else {
-      matchingEvents = _storedEvents.where((event) {
-        bool kindMatches =
-            filter.kinds == null || filter.kinds!.contains(event.kind);
-        bool authorMatches =
-            filter.authors == null || filter.authors!.contains(event.pubKey);
-        bool idsMatches = filter.ids == null || filter.ids!.contains(event.id);
-        return kindMatches && authorMatches && idsMatches;
-      }).toList();
+  void _respondToRequest(List<Filter> filters, String requestId) {
+    Set<Nip01Event> allMatchingEvents = {};
 
-      if (textNotes != null) {
-        matchingEvents.addAll(textNotes!.values.where((event) {
+    for (Filter filter in filters) {
+      List<Nip01Event> eventsForThisFilter = [];
+
+      // Match against contact lists
+      if (filter.kinds != null &&
+          filter.kinds!.contains(ContactList.kKind) &&
+          filter.authors != null &&
+          filter.authors!.isNotEmpty) {
+        eventsForThisFilter.addAll(_contactLists.values
+            .where((e) => filter.authors!.contains(e.pubKey))
+            .toList());
+      }
+      // Match against metadatas
+      else if (filter.kinds != null &&
+          filter.kinds!.contains(Metadata.kKind) &&
+          filter.authors != null &&
+          filter.authors!.isNotEmpty) {
+        eventsForThisFilter.addAll(_metadatas.values
+            .where((e) => filter.authors!.contains(e.pubKey))
+            .toList());
+      }
+      // General event matching (storedEvents and textNotes)
+      else {
+        eventsForThisFilter.addAll(_storedEvents.where((event) {
           bool kindMatches =
               filter.kinds == null || filter.kinds!.contains(event.kind);
           bool authorMatches =
               filter.authors == null || filter.authors!.contains(event.pubKey);
           bool idsMatches =
               filter.ids == null || filter.ids!.contains(event.id);
+          // Add other tag-based filtering if necessary, e.g., #e, #p tags
           return kindMatches && authorMatches && idsMatches;
         }).toList());
-      }
-    }
-    if (_nip65s != null) {
-      for (var entry in _nip65s!.entries) {
-        if (filter.authors != null &&
-            filter.authors!.contains(entry.key.publicKey) &&
-            (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
-          if (signEvents) {
-            Nip01Event event = entry.value.toEvent();
-            event.sign(entry.key.privateKey!);
-          }
-          matchingEvents.add(entry.value.toEvent());
+
+        if (textNotes != null) {
+          eventsForThisFilter.addAll(textNotes!.values.where((event) {
+            bool kindMatches =
+                filter.kinds == null || filter.kinds!.contains(event.kind);
+            bool authorMatches = filter.authors == null ||
+                filter.authors!.contains(event.pubKey);
+            bool idsMatches =
+                filter.ids == null || filter.ids!.contains(event.id);
+            // Add other tag-based filtering if necessary
+            return kindMatches && authorMatches && idsMatches;
+          }).toList());
         }
       }
+
+      // Match against NIP-65s
+      if (_nip65s != null) {
+        for (var entry in _nip65s!.entries) {
+          if (filter.authors != null &&
+              filter.authors!.contains(entry.key.publicKey) &&
+              (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
+            Nip01Event eventToAdd =
+                entry.value.toEvent(); // Creates a new event instance
+            if (signEvents && entry.key.privateKey != null) {
+              // Sign the new instance, not the one in _nip65s
+              eventToAdd.sign(entry.key.privateKey!);
+            }
+            eventsForThisFilter.add(eventToAdd);
+          }
+        }
+      }
+
+      // Match against textNotes (again, for specific kinds if not covered by general else)
+      // This block might be redundant if general matching for textNotes is sufficient
+      // or could be more specific if textNotes have unique matching criteria.
+      // For now, ensuring signing is handled correctly if events are matched here.
+      if (textNotes != null) {
+        for (var entry in textNotes!.entries) {
+          bool authorsMatch = filter.authors != null &&
+              filter.authors!.contains(entry.key.publicKey);
+          bool kindsMatch = filter.kinds == null ||
+              filter.kinds!.contains(entry.value.kind) ||
+              (entry.value.kind == Nip01Event.kTextNodeKind &&
+                  filter.kinds!.contains(Nip01Event.kTextNodeKind)) ||
+              (filter.kinds!.any((k) =>
+                  Nip51List.kPossibleKinds.contains(k) &&
+                  Nip51List.kPossibleKinds.contains(entry.value.kind)));
+
+          if (authorsMatch && kindsMatch) {
+            // Clone the event from the map before signing to avoid mutating the stored original
+            Nip01Event eventToAdd = Nip01Event.fromJson(entry.value.toJson());
+            if (signEvents && entry.key.privateKey != null) {
+              eventToAdd.sign(entry.key.privateKey!);
+            }
+            eventsForThisFilter.add(eventToAdd);
+          }
+        }
+      }
+      allMatchingEvents.addAll(eventsForThisFilter);
     }
 
-    if (textNotes != null) {
-      for (var entry in textNotes!.entries) {
-        if (filter.authors != null &&
-            filter.authors!.contains(entry.key.publicKey) &&
-            (filter.kinds == null ||
-                filter.kinds!.contains(Nip01Event.kTextNodeKind) ||
-                filter.kinds!
-                    .any((k) => Nip51List.kPossibleKinds.contains(k)))) {
-          if (signEvents) {
-            entry.value.sign(entry.key.privateKey!);
-          }
-          matchingEvents.add(entry.value);
-        }
-      }
-    }
-    for (var event in matchingEvents) {
+    for (var event in allMatchingEvents) {
       _webSocket!.add(jsonEncode(["EVENT", requestId, event.toJson()]));
     }
 
