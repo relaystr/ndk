@@ -130,14 +130,6 @@ void main() async {
     });
   });
 
-  // TODO test multiple filters (OR condition)
-
-  // [
-  //   {ids: ["ad6137b9a3dc4b393a41d745c483837cfd2379e22ec9916c487d6bd6cfe4b3b7"], kinds: [9041]},
-  //   {kinds: [1311, 9735], limit: 200, "#a": ["30311:cf45a6ba1363ad7ed213a078e710d24115ae721c9b47bd1ebf4458eaefb4c2a5:ec9731a5-b1a0-4296-baf4-0f8355687581"]},
-  //   {authors: ["63fe6318dc58583cfe16810f86dd09e18bfd76aabc24a0081ce2856f330504ed", "46f5797187ff5cf4dddb33828fb4e1296a7fd0ce666a3f24cdd454329e201480"], kinds: [10000]}
-  // ]
-
   group('immutable filters', () {
     test('Filters are cloned and immutable in query method', () {
       final cache = MemCacheManager();
