@@ -143,6 +143,13 @@ class Nwc {
     if (event.content != '') {
       var decrypted = Nip04.decrypt(
           connection.uri.secret, connection.uri.walletPubkey, event.content);
+      if (decrypted=='') {
+        decrypted = await Nip44.decryptMessage(
+          event.content,
+          connection.uri.secret,
+          connection.uri.walletPubkey,
+        );
+      }
       Map<String, dynamic> data;
       data = json.decode(decrypted);
       NwcResponse? response;
