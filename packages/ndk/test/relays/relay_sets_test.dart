@@ -263,8 +263,21 @@ void main() async {
           Nip01Event.kTextNodeKind
         ], authors: [
           key1.publicKey,
+        ])
+        ,
+        Filter(kinds: [
+          Nip01Event.kTextNodeKind
+        ], authors: [
           key2.publicKey,
+        ]),
+        Filter(kinds: [
+          Nip01Event.kTextNodeKind
+        ], authors: [
           key3.publicKey,
+        ]),
+        Filter(kinds: [
+          Nip01Event.kTextNodeKind
+        ], authors: [
           key4.publicKey
         ])
       ], relaySet: relaySet);

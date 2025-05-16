@@ -36,12 +36,15 @@ void main() async {
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
   }
 
-  Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
+  Map<KeyPair, Nip01Event> textNotes = {
+    key1: textNote(key1),
+    key2: textNote(key2)
+  };
 
   group('Requests', () {
     test('Request text note', () async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
-      await relay1.startServer(textNotes: key1TextNotes);
+      await relay1.startServer(textNotes: textNotes);
 
       final ndk = Ndk(NdkConfig(
         eventVerifier: MockEventVerifier(),
@@ -57,7 +60,65 @@ void main() async {
 
       final query = ndk.requests.query(filters: [filter]);
 
-      await expectLater(query.stream, emitsInAnyOrder(key1TextNotes.values));
+      await expectLater(
+          query.stream, emitsInAnyOrder([textNotes.values.first]));
+
+      await ndk.destroy();
+      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+      await relay1.stopServer();
+    });
+
+    test('Request multiple filters text note', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      await relay1.startServer(textNotes: textNotes);
+
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [relay1.url],
+      ));
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      final query = ndk.requests.query(
+          // explicitRelays: [relay1.url],
+          filters: [
+        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]),
+        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key2.publicKey])
+      ]);
+
+      await expectLater(query.stream, emitsInAnyOrder(textNotes.values));
+
+      // await for (final event in query.stream) {
+      //   print(event);
+      // }
+
+      await ndk.destroy();
+      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+      await relay1.stopServer();
+    });
+    test('Request multiple filters text note JIT', skip: true, () async {
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      await relay1.startServer(textNotes: textNotes);
+
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+        bootstrapRelays: [relay1.url],
+      ));
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      final query = ndk.requests.query(
+        // explicitRelays: [relay1.url],
+          filters: [
+            Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]),
+            Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key2.publicKey])
+          ]);
+
+      await expectLater(query.stream, emitsInAnyOrder(textNotes.values));
 
       // await for (final event in query.stream) {
       //   print(event);
