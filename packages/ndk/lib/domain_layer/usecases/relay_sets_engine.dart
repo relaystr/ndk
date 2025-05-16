@@ -90,7 +90,7 @@ class RelaySetsEngine implements NetworkEngine {
       return;
     }
     RelaySet relaySet = state.request.relaySet!;
-    for (var filter in state.unresolvedFilters) {
+    for (final filter in state.unresolvedFilters) {
       if (splitRequestsByPubKeyMappings) {
         relaySet.splitIntoRequests(filter, state);
         print(
@@ -139,7 +139,7 @@ class RelaySetsEngine implements NetworkEngine {
         throw Exception("cannot do request with empty filters");
       }
       final List<Filter> filters =  [];
-      for (var filter in state.request.filters) {
+      for (final filter in state.request.filters) {
         filters.addAll(RelaySet.sliceFilterAuthors(filter));
       }
       state.addRequest(url, filters);

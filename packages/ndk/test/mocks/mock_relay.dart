@@ -243,7 +243,7 @@ class MockRelay {
       // or could be more specific if textNotes have unique matching criteria.
       // For now, ensuring signing is handled correctly if events are matched here.
       if (textNotes != null) {
-        for (var entry in textNotes!.entries) {
+        for (final entry in textNotes!.entries) {
           bool authorsMatch = filter.authors != null &&
               filter.authors!.contains(entry.key.publicKey);
           bool kindsMatch = filter.kinds == null ||
