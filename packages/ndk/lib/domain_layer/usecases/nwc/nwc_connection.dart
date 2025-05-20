@@ -15,6 +15,9 @@ class NwcConnection {
   NdkResponse? subscription;
   StreamSubscription<Nip01Event>? _streamSubscription;
 
+  bool useETagForEachRequest = false;
+  bool ignoreCapabilitiesCheck = false;
+
   StreamController<NwcResponse> responseStream =
       StreamController<NwcResponse>.broadcast();
 
@@ -31,13 +34,19 @@ class NwcConnection {
       .where((notification) => notification.isPaymentSent)
       .asBroadcastStream();
 
-  Stream<NwcNotification> get holdInvoiceStateStream => notificationStream.stream
-      .where((notification) => notification.isHoldInvoiceAccepted)
-      .asBroadcastStream();
+  Stream<NwcNotification> get holdInvoiceStateStream =>
+      notificationStream.stream
+          .where((notification) => notification.isHoldInvoiceAccepted)
+          .asBroadcastStream();
 
   /// listen
   void listen(void Function(Nip01Event event)? onData) {
-    _streamSubscription = subscription!.stream.listen(onData);
+    if (subscription != null) {
+      _streamSubscription = subscription!.stream.listen(onData);
+    } else {
+      Logger.log
+          .e("NwcConnection: Attempted to listen on a null subscription.");
+    }
   }
 
   /// cancels subscription and closes stream controllers

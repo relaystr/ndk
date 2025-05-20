@@ -48,7 +48,10 @@ class Nwc {
   /// and optionally doing a `get_info` request (default false).
   /// It subscribes for notifications
   Future<NwcConnection> connect(String uri,
-      {bool doGetInfoMethod = false, Function(String?)? onError}) async {
+      {bool doGetInfoMethod = false,
+      bool useETagForEachRequest = false,
+      bool ignoreCapabilitiesCheck = false,
+      Function(String?)? onError}) async {
     var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
     var relay = Uri.decodeFull(parsedUri.relay);
     var filter =
@@ -72,6 +75,8 @@ class Nwc {
       Nip01Event event = infoEvent.first;
       if (event.kind == NwcKind.INFO.value && event.content != "") {
         final connection = NwcConnection(parsedUri);
+        connection.useETagForEachRequest = useETagForEachRequest;
+        connection.ignoreCapabilitiesCheck = ignoreCapabilitiesCheck;
 
         connection.permissions = event.content.split(" ").toSet();
 
@@ -88,6 +93,7 @@ class Nwc {
         await _subscribeToNotificationsAndResponses(connection);
 
         if (doGetInfoMethod &&
+            ignoreCapabilitiesCheck ||
             connection.permissions.contains(NwcMethod.GET_INFO.name)) {
           try {
             await getInfo(connection).then((info) {
@@ -110,17 +116,23 @@ class Nwc {
 
   Future<void> _subscribeToNotificationsAndResponses(
       NwcConnection connection) async {
+    List<int> kindsToSubscribe = [
+      connection.isLegacyNotifications()
+          ? NwcKind.LEGACY_NOTIFICATION.value
+          : NwcKind.NOTIFICATION.value,
+    ];
+    // Only subscribe to NwcKind.RESPONSE if not using tagged subscriptions per request
+    if (!connection.useETagForEachRequest) {
+      kindsToSubscribe.add(NwcKind.RESPONSE.value);
+    }
+
     connection.subscription = _requests.subscription(
-        name: "nwc-sub",
+        name:
+            "nwc-sub-${connection.useETagForEachRequest ? "notifs-only" : ""}",
         explicitRelays: [connection.uri.relay],
         filters: [
           Filter(
-            kinds: [
-              NwcKind.RESPONSE.value,
-              connection.isLegacyNotifications()
-                  ? NwcKind.LEGACY_NOTIFICATION.value
-                  : NwcKind.NOTIFICATION.value,
-            ],
+            kinds: kindsToSubscribe,
             authors: [connection.uri.walletPubkey],
             pTags: [connection.signer.getPublicKey()],
           )
@@ -169,7 +181,8 @@ class Nwc {
           response = ListTransactionsResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.LOOKUP_INVOICE.name) {
           response = LookupInvoiceResponse.deserialize(data);
-        } else if (data['result_type'] == NwcMethod.CANCEL_HOLD_INVOICE.name || data['result_type'] == NwcMethod.SETTLE_HOLD_INVOICE.name) {
+        } else if (data['result_type'] == NwcMethod.CANCEL_HOLD_INVOICE.name ||
+            data['result_type'] == NwcMethod.SETTLE_HOLD_INVOICE.name) {
           response =
               NwcResponse(resultType: data['result_type']); // Generic response
         }
@@ -238,47 +251,107 @@ class Nwc {
   Future<T> _executeRequest<T extends NwcResponse>(
       NwcConnection connection, NwcRequest request,
       {Duration? timeout}) async {
-    if (connection.permissions.contains(request.method.name)) {
-      var json = request.toMap();
-      var content = jsonEncode(json);
-      var encrypted = Nip04.encrypt(
-          connection.uri.secret, connection.uri.walletPubkey, content);
+    if (!connection.ignoreCapabilitiesCheck &&
+        !connection.permissions.contains(request.method.name)) {
+      throw Exception("${request.method.name} method not in permissions");
+    }
+    var json = request.toMap();
+    var content = jsonEncode(json);
+    var encrypted = Nip04.encrypt(
+        connection.uri.secret, connection.uri.walletPubkey, content);
 
-      Nip01Event event = Nip01Event(
-          pubKey: connection.signer.getPublicKey(),
-          kind: NwcKind.REQUEST.value,
-          tags: [
-            ["p", connection.uri.walletPubkey]
-          ],
-          content: encrypted);
-      final bResponse = _broadcast.broadcast(
-        nostrEvent: event,
-        specificRelays: [connection.uri.relay],
-        customSigner: connection.signer,
+    Nip01Event event = Nip01Event(
+        pubKey: connection.signer.getPublicKey(),
+        kind: NwcKind.REQUEST.value,
+        tags: [
+          ["p", connection.uri.walletPubkey]
+        ],
+        content: encrypted);
+
+    Completer<NwcResponse> completer = Completer();
+    _inflighRequests[event.id] = completer;
+
+    NdkResponse? dedicatedResponse;
+
+    if (connection.useETagForEachRequest) {
+      final responseFilter = Filter(
+        kinds: [NwcKind.RESPONSE.value],
+        authors: [connection.uri.walletPubkey],
+        pTags: [connection.signer.getPublicKey()],
+        eTags: [event.id], // Tagged with the request event's ID
       );
-      await bResponse.broadcastDoneFuture;
+      dedicatedResponse = _requests.subscription(
+          name: "nwc-response-",
+          explicitRelays: [connection.uri.relay],
+          filters: [responseFilter],
+          cacheRead: false,
+          cacheWrite: false);
 
-      Completer<NwcResponse> completer = Completer();
-      _inflighRequests[event.id] = completer;
-      _inflighRequestTimers[event.id] =
-          Timer(timeout ?? Duration(seconds: 5), () {
+      dedicatedResponse.stream.listen((responseEvent) async {
+        await _onResponse(responseEvent, connection);
+      }, onError: (error) async {
         if (!completer.isCompleted) {
-          final error =
-              "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relay}";
-          completer.completeError(error);
+          completer.completeError(
+              "Error on temporary response subscription: $error");
           _inflighRequests.remove(event.id);
+          if (_inflighRequestTimers[event.id]?.isActive ?? false) {
+            _inflighRequestTimers[event.id]!.cancel();
+          }
           _inflighRequestTimers.remove(event.id);
-          Logger.log.w(error);
+        }
+        if (dedicatedResponse!=null) {
+          await _requests.closeSubscription(dedicatedResponse.requestId);
         }
       });
+    }
+
+    final bResponse = _broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: [connection.uri.relay],
+      customSigner: connection.signer,
+    );
+    await bResponse.broadcastDoneFuture;
+
+    _inflighRequestTimers[event.id] =
+        Timer(timeout ?? Duration(seconds: 5), () async {
+      if (!completer.isCompleted) {
+        final error =
+            "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relay} and eventId ${event.id}"; // Added event.id to log
+        completer.completeError(error);
+        _inflighRequests.remove(event.id);
+        _inflighRequestTimers.remove(event.id);
+        if (connection.useETagForEachRequest &&
+            dedicatedResponse != null) {
+          await _requests.closeSubscription(dedicatedResponse.requestId);
+        }
+        Logger.log.w(error);
+      }
+    });
+
+    try {
       NwcResponse response = await completer.future;
+      if (connection.useETagForEachRequest &&
+          dedicatedResponse != null) {
+        await _requests.closeSubscription(dedicatedResponse.requestId);
+      }
       if (response is T) {
         return response;
       }
       throw Exception(
           "error ${response.resultType} code: ${response.errorCode} ${response.errorMessage}");
+    } catch (e) {
+      if (_inflighRequestTimers[event.id]?.isActive ?? false) {
+        _inflighRequestTimers[event.id]!.cancel();
+      }
+      _inflighRequests.remove(event.id);
+      _inflighRequestTimers.remove(event.id); // Ensure removal
+
+      if (connection.useETagForEachRequest &&
+          dedicatedResponse != null) {
+        await _requests.closeSubscription(dedicatedResponse.requestId);
+      }
+      rethrow;
     }
-    throw Exception("${request.method.name} method not in permissions");
   }
 
   /// Does a `get_info` request for returning node detailed info
