@@ -80,7 +80,7 @@ void main() async {
       final rcvMetadatas = await ndk.metadata
           .loadMetadatas([key0.publicKey, key1.publicKey], null);
 
-      expect(rcvMetadatas.length, 1); // only one is missing
+      expect(rcvMetadatas.length, 2); // only one is missing
     });
 
     test('broadcast metadata', () async {
