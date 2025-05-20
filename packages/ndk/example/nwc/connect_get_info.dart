@@ -12,8 +12,11 @@ void main() async {
   final nwcUri = Platform.environment['NWC_URI']!;
   final connection = await ndk.nwc.connect(nwcUri, doGetInfoMethod: true);
 
-  print("alias: ${connection.info!.alias}");
-  print("pubkey: ${connection.info!.pubkey}");
+  print("Connected, permissions: ${connection.permissions}");
 
+  if (connection.info != null) {
+    print("alias: ${connection.info!.alias}");
+    print("pubkey: ${connection.info!.pubkey}");
+  }
   await ndk.destroy();
 }
