@@ -34,7 +34,8 @@ void main() async {
           "906a0c5920b59e5754d0df5164bfea2a8d48ce5d73beaa1e854b3e6725e3288a");
 
   if (response.payInvoiceResponse != null &&
-      response.payInvoiceResponse!.preimage.isNotEmpty) {
+      response.payInvoiceResponse!.preimage !=null &&
+      response.payInvoiceResponse!.preimage!.isNotEmpty) {
     print(
         "Payed $amount to $lnurl, preimage = ${response.payInvoiceResponse!.preimage}");
 
