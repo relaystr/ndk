@@ -14,7 +14,7 @@ class Connectivy {
 
   /// forces all relays to reconnect \
   /// use this for faster reconnects based on your application/os connectivity \
-  tryReconnect() {
+  void tryReconnect() {
     for (final rConnectivity in _relayManager.globalState.relays.values) {
       if (!rConnectivity.isConnected) {
         _relayManager
