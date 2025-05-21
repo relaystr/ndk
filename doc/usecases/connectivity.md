@@ -10,7 +10,7 @@ icon: rss
 /// Stream<Map<String, RelayConnectivity>>
 /// key: relay url/identifier
 /// value: relay connectivity
-ndk.connectivity.relayConnectivityChanges;
+ndkInstance.connectivity.relayConnectivityChanges;
 
 
 /// forces all relays to reconnect \
@@ -26,9 +26,8 @@ tryReconnect();
  
     switch (state) {
       case AppLifecycleState.resumed:
-        final ndkInstance = _ref.read(ndkProvider);
         // reconnect instantly when resuming
-        tryReconnect();
+        ndkInstance.connectivity.tryReconnect();
         break;
       case AppLifecycleState.inactive:
         break;
