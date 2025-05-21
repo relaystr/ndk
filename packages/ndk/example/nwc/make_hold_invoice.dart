@@ -47,7 +47,7 @@ void main() async {
       // Check if errorCode is null for success
       final invoice = makeResponse.invoice;
       print(
-          "Hold invoice created successfully. Invoice: $invoice, Payment Hash: ${makeResponse.paymentHash}");
+          "Hold invoice created successfully. Invoice: $invoice Payment Hash: ${makeResponse.paymentHash}");
 
       // if (invoice.isNotEmpty) {
         // print("\nScan QR Code to pay/hold:");
