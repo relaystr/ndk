@@ -17,6 +17,7 @@ class NwcNotification {
   int createdAt;
   int? expiresAt;
   int? settledAt;
+  int? settleDeadline;
   Map<String, dynamic>? metadata;
 
   get isIncoming => type == TransactionType.incoming.value;
@@ -37,6 +38,7 @@ class NwcNotification {
     required this.createdAt,
     this.expiresAt,
     this.settledAt,
+    this.settleDeadline,
     this.metadata,
   });
 
@@ -54,6 +56,7 @@ class NwcNotification {
       createdAt: map['created_at'] as int,
       expiresAt: map['expires_at'] as int?,
       settledAt: map['settled_at'] as int?,
+      settleDeadline: map['settle_deadline'] as int?,
       metadata: map.containsKey('metadata') && map['metadata'] != null
           ? Map<String, dynamic>.from(map['metadata'])
           : null,
