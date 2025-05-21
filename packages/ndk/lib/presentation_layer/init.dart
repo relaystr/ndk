@@ -14,6 +14,7 @@ import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
+import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
@@ -74,6 +75,7 @@ class Initialization {
   late BlossomUserServerList blossomUserServerList;
   late Search search;
   late GiftWrap giftWrap;
+  late Connectivy connectivity;
 
   late VerifyNip05 verifyNip05;
 
@@ -227,6 +229,8 @@ class Initialization {
     );
 
     giftWrap = GiftWrap(accounts: accounts);
+
+    connectivity = Connectivy(relayManager);
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
