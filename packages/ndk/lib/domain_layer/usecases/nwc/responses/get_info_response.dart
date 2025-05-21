@@ -7,11 +7,11 @@ import 'nwc_response.dart';
 /// Represents the result of a 'get_info' response.
 class GetInfoResponse extends NwcResponse {
   final String alias;
-  final String color;
-  final String pubkey;
+  final String? color;
+  final String? pubkey;
   final BitcoinNetwork network;
-  final int blockHeight;
-  final String blockHash;
+  final int? blockHeight;
+  final String? blockHash;
   final List<String> methods;
   final List<String> notifications;
 
@@ -45,11 +45,11 @@ class GetInfoResponse extends NwcResponse {
     return GetInfoResponse(
         resultType: input['result_type'] as String,
         alias: result['alias'] as String,
-        color: result['color'] as String,
-        pubkey: result['pubkey'] as String,
-        network: BitcoinNetwork.fromPlaintext(result['network'] as String),
-        blockHeight: result['block_height'] as int,
-        blockHash: result['block_hash'] as String,
+        color: result['color'] as String?,
+        pubkey: result['pubkey'] as String?,
+        network: BitcoinNetwork.fromPlaintext(result['network'] as String?),
+        blockHeight: result['block_height'] as int?,
+        blockHash: result['block_hash'] as String?,
         methods: methods,
         notifications: notifications);
   }
