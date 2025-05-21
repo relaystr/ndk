@@ -14,7 +14,7 @@ class RelaysPage extends StatefulWidget {
 }
 
 class _RelaysPageState extends State<RelaysPage> {
-  final amber = Amberflutter();
+  // final amber = Amberflutter();
   // ignore: unused_field
   String _text = '';
   UserRelayList? relays;
@@ -32,21 +32,10 @@ class _RelaysPageState extends State<RelaysPage> {
             ),
             FilledButton(
                 onPressed: () async {
-                  amber.getPublicKey(
-                    permissions: [
-                      const Permission(
-                        type: "nip04_encrypt",
-                      ),
-                      const Permission(
-                        type: "nip04_decrypt",
-                      ),
-                    ],
-                  ).then((value) async {
-                    UserRelayList? list = await ndk.userRelayLists
-                        .getSingleUserRelayList(Nip19.decode(value['signature']));
-                    setState(() {
-                      relays = list;
-                    });
+                  UserRelayList? list = await ndk.userRelayLists
+                      .getSingleUserRelayList(ndk.accounts.getPublicKey()!);
+                  setState(() {
+                    relays = list;
                   });
                 },
                 child: const Text("Fetch relay list"))

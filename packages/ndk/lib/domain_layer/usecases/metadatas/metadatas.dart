@@ -88,14 +88,16 @@ class Metadatas {
   Future<List<Metadata>> loadMetadatas(List<String> pubKeys, RelaySet? relaySet,
       {Function(Metadata)? onLoad}) async {
     List<String> missingPubKeys = [];
+    Map<String, Metadata> metadatas = {};
     for (var pubKey in pubKeys) {
       Metadata? userMetadata = await _cacheManager.loadMetadata(pubKey);
       if (userMetadata == null) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
+      } else {
+        metadatas[pubKey] = userMetadata;
       }
     }
-    Map<String, Metadata> metadatas = {};
 
     if (missingPubKeys.isNotEmpty) {
       Logger.log.d("loading missing user metadatas ${missingPubKeys.length}");

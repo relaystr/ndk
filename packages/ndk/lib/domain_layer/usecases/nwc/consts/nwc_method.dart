@@ -15,6 +15,9 @@ class NwcMethod {
   static const NwcMethod PAY_KEYSEND = NwcMethod('pay_keysend');
   static const NwcMethod MULTI_PAY_KEYSEND = NwcMethod('multi_pay_keysend');
   static const NwcMethod MAKE_INVOICE = NwcMethod('make_invoice');
+  static const NwcMethod MAKE_HOLD_INVOICE = NwcMethod('make_hold_invoice');
+  static const NwcMethod CANCEL_HOLD_INVOICE = NwcMethod('cancel_hold_invoice');
+  static const NwcMethod SETTLE_HOLD_INVOICE = NwcMethod('settle_hold_invoice');
   static const NwcMethod LOOKUP_INVOICE = NwcMethod('lookup_invoice');
   static const NwcMethod LIST_TRANSACTIONS = NwcMethod('list_transactions');
   static const NwcMethod UNKNOWN = NwcMethod('unknown');
@@ -26,6 +29,9 @@ class NwcMethod {
     PAY_KEYSEND.name: PAY_KEYSEND,
     MULTI_PAY_KEYSEND.name: MULTI_PAY_KEYSEND,
     MAKE_INVOICE.name: MAKE_INVOICE,
+    MAKE_HOLD_INVOICE.name: MAKE_HOLD_INVOICE,
+    CANCEL_HOLD_INVOICE.name: CANCEL_HOLD_INVOICE,
+    SETTLE_HOLD_INVOICE.name: SETTLE_HOLD_INVOICE,
     LOOKUP_INVOICE.name: LOOKUP_INVOICE,
     LIST_TRANSACTIONS.name: LIST_TRANSACTIONS,
     GET_BALANCE.name: GET_BALANCE,

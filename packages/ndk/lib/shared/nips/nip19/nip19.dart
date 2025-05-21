@@ -1,4 +1,5 @@
 import 'package:bech32/bech32.dart';
+import 'package:collection/collection.dart';
 import 'package:hex/hex.dart';
 
 import '../../logger/logger.dart';
@@ -63,7 +64,19 @@ class Nip19 {
       var decoder = Bech32Decoder();
       var bech32Result = decoder.convert(npub);
       var data = convertBits(bech32Result.data, 5, 8, false);
-      return HEX.encode(data);
+      if (bech32Result.hrp != Hrps.kNoteId &&
+          bech32Result.hrp != Hrps.kPublicKey &&
+          bech32Result.hrp != Hrps.kPrivateKey) {
+        final tlv = Nip19TLV.parseTLV(data);
+        final special = tlv.firstWhereOrNull((t) => t.type == 0)?.value;
+        if (special != null) {
+          return HEX.encode(special);
+        } else {
+          throw "Missing 'special' kind in TLV entity, cant decode to hex";
+        }
+      } else {
+        return HEX.encode(data);
+      }
     } catch (e) {
       Logger.log.e("Nip19 decode error ${e.toString()}");
       return "";
@@ -122,6 +135,47 @@ class Nip19 {
       throw InvalidPadding('illegal zero padding');
     } else if (((acc << (to - bits)) & maxv) != 0) {
       throw InvalidPadding('non zero');
+    }
+
+    return result;
+  }
+}
+
+class Nip19TLV {
+  final int type;
+  final int length;
+  final List<int> value;
+
+  Nip19TLV(this.type, this.length, this.value);
+
+  static List<Nip19TLV> parseTLV(List<int> data) {
+    List<Nip19TLV> result = [];
+    int index = 0;
+
+    while (index < data.length) {
+      // Check if we have enough bytes for type and length
+      if (index + 2 > data.length) {
+        throw FormatException('Incomplete TLV data');
+      }
+
+      // Read type (1 byte)
+      int type = data[index];
+      index++;
+
+      // Read length (1 byte)
+      int length = data[index];
+      index++;
+
+      // Check if we have enough bytes for value
+      if (index + length > data.length) {
+        throw FormatException('TLV value length exceeds available data');
+      }
+
+      // Read value
+      List<int> value = data.sublist(index, index + length);
+      index += length;
+
+      result.add(Nip19TLV(type, length, value));
     }
 
     return result;

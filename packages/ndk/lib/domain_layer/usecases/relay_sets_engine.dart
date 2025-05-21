@@ -89,24 +89,24 @@ class RelaySetsEngine implements NetworkEngine {
     if (state.unresolvedFilters.isEmpty || state.request.relaySet == null) {
       return;
     }
-    // TODO support more than 1 filter
     RelaySet relaySet = state.request.relaySet!;
-    Filter filter = state.unresolvedFilters.first;
-    if (splitRequestsByPubKeyMappings) {
-      relaySet.splitIntoRequests(filter, state);
-      print(
-          "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${state.requests.length} relays");
-
-      if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
+    for (final filter in state.unresolvedFilters) {
+      if (splitRequestsByPubKeyMappings) {
+        relaySet.splitIntoRequests(filter, state);
         print(
-            "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
-        for (final url in _bootstrapRelays) {
+            "request for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds} made requests to ${state.requests.length} relays");
+
+        if (state.requests.isEmpty && relaySet.fallbackToBootstrapRelays) {
+          print(
+              "making fallback requests to ${_bootstrapRelays.length} bootstrap relays for ${filter.authors != null ? filter.authors!.length : 0} authors with kinds: ${filter.kinds}");
+          for (final url in _bootstrapRelays) {
+            state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
+          }
+        }
+      } else {
+        for (final url in relaySet.urls) {
           state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
         }
-      }
-    } else {
-      for (final url in relaySet.urls) {
-        state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
       }
     }
     _globalState.inFlightRequests[state.id] = state;
@@ -122,22 +122,27 @@ class RelaySetsEngine implements NetworkEngine {
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
     }
+    Iterable<String>? relaysForRequest;
+
     if (state.request.explicitRelays != null &&
         state.request.explicitRelays!.isNotEmpty) {
       for (final url in state.request.explicitRelays!) {
         await _relayManager.connectRelay(
             dirtyUrl: url, connectionSource: ConnectionSource.explicit);
-        state.addRequest(
-            url, RelaySet.sliceFilterAuthors(state.request.filters.first));
       }
+      relaysForRequest = state.request.explicitRelays;
     } else {
-      for (final url in _bootstrapRelays) {
-        if (state.request.filters.isEmpty) {
-          throw Exception("cannot do request with empty filters");
-        }
-        state.addRequest(
-            url, RelaySet.sliceFilterAuthors(state.request.filters.first));
+      relaysForRequest = _bootstrapRelays;
+    }
+    for (final url in relaysForRequest!) {
+      if (state.request.filters.isEmpty) {
+        throw Exception("cannot do request with empty filters");
       }
+      final List<Filter> filters =  [];
+      for (final filter in state.request.filters) {
+        filters.addAll(RelaySet.sliceFilterAuthors(filter));
+      }
+      state.addRequest(url, filters);
     }
     _globalState.inFlightRequests[state.id] = state;
 

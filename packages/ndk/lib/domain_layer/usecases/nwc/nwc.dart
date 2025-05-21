@@ -17,6 +17,9 @@ import 'requests/get_info.dart';
 import 'requests/list_transactions.dart';
 import 'requests/lookup_invoice.dart';
 import 'requests/make_invoice.dart';
+import 'requests/make_hold_invoice.dart'; // Add import for MakeHoldInvoiceRequest
+import 'requests/cancel_hold_invoice.dart'; // Add import for CancelHoldInvoiceRequest
+import 'requests/settle_hold_invoice.dart'; // Add import for SettleHoldInvoiceRequest
 import 'requests/nwc_request.dart';
 import 'requests/pay_invoice.dart';
 import 'responses/nwc_response.dart';
@@ -140,6 +143,13 @@ class Nwc {
     if (event.content != '') {
       var decrypted = Nip04.decrypt(
           connection.uri.secret, connection.uri.walletPubkey, event.content);
+      if (decrypted=='') {
+        decrypted = await Nip44.decryptMessage(
+          event.content,
+          connection.uri.secret,
+          connection.uri.walletPubkey,
+        );
+      }
       Map<String, dynamic> data;
       data = json.decode(decrypted);
       NwcResponse? response;
@@ -150,7 +160,8 @@ class Nwc {
           response = GetBalanceResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.GET_BUDGET.name) {
           response = GetBudgetResponse.deserialize(data);
-        } else if (data['result_type'] == NwcMethod.MAKE_INVOICE.name) {
+        } else if (data['result_type'] == NwcMethod.MAKE_INVOICE.name ||
+            data['result_type'] == NwcMethod.MAKE_HOLD_INVOICE.name) {
           response = MakeInvoiceResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.PAY_INVOICE.name) {
           response = PayInvoiceResponse.deserialize(data);
@@ -158,6 +169,9 @@ class Nwc {
           response = ListTransactionsResponse.deserialize(data);
         } else if (data['result_type'] == NwcMethod.LOOKUP_INVOICE.name) {
           response = LookupInvoiceResponse.deserialize(data);
+        } else if (data['result_type'] == NwcMethod.CANCEL_HOLD_INVOICE.name || data['result_type'] == NwcMethod.SETTLE_HOLD_INVOICE.name) {
+          response =
+              NwcResponse(resultType: data['result_type']); // Generic response
         }
       } else {
         response = NwcResponse(resultType: data['result_type']);
@@ -192,7 +206,7 @@ class Nwc {
       if (data.containsKey("notification_type") &&
           data['notification'] != null) {
         NwcNotification notification =
-            NwcNotification.fromMap(data['notification']);
+            NwcNotification.fromMap(data["notification_type"],data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
         // TODO: Define what to do when data has an error
@@ -213,7 +227,7 @@ class Nwc {
       if (data.containsKey("notification_type") &&
           data['notification'] != null) {
         NwcNotification notification =
-            NwcNotification.fromMap(data['notification']);
+            NwcNotification.fromMap(data["notification_type"],data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
         // TODO: Define what to do when data has an error
@@ -282,7 +296,7 @@ class Nwc {
     return _executeRequest<GetBudgetResponse>(connection, GetBudgetRequest());
   }
 
-  /// Does a `make_invoie` request
+  /// Does a `make_invoice` request
   Future<MakeInvoiceResponse> makeInvoice(NwcConnection connection,
       {required int amountSats,
       String? description,
@@ -295,6 +309,37 @@ class Nwc {
             description: description,
             descriptionHash: descriptionHash,
             expiry: expiry));
+  }
+
+  /// Does a `make_hold_invoice` request
+  Future<MakeInvoiceResponse> makeHoldInvoice(NwcConnection connection,
+      {required int amountSats,
+      String? description,
+      String? descriptionHash,
+      int? expiry,
+      required String paymentHash}) async {
+    return _executeRequest<MakeInvoiceResponse>(
+        connection,
+        MakeHoldInvoiceRequest(
+            amountMsat: amountSats * 1000,
+            description: description,
+            descriptionHash: descriptionHash,
+            expiry: expiry,
+            paymentHash: paymentHash));
+  }
+
+  /// Does a `cancel_hold_invoice` request
+  Future<NwcResponse> cancelHoldInvoice(NwcConnection connection,
+      {required String paymentHash}) async {
+    return _executeRequest<NwcResponse>(
+        connection, CancelHoldInvoiceRequest(paymentHash: paymentHash));
+  }
+
+  /// Does a `settle_hold_invoice` request
+  Future<NwcResponse> settleHoldInvoice(NwcConnection connection,
+      {required String preimage}) async {
+    return _executeRequest<NwcResponse>(
+        connection, SettleHoldInvoiceRequest(preimage: preimage));
   }
 
   /// Does a `pay_invoice` request

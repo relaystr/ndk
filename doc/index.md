@@ -50,6 +50,8 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - threading, you can do this on your own if you move ndk or only the event_verifier into its own thread (🔜 planned)
 - support for request overrides (you have to close and reopen requests) (🤔 unsure)
 
+[!ref](/library-development/CONTRIBUTING.md)
+
 ---
 
 ## NIPs
