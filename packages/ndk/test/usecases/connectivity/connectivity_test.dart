@@ -52,9 +52,6 @@ void main() async {
         }
       });
 
-      // Ensure connected
-      await Future.delayed(Duration(milliseconds: 500));
-
       ndk.requests.query(filters: [
         Filter(kinds: [1])
       ], explicitRelays: [
