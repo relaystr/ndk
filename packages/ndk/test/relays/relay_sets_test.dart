@@ -263,8 +263,7 @@ void main() async {
           Nip01Event.kTextNodeKind
         ], authors: [
           key1.publicKey,
-        ])
-        ,
+        ]),
         Filter(kinds: [
           Nip01Event.kTextNodeKind
         ], authors: [
@@ -275,11 +274,7 @@ void main() async {
         ], authors: [
           key3.publicKey,
         ]),
-        Filter(kinds: [
-          Nip01Event.kTextNodeKind
-        ], authors: [
-          key4.publicKey
-        ])
+        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key4.publicKey])
       ], relaySet: relaySet);
 
       await for (final event in query.stream) {
@@ -546,7 +541,7 @@ void main() async {
     // }, timeout: const Timeout.factor(10));
   });
 
-  group(skip: true, "Calculate best relays (external REAL)", () {
+  group("Calculate best relays (external REAL)", skip: true, () {
 // ================================================================================================
 // REAL EXTERNAL RELAYS FOR SOME NPUBS
 // ================================================================================================

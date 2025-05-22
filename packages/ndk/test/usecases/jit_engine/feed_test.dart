@@ -24,6 +24,8 @@ void main() async {
         // wait for the relays to connect
         await Future.delayed(const Duration(seconds: 2));
 
+        final t0 = DateTime.now();
+
         final key = KeyPair.justPublicKey(Helpers.decodeBech32(npub)[0]);
 
         final contactsResponse = ndk.requests.query(name: "contacts", filters: [
@@ -71,6 +73,7 @@ void main() async {
         NdkResponse feedResponse2 =
             ndk.requests.subscription(id: "feed-test2", filters: [
           Filter(
+            limit: 100,
             authors: myContactList.contacts,
             kinds: [Nip01Event.kTextNodeKind],
             since:
@@ -79,12 +82,25 @@ void main() async {
         ]);
 
         List<Nip01Event> events = [];
+        developer.log('waiting for events...');
+        //final feedData = await feedResponse2.future;
+        //events.addAll(feedData);
+
         feedResponse2.stream.listen((event) {
-          developer.log("gotEvent: ${event.content}");
           events.add(event);
         });
-
         await Future.delayed(const Duration(seconds: 5));
+
+        final t1 = DateTime.now();
+
+        print(
+            "BEST ${ndk.relays.globalState.relays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
+        print(
+            "CONTACTS ${myContactList.contacts.length} WITH  ${nip65events.length} nip65 events");
+        print("${events.length} events");
+
+        print("=====  time took ${t1.difference(t0).inMilliseconds} ms");
+
         //developer.log("FEED: ${events.toString()}");
 
         developer.log('##################################################');
