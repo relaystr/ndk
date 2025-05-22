@@ -16,10 +16,10 @@ class Connectivy {
 
   /// forces all relays to reconnect \
   /// use this for faster reconnects based on your application/os connectivity \
-  void tryReconnect() {
+  Future<void> tryReconnect() async {
     for (final rConnectivity in _relayManager.globalState.relays.values) {
       if (!rConnectivity.isConnected) {
-        _relayManager
+        await _relayManager
             .reconnectRelay(
           rConnectivity.url,
           connectionSource: rConnectivity.relay.connectionSource,

@@ -73,5 +73,50 @@ void main() async {
 
       subscription.cancel();
     });
+
+    test('try reconnect', () async {
+      ndk.requests.query(filters: [
+        Filter(kinds: [1])
+      ], explicitRelays: [
+        relay1.url
+      ]);
+
+      // Ensure connected
+      await Future.delayed(Duration(milliseconds: 500));
+      expect(
+          ndk.connectivity.relayConnectivityChanges,
+          emitsInAnyOrder([
+            predicate<Map<String, RelayConnectivity>>((event) {
+              expect(event[relay0.url]?.isConnected, true);
+              expect(event[relay1.url]?.isConnected, true);
+              return true;
+            }),
+          ]));
+
+      // Disconnect relay 0
+      await ndk.relays.globalState.relays[relay0.url]?.close();
+
+      expect(
+          ndk.connectivity.relayConnectivityChanges,
+          emitsInAnyOrder([
+            predicate<Map<String, RelayConnectivity>>((event) {
+              expect(event[relay0.url]?.isConnected, false);
+              expect(event[relay1.url]?.isConnected, true);
+              return true;
+            }),
+          ]));
+
+      // Reconnect relay 0
+      await ndk.connectivity.tryReconnect();
+      expect(
+          ndk.connectivity.relayConnectivityChanges,
+          emitsInAnyOrder([
+            predicate<Map<String, RelayConnectivity>>((event) {
+              expect(event[relay0.url]?.isConnected, true);
+              expect(event[relay1.url]?.isConnected, true);
+              return true;
+            }),
+          ]));
+    });
   });
 }
