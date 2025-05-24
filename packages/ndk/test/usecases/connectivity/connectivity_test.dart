@@ -91,14 +91,14 @@ void main() async {
           ]));
 
       // Disconnect relay 0
-      await ndk.relays.globalState.relays[relay0.url]?.close();
+      await ndk.relays.globalState.relays[relay1.url]?.close();
 
       expect(
           ndk.connectivity.relayConnectivityChanges,
           emitsInAnyOrder([
             predicate<Map<String, RelayConnectivity>>((event) {
-              expect(event[relay0.url]?.isConnected, false);
-              expect(event[relay1.url]?.isConnected, true);
+              expect(event[relay0.url]?.isConnected, true);
+              expect(event[relay1.url]?.isConnected, false);
               return true;
             }),
           ]));

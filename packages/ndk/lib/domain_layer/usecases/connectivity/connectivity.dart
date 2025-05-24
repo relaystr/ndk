@@ -23,6 +23,7 @@ class Connectivy {
             .reconnectRelay(
           rConnectivity.url,
           connectionSource: rConnectivity.relay.connectionSource,
+          force: true,
         )
             .then((connected) {
           _relayManager.updateRelayConnectivity();

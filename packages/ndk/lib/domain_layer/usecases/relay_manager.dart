@@ -198,8 +198,11 @@ class RelayManager<T> {
   }
 
   /// Reconnects to a relay, if the relay is not connected or the connection is closed.
-  Future<bool> reconnectRelay(String url,
-      {required ConnectionSource connectionSource, bool force = false}) async {
+  Future<bool> reconnectRelay(
+    String url, {
+    required ConnectionSource connectionSource,
+    bool force = false,
+  }) async {
     RelayConnectivity? relayConnectivity = globalState.relays[url];
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
       await relayConnectivity.relayTransport!.ready
@@ -215,7 +218,8 @@ class RelayManager<T> {
       if (!force &&
           (relayConnectivity == null ||
               !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
-                  FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS))) {
+                FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS,
+              ))) {
         // don't try too often
         updateRelayConnectivity();
         return false;
