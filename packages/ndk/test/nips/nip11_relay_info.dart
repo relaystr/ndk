@@ -29,6 +29,9 @@ void main() {
       data['icon'] = "https://bla.com/favicon.ico";
       data['software'] = "https://github.com/bla";
       data['version'] = "1.0";
+      data['privacy_policy'] = "https://my-relay/privacy_policy";
+      data['terms_of_service'] = "https://my-relay/terms_of_service";
+
       RelayInfo info = RelayInfo.fromJson(data, "wss://bla.com");
 
       expect(data['name'], info.name);
@@ -39,6 +42,8 @@ void main() {
       expect(data['icon'], info.icon);
       expect(data['software'], info.software);
       expect(data['version'], info.version);
+      expect(data['privacy_policy'], info.privacyPolicy);
+      expect(data['terms_of_service'], info.termsOfService);
     });
   });
 }

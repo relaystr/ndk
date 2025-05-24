@@ -5,6 +5,7 @@ import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
@@ -123,6 +124,12 @@ class Ndk {
   ///
   /// low level usecase, recommended for advanced users
   GiftWrap get giftWrap => _initialization.giftWrap;
+
+  /// Use case for managing relay connectivity \
+  /// get notified about relay connectivity changes \
+  /// and update NDK about your application connectivity \
+  /// for faster reconnects
+  Connectivy get connectivity => _initialization.connectivity;
 
   /// Nostr Wallet connect
   @experimental // needs more docs & tests

@@ -27,8 +27,21 @@ class RelayInfo {
   /// Relay software version identifier
   final String version;
 
-  RelayInfo._(this.name, this.description, this.pubKey, this.contact, this.nips,
-      this.software, this.version, this.icon);
+  final String privacyPolicy;
+  final String termsOfService;
+
+  RelayInfo._(
+    this.name,
+    this.description,
+    this.pubKey,
+    this.contact,
+    this.nips,
+    this.software,
+    this.version,
+    this.icon,
+    this.privacyPolicy,
+    this.termsOfService,
+  );
 
   factory RelayInfo.fromJson(Map<String, dynamic> json, String url) {
     final String name = json["name"] ?? '';
@@ -44,8 +57,20 @@ class RelayInfo {
     final List<dynamic> nips = json["supported_nips"] ?? [];
     final String software = json["software"] ?? "";
     final String version = json["version"] ?? "";
+    final String privacyPolicy = json["privacy_policy"] ?? "";
+    final String termsOfService = json["terms_of_service"] ?? "";
     return RelayInfo._(
-        name, description, pubKey, contact, nips, software, version, icon);
+      name,
+      description,
+      pubKey,
+      contact,
+      nips,
+      software,
+      version,
+      icon,
+      privacyPolicy,
+      termsOfService,
+    );
   }
 
   static Future<RelayInfo?> get(String url) async {
