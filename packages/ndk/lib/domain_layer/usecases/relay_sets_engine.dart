@@ -130,10 +130,6 @@ class RelaySetsEngine implements NetworkEngine {
 
     if (state.request.explicitRelays != null &&
         state.request.explicitRelays!.isNotEmpty) {
-      // for (final url in state.request.explicitRelays!) {
-      //   await _relayManager.connectRelay(
-      //       dirtyUrl: url, connectionSource: ConnectionSource.explicit);
-      // }
       relaysForRequest = state.request.explicitRelays;
     } else {
       relaysForRequest = _bootstrapRelays;
