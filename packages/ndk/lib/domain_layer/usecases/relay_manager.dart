@@ -216,7 +216,7 @@ class RelayManager<T> {
     if (relayConnectivity == null ||
         !relayConnectivity.relayTransport!.isOpen()) {
       if (!force &&
-          (relayConnectivity == null ||
+          (relayConnectivity != null &&
               !relayConnectivity.relay.wasLastConnectTryLongerThanSeconds(
                 FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS,
               ))) {

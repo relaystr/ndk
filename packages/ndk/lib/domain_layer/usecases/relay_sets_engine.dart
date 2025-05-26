@@ -50,14 +50,22 @@ class RelaySetsEngine implements NetworkEngine {
 
   // ====================================================================================================================
 
-  bool doRelayRequest(String id, RelayRequestState request) {
-    if (
-        // _relayManager.isRelayConnected(request.url) &&
-        (!_globalState.blockedRelays.contains(request.url))) {
-      try {
-        RelayConnectivity? relay = _globalState.relays[request.url];
-        if (relay != null) {
-          relay.stats.activeRequests++;
+  Future<bool> doRelayRequest(String id, RelayRequestState request) async {
+    if (_globalState.blockedRelays.contains(request.url)) {
+      Logger.log
+          .w("COULD NOT SEND REQUEST TO ${request.url} since relay is blocked");
+      return false;
+    }
+
+    final connected = await _relayManager.reconnectRelay(request.url,
+        connectionSource:
+            ConnectionSource.explicit // TODO improve this connection source
+        );
+    if (connected) {
+      RelayConnectivity? relay = _globalState.relays[request.url];
+      if (relay != null) {
+        relay.stats.activeRequests++;
+        try {
           _relayManager.send(
               relay,
               ClientMsg(
@@ -65,21 +73,17 @@ class RelaySetsEngine implements NetworkEngine {
                 id: id,
                 filters: request.filters,
               ));
+        } catch (e) {
+          Logger.log.e("COULD NOT SEND REQUEST TO ${request.url}:", error: e);
+          return false;
         }
-        return true;
-      } catch (e) {
-        print(e);
       }
+      return true;
     } else {
-      print(
+      Logger.log.e(
           "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
-      RelayConnectivity? relay = _globalState.relays[request.url];
-      if (relay != null) {
-        _relayManager.reconnectRelay(relay.url,
-            connectionSource: relay.relay.connectionSource);
-      }
+      return false;
     }
-    return false;
   }
 
   // =====================================================================================
@@ -126,10 +130,10 @@ class RelaySetsEngine implements NetworkEngine {
 
     if (state.request.explicitRelays != null &&
         state.request.explicitRelays!.isNotEmpty) {
-      for (final url in state.request.explicitRelays!) {
-        await _relayManager.connectRelay(
-            dirtyUrl: url, connectionSource: ConnectionSource.explicit);
-      }
+      // for (final url in state.request.explicitRelays!) {
+      //   await _relayManager.connectRelay(
+      //       dirtyUrl: url, connectionSource: ConnectionSource.explicit);
+      // }
       relaysForRequest = state.request.explicitRelays;
     } else {
       relaysForRequest = _bootstrapRelays;
@@ -138,7 +142,7 @@ class RelaySetsEngine implements NetworkEngine {
       if (state.request.filters.isEmpty) {
         throw Exception("cannot do request with empty filters");
       }
-      final List<Filter> filters =  [];
+      final List<Filter> filters = [];
       for (final filter in state.request.filters) {
         filters.addAll(RelaySet.sliceFilterAuthors(filter));
       }
@@ -146,14 +150,12 @@ class RelaySetsEngine implements NetworkEngine {
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    List<String> notSent = [];
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
-      if (!doRelayRequest(state.id, entry.value)) {
-        notSent.add(entry.key);
-      }
-    }
-    for (var url in notSent) {
-      state.requests.remove(url);
+      doRelayRequest(state.id, entry.value).then((sent) {
+        if (!sent) {
+          state.requests.remove(entry.value.url);
+        }
+      });
     }
   }
 
@@ -183,14 +185,12 @@ class RelaySetsEngine implements NetworkEngine {
     }
     _globalState.inFlightRequests[state.id] = state;
 
-    List<String> notSent = [];
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
-      if (!doRelayRequest(state.id, entry.value)) {
-        notSent.add(entry.key);
-      }
-    }
-    for (var url in notSent) {
-      state.requests.remove(url);
+      doRelayRequest(state.id, entry.value).then((sent) {
+        if (!sent) {
+          state.requests.remove(entry.value.url);
+        }
+      });
     }
 
     return NdkResponse(state.id, state.stream);

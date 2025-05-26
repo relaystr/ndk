@@ -31,7 +31,7 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 5097);
+      relay0 = MockRelay(name: "relay 0", explicitPort: 5101);
       await relay0.startServer();
 
       final cache = MemCacheManager();
