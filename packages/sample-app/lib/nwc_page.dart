@@ -6,6 +6,7 @@ import 'package:convert/convert.dart' as convert;
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_kind.dart';
 import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/nwc_response.dart';
@@ -157,8 +158,6 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
       );
 
       try {
-        Nip01Event? foundWalletAuthEvent;
-        const int nip47InfoEventKind = 13194;
 
         // Retrieve the discoveryRelay and appPubkey that were set before launching nostr+walletauth
         // These are final and won't change during this try block.
@@ -187,28 +186,22 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
             .query(
               filters: [
                 Filter(
-                  kinds: [nip47InfoEventKind],
-                  tags: {
-                    '#p': [appPubkeyForTag] // Tagged with our app's pubkey
-                  },
-                  limit: 5,
+                  kinds: [NwcKind.INFO.value],
+                  pTags: [appPubkeyForTag],
+                  limit: 1,
                 )
               ],
               explicitRelays: {
                 discoveryRelayForQuery
-              }, // Use explicitRelays (user feedback)
+              },
             )
             .stream
             .timeout(const Duration(seconds: 15));
 
-        List<Nip01Event> potentialEvents = [];
-        await for (final event in stream) {
-          potentialEvents.add(event);
-        }
-
-        if (potentialEvents.isEmpty) {
+        Nip01Event? foundWalletAuthEvent = await stream.first;
+        if (foundWalletAuthEvent == null){
           print(
-              'No NWC Info Event (kind $nip47InfoEventKind) found on $discoveryRelayForQuery tagged for $appPubkeyForTag.');
+              'No NWC Info Event (kind ${NwcKind.INFO.value}) found on $discoveryRelayForQuery tagged for $appPubkeyForTag.');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
                 content: Text(
@@ -217,37 +210,10 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
           return;
         }
 
-        potentialEvents.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-        for (final event in potentialEvents) {
-          print(
-              'Processing potential NWC Info Event ID: ${event.id}, Author: ${event.pubKey}');
-          // Use Bip340EventVerifier().verify(event) (user feedback)
-          final bool isValidSignature =
-              await Bip340EventVerifier().verify(event);
-          if (isValidSignature) {
-            print(
-                'Event ID ${event.id} has a VALID signature from ${event.pubKey}. This is the Wallet NWC Service Pubkey.');
-            foundWalletAuthEvent = event;
-            break;
-          } else {
-            print('Event ID ${event.id} has an INVALID signature. Skipping.');
-          }
-        }
-
-        if (foundWalletAuthEvent == null) {
-          print('No NWC Info Event with a valid signature found.');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not validate NWC Info Event.')),
-          );
-          return;
-        }
-
         print(
-            'Successfully fetched and validated NWC Info Event (Kind $nip47InfoEventKind):');
+            'Successfully fetched and validated NWC Info Event (Kind ${NwcKind.INFO.value}):');
         print(
             '  Author (Wallet NWC Service Pubkey): ${foundWalletAuthEvent.pubKey}');
-        // Content of kind:13194 is ignored as per user feedback.
 
         // Construct the NWC URI as per user's explicit instructions:
         // walletPubKey is the author of the 13194 event
