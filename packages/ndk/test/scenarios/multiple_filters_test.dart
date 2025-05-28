@@ -108,7 +108,7 @@ void main() async {
             eventVerifier: MockEventVerifier(),
             cache: cacheManager,
             engine: NdkEngine.JIT,
-            bootstrapRelays: [relay0.url, relay1.url],
+            bootstrapRelays: [relay1.url],
           ),
         );
 
@@ -137,6 +137,8 @@ void main() async {
           Filter(kinds: [1]),
           Filter(kinds: [2]),
           Filter(authors: [key1.publicKey, key2.publicKey], kinds: [3]),
+        ], explicitRelays: [
+          relay0.url
         ]);
 
         profiler.checkpoint('query sub send ');
@@ -149,7 +151,7 @@ void main() async {
         });
 
         // insert new events
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 1000));
 
         relay0.sendEvent(
           event: textNote(key1, 1),
