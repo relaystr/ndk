@@ -63,7 +63,7 @@ class JitEngine with Logger implements NetworkEngine {
 
     /// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
     /// user can provide multiple filters
-    for (var filter in requestState.unresolvedFilters) {
+    for (final filter in requestState.unresolvedFilters) {
       // filter different types of filters/requests because each requires a different strategy
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
@@ -121,7 +121,7 @@ class JitEngine with Logger implements NetworkEngine {
         connectedRelays: relayManagerLight.connectedRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .toList(),
-        closeOnEOSE: requestState.request.closeOnEOSE,
+        closeOnEOSE: ndkRequest.closeOnEOSE,
       );
     }
   }

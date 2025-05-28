@@ -276,7 +276,11 @@ class MockRelay {
 
   /// sends event on the websocket connection \
   /// if key pair is provided, it will sign the event
-  void sendEvent(Nip01Event event, KeyPair? keyPair) {
+  void sendEvent({
+    required Nip01Event event,
+    required String subId,
+    KeyPair? keyPair,
+  }) {
     if (_webSocket == null) {
       throw Exception("WebSocket is not connected");
     }
@@ -285,7 +289,7 @@ class MockRelay {
       event.sign(keyPair.privateKey!);
     }
 
-    _webSocket!.add(jsonEncode(["EVENT", event]));
+    _webSocket!.add(jsonEncode(["EVENT", subId, event]));
   }
 
   Future<void> stopServer() async {

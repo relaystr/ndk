@@ -16,7 +16,7 @@ void main() async {
     () {
       late MockRelay relay0;
       late MockRelay relay1;
-      late Ndk ndk;
+
       setUp(() async {
         relay0 = MockRelay(name: "relay 0", explicitPort: 5297);
         relay1 = MockRelay(name: "relay 1", explicitPort: 5298);
@@ -25,21 +25,9 @@ void main() async {
         await relay1.startServer();
 
         final cache = MemCacheManager();
-        final NdkConfig config = NdkConfig(
-          eventVerifier: MockEventVerifier(),
-          cache: cache,
-          bootstrapRelays: [relay0.url, relay1.url],
-          // logLevel: Logger.logLevels.trace,
-          ignoreRelays: [],
-        );
-
-        ndk = Ndk(config);
-
-        await ndk.relays.seedRelaysConnected;
       });
 
       tearDown(() async {
-        await ndk.destroy();
         await relay0.stopServer();
         await relay1.stopServer();
       });
@@ -56,6 +44,7 @@ void main() async {
             eventVerifier: MockEventVerifier(),
             cache: cacheManager,
             engine: NdkEngine.JIT,
+            bootstrapRelays: [relay0.url, relay1.url],
           ),
         );
 
@@ -123,7 +112,7 @@ void main() async {
           ),
         );
 
-        final queryResponse = ndk.requests.subscription(filters: [
+        final subResponse = ndk.requests.subscription(id: "mySubId", filters: [
           Filter(
             ids: [
               "ad6137b9a3dc4b393a41d745c483837cfd2379e22ec9916c487d6bd6cfe4b3b7",
@@ -146,11 +135,12 @@ void main() async {
             kinds: [10000],
           ),
           Filter(kinds: [1]),
+          Filter(kinds: [2]),
         ]);
 
         profiler.checkpoint('query sub send ');
 
-        queryResponse.stream.listen((event) {
+        subResponse.stream.listen((event) {
           profiler.checkpoint('got event ${event.id} of kind ${event.kind}');
         }, onDone: () {
           profiler.checkpoint('query done');
@@ -158,11 +148,28 @@ void main() async {
         });
 
         // insert new events
+        await Future.delayed(const Duration(milliseconds: 500));
+        relay0.sendEvent(
+          event: Nip01Event(
+              pubKey: key1.publicKey,
+              kind: 1,
+              tags: [],
+              content: "runntime conent"),
+          keyPair: key1,
+          subId: "mySubId",
+        );
 
-        // todo modify mock relay to allow adding text notes (or trigger sub event)
-        relay0.textNotes!.addAll(key2TextNotes);
+        relay0.sendEvent(
+          event: Nip01Event(
+              pubKey: key1.publicKey,
+              kind: 2,
+              tags: [],
+              content: "kind 2 content"),
+          keyPair: key1,
+          subId: "mySubId",
+        );
 
-        await queryResponse.future;
+        await subResponse.future;
       });
     },
   );
