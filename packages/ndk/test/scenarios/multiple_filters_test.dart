@@ -136,6 +136,7 @@ void main() async {
           ),
           Filter(kinds: [1]),
           Filter(kinds: [2]),
+          Filter(authors: [key1.publicKey, key2.publicKey], kinds: [3]),
         ]);
 
         profiler.checkpoint('query sub send ');
@@ -149,6 +150,12 @@ void main() async {
 
         // insert new events
         await Future.delayed(const Duration(milliseconds: 500));
+
+        relay0.sendEvent(
+          event: textNote(key1, 1),
+          keyPair: key1,
+          subId: "mySubId",
+        );
         relay0.sendEvent(
           event: Nip01Event(
               pubKey: key1.publicKey,
@@ -168,8 +175,17 @@ void main() async {
           keyPair: key1,
           subId: "mySubId",
         );
+        relay0.sendEvent(
+          event: Nip01Event(
+              pubKey: key1.publicKey,
+              kind: 3,
+              tags: [],
+              content: "kind 3 content"),
+          keyPair: key1,
+          subId: "mySubId",
+        );
 
-        await subResponse.future;
+        await Future.delayed(const Duration(seconds: 5));
       });
     },
   );
