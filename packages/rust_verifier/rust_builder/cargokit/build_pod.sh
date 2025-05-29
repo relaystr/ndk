@@ -56,3 +56,4 @@ sh "$BASEDIR/run_build_tool.sh" build-pod "$@"
 # attribute on custom build phase)
 ln -fs "$OBJROOT/XCBuildData/build.db" "${BUILT_PRODUCTS_DIR}/cargokit_phony"
 ln -fs "${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}" "${BUILT_PRODUCTS_DIR}/cargokit_phony_out"
+
