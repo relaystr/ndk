@@ -1,3 +1,8 @@
+## 0.1.7
+
+- flutter requirements
+- fix: LF line break issue
+
 ## 0.1.6
 
 - upgrade to flutter_rust_bridge 2.10.0
