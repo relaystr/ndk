@@ -30,7 +30,7 @@ dependencies:
   web_socket_client: ^0.2.1
   elliptic: ^0.3.11
   cryptography: ^2.7.0
-  meta: ^1.17.0
+  meta: ^1.16.0
   xxh3: ^1.2.0
   ascii_qr: ^1.0.1 # Add ascii_qr dependency
 
