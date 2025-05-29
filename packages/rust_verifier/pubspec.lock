@@ -546,12 +546,12 @@ packages:
     source: hosted
     version: "3.0.2"
   rust_lib_ndk:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       path: rust_builder
       relative: true
     source: path
-    version: "0.1.5"
+    version: "0.1.6"
   rxdart:
     dependency: transitive
     description:
