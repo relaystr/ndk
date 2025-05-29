@@ -88,14 +88,23 @@ class RelaySetsEngine implements NetworkEngine {
 
   // =====================================================================================
   Future<void> doRelayBroadcast(String relayUrl, Nip01Event nostrEvent) async {
-    bool connected = await _relayManager.reconnectRelay(relayUrl,
-        connectionSource: ConnectionSource.broadcastSpecific);
-    if (connected) {
-      _relayManager.registerRelayBroadcast(
-        eventToPublish: nostrEvent,
-        relayUrl: relayUrl,
-      );
+    _relayManager.registerRelayBroadcast(
+      eventToPublish: nostrEvent,
+      relayUrl: relayUrl,
+    );
+    bool connected = false;
+    Object? error;
+    try {
+      connected = await _relayManager.reconnectRelay(relayUrl,
+          connectionSource: ConnectionSource.broadcastSpecific);
+    } catch (e) {
+      Logger.log.w(
+          "Error during reconnectRelay for $relayUrl in doRelayBroadcast",
+          error: e);
+      error = e;
+    }
 
+    if (connected) {
       final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
       if (relayConnectivity != null) {
         _relayManager.send(
@@ -104,8 +113,11 @@ class RelaySetsEngine implements NetworkEngine {
               ClientMsgType.kEvent,
               event: nostrEvent,
             ));
+        return;
       }
     }
+    _relayManager.failBroadcast(
+        nostrEvent.id, relayUrl, "Could not connect to relay $relayUrl $error");
   }
 
   Future<void> doNostrRequestWithRelaySet(RequestState state,
