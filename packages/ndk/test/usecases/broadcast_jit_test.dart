@@ -227,9 +227,6 @@ void main() async {
           )
           .broadcastDoneFuture;
 
-      // wait for broadcast to be processed by relay
-      await Future.delayed(Duration(seconds: 1));
-
       List<Nip01Event> result = await ndk.requests.query(
         explicitRelays: [relay2.url],
         filters: [
