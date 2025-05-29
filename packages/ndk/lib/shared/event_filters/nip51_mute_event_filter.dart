@@ -16,11 +16,13 @@ class Nip51MuteEventFilter extends EventFilter {
     _mutedTags = muteList.hashtags
         .map((element) => element.value.trim().toLowerCase())
         .toList();
-    List<String> words = muteList.words.map((e) => e.value).toList();
+    List<String> words =
+        muteList.words.map((e) => e.value.toLowerCase()).toList();
     List<List<int>> treeWords = List.generate(words.length, (index) {
       var word = words[index];
       return word.codeUnits;
     });
+    _muteList = muteList;
     trieTree = buildTrieTree(treeWords, null);
   }
 
@@ -29,12 +31,15 @@ class Nip51MuteEventFilter extends EventFilter {
   }
 
   bool isMutedPubKey(String pubKey) {
-    return _muteList?.pubKeys.any((element) => element.value == pubKey) ?? false;
+    return _muteList?.pubKeys.any((element) => element.value == pubKey) ??
+        false;
   }
 
   bool hasMutedHashtag(Nip01Event event) {
     List<String> tTags = event.tTags;
-    return tTags.isNotEmpty && _mutedTags!=null && tTags.any((tag) => _mutedTags!.contains(tag));
+    return tTags.isNotEmpty &&
+        _mutedTags != null &&
+        tTags.any((tag) => _mutedTags!.contains(tag));
   }
 
   @override
