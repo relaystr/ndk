@@ -86,7 +86,14 @@ class RelaySetsEngine implements NetworkEngine {
     }
   }
 
-  // =====================================================================================
+  /// =====================================================================================
+  /// The flow:
+  /// 1) register broadcast in relay manager's global state,
+  ///     so that even failed to connect relays will be taken into account for broadcast done logic
+  /// 2) make sure the relay is connected by calling reconnect
+  /// 3) if connected was successfull send the event
+  /// 4) otherwise call failBroadcast in order to publish a RelayBroadcastResponse
+  ///   for that specific relay with an error message
   Future<void> doRelayBroadcast(String relayUrl, Nip01Event nostrEvent) async {
     _relayManager.registerRelayBroadcast(
       eventToPublish: nostrEvent,
