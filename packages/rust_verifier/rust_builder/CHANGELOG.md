@@ -1,3 +1,8 @@
+## 0.1.6
+
+- upgrade to flutter_rust_bridge 2.10.0
+- fix: issue with 3.32.0 https://github.com/irondash/cargokit/issues/93
+
 ## 0.1.5
 
 - rollback to flutter_rust_bridge 2.7.0
