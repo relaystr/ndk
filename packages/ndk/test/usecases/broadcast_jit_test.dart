@@ -16,7 +16,7 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 5095);
+      relay0 = MockRelay(name: "relay 0", explicitPort: 5085);
       await relay0.startServer(nip65s: {
         key0: Nip65(
             pubKey: key0.publicKey,
@@ -140,8 +140,8 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      relay1 = MockRelay(name: "relay 1", explicitPort: 5096);
-      relay2 = MockRelay(name: "relay 2", explicitPort: 5097);
+      relay1 = MockRelay(name: "relay 1", explicitPort: 5086);
+      relay2 = MockRelay(name: "relay 2", explicitPort: 5087);
       await relay1.startServer(nip65s: {
         key1: Nip65(
             pubKey: key1.publicKey,
