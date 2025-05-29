@@ -488,12 +488,7 @@ class RelayManager<T> {
       RequestState state, RelayConnectivity relayConnectivity) {
     /// recived everything, close the network controller
     if (state.didAllRequestsReceivedEOSE) {
-      Future.delayed(
-        Duration(milliseconds: 500),
-      ).then((_) {
-        state.networkController.close();
-      });
-
+      state.networkController.close();
       updateRelayConnectivity();
       return;
     }
