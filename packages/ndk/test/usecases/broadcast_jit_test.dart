@@ -231,7 +231,7 @@ void main() async {
       await Future.delayed(Duration(seconds: 1));
 
       List<Nip01Event> result = await ndk.requests.query(
-        explicitRelays: [relay2.url],
+        //explicitRelays: [relay2.url],
         filters: [
           Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
         ],
