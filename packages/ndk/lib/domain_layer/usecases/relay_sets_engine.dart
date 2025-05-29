@@ -87,6 +87,26 @@ class RelaySetsEngine implements NetworkEngine {
   }
 
   // =====================================================================================
+  Future<void> doRelayBroadcast(String relayUrl, Nip01Event nostrEvent) async {
+    bool connected = await _relayManager.reconnectRelay(relayUrl,
+        connectionSource: ConnectionSource.broadcastSpecific);
+    if (connected) {
+      _relayManager.registerRelayBroadcast(
+        eventToPublish: nostrEvent,
+        relayUrl: relayUrl,
+      );
+
+      final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
+      if (relayConnectivity != null) {
+        _relayManager.send(
+            relayConnectivity,
+            ClientMsg(
+              ClientMsgType.kEvent,
+              event: nostrEvent,
+            ));
+      }
+    }
+  }
 
   Future<void> doNostrRequestWithRelaySet(RequestState state,
       {bool splitRequestsByPubKeyMappings = true}) async {
@@ -208,32 +228,9 @@ class RelaySetsEngine implements NetworkEngine {
       }
 
       if (specificRelays != null) {
-        // check connectivity
         for (final relayUrl in specificRelays) {
-          if (_relayManager.isRelayConnected(relayUrl)) {
-            continue;
-          }
-          await _relayManager.connectRelay(
-              dirtyUrl: relayUrl,
-              connectionSource: ConnectionSource.broadcastSpecific);
-        }
-        // send out request
-        for (final relayUrl in specificRelays) {
-          _relayManager.registerRelayBroadcast(
-            eventToPublish: nostrEvent,
-            relayUrl: relayUrl,
-          );
-
-          final relayConnectivity =
-              _relayManager.getRelayConnectivity(relayUrl);
-          if (relayConnectivity != null) {
-            _relayManager.send(
-                relayConnectivity,
-                ClientMsg(
-                  ClientMsgType.kEvent,
-                  event: nostrEvent,
-                ));
-          }
+          // broadcast async
+          doRelayBroadcast(relayUrl, nostrEvent);
         }
         return;
       }
