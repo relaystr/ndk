@@ -32,6 +32,7 @@ void main() async {
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay0.url],
         ignoreRelays: [],
+        logLevel: Level.all,
       );
 
       ndk = Ndk(config);
@@ -225,6 +226,9 @@ void main() async {
             nostrEvent: event,
           )
           .broadcastDoneFuture;
+
+      // wait for broadcast to be processed by relay
+      await Future.delayed(Duration(seconds: 1));
 
       List<Nip01Event> result = await ndk.requests.query(
         explicitRelays: [relay2.url],
