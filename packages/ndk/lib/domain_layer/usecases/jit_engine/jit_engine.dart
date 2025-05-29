@@ -67,17 +67,17 @@ class JitEngine with Logger implements NetworkEngine {
     for (final filter in requestState.unresolvedFilters) {
       // filter different types of filters/requests because each requires a different strategy
 
-      // if (requestState.request.explicitRelays != null &&
-      //     requestState.request.explicitRelays!.isNotEmpty) {
-      //   RelayJitBlastSpecificStrategy.handleRequest(
-      //     relayManager: relayManagerLight,
-      //     requestState: requestState,
-      //     filter: filter,
-      //     closeOnEOSE: ndkRequest.closeOnEOSE,
-      //     specificRelays: requestState.request.explicitRelays!,
-      //   );
-      //   continue;
-      // }
+      if (requestState.request.explicitRelays != null &&
+          requestState.request.explicitRelays!.isNotEmpty) {
+        RelayJitRequestSpecificStrategy.handleRequest(
+          relayManager: relayManagerLight,
+          requestState: requestState,
+          filter: filter,
+          closeOnEOSE: ndkRequest.closeOnEOSE,
+          specificRelays: requestState.request.explicitRelays!,
+        );
+        continue;
+      }
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
         RelayJitPubkeyStrategy.handleRequest(

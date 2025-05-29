@@ -9,7 +9,7 @@ import '../../relay_manager.dart';
 ///
 /// blast the request to all connected relays without adding the pubkey to the relay
 ///
-class RelayJitBlastSpecificStrategy {
+class RelayJitRequestSpecificStrategy {
   /// send out the request
   static handleRequest({
     required RequestState requestState,
