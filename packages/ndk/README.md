@@ -18,6 +18,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - [zapstore](https://github.com/zapstore/zapstore)
 - [freeflow](https://github.com/nostrlabs-io/freeflow)
 - [hostr](https://github.com/sudonym-btc/hostr)
+- [bitblik](https://github.com/bitblik)
 
 # ➡️ [Getting Started 🔗](https://dart-nostr.com/guides/getting-started/)
 
