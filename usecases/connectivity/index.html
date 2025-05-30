@@ -9,24 +9,24 @@
     <meta name="generator" content="Retype 3.9.0">
 
     <!-- Primary Meta Tags -->
-    <title>Gossip</title>
-    <meta name="title" content="Gossip">
-    <meta name="description" content="The simplest characterization of the gossip model is just this: reading the posts of people you follow from the relays that they wrote them to.">
+    <title>Connectivity</title>
+    <meta name="title" content="Connectivity">
+    <meta name="description" content="Ndk uses exponential backoff to reconnect to relays. The reconnect interval might be too long when the app is in the background and then resumed. ">
 
     <!-- Canonical -->
-    <link rel="canonical" href="https://dart-nostr.com/concepts/gossip/">
+    <link rel="canonical" href="https://dart-nostr.com/usecases/connectivity/">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dart-nostr.com/concepts/gossip/">
-    <meta property="og:title" content="Gossip">
-    <meta property="og:description" content="The simplest characterization of the gossip model is just this: reading the posts of people you follow from the relays that they wrote them to.">
+    <meta property="og:url" content="https://dart-nostr.com/usecases/connectivity/">
+    <meta property="og:title" content="Connectivity">
+    <meta property="og:description" content="Ndk uses exponential backoff to reconnect to relays. The reconnect interval might be too long when the app is in the background and then resumed. ">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://dart-nostr.com/concepts/gossip/">
-    <meta property="twitter:title" content="Gossip">
-    <meta property="twitter:description" content="The simplest characterization of the gossip model is just this: reading the posts of people you follow from the relays that they wrote them to.">
+    <meta property="twitter:url" content="https://dart-nostr.com/usecases/connectivity/">
+    <meta property="twitter:title" content="Connectivity">
+    <meta property="twitter:description" content="Ndk uses exponential backoff to reconnect to relays. The reconnect interval might be too long when the app is in the background and then resumed. ">
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
@@ -35,6 +35,7 @@
     <script data-cfasync="false" src="../../resources/js/config.js?v=3.9.0.801919963350" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=3.9.0" data-turbo-eval="false" defer></script>
     <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.9.0.801919963350" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.9.0.801919963350" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -168,21 +169,65 @@
                                 <!-- Rendered if sidebar right is enabled -->
                                 <div id="docs-sidebar-right-toggle"></div>
                                 <!-- Page content  -->
-<doc-anchor-target id="gossip" class="break-words">
+<doc-anchor-target id="connectivity" class="break-words">
     <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#gossip">#</doc-anchor-trigger>
-        <span>Gossip</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#connectivity">#</doc-anchor-trigger>
+        <span>Connectivity</span>
     </h1>
 </doc-anchor-target>
-<doc-anchor-target id="gossipoutbox-model-of-relay-discovery-and-connectivity">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#gossipoutbox-model-of-relay-discovery-and-connectivity">#</doc-anchor-trigger>
-        <span>Gossip/outbox model of relay discovery and connectivity</span>
-    </h3>
+<p><span class="no-link inline-flex align-middle items-center justify-center font-medium leading-none whitespace-nowrap text-blue-600 bg-blue-100 h-6 px-2 text-xs rounded-md">
+    <span>high level</span>
+</span></p>
+<doc-anchor-target id="example">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#example">#</doc-anchor-trigger>
+        <span>Example</span>
+    </h2>
 </doc-anchor-target>
-<p>The simplest characterization of the gossip model is just this: <em>reading the posts of people you follow from the relays that they wrote them to.</em></p>
-<img src="https://mikedilger.com/gossip-model/gossip-model.png" style="width:400px; height:400px"/>
-<p>more details on <a href="https://mikedilger.com/gossip-model/">https://mikedilger.com/gossip-model/</a></p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre class="language-dart"><code v-pre class="language-dart">/// Stream&lt;Map&lt;String, RelayConnectivity&gt;&gt;
+/// key: relay url/identifier
+/// value: relay connectivity
+ndkInstance.connectivity.relayConnectivityChanges;
+
+
+/// forces all relays to reconnect \
+/// use this for faster reconnects based on your application/os connectivity \
+tryReconnect();
+</code></pre>
+</doc-codeblock></div>
+<div class="codeblock-wrapper"><doc-codeblock>
+<div class="codeblock-title">example in a flutter app</div>
+<pre class="language-dart"><code v-pre class="language-dart">  // listen to lifecycle changes
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+ 
+    switch (state) {
+      case AppLifecycleState.resumed:
+        // reconnect instantly when resuming
+        ndkInstance.connectivity.tryReconnect();
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        break;
+      case AppLifecycleState.detached:
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="when-to-use">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#when-to-use">#</doc-anchor-trigger>
+        <span>When to use</span>
+    </h2>
+</doc-anchor-target>
+<p>Ndk uses exponential backoff to reconnect to relays.<br />
+The reconnect interval might be too long when the app is in the background and then resumed. <br />
+You can instantly reconnect using the <code v-pre>tryReconnect()</code> method, as shown in the example above.</p>
+<p><code v-pre>relayConnectivityChanges</code> can be used to display connectivity status in the UI.</p>
 
                                 
                                 <!-- Required only on API pages -->
@@ -192,20 +237,20 @@
                             
                                 <nav class="print:hidden flex mt-14">
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../concepts/engines/jit_engine/">
+                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/broadcast/">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="mr-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19 11H7.41l5.29-5.29a.996.996 0 10-1.41-1.41l-7 7a1 1 0 000 1.42l7 7a1.024 1.024 0 001.42-.01.996.996 0 000-1.41L7.41 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                             <span>
                                                 <span class="block text-xs font-normal text-gray-400 dark:text-dark-400">Previous</span>
-                                                <span class="block mt-1">Relay JIT Engine</span>
+                                                <span class="block mt-1">Broadcast</span>
                                             </span>
                                         </a>
                                     </div>
                             
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../concepts/performance/">
+                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/domain-verification-(nip05)/">
                                             <span>
                                                 <span class="block text-xs font-normal text-right text-gray-400 dark:text-dark-400">Next</span>
-                                                <span class="block mt-1">Performance</span>
+                                                <span class="block mt-1">Domain verification (nip​05)</span>
                                             </span>
                                             <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                         </a>
@@ -249,6 +294,6 @@
 
     <div id="docs-overlay-target"></div>
 
-    <script data-cfasync="false">window.__DOCS__ = { "title": "Gossip", level: 2, icon: "file", hasPrism: false, hasMermaid: false, hasMath: false, tocDepth: 23 }</script>
+    <script data-cfasync="false">window.__DOCS__ = { "title": "Connectivity", level: 2, icon: "file", hasPrism: true, hasMermaid: false, hasMath: false, tocDepth: 23 }</script>
 </body>
 </html>

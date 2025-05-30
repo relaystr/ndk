@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.8.1.799954618769">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.9.0.801919963350">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 3.8.1">
+    <meta name="generator" content="Retype 3.9.0">
 
     <!-- Primary Meta Tags -->
     <title>Zaps</title>
@@ -28,14 +28,14 @@
     <meta property="twitter:title" content="Zaps">
     <meta property="twitter:description" content="You need a nostr+walletconnect://... uri from your NWC wallet service provider.">
 
-    <script data-cfasync="false">(function () { var el = document.documentElement, m = localStorage.getItem("doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
+    <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=3.8.1.799954618769" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=3.9.0.801919963350" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=3.8.1.799954618769" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=3.8.1" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.8.1.799954618769" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.8.1.799954618769" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=3.9.0.801919963350" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=3.9.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.9.0.801919963350" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.9.0.801919963350" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -52,7 +52,7 @@
                     <div class="flex items-center px-2 md:px-6">
                         <a id="docs-site-logo" href="../../" class="flex items-center leading-snug text-2xl">
                             <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                        </a><span class="hidden px-2 py-1 ml-4 text-sm font-semibold leading-none text-root-logo-label-text bg-root-logo-label-bg rounded-sm md:inline-block">v0.3.2</span>
+                        </a><span class="hidden mt-1 px-2 py-1 ml-4 text-xs font-semibold leading-none text-root-logo-label-text bg-root-logo-label-bg rounded-md md:inline-block">v0.3.2</span>
                     </div>
         
                     <span class="hidden h-8 border-r md:inline-block dark:border-dark-650"></span>
@@ -186,40 +186,40 @@
 </doc-anchor-target>
 <div class="codeblock-wrapper"><doc-codeblock>
 <div class="codeblock-title">zap, receipt</div>
-<pre class="language-dart"><code v-pre class="language-dart">  final amount = 21;
-  final lnurl = &quot;opensats@vlt.ge&quot;;
-  final comment = &quot;enjoy this zap from NDK&quot;;
+<pre class="language-dart"><code v-pre class="language-dart">final amount = 21;
+final lnurl = &quot;opensats@vlt.ge&quot;;
+final comment = &quot;enjoy this zap from NDK&quot;;
 
-  ZapResponse response = await ndk.zaps.zap(
-      nwcConnection: connection,
-      lnurl: lnurl,
-      comment: comment,
-      amountSats: amount,
-      fetchZapReceipt: true,
-      signer: Bip340EventSigner(
-          privateKey: key.privateKey, publicKey: key.publicKey),
-      relays: [&quot;wss://relay.damus.io&quot;],
-      pubKey:
-          &quot;787338757fc25d65cd929394d5e7713cf43638e8d259e8dcf5c73b834eb851f2&quot;,
-      eventId:
-          &quot;906a0c5920b59e5754d0df5164bfea2a8d48ce5d73beaa1e854b3e6725e3288a&quot;);
+ZapResponse response = await ndk.zaps.zap(
+    nwcConnection: connection,
+    lnurl: lnurl,
+    comment: comment,
+    amountSats: amount,
+    fetchZapReceipt: true,
+    signer: Bip340EventSigner(
+        privateKey: key.privateKey, publicKey: key.publicKey),
+    relays: [&quot;wss://relay.damus.io&quot;],
+    pubKey:
+        &quot;787338757fc25d65cd929394d5e7713cf43638e8d259e8dcf5c73b834eb851f2&quot;,
+    eventId:
+        &quot;906a0c5920b59e5754d0df5164bfea2a8d48ce5d73beaa1e854b3e6725e3288a&quot;);
 
-  if (response.payInvoiceResponse != null &amp;&amp;
-      response.payInvoiceResponse!.preimage.isNotEmpty) {
-    print(
-        &quot;Payed $amount to $lnurl, preimage = ${response.payInvoiceResponse!.preimage}&quot;);
+if (response.payInvoiceResponse != null &amp;&amp;
+    response.payInvoiceResponse!.preimage != null &amp;&amp;
+    response.payInvoiceResponse!.preimage!.isNotEmpty) {
+  print(
+      &quot;Payed $amount to $lnurl, preimage = ${response.payInvoiceResponse!.preimage}&quot;);
 
-    print(&quot;Waiting for Zap Receipt...&quot;);
-    ZapReceipt? receipt = await response.zapReceipt;
-    if (receipt != null) {
-      print(&quot;Receipt : $receipt&quot;);
-    } else {
-      print(&quot;No Receipt&quot;);
-    }
+  print(&quot;Waiting for Zap Receipt...&quot;);
+  ZapReceipt? receipt = await response.zapReceipt;
+  if (receipt != null) {
+    print(&quot;Receipt : $receipt&quot;);
+  } else {
+    print(&quot;No Receipt&quot;);
   }
+}
 
-  await ndk.destroy();
-}</code></pre>
+await ndk.destroy();</code></pre>
 </doc-codeblock></div>
 <div class="codeblock-wrapper"><doc-codeblock>
 <div class="codeblock-title">receipts for profile</div>
@@ -290,7 +290,7 @@ print(&quot;${receipts.length} receipts, total of $eventSum sats&quot;);</code><
                             </div>
                             <footer class="clear-both">
                             
-                                <nav class="flex mt-14">
+                                <nav class="print:hidden flex mt-14">
                                     <div class="w-1/2">
                                         <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/user-relay-lists/">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="mr-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19 11H7.41l5.29-5.29a.996.996 0 10-1.41-1.41l-7 7a1 1 0 000 1.42l7 7a1.024 1.024 0 001.42-.01.996.996 0 000-1.41L7.41 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
@@ -314,13 +314,13 @@ print(&quot;${receipts.length} receipts, total of $eventSum sats&quot;);</code><
                             </footer>
                         </main>
                 
-                        <div class="border-t dark:border-dark-650 pt-6 mb-8">
-                            <footer class="flex flex-wrap items-center justify-between">
-                                <div>
+                        <div class="print:border-none border-t dark:border-dark-650 pt-6 mb-8">
+                            <footer class="flex flex-wrap items-center justify-between print:justify-center">
+                                <div class="print:hidden">
                                     <ul class="flex flex-wrap items-center text-sm">
                                     </ul>
                                 </div>
-                                <div class="docs-copyright py-2 text-gray-500 dark:text-dark-350 text-sm leading-relaxed"><p>© Copyright 2025. All rights reserved.</p></div>
+                                <div class="print:justify-center docs-copyright py-2 text-gray-500 dark:text-dark-350 text-sm leading-relaxed"><p>© Copyright 2025. All rights reserved.</p></div>
                             </footer>
                         </div>
                     </div>
