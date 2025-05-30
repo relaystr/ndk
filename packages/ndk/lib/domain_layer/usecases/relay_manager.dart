@@ -333,6 +333,21 @@ class RelayManager<T> {
     }
   }
 
+  /// use this to signal a failed broadcast
+  void failBroadcast(String nostrEventId, String relay, String msg) {
+    if (globalState.inFlightBroadcasts.containsKey(nostrEventId)) {
+      globalState.inFlightBroadcasts[nostrEventId]?.networkController.add(
+        RelayBroadcastResponse(
+          relayUrl: relay,
+          okReceived: false,
+          broadcastSuccessful: false,
+          msg: msg,
+        ),
+      );
+    }
+  }
+
+
   void _startListeningToSocket(RelayConnectivity relayConnectivity) {
     relayConnectivity.listen((message) {
       _handleIncomingMessage(
