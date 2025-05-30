@@ -117,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: 'Metadata'),
       const Tab(text: 'Relays'),
       const Tab(text: nwcTabName), // Use the constant
-      const Tab(text: 'Zaps'),
+      // const Tab(text: 'Zaps'),
       const Tab(text: "Blossom"),
       // if (amberAvailable) const Tab(text: 'Amber'), // Conditionally add Amber tab
     ];
@@ -127,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage>
       metadata(ndk, context), // Pass context, assuming metadata is a function
       const RelaysPage(),
       const NwcPage(),
-      const ZapsPage(),
+      // const ZapsPage(),
       BlossomMediaPage(ndk: ndk),
       // if (amberAvailable) const AmberPage(), // Conditionally add Amber page
     ];

@@ -6,7 +6,7 @@ icon: server
 
 ## Example
 
-:::code source="../../packages/ndk/test/relays/relay_sets_test.dart" language="dart" range="245-260" title="" :::
+:::code source="../../packages/ndk/test/relays/relay_sets_test.dart" language="dart" range="229-260" title="" :::
 
 ## When to use
 
