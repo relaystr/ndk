@@ -1,3 +1,8 @@
+## 0.2.4
+
+ - upgrade to ndk 0.4.0
+ - dependency updates
+
 ## 0.2.3
 - fix loadEvents when empty pubKeys
 

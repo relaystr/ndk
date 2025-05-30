@@ -1,8 +1,29 @@
+## 0.4.0
+
+- feat: nip 59 gift wrap
+- feat: tlv decode nip19
+- feat: search usecase
+- feat: relayConnectivityChanges usecase
+- feat: Add settleDeadline field to NwcNotification
+- feat: Nip51 mute list event filterenhancementNew feature or request
+- feat: NWC hold invoice support
+- feat: Support NWC Primal Wallet specific behaviorenhancement
+- fix: breaking realtime updates with multiple filters
+- fix: add support for multiple filters on RELAYS_SET engine
+- fix: Add NWC useETagForEachRequest & ignoreCapabilitiesCheck to connect
+- fix: Fix connection to a bad relay blocking event delivery
+- fix: Connection to a bad relay blocking broadcastenhancement
+- fix: Filter with ids breaks realtime updatesbug
+- fix: rust dependency with latest flutter version
+- updated dependencies
+
 ## 0.3.2
+
 - improvement: add NWC get_budget method support
 - improvement: adds percent consider broadcast done
 
 ## 0.3.1
+
 - improvement: generic filter tags
 - fix: blossom parsing issues
 - fix: log invalid signed events

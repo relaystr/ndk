@@ -1,3 +1,7 @@
+## 0.4.0
+
+ - new builder to support flutter 3.32.0
+
 ## 0.3.1
 - rollback to flutter_rust_bridge to 2.7.0
 
