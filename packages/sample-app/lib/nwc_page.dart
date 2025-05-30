@@ -305,9 +305,9 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
             // Let's parse the URI string that the button *intends* to launch
             // to extract the necessary _pending values.
             // The existing code for the URI is:
-            String appName = "Yana"; // Example from existing code
+            String appName = "NDK Demo"; // Example from existing code
             String appIcon =
-                "https%3A%2F%2Fyana.do%2Fimages%2Flogo-new.png"; // Example
+                "https%3A%2F%2Flogowik.com%2Fcontent%2Fuploads%2Fimages%2Fflutter5786.jpg"; // Example
             String methods =
                 "get_info get_balance get_budget make_invoice pay_invoice lookup_invoice list_transactions sign_message make_hold_invoice cancel_hold_invoice settle_hold_invoice"; // Example
             String discoveryRelay =
