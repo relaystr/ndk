@@ -73,37 +73,38 @@ void main() async {
 
     test('query simple event by id',
         timeout: const Timeout(Duration(seconds: 3)), () async {
-          MockRelay relay1 =
+      MockRelay relay1 =
           MockRelay(name: "relay 1", explicitPort: 3900, signEvents: false);
-          await relay1.startServer(textNotes: key1TextNotes);
+      await relay1.startServer(textNotes: key1TextNotes);
 
-          final cache = MemCacheManager();
+      final cache = MemCacheManager();
 
-          final ndk = Ndk(
-            NdkConfig(
-                eventVerifier: Bip340EventVerifier(),
-                cache: cache,
-                engine: NdkEngine.RELAY_SETS,
-                bootstrapRelays: [relay1.url]),
-          );
-          await ndk.relays.seedRelaysConnected;
+      final ndk = Ndk(
+        NdkConfig(
+            eventVerifier: Bip340EventVerifier(),
+            cache: cache,
+            engine: NdkEngine.RELAY_SETS,
+            bootstrapRelays: [relay1.url]),
+      );
+      await ndk.relays.seedRelaysConnected;
 
-          final response = ndk.requests.query(filters: [
-            Filter(ids: [key1TextNotes[key1]!.id])
-          ]);
+      final response = ndk.requests.query(filters: [
+        Filter(ids: [key1TextNotes[key1]!.id])
+      ]);
 
-          await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
+      await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
 
-          await cache.saveEvent(key1TextNotes[key1]!);
+      await cache.saveEvent(key1TextNotes[key1]!);
 
-          final response2 = ndk.requests.query(filters: [
-            Filter(ids: [key1TextNotes[key1]!.id])
-          ]);
+      final response2 = ndk.requests.query(filters: [
+        Filter(ids: [key1TextNotes[key1]!.id])
+      ]);
 
-          await expectLater(response2.stream, emitsInAnyOrder(key1TextNotes.values));
+      await expectLater(
+          response2.stream, emitsInAnyOrder(key1TextNotes.values));
 
-          await relay1.stopServer();
-        });
+      await relay1.stopServer();
+    });
     // ================================================================================================
 
     test('verify signatures of events', () async {

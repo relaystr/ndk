@@ -84,9 +84,10 @@ void main() async {
       final query = ndk.requests.query(
           // explicitRelays: [relay1.url],
           filters: [
-        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]),
-        Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key2.publicKey])
-      ]);
+            Filter(
+                kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]),
+            Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key2.publicKey])
+          ]);
 
       await expectLater(query.stream, emitsInAnyOrder(textNotes.values));
 
@@ -112,9 +113,10 @@ void main() async {
           .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
       final query = ndk.requests.query(
-        // explicitRelays: [relay1.url],
+          // explicitRelays: [relay1.url],
           filters: [
-            Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]),
+            Filter(
+                kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]),
             Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key2.publicKey])
           ]);
 

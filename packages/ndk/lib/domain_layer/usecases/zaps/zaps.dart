@@ -131,7 +131,9 @@ class Zaps {
     try {
       final payResponse = await _nwc.payInvoice(nwcConnection,
           invoice: invoice.invoice, timeout: Duration(seconds: 10));
-      if (payResponse.preimage!=null && payResponse.preimage!.isNotEmpty && payResponse.errorCode == null) {
+      if (payResponse.preimage != null &&
+          payResponse.preimage!.isNotEmpty &&
+          payResponse.errorCode == null) {
         final zapResponse = ZapResponse(payInvoiceResponse: payResponse);
         if (zapRequest != null &&
             fetchZapReceipt &&

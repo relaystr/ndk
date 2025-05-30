@@ -15,8 +15,8 @@ void main() async {
   // You need an NWC_URI env var or to replace with your NWC uri connection
   final nwcUri = Platform.environment['NWC_URI']!;
   final connection = await ndk.nwc.connect(
-      nwcUri,
-      useETagForEachRequest: false,
+    nwcUri,
+    useETagForEachRequest: false,
   );
 
   GetBalanceResponse balanceResponse = await ndk.nwc.getBalance(connection);

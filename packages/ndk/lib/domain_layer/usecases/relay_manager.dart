@@ -347,7 +347,6 @@ class RelayManager<T> {
     }
   }
 
-
   void _startListeningToSocket(RelayConnectivity relayConnectivity) {
     relayConnectivity.listen((message) {
       _handleIncomingMessage(

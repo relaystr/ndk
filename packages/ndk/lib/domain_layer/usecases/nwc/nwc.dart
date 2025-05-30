@@ -92,8 +92,7 @@ class Nwc {
 
         await _subscribeToNotificationsAndResponses(connection);
 
-        if (doGetInfoMethod &&
-            ignoreCapabilitiesCheck ||
+        if (doGetInfoMethod && ignoreCapabilitiesCheck ||
             connection.permissions.contains(NwcMethod.GET_INFO.name)) {
           try {
             await getInfo(connection).then((info) {
@@ -155,7 +154,7 @@ class Nwc {
     if (event.content != '') {
       var decrypted = Nip04.decrypt(
           connection.uri.secret, connection.uri.walletPubkey, event.content);
-      if (decrypted=='') {
+      if (decrypted == '') {
         decrypted = await Nip44.decryptMessage(
           event.content,
           connection.uri.secret,
@@ -218,8 +217,8 @@ class Nwc {
       data = json.decode(decrypted);
       if (data.containsKey("notification_type") &&
           data['notification'] != null) {
-        NwcNotification notification =
-            NwcNotification.fromMap(data["notification_type"],data['notification']);
+        NwcNotification notification = NwcNotification.fromMap(
+            data["notification_type"], data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
         // TODO: Define what to do when data has an error
@@ -239,8 +238,8 @@ class Nwc {
       data = json.decode(decrypted);
       if (data.containsKey("notification_type") &&
           data['notification'] != null) {
-        NwcNotification notification =
-            NwcNotification.fromMap(data["notification_type"],data['notification']);
+        NwcNotification notification = NwcNotification.fromMap(
+            data["notification_type"], data['notification']);
         connection.notificationStream.add(notification);
       } else if (data.containsKey("error")) {
         // TODO: Define what to do when data has an error
@@ -299,7 +298,7 @@ class Nwc {
           }
           _inflighRequestTimers.remove(event.id);
         }
-        if (dedicatedResponse!=null) {
+        if (dedicatedResponse != null) {
           await _requests.closeSubscription(dedicatedResponse.requestId);
         }
       });
@@ -320,8 +319,7 @@ class Nwc {
         completer.completeError(error);
         _inflighRequests.remove(event.id);
         _inflighRequestTimers.remove(event.id);
-        if (connection.useETagForEachRequest &&
-            dedicatedResponse != null) {
+        if (connection.useETagForEachRequest && dedicatedResponse != null) {
           await _requests.closeSubscription(dedicatedResponse.requestId);
         }
         Logger.log.w(error);
@@ -330,8 +328,7 @@ class Nwc {
 
     try {
       NwcResponse response = await completer.future;
-      if (connection.useETagForEachRequest &&
-          dedicatedResponse != null) {
+      if (connection.useETagForEachRequest && dedicatedResponse != null) {
         await _requests.closeSubscription(dedicatedResponse.requestId);
       }
       if (response is T) {
@@ -346,8 +343,7 @@ class Nwc {
       _inflighRequests.remove(event.id);
       _inflighRequestTimers.remove(event.id); // Ensure removal
 
-      if (connection.useETagForEachRequest &&
-          dedicatedResponse != null) {
+      if (connection.useETagForEachRequest && dedicatedResponse != null) {
         await _requests.closeSubscription(dedicatedResponse.requestId);
       }
       rethrow;
