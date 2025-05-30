@@ -29,7 +29,6 @@ class NwcConnection {
           .where((notification) => notification.isPaymentReceived)
           .asBroadcastStream();
 
-
   Stream<NwcNotification> get paymentsSentStream => notificationStream.stream
       .where((notification) => notification.isPaymentSent)
       .asBroadcastStream();

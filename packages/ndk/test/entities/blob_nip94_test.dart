@@ -89,7 +89,9 @@ void main() async {
       expect(result2.nip94!.dimenssions, equals("100"));
     });
 
-    test('NIP92 - should handle multiple repeated fields - image / thumb / fallback', () {
+    test(
+        'NIP92 - should handle multiple repeated fields - image / thumb / fallback',
+        () {
       final json = '''{
               "url": "https://nostr.download/aaaa.mp4",
               "duration": "24.293322",
@@ -109,7 +111,8 @@ void main() async {
       // replaced by second instance (BAD!!)
       // https://github.com/hzrd149/blossom/pull/60
       expect(result.fallback!.first, equals("https://nostr.download/bbbb.mp4"));
-      expect(result.thumbnail!.first, equals("https://nostr.download/thumb/aaaa.webp"));
+      expect(result.thumbnail!.first,
+          equals("https://nostr.download/thumb/aaaa.webp"));
     });
   });
 }

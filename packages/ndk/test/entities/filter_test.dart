@@ -190,6 +190,5 @@ void main() {
       filter.setTag('#y', ['ytag1']);
       expect(filter.getTag('y'), ['ytag1']);
     });
-
   });
 }

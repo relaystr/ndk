@@ -11,9 +11,7 @@ class PayInvoiceResponse extends NwcResponse {
   final int feesPaid;
 
   PayInvoiceResponse(
-      {this.preimage,
-      required super.resultType,
-      required this.feesPaid});
+      {this.preimage, required super.resultType, required this.feesPaid});
 
   factory PayInvoiceResponse.deserialize(Map<String, dynamic> input) {
     if (!input.containsKey('result')) {

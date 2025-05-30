@@ -7,8 +7,8 @@ void main() {
       expect(NwcMethod.fromPlaintext('get_info'), equals(NwcMethod.GET_INFO));
       expect(NwcMethod.fromPlaintext('get_balance'),
           equals(NwcMethod.GET_BALANCE));
-      expect(NwcMethod.fromPlaintext('get_budget'),
-          equals(NwcMethod.GET_BUDGET));
+      expect(
+          NwcMethod.fromPlaintext('get_budget'), equals(NwcMethod.GET_BUDGET));
       expect(NwcMethod.fromPlaintext('pay_invoice'),
           equals(NwcMethod.PAY_INVOICE));
       expect(NwcMethod.fromPlaintext('multi_pay_invoice'),

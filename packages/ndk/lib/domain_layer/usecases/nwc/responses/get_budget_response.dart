@@ -5,7 +5,6 @@ import 'nwc_response.dart';
 
 /// Represents the result of a 'get_budget' response.
 class GetBudgetResponse extends NwcResponse {
-
   final int usedBudget; // msats
   final int totalBudget; // msats
   final int? renewsAt; // timestamp
@@ -15,13 +14,12 @@ class GetBudgetResponse extends NwcResponse {
 
   int get totalBudgetSats => totalBudget ~/ 1000;
 
-  GetBudgetResponse({
-    required super.resultType,
-    required this.usedBudget,
-    required this.totalBudget,
-    this.renewsAt,
-    required this.renewalPeriod
-  });
+  GetBudgetResponse(
+      {required super.resultType,
+      required this.usedBudget,
+      required this.totalBudget,
+      this.renewsAt,
+      required this.renewalPeriod});
 
   factory GetBudgetResponse.deserialize(Map<String, dynamic> input) {
     if (!input.containsKey('result')) {
