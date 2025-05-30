@@ -106,6 +106,17 @@ class _MyHomePageState extends State<MyHomePage>
   // Define a constant for the NWC tab name to avoid magic strings
   static const String nwcTabName = 'NWC';
 
+  // Callback method to be passed to AccountsPage
+  void _handleAccountChange() {
+    if (mounted) {
+      setState(() {
+        // This will trigger a rebuild of _MyHomePageState,
+        // which in turn rebuilds its children, including the TabBarView
+        // and the metadata widget with the new account context.
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();

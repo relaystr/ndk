@@ -7,7 +7,9 @@ import 'package:ndk/shared/nips/nip19/nip19.dart' as nip19_decoder;
 import 'main.dart';
 
 class AccountsPage extends StatefulWidget {
-  const AccountsPage({super.key});
+  final VoidCallback? onAccountChanged;
+
+  const AccountsPage({super.key, this.onAccountChanged});
 
   @override
   State<AccountsPage> createState() => _AccountsPageState();
@@ -106,6 +108,7 @@ class _AccountsPageState extends State<AccountsPage> {
             pubkey: pubkeyHex, privkey: hexPrivkey); // Pass hex private key
         _loadCurrentUser();
         _loadAccounts();
+        widget.onAccountChanged?.call(); // Notify listener
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Logged in with private key!')),
         );
@@ -149,6 +152,7 @@ class _AccountsPageState extends State<AccountsPage> {
         ndk.accounts.loginPublicKey(pubkey: hexPubkey); // Use global ndk
         _loadCurrentUser();
         _loadAccounts();
+        widget.onAccountChanged?.call(); // Notify listener
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Logged in with public key (read-only)!')),
         );
@@ -208,6 +212,7 @@ class _AccountsPageState extends State<AccountsPage> {
         ndk.accounts.loginPublicKey(pubkey: hexPubkey); // Use global ndk
         _loadCurrentUser();
         _loadAccounts();
+        widget.onAccountChanged?.call(); // Notify listener
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
@@ -287,6 +292,8 @@ class _AccountsPageState extends State<AccountsPage> {
       // Further validation for hex format could be added here if necessary.
       ndk.accounts.switchAccount(pubkey: hexPubkey); // Corrected
       _loadCurrentUser();
+      // _loadAccounts(); // _loadCurrentUser already fetches metadata for the new user, and _loadAccounts might be redundant here unless specifically needed for the accounts list UI immediately.
+      widget.onAccountChanged?.call(); // Notify listener
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Switched to $pubkey')),
       );
@@ -301,6 +308,7 @@ class _AccountsPageState extends State<AccountsPage> {
     ndk.accounts.logout(); // Corrected, it's not async
     _loadCurrentUser();
     _loadAccounts(); // This will now reflect that no user is active
+    widget.onAccountChanged?.call(); // Notify listener
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Logged out')),
     );
