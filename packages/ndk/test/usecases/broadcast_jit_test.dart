@@ -1,3 +1,4 @@
+import 'package:logger/logger.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -16,7 +17,7 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 5095);
+      relay0 = MockRelay(name: "relay 0", explicitPort: 5085);
       await relay0.startServer(nip65s: {
         key0: Nip65(
             pubKey: key0.publicKey,
@@ -31,6 +32,7 @@ void main() async {
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay0.url],
         ignoreRelays: [],
+        logLevel: Level.all,
       );
 
       ndk = Ndk(config);
@@ -140,8 +142,8 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      relay1 = MockRelay(name: "relay 1", explicitPort: 5096);
-      relay2 = MockRelay(name: "relay 2", explicitPort: 5097);
+      relay1 = MockRelay(name: "relay 1", explicitPort: 5086);
+      relay2 = MockRelay(name: "relay 2", explicitPort: 5087);
       await relay1.startServer(nip65s: {
         key1: Nip65(
             pubKey: key1.publicKey,
@@ -156,22 +158,27 @@ void main() async {
         cache: cache,
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay1.url],
+        //logLevel: Level.all,
         ignoreRelays: [],
       );
 
       ndk = Ndk(config);
 
       // own
-      cache.saveUserRelayList(UserRelayList.fromNip65(Nip65(
-          pubKey: key1.publicKey,
-          relays: {relay1.url: ReadWriteMarker.readWrite},
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)));
+      await cache.saveUserRelayList(UserRelayList.fromNip65(
+        Nip65(
+            pubKey: key1.publicKey,
+            relays: {relay1.url: ReadWriteMarker.readWrite},
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000),
+      ));
 
       // other
-      cache.saveUserRelayList(UserRelayList.fromNip65(Nip65(
-          pubKey: keyOther.publicKey,
-          relays: {relay2.url: ReadWriteMarker.readWrite},
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)));
+      await cache.saveUserRelayList(UserRelayList.fromNip65(
+        Nip65(
+            pubKey: keyOther.publicKey,
+            relays: {relay2.url: ReadWriteMarker.readWrite},
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000),
+      ));
       await ndk.relays.seedRelaysConnected;
     });
 
@@ -205,6 +212,7 @@ void main() async {
     test('broadcast JIT - other read', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
       Nip01Event event = Nip01Event(
           pubKey: key1.publicKey,
           kind: Nip01Event.kTextNodeKind,
@@ -212,6 +220,7 @@ void main() async {
             ["p", keyOther.publicKey]
           ],
           content: "hi other");
+
       await ndk.broadcast
           .broadcast(
             nostrEvent: event,
@@ -219,6 +228,7 @@ void main() async {
           .broadcastDoneFuture;
 
       List<Nip01Event> result = await ndk.requests.query(
+        name: "other read",
         explicitRelays: [relay2.url],
         filters: [
           Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])

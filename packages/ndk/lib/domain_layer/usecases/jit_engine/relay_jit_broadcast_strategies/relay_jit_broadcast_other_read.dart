@@ -55,13 +55,29 @@ class RelayJitBroadcastOtherReadStrategy {
       toCheckRelays: myWriteRelayUrls,
     );
 
+    // register relay broadcast
+    for (final relayUrl in myWriteRelayUrls) {
+      relayManager.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relayUrl,
+      );
+    }
+
     // connect missing relays
     final couldNotConnectRelays = await connectRelays(
-      connectedRelays: connectedRelays,
       relayManager: relayManager,
       relaysToConnect: notConnectedRelays,
       connectionSource: ConnectionSource.broadcastOther,
     );
+
+    // deregister relays that failed to connect
+    for (final failedRelay in couldNotConnectRelays) {
+      relayManager.failBroadcast(
+        eventToPublish.id,
+        failedRelay,
+        "connection failed",
+      );
+    }
 
     // list of relays without the failed ones
     final List<String> actualBroadcastList = myWriteRelayUrls
@@ -78,11 +94,6 @@ class RelayJitBroadcastOtherReadStrategy {
       final relay = relayManager.connectedRelays
           .firstWhere((element) => element.url == relayUrl);
 
-      // register relay broadcast
-      relayManager.registerRelayBroadcast(
-        eventToPublish: eventToPublish,
-        relayUrl: relay.url,
-      );
       relayManager.send(relay, myClientMsg);
     }
 

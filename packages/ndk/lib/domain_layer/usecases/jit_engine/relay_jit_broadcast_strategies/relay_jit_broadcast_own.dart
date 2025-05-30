@@ -50,7 +50,6 @@ class RelayJitBroadcastOutboxStrategy {
 
     // connect missing relays
     final couldNotConnectRelays = await connectRelays(
-      connectedRelays: connectedRelays,
       relaysToConnect: notConnectedRelays,
       connectionSource: ConnectionSource.broadcastOwn,
       relayManager: relayManager,

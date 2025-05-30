@@ -19,6 +19,7 @@ import 'relay_jit_broadcast_strategies/relay_jit_broadcast_specific.dart';
 import 'relay_jit_request_strategies/relay_jit_blast_all_strategy.dart';
 import 'relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import '../relay_manager.dart';
+import 'relay_jit_request_strategies/relay_jit_specific_strategy.dart';
 
 /// Just In Time Network Engine
 /// This engine is responsible for handling all nostr network requests
@@ -63,8 +64,20 @@ class JitEngine with Logger implements NetworkEngine {
 
     /// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
     /// user can provide multiple filters
-    for (var filter in requestState.unresolvedFilters) {
+    for (final filter in requestState.unresolvedFilters) {
       // filter different types of filters/requests because each requires a different strategy
+
+      if (requestState.request.explicitRelays != null &&
+          requestState.request.explicitRelays!.isNotEmpty) {
+        RelayJitRequestSpecificStrategy.handleRequest(
+          relayManager: relayManagerLight,
+          requestState: requestState,
+          filter: filter,
+          closeOnEOSE: ndkRequest.closeOnEOSE,
+          specificRelays: requestState.request.explicitRelays!,
+        );
+        continue;
+      }
 
       if ((filter.authors != null && filter.authors!.isNotEmpty)) {
         RelayJitPubkeyStrategy.handleRequest(
@@ -121,7 +134,7 @@ class JitEngine with Logger implements NetworkEngine {
         connectedRelays: relayManagerLight.connectedRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .toList(),
-        closeOnEOSE: requestState.request.closeOnEOSE,
+        closeOnEOSE: ndkRequest.closeOnEOSE,
       );
     }
   }
