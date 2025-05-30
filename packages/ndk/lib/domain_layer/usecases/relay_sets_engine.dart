@@ -86,7 +86,46 @@ class RelaySetsEngine implements NetworkEngine {
     }
   }
 
-  // =====================================================================================
+  /// =====================================================================================
+  /// The flow:
+  /// 1) register broadcast in relay manager's global state,
+  ///     so that even failed to connect relays will be taken into account for broadcast done logic
+  /// 2) make sure the relay is connected by calling reconnect
+  /// 3) if connected was successfull send the event
+  /// 4) otherwise call failBroadcast in order to publish a RelayBroadcastResponse
+  ///   for that specific relay with an error message
+  Future<void> doRelayBroadcast(String relayUrl, Nip01Event nostrEvent) async {
+    _relayManager.registerRelayBroadcast(
+      eventToPublish: nostrEvent,
+      relayUrl: relayUrl,
+    );
+    bool connected = false;
+    Object? error;
+    try {
+      connected = await _relayManager.reconnectRelay(relayUrl,
+          connectionSource: ConnectionSource.broadcastSpecific);
+    } catch (e) {
+      Logger.log.w(
+          "Error during reconnectRelay for $relayUrl in doRelayBroadcast",
+          error: e);
+      error = e;
+    }
+
+    if (connected) {
+      final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
+      if (relayConnectivity != null) {
+        _relayManager.send(
+            relayConnectivity,
+            ClientMsg(
+              ClientMsgType.kEvent,
+              event: nostrEvent,
+            ));
+        return;
+      }
+    }
+    _relayManager.failBroadcast(
+        nostrEvent.id, relayUrl, "Could not connect to relay $relayUrl $error");
+  }
 
   Future<void> doNostrRequestWithRelaySet(RequestState state,
       {bool splitRequestsByPubKeyMappings = true}) async {
@@ -208,32 +247,9 @@ class RelaySetsEngine implements NetworkEngine {
       }
 
       if (specificRelays != null) {
-        // check connectivity
         for (final relayUrl in specificRelays) {
-          if (_relayManager.isRelayConnected(relayUrl)) {
-            continue;
-          }
-          await _relayManager.connectRelay(
-              dirtyUrl: relayUrl,
-              connectionSource: ConnectionSource.broadcastSpecific);
-        }
-        // send out request
-        for (final relayUrl in specificRelays) {
-          _relayManager.registerRelayBroadcast(
-            eventToPublish: nostrEvent,
-            relayUrl: relayUrl,
-          );
-
-          final relayConnectivity =
-              _relayManager.getRelayConnectivity(relayUrl);
-          if (relayConnectivity != null) {
-            _relayManager.send(
-                relayConnectivity,
-                ClientMsg(
-                  ClientMsgType.kEvent,
-                  event: nostrEvent,
-                ));
-          }
+          // broadcast async
+          doRelayBroadcast(relayUrl, nostrEvent);
         }
         return;
       }
