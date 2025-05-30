@@ -70,6 +70,7 @@ class RelayJitBroadcastOtherReadStrategy {
       connectionSource: ConnectionSource.broadcastOther,
     );
 
+    // deregister relays that failed to connect
     for (final failedRelay in couldNotConnectRelays) {
       relayManager.failBroadcast(
         eventToPublish.id,
