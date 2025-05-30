@@ -30,9 +30,14 @@ class WebSocketClientNostrTransport implements NostrTransport {
           if (state == Reconnected() && onReconnect != null) {
             onReconnect.call();
           }
+          break;
         case Disconnected():
           completer = Completer();
           ready = completer.future;
+          break;
+        default:
+          Logger.log.w(
+              "${_websocketDS.url} connection state changed to unknown state: $state");
       }
     });
   }
