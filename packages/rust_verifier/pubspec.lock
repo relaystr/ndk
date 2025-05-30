@@ -459,12 +459,12 @@ packages:
     source: hosted
     version: "2.0.0"
   ndk:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.3.2"
+    version: "0.4.0"
   package_config:
     dependency: transitive
     description:
@@ -551,7 +551,7 @@ packages:
       path: rust_builder
       relative: true
     source: path
-    version: "0.1.6"
+    version: "0.1.7"
   rxdart:
     dependency: transitive
     description:
@@ -713,10 +713,10 @@ packages:
     dependency: transitive
     description:
       name: web_socket_client
-      sha256: "0ec5230852349191188c013112e4d2be03e3fc83dbe80139ead9bf3a136e53b5"
+      sha256: "394789177aa3bc1b7b071622a1dbf52a4631d7ce23c555c39bb2523e92316b07"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.5"
+    version: "0.2.1"
   webdriver:
     dependency: transitive
     description:

@@ -20,6 +20,7 @@ dependencies:
     sdk: flutter
   flutter_rust_bridge: 2.10.0
   rust_lib_ndk: ^0.1.7
+  ndk: ^0.4.0
 
 #dependency_overrides:
 #  rust_lib_ndk:
