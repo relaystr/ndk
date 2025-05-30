@@ -3,7 +3,7 @@ output: .retype
 url: dart-nostr.com
 branding:
   title: NDK
-  label: v0.3.2
+  label: v0.4.0
 links:
 - text: pub.dev
   link: https://pub.dev/packages/ndk
