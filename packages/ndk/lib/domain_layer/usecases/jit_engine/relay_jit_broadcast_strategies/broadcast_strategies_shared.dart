@@ -26,8 +26,6 @@ List<String> checkConnectionStatus({
 /// [returns] list of relays where the connection failed
 Future<List<String>> connectRelays({
   required List<String> relaysToConnect,
-  required List<RelayConnectivity<JitEngineRelayConnectivityData>>
-      connectedRelays,
   required RelayManager relayManager,
   required ConnectionSource connectionSource,
 }) async {

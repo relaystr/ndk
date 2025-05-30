@@ -65,7 +65,6 @@ class RelayJitBroadcastOtherReadStrategy {
 
     // connect missing relays
     final couldNotConnectRelays = await connectRelays(
-      connectedRelays: connectedRelays,
       relayManager: relayManager,
       relaysToConnect: notConnectedRelays,
       connectionSource: ConnectionSource.broadcastOther,
