@@ -21,8 +21,15 @@ class Nip51List {
   static const int kRelaySet = 30002;
   static const int kBookmarksSet = 30003;
   static const int kCurationSet = 30004;
+  static const int kCurationVideoSet = 30005;
+  static const int kKindMuteSet = 30007;
   static const int kInterestsSet = 30015;
   static const int kEmojisSet = 30030;
+  static const int kReleaseArtifactSet = 30063;
+  static const int kAppCurationSet = 30267;
+  static const int kCalendar = 31924;
+  static const int kStarterPacks = 39089;
+  static const int kStarterPacksMedia = 39092;
 
   static const String kRelay = "relay";
   static const String kPubkey = "p";
@@ -47,8 +54,15 @@ class Nip51List {
     kRelaySet,
     kBookmarksSet,
     kCurationSet,
+    kCurationVideoSet,
+    kKindMuteSet,
     kInterestsSet,
-    kEmojisSet
+    kEmojisSet,
+    kReleaseArtifactSet,
+    kAppCurationSet,
+    kCalendar,
+    kStarterPacks,
+    kStarterPacksMedia,
   ];
 
   static const List<String> kPossibleTags = [
