@@ -71,12 +71,14 @@ class Lists {
     return list;
   }
 
-  Future<Nip51Set?> _getCachedNip51RelaySet(
+  /// gets set by name with the specified signer
+  Future<Nip51Set?> _getCachedSetByName(
     String name,
     EventSigner signer,
+    int kind,
   ) async {
-    List<Nip01Event>? events = await _cacheManager.loadEvents(
-        pubKeys: [signer.getPublicKey()], kinds: [Nip51List.kRelaySet]);
+    List<Nip01Event>? events = await _cacheManager
+        .loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
     events = events.where((event) {
       if (event.getDtag() != null && event.getDtag() == name) {
         return true;
@@ -91,19 +93,49 @@ class Lists {
         : null;
   }
 
-  /// return single nip51 set that match given name
+  /// use getSetByName instead
+  @Deprecated("use getSetByName instead")
   Future<Nip51Set?> getSingleNip51RelaySet(
     String name,
     EventSigner signer, {
     bool forceRefresh = false,
   }) async {
-    Nip51Set? relaySet = await _getCachedNip51RelaySet(name, signer);
+    return getSetByName(
+      name: name,
+      kind: Nip51List.kRelaySet,
+      customSigner: signer,
+    );
+  }
+
+  /// [name] name of the set \
+  /// [kind] kind of the set @see Nip51List class \
+  /// [customSigner] optional, logged in account used per default \
+  /// [forceRefresh] skip cache \
+  /// get a set by name identifier (d tag) for the logged in pubkey (or signer)
+  Future<Nip51Set?> getSetByName({
+    required String name,
+    required int kind,
+    EventSigner? customSigner,
+    bool forceRefresh = false,
+  }) async {
+    final EventSigner signer;
+
+    if (customSigner != null) {
+      signer = customSigner;
+    } else {
+      if (_accounts.isNotLoggedIn) {
+        throw Exception("getSetByName() no account");
+      }
+      signer = _accounts.getLoggedAccount()!.signer;
+    }
+
+    Nip51Set? relaySet = await _getCachedSetByName(name, signer, kind);
     if (relaySet == null || forceRefresh) {
       Nip51Set? newRelaySet;
       await for (final event in _requests.query(filters: [
         Filter(
           authors: [signer.getPublicKey()],
-          kinds: [Nip51List.kRelaySet],
+          kinds: [kind],
           tags: {
             "#d": [name]
           },
@@ -128,9 +160,56 @@ class Lists {
     return relaySet;
   }
 
+  /// get a nip51 set
+  Stream<Iterable<Nip51Set>?> _getSets(
+    int kind,
+    EventSigner signer, {
+    bool forceRefresh = false,
+  }) {
+    final relaySets = <String, Nip51Set>{};
+
+    return _requests
+        .query(
+          filters: [
+            Filter(
+              authors: [signer.getPublicKey()],
+              kinds: [kind],
+            )
+          ],
+          cacheRead: !forceRefresh,
+        )
+        .stream
+        .where((event) => event.getDtag() != null)
+        .asyncMap((event) async {
+          final dtag = event.getDtag()!;
+          final existingSet = relaySets[dtag];
+
+          if (existingSet == null || existingSet.createdAt < event.createdAt) {
+            final newSet = await Nip51Set.fromEvent(event, signer);
+            if (newSet != null) {
+              await _cacheManager.saveEvent(event);
+              relaySets[newSet.name] = newSet;
+              return relaySets.values;
+            }
+          }
+          return null;
+        })
+        .where((sets) => sets != null);
+  }
+
+  Stream<Iterable<Nip51Set>?> getPublicSets({
+    required int kind,
+    required String publicKey,
+    bool forceRefresh = false,
+  }) {
+    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    return _getSets(kind, mySigner, forceRefresh: forceRefresh);
+  }
+
   // coverage:ignore-start
 
   /// return list of all nip51 relay sets that match a given kind
+  @Deprecated("use getSet() instead")
   Future<List<Nip51Set>?> getNip51RelaySets(
     int kind,
     EventSigner signer, {
@@ -166,7 +245,9 @@ class Lists {
     // return [];
   }
 
-  /// return single public nip51 set that match given name and pubkey
+  /// return single public nip51 set that match given name and pubkey \
+  /// use getSetByName instead
+  @Deprecated("use getSetByName instead")
   Future<Nip51Set?> getSinglePublicNip51RelaySet({
     required String name,
     required String publicKey,
@@ -177,6 +258,8 @@ class Lists {
     return getSingleNip51RelaySet(name, mySigner, forceRefresh: forceRefresh);
   }
 
+  /// use getPublicSets() instead
+  @Deprecated("use getPublicSets() instead")
   Future<List<Nip51Set>?> getPublicNip51RelaySets({
     required int kind,
     required String publicKey,
