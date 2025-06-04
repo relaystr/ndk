@@ -30,6 +30,12 @@ class Lists {
         _broadcast = broadcast,
         _accounts = accounts;
 
+  EventSigner? get _eventSigner {
+    return _accounts.getLoggedAccount()?.signer;
+  }
+
+  ///* lists *///
+
   Future<Nip51List?> _getCachedNip51List(int kind, EventSigner signer) async {
     List<Nip01Event>? events = await _cacheManager
         .loadEvents(pubKeys: [signer.getPublicKey()], kinds: [kind]);
@@ -73,6 +79,95 @@ class Lists {
     return list;
   }
 
+  /// adds element to list
+  Future<Nip51List> addElementToList({
+    required int kind,
+    required String tag,
+    required String value,
+    Iterable<String>? broadcastRelays,
+    bool private = false,
+  }) async {
+    if (_eventSigner == null) {
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
+    }
+    Nip51List? list = await getSingleNip51List(
+      kind,
+      _eventSigner!,
+      forceRefresh: true,
+    );
+    list ??= Nip51List(
+        kind: kind,
+        pubKey: _eventSigner!.getPublicKey(),
+        createdAt: Helpers.now,
+        elements: []);
+    list.addElement(tag, value, private);
+    list.createdAt = Helpers.now;
+    Nip01Event event = await list.toEvent(_eventSigner);
+
+    final broadcastResponse = _broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: broadcastRelays,
+      customSigner: _eventSigner,
+    );
+    await broadcastResponse.broadcastDoneFuture;
+
+    List<Nip01Event>? events = await _cacheManager
+        .loadEvents(pubKeys: [_eventSigner!.getPublicKey()], kinds: [kind]);
+    for (var event in events) {
+      _cacheManager.removeEvent(event.id);
+    }
+    await _cacheManager.saveEvent(event);
+    return list;
+  }
+
+  /// removes entry from list
+  Future<Nip51List?> removeElementFromList({
+    required int kind,
+    required String tag,
+    required String value,
+    Iterable<String>? broadcastRelays,
+  }) async {
+    if (_eventSigner == null) {
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
+    }
+    Nip51List? list = await getSingleNip51List(
+      kind,
+      _eventSigner!,
+      forceRefresh: true,
+    );
+    if (list == null || list.elements.isEmpty) {
+      list = Nip51List(
+          kind: kind,
+          pubKey: _eventSigner!.getPublicKey(),
+          createdAt: Helpers.now,
+          elements: []);
+    }
+    if (list.elements.isNotEmpty) {
+      list.removeElement(tag, value);
+      list.createdAt = Helpers.now;
+      Nip01Event event = await list.toEvent(_eventSigner);
+
+      final broadcastResponse = _broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: broadcastRelays,
+        customSigner: _eventSigner,
+      );
+      await broadcastResponse.broadcastDoneFuture;
+
+      List<Nip01Event>? events = await _cacheManager
+          .loadEvents(pubKeys: [_eventSigner!.getPublicKey()], kinds: [kind]);
+      for (var event in events) {
+        _cacheManager.removeEvent(event.id);
+      }
+      await _cacheManager.saveEvent(event);
+    }
+    return list;
+  }
+
+  ///* sets *///
+
   /// gets set by name with the specified signer
   Future<Nip51Set?> _getCachedSetByName(
     String name,
@@ -95,25 +190,50 @@ class Lists {
         : null;
   }
 
-  /// use getSetByName instead
-  @Deprecated("use getSetByName instead")
-  Future<Nip51Set?> getSingleNip51RelaySet(
-    String name,
+  /// get a nip51 set
+  Stream<Iterable<Nip51Set>?> _getSets(
+    int kind,
     EventSigner signer, {
     bool forceRefresh = false,
-  }) async {
-    return getSetByName(
-      name: name,
-      kind: Nip51List.kRelaySet,
-      customSigner: signer,
-    );
+  }) {
+    final relaySets = <String, Nip51Set>{};
+
+    return _requests
+        .query(
+          filters: [
+            Filter(
+              authors: [signer.getPublicKey()],
+              kinds: [kind],
+            )
+          ],
+          cacheRead: !forceRefresh,
+        )
+        .stream
+        .where((event) => event.getDtag() != null)
+        .asyncMap((event) async {
+          final dtag = event.getDtag()!;
+          final existingSet = relaySets[dtag];
+
+          if (existingSet == null || existingSet.createdAt < event.createdAt) {
+            final newSet = await Nip51Set.fromEvent(event, signer);
+            if (newSet != null) {
+              await _cacheManager.saveEvent(event);
+              relaySets[newSet.name] = newSet;
+              return relaySets.values;
+            }
+          }
+          return null;
+        })
+        .where((sets) => sets != null)
+        // emit nothing to distinguis from loading
+        .defaultIfEmpty(<Nip51Set>[]);
   }
 
+  /// get a set by name identifier (d tag) for the logged in pubkey (or signer)
   /// [name] name of the set \
   /// [kind] kind of the set @see Nip51List class \
   /// [customSigner] optional, logged in account used per default \
-  /// [forceRefresh] skip cache \
-  /// get a set by name identifier (d tag) for the logged in pubkey (or signer)
+  /// [forceRefresh] skip cache
   Future<Nip51Set?> getSetByName({
     required String name,
     required int kind,
@@ -162,46 +282,9 @@ class Lists {
     return relaySet;
   }
 
-  /// get a nip51 set
-  Stream<Iterable<Nip51Set>?> _getSets(
-    int kind,
-    EventSigner signer, {
-    bool forceRefresh = false,
-  }) {
-    final relaySets = <String, Nip51Set>{};
-
-    return _requests
-        .query(
-          filters: [
-            Filter(
-              authors: [signer.getPublicKey()],
-              kinds: [kind],
-            )
-          ],
-          cacheRead: !forceRefresh,
-        )
-        .stream
-        .where((event) => event.getDtag() != null)
-        .asyncMap((event) async {
-          final dtag = event.getDtag()!;
-          final existingSet = relaySets[dtag];
-
-          if (existingSet == null || existingSet.createdAt < event.createdAt) {
-            final newSet = await Nip51Set.fromEvent(event, signer);
-            if (newSet != null) {
-              await _cacheManager.saveEvent(event);
-              relaySets[newSet.name] = newSet;
-              return relaySets.values;
-            }
-          }
-          return null;
-        })
-        .where((sets) => sets != null)
-        // emit nothing to distinguis from loading
-        .defaultIfEmpty(<Nip51Set>[]);
-  }
-
-  /// returns the public sets of a given pubkey
+  /// returns the public sets of a given pubkey \
+  /// [kind] list type
+  /// [publicKey] of user
   Stream<Iterable<Nip51Set>?> getPublicSets({
     required int kind,
     required String publicKey,
@@ -211,7 +294,131 @@ class Lists {
     return _getSets(kind, mySigner, forceRefresh: forceRefresh);
   }
 
-  // coverage:ignore-start
+  /// add element to set, \
+  /// if the set does not exist it gets created \
+  /// [name] of the set \
+  /// [tag] type of the element to add \
+  /// [value] your element \
+  /// [kind] type of the set \
+  /// [private] if the value is private
+  Future<Nip51Set?> addElementToSet({
+    required String name,
+    required String tag,
+    required String value,
+    required int kind,
+    bool private = false,
+    Iterable<String>? specificRelays,
+  }) async {
+    Nip51Set? set =
+        await getSetByName(name: name, kind: kind, forceRefresh: true);
+    set ??= Nip51Set(
+        name: name,
+        pubKey: _eventSigner!.getPublicKey(),
+        kind: Nip51List.kRelaySet,
+        createdAt: Helpers.now,
+        elements: []);
+    set.addElement(tag, value, private);
+    set.createdAt = Helpers.now;
+    Nip01Event event = await set.toEvent(_eventSigner);
+
+    final broadcastResponse = _broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: specificRelays,
+      customSigner: _eventSigner,
+    );
+    await broadcastResponse.broadcastDoneFuture;
+
+    List<Nip01Event>? events = await _cacheManager
+        .loadEvents(pubKeys: [_eventSigner!.getPublicKey()], kinds: [kind]);
+    events = events.where((event) {
+      if (event.getDtag() != null && event.getDtag() == name) {
+        return true;
+      }
+      return false;
+    }).toList();
+    for (final event in events) {
+      _cacheManager.removeEvent(event.id);
+    }
+
+    await _cacheManager.saveEvent(event);
+    return set;
+  }
+
+  /// removes element from set, \
+  /// [name] of the set \
+  /// [tag] type of the element to remove \
+  /// [value] your element \
+  /// [kind] type of the set \
+  /// [private] if the value is private
+  Future<Nip51Set?> removeElementFromSet({
+    required String name,
+    required String value,
+    required String tag,
+    required int kind,
+    bool private = false,
+    Iterable<String>? specificRelays,
+  }) async {
+    if (_eventSigner == null) {
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
+    }
+    Nip51Set? mySet = await getSetByName(
+      name: name,
+      kind: kind,
+      forceRefresh: true,
+    );
+    if ((mySet == null || mySet.allRelays.isEmpty)) {
+      mySet = Nip51Set(
+          name: name,
+          kind: Nip51List.kRelaySet,
+          pubKey: _eventSigner!.getPublicKey(),
+          createdAt: Helpers.now,
+          elements: []);
+    }
+    if (mySet != null) {
+      mySet.removeElement(tag, value);
+      mySet.createdAt = Helpers.now;
+      Nip01Event event = await mySet.toEvent(_eventSigner);
+
+      final broadcastResponse = _broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: specificRelays,
+        customSigner: _eventSigner,
+      );
+      await broadcastResponse.broadcastDoneFuture;
+
+      List<Nip01Event>? events = await _cacheManager.loadEvents(
+          pubKeys: [_eventSigner!.getPublicKey()],
+          kinds: [Nip51List.kRelaySet]);
+      events = events.where((event) {
+        if (event.getDtag() != null && event.getDtag() == name) {
+          return true;
+        }
+        return false;
+      }).toList();
+      for (var event in events) {
+        _cacheManager.removeEvent(event.id);
+      }
+      await _cacheManager.saveEvent(event);
+    }
+    return mySet;
+  }
+
+  //* deprecated methods *//
+
+  /// use getSetByName instead
+  @Deprecated("use getSetByName instead")
+  Future<Nip51Set?> getSingleNip51RelaySet(
+    String name,
+    EventSigner signer, {
+    bool forceRefresh = false,
+  }) async {
+    return getSetByName(
+      name: name,
+      kind: Nip51List.kRelaySet,
+      customSigner: signer,
+    );
+  }
 
   /// return list of all nip51 relay sets that match a given kind
   @Deprecated("use getSet() instead")
@@ -250,21 +457,7 @@ class Lists {
     // return [];
   }
 
-  /// return single public nip51 set that match given name and pubkey \
-  /// use getSetByName instead
-  @Deprecated("use getSetByName instead")
-  Future<Nip51Set?> getSinglePublicNip51RelaySet({
-    required String name,
-    required String publicKey,
-    bool forceRefresh = false,
-  }) async {
-    //? not perfect to use bip340 signer here
-    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
-    return getSingleNip51RelaySet(name, mySigner, forceRefresh: forceRefresh);
-  }
-
-  /// use getPublicSets() instead
-  @Deprecated("use getPublicSets() instead")
+  @Deprecated("use getPublicSets()")
   Future<List<Nip51Set>?> getPublicNip51RelaySets({
     required int kind,
     required String publicKey,
@@ -274,20 +467,13 @@ class Lists {
     return getNip51RelaySets(kind, mySigner, forceRefresh: forceRefresh);
   }
 
-  EventSigner? get _eventSigner {
-    return _accounts.getLoggedAccount()?.signer;
-  }
-
+  @Deprecated("use addElementToSet()")
   Future<Nip51Set> broadcastAddNip51SetRelay(
     String relayUrl,
     String name,
     Iterable<String>? broadcastRelays, {
     bool private = false,
   }) async {
-    if (_eventSigner == null) {
-      throw Exception(
-          "cannot broadcast private nip51 list without a signer that can sign");
-    }
     Nip51Set? list =
         await getSingleNip51RelaySet(name, _eventSigner!, forceRefresh: true);
     list ??= Nip51Set(
@@ -324,6 +510,7 @@ class Lists {
     return list;
   }
 
+  @Deprecated("use removeElementFromSet()")
   Future<Nip51Set?> broadcastRemoveNip51SetRelay(
     String relayUrl,
     String name,
@@ -380,6 +567,7 @@ class Lists {
     return relaySet;
   }
 
+  @Deprecated("use removeElementFromList()")
   Future<Nip51List> broadcastAddNip51ListRelay(
     int kind,
     String relayUrl,
@@ -418,6 +606,7 @@ class Lists {
     return list;
   }
 
+  @Deprecated("use removeElementFromSet()")
   Future<Nip51List?> broadcastRemoveNip51Relay(
     int kind,
     String relayUrl,
@@ -466,89 +655,37 @@ class Lists {
     return list;
   }
 
-  Future<Nip51List?> broadcastRemoveNip51ListElement(
-    int kind,
-    String tag,
-    String value,
-    Iterable<String>? broadcastRelays,
-  ) async {
-    if (_eventSigner == null) {
-      throw Exception(
-          "cannot broadcast private nip51 list without a signer that can sign");
-    }
-    Nip51List? list = await getSingleNip51List(
-      kind,
-      _eventSigner!,
-      forceRefresh: true,
-    );
-    if (list == null || list.elements.isEmpty) {
-      list = Nip51List(
-          kind: kind,
-          pubKey: _eventSigner!.getPublicKey(),
-          createdAt: Helpers.now,
-          elements: []);
-    }
-    if (list.elements.isNotEmpty) {
-      list.removeElement(tag, value);
-      list.createdAt = Helpers.now;
-      Nip01Event event = await list.toEvent(_eventSigner);
-
-      final broadcastResponse = _broadcast.broadcast(
-        nostrEvent: event,
-        specificRelays: broadcastRelays,
-        customSigner: _eventSigner,
-      );
-      await broadcastResponse.broadcastDoneFuture;
-
-      List<Nip01Event>? events = await _cacheManager
-          .loadEvents(pubKeys: [_eventSigner!.getPublicKey()], kinds: [kind]);
-      for (var event in events) {
-        _cacheManager.removeEvent(event.id);
-      }
-      await _cacheManager.saveEvent(event);
-    }
-    return list;
-  }
-
+  @Deprecated("use broadcastAddElementToList()")
   Future<Nip51List> broadcastAddNip51ListElement(
     int kind,
     String tag,
     String value,
     Iterable<String>? broadcastRelays, {
     bool private = false,
-  }) async {
-    if (_eventSigner == null) {
-      throw Exception(
-          "cannot broadcast private nip51 list without a signer that can sign");
-    }
-    Nip51List? list = await getSingleNip51List(
-      kind,
-      _eventSigner!,
-      forceRefresh: true,
-    );
-    list ??= Nip51List(
-        kind: kind,
-        pubKey: _eventSigner!.getPublicKey(),
-        createdAt: Helpers.now,
-        elements: []);
-    list.addElement(tag, value, private);
-    list.createdAt = Helpers.now;
-    Nip01Event event = await list.toEvent(_eventSigner);
-
-    final broadcastResponse = _broadcast.broadcast(
-      nostrEvent: event,
-      specificRelays: broadcastRelays,
-      customSigner: _eventSigner,
-    );
-    await broadcastResponse.broadcastDoneFuture;
-
-    List<Nip01Event>? events = await _cacheManager
-        .loadEvents(pubKeys: [_eventSigner!.getPublicKey()], kinds: [kind]);
-    for (var event in events) {
-      _cacheManager.removeEvent(event.id);
-    }
-    await _cacheManager.saveEvent(event);
-    return list;
+  }) {
+    return addElementToList(kind: kind, tag: tag, value: value);
   }
-  // coverage:ignore-end
+
+  @Deprecated("use broadcastRemoveElementFromList()")
+  Future<Nip51List?> broadcastRemoveNip51ListElement(
+    int kind,
+    String tag,
+    String value,
+    Iterable<String>? broadcastRelays,
+  ) async {
+    return removeElementFromList(kind: kind, tag: tag, value: value);
+  }
+
+  /// return single public nip51 set that match given name and pubkey \
+  /// use getSetByName instead
+  @Deprecated("use getSetByName instead")
+  Future<Nip51Set?> getSinglePublicNip51RelaySet({
+    required String name,
+    required String publicKey,
+    bool forceRefresh = false,
+  }) async {
+    //? not perfect to use bip340 signer here
+    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    return getSingleNip51RelaySet(name, mySigner, forceRefresh: forceRefresh);
+  }
 }
