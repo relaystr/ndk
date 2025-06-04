@@ -1,3 +1,5 @@
+import 'package:rxdart/rxdart.dart';
+
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
@@ -194,9 +196,12 @@ class Lists {
           }
           return null;
         })
-        .where((sets) => sets != null);
+        .where((sets) => sets != null)
+        // emit nothing to distinguis from loading
+        .defaultIfEmpty(<Nip51Set>[]);
   }
 
+  /// returns the public sets of a given pubkey
   Stream<Iterable<Nip51Set>?> getPublicSets({
     required int kind,
     required String publicKey,
