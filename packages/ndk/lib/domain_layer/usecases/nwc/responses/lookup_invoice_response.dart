@@ -74,4 +74,8 @@ class LookupInvoiceResponse extends NwcResponse {
       resultType: input['result_type'] as String,
     );
   }
+  @override
+  String toString() {
+    return 'LookupInvoiceResponse(type: $type, invoice: $invoice, description: $description, descriptionHash: $descriptionHash, preimage: $preimage, paymentHash: $paymentHash, amount: $amount, feesPaid: $feesPaid, createdAt: $createdAt, expiresAt: $expiresAt, settledAt: $settledAt, resultType: $resultType)';
+  }
 }
