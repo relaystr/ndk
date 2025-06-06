@@ -230,6 +230,7 @@ class Lists {
   }
 
   /// get a set by name identifier (d tag) for the logged in pubkey (or signer)
+  ///
   /// [name] name of the set \
   /// [kind] kind of the set @see Nip51List class \
   /// [customSigner] optional, logged in account used per default \
@@ -295,7 +296,8 @@ class Lists {
   }
 
   /// add element to set, \
-  /// if the set does not exist it gets created \
+  /// if the set does not exist it gets created
+  ///
   /// [name] of the set \
   /// [tag] type of the element to add \
   /// [value] your element \
@@ -344,7 +346,8 @@ class Lists {
     return set;
   }
 
-  /// removes element from set, \
+  /// removes element from set
+  ///
   /// [name] of the set \
   /// [tag] type of the element to remove \
   /// [value] your element \
@@ -402,6 +405,43 @@ class Lists {
       await _cacheManager.saveEvent(event);
     }
     return mySet;
+  }
+
+  /// overrides/creates a complete set \
+  /// be mindfull using this, instead look at add/removeElementFromSet()
+  ///
+  /// [set] set to be updated/created \
+  /// [kind] type of the set \
+  /// [specificRelays] optional, realays to broadcast to
+  Future<Nip51Set> setCompleteSet({
+    required Nip51Set set,
+    required int kind,
+    Iterable<String>? specificRelays,
+  }) async {
+    Nip01Event event = await set.toEvent(_eventSigner);
+
+    final broadcastResponse = _broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: specificRelays,
+      customSigner: _eventSigner,
+    );
+    await broadcastResponse.broadcastDoneFuture;
+
+    /// update cache, remove old set and set the new one
+    List<Nip01Event>? events = await _cacheManager
+        .loadEvents(pubKeys: [_eventSigner!.getPublicKey()], kinds: [kind]);
+    events = events.where((event) {
+      if (event.getDtag() != null && event.getDtag() == set.name) {
+        return true;
+      }
+      return false;
+    }).toList();
+    for (final event in events) {
+      _cacheManager.removeEvent(event.id);
+    }
+
+    await _cacheManager.saveEvent(event);
+    return set;
   }
 
   //* deprecated methods *//
