@@ -288,47 +288,88 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> removeAllNip05s() async {
-    // No operation for unimplemented method
+    await dbRdy;
+    final box = _objectBox.store.box<DbNip05>();
+    box.removeAll();
   }
 
   @override
   Future<void> removeAllRelaySets() async {
-    // No operation for unimplemented method
+    throw UnimplementedError(
+        'removeAllRelaySets is not implemented in DbObjectBox');
   }
 
   @override
   Future<void> removeAllUserRelayLists() async {
-    // No operation for unimplemented method
+    await dbRdy;
+    final userRelayListBox = _objectBox.store.box<DbUserRelayList>();
+    userRelayListBox.removeAll();
   }
 
   @override
   Future<void> removeContactList(String pubKey) async {
-    // No operation for unimplemented method
+    await dbRdy;
+    final contactListBox = _objectBox.store.box<DbContactList>();
+    final existingContact = contactListBox
+        .query(DbContactList_.pubKey.equals(pubKey))
+        .build()
+        .findFirst();
+    if (existingContact != null) {
+      contactListBox.remove(existingContact.dbId);
+    }
   }
 
   @override
   Future<void> removeEvent(String id) async {
-    // No operation for unimplemented method
+    await dbRdy;
+    final eventBox = _objectBox.store.box<DbNip01Event>();
+    final existingEvent =
+        eventBox.query(DbNip01Event_.nostrId.equals(id)).build().findFirst();
+    if (existingEvent != null) {
+      eventBox.remove(existingEvent.dbId);
+    }
   }
 
   @override
   Future<void> removeMetadata(String pubKey) async {
-    // No operation for unimplemented method
+    await dbRdy;
+    final metadataBox = _objectBox.store.box<DbMetadata>();
+    final existingMetadata = metadataBox
+        .query(DbMetadata_.pubKey.equals(pubKey))
+        .build()
+        .findFirst();
+    if (existingMetadata != null) {
+      metadataBox.remove(existingMetadata.dbId);
+    }
   }
 
   @override
   Future<void> removeNip05(String pubKey) async {
-    // No operation for unimplemented method
+    await dbRdy;
+    final box = _objectBox.store.box<DbNip05>();
+    final existing = box.query(DbNip05_.pubKey.equals(pubKey)).build().find();
+    if (existing.isNotEmpty) {
+      box.removeMany(existing.map((e) => e.dbId).toList());
+    }
   }
 
   @override
   Future<void> removeRelaySet(String name, String pubKey) async {
-    // No operation for unimplemented method
+    throw UnimplementedError(
+        'removeRelaySet is not implemented in DbObjectBox');
   }
 
   @override
   Future<void> removeUserRelayList(String pubKey) async {
-    // No operation for unimplemented method
+    await dbRdy;
+    final userRelayListBox = _objectBox.store.box<DbUserRelayList>();
+    final existingUserRelayList = userRelayListBox
+        .query(DbUserRelayList_.pubKey.equals(pubKey))
+        .build()
+        .findFirst();
+    if (existingUserRelayList != null) {
+      userRelayListBox.remove(existingUserRelayList.dbId);
+    }
   }
 
   @override
