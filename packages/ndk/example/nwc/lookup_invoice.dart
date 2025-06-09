@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:io';
+
 import 'package:ndk/ndk.dart';
 
 void main() async {
@@ -10,19 +11,14 @@ void main() async {
 
   // You need an NWC_URI env var or to replace with your NWC uri connection
   final nwcUri = Platform.environment['NWC_URI']!;
-  final connection = await ndk.nwc.connect(
-    nwcUri,
-    doGetInfoMethod: true,
-    timeout: Duration(seconds: 10)
-  );
+  final connection = await ndk.nwc.connect(nwcUri);
 
-  print("Connected, permissions: ${connection.permissions}");
+  // use an INVOICE env var or replace with your bolt11 invoice
+  final hash = Platform.environment['HASH']!;
 
-  if (connection.info != null) {
-    print("alias: ${connection.info!.alias}");
-    if (connection.info!.pubkey != null) {
-      print("pubkey: ${connection.info!.pubkey}");
-    }
-  }
+  final invoiceResponse = await ndk.nwc.lookupInvoice(connection, paymentHash: hash);
+
+  print("invoice response: $invoiceResponse");
+
   await ndk.destroy();
 }
