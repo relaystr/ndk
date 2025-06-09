@@ -420,6 +420,8 @@ class Lists {
   }) async {
     Nip01Event event = await set.toEvent(_eventSigner);
 
+    print(event);
+
     final broadcastResponse = _broadcast.broadcast(
       nostrEvent: event,
       specificRelays: specificRelays,
