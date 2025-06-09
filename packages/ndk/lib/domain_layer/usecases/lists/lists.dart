@@ -446,6 +446,44 @@ class Lists {
     return set;
   }
 
+  /// deletes a set by name (logged in pubkey) \
+  /// [name] name of the set \
+  /// [kind] type of the set \
+  /// [specificRelays] optional, relays to broadcast to
+  Future deleteSet({
+    required String name,
+    required int kind,
+    Iterable<String>? specificRelays,
+  }) async {
+    if (_eventSigner == null) {
+      throw Exception(
+          "cannot broadcast private nip51 list without a signer that can sign");
+    }
+
+    /// remove all from cache
+    List<Nip01Event>? eventsInCache = await _cacheManager
+        .loadEvents(pubKeys: [_eventSigner!.getPublicKey()], kinds: [kind]);
+    eventsInCache = eventsInCache.where((event) {
+      if (event.getDtag() != null && event.getDtag() == name) {
+        return true;
+      }
+      return false;
+    }).toList();
+
+    Nip51Set? set = await getSetByName(name: name, kind: kind);
+    if (set != null) {
+      final broadcastResponse = _broadcast.broadcastDeletion(
+        eventId: set.id,
+        customSigner: _eventSigner,
+      );
+      await broadcastResponse.broadcastDoneFuture;
+
+      for (final event in eventsInCache) {
+        await _cacheManager.removeEvent(event.id);
+      }
+    }
+  }
+
   //* deprecated methods *//
 
   /// use getSetByName instead
