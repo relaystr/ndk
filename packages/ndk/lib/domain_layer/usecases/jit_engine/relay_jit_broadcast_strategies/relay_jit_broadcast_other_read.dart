@@ -9,7 +9,6 @@ import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../relay_manager.dart';
 import '../../user_relay_lists/user_relay_lists.dart';
-import 'broadcast_strategies_shared.dart';
 
 /// broadcast to other read relays
 class RelayJitBroadcastOtherReadStrategy {
