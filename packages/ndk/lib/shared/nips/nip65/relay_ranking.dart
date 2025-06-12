@@ -7,118 +7,124 @@ RelayRankingResult rankRelays({
   required List<CoveragePubkey> searchingPubkeys,
   required ReadWriteMarker direction,
   required List<UserRelayList> eventData,
-  // usually to boost already connected relays
   List<String> boostRelays = const [],
-  // aka banned relays
   List<String> ignoreRelays = const [],
-  // on found value
   int foundBoost = 1,
-  // boost value
   int boost = 10,
 }) {
-  // string is the relay url
-  Map<String, TestRelayHit> relayHits = {};
+  // create a map of relay -> set of pubkeys it covers
+  Map<String, Set<String>> relayCoverage = {};
 
-  // string is the pubkey
-  Map<String, CoveragePubkey> searchingPubkeysMap = {
-    for (final e in searchingPubkeys) e.pubkey: e,
-  };
-
-  // track which pubkey-relay combinations already processed
-  Set<String> processedCombinations = {};
-
-  // count for each event data (pubkey)
-  for (final event in eventData) {
-    // not interested in this pubkey
-    if (searchingPubkeys.any((element) => element.pubkey == event.pubKey) ==
-        false) {
-      continue;
+  // build coverage map based on direction (read/write)
+  for (final userRelay in eventData) {
+    Iterable<String> relevantUrls;
+    if (direction.isRead) {
+      relevantUrls = userRelay.readUrls;
+    } else {
+      relevantUrls = userRelay.urls
+          .where((url) => userRelay.relays[url]?.isWrite ?? false);
     }
 
-    for (final relay in event.relays.keys) {
-      if (ignoreRelays.contains(relay)) {
-        continue;
-      }
-      // check for direction
-      if (!event.relays[relay]!.isPartialMatch(direction)) {
-        continue;
-      }
+    for (final relayUrl in relevantUrls) {
+      if (ignoreRelays.contains(relayUrl)) continue;
 
-      // create unique key for this pubkey-relay combination
-      String combinationKey = "${event.pubKey}:$relay";
-
-      // skip if we've already processed this combination
-      if (processedCombinations.contains(combinationKey)) {
-        continue;
-      }
-
-      // check if a new relay is needed
-      if (searchingPubkeysMap[event.pubKey]!.missingCoverage <= 0) {
-        continue;
-      }
-
-      // Mark this combination as processed
-      processedCombinations.add(combinationKey);
-
-      // check if relay is already in relayHits
-      if (relayHits.containsKey(relay)) {
-        relayHits[relay]!.hitPubkeys.add(event.pubKey);
-        relayHits[relay]!.score += foundBoost;
-      } else {
-        relayHits[relay] = TestRelayHit(
-          score: foundBoost,
-          hitPubkeys: [event.pubKey],
-        );
-      }
-      // decrease missing coverage
-      searchingPubkeysMap[event.pubKey]!.missingCoverage -= 1;
+      relayCoverage.putIfAbsent(relayUrl, () => <String>{});
+      relayCoverage[relayUrl]!.add(userRelay.pubKey);
     }
   }
 
-  // boost already connected relays
-  for (final relay in boostRelays) {
-    if (relayHits.containsKey(relay)) {
-      relayHits[relay]!.score += boost;
-    }
+  // track coverage needed for each pubkey
+  Map<String, int> remainingCoverage = {};
+  for (final cp in searchingPubkeys) {
+    remainingCoverage[cp.pubkey] = cp.desiredCoverage;
   }
 
-  // assemble result
-  List<RelayRanking> ranking = [];
+  List<RelayRanking> selectedRelays = [];
+
+  // greedy algorithm to find minimal set
+  while (remainingCoverage.values.any((coverage) => coverage > 0)) {
+    String? bestRelay;
+    int bestScore = 0;
+    Set<String> bestCoveredPubkeys = {};
+
+    // find relay that covers the most uncovered pubkeys
+    for (final relayUrl in relayCoverage.keys) {
+      Set<String> coveredPubkeys = {};
+      int score = 0;
+
+      for (final pubkey in relayCoverage[relayUrl]!) {
+        if ((remainingCoverage[pubkey] ?? 0) > 0) {
+          coveredPubkeys.add(pubkey);
+          score += 1;
+
+          // apply boost if this relay is in boost list
+          if (boostRelays.contains(relayUrl)) {
+            score += boost;
+          }
+        }
+      }
+
+      // apply found boost for relays already selected
+      if (selectedRelays.any((r) => r.relayUrl == relayUrl)) {
+        score += foundBoost;
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestRelay = relayUrl;
+        bestCoveredPubkeys = coveredPubkeys;
+      }
+    }
+
+    // if no relay can improve coverage, break
+    if (bestRelay == null || bestScore == 0) break;
+
+    // add the best relay to selection
+    List<CoveragePubkey> coveredPubkeyObjects = [];
+    for (final pubkey in bestCoveredPubkeys) {
+      if ((remainingCoverage[pubkey] ?? 0) > 0) {
+        coveredPubkeyObjects.add(
+            CoveragePubkey(pubkey, 1, 0) // This relay covers this pubkey once
+            );
+        remainingCoverage[pubkey] = remainingCoverage[pubkey]! - 1;
+      }
+    }
+
+    // check if this relay is already selected, if so update it
+    int existingIndex =
+        selectedRelays.indexWhere((r) => r.relayUrl == bestRelay);
+    if (existingIndex != -1) {
+      selectedRelays[existingIndex].score += bestScore;
+      selectedRelays[existingIndex].coveredPubkeys.addAll(coveredPubkeyObjects);
+    } else {
+      selectedRelays.add(RelayRanking(
+        relayUrl: bestRelay,
+        score: bestScore,
+        coveredPubkeys: coveredPubkeyObjects,
+      ));
+    }
+
+    // remove this relay from future consideration for this iteration
+    relayCoverage.remove(bestRelay);
+  }
+
+  // find pubkeys that couldn't be fully covered
   List<CoveragePubkey> notCoveredPubkeys = [];
-
-  // not covered pubkeys
-  for (final pubkey in searchingPubkeysMap.entries) {
-    if (pubkey.value.missingCoverage > 0) {
-      notCoveredPubkeys.add(pubkey.value);
+  for (final cp in searchingPubkeys) {
+    int remaining = remainingCoverage[cp.pubkey] ?? 0;
+    if (remaining > 0) {
+      notCoveredPubkeys
+          .add(CoveragePubkey(cp.pubkey, cp.desiredCoverage, remaining));
     }
   }
 
-  // populate ranking
-  for (final relayHit in relayHits.entries) {
-    if (relayHit.value.score > 0) {
-      ranking.add(
-        RelayRanking(
-          relayUrl: relayHit.key,
-          score: relayHit.value.score,
-          coveredPubkeys: searchingPubkeys
-              .where((element) =>
-                  relayHit.value.hitPubkeys.contains(element.pubkey))
-              .toList(),
-        ),
-      );
-    }
-  }
+  // sort relays by score
+  selectedRelays.sort((a, b) => b.score.compareTo(a.score));
 
   return RelayRankingResult(
-    ranking: ranking,
+    ranking: selectedRelays,
     notCoveredPubkeys: notCoveredPubkeys,
   );
-}
-
-class TestRelayHit {
-  int score = 0;
-  List<String> hitPubkeys = [];
-  TestRelayHit({required this.score, required this.hitPubkeys});
 }
 
 class RelayRankingResult {
