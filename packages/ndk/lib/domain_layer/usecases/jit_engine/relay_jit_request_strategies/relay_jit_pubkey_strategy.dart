@@ -342,5 +342,23 @@ class CoveragePubkey {
   int desiredCoverage;
   int missingCoverage;
 
-  CoveragePubkey(this.pubkey, this.desiredCoverage, this.missingCoverage);
+  CoveragePubkey(
+    this.pubkey,
+    this.desiredCoverage,
+    this.missingCoverage,
+  );
+
+  @override
+  operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is CoveragePubkey &&
+        other.pubkey == pubkey &&
+        other.desiredCoverage == desiredCoverage &&
+        other.missingCoverage == missingCoverage;
+  }
+
+  @override
+  int get hashCode =>
+      pubkey.hashCode ^ desiredCoverage.hashCode ^ missingCoverage.hashCode;
 }
