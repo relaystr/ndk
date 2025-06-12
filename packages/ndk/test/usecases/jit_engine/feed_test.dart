@@ -1,3 +1,4 @@
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -50,36 +51,51 @@ void main() async {
         ]);
 
         var nip65events = await nip65Response.stream.toList();
-        cacheManager.saveEvents(nip65events);
+        await cacheManager.saveEvents(nip65events);
 
-        cacheManager.loadEvents(
+        //UserRelayList.fromNip65(Nip65.fromEvent(nip65events))
+        final List<Nip65> nip65List =
+            nip65events.map((event) => Nip65.fromEvent(event)).toList();
+        final List<UserRelayList> userRelayLists =
+            nip65List.map((nip65) => UserRelayList.fromNip65(nip65)).toList();
+
+        await cacheManager.saveUserRelayLists(userRelayLists);
+
+        await cacheManager.loadEvents(
           pubKeys: myContactList.contacts,
           kinds: [Nip65.kKind],
         );
 
         developer.log('##################################################');
 
-        ndk.requests.query(name: "feed-test", filters: [
-          Filter(
-            authors: myContactList.contacts,
-            kinds: [Nip01Event.kTextNodeKind],
-            since:
-                (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 1,
-          ),
-        ]);
+        ndk.requests.query(
+          name: "feed-test",
+          filters: [
+            Filter(
+              authors: myContactList.contacts,
+              kinds: [Nip01Event.kTextNodeKind],
+              since:
+                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 1,
+            ),
+          ],
+          desiredCoverage: relayMinCountPerPubKey,
+        );
 
         await Future.delayed(const Duration(seconds: 5));
 
-        NdkResponse feedResponse2 =
-            ndk.requests.subscription(id: "feed-test2", filters: [
-          Filter(
-            limit: 100,
-            authors: myContactList.contacts,
-            kinds: [Nip01Event.kTextNodeKind],
-            since:
-                (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
-          ),
-        ]);
+        NdkResponse feedResponse2 = ndk.requests.subscription(
+          id: "feed-test2",
+          filters: [
+            Filter(
+              limit: 100,
+              authors: myContactList.contacts,
+              kinds: [Nip01Event.kTextNodeKind],
+              since:
+                  (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 60 * 60 * 4,
+            ),
+          ],
+          desiredCoverage: relayMinCountPerPubKey,
+        );
 
         List<Nip01Event> events = [];
         developer.log('waiting for events...');
@@ -92,6 +108,12 @@ void main() async {
         await Future.delayed(const Duration(seconds: 5));
 
         final t1 = DateTime.now();
+
+        for (final relay in ndk.relays.globalState.relays.values) {
+          print(
+            "Relay: ${relay.url} - ${relay.specificEngineData.assignedPubkeys.length} pubkeys",
+          );
+        }
 
         print(
             "BEST ${ndk.relays.globalState.relays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");

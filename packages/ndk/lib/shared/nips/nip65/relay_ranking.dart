@@ -21,19 +21,21 @@ RelayRankingResult rankRelays({
 
   // string is the pubkey
   Map<String, CoveragePubkey> searchingPubkeysMap = {
-    for (var e in searchingPubkeys) e.pubkey: e,
+    for (final e in searchingPubkeys) e.pubkey: e,
   };
 
-  // count for each event data (pubkey)
+  // track which pubkey-relay combinations already processed
+  Set<String> processedCombinations = {};
 
-  for (var event in eventData) {
+  // count for each event data (pubkey)
+  for (final event in eventData) {
     // not interested in this pubkey
     if (searchingPubkeys.any((element) => element.pubkey == event.pubKey) ==
         false) {
       continue;
     }
 
-    for (var relay in event.relays.keys) {
+    for (final relay in event.relays.keys) {
       if (ignoreRelays.contains(relay)) {
         continue;
       }
@@ -41,10 +43,22 @@ RelayRankingResult rankRelays({
       if (!event.relays[relay]!.isPartialMatch(direction)) {
         continue;
       }
+
+      // create unique key for this pubkey-relay combination
+      String combinationKey = "${event.pubKey}:$relay";
+
+      // skip if we've already processed this combination
+      if (processedCombinations.contains(combinationKey)) {
+        continue;
+      }
+
       // check if a new relay is needed
       if (searchingPubkeysMap[event.pubKey]!.missingCoverage <= 0) {
         continue;
       }
+
+      // Mark this combination as processed
+      processedCombinations.add(combinationKey);
 
       // check if relay is already in relayHits
       if (relayHits.containsKey(relay)) {
@@ -62,7 +76,7 @@ RelayRankingResult rankRelays({
   }
 
   // boost already connected relays
-  for (var relay in boostRelays) {
+  for (final relay in boostRelays) {
     if (relayHits.containsKey(relay)) {
       relayHits[relay]!.score += boost;
     }
@@ -73,14 +87,14 @@ RelayRankingResult rankRelays({
   List<CoveragePubkey> notCoveredPubkeys = [];
 
   // not covered pubkeys
-  for (var pubkey in searchingPubkeysMap.entries) {
+  for (final pubkey in searchingPubkeysMap.entries) {
     if (pubkey.value.missingCoverage > 0) {
       notCoveredPubkeys.add(pubkey.value);
     }
   }
 
   // populate ranking
-  for (var relayHit in relayHits.entries) {
+  for (final relayHit in relayHits.entries) {
     if (relayHit.value.score > 0) {
       ranking.add(
         RelayRanking(

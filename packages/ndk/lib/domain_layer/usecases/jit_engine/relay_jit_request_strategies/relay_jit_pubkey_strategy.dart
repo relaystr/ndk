@@ -34,7 +34,7 @@ import '../../user_relay_lists/user_relay_lists.dart';
 ///
 
 class RelayJitPubkeyStrategy with Logger {
-  static handleRequest({
+  static void handleRequest({
     required RequestState requestState,
     required GlobalState globalState,
 
@@ -307,6 +307,9 @@ void _sendRequestToSocket(
   GlobalState globalState,
   RelayManager relayManager,
 ) {
+  if (globalState.inFlightRequests[requestState.id] == null) {
+    globalState.inFlightRequests[requestState.id] = requestState;
+  }
   // link the request id to the relay
   relayManager.registerRelayRequest(
     reqId: requestState.id,
