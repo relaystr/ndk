@@ -34,7 +34,7 @@ import '../../user_relay_lists/user_relay_lists.dart';
 ///
 
 class RelayJitPubkeyStrategy with Logger {
-  static handleRequest({
+  static void handleRequest({
     required RequestState requestState,
     required GlobalState globalState,
 
@@ -307,6 +307,9 @@ void _sendRequestToSocket(
   GlobalState globalState,
   RelayManager relayManager,
 ) {
+  if (globalState.inFlightRequests[requestState.id] == null) {
+    globalState.inFlightRequests[requestState.id] = requestState;
+  }
   // link the request id to the relay
   relayManager.registerRelayRequest(
     reqId: requestState.id,
@@ -339,5 +342,23 @@ class CoveragePubkey {
   int desiredCoverage;
   int missingCoverage;
 
-  CoveragePubkey(this.pubkey, this.desiredCoverage, this.missingCoverage);
+  CoveragePubkey(
+    this.pubkey,
+    this.desiredCoverage,
+    this.missingCoverage,
+  );
+
+  @override
+  operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is CoveragePubkey &&
+        other.pubkey == pubkey &&
+        other.desiredCoverage == desiredCoverage &&
+        other.missingCoverage == missingCoverage;
+  }
+
+  @override
+  int get hashCode =>
+      pubkey.hashCode ^ desiredCoverage.hashCode ^ missingCoverage.hashCode;
 }

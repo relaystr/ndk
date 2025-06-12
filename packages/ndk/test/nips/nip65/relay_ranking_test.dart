@@ -66,17 +66,19 @@ void main() {
       for (var i = 0; i < 10; i++) {
         int foundPubkey = 0;
         for (var element in result.ranking) {
-          bool found = element.coveredPubkeys.contains(searchingPubkeys[i]);
-          if (found) {
-            foundPubkey++;
-          }
+          // Count how many times this pubkey appears in coveredPubkeys
+          foundPubkey += element.coveredPubkeys
+              .where((cp) => cp.pubkey == searchingPubkeys[i].pubkey)
+              .length;
         }
         expect(foundPubkey, 2);
       }
 
       // check that the notCoveredPubkeys are the ones that have no data
       for (var i = 10; i < 20; i++) {
-        expect(result.notCoveredPubkeys.contains(searchingPubkeys[i]), true);
+        bool foundInNotCovered = result.notCoveredPubkeys
+            .any((cp) => cp.pubkey == searchingPubkeys[i].pubkey);
+        expect(foundInNotCovered, true);
       }
     });
   });
