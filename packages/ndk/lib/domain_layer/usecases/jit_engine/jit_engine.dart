@@ -89,6 +89,7 @@ class JitEngine with Logger implements NetworkEngine {
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
+          bootstrapRelays: bootstrapRelays,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
@@ -108,6 +109,7 @@ class JitEngine with Logger implements NetworkEngine {
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
+          bootstrapRelays: bootstrapRelays,
           desiredCoverage: ndkRequest.desiredCoverage,
           closeOnEOSE: ndkRequest.closeOnEOSE,
           direction: ReadWriteMarker
@@ -126,7 +128,7 @@ class JitEngine with Logger implements NetworkEngine {
       //   throw UnimplementedError("ids filter not implemented yet");
       // }
 
-      /// unknown filter strategy, blast to all connected relays
+      /// unknown filter strategy, blast to all connected boostrap relays
       RelayJitBlastAllStrategy.handleRequest(
         relayManager: relayManagerLight,
         requestState: requestState,
@@ -134,6 +136,7 @@ class JitEngine with Logger implements NetworkEngine {
         connectedRelays: relayManagerLight.connectedRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .toList(),
+        bootstrapRelays: bootstrapRelays,
         closeOnEOSE: ndkRequest.closeOnEOSE,
       );
     }

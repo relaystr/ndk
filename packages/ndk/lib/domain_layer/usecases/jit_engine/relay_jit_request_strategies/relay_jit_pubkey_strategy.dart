@@ -42,6 +42,7 @@ class RelayJitPubkeyStrategy with Logger {
     required Filter filter,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
         connectedRelays,
+    required List<String> bootstrapRelays,
 
     /// used to get the nip65 data if its necessary to look for not covered pubkeys
     required CacheManager cacheManager,
@@ -133,6 +134,7 @@ class RelayJitPubkeyStrategy with Logger {
       filter: notFoundFilter,
       connectedRelays: connectedRelays,
       closeOnEOSE: closeOnEOSE,
+      bootstrapRelays: bootstrapRelays,
     );
   }
 
