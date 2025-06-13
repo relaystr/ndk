@@ -11,15 +11,18 @@ import '../../relay_manager.dart';
 ///
 class RelayJitBlastAllStrategy {
   /// send out the request
-  static handleRequest({
+  static void handleRequest({
     required RequestState requestState,
     required Filter filter,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
         connectedRelays,
     required bool closeOnEOSE,
     required RelayManager relayManager,
+    required List<String> bootstrapRelays,
   }) {
     for (final connectedRelay in connectedRelays) {
+      // skip if the relay is not in the bootstrap relays
+      if (!bootstrapRelays.contains(connectedRelay.url)) continue;
       final clientMsg = ClientMsg(
         ClientMsgType.kReq,
         id: requestState.id,
