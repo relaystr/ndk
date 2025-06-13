@@ -9,7 +9,6 @@ import '../../../entities/relay_connectivity.dart';
 import '../../../repositories/cache_manager.dart';
 import '../../relay_manager.dart';
 import '../../user_relay_lists/user_relay_lists.dart';
-import 'broadcast_strategies_shared.dart';
 
 /// broadcast to other read relays
 class RelayJitBroadcastOtherReadStrategy {
@@ -49,54 +48,53 @@ class RelayJitBroadcastOtherReadStrategy {
       myWriteRelayUrls.addAll(maxList);
     }
 
-    // check connection status
-    final notConnectedRelays = checkConnectionStatus(
-      connectedRelays: connectedRelays,
-      toCheckRelays: myWriteRelayUrls,
-    );
+    // function to send message to relay
+    void sendToRelay({
+      required RelayConnectivity relay,
+    }) {
+      final myClientMsg = ClientMsg(
+        ClientMsgType.kEvent,
+        event: eventToPublish,
+      );
+      relayManager.send(relay, myClientMsg);
+    }
 
-    // register relay broadcast
     for (final relayUrl in myWriteRelayUrls) {
+      // register relay broadcast
       relayManager.registerRelayBroadcast(
         eventToPublish: eventToPublish,
         relayUrl: relayUrl,
       );
+
+      final isConnected = relayManager.isRelayConnected(relayUrl);
+      if (isConnected) {
+        sendToRelay(
+          relay: connectedRelays.firstWhere(
+            (element) => element.url == relayUrl,
+          ),
+        );
+        continue;
+      }
+
+      relayManager
+          .connectRelay(
+        dirtyUrl: relayUrl,
+        connectionSource: ConnectionSource.broadcastOther,
+      )
+          .then((success) {
+        if (!success.first) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "connection failed",
+          );
+          return;
+        }
+        final relay = relayManager.connectedRelays
+            .firstWhere((element) => element.url == relayUrl);
+
+        sendToRelay(relay: relay);
+      });
     }
-
-    // connect missing relays
-    final couldNotConnectRelays = await connectRelays(
-      relayManager: relayManager,
-      relaysToConnect: notConnectedRelays,
-      connectionSource: ConnectionSource.broadcastOther,
-    );
-
-    // deregister relays that failed to connect
-    for (final failedRelay in couldNotConnectRelays) {
-      relayManager.failBroadcast(
-        eventToPublish.id,
-        failedRelay,
-        "connection failed",
-      );
-    }
-
-    // list of relays without the failed ones
-    final List<String> actualBroadcastList = myWriteRelayUrls
-        .where((element) => !couldNotConnectRelays.contains(element))
-        .toList();
-
-    final ClientMsg myClientMsg = ClientMsg(
-      ClientMsgType.kEvent,
-      event: eventToPublish,
-    );
-
-    // broadcast event
-    for (var relayUrl in actualBroadcastList) {
-      final relay = relayManager.connectedRelays
-          .firstWhere((element) => element.url == relayUrl);
-
-      relayManager.send(relay, myClientMsg);
-    }
-
-    return couldNotConnectRelays;
   }
 }
