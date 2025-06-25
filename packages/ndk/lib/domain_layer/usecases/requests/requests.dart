@@ -137,8 +137,11 @@ class Requests {
   }
 
   /// Closes a Nostr network subscription
-  Future<void> closeSubscription(String subId) async {
+  Future<void> closeSubscription(
+    String subId,
+  ) async {
     final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
+
     if (relayUrls == null) {
       Logger.log.w("no relay urls found for subscription $subId, cannot close");
       return;
@@ -219,11 +222,10 @@ class Requests {
       eventOutFilters: _eventOutFilters,
     )();
 
-    /// cleanup on close
-    state.stream.doOnDone(() {
-      _globalState.inFlightRequests.remove(state.id);
-    });
-    state.stream.doOnError((error, stacktrace) {
+    // cleanup on close
+    // use done future for replay subject
+    state.controller.done.then((_) {
+      // closeSubscription(state.id, devCalledFrom: "controller.done");
       _globalState.inFlightRequests.remove(state.id);
     });
 
