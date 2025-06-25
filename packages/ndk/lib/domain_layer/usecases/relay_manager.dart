@@ -142,6 +142,12 @@ class RelayManager<T> {
       updateRelayConnectivity();
       return Tuple(true, "");
     }
+
+    if (isRelayConnecting(url)) {
+      Logger.log.t("relay is already connecting: $url");
+      updateRelayConnectivity();
+      return Tuple(true, "relay is still connecting");
+    }
     RelayConnectivity? relayConnectivity = globalState.relays[url];
 
     try {
