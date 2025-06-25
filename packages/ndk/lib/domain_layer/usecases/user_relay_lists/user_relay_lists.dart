@@ -71,6 +71,7 @@ class UserRelayLists {
       try {
         await for (final event in (_requests.query(
 //                timeout: missingPubKeys.length > 1 ? 10 : 3,
+            name: "user-relay-lists",
             filters: [
               Filter(
                   authors: missingPubKeys,
