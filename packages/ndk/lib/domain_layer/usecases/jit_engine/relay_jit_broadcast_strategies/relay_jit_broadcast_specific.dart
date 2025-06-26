@@ -4,7 +4,6 @@ import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
 import '../../../entities/relay_connectivity.dart';
 import '../../relay_manager.dart';
-import 'broadcast_strategies_shared.dart';
 
 /// broadcast to specific relays
 class RelayJitBroadcastSpecificRelaysStrategy {
@@ -16,46 +15,52 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     required RelayManager relayManager,
     required List<String> specificRelays,
   }) async {
-    // check connection status
-    final notConnectedRelays = checkConnectionStatus(
-      connectedRelays: connectedRelays,
-      toCheckRelays: specificRelays,
-    );
-
-    // connect missing relays
-    final couldNotConnectRelays = await connectRelays(
-      relayManager: relayManager,
-      relaysToConnect: notConnectedRelays,
-      connectionSource: ConnectionSource.broadcastSpecific,
-    );
-
-    // list of relays without the failed ones
-    final List<String> actualBroadcastList = specificRelays
-        .where((element) => !couldNotConnectRelays.contains(element))
-        .toList();
-
-    final ClientMsg myClientMsg = ClientMsg(
-      ClientMsgType.kEvent,
-      event: eventToPublish,
-    );
-
-    // broadcast event
-    for (var relayUrl in actualBroadcastList) {
-      if (connectedRelays.isEmpty) {
-        throw Exception("No connected relays");
-      }
-
-      final relay = relayManager.connectedRelays
-          .firstWhere((element) => element.url == relayUrl);
-
-      relayManager.registerRelayBroadcast(
-        eventToPublish: eventToPublish,
-        relayUrl: relay.url,
+    void sendToRelay({
+      required RelayConnectivity relay,
+    }) {
+      final myClientMsg = ClientMsg(
+        ClientMsgType.kEvent,
+        event: eventToPublish,
       );
-
       relayManager.send(relay, myClientMsg);
     }
 
-    return couldNotConnectRelays;
+    for (final relayUrl in specificRelays) {
+      // register relay broadcast
+      relayManager.registerRelayBroadcast(
+        eventToPublish: eventToPublish,
+        relayUrl: relayUrl,
+      );
+
+      final isConnected = relayManager.isRelayConnected(relayUrl);
+      if (isConnected) {
+        sendToRelay(
+          relay: connectedRelays.firstWhere(
+            (element) => element.url == relayUrl,
+          ),
+        );
+        continue;
+      }
+
+      relayManager
+          .connectRelay(
+        dirtyUrl: relayUrl,
+        connectionSource: ConnectionSource.broadcastSpecific,
+      )
+          .then((success) {
+        if (!success.first) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "connection failed",
+          );
+          return;
+        }
+        final relay = relayManager.connectedRelays
+            .firstWhere((element) => element.url == relayUrl);
+
+        sendToRelay(relay: relay);
+      });
+    }
   }
 }
