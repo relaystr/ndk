@@ -142,6 +142,12 @@ class RelayManager<T> {
       updateRelayConnectivity();
       return Tuple(true, "");
     }
+
+    if (isRelayConnecting(url)) {
+      Logger.log.t("relay is already connecting: $url");
+      updateRelayConnectivity();
+      return Tuple(true, "relay is still connecting");
+    }
     RelayConnectivity? relayConnectivity = globalState.relays[url];
 
     try {
@@ -449,8 +455,7 @@ class RelayManager<T> {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
       Logger.log.w(
-          "RECEIVED EVENT from ${connectivity.url} for id $id, not in globalState inFlightRequests");
-      // send(url, jsonEncode(["CLOSE", id]));
+          "RECEIVED EVENT from ${connectivity.url} for id $id, not in globalState inFlightRequests. Likely data after EOSE on a query");
       return;
     }
 
