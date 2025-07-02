@@ -55,11 +55,11 @@ class ClientMsg {
     }
   }
 
-  _eventToJson() {
+  List<Object> _eventToJson() {
     return [type, event!.toJson()];
   }
 
-  _reqToJson() {
+  List _reqToJson() {
     List<dynamic> json = [type, id];
     for (var filter in filters!) {
       json.add(filter.toMap());
@@ -67,11 +67,11 @@ class ClientMsg {
     return json;
   }
 
-  _closeToJson() {
+  List<String?> _closeToJson() {
     return [type, id];
   }
 
-  toJson() {
+  dynamic toJson() {
     switch (type) {
       case ClientMsgType.kEvent:
         return _eventToJson();

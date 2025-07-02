@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
