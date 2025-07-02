@@ -51,7 +51,8 @@ class Nwc {
       {bool doGetInfoMethod = false,
       bool useETagForEachRequest = false,
       bool ignoreCapabilitiesCheck = false,
-      Function(String?)? onError, Duration? timeout}) async {
+      Function(String?)? onError,
+      Duration? timeout}) async {
     var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
     var relay = Uri.decodeFull(parsedUri.relay);
     var filter =
@@ -64,7 +65,7 @@ class Nwc {
             name: "nwc-info",
             explicitRelays: [relay],
             filters: [filter],
-            timeout: timeout?? Duration(seconds: 5),
+            timeout: timeout ?? Duration(seconds: 5),
             timeoutCallback: () {
               onError?.call("timeout");
             },
@@ -351,8 +352,10 @@ class Nwc {
   }
 
   /// Does a `get_info` request for returning node detailed info
-  Future<GetInfoResponse> getInfo(NwcConnection connection, {Duration? timeout}) async {
-    return _executeRequest<GetInfoResponse>(connection, GetInfoRequest(), timeout: timeout);
+  Future<GetInfoResponse> getInfo(NwcConnection connection,
+      {Duration? timeout}) async {
+    return _executeRequest<GetInfoResponse>(connection, GetInfoRequest(),
+        timeout: timeout);
   }
 
   /// Does a `get_balance` request

@@ -108,7 +108,8 @@ void main() async {
     // ================================================================================================
 
     test('verify signatures of events', () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 3962, signEvents: false);
+      MockRelay relay1 =
+          MockRelay(name: "relay 1", explicitPort: 3962, signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
       final ndk = Ndk(

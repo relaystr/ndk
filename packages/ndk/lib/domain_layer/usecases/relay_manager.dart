@@ -421,7 +421,7 @@ class RelayManager<T> {
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
-      _handleClosed(eventJson,relayConnectivity);
+      _handleClosed(eventJson, relayConnectivity);
     }
     if (eventJson[0] == ClientMsgType.kAuth) {
       // nip 42 used to send authentication challenges
