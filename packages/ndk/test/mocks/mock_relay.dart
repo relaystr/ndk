@@ -292,6 +292,15 @@ class MockRelay {
     _webSocket!.add(jsonEncode(["EVENT", subId, event]));
   }
 
+  /// sends a CLOSED message for a given subscription ID
+  void sendClosed(String subId, {String message = ""}) {
+    if (_webSocket == null) {
+      throw Exception("WebSocket is not connected");
+    }
+
+    _webSocket!.add(jsonEncode(["CLOSED", subId, message]));
+  }
+
   Future<void> stopServer() async {
     if (server != null) {
       log('Closing server on localhost:$url');

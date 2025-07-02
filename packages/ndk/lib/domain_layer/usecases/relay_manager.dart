@@ -421,7 +421,7 @@ class RelayManager<T> {
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
-      globalState.inFlightRequests.remove(eventJson[1]);
+      _handleClosed(eventJson,relayConnectivity);
     }
     if (eventJson[0] == ClientMsgType.kAuth) {
       // nip 42 used to send authentication challenges
@@ -499,6 +499,25 @@ class RelayManager<T> {
         _checkNetworkClose(state, relayConnectivity);
         _logActiveRequests();
       }
+    }
+    return;
+  }
+
+  /// handles CLOSED messages
+  void _handleClosed(
+      List<dynamic> eventJson, RelayConnectivity relayConnectivity) {
+    String id = eventJson[1];
+    RequestState? state = globalState.inFlightRequests[id];
+    if (state != null) {
+      Logger.log.t(
+          "⛁ received CLOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+      RelayRequestState? request = state.requests[relayConnectivity.url];
+      if (request != null) {
+        request.receivedEOSE = true;
+      }
+
+      _checkNetworkClose(state, relayConnectivity);
+      _logActiveRequests();
     }
     return;
   }
