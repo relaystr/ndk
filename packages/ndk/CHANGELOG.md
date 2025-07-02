@@ -1,3 +1,10 @@
+## 0.4.2
+
+- fix: close relay only closes the specifi relay
+- fix: fixed common ndk warnings
+- fix: remove inFlight requests
+- fix: jit engine connections to low value relays
+
 ## 0.4.0
 
 - feat: nip 59 gift wrap
