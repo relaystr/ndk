@@ -1,3 +1,8 @@
+## 0.2.5
+
+ - **FIX**: jit use bootstrapRelays if no data.
+ - **FEAT**: stream relayConnectivityChanges.
+
 ## 0.2.4
 
  - upgrade to ndk 0.4.0

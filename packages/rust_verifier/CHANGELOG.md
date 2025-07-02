@@ -1,3 +1,9 @@
+## 0.4.1
+
+ - **FIX**: jit use bootstrapRelays if no data.
+ - **FEAT**: stream relayConnectivityChanges.
+ - **FEAT**: publishUserServerList.
+
 ## 0.4.0
 
  - new builder to support flutter 3.32.0

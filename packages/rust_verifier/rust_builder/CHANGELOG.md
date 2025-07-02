@@ -1,3 +1,7 @@
+## 0.1.8
+
+ - **FEAT**: publishUserServerList.
+
 ## 0.1.7
 
 - flutter requirements
