@@ -1,4 +1,4 @@
-## 0.4.2
+## 0.4.1
 
 - fix: close relay only closes the specifi relay
 - fix: fixed common ndk warnings
