@@ -4,6 +4,7 @@ import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/broadcast_response.dart';
 import '../../entities/broadcast_state.dart';
+import '../../entities/contact_list.dart';
 import '../../entities/global_state.dart';
 import '../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../entities/nip_01_event.dart';
@@ -183,7 +184,7 @@ class JitEngine with Logger implements NetworkEngine {
       );
 
       // check if we need to publish to others inboxes
-      if (nostrEvent.pTags.isNotEmpty) {
+      if (nostrEvent.pTags.isNotEmpty && nostrEvent.kind != ContactList.kKind) {
         RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: nostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
