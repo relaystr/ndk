@@ -1,3 +1,8 @@
+## 0.2.5
+
+ - upgrade to ndk 0.4.1
+ - added delete methods
+
 ## 0.2.4
 
  - upgrade to ndk 0.4.0
