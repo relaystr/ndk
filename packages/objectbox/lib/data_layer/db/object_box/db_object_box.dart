@@ -402,6 +402,7 @@ class DbObjectBox implements CacheManager {
   @override
   Future<void> saveRelaySet(RelaySet relaySet) async {
     // No operation for unimplemented method
+    throw UnimplementedError('saveRelaySet is not implemented in DbObjectBox');
   }
 
   @override
