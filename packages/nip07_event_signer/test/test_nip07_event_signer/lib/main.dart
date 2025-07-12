@@ -2,28 +2,8 @@
 
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:ndk/ndk.dart';
-
-void main() {
-  runApp(const MainApp());
-}
-
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: FilledButton(onPressed: test, child: Text("Test")),
-        ),
-      ),
-    );
-  }
-}
 
 void test() async {
   final nip07Signer = Nip07EventSigner();
