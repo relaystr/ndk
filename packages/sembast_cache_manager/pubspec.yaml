@@ -1,0 +1,16 @@
+name: sembast_cache_manager
+description: A Sembast-based cache manager for the NDK (Nostr Development Kit) library, providing persistent storage for Nostr protocol data.
+version: 1.0.0
+homepage: https://github.com/nogringo/sembast-cache-manager
+repository: https://github.com/nogringo/sembast-cache-manager
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  ndk: ^0.4.0
+  sembast: ^3.8.5+1
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.24.0
