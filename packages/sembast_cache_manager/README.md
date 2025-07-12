@@ -32,22 +32,20 @@ dart pub get
 ### Basic Setup
 
 ```dart
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
 import 'package:sembast_cache_manager/sembast_cache_manager.dart';
-import 'package:sembast/sembast.dart';
-import 'package:sembast/sembast_io.dart';
 import 'package:ndk/ndk.dart';
 
-// Initialize Sembast database
-final database = await databaseFactoryIo.openDatabase('cache.db');
-
 // Create cache manager
-final cacheManager = SembastCacheManager(database);
+final Directory appDocumentsDir = await getApplicationDocumentsDirectory();
+final cacheManager = await SembastCacheManager.create(databasePath: appDocumentsDir.path);
 
 // Configure NDK with cache
 final ndkConfig = NdkConfig(
   cache: cacheManager,
-  eventSigner: eventSigner,
-  eventVerifier: eventVerifier,
+  eventVerifier: Bip340EventVerifier(),
 );
 
 final ndk = Ndk(ndkConfig);

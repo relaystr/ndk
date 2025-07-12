@@ -4,25 +4,19 @@ import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
-import 'package:sembast/sembast.dart';
-import 'package:sembast/sembast_io.dart';
 import 'package:test/test.dart';
 import 'package:sembast_cache_manager/sembast_cache_manager.dart';
 
 void main() {
   group('SembastCacheManager Tests', () {
-    late Database database;
     late SembastCacheManager cacheManager;
     late Directory tempDir;
 
     setUp(() async {
-      // Create temporary directory for test database
-      tempDir = await Directory.systemTemp.createTemp('sembast_cache_test_');
-      final dbPath = '${tempDir.path}/test_cache.db';
-      
-      // Open database
-      database = await databaseFactoryIo.openDatabase(dbPath);
-      cacheManager = SembastCacheManager(database);
+      tempDir = await Directory.systemTemp.createTemp('sembast_cache_test');
+      cacheManager = await SembastCacheManager.create(
+        databasePath: tempDir.path,
+      );
     });
 
     tearDown(() async {
@@ -36,7 +30,10 @@ void main() {
         final event = Nip01Event(
           pubKey: 'test_pubkey',
           kind: 1,
-          tags: [['p', 'another_pubkey'], ['t', 'test']],
+          tags: [
+            ['p', 'another_pubkey'],
+            ['t', 'test'],
+          ],
           content: 'Test event content',
           createdAt: 1234567890,
         );
@@ -84,7 +81,9 @@ void main() {
           Nip01Event(
             pubKey: 'pubkey1',
             kind: 1,
-            tags: [['p', 'target_pubkey']],
+            tags: [
+              ['p', 'target_pubkey'],
+            ],
             content: 'Event 1',
             createdAt: 1234567890,
           ),
@@ -107,7 +106,9 @@ void main() {
         await cacheManager.saveEvents(events);
 
         // Test pubKeys filter
-        final eventsByPubkey = await cacheManager.loadEvents(pubKeys: ['pubkey1']);
+        final eventsByPubkey = await cacheManager.loadEvents(
+          pubKeys: ['pubkey1'],
+        );
         expect(eventsByPubkey.length, equals(2));
         expect(eventsByPubkey.every((e) => e.pubKey == 'pubkey1'), isTrue);
 
@@ -124,7 +125,9 @@ void main() {
         expect(eventsBefore.length, equals(2));
 
         // Test pTag filter
-        final eventsByPTag = await cacheManager.loadEvents(pTag: 'target_pubkey');
+        final eventsByPTag = await cacheManager.loadEvents(
+          pTag: 'target_pubkey',
+        );
         expect(eventsByPTag.length, equals(1));
         expect(eventsByPTag.first.pTags.contains('target_pubkey'), isTrue);
       });
@@ -134,21 +137,28 @@ void main() {
           Nip01Event(
             pubKey: 'author1',
             kind: 1,
-            tags: [['t', 'bitcoin'], ['p', 'user1']],
+            tags: [
+              ['t', 'bitcoin'],
+              ['p', 'user1'],
+            ],
             content: 'Bitcoin is great!',
             createdAt: 1234567890,
           ),
           Nip01Event(
             pubKey: 'author2',
             kind: 2,
-            tags: [['t', 'nostr']],
+            tags: [
+              ['t', 'nostr'],
+            ],
             content: 'Nostr protocol discussion',
             createdAt: 1234567895,
           ),
           Nip01Event(
             pubKey: 'author1',
             kind: 1,
-            tags: [['t', 'lightning']],
+            tags: [
+              ['t', 'lightning'],
+            ],
             content: 'Lightning network update',
             createdAt: 1234567900,
           ),
@@ -157,7 +167,9 @@ void main() {
         await cacheManager.saveEvents(events);
 
         // Test author filter
-        final eventsByAuthor = await cacheManager.searchEvents(authors: ['author1']);
+        final eventsByAuthor = await cacheManager.searchEvents(
+          authors: ['author1'],
+        );
         expect(eventsByAuthor.length, equals(2));
 
         // Test kind filter
@@ -165,15 +177,24 @@ void main() {
         expect(eventsByKind.length, equals(2));
 
         // Test content search
-        final eventsByContent = await cacheManager.searchEvents(search: 'Bitcoin');
+        final eventsByContent = await cacheManager.searchEvents(
+          search: 'Bitcoin',
+        );
         expect(eventsByContent.length, equals(1));
 
         // Test tag filter
-        final eventsByTag = await cacheManager.searchEvents(tags: {'t': ['bitcoin']});
+        final eventsByTag = await cacheManager.searchEvents(
+          tags: {
+            't': ['bitcoin'],
+          },
+        );
         expect(eventsByTag.length, equals(1));
 
         // Test time range
-        final eventsInRange = await cacheManager.searchEvents(since: 1234567895, until: 1234567900);
+        final eventsInRange = await cacheManager.searchEvents(
+          since: 1234567895,
+          until: 1234567900,
+        );
         expect(eventsInRange.length, equals(2));
 
         // Test limit
@@ -196,12 +217,15 @@ void main() {
         expect(await cacheManager.loadEvent(event.id), isNull);
 
         // Test removeAllEvents
-        final events = List.generate(3, (i) => Nip01Event(
-          pubKey: 'pubkey$i',
-          kind: 1,
-          tags: [],
-          content: 'Event $i',
-        ));
+        final events = List.generate(
+          3,
+          (i) => Nip01Event(
+            pubKey: 'pubkey$i',
+            kind: 1,
+            tags: [],
+            content: 'Event $i',
+          ),
+        );
 
         await cacheManager.saveEvents(events);
         await cacheManager.removeAllEvents();
@@ -256,7 +280,11 @@ void main() {
         ];
 
         await cacheManager.saveMetadatas(metadatas);
-        final loaded = await cacheManager.loadMetadatas(['pubkey1', 'pubkey2', 'nonexistent']);
+        final loaded = await cacheManager.loadMetadatas([
+          'pubkey1',
+          'pubkey2',
+          'nonexistent',
+        ]);
 
         expect(loaded.length, equals(3));
         expect(loaded[0]?.name, equals('User 1'));
@@ -266,9 +294,23 @@ void main() {
 
       test('searchMetadatas', () async {
         final metadatas = [
-          Metadata(pubKey: 'pubkey1', name: 'Alice', displayName: 'Alice Smith', about: 'Bitcoin enthusiast'),
-          Metadata(pubKey: 'pubkey2', name: 'Bob', displayName: 'Bob Jones', about: 'Nostr developer'),
-          Metadata(pubKey: 'pubkey3', name: 'Carol', nip05: 'carol@bitcoin.org'),
+          Metadata(
+            pubKey: 'pubkey1',
+            name: 'Alice',
+            displayName: 'Alice Smith',
+            about: 'Bitcoin enthusiast',
+          ),
+          Metadata(
+            pubKey: 'pubkey2',
+            name: 'Bob',
+            displayName: 'Bob Jones',
+            about: 'Nostr developer',
+          ),
+          Metadata(
+            pubKey: 'pubkey3',
+            name: 'Carol',
+            nip05: 'carol@bitcoin.org',
+          ),
         ];
 
         await cacheManager.saveMetadatas(metadatas);
@@ -279,11 +321,20 @@ void main() {
         expect(aliceResults.first.name, equals('Alice'));
 
         // Search by about
-        final bitcoinResults = await cacheManager.searchMetadatas('bitcoin', 10);
-        expect(bitcoinResults.length, equals(2)); // Alice (about) and Carol (nip05)
+        final bitcoinResults = await cacheManager.searchMetadatas(
+          'bitcoin',
+          10,
+        );
+        expect(
+          bitcoinResults.length,
+          equals(2),
+        ); // Alice (about) and Carol (nip05)
 
         // Search by nip05
-        final nip05Results = await cacheManager.searchMetadatas('carol@bitcoin.org', 10);
+        final nip05Results = await cacheManager.searchMetadatas(
+          'carol@bitcoin.org',
+          10,
+        );
         expect(nip05Results.length, equals(1));
         expect(nip05Results.first.name, equals('Carol'));
 
@@ -354,7 +405,11 @@ void main() {
         ];
 
         await cacheManager.saveNip05s(nip05s);
-        final loaded = await cacheManager.loadNip05s(['pubkey1', 'pubkey2', 'nonexistent']);
+        final loaded = await cacheManager.loadNip05s([
+          'pubkey1',
+          'pubkey2',
+          'nonexistent',
+        ]);
 
         expect(loaded.length, equals(3));
         expect(loaded[0]?.nip05, equals('user1@example.com'));
@@ -393,20 +448,29 @@ void main() {
             pubKey: 'pubkey1',
             createdAt: 1234567890,
             refreshedTimestamp: 1234567890,
-            relays: {'wss://relay1.com': ReadWriteMarker.from(read: true, write: true)},
+            relays: {
+              'wss://relay1.com': ReadWriteMarker.from(read: true, write: true),
+            },
           ),
           UserRelayList(
             pubKey: 'pubkey2',
             createdAt: 1234567891,
             refreshedTimestamp: 1234567891,
-            relays: {'wss://relay2.com': ReadWriteMarker.from(read: true, write: false)},
+            relays: {
+              'wss://relay2.com': ReadWriteMarker.from(
+                read: true,
+                write: false,
+              ),
+            },
           ),
         ];
 
         await cacheManager.saveUserRelayLists(userRelayLists);
 
         for (final userRelayList in userRelayLists) {
-          final loaded = await cacheManager.loadUserRelayList(userRelayList.pubKey);
+          final loaded = await cacheManager.loadUserRelayList(
+            userRelayList.pubKey,
+          );
           expect(loaded, isNotNull);
           expect(loaded!.relays.length, equals(1));
         }
@@ -433,24 +497,42 @@ void main() {
         );
 
         await cacheManager.saveRelaySet(relaySet);
-        final loaded = await cacheManager.loadRelaySet('test_set', 'test_pubkey');
+        final loaded = await cacheManager.loadRelaySet(
+          'test_set',
+          'test_pubkey',
+        );
 
         expect(loaded, isNotNull);
         expect(loaded!.name, equals(relaySet.name));
         expect(loaded.pubKey, equals(relaySet.pubKey));
         expect(loaded.direction, equals(relaySet.direction));
         expect(loaded.relaysMap.length, equals(1));
-        expect(loaded.relaysMap['wss://relay1.com']?.first.pubKey, equals('user1'));
+        expect(
+          loaded.relaysMap['wss://relay1.com']?.first.pubKey,
+          equals('user1'),
+        );
       });
     });
 
     group('Cleanup Operations', () {
       test('remove operations work correctly', () async {
         // Setup test data
-        final event = Nip01Event(pubKey: 'test_pubkey', kind: 1, tags: [], content: 'Test');
+        final event = Nip01Event(
+          pubKey: 'test_pubkey',
+          kind: 1,
+          tags: [],
+          content: 'Test',
+        );
         final metadata = Metadata(pubKey: 'test_pubkey', name: 'Test User');
-        final contactList = ContactList(pubKey: 'test_pubkey', contacts: ['contact1']);
-        final nip05 = Nip05(pubKey: 'test_pubkey', nip05: 'test@example.com', valid: true);
+        final contactList = ContactList(
+          pubKey: 'test_pubkey',
+          contacts: ['contact1'],
+        );
+        final nip05 = Nip05(
+          pubKey: 'test_pubkey',
+          nip05: 'test@example.com',
+          valid: true,
+        );
         final userRelayList = UserRelayList(
           pubKey: 'test_pubkey',
           createdAt: 1234567890,
@@ -488,7 +570,10 @@ void main() {
         expect(await cacheManager.loadUserRelayList('test_pubkey'), isNull);
 
         await cacheManager.removeRelaySet('test_set', 'test_pubkey');
-        expect(await cacheManager.loadRelaySet('test_set', 'test_pubkey'), isNull);
+        expect(
+          await cacheManager.loadRelaySet('test_set', 'test_pubkey'),
+          isNull,
+        );
 
         // Test bulk removals
         await cacheManager.saveMetadata(metadata);
@@ -509,7 +594,10 @@ void main() {
 
         await cacheManager.saveRelaySet(relaySet);
         await cacheManager.removeAllRelaySets();
-        expect(await cacheManager.loadRelaySet('test_set', 'test_pubkey'), isNull);
+        expect(
+          await cacheManager.loadRelaySet('test_set', 'test_pubkey'),
+          isNull,
+        );
       });
     });
 
