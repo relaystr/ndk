@@ -1,5 +1,5 @@
 name: nip07_event_signer
-description: A starting point for Dart libraries or applications.
+description: Nostr nip07 signer for ndk
 version: 1.0.0
 repository: https://github.com/relaystr/ndk
 
