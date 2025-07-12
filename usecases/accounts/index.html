@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.804782459457">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.805630111548">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.11.0">
@@ -30,12 +30,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=3.11.0.804782459457" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=3.11.0.805630111548" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=3.11.0.804782459457" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=3.11.0.805630111548" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=3.11.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.11.0.804782459457" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.11.0.804782459457" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.11.0.805630111548" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.11.0.805630111548" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -205,6 +205,34 @@ NdkBroadcastResponse response = ndk.broadcast.broadcast(
 await response.broadcastDoneFuture;
 
 // logout</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="external-signer-web">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#external-signer-web">#</doc-anchor-trigger>
+        <span>External Signer (web)</span>
+    </h3>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'package:ndk/ndk.dart';
+
+/// import web signer package
+import 'package:nip07_event_signer/nip07_event_signer.dart';
+
+void main() async {
+  /// create ndk obj
+  final ndk = Ndk.defaultConfig();
+
+  /// create web signer
+  final webSigner = Nip07EventSigner();
+
+  /// On the web, you need to call this first!
+  /// getPublicKeyAsync() caches the public key, and ndk uses the cached version
+  /// If you want to update from the real signer, call getPublicKeyAsync() again
+  await webSigner.getPublicKeyAsync();
+
+  /// login with the web signer
+  ndk.accounts.loginExternalSigner(signer: webSigner);
+}</code></pre>
 </doc-codeblock></div>
 <doc-anchor-target id="when-to-use">
     <h2>
