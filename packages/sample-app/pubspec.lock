@@ -430,21 +430,21 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.3.2"
+    version: "0.4.1"
   ndk_amber:
     dependency: "direct main"
     description:
       path: "../amber"
       relative: true
     source: path
-    version: "0.3.0"
+    version: "0.3.1"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
       path: "../rust_verifier"
       relative: true
     source: path
-    version: "0.3.2"
+    version: "0.4.0"
   nested:
     dependency: transitive
     description:
