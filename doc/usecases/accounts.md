@@ -10,7 +10,7 @@ icon: person
 
 ### External Signer (web)
 
-:::code source="../../packages/nip07_event_signer/example/nip07_event_signer_example.dart" language="dart" range="1-18" title="" :::
+:::code source="../../packages/nip07_event_signer/example/nip07_event_signer_example.dart" language="dart"  title="" :::
 
 ## When to use
 

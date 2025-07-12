@@ -10,7 +10,9 @@ void main() async {
   /// create web signer
   final webSigner = Nip07EventSigner();
 
-  /// on web you need to call this first!
+  /// On the web, you need to call this first!
+  /// getPublicKeyAsync() caches the public key, and ndk uses the cached version
+  /// If you want to update from the real signer, call getPublicKeyAsync() again
   await webSigner.getPublicKeyAsync();
 
   /// login with the web signer
