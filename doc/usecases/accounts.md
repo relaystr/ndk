@@ -8,9 +8,13 @@ icon: person
 
 :::code source="../../packages/ndk/example/account_test.dart" language="dart" range="16-34" title="" :::
 
+### External Signer (web)
+
+:::code source="../../packages/nip07_event_signer/example/nip07_event_signer_example.dart" language="dart"  title="" :::
+
 ## When to use
 
-Use it to log in an account. 
+Use it to log in an account.
 You can use several types of accounts:
 
 - `loginPrivateKey`
