@@ -1,4 +1,12 @@
+import '../../repositories/cashu_repo.dart';
+
 class CashuWallet {
+  final CashuRepo _cashuRepo;
+
+  CashuWallet({
+    required CashuRepo cashuRepo,
+  }) : _cashuRepo = cashuRepo;
+
   final Set<Transaction> _transactions = {};
 
   final Set<Mint> _mints = {};
@@ -19,5 +27,7 @@ class CashuWallet {
   spend() {}
 
   /// accept token from user
-  receive() {}
+  receive() {
+    _cashuRepo.swap();
+  }
 }
