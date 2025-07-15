@@ -1,5 +1,23 @@
 class CashuWallet {
-  static const int kWalletKind = 17375;
-  static const int kUnspendProofKind = 7375;
-  static const int kSpendingHistoryKind = 7376;
+  final Set<Transaction> _transactions = {};
+
+  final Set<Mint> _mints = {};
+
+  final Set<Proof> _proofs = {};
+
+  final Set<Pending> _pending = {};
+
+  getBalance({required String unit}) {}
+
+  /// funds the wallet (usually with lightning) and get ecash
+  fund() {}
+
+  /// redeem toke for x (usually with lightning)
+  redeem() {}
+
+  /// send token to user
+  spend() {}
+
+  /// accept token from user
+  receive() {}
 }
