@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import '../../domain_layer/entities/cashu/wallet_cashu_token_event.dart';
-import '../../domain_layer/entities/cashu/wallet_cashu_token_event_content.dart';
-import '../../domain_layer/entities/nip_01_event.dart';
-import '../../domain_layer/repositories/event_signer.dart';
+import '../../../domain_layer/entities/cashu/wallet_cashu_token_event.dart';
+import '../../../domain_layer/entities/cashu/wallet_cashu_token_event_content.dart';
+import '../../../domain_layer/entities/nip_01_event.dart';
+import '../../../domain_layer/repositories/event_signer.dart';
 
 class WalletCashuTokenEventModel extends WalletCashuTokenEvent {
   WalletCashuTokenEventModel(
