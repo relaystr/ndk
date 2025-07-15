@@ -1,4 +1,4 @@
-import 'nip_01_event.dart';
+import '../nip_01_event.dart';
 
 class WalletCashuEvent {
   static const int kWalletKind = 17375;
