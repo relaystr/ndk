@@ -13,4 +13,13 @@ class WalletCashuProof {
     required this.secret,
     required this.unblindedSig,
   });
+
+  Map<String, Object> toJson() {
+    return {
+      'id': id,
+      'amount': amount,
+      'secret': secret,
+      'C': unblindedSig,
+    };
+  }
 }

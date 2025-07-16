@@ -19,6 +19,14 @@ class WalletCashuBlindedMessage {
     );
   }
 
+  Map<String, Object> toJson() {
+    return {
+      'id': id,
+      'amount': amount,
+      'B_': blindedMessage,
+    };
+  }
+
   @override
   String toString() {
     return '${super.toString()}, id: $id, amount: $amount, blindedMessage: $blindedMessage';
