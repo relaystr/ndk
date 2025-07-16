@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.805630111548">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.805994656041">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.11.0">
@@ -30,12 +30,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=3.11.0.805630111548" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=3.11.0.805994656041" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=3.11.0.805630111548" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=3.11.0.805994656041" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=3.11.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.11.0.805630111548" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.11.0.805630111548" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.11.0.805994656041" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.11.0.805994656041" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -182,6 +182,7 @@
 <li><code v-pre>MemCacheManager</code></li>
 <li><a href="https://pub.dev/packages/ndk_objectbox"><code v-pre>DbObjectBox</code></a></li>
 <li><a href="https://pub.dev/packages/ndk_isar"><code v-pre>IsarCacheManager</code></a></li>
+<li><a href="https://pub.dev/packages/sembast_cache_manager"><code v-pre>SembastCacheManager</code></a></li>
 </ul>
 <p>If you want your own database, you need to implement the <code v-pre>CacheManager</code> interface. Contributions for more database implementations are welcome!</p>
 <p>Its recommended to use the database only for ndk and spin up a secondary db for your own app data.</p>
@@ -195,6 +196,26 @@ import 'package:ndk_objectbox/ndk_objectbox.dart';
   DbObjectBox myObjectboxDb = DbObjectBox();
   await myObjectboxDb.dbRdy;
   final CacheManager db = myObjectboxDb;
+
+  final ndkConfig = NdkConfig(
+    cache: db,
+    eventSigner: eventSigner,
+    eventVerifier: eventVerifier,
+  );
+
+  final ndk = Ndk(ndkConfig);</code></pre>
+</doc-codeblock></div>
+<div class="codeblock-wrapper"><doc-codeblock>
+<div class="codeblock-title">sembast example</div>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">import 'dart:io';
+
+import 'package:ndk/ndk.dart';
+import 'package:sembast_cache_manager/sembast_cache_manager.dart';
+
+...
+
+  final tempDir = await Directory.systemTemp.createTemp('sembast_cache_db');
+  final db = await SembastCacheManager.create(databasePath: tempDir.path);
 
   final ndkConfig = NdkConfig(
     cache: db,
