@@ -25,6 +25,10 @@ Core package of the NDK. Go here for instructions on how to use the NDK. 📜
 
 Amber signer compatible with the NDK.
 
+### [🔗 nip07 event signer](./packages/nip07_event_signer/)
+
+NIP-07 signer compatible with the NDK.
+
 ### [🔗 ObjectBox](./packages/objectbox/)
 
 ObjectBox database implementation.
