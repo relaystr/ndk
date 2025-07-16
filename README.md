@@ -33,6 +33,10 @@ ObjectBox database implementation.
 
 Isar database implementation.
 
+### [🔗 Sembast cache manager](./packages/sembast_cache_manager/)
+
+Sembast database implementation.
+
 ### [🔗 rust verifier](./packages/rust_verifier/)
 
 Event verifier written in Rust.
