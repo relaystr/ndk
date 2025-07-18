@@ -16,7 +16,7 @@ class CashuRepoImpl implements CashuRepo {
     required this.client,
   });
   @override
-  Future<WalletCashuBlindedSignature> swap({
+  Future<List<WalletCashuBlindedSignature>> swap({
     required String mintURL,
     required List<WalletCashuProof> proofs,
     required List<WalletCashuBlindedMessage> outputs,
@@ -45,6 +45,14 @@ class CashuRepoImpl implements CashuRepo {
       throw Exception('Invalid response format: $responseBody');
     }
 
-    return WalletCashuBlindedSignature.fromServerMap(responseBody);
+    final List<dynamic> signaturesUnparsed = responseBody['signatures'];
+
+    if (signaturesUnparsed.isEmpty) {
+      throw Exception('No signatures returned from swap');
+    }
+
+    return signaturesUnparsed
+        .map((e) => WalletCashuBlindedSignature.fromServerMap(e))
+        .toList();
   }
 }
