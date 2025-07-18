@@ -1,3 +1,8 @@
+## 0.5.0
+
+- feat: NIP07 web signer support
+- feat: sembast cache manager (+web support)
+
 ## 0.4.1
 
 - fix: close relay only closes the specifi relay

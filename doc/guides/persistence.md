@@ -10,6 +10,7 @@ Available databases:
 - `MemCacheManager`
 - [`DbObjectBox`](https://pub.dev/packages/ndk_objectbox)
 - [`IsarCacheManager`](https://pub.dev/packages/ndk_isar)
+- [`SembastCacheManager`](https://pub.dev/packages/sembast_cache_manager)
 
 If you want your own database, you need to implement the `CacheManager` interface. Contributions for more database implementations are welcome!
 
@@ -24,6 +25,26 @@ import 'package:ndk_objectbox/ndk_objectbox.dart';
   DbObjectBox myObjectboxDb = DbObjectBox();
   await myObjectboxDb.dbRdy;
   final CacheManager db = myObjectboxDb;
+
+  final ndkConfig = NdkConfig(
+    cache: db,
+    eventSigner: eventSigner,
+    eventVerifier: eventVerifier,
+  );
+
+  final ndk = Ndk(ndkConfig);
+```
+
+```dart sembast example
+import 'dart:io';
+
+import 'package:ndk/ndk.dart';
+import 'package:sembast_cache_manager/sembast_cache_manager.dart';
+
+...
+
+  final tempDir = await Directory.systemTemp.createTemp('sembast_cache_db');
+  final db = await SembastCacheManager.create(databasePath: tempDir.path);
 
   final ndkConfig = NdkConfig(
     cache: db,

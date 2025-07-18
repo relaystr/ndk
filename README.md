@@ -25,6 +25,10 @@ Core package of the NDK. Go here for instructions on how to use the NDK. 📜
 
 Amber signer compatible with the NDK.
 
+### [🔗 nip07 event signer](./packages/nip07_event_signer/)
+
+NIP-07 signer compatible with the NDK.
+
 ### [🔗 ObjectBox](./packages/objectbox/)
 
 ObjectBox database implementation.
@@ -32,6 +36,10 @@ ObjectBox database implementation.
 ### [🔗 Isar](./packages/isar/)
 
 Isar database implementation.
+
+### [🔗 Sembast cache manager](./packages/sembast_cache_manager/)
+
+Sembast database implementation.
 
 ### [🔗 rust verifier](./packages/rust_verifier/)
 
