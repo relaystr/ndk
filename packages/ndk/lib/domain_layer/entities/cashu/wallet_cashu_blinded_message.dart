@@ -32,3 +32,17 @@ class WalletCashuBlindedMessage {
     return '${super.toString()}, id: $id, amount: $amount, blindedMessage: $blindedMessage';
   }
 }
+
+class WalletCashuBlindedMessageItem {
+  final WalletCashuBlindedMessage blindedMessage;
+  final String secret;
+  final BigInt r;
+  final int amount;
+
+  WalletCashuBlindedMessageItem({
+    required this.blindedMessage,
+    required this.secret,
+    required this.r,
+    required this.amount,
+  });
+}

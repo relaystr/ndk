@@ -2,11 +2,52 @@ import 'dart:math';
 
 import 'package:pointycastle/export.dart';
 
+import '../../../shared/logger/logger.dart';
+import '../../../shared/nips/nip01/helpers.dart';
+import '../../entities/cashu/wallet_cashu_blinded_message.dart';
 import 'cashu_tools.dart';
 
 typedef BlindMessageResult = (String B_, BigInt r);
 
 class CashuBdhke {
+  static List<WalletCashuBlindedMessageItem> createBlindedMsgForAmounts({
+    required String keysetId,
+    required List<int> amounts,
+  }) {
+    List<WalletCashuBlindedMessageItem> items = [];
+
+    for (final amount in amounts) {
+      try {
+        final secret = Helpers.getSecureRandomString(32);
+        final (B_, r) = blindMessage(secret);
+
+        if (B_.isEmpty) {
+          continue;
+        }
+
+        final blindedMessage = WalletCashuBlindedMessage(
+          id: keysetId,
+          amount: amount,
+          blindedMessage: B_,
+        );
+
+        items.add(WalletCashuBlindedMessageItem(
+          blindedMessage: blindedMessage,
+          secret: secret,
+          r: r,
+          amount: amount,
+        ));
+      } catch (e) {
+        Logger.log.w(
+          'Error creating blinded message for amount $amount: $e',
+          error: e,
+        );
+      }
+    }
+
+    return items;
+  }
+
   static BlindMessageResult blindMessage(String secret, {BigInt? r}) {
     // Alice picks secret x and computes Y = hash_to_curve(x)
     final ECPoint Y = CashuTools.hashToCurve(secret);
