@@ -4,8 +4,11 @@ import '../../../domain_layer/entities/cashu/wallet_cahsu_keyset.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_message.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_signature.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_proof.dart';
+import '../../../domain_layer/entities/cashu/wallet_cashu_quote.dart';
 import '../../../domain_layer/repositories/cashu_repo.dart';
 import '../../../domain_layer/usecases/cashu_wallet/cashu_tools.dart';
+import '../../../shared/nips/nip01/bip340.dart';
+import '../../../shared/nips/nip01/key_pair.dart';
 import '../../data_sources/http_request.dart';
 
 final headers = {'Content-Type': 'application/json'};
@@ -121,5 +124,48 @@ class CashuRepoImpl implements CashuRepo {
               mintURL: mintURL,
             ))
         .toList();
+  }
+
+  Future getMintQuote({
+    required String mintURL,
+    required int amount,
+    required String unit,
+    required String method,
+    String description = '',
+  }) async {
+    KeyPair quoteKey = Bip340.generatePrivateKey();
+
+    final url =
+        CashuTools.composeUrl(mintUrl: mintURL, path: 'mint/quote/$method');
+
+    final body = {
+      'amount': amount,
+      'unit': unit,
+      'description': description,
+      'pubkey': quoteKey.publicKey,
+    };
+
+    final response = await client.post(
+      url: Uri.parse(url),
+      body: jsonEncode(body),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error swapping cashu tokens: ${response.statusCode}, ${response.body}',
+      );
+    }
+
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+
+    return WalletCashuQuote.fromServerMap(
+      map: responseBody,
+      mintURL: mintURL,
+      quoteKey: quoteKey,
+    );
   }
 }
