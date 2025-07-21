@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:pointycastle/export.dart';
+import 'package:crypto/crypto.dart';
+import 'package:pointycastle/export.dart' hide Digest;
 
 import 'package:convert/convert.dart';
 
 import '../../../config/cashu_config.dart';
+import '../../../shared/nips/nip01/bip340.dart';
+import '../../entities/cashu/wallet_cashu_blinded_message.dart';
 
 class CashuTools {
   static String composeUrl({
@@ -72,5 +75,32 @@ class CashuTools {
           (byte) => byte.toRadixString(16).padLeft(2, '0'),
         )
         .join();
+  }
+
+  static String createMintSignature({
+    required String quote,
+    required List<WalletCashuBlindedMessage> blindedMessagesOutputs,
+    required String privateKeyHex,
+  }) {
+    final StringBuffer messageBuffer = StringBuffer();
+
+    // add quote id
+    messageBuffer.write(quote);
+
+    // add each B_ field(hex strings)
+    for (final output in blindedMessagesOutputs) {
+      messageBuffer.write(output.blindedMessage);
+    }
+
+    final String messageToSign = messageBuffer.toString();
+
+    // hash the message
+    final Uint8List messageBytes = utf8.encode(messageToSign);
+    final Digest messageHash = sha256.convert(messageBytes);
+    final String messageHashHex = messageHash.toString();
+
+    final String signature = Bip340.sign(messageHashHex, privateKeyHex);
+
+    return signature;
   }
 }

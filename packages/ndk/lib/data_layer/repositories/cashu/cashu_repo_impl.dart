@@ -126,7 +126,7 @@ class CashuRepoImpl implements CashuRepo {
         .toList();
   }
 
-  Future getMintQuote({
+  Future<WalletCashuQuote> getMintQuote({
     required String mintURL,
     required int amount,
     required String unit,
@@ -153,7 +153,7 @@ class CashuRepoImpl implements CashuRepo {
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error swapping cashu tokens: ${response.statusCode}, ${response.body}',
+        'Error getting mint quote: ${response.statusCode}, ${response.body}',
       );
     }
 
@@ -167,5 +167,93 @@ class CashuRepoImpl implements CashuRepo {
       mintURL: mintURL,
       quoteKey: quoteKey,
     );
+  }
+
+  Future<CashuQuoteState> checkMintQuoteState({
+    required String mintURL,
+    required String quoteID,
+    required String method,
+  }) async {
+    final url = CashuTools.composeUrl(
+        mintUrl: mintURL, path: 'mint/quote/$method/$quoteID');
+
+    final response = await client.get(
+      url: Uri.parse(url),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error checking quote state: ${response.statusCode}, ${response.body}',
+      );
+    }
+
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+
+    return CashuQuoteState.fromValue(
+      responseBody['state'] as String,
+    );
+  }
+
+  Future<List<WalletCashuBlindedSignature>> mintTokens({
+    required String mintURL,
+    required String quote,
+    required List<WalletCashuBlindedMessage> blindedMessagesOutputs,
+    required String method,
+    required KeyPair quoteKey,
+  }) async {
+    final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'mint/$method');
+
+    if (blindedMessagesOutputs.isEmpty) {
+      throw Exception('No outputs provided for minting');
+    }
+
+    final signature = CashuTools.createMintSignature(
+      quote: quote,
+      blindedMessagesOutputs: blindedMessagesOutputs,
+      privateKeyHex: quoteKey.privateKey!,
+    );
+
+    final body = {
+      'quote': quote,
+      'outputs': blindedMessagesOutputs.map((e) {
+        return {
+          'id': e.id,
+          'amount': e.amount,
+          'B_': e.blindedMessage,
+        };
+      }).toList(),
+      "signature": signature,
+    };
+
+    final response = await client.post(
+      url: Uri.parse(url),
+      body: jsonEncode(body),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error swapping cashu tokens: ${response.statusCode}, ${response.body}',
+      );
+    }
+
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+
+    final List<dynamic> signaturesUnparsed = responseBody['signatures'];
+
+    if (signaturesUnparsed.isEmpty) {
+      throw Exception('No signatures returned from mint');
+    }
+
+    return signaturesUnparsed
+        .map((e) => WalletCashuBlindedSignature.fromServerMap(e))
+        .toList();
   }
 }
