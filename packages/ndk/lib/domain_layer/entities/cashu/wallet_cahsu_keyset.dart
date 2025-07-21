@@ -17,7 +17,7 @@ class WalletCahsuKeyset {
 
   factory WalletCahsuKeyset.fromResponses({
     required WalletCahsuKeysetResponse keysetResponse,
-    required WalletCahsuKeystResponse keysResponse,
+    required WalletCahsuKeysResponse keysResponse,
   }) {
     if (keysetResponse.id != keysResponse.id ||
         keysetResponse.mintURL != keysResponse.mintURL ||
@@ -75,28 +75,28 @@ class WalletCahsuKeysetResponse {
   }
 }
 
-class WalletCahsuKeystResponse {
+class WalletCahsuKeysResponse {
   final String id;
   final String mintURL;
   final String unit;
   final Set<WalletCahsuMintKeyPair> mintKeyPairs;
 
-  WalletCahsuKeystResponse({
+  WalletCahsuKeysResponse({
     required this.id,
     required this.mintURL,
     required this.unit,
     required this.mintKeyPairs,
   });
 
-  factory WalletCahsuKeystResponse.fromServerMap({
+  factory WalletCahsuKeysResponse.fromServerMap({
     required Map<String, dynamic> map,
     required String mintURL,
   }) {
-    return WalletCahsuKeystResponse(
+    return WalletCahsuKeysResponse(
       id: map['id'] as String,
       mintURL: mintURL,
       unit: map['unit'] as String,
-      mintKeyPairs: (map['keys'] as Map<String, String>)
+      mintKeyPairs: (map['keys'] as Map<String, dynamic>)
           .entries
           .map((e) => WalletCahsuMintKeyPair(
                 amount: int.parse(e.key),

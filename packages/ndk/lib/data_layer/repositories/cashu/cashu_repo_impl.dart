@@ -57,7 +57,8 @@ class CashuRepoImpl implements CashuRepo {
         .toList();
   }
 
-  Future<List<WalletCahsuKeystResponse>> getKeysets({
+  @override
+  Future<List<WalletCahsuKeysetResponse>> getKeysets({
     required String mintURL,
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'keysets');
@@ -74,19 +75,23 @@ class CashuRepoImpl implements CashuRepo {
     }
     final responseBody = jsonDecode(response.body);
 
-    if (responseBody is! List) {
+    if (responseBody is! Map) {
       throw Exception('Invalid response format: $responseBody');
     }
-    return responseBody
-        .map((e) => WalletCahsuKeystResponse.fromServerMap(
+    final List<dynamic> keysetsUnparsed = responseBody['keysets'];
+    return keysetsUnparsed
+        .map((e) => WalletCahsuKeysetResponse.fromServerMap(
               map: e as Map<String, dynamic>,
               mintURL: mintURL,
             ))
         .toList();
   }
 
-  Future<List<WalletCahsuKeystResponse>> getKeys(
-      {required String mintURL, String? keysetId}) async {
+  @override
+  Future<List<WalletCahsuKeysResponse>> getKeys({
+    required String mintURL,
+    String? keysetId,
+  }) async {
     final baseUrl = CashuTools.composeUrl(mintUrl: mintURL, path: 'keys');
 
     final String url;
@@ -106,11 +111,12 @@ class CashuRepoImpl implements CashuRepo {
       );
     }
     final responseBody = jsonDecode(response.body);
-    if (responseBody is! List) {
+    if (responseBody is! Map) {
       throw Exception('Invalid response format: $responseBody');
     }
-    return responseBody
-        .map((e) => WalletCahsuKeystResponse.fromServerMap(
+    final List<dynamic> keysUnparsed = responseBody['keysets'];
+    return keysUnparsed
+        .map((e) => WalletCahsuKeysResponse.fromServerMap(
               map: e as Map<String, dynamic>,
               mintURL: mintURL,
             ))

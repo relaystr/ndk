@@ -2,18 +2,21 @@ import 'package:http/http.dart' as http;
 
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
+import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/blossom.dart';
+import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
+import '../domain_layer/usecases/cashu_wallet/cashu_wallet.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/files/blossom.dart';
@@ -76,6 +79,7 @@ class Initialization {
   late Search search;
   late GiftWrap giftWrap;
   late Connectivy connectivity;
+  late CashuWallet cashuWallet;
 
   late VerifyNip05 verifyNip05;
 
@@ -130,6 +134,10 @@ class Initialization {
         Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
 
     final BlossomRepository blossomRepository = BlossomRepositoryImpl(
+      client: _httpRequestDS,
+    );
+
+    final CashuRepo cashuRepo = CashuRepoImpl(
       client: _httpRequestDS,
     );
 
@@ -231,6 +239,10 @@ class Initialization {
     giftWrap = GiftWrap(accounts: accounts);
 
     connectivity = Connectivy(relayManager);
+
+    cashuWallet = CashuWallet(
+      cashuRepo: cashuRepo,
+    );
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
