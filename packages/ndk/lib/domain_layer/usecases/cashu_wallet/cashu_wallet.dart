@@ -1,12 +1,22 @@
-import '../../entities/cashu/wallet_cahsu_keyset.dart';
+import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_repo.dart';
+import 'cashu_keysets.dart';
 
 class CashuWallet {
   final CashuRepo _cashuRepo;
+  final CacheManager _cacheManager;
 
+  late final CashuKeysets _cashuKeysets;
   CashuWallet({
     required CashuRepo cashuRepo,
-  }) : _cashuRepo = cashuRepo;
+    required CacheManager cacheManager,
+  })  : _cashuRepo = cashuRepo,
+        _cacheManager = cacheManager {
+    _cashuKeysets = CashuKeysets(
+      cashuRepo: _cashuRepo,
+      cacheManager: _cacheManager,
+    );
+  }
 
   // final Set<Transaction> _transactions = {};
 
@@ -30,29 +40,5 @@ class CashuWallet {
   /// accept token from user
   receive() {
     //_cashuRepo.swap();
-  }
-
-  Future<List<WalletCahsuKeyset>> getKeysetMintFromNetwork({
-    required String mintURL,
-  }) async {
-    final List<WalletCahsuKeyset> mintKeys = [];
-    final keySets = await _cashuRepo.getKeysets(
-      mintURL: mintURL,
-    );
-
-    for (final keySet in keySets) {
-      final keys = await _cashuRepo.getKeys(
-        mintURL: mintURL,
-        keysetId: keySet.id,
-      );
-
-      mintKeys.add(
-        WalletCahsuKeyset.fromResponses(
-          keysetResponse: keySet,
-          keysResponse: keys.first,
-        ),
-      );
-    }
-    return mintKeys;
   }
 }

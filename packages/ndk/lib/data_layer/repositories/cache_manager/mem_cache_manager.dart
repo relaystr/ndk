@@ -1,5 +1,6 @@
 import 'dart:core';
 
+import '../../../domain_layer/entities/cashu/wallet_cahsu_keyset.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
@@ -29,6 +30,9 @@ class MemCacheManager implements CacheManager {
 
   /// In memory storage
   Map<String, Nip01Event> events = {};
+
+  /// String for mint Url
+  Map<String, Set<WalletCahsuKeyset>> cashuKeysets = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -288,5 +292,24 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> close() async {
     return;
+  }
+
+  @override
+  Future<List<WalletCahsuKeyset>> getKeysets({required String mintURL}) {
+    if (cashuKeysets.containsKey(mintURL)) {
+      return Future.value(cashuKeysets[mintURL]?.toList() ?? []);
+    } else {
+      return Future.value([]);
+    }
+  }
+
+  @override
+  Future<void> saveKeyset(WalletCahsuKeyset keyset) {
+    if (cashuKeysets.containsKey(keyset.mintURL)) {
+      cashuKeysets[keyset.mintURL]!.add(keyset);
+    } else {
+      cashuKeysets[keyset.mintURL] = {keyset};
+    }
+    return Future.value();
   }
 }

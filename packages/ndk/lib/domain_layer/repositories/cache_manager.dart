@@ -1,3 +1,4 @@
+import '../entities/cashu/wallet_cahsu_keyset.dart';
 import '../entities/contact_list.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
@@ -78,4 +79,11 @@ abstract class CacheManager {
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
+
+  /// cashu methods
+
+  Future<void> saveKeyset(WalletCahsuKeyset keyset);
+  Future<List<WalletCahsuKeyset>> getKeysets({
+    required String mintURL,
+  });
 }

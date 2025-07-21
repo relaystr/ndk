@@ -242,6 +242,7 @@ class Initialization {
 
     cashuWallet = CashuWallet(
       cashuRepo: cashuRepo,
+      cacheManager: _ndkConfig.cache,
     );
 
     /// set the user configured log level

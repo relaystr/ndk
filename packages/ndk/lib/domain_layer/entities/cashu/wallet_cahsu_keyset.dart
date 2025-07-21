@@ -5,6 +5,7 @@ class WalletCahsuKeyset {
   final bool active;
   final int inputFeePPK;
   final Set<WalletCahsuMintKeyPair> mintKeyPairs;
+  int? fetchedAt;
 
   WalletCahsuKeyset({
     required this.id,
@@ -13,7 +14,10 @@ class WalletCahsuKeyset {
     required this.active,
     required this.inputFeePPK,
     required this.mintKeyPairs,
-  });
+    this.fetchedAt,
+  }) {
+    fetchedAt ??= DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  }
 
   factory WalletCahsuKeyset.fromResponses({
     required WalletCahsuKeysetResponse keysetResponse,
