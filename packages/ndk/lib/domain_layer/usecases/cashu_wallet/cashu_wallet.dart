@@ -3,6 +3,8 @@ import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_repo.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_keysets.dart';
+
+import 'cashu_token_encoder.dart';
 import 'cashu_tools.dart';
 
 class CashuWallet {
@@ -86,7 +88,25 @@ class CashuWallet {
     if (mintResponse.isEmpty) {
       throw Exception('Minting failed, no signatures returned');
     }
-    print('Minting successful, signatures: $mintResponse');
+
+    // unblind
+
+    final unblindedTokens = CashuBdhke.unblindSignatures(
+      mintSignatures: mintResponse,
+      blindedMessages: blindedMessagesOutputs,
+      mintPublicKeys: keyset,
+      keysetId: keysetId,
+    );
+
+// Encode to cashuB format for display
+    final cashuToken = CashuTokenEncoder.encodeTokenV4(
+        proofs: unblindedTokens,
+        mintUrl: mintURL,
+        memo: 'Funded $amount $unit',
+        unit: 'sat');
+
+    print('Your Cashu token: $cashuToken');
+    return cashuToken;
   }
 
   /// redeem toke for x (usually with lightning)

@@ -4,7 +4,10 @@ import 'package:pointycastle/export.dart';
 
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
+import '../../entities/cashu/wallet_cahsu_keyset.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
+import '../../entities/cashu/wallet_cashu_blinded_signature.dart';
+import '../../entities/cashu/wallet_cashu_proof.dart';
 import 'cashu_tools.dart';
 
 typedef BlindMessageResult = (String B_, BigInt r);
@@ -77,5 +80,47 @@ class CashuBdhke {
     final rK = K * r;
     if (rK == null) return null;
     return C_ - rK;
+  }
+
+  static List<WalletCashuProof> unblindSignatures({
+    required List<WalletCashuBlindedSignature> mintSignatures,
+    required List<WalletCashuBlindedMessageItem> blindedMessages,
+    required WalletCahsuKeyset mintPublicKeys,
+    required String keysetId,
+  }) {
+    List<WalletCashuProof> tokens = [];
+
+    for (int i = 0; i < mintSignatures.length; i++) {
+      final signature = mintSignatures[i];
+      final blindedMsg = blindedMessages[i];
+
+      final matchingKeys = mintPublicKeys.mintKeyPairs
+          .where((e) => e.amount == blindedMsg.amount)
+          .toList();
+
+      if (matchingKeys.isEmpty) {
+        throw Exception('No mint public key for amount ${blindedMsg.amount}');
+      }
+      final mintPubKey = matchingKeys.first;
+
+      final unblindedSig = unblindingSignature(
+        cHex: signature.blindedSignature,
+        kHex: mintPubKey.pubkey,
+        r: blindedMsg.r,
+      );
+
+      if (unblindedSig == null) {
+        throw Exception('Failed to unblind signature');
+      }
+
+      tokens.add(WalletCashuProof(
+        secret: blindedMsg.secret,
+        amount: blindedMsg.amount,
+        unblindedSig: CashuTools.ecPointToHex(unblindedSig),
+        id: keysetId,
+      ));
+    }
+
+    return tokens;
   }
 }

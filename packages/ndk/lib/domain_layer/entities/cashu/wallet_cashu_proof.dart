@@ -22,4 +22,21 @@ class WalletCashuProof {
       'C': unblindedSig,
     };
   }
+
+  Map<String, Object> toV4Json() {
+    return {
+      'a': amount,
+      's': secret,
+      'c': unblindedSig,
+    };
+  }
+
+  factory WalletCashuProof.fromV4Json(String keysetId, Map json) {
+    return WalletCashuProof(
+      id: keysetId,
+      amount: json['a'] ?? 0,
+      secret: json['s']?.toString() ?? '',
+      unblindedSig: json['c']?.toString() ?? '',
+    );
+  }
 }
