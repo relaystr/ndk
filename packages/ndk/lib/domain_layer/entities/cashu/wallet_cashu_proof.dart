@@ -1,3 +1,5 @@
+import '../../usecases/cashu_wallet/cashu_tools.dart';
+
 class WalletCashuProof {
   final String id;
   final int amount;
@@ -27,13 +29,13 @@ class WalletCashuProof {
     return {
       'a': amount,
       's': secret,
-      'c': unblindedSig,
+      'c': CashuTools.hexToBytes(unblindedSig),
     };
   }
 
-  factory WalletCashuProof.fromV4Json(String keysetId, Map json) {
+  factory WalletCashuProof.fromV4Json(Map json) {
     return WalletCashuProof(
-      id: keysetId,
+      id: json['i']?.toString() ?? '',
       amount: json['a'] ?? 0,
       secret: json['s']?.toString() ?? '',
       unblindedSig: json['c']?.toString() ?? '',

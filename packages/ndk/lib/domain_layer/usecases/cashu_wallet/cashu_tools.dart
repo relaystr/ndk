@@ -103,4 +103,13 @@ class CashuTools {
 
     return signature;
   }
+
+  static Uint8List hexToBytes(String hex) {
+    return Uint8List.fromList(
+      List.generate(
+        hex.length ~/ 2,
+        (i) => int.parse(hex.substring(i * 2, i * 2 + 2), radix: 16),
+      ),
+    );
+  }
 }

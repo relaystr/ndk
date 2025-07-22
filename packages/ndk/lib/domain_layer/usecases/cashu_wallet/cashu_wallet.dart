@@ -1,4 +1,5 @@
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
+import '../../entities/cashu/wallet_cashu_token.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_repo.dart';
 import 'cashu_bdhke.dart';
@@ -98,15 +99,16 @@ class CashuWallet {
       keysetId: keysetId,
     );
 
-// Encode to cashuB format for display
-    final cashuToken = CashuTokenEncoder.encodeTokenV4(
+    // todo for debugging
+    final cashuToken = WalletCashuToken(
         proofs: unblindedTokens,
         mintUrl: mintURL,
         memo: 'Funded $amount $unit',
         unit: 'sat');
 
-    print('Your Cashu token: $cashuToken');
-    return cashuToken;
+    final cashuTokenString = cashuToken.toV4TokenString();
+
+    return cashuTokenString;
   }
 
   /// redeem toke for x (usually with lightning)
