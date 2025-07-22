@@ -1,4 +1,6 @@
+import '../../../config/cashu_config.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
+import '../../entities/cashu/wallet_cashu_quote.dart';
 import '../../entities/cashu/wallet_cashu_token.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_repo.dart';
@@ -47,9 +49,11 @@ class CashuWallet {
       throw Exception('No keysets found for mint: $mintURL');
     }
 
-    // todo filter active keyset
-    final keyset = keysets.first;
-    final keysetId = keyset.id;
+    final keyset = CashuTools.findActiveKeyset(keysets);
+
+    if (keyset == null) {
+      throw Exception('No active keyset found for mint: $mintURL');
+    }
 
     final quote = await _cashuRepo.getMintQuote(
       mintURL: mintURL,
@@ -58,18 +62,32 @@ class CashuWallet {
       method: method,
     );
 
-    final toPay = quote.request;
+    CashuQuoteState payStatus;
 
-    // todo check until payed or expired
-    await _cashuRepo.checkMintQuoteState(
-      mintURL: mintURL,
-      quoteID: quote.quoteId,
-      method: method,
-    );
+    while (true) {
+      payStatus = await _cashuRepo.checkMintQuoteState(
+        mintURL: mintURL,
+        quoteID: quote.quoteId,
+        method: method,
+      );
+
+      if (payStatus == CashuQuoteState.paid) {
+        break;
+      }
+
+      // check if quote has expired
+      final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      if (currentTime >= quote.expiry) {
+        throw Exception('Quote expired before payment was received');
+      }
+      await Future.delayed(CashuConfig.FUNDING_CHECK_INTERVAL);
+    }
 
     List<int> splittedAmounts = CashuTools.splitAmount(amount);
     final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
-        keysetId: keysetId, amounts: splittedAmounts);
+      keysetId: keyset.id,
+      amounts: splittedAmounts,
+    );
 
     final mintResponse = await _cashuRepo.mintTokens(
       mintURL: mintURL,
@@ -96,7 +114,7 @@ class CashuWallet {
       mintSignatures: mintResponse,
       blindedMessages: blindedMessagesOutputs,
       mintPublicKeys: keyset,
-      keysetId: keysetId,
+      keysetId: keyset.id,
     );
 
     // todo for debugging

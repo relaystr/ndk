@@ -8,6 +8,7 @@ import 'package:convert/convert.dart';
 
 import '../../../config/cashu_config.dart';
 import '../../../shared/nips/nip01/bip340.dart';
+import '../../entities/cashu/wallet_cahsu_keyset.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
 
 class CashuTools {
@@ -111,5 +112,18 @@ class CashuTools {
         (i) => int.parse(hex.substring(i * 2, i * 2 + 2), radix: 16),
       ),
     );
+  }
+
+  static WalletCahsuKeyset? findActiveKeyset(
+    List<WalletCahsuKeyset> keysets,
+  ) {
+    if (keysets.isEmpty) {
+      return null;
+    }
+    try {
+      return keysets.firstWhere((keyset) => keyset.active);
+    } catch (_) {
+      return null;
+    }
   }
 }
