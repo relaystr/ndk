@@ -1,4 +1,4 @@
-import '../../../shared/nips/nip01/key_pair.dart';
+import '../../usecases/cashu_wallet/cashu_keypair.dart';
 
 class WalletCashuQuote {
   final String quoteId;
@@ -7,7 +7,7 @@ class WalletCashuQuote {
   final String unit;
   final CashuQuoteState state;
 
-  final KeyPair quoteKey;
+  final CashuKeypair quoteKey;
 
   /// expires in seconds
   final int expiry;
@@ -27,7 +27,7 @@ class WalletCashuQuote {
   factory WalletCashuQuote.fromServerMap({
     required Map<String, dynamic> map,
     required String mintURL,
-    required KeyPair quoteKey,
+    required CashuKeypair quoteKey,
   }) {
     return WalletCashuQuote(
       quoteId: map['quote'] as String,

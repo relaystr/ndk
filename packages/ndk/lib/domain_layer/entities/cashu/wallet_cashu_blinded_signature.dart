@@ -14,7 +14,9 @@ class WalletCashuBlindedSignature {
   factory WalletCashuBlindedSignature.fromServerMap(Map json) {
     return WalletCashuBlindedSignature(
       id: json['id'],
-      amount: int.tryParse(json['amount']) ?? 0,
+      amount: json['amount'] is int
+          ? json['amount']
+          : int.tryParse(json['amount']) ?? 0,
       blindedSignature: json['C_'] ?? '',
     );
   }

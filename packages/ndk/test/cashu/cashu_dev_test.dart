@@ -10,11 +10,14 @@ void main() {
 
       final mintURL = 'http://127.0.0.1:8085';
 
-      final keys = await ndk.cashuWallet.getKeysetMintFromNetwork(
+      final fundResponse = await ndk.cashuWallet.fund(
         mintURL: mintURL,
+        amount: 52,
+        unit: 'sat',
+        method: 'bolt11',
       );
-      expect(keys, isNotEmpty);
-      print(keys);
+
+      print(fundResponse);
     });
   });
 }

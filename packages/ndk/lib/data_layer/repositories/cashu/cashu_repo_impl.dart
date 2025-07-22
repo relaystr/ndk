@@ -6,9 +6,8 @@ import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_signature.dart
 import '../../../domain_layer/entities/cashu/wallet_cashu_proof.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_quote.dart';
 import '../../../domain_layer/repositories/cashu_repo.dart';
+import '../../../domain_layer/usecases/cashu_wallet/cashu_keypair.dart';
 import '../../../domain_layer/usecases/cashu_wallet/cashu_tools.dart';
-import '../../../shared/nips/nip01/bip340.dart';
-import '../../../shared/nips/nip01/key_pair.dart';
 import '../../data_sources/http_request.dart';
 
 final headers = {'Content-Type': 'application/json'};
@@ -126,6 +125,7 @@ class CashuRepoImpl implements CashuRepo {
         .toList();
   }
 
+  @override
   Future<WalletCashuQuote> getMintQuote({
     required String mintURL,
     required int amount,
@@ -133,7 +133,7 @@ class CashuRepoImpl implements CashuRepo {
     required String method,
     String description = '',
   }) async {
-    KeyPair quoteKey = Bip340.generatePrivateKey();
+    CashuKeypair quoteKey = CashuKeypair.generateCashuKeyPair();
 
     final url =
         CashuTools.composeUrl(mintUrl: mintURL, path: 'mint/quote/$method');
@@ -169,6 +169,7 @@ class CashuRepoImpl implements CashuRepo {
     );
   }
 
+  @override
   Future<CashuQuoteState> checkMintQuoteState({
     required String mintURL,
     required String quoteID,
@@ -198,12 +199,13 @@ class CashuRepoImpl implements CashuRepo {
     );
   }
 
+  @override
   Future<List<WalletCashuBlindedSignature>> mintTokens({
     required String mintURL,
     required String quote,
     required List<WalletCashuBlindedMessage> blindedMessagesOutputs,
     required String method,
-    required KeyPair quoteKey,
+    required CashuKeypair quoteKey,
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'mint/$method');
 
@@ -214,7 +216,7 @@ class CashuRepoImpl implements CashuRepo {
     final signature = CashuTools.createMintSignature(
       quote: quote,
       blindedMessagesOutputs: blindedMessagesOutputs,
-      privateKeyHex: quoteKey.privateKey!,
+      privateKeyHex: quoteKey.privateKey,
     );
 
     final body = {
