@@ -48,7 +48,9 @@ class Nip01Event {
     final kind = data['kind'] as int;
     final tags = castToListOfListOfString(data['tags']);
     final content = data['content'] as String;
-    final sig = data['sig'] as String;
+
+    /// '' to support rumor events
+    final sig = (data['sig'] as String?) ?? '';
 
     return Nip01Event._(id, pubKey, createdAt, kind, tags, content, sig);
   }
