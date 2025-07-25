@@ -1,5 +1,6 @@
 import '../../../config/cashu_config.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
+import '../../entities/cashu/wallet_cashu_proof.dart';
 import '../../entities/cashu/wallet_cashu_quote.dart';
 import '../../entities/cashu/wallet_cashu_token.dart';
 import '../../repositories/cache_manager.dart';
@@ -37,7 +38,7 @@ class CashuWallet {
   getBalance({required String unit}) {}
 
   /// funds the wallet (usually with lightning) and get ecash
-  fund({
+  Future<List<WalletCashuProof>> fund({
     required String mintURL,
     required int amount,
     required String unit,
@@ -116,17 +117,15 @@ class CashuWallet {
       mintPublicKeys: keyset,
       keysetId: keyset.id,
     );
+    if (unblindedTokens.isEmpty) {
+      throw Exception('Unblinding failed, no tokens returned');
+    }
+    await _cacheManager.saveProofs(
+      tokens: unblindedTokens,
+      mintUrl: mintURL,
+    );
 
-    // todo for debugging
-    final cashuToken = WalletCashuToken(
-        proofs: unblindedTokens,
-        mintUrl: mintURL,
-        memo: 'Funded $amount $unit',
-        unit: 'sat');
-
-    final cashuTokenString = cashuToken.toV4TokenString();
-
-    return cashuTokenString;
+    return unblindedTokens;
   }
 
   /// redeem toke for x (usually with lightning)
@@ -138,5 +137,23 @@ class CashuWallet {
   /// accept token from user
   receive() {
     //_cashuRepo.swap();
+  }
+
+  String proofsToToken({
+    required List<WalletCashuProof> proofs,
+    required String mintUrl,
+    required String unit,
+    String memo = "",
+  }) {
+    if (proofs.isEmpty) {
+      throw Exception('No proofs provided for token conversion');
+    }
+    final cashuToken = WalletCashuToken(
+      proofs: proofs,
+      mintUrl: mintUrl,
+      memo: memo,
+      unit: unit,
+    );
+    return cashuToken.toV4TokenString();
   }
 }

@@ -23,7 +23,7 @@ class WalletCashuToken {
     Map<String, List<Map>> allProofs = <String, List<Map>>{};
 
     for (final proof in proofs) {
-      final keysetId = proof.id;
+      final keysetId = proof.keysetId;
       final proofMaps = allProofs.putIfAbsent(keysetId, () => <Map>[]);
       proofMaps.add(proof.toV4Json());
     }

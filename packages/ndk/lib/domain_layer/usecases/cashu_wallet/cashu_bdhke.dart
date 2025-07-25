@@ -117,7 +117,7 @@ class CashuBdhke {
         secret: blindedMsg.secret,
         amount: blindedMsg.amount,
         unblindedSig: CashuTools.ecPointToHex(unblindedSig),
-        id: keysetId,
+        keysetId: keysetId,
       ));
     }
 

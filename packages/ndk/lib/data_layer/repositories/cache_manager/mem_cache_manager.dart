@@ -1,5 +1,7 @@
 import 'dart:core';
 
+import 'package:ndk/domain_layer/entities/cashu/wallet_cashu_proof.dart';
+
 import '../../../domain_layer/entities/cashu/wallet_cahsu_keyset.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
@@ -33,6 +35,9 @@ class MemCacheManager implements CacheManager {
 
   /// String for mint Url
   Map<String, Set<WalletCahsuKeyset>> cashuKeysets = {};
+
+  /// String for mint Url
+  Map<String, Set<WalletCashuProof>> cashuProofs = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -309,6 +314,39 @@ class MemCacheManager implements CacheManager {
       cashuKeysets[keyset.mintURL]!.add(keyset);
     } else {
       cashuKeysets[keyset.mintURL] = {keyset};
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<List<WalletCashuProof>> getProofs({
+    required String mintUrl,
+    String? keysetId,
+  }) {
+    if (cashuProofs.containsKey(mintUrl)) {
+      if (keysetId != null) {
+        return Future.value(
+          cashuProofs[mintUrl]!
+              .where((proof) => proof.keysetId == keysetId)
+              .toList(),
+        );
+      } else {
+        return Future.value(cashuProofs[mintUrl]?.toList() ?? []);
+      }
+    } else {
+      return Future.value([]);
+    }
+  }
+
+  @override
+  Future<void> saveProofs({
+    required List<WalletCashuProof> tokens,
+    required String mintUrl,
+  }) {
+    if (cashuProofs.containsKey(mintUrl)) {
+      cashuProofs[mintUrl]!.addAll(tokens);
+    } else {
+      cashuProofs[mintUrl] = Set<WalletCashuProof>.from(tokens);
     }
     return Future.value();
   }

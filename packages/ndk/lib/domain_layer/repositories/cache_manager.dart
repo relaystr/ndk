@@ -1,4 +1,5 @@
 import '../entities/cashu/wallet_cahsu_keyset.dart';
+import '../entities/cashu/wallet_cashu_proof.dart';
 import '../entities/contact_list.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
@@ -85,5 +86,15 @@ abstract class CacheManager {
   Future<void> saveKeyset(WalletCahsuKeyset keyset);
   Future<List<WalletCahsuKeyset>> getKeysets({
     required String mintURL,
+  });
+
+  Future<void> saveProofs({
+    required List<WalletCashuProof> tokens,
+    required String mintUrl,
+  });
+
+  Future<List<WalletCashuProof>> getProofs({
+    required String mintUrl,
+    String? keysetId,
   });
 }
