@@ -26,6 +26,8 @@ class CashuRepoImpl implements CashuRepo {
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'swap');
 
+    outputs.sort((a, b) => a.amount.compareTo(b.amount));
+
     final body = {
       'inputs': proofs.map((e) => e.toJson()).toList(),
       'outputs': outputs.map((e) => e.toJson()).toList(),

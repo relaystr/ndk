@@ -350,4 +350,16 @@ class MemCacheManager implements CacheManager {
     }
     return Future.value();
   }
+
+  @override
+  Future<void> removeProof(
+      {required WalletCashuProof proof, required String mintUrl}) {
+    if (cashuProofs.containsKey(mintUrl)) {
+      cashuProofs[mintUrl]?.remove(proof);
+      if (cashuProofs[mintUrl]?.isEmpty ?? true) {
+        cashuProofs.remove(mintUrl);
+      }
+    }
+    return Future.value();
+  }
 }

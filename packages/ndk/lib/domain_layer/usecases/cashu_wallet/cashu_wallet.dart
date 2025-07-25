@@ -180,7 +180,6 @@ class CashuWallet {
     );
 
     // unblind
-
     final myUnblindedTokens = CashuBdhke.unblindSignatures(
       mintSignatures: myBlindedSingatures,
       blindedMessages: blindedMessagesOutputs,
@@ -191,6 +190,22 @@ class CashuWallet {
     if (myUnblindedTokens.isEmpty) {
       throw Exception('Unblinding failed, no tokens returned');
     }
+
+    // check if we recived our own proofs
+    final ownTokens = await _cacheManager.getProofs(mintUrl: rcvToken.mintUrl);
+
+    final sameSendRcv = rcvToken.proofs
+        .where((e) => ownTokens.any((ownToken) => ownToken.secret == e.secret))
+        .toList();
+
+    for (final dublicate in sameSendRcv) {
+      await _cacheManager.removeProof(
+        proof: dublicate,
+        mintUrl: rcvToken.mintUrl,
+      );
+    }
+
+    // save new proofs
     await _cacheManager.saveProofs(
       tokens: myUnblindedTokens,
       mintUrl: rcvToken.mintUrl,
