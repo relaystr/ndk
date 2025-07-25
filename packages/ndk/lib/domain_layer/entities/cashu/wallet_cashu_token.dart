@@ -53,10 +53,31 @@ class WalletCashuToken {
     final mint = json['m']?.toString() ?? '';
     final unit = json['u']?.toString() ?? '';
     final memo = json['d']?.toString() ?? '';
-    final tokenJson = json['t'] ?? [];
+    final tokensJson = json['t'] ?? [];
+
+    if (tokensJson is! List) {
+      throw Exception('Invalid token format: "t" should be a list');
+    }
+
+    final myProofs = List<WalletCashuProof>.empty(growable: true);
+
+    for (final tokenJson in tokensJson) {
+      final keysetId = tokenJson['i'] as String;
+
+      final proofsJson = tokenJson['p'] as List<dynamic>? ?? [];
+
+      for (final proofJson in proofsJson) {
+        final myProof = WalletCashuProof.fromV4Json(
+          json: proofJson as Map,
+          keysetId: keysetId,
+        );
+        myProofs.add(myProof);
+      }
+    }
+
     return WalletCashuToken(
       mintUrl: mint,
-      proofs: [WalletCashuProof.fromV4Json(tokenJson)],
+      proofs: myProofs,
       memo: memo,
       unit: unit,
     );

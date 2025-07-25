@@ -5,7 +5,7 @@ void main() {
   setUp(() {});
 
   group('dev tests', () {
-    test('getKeys', () async {
+    test('fund', () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final mintURL = 'http://127.0.0.1:8085';
@@ -18,6 +18,31 @@ void main() {
       );
 
       print(fundResponse);
+    });
+
+    test('receive', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final mintURL = 'http://127.0.0.1:8085';
+
+      final fundResponse = await ndk.cashuWallet.fund(
+        mintURL: mintURL,
+        amount: 52,
+        unit: 'sat',
+        method: 'bolt11',
+      );
+
+      final eCashToken = ndk.cashuWallet.proofsToToken(
+        proofs: fundResponse,
+        mintUrl: mintURL,
+        unit: 'sat',
+      );
+
+      print(eCashToken);
+
+      final receiveResponse = await ndk.cashuWallet.receive(eCashToken);
+
+      print(receiveResponse);
     });
   });
 }

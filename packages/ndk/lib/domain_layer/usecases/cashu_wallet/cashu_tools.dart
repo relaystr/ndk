@@ -10,6 +10,7 @@ import '../../../config/cashu_config.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 import '../../entities/cashu/wallet_cahsu_keyset.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
+import '../../entities/cashu/wallet_cashu_proof.dart';
 
 class CashuTools {
   static String composeUrl({
@@ -114,6 +115,10 @@ class CashuTools {
     );
   }
 
+  static String bytesToHex(Uint8List bytes) {
+    return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join('');
+  }
+
   static WalletCahsuKeyset? findActiveKeyset(
     List<WalletCahsuKeyset> keysets,
   ) {
@@ -125,5 +130,9 @@ class CashuTools {
     } catch (_) {
       return null;
     }
+  }
+
+  static int sumOfProofs({required List<WalletCashuProof> proofs}) {
+    return proofs.fold(0, (sum, proof) => sum + proof.amount);
   }
 }

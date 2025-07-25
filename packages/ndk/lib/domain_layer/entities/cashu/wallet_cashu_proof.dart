@@ -33,12 +33,20 @@ class WalletCashuProof {
     };
   }
 
-  factory WalletCashuProof.fromV4Json(Map json) {
+  factory WalletCashuProof.fromV4Json({
+    required Map json,
+    required String keysetId,
+  }) {
+    final unblindedSig = json['c'] as String?;
+    if (unblindedSig == null || unblindedSig.isEmpty) {
+      throw Exception('Unblinded signature is missing or empty');
+    }
+
     return WalletCashuProof(
-      keysetId: json['i']?.toString() ?? '',
+      keysetId: keysetId,
       amount: json['a'] ?? 0,
       secret: json['s']?.toString() ?? '',
-      unblindedSig: json['c']?.toString() ?? '',
+      unblindedSig: unblindedSig,
     );
   }
 }

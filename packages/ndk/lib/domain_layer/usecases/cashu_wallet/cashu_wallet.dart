@@ -135,8 +135,68 @@ class CashuWallet {
   spend() {}
 
   /// accept token from user
-  receive() {
-    //_cashuRepo.swap();
+  Future<List<WalletCashuProof>> receive(String token) async {
+    final rcvToken = CashuTokenEncoder.decodedToken(token);
+    if (rcvToken == null) {
+      throw Exception('Invalid Cashu token format');
+    }
+
+    if (rcvToken.proofs.isEmpty) {
+      throw Exception('No proofs found in the Cashu token');
+    }
+
+    final keysets = await _cashuKeysets.getKeysetsFromMint(rcvToken.mintUrl);
+
+    if (keysets.isEmpty) {
+      throw Exception('No keysets found for mint: ${rcvToken.mintUrl}');
+    }
+
+    final keyset = CashuTools.findActiveKeyset(keysets);
+
+    if (keyset == null) {
+      throw Exception('No active keyset found for mint: ${rcvToken.mintUrl}');
+    }
+
+    final rcvSum = CashuTools.sumOfProofs(proofs: rcvToken.proofs);
+
+    List<int> splittedAmounts = CashuTools.splitAmount(rcvSum);
+    final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
+      keysetId: keyset.id,
+      amounts: splittedAmounts,
+    );
+
+    final myBlindedSingatures = await _cashuRepo.swap(
+      mintURL: rcvToken.mintUrl,
+      proofs: rcvToken.proofs,
+      outputs: blindedMessagesOutputs
+          .map(
+            (e) => WalletCashuBlindedMessage(
+              amount: e.amount,
+              id: e.blindedMessage.id,
+              blindedMessage: e.blindedMessage.blindedMessage,
+            ),
+          )
+          .toList(),
+    );
+
+    // unblind
+
+    final myUnblindedTokens = CashuBdhke.unblindSignatures(
+      mintSignatures: myBlindedSingatures,
+      blindedMessages: blindedMessagesOutputs,
+      mintPublicKeys: keyset,
+      keysetId: keyset.id,
+    );
+
+    if (myUnblindedTokens.isEmpty) {
+      throw Exception('Unblinding failed, no tokens returned');
+    }
+    await _cacheManager.saveProofs(
+      tokens: myUnblindedTokens,
+      mintUrl: rcvToken.mintUrl,
+    );
+
+    return myUnblindedTokens;
   }
 
   String proofsToToken({
