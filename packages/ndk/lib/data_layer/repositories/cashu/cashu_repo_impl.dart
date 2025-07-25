@@ -215,7 +215,7 @@ class CashuRepoImpl implements CashuRepo {
       throw Exception('No outputs provided for minting');
     }
 
-    final signature = CashuTools.createMintSignature(
+    final quoteSignature = CashuTools.createMintSignature(
       quote: quote,
       blindedMessagesOutputs: blindedMessagesOutputs,
       privateKeyHex: quoteKey.privateKey,
@@ -230,7 +230,7 @@ class CashuRepoImpl implements CashuRepo {
           'B_': e.blindedMessage,
         };
       }).toList(),
-      "signature": signature,
+      "signature": quoteSignature,
     };
 
     final response = await client.post(
