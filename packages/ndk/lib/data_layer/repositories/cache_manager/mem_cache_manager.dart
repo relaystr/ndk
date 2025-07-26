@@ -352,14 +352,20 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> removeProof(
-      {required WalletCashuProof proof, required String mintUrl}) {
+  Future<void> removeProofs(
+      {required List<WalletCashuProof> proofs, required String mintUrl}) {
     if (cashuProofs.containsKey(mintUrl)) {
-      cashuProofs[mintUrl]?.remove(proof);
-      if (cashuProofs[mintUrl]?.isEmpty ?? true) {
+      final existingProofs = cashuProofs[mintUrl]!;
+      for (final proof in proofs) {
+        existingProofs.removeWhere((p) => p.secret == proof.secret);
+      }
+      if (existingProofs.isEmpty) {
         cashuProofs.remove(mintUrl);
       }
+
+      return Future.value();
+    } else {
+      return Future.error('No proofs found for mint URL: $mintUrl');
     }
-    return Future.value();
   }
 }

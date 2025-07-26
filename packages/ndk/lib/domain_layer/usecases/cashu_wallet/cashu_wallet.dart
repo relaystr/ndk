@@ -1,4 +1,5 @@
 import '../../../config/cashu_config.dart';
+import '../../../shared/logger/logger.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
 import '../../entities/cashu/wallet_cashu_proof.dart';
 import '../../entities/cashu/wallet_cashu_quote.dart';
@@ -10,12 +11,14 @@ import 'cashu_keysets.dart';
 
 import 'cashu_token_encoder.dart';
 import 'cashu_tools.dart';
+import 'cashu_wallet_proof_select.dart';
 
 class CashuWallet {
   final CashuRepo _cashuRepo;
   final CacheManager _cacheManager;
 
   late final CashuKeysets _cashuKeysets;
+  late final CashuWalletProofSelect _cashuWalletProofSelect;
   CashuWallet({
     required CashuRepo cashuRepo,
     required CacheManager cacheManager,
@@ -24,6 +27,9 @@ class CashuWallet {
     _cashuKeysets = CashuKeysets(
       cashuRepo: _cashuRepo,
       cacheManager: _cacheManager,
+    );
+    _cashuWalletProofSelect = CashuWalletProofSelect(
+      cashuRepo: _cashuRepo,
     );
   }
 
@@ -132,7 +138,78 @@ class CashuWallet {
   redeem() {}
 
   /// send token to user
-  spend() {}
+  Future<List<WalletCashuProof>> spend({
+    required String mint,
+    required int amount,
+    required String unit,
+  }) async {
+    if (amount <= 0) {
+      throw Exception('Amount must be greater than zero');
+    }
+
+    final keysets = await _cashuKeysets.getKeysetsFromMint(mint);
+    if (keysets.isEmpty) {
+      throw Exception('No keysets found for mint: $mint');
+    }
+
+    // filter unit
+    final keysetsFiltered =
+        keysets.where((keyset) => keyset.unit == unit).toList();
+
+    if (keysetsFiltered.isEmpty) {
+      throw Exception('No keysets found for mint: $mint with unit: $unit');
+    }
+
+    final keyset = CashuTools.findActiveKeyset(keysetsFiltered);
+    if (keyset == null) {
+      throw Exception('No active keyset found for mint: $mint');
+    }
+
+    final proofs = await _cacheManager.getProofs(mintUrl: mint);
+    if (proofs.isEmpty) {
+      throw Exception('No proofs found for mint: $mint');
+    }
+
+    final selectionResult =
+        CashuWalletProofSelect.selectProofsForSpending(proofs, amount);
+
+    if (selectionResult.selectedProofs.isEmpty) {
+      throw Exception('Not enough funds to spend the requested amount');
+    }
+
+    if (selectionResult.needsSplit) {
+      Logger.log.d(
+          'Need to split ${selectionResult.splitAmount} $unit from ${selectionResult.totalSelected} total');
+
+      // split to get exact change
+      final splitResult = await _cashuWalletProofSelect.performSplit(
+        mint: mint,
+        proofsToSplit: selectionResult.selectedProofs,
+        targetAmount: amount,
+        changeAmount: selectionResult.splitAmount,
+        keyset: keyset,
+      );
+
+      await _cacheManager.removeProofs(
+        proofs: selectionResult.selectedProofs,
+        mintUrl: mint,
+      );
+      // save change proofs
+      await _cacheManager.saveProofs(
+        tokens: splitResult.changeProofs,
+        mintUrl: mint,
+      );
+
+      return splitResult.exactProofs;
+    } else {
+      Logger.log.d('No split needed, using selected proofs directly');
+      await _cacheManager.removeProofs(
+        proofs: selectionResult.selectedProofs,
+        mintUrl: mint,
+      );
+      return selectionResult.selectedProofs;
+    }
+  }
 
   /// accept token from user
   Future<List<WalletCashuProof>> receive(String token) async {
@@ -198,12 +275,10 @@ class CashuWallet {
         .where((e) => ownTokens.any((ownToken) => ownToken.secret == e.secret))
         .toList();
 
-    for (final dublicate in sameSendRcv) {
-      await _cacheManager.removeProof(
-        proof: dublicate,
-        mintUrl: rcvToken.mintUrl,
-      );
-    }
+    await _cacheManager.removeProofs(
+      proofs: sameSendRcv,
+      mintUrl: rcvToken.mintUrl,
+    );
 
     // save new proofs
     await _cacheManager.saveProofs(

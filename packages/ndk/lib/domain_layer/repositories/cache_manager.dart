@@ -98,8 +98,8 @@ abstract class CacheManager {
     String? keysetId,
   });
 
-  Future<void> removeProof({
-    required WalletCashuProof proof,
+  Future<void> removeProofs({
+    required List<WalletCashuProof> proofs,
     required String mintUrl,
   });
 }
