@@ -120,16 +120,24 @@ class CashuTools {
     return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join('');
   }
 
-  static WalletCahsuKeyset? findActiveKeyset(
-    List<WalletCahsuKeyset> keysets,
-  ) {
-    if (keysets.isEmpty) {
-      return null;
+  /// Filters keysets by unit and returns the active keyset.
+  /// Throws an exception if no keysets are found with the specified unit
+  /// or if no active keyset is found.
+  static WalletCahsuKeyset filterKeysetsByUnitActive({
+    required List<WalletCahsuKeyset> keysets,
+    required String unit,
+  }) {
+    final keysetsFiltered =
+        keysets.where((keyset) => keyset.unit == unit).toList();
+
+    if (keysetsFiltered.isEmpty) {
+      throw Exception('No keysets found with unit: $unit');
     }
+
     try {
-      return keysets.firstWhere((keyset) => keyset.active);
+      return keysetsFiltered.firstWhere((keyset) => keyset.active);
     } catch (_) {
-      return null;
+      throw Exception('No active keyset found for unit: $unit');
     }
   }
 
@@ -157,26 +165,5 @@ class CashuTools {
     required String unit,
   }) {
     return proofs.where((proof) => proof.keysetId == unit).toList();
-  }
-
-  /// Filters keysets by unit and returns the active keyset. \
-  /// Throws an exception if no keysets are found with the specified unit \
-  /// or if no active keyset is found.
-  static WalletCahsuKeyset filterKeysetsByUnitActive({
-    required List<WalletCahsuKeyset> keysets,
-    required String unit,
-  }) {
-    final keysetsFiltered =
-        keysets.where((keyset) => keyset.unit == unit).toList();
-
-    if (keysetsFiltered.isEmpty) {
-      throw Exception('No keysets found with unit: $unit');
-    }
-
-    final keyset = findActiveKeyset(keysetsFiltered);
-    if (keyset == null) {
-      throw Exception('No active keyset found for');
-    }
-    return keyset;
   }
 }

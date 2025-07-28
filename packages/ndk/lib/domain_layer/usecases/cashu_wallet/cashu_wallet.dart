@@ -56,11 +56,10 @@ class CashuWallet {
       throw Exception('No keysets found for mint: $mintURL');
     }
 
-    final keyset = CashuTools.findActiveKeyset(keysets);
-
-    if (keyset == null) {
-      throw Exception('No active keyset found for mint: $mintURL');
-    }
+    final keyset = CashuTools.filterKeysetsByUnitActive(
+      keysets: keysets,
+      unit: unit,
+    );
 
     final quote = await _cashuRepo.getMintQuote(
       mintURL: mintURL,
@@ -334,11 +333,10 @@ class CashuWallet {
       throw Exception('No keysets found for mint: ${rcvToken.mintUrl}');
     }
 
-    final keyset = CashuTools.findActiveKeyset(keysets);
-
-    if (keyset == null) {
-      throw Exception('No active keyset found for mint: ${rcvToken.mintUrl}');
-    }
+    final keyset = CashuTools.filterKeysetsByUnitActive(
+      keysets: keysets,
+      unit: rcvToken.unit,
+    );
 
     final rcvSum = CashuTools.sumOfProofs(proofs: rcvToken.proofs);
 
