@@ -4,7 +4,7 @@ import 'package:pointycastle/export.dart';
 
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
-import '../../entities/cashu/wallet_cahsu_keyset.dart';
+import '../../entities/cashu/wallet_cashu_keyset.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
 import '../../entities/cashu/wallet_cashu_blinded_signature.dart';
 import '../../entities/cashu/wallet_cashu_proof.dart';

@@ -8,7 +8,7 @@ import 'package:convert/convert.dart';
 
 import '../../../config/cashu_config.dart';
 import '../../../shared/nips/nip01/bip340.dart';
-import '../../entities/cashu/wallet_cahsu_keyset.dart';
+import '../../entities/cashu/wallet_cashu_keyset.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
 import '../../entities/cashu/wallet_cashu_proof.dart';
 

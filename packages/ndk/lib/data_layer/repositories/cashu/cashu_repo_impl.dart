@@ -1,8 +1,9 @@
 import 'dart:convert';
 
-import '../../../domain_layer/entities/cashu/wallet_cahsu_keyset.dart';
+import '../../../domain_layer/entities/cashu/wallet_cashu_keyset.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_message.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_signature.dart';
+import '../../../domain_layer/entities/cashu/wallet_cashu_melt_response.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_proof.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_quote.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_quote_melt.dart';
@@ -324,6 +325,43 @@ class CashuRepoImpl implements CashuRepo {
     return WalletCashuQuoteMelt.fromServerMap(
       json: responseBody,
       mintURL: mintURL,
+    );
+  }
+
+  @override
+  Future<WalletCashuMeltResponse> meltTokens({
+    required String mintURL,
+    required String quoteId,
+    required List<WalletCashuProof> proofs,
+    required List<WalletCashuBlindedMessage> outputs,
+    String method = 'bolt11',
+  }) async {
+    final body = {
+      'quote': quoteId,
+      'inputs': proofs.map((e) => e.toJson()).toList(),
+      'outputs': outputs.map((e) => e.toJson()).toList()
+    };
+    final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'melt/$method');
+
+    final response = await client.post(
+      url: Uri.parse(url),
+      body: jsonEncode(body),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error melting cashu tokens: ${response.statusCode}, ${response.body}',
+      );
+    }
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+    return WalletCashuMeltResponse.fromServerMap(
+      map: responseBody,
+      mintUrl: mintURL,
+      quoteId: quoteId,
     );
   }
 }

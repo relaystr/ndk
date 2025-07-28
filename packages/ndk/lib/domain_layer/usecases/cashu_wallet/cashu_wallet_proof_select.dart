@@ -1,4 +1,4 @@
-import '../../entities/cashu/wallet_cahsu_keyset.dart';
+import '../../entities/cashu/wallet_cashu_keyset.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
 import '../../entities/cashu/wallet_cashu_proof.dart';
 import '../../repositories/cashu_repo.dart';

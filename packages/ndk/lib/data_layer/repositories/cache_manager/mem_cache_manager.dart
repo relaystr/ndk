@@ -2,7 +2,7 @@ import 'dart:core';
 
 import 'package:ndk/domain_layer/entities/cashu/wallet_cashu_proof.dart';
 
-import '../../../domain_layer/entities/cashu/wallet_cahsu_keyset.dart';
+import '../../../domain_layer/entities/cashu/wallet_cashu_keyset.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';

@@ -1,6 +1,7 @@
-import '../entities/cashu/wallet_cahsu_keyset.dart';
+import '../entities/cashu/wallet_cashu_keyset.dart';
 import '../entities/cashu/wallet_cashu_blinded_message.dart';
 import '../entities/cashu/wallet_cashu_blinded_signature.dart';
+import '../entities/cashu/wallet_cashu_melt_response.dart';
 import '../entities/cashu/wallet_cashu_proof.dart';
 import '../entities/cashu/wallet_cashu_quote.dart';
 import '../entities/cashu/wallet_cashu_quote_melt.dart';
@@ -63,6 +64,19 @@ abstract class CashuRepo {
   Future<WalletCashuQuoteMelt> checkMeltQuoteState({
     required String mintURL,
     required String quoteID,
+    required String method,
+  });
+
+  /// [mintURL] is the URL of the mint \
+  /// [quoteId] is the ID of the melt quote \
+  /// [proofs] is a list of [WalletCashuProof] inputs \
+  /// [outputs] is a list of blank! [WalletCashuBlindedMessage] outputs \
+  /// Returns a [WalletCashuMeltResponse] object containing the melt response details.
+  Future<WalletCashuMeltResponse> meltTokens({
+    required String mintURL,
+    required String quoteId,
+    required List<WalletCashuProof> proofs,
+    required List<WalletCashuBlindedMessage> outputs,
     required String method,
   });
 }
