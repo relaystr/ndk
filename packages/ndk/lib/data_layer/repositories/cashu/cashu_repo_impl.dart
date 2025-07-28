@@ -5,6 +5,7 @@ import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_message.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_signature.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_proof.dart';
 import '../../../domain_layer/entities/cashu/wallet_cashu_quote.dart';
+import '../../../domain_layer/entities/cashu/wallet_cashu_quote_melt.dart';
 import '../../../domain_layer/repositories/cashu_repo.dart';
 import '../../../domain_layer/usecases/cashu_wallet/cashu_keypair.dart';
 import '../../../domain_layer/usecases/cashu_wallet/cashu_tools.dart';
@@ -259,5 +260,70 @@ class CashuRepoImpl implements CashuRepo {
     return signaturesUnparsed
         .map((e) => WalletCashuBlindedSignature.fromServerMap(e))
         .toList();
+  }
+
+  @override
+  Future<WalletCashuQuoteMelt> getMeltQuote({
+    required String mintURL,
+    required String request,
+    required String unit,
+    required String method,
+  }) async {
+    final url =
+        CashuTools.composeUrl(mintUrl: mintURL, path: 'melt/quote/$method');
+
+    final body = {
+      'request': request,
+      'unit': unit,
+    };
+
+    final response = await client.post(
+      url: Uri.parse(url),
+      body: jsonEncode(body),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error getting melt quote: ${response.statusCode}, ${response.body}',
+      );
+    }
+
+    return WalletCashuQuoteMelt.fromServerMap(
+      json: jsonDecode(response.body) as Map<String, dynamic>,
+      mintURL: mintURL,
+      request: request,
+    );
+  }
+
+  @override
+  Future<WalletCashuQuoteMelt> checkMeltQuoteState({
+    required String mintURL,
+    required String quoteID,
+    required String method,
+  }) async {
+    final url = CashuTools.composeUrl(
+        mintUrl: mintURL, path: 'melt/quote/$method/$quoteID');
+
+    final response = await client.get(
+      url: Uri.parse(url),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error checking quote state: ${response.statusCode}, ${response.body}',
+      );
+    }
+
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+
+    return WalletCashuQuoteMelt.fromServerMap(
+      json: responseBody,
+      mintURL: mintURL,
+    );
   }
 }
