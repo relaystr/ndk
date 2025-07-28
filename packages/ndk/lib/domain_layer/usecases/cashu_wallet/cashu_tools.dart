@@ -141,6 +141,14 @@ class CashuTools {
     }
   }
 
+  /// filters keysets by unit
+  static List<WalletCahsuKeyset> filterKeysetsByUnit({
+    required List<WalletCahsuKeyset> keysets,
+    required String unit,
+  }) {
+    return keysets.where((keyset) => keyset.unit == unit).toList();
+  }
+
   /// Sums the amounts of all proofs in the list. \
   /// Returns the total amount.
   static int sumOfProofs({required List<WalletCashuProof> proofs}) {

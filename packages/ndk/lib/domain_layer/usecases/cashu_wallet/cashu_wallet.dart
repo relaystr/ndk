@@ -171,16 +171,22 @@ class CashuWallet {
       amountToSpend = meltQuote.amount;
     }
 
-    final selectionResult =
-        CashuWalletProofSelect.selectProofsForSpending(proofs, amountToSpend);
-
-    final keysets = await _cashuKeysets.getKeysetsFromMint(mintURL);
-    if (keysets.isEmpty) {
+    final mintKeysets = await _cashuKeysets.getKeysetsFromMint(mintURL);
+    if (mintKeysets.isEmpty) {
       throw Exception('No keysets found for mint: $mintURL');
     }
 
+    final keysetsForUnit =
+        CashuTools.filterKeysetsByUnit(keysets: mintKeysets, unit: unit);
+
+    final selectionResult = CashuWalletProofSelect.selectProofsForSpending(
+      proofs: proofs,
+      targetAmount: amountToSpend,
+      keysets: keysetsForUnit,
+    );
+
     final activeKeyset =
-        CashuTools.filterKeysetsByUnitActive(keysets: keysets, unit: unit);
+        CashuTools.filterKeysetsByUnitActive(keysets: mintKeysets, unit: unit);
 
     /// outputs to send to mint
     final List<WalletCashuBlindedMessageItem> myOutputs = [];
@@ -189,11 +195,8 @@ class CashuWallet {
     if (selectionResult.needsSplit) {
       final blindedMessagesOutputsOverpay =
           CashuBdhke.createBlindedMsgForAmounts(
-        keysetId: activeKeyset.id,
-
-        /// split to get smaller proofs for the future
-        amounts: CashuTools.splitAmount(selectionResult.splitAmount),
-      );
+              keysetId: activeKeyset.id,
+              amounts: CashuTools.splitAmount(selectionResult.splitAmount));
       myOutputs.addAll(
         blindedMessagesOutputsOverpay,
       );
@@ -267,16 +270,18 @@ class CashuWallet {
       throw Exception('No keysets found for mint: $mint');
     }
 
-    final keyset =
-        CashuTools.filterKeysetsByUnitActive(keysets: keysets, unit: unit);
+    final keysetsForUnit = CashuTools.filterKeysetsByUnit(
+      keysets: keysets,
+      unit: unit,
+    );
 
     final proofs = await _cacheManager.getProofs(mintUrl: mint);
     if (proofs.isEmpty) {
       throw Exception('No proofs found for mint: $mint');
     }
 
-    final selectionResult =
-        CashuWalletProofSelect.selectProofsForSpending(proofs, amount);
+    final selectionResult = CashuWalletProofSelect.selectProofsForSpending(
+        proofs: proofs, targetAmount: amount, keysets: keysetsForUnit);
 
     if (selectionResult.selectedProofs.isEmpty) {
       throw Exception('Not enough funds to spend the requested amount');
@@ -292,7 +297,7 @@ class CashuWallet {
         proofsToSplit: selectionResult.selectedProofs,
         targetAmount: amount,
         changeAmount: selectionResult.splitAmount,
-        keyset: keyset,
+        keysets: keysetsForUnit,
       );
 
       await _cacheManager.removeProofs(
