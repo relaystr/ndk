@@ -121,7 +121,6 @@ class CashuWallet {
       mintSignatures: mintResponse,
       blindedMessages: blindedMessagesOutputs,
       mintPublicKeys: keyset,
-      keysetId: keyset.id,
     );
     if (unblindedTokens.isEmpty) {
       throw Exception('Unblinding failed, no tokens returned');
@@ -134,8 +133,125 @@ class CashuWallet {
     return unblindedTokens;
   }
 
-  /// redeem toke for x (usually with lightning)
-  redeem() {}
+  /// redeem token for x (usually lightning)
+  /// [mintURL] - URL of the mint
+  /// [request] - the method request to redeem (like lightning invoice)
+  /// [unit] - the unit of the token (sat)
+  /// [method] - the method to use for redemption (bolt11)
+  Future redeem({
+    required String mintURL,
+    required String request,
+    required String unit,
+    required String method,
+  }) async {
+    final meltQuote = await _cashuRepo.getMeltQuote(
+      mintURL: mintURL,
+      request: request,
+      unit: unit,
+      method: method,
+    );
+    final feeReserve = meltQuote.feeReserve;
+
+    final proofsUnfiltered = await _cacheManager.getProofs(
+      mintUrl: mintURL,
+    );
+    final proofs =
+        CashuTools.filterProofsByUnit(proofs: proofsUnfiltered, unit: unit);
+
+    if (proofs.isEmpty) {
+      throw Exception('No proofs found for mint: $mintURL and unit: $unit');
+    }
+
+    final int amountToSpend;
+
+    // todo: add mint fees
+
+    if (feeReserve != null) {
+      amountToSpend = meltQuote.amount + feeReserve;
+    } else {
+      amountToSpend = meltQuote.amount;
+    }
+
+    final selectionResult =
+        CashuWalletProofSelect.selectProofsForSpending(proofs, amountToSpend);
+
+    final keysets = await _cashuKeysets.getKeysetsFromMint(mintURL);
+    if (keysets.isEmpty) {
+      throw Exception('No keysets found for mint: $mintURL');
+    }
+
+    final activeKeyset =
+        CashuTools.filterKeysetsByUnitActive(keysets: keysets, unit: unit);
+
+    /// outputs to send to mint
+    final List<WalletCashuBlindedMessageItem> myOutputs = [];
+
+    /// we dont have the exact amount
+    if (selectionResult.needsSplit) {
+      final blindedMessagesOutputsOverpay =
+          CashuBdhke.createBlindedMsgForAmounts(
+        keysetId: activeKeyset.id,
+
+        /// split to get smaller proofs for the future
+        amounts: CashuTools.splitAmount(selectionResult.splitAmount),
+      );
+      myOutputs.addAll(
+        blindedMessagesOutputsOverpay,
+      );
+    }
+
+    /// blank outputs for (lightning) fee reserve
+    if (meltQuote.feeReserve != null) {
+      final numBlankOutputs =
+          CashuTools.calculateNumberOfBlankOutputs(meltQuote.feeReserve!);
+
+      final blankOutputs = CashuBdhke.createBlindedMsgForAmounts(
+        keysetId: activeKeyset.id,
+        amounts: List.generate(numBlankOutputs, (_) => 0),
+      );
+      myOutputs.addAll(blankOutputs);
+    }
+
+    // todo communicate with user to check if everything is ok (fees, overpay, etc)
+
+    final meltResult = await _cashuRepo.meltTokens(
+      mintURL: mintURL,
+      quoteId: meltQuote.quoteId,
+      proofs: selectionResult.selectedProofs,
+      outputs: myOutputs
+          .map(
+            (e) => WalletCashuBlindedMessage(
+              amount: e.amount,
+              id: e.blindedMessage.id,
+              blindedMessage: e.blindedMessage.blindedMessage,
+            ),
+          )
+          .toList(),
+      method: method,
+    );
+
+    /// remove used proofs
+    await _cacheManager.removeProofs(
+      proofs: selectionResult.selectedProofs,
+      mintUrl: mintURL,
+    );
+
+    /// save change proofs if any
+    if (meltResult.change.isNotEmpty) {
+      /// unblind change proofs
+      final changeUnblinded = CashuBdhke.unblindSignatures(
+        mintSignatures: meltResult.change,
+        blindedMessages: myOutputs,
+        mintPublicKeys: activeKeyset,
+      );
+
+      await _cacheManager.saveProofs(
+        tokens: changeUnblinded,
+        mintUrl: mintURL,
+      );
+    }
+    return meltResult;
+  }
 
   /// send token to user
   Future<List<WalletCashuProof>> spend({
@@ -152,18 +268,8 @@ class CashuWallet {
       throw Exception('No keysets found for mint: $mint');
     }
 
-    // filter unit
-    final keysetsFiltered =
-        keysets.where((keyset) => keyset.unit == unit).toList();
-
-    if (keysetsFiltered.isEmpty) {
-      throw Exception('No keysets found for mint: $mint with unit: $unit');
-    }
-
-    final keyset = CashuTools.findActiveKeyset(keysetsFiltered);
-    if (keyset == null) {
-      throw Exception('No active keyset found for mint: $mint');
-    }
+    final keyset =
+        CashuTools.filterKeysetsByUnitActive(keysets: keysets, unit: unit);
 
     final proofs = await _cacheManager.getProofs(mintUrl: mint);
     if (proofs.isEmpty) {
@@ -261,7 +367,6 @@ class CashuWallet {
       mintSignatures: myBlindedSingatures,
       blindedMessages: blindedMessagesOutputs,
       mintPublicKeys: keyset,
-      keysetId: keyset.id,
     );
 
     if (myUnblindedTokens.isEmpty) {

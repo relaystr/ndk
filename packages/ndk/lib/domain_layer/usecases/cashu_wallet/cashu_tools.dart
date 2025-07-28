@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
@@ -132,7 +133,50 @@ class CashuTools {
     }
   }
 
+  /// Sums the amounts of all proofs in the list. \
+  /// Returns the total amount.
   static int sumOfProofs({required List<WalletCashuProof> proofs}) {
     return proofs.fold(0, (sum, proof) => sum + proof.amount);
+  }
+
+  /// Calculates the number of blank outputs needed for a given fee reserve.
+  static int calculateNumberOfBlankOutputs(int feeReserveSat) {
+    if (feeReserveSat <= 0) {
+      throw Exception("Fee reserve can't be negative.");
+    }
+
+    if (feeReserveSat == 0) {
+      return 0;
+    }
+
+    return max((log(feeReserveSat) / ln2).ceil(), 1);
+  }
+
+  static List<WalletCashuProof> filterProofsByUnit({
+    required List<WalletCashuProof> proofs,
+    required String unit,
+  }) {
+    return proofs.where((proof) => proof.keysetId == unit).toList();
+  }
+
+  /// Filters keysets by unit and returns the active keyset. \
+  /// Throws an exception if no keysets are found with the specified unit \
+  /// or if no active keyset is found.
+  static WalletCahsuKeyset filterKeysetsByUnitActive({
+    required List<WalletCahsuKeyset> keysets,
+    required String unit,
+  }) {
+    final keysetsFiltered =
+        keysets.where((keyset) => keyset.unit == unit).toList();
+
+    if (keysetsFiltered.isEmpty) {
+      throw Exception('No keysets found with unit: $unit');
+    }
+
+    final keyset = findActiveKeyset(keysetsFiltered);
+    if (keyset == null) {
+      throw Exception('No active keyset found for');
+    }
+    return keyset;
   }
 }

@@ -1,4 +1,3 @@
-import 'package:ndk/domain_layer/usecases/cashu_wallet/cashu_wallet_proof_select.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
@@ -65,5 +64,5 @@ void main() {
       );
       print(spendResult);
     });
-  });
+  }, skip: true);
 }

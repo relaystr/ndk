@@ -86,7 +86,6 @@ class CashuBdhke {
     required List<WalletCashuBlindedSignature> mintSignatures,
     required List<WalletCashuBlindedMessageItem> blindedMessages,
     required WalletCahsuKeyset mintPublicKeys,
-    required String keysetId,
   }) {
     List<WalletCashuProof> tokens = [];
 
@@ -117,7 +116,7 @@ class CashuBdhke {
         secret: blindedMsg.secret,
         amount: blindedMsg.amount,
         unblindedSig: CashuTools.ecPointToHex(unblindedSig),
-        keysetId: keysetId,
+        keysetId: mintPublicKeys.id,
       ));
     }
 

@@ -80,7 +80,6 @@ class CashuWalletProofSelect {
       mintSignatures: blindedSignatures,
       blindedMessages: blindedMessagesOutputs,
       mintPublicKeys: keyset,
-      keysetId: keyset.id,
     );
 
     return SplitResult(

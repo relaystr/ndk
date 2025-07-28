@@ -3,7 +3,7 @@ import 'wallet_cashu_quote.dart';
 class WalletCashuQuoteMelt {
   final String request;
   final String quoteId;
-  final String amount;
+  final int amount;
   final int? feeReserve;
   final bool paid;
   final int? expiry;
@@ -30,7 +30,7 @@ class WalletCashuQuoteMelt {
   }) {
     return WalletCashuQuoteMelt(
       quoteId: json['quote'] as String,
-      amount: json['amount'] as String,
+      amount: json['amount'] as int,
       unit: json['unit'] as String,
       state: CashuQuoteState.fromValue(json['state'] as String),
       expiry: json['expiry'] as int?,
