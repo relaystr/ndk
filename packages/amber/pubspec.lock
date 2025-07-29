@@ -137,6 +137,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.9.2"
+  cbor:
+    dependency: transitive
+    description:
+      name: cbor
+      sha256: f5239dd6b6ad24df67d1449e87d7180727d6f43b87b3c9402e6398c7a2d9609b
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.3.7"
   characters:
     dependency: transitive
     description:
@@ -341,6 +349,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  ieee754:
+    dependency: transitive
+    description:
+      name: ieee754
+      sha256: "7d87451c164a56c156180d34a4e93779372edd191d2c219206100b976203128c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -464,7 +480,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.4.1"
+    version: "0.5.0"
   package_config:
     dependency: transitive
     description:

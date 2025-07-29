@@ -5,6 +5,7 @@ import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/cashu_wallet/cashu_wallet.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
@@ -142,6 +143,10 @@ class Ndk {
   /// Search
   @experimental
   Search get search => _initialization.search;
+
+  /// Cashu Wallet
+  @experimental // in development
+  CashuWallet get cashuWallet => _initialization.cashuWallet;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {

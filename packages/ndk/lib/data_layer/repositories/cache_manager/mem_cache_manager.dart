@@ -1,5 +1,8 @@
 import 'dart:core';
 
+import 'package:ndk/domain_layer/entities/cashu/wallet_cashu_proof.dart';
+
+import '../../../domain_layer/entities/cashu/wallet_cashu_keyset.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
@@ -29,6 +32,12 @@ class MemCacheManager implements CacheManager {
 
   /// In memory storage
   Map<String, Nip01Event> events = {};
+
+  /// String for mint Url
+  Map<String, Set<WalletCahsuKeyset>> cashuKeysets = {};
+
+  /// String for mint Url
+  Map<String, Set<WalletCashuProof>> cashuProofs = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -288,5 +297,75 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> close() async {
     return;
+  }
+
+  @override
+  Future<List<WalletCahsuKeyset>> getKeysets({required String mintURL}) {
+    if (cashuKeysets.containsKey(mintURL)) {
+      return Future.value(cashuKeysets[mintURL]?.toList() ?? []);
+    } else {
+      return Future.value([]);
+    }
+  }
+
+  @override
+  Future<void> saveKeyset(WalletCahsuKeyset keyset) {
+    if (cashuKeysets.containsKey(keyset.mintURL)) {
+      cashuKeysets[keyset.mintURL]!.add(keyset);
+    } else {
+      cashuKeysets[keyset.mintURL] = {keyset};
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<List<WalletCashuProof>> getProofs({
+    required String mintUrl,
+    String? keysetId,
+  }) {
+    if (cashuProofs.containsKey(mintUrl)) {
+      if (keysetId != null) {
+        return Future.value(
+          cashuProofs[mintUrl]!
+              .where((proof) => proof.keysetId == keysetId)
+              .toList(),
+        );
+      } else {
+        return Future.value(cashuProofs[mintUrl]?.toList() ?? []);
+      }
+    } else {
+      return Future.value([]);
+    }
+  }
+
+  @override
+  Future<void> saveProofs({
+    required List<WalletCashuProof> tokens,
+    required String mintUrl,
+  }) {
+    if (cashuProofs.containsKey(mintUrl)) {
+      cashuProofs[mintUrl]!.addAll(tokens);
+    } else {
+      cashuProofs[mintUrl] = Set<WalletCashuProof>.from(tokens);
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<void> removeProofs(
+      {required List<WalletCashuProof> proofs, required String mintUrl}) {
+    if (cashuProofs.containsKey(mintUrl)) {
+      final existingProofs = cashuProofs[mintUrl]!;
+      for (final proof in proofs) {
+        existingProofs.removeWhere((p) => p.secret == proof.secret);
+      }
+      if (existingProofs.isEmpty) {
+        cashuProofs.remove(mintUrl);
+      }
+
+      return Future.value();
+    } else {
+      return Future.error('No proofs found for mint URL: $mintUrl');
+    }
   }
 }
