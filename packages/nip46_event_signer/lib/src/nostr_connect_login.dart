@@ -115,6 +115,7 @@ class NostrConnectLogin {
   }
 
   void dispose() {
+    ndk.requests.closeSubscription(subscription.requestId);
     _connectionController.close();
   }
 }
