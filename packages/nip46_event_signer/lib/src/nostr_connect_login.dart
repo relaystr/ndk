@@ -100,8 +100,6 @@ class NostrConnectLogin {
 
       final response = jsonDecode(decryptedContent!);
 
-      print(response);
-
       if (response["result"] == "auth_url") {
         _streamController.add(AuthRequired(response["error"]));
         continue;

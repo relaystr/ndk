@@ -5,7 +5,7 @@ import 'package:nip46_event_signer/nip46_event_signer.dart';
 
 const globalConnectionSettings = {
   "privateKey":
-      "f03fcf8f65409b454721dd02f6ca24012c56f8bf0842d6e79d247db895f6e85c",
+      "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
   "remotePubkey":
       "b836aab8e635e41e62b832d68dc0f1857b717689df248290be9efa02f02de672",
   "relays": ["wss://relay.nsec.app"],
@@ -19,14 +19,12 @@ void main() {
 
   Get.put(TextEditingController());
 
-  Get.put(Repository());
-
   final nostrConnectLogin = NostrConnectLogin(
     relays: relays,
     appName: "Demo app",
   );
   nostrConnectLogin.stream.listen((event) {
-    print(event);
+    print(event.toJson());
   });
   Get.put(nostrConnectLogin);
 
@@ -40,25 +38,10 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 500,
-            child: GetBuilder<Repository>(
-              builder: (c) {
-                final ndk = Get.find<Ndk>();
-                if (ndk.accounts.isLoggedIn) return HomeView();
-                return Nip46LoginView();
-              },
-            ),
-          ),
-        ),
+        body: Center(child: SizedBox(width: 500, child: Nip46LoginView())),
       ),
     );
   }
-}
-
-class Repository extends GetxController {
-  static Repository get to => Get.find();
 }
 
 class Nip46LoginView extends StatelessWidget {
@@ -80,7 +63,7 @@ class Nip46LoginView extends StatelessWidget {
                   bunkerUrl: Get.find<TextEditingController>().text,
                 );
                 bunkerLogin.stream.listen((event) {
-                  print(event);
+                  print(event.toJson());
                 });
               },
               child: Text("Connect"),
@@ -89,44 +72,26 @@ class Nip46LoginView extends StatelessWidget {
         ),
         SizedBox(height: 8),
         SelectableText(Get.find<NostrConnectLogin>().nostrConnectURL),
-        // SizedBox(height: 8),
-        // FilledButton(
-        //   onPressed: () async {
-        //     final signer = Nip46EventSigner(
-        //       connectionSettings: ConnectionSettings.fromJson(
-        //         globalConnectionSettings,
-        //       ),
-        //     );
+        SizedBox(height: 8),
+        FilledButton(
+          onPressed: () async {
+            final ndk = Get.find<Ndk>();
 
-        //     await signer.getPublicKeyAsync();
+            final signer = Nip46EventSigner(
+              connectionSettings: ConnectionSettings.fromJson(
+                globalConnectionSettings,
+              ),
+            );
 
-        //     ndk.accounts.loginExternalSigner(signer: signer);
+            await signer.getPublicKeyAsync();
 
-        //     print(ndk.accounts.isLoggedIn);
+            ndk.accounts.loginExternalSigner(signer: signer);
 
-        //     Repository.to.update();
-        //   },
-        //   child: Text("Use global account"),
-        // ),
+            print(ndk.accounts.getPublicKey());
+          },
+          child: Text("Use global account"),
+        ),
       ],
-    );
-  }
-}
-
-class HomeView extends StatelessWidget {
-  const HomeView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton(
-      onPressed: () async {
-        final ndk = Get.find<Ndk>();
-        print(
-          await (ndk.accounts.getLoggedAccount()!.signer as Nip46EventSigner)
-              .getPublicKeyAsync(),
-        );
-      },
-      child: Text("Get pubkey"),
     );
   }
 }

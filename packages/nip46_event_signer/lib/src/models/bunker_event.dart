@@ -7,18 +7,15 @@ sealed class BunkerEvent {
 class AuthRequired extends BunkerEvent {
   final String url;
   AuthRequired(this.url);
-  
+
   @override
-  Map<String, dynamic> toJson() => {
-    'type': 'AuthRequired',
-    'url': url,
-  };
+  Map<String, dynamic> toJson() => {'type': 'AuthRequired', 'url': url};
 }
 
 class Connected extends BunkerEvent {
   final ConnectionSettings settings;
   Connected(this.settings);
-  
+
   @override
   Map<String, dynamic> toJson() => {
     'type': 'Connected',

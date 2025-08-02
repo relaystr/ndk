@@ -107,7 +107,10 @@ class Nip46EventSigner implements EventSigner {
     );
 
     await localEventSigner.sign(requestEvent);
-    ndk!.broadcast.broadcast(nostrEvent: requestEvent);
+    ndk!.broadcast.broadcast(
+      nostrEvent: requestEvent,
+      specificRelays: connectionSettings.relays,
+    );
 
     return completer.future;
   }
