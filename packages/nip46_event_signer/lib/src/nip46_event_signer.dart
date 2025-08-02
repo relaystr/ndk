@@ -216,6 +216,17 @@ class Nip46EventSigner implements EventSigner {
     event.sig = signedEvent["sig"];
   }
 
+  Future<String> ping() async {
+    final request = {
+      "id": generateRandomString(),
+      "method": "ping",
+      "params": [],
+    };
+
+    final response = await remoteRequest(request: request);
+    return response;
+  }
+
   void closeSubscription() async {
     if (subscription == null) return;
     await ndk!.requests.closeSubscription(subscription!.requestId);

@@ -169,5 +169,10 @@ void main() {
       
       expect(decryptedMessage, equals(testMessage));
     });
+
+    test('ping should return pong', () async {
+      final response = await signer.ping();
+      expect(response, equals('pong'));
+    });
   });
 }
