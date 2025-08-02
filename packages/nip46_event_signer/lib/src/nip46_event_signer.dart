@@ -19,6 +19,9 @@ class Nip46EventSigner implements EventSigner {
   String? nostrConnectURL;
   String? bunkerURL;
 
+  final _connectionController = StreamController<bool>.broadcast();
+  Stream<bool> get connectionStream => _connectionController.stream;
+
   Nip46EventSigner(this.ndk) {
     final keyPair = KeyPair.generate();
     localEventSigner = Bip340EventSigner(
@@ -105,6 +108,10 @@ class Nip46EventSigner implements EventSigner {
       request: request,
       subscription: bunkerResponse!,
     );
+    
+    this.remotePubkey = remotePubkey;
+    this.relays = relays;
+    _connectionController.add(true);
   }
 
   Future<void> listenNostrConnect({required List<String> relays}) async {
@@ -132,7 +139,8 @@ class Nip46EventSigner implements EventSigner {
       if (response["method"] != "connect") continue;
       
       remotePubkey = event.pubKey;
-      // TODO emit event
+      this.relays = relays;
+      _connectionController.add(true);
       break;
     }
   }
@@ -287,5 +295,9 @@ class Nip46EventSigner implements EventSigner {
   Future<void> sign(Nip01Event event) {
     // TODO: implement sign
     throw UnimplementedError();
+  }
+
+  void dispose() {
+    _connectionController.close();
   }
 }
