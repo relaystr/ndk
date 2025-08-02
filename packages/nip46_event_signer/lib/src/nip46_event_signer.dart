@@ -22,8 +22,8 @@ class Nip46EventSigner implements EventSigner {
   final _connectionController = StreamController<bool>.broadcast();
   Stream<bool> get connectionStream => _connectionController.stream;
 
-  Nip46EventSigner(this.ndk) {
-    final keyPair = KeyPair.generate();
+  Nip46EventSigner(this.ndk, String privateKey) {
+    final keyPair = KeyPair.fromPrivateKey(privateKey: privateKey);
     localEventSigner = Bip340EventSigner(
       privateKey: keyPair.privateKey,
       publicKey: keyPair.publicKey,
