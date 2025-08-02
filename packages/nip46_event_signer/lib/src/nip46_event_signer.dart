@@ -121,33 +121,57 @@ class Nip46EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) {
-    // TODO: implement decrypt
-    throw UnimplementedError();
+  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+    final request = {
+      "id": id ?? generateRandomString(),
+      "method": "nip04_decrypt",
+      "params": [destPubKey, msg],
+    };
+
+    final decryptedText = await remoteRequest(request: request);
+    return decryptedText;
   }
 
   @override
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
-  }) {
-    // TODO: implement decryptNip44
-    throw UnimplementedError();
+  }) async {
+    final request = {
+      "id": generateRandomString(),
+      "method": "nip44_decrypt",
+      "params": [senderPubKey, ciphertext],
+    };
+
+    final decryptedText = await remoteRequest(request: request);
+    return decryptedText;
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) {
-    // TODO: implement encrypt
-    throw UnimplementedError();
+  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+    final request = {
+      "id": id ?? generateRandomString(),
+      "method": "nip04_encrypt",
+      "params": [destPubKey, msg],
+    };
+
+    final encryptedText = await remoteRequest(request: request);
+    return encryptedText;
   }
 
   @override
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
-  }) {
-    // TODO: implement encryptNip44
-    throw UnimplementedError();
+  }) async {
+    final request = {
+      "id": generateRandomString(),
+      "method": "nip44_encrypt",
+      "params": [recipientPubKey, plaintext],
+    };
+
+    final encryptedText = await remoteRequest(request: request);
+    return encryptedText;
   }
 
   @override
@@ -171,9 +195,25 @@ class Nip46EventSigner implements EventSigner {
   }
 
   @override
-  Future<void> sign(Nip01Event event) {
-    // TODO: implement sign
-    throw UnimplementedError();
+  Future<void> sign(Nip01Event event) async {
+    final eventMap = {
+      "kind": event.kind,
+      "content": event.content,
+      "tags": event.tags,
+      "created_at": event.createdAt,
+    };
+
+    final request = {
+      "id": generateRandomString(),
+      "method": "sign_event",
+      "params": [jsonEncode(eventMap)],
+    };
+
+    final signedEventJson = await remoteRequest(request: request);
+    final signedEvent = jsonDecode(signedEventJson);
+
+    event.id = signedEvent["id"];
+    event.sig = signedEvent["sig"];
   }
 
   void closeSubscription() async {
