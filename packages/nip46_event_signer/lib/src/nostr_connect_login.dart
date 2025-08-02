@@ -18,10 +18,8 @@ class NostrConnectLogin {
   final keyPair = KeyPair.generate();
   final secret = generateRandomString();
 
-  final _connectionController =
-      StreamController<ConnectionSettings>.broadcast();
-  Stream<ConnectionSettings> get connectionStream =>
-      _connectionController.stream;
+  final _connectionCompleter = Completer<ConnectionSettings>();
+  Future<ConnectionSettings> get connectionFuture => _connectionCompleter.future;
 
   late NdkResponse subscription;
 
@@ -72,7 +70,7 @@ class NostrConnectLogin {
       throw ArgumentError("At least one relay is required");
     }
 
-    final oneHourAgo =
+    final oneMinuteAgo =
         (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
         Duration(hours: 1).inSeconds;
     subscription = ndk.requests.subscription(
@@ -81,7 +79,7 @@ class NostrConnectLogin {
         Filter(
           kinds: [24133],
           pTags: [localEventSigner.publicKey],
-          since: oneHourAgo,
+          since: oneMinuteAgo,
         ),
       ],
     );
@@ -98,9 +96,11 @@ class NostrConnectLogin {
 
       final response = jsonDecode(decryptedContent!);
 
+      print(response);
+
       if (response["method"] != "connect") continue;
 
-      _connectionController.add(
+      _connectionCompleter.complete(
         ConnectionSettings(
           privateKey: localEventSigner.privateKey!,
           remotePubkey: event.pubKey,
@@ -116,6 +116,5 @@ class NostrConnectLogin {
 
   void dispose() {
     ndk.requests.closeSubscription(subscription.requestId);
-    _connectionController.close();
   }
 }

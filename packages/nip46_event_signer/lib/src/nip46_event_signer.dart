@@ -11,10 +11,10 @@ class Nip46EventSigner implements EventSigner {
 
   String? _cachedPublicKey;
 
-  String? remotePubkey;
-  List<String>? relays;
-
+  late String remotePubkey;
+  late List<String> relays;
   late Bip340EventSigner localEventSigner;
+
   late NdkResponse subscription;
 
   Nip46EventSigner({required this.ndk, required ConnectionSettings settings}) {
@@ -24,20 +24,23 @@ class Nip46EventSigner implements EventSigner {
       publicKey: keyPair.publicKey,
     );
 
+    remotePubkey = settings.remotePubkey;
+    relays = settings.relays;
+
     listenBunker();
   }
 
+  final oneMinuteAgo =
+      (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
+      Duration(hours: 1).inSeconds;
   Future<void> listenBunker() async {
-    final oneHourAgo =
-        (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
-        Duration(hours: 1).inSeconds;
     subscription = ndk.requests.subscription(
       explicitRelays: relays,
       filters: [
         Filter(
           kinds: [24133],
           pTags: [localEventSigner.publicKey],
-          since: oneHourAgo,
+          since: oneMinuteAgo,
         ),
       ],
     );
@@ -48,6 +51,8 @@ class Nip46EventSigner implements EventSigner {
     required List<String> relays,
     required Map<String, dynamic> request,
   }) async {
+    print(request["id"]);
+
     final encryptedRequest = await localEventSigner.encryptNip44(
       plaintext: jsonEncode(request),
       recipientPubKey: remotePubkey,
@@ -62,6 +67,7 @@ class Nip46EventSigner implements EventSigner {
       content: encryptedRequest!,
     );
 
+    await localEventSigner.sign(requestEvent);
     ndk.broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
 
     await for (final event in subscription.stream) {
@@ -72,13 +78,15 @@ class Nip46EventSigner implements EventSigner {
 
       final response = jsonDecode(decryptedContent!);
 
-      if (response["id"] != request["id"]) continue;
+      print('${DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000)}: $response');
 
-      if (response["error"] != null) {
-        throw Exception(response["error"]);
+      if (response["result"] == "auth_url") {
+        // print(response["error"]);
       }
 
-      return response["result"];
+      if (response["id"] != request["id"]) continue;
+
+      // return response["result"];
     }
 
     throw Exception('No response received');
@@ -127,10 +135,6 @@ class Nip46EventSigner implements EventSigner {
   }
 
   Future<String> getPublicKeyAsync() async {
-    if (remotePubkey == null) {
-      throw StateError('No bunker connected');
-    }
-
     final request = {
       "id": generateRandomString(),
       "method": "get_public_key",
@@ -138,8 +142,8 @@ class Nip46EventSigner implements EventSigner {
     };
 
     final publicKey = await remoteRequest(
-      relays: relays!,
-      remotePubkey: remotePubkey!,
+      relays: relays,
+      remotePubkey: remotePubkey,
       request: request,
     );
 

@@ -52,21 +52,22 @@ Future<ConnectionSettings> bunkerLogin({
     content: encryptedRequest!,
   );
 
-  final oneHourAgo =
+  final oneMinuteAgo =
       (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
       Duration(hours: 1).inSeconds;
   final subscription = ndk.requests.subscription(
     explicitRelays: relays,
     filters: [
       Filter(
-        authors: [remotePubkey],
+        // authors: [remotePubkey],
         kinds: [24133],
         pTags: [localEventSigner.publicKey],
-        since: oneHourAgo,
+        since: oneMinuteAgo,
       ),
     ],
   );
 
+  await localEventSigner.sign(requestEvent);
   ndk.broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
 
   await for (final event in subscription.stream) {
