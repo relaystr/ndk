@@ -3,25 +3,25 @@ import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
 import 'package:nip01/nip01.dart';
+import 'package:nip46_event_signer/src/models/bunker_event.dart';
 import 'package:nip46_event_signer/src/models/connection_settings.dart';
 import 'package:nip46_event_signer/src/utils.dart';
 
 class NostrConnectLogin {
-  Ndk ndk;
+  final _streamController = StreamController<BunkerEvent>.broadcast();
+  Stream<BunkerEvent> get stream => _streamController.stream;
+
+  Ndk? ndk;
+  NdkResponse? subscription;
 
   List<String> relays;
   List<String>? perms;
-  String? name;
-  String? url;
-  String? image;
+  String? appName;
+  String? appUrl;
+  String? appImageUrl;
 
   final keyPair = KeyPair.generate();
   final secret = generateRandomString();
-
-  final _connectionCompleter = Completer<ConnectionSettings>();
-  Future<ConnectionSettings> get connectionFuture => _connectionCompleter.future;
-
-  late NdkResponse subscription;
 
   Bip340EventSigner get localEventSigner => Bip340EventSigner(
     privateKey: keyPair.privateKey,
@@ -43,43 +43,47 @@ class NostrConnectLogin {
       params.add('perms=${perms!.join(',')}');
     }
 
-    if (name != null) {
-      params.add('name=${Uri.encodeComponent(name!)}');
+    if (appName != null) {
+      params.add('name=${Uri.encodeComponent(appName!)}');
     }
 
-    if (url != null) {
-      params.add('url=${Uri.encodeComponent(url!)}');
+    if (appUrl != null) {
+      params.add('url=${Uri.encodeComponent(appUrl!)}');
     }
 
-    if (image != null) {
-      params.add('image=${Uri.encodeComponent(image!)}');
+    if (appImageUrl != null) {
+      params.add('image=${Uri.encodeComponent(appImageUrl!)}');
     }
 
     return 'nostrconnect://$pubkey?${params.join('&')}';
   }
 
   NostrConnectLogin({
-    required this.ndk,
     required this.relays,
     this.perms,
-    this.name,
-    this.url,
-    this.image,
+    this.appName,
+    this.appUrl,
+    this.appImageUrl,
   }) {
     if (relays.isEmpty) {
       throw ArgumentError("At least one relay is required");
     }
 
-    final oneMinuteAgo =
-        (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
-        Duration(hours: 1).inSeconds;
-    subscription = ndk.requests.subscription(
+    ndk = Ndk(
+      NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: relays,
+      ),
+    );
+
+    subscription = ndk!.requests.subscription(
       explicitRelays: relays,
       filters: [
         Filter(
           kinds: [24133],
           pTags: [localEventSigner.publicKey],
-          since: oneMinuteAgo,
+          since: someTimeAgo(),
         ),
       ],
     );
@@ -88,7 +92,7 @@ class NostrConnectLogin {
   }
 
   Future<void> listenConnection() async {
-    await for (final event in subscription.stream) {
+    await for (final event in subscription!.stream) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: event.pubKey,
@@ -98,23 +102,37 @@ class NostrConnectLogin {
 
       print(response);
 
-      if (response["method"] != "connect") continue;
+      if (response["result"] == "auth_url") {
+        _streamController.add(AuthRequired(response["error"]));
+        continue;
+      }
 
-      _connectionCompleter.complete(
-        ConnectionSettings(
-          privateKey: localEventSigner.privateKey!,
-          remotePubkey: event.pubKey,
-          relays: relays,
-        ),
-      );
-
-      break;
+      if (response["result"] == secret) {
+        _streamController.add(
+          Connected(
+            ConnectionSettings(
+              privateKey: localEventSigner.privateKey!,
+              remotePubkey: event.pubKey,
+              relays: relays,
+            ),
+          ),
+        );
+        break;
+      }
     }
 
-    ndk.requests.closeSubscription(subscription.requestId);
+    dispose();
+  }
+
+  void closeSubscription() async {
+    if (subscription == null) return;
+    await ndk!.requests.closeSubscription(subscription!.requestId);
   }
 
   void dispose() {
-    ndk.requests.closeSubscription(subscription.requestId);
+    _streamController.close();
+    if (ndk == null) return;
+    closeSubscription();
+    ndk!.destroy();
   }
 }

@@ -3,99 +3,118 @@ import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
 import 'package:nip01/nip01.dart';
-import 'package:nip46_event_signer/src/models/connection_settings.dart';
+import 'package:nip46_event_signer/nip46_event_signer.dart';
+import 'package:nip46_event_signer/src/models/bunker_event.dart';
 import 'package:nip46_event_signer/src/utils.dart';
 
 class Nip46EventSigner implements EventSigner {
-  Ndk ndk;
+  final _streamController = StreamController<dynamic>.broadcast();
+  Stream<dynamic> get stream => _streamController.stream;
+
+  ConnectionSettings connectionSettings;
+
+  Ndk? ndk;
+  NdkResponse? subscription;
+
+  final _pendingRequests = <String, Completer<dynamic>>{};
 
   String? _cachedPublicKey;
 
-  late String remotePubkey;
-  late List<String> relays;
   late Bip340EventSigner localEventSigner;
 
-  late NdkResponse subscription;
+  Nip46EventSigner({required this.connectionSettings}) {
+    final keyPair = KeyPair.fromPrivateKey(
+      privateKey: connectionSettings.privateKey,
+    );
 
-  Nip46EventSigner({required this.ndk, required ConnectionSettings settings}) {
-    final keyPair = KeyPair.fromPrivateKey(privateKey: settings.privateKey);
     localEventSigner = Bip340EventSigner(
       privateKey: keyPair.privateKey,
       publicKey: keyPair.publicKey,
     );
 
-    remotePubkey = settings.remotePubkey;
-    relays = settings.relays;
+    ndk = Ndk(
+      NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: connectionSettings.relays,
+      ),
+    );
 
-    listenBunker();
+    ndk!.accounts.loginExternalSigner(signer: localEventSigner);
+
+    listenRelays();
   }
 
-  final oneMinuteAgo =
-      (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
-      Duration(hours: 1).inSeconds;
-  Future<void> listenBunker() async {
-    subscription = ndk.requests.subscription(
-      explicitRelays: relays,
+  Future<void> listenRelays() async {
+    subscription = ndk!.requests.subscription(
       filters: [
         Filter(
+          authors: [connectionSettings.remotePubkey],
           kinds: [24133],
           pTags: [localEventSigner.publicKey],
-          since: oneMinuteAgo,
+          since: someTimeAgo(),
         ),
       ],
     );
+
+    subscription!.stream.listen(onEvent);
   }
 
-  Future<String> remoteRequest({
-    required String remotePubkey,
-    required List<String> relays,
-    required Map<String, dynamic> request,
-  }) async {
-    print(request["id"]);
+  Future<void> onEvent(Nip01Event event) async {
+    final decryptedContent = await localEventSigner.decryptNip44(
+      ciphertext: event.content,
+      senderPubKey: event.pubKey,
+    );
+
+    final response = jsonDecode(decryptedContent!);
+
+    print(response);
+
+    if (response["result"] == "auth_url") {
+      _streamController.add(AuthRequired(response["error"]));
+      return;
+    }
+
+    if (_pendingRequests[response["id"]] != null) {
+      final completer = _pendingRequests.remove(response["id"])!;
+
+      if (response["error"] != null && response["result"] != "auth_url") {
+        completer.completeError(Exception(response["error"]));
+      } else {
+        completer.complete(response["result"]);
+      }
+    }
+  }
+
+  Future<String> remoteRequest({required Map<String, dynamic> request}) async {
+    print(request);
+
+    final completer = Completer<String>();
+    _pendingRequests[request["id"]] = completer;
 
     final encryptedRequest = await localEventSigner.encryptNip44(
       plaintext: jsonEncode(request),
-      recipientPubKey: remotePubkey,
+      recipientPubKey: connectionSettings.remotePubkey,
     );
 
     final requestEvent = Nip01Event(
       pubKey: localEventSigner.publicKey,
       kind: 24133,
       tags: [
-        ["p", remotePubkey],
+        ["p", connectionSettings.remotePubkey],
       ],
       content: encryptedRequest!,
     );
 
     await localEventSigner.sign(requestEvent);
-    ndk.broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
+    ndk!.broadcast.broadcast(nostrEvent: requestEvent);
 
-    await for (final event in subscription.stream) {
-      final decryptedContent = await localEventSigner.decryptNip44(
-        ciphertext: event.content,
-        senderPubKey: remotePubkey,
-      );
-
-      final response = jsonDecode(decryptedContent!);
-
-      print('${DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000)}: $response');
-
-      if (response["result"] == "auth_url") {
-        // print(response["error"]);
-      }
-
-      if (response["id"] != request["id"]) continue;
-
-      // return response["result"];
-    }
-
-    throw Exception('No response received');
+    return completer.future;
   }
 
   @override
   bool canSign() {
-    // TODO: implement canSign
-    throw UnimplementedError();
+    return true;
   }
 
   @override
@@ -141,11 +160,7 @@ class Nip46EventSigner implements EventSigner {
       "params": [],
     };
 
-    final publicKey = await remoteRequest(
-      relays: relays,
-      remotePubkey: remotePubkey,
-      request: request,
-    );
+    final publicKey = await remoteRequest(request: request);
 
     _cachedPublicKey = publicKey;
 
@@ -156,5 +171,17 @@ class Nip46EventSigner implements EventSigner {
   Future<void> sign(Nip01Event event) {
     // TODO: implement sign
     throw UnimplementedError();
+  }
+
+  void closeSubscription() async {
+    if (subscription == null) return;
+    await ndk!.requests.closeSubscription(subscription!.requestId);
+  }
+
+  void dispose() {
+    _streamController.close();
+    if (ndk == null) return;
+    closeSubscription();
+    ndk!.destroy();
   }
 }

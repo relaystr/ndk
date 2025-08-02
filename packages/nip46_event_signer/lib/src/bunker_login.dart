@@ -1,93 +1,131 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:ndk/ndk.dart';
 import 'package:nip01/nip01.dart';
+import 'package:nip46_event_signer/src/models/bunker_event.dart';
 import 'package:nip46_event_signer/src/models/connection_settings.dart';
 import 'package:nip46_event_signer/src/utils.dart';
 
-Future<ConnectionSettings> bunkerLogin({
-  required Ndk ndk,
-  required String bunkerUrl,
-}) async {
-  final uri = Uri.parse(bunkerUrl);
-  if (uri.scheme != 'bunker') {
-    throw ArgumentError('Invalid bunker URL scheme');
+class BunkerLogin {
+  final _streamController = StreamController<BunkerEvent>.broadcast();
+  Stream<BunkerEvent> get stream => _streamController.stream;
+
+  Ndk? ndk;
+  NdkResponse? subscription;
+
+  BunkerLogin({required String bunkerUrl}) {
+    _connect(bunkerUrl: bunkerUrl);
   }
 
-  final remotePubkey = uri.host;
-  final relays = uri.queryParametersAll['relay'] ?? [];
-  final secret = uri.queryParameters['secret'];
+  _connect({required String bunkerUrl}) async {
+    final uri = Uri.parse(bunkerUrl);
+    if (uri.scheme != 'bunker') {
+      throw ArgumentError('Invalid bunker URL scheme');
+    }
 
-  if (relays.isEmpty) {
-    throw ArgumentError('At least one relay is required in bunker URL');
-  }
+    final remotePubkey = uri.host;
+    final relays = uri.queryParametersAll['relay'] ?? [];
+    final secret = uri.queryParameters['secret'];
 
-  if (secret == null) {
-    throw ArgumentError('Secret parameter is required in bunker URL');
-  }
+    if (relays.isEmpty) {
+      throw ArgumentError('At least one relay is required in bunker URL');
+    }
 
-  final keyPair = KeyPair.generate();
-  final localEventSigner = Bip340EventSigner(
-    privateKey: keyPair.privateKey,
-    publicKey: keyPair.publicKey,
-  );
+    if (secret == null) {
+      throw ArgumentError('Secret parameter is required in bunker URL');
+    }
 
-  final request = {
-    "id": generateRandomString(),
-    "method": "connect",
-    "params": [remotePubkey, secret],
-  };
-
-  final encryptedRequest = await localEventSigner.encryptNip44(
-    plaintext: jsonEncode(request),
-    recipientPubKey: remotePubkey,
-  );
-
-  final requestEvent = Nip01Event(
-    pubKey: localEventSigner.publicKey,
-    kind: 24133,
-    tags: [
-      ["p", remotePubkey],
-    ],
-    content: encryptedRequest!,
-  );
-
-  final oneMinuteAgo =
-      (DateTime.now().millisecondsSinceEpoch ~/ 1000) -
-      Duration(hours: 1).inSeconds;
-  final subscription = ndk.requests.subscription(
-    explicitRelays: relays,
-    filters: [
-      Filter(
-        // authors: [remotePubkey],
-        kinds: [24133],
-        pTags: [localEventSigner.publicKey],
-        since: oneMinuteAgo,
-      ),
-    ],
-  );
-
-  await localEventSigner.sign(requestEvent);
-  ndk.broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
-
-  await for (final event in subscription.stream) {
-    final decryptedContent = await localEventSigner.decryptNip44(
-      ciphertext: event.content,
-      senderPubKey: remotePubkey,
+    final keyPair = KeyPair.generate();
+    final localEventSigner = Bip340EventSigner(
+      privateKey: keyPair.privateKey,
+      publicKey: keyPair.publicKey,
     );
 
-    final response = jsonDecode(decryptedContent!);
+    final request = {
+      "id": generateRandomString(),
+      "method": "connect",
+      "params": [remotePubkey, secret],
+    };
 
-    if (response["id"] != request["id"]) continue;
+    final encryptedRequest = await localEventSigner.encryptNip44(
+      plaintext: jsonEncode(request),
+      recipientPubKey: remotePubkey,
+    );
 
-    break;
+    final requestEvent = Nip01Event(
+      pubKey: localEventSigner.publicKey,
+      kind: 24133,
+      tags: [
+        ["p", remotePubkey],
+      ],
+      content: encryptedRequest!,
+    );
+
+    ndk = Ndk(
+      NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: relays,
+      ),
+    );
+
+    subscription = ndk!.requests.subscription(
+      explicitRelays: relays,
+      filters: [
+        Filter(
+          authors: [remotePubkey],
+          kinds: [24133],
+          pTags: [localEventSigner.publicKey],
+          since: someTimeAgo(),
+        ),
+      ],
+    );
+
+    await localEventSigner.sign(requestEvent);
+    ndk!.broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
+
+    await for (final event in subscription!.stream) {
+      final decryptedContent = await localEventSigner.decryptNip44(
+        ciphertext: event.content,
+        senderPubKey: remotePubkey,
+      );
+
+      final response = jsonDecode(decryptedContent!);
+
+      if (response["id"] != request["id"]) continue;
+
+      if (response["result"] == "auth_url") {
+        _streamController.add(AuthRequired(response["error"]));
+        continue;
+      }
+
+      if (response["result"] == "ack") {
+        _streamController.add(
+          Connected(
+            ConnectionSettings(
+              privateKey: localEventSigner.privateKey!,
+              remotePubkey: remotePubkey,
+              relays: relays,
+            ),
+          ),
+        );
+        break;
+      }
+    }
+
+    dispose();
   }
 
-  ndk.requests.closeSubscription(subscription.requestId);
+  void closeSubscription() async {
+    if (subscription == null) return;
+    await ndk!.requests.closeSubscription(subscription!.requestId);
+  }
 
-  return ConnectionSettings(
-    privateKey: localEventSigner.privateKey!,
-    remotePubkey: remotePubkey,
-    relays: relays,
-  );
+  void dispose() {
+    _streamController.close();
+    if (ndk == null) return;
+    closeSubscription();
+    ndk!.destroy();
+  }
 }
