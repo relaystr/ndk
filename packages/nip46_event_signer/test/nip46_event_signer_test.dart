@@ -84,34 +84,37 @@ void main() {
       expect(decryptedText, equals(testMessage));
     });
 
-    test('encrypt should request remote encryption and be verifiable', () async {
-      const testMessage = 'Hello, this is a test message to encrypt!';
-      
-      // Create a local event signer to verify decryption
-      final keyPair = KeyPair.generate();
-      final localSigner = Bip340EventSigner(
-        privateKey: keyPair.privateKey,
-        publicKey: keyPair.publicKey,
-      );
-      
-      // Test encrypting with the NIP-46 signer
-      final encryptedMessage = await signer.encrypt(
-        testMessage,
-        keyPair.publicKey,
-      );
-      
-      expect(encryptedMessage, isNotNull);
-      expect(encryptedMessage, isNotEmpty);
-      expect(encryptedMessage, isNot(equals(testMessage)));
-      
-      // Verify by decrypting with local signer
-      final decryptedMessage = await localSigner.decrypt(
-        encryptedMessage!,
-        await signer.getPublicKeyAsync(),
-      );
-      
-      expect(decryptedMessage, equals(testMessage));
-    });
+    test(
+      'encrypt should request remote encryption and be verifiable',
+      () async {
+        const testMessage = 'Hello, this is a test message to encrypt!';
+
+        // Create a local event signer to verify decryption
+        final keyPair = KeyPair.generate();
+        final localSigner = Bip340EventSigner(
+          privateKey: keyPair.privateKey,
+          publicKey: keyPair.publicKey,
+        );
+
+        // Test encrypting with the NIP-46 signer
+        final encryptedMessage = await signer.encrypt(
+          testMessage,
+          keyPair.publicKey,
+        );
+
+        expect(encryptedMessage, isNotNull);
+        expect(encryptedMessage, isNotEmpty);
+        expect(encryptedMessage, isNot(equals(testMessage)));
+
+        // Verify by decrypting with local signer
+        final decryptedMessage = await localSigner.decrypt(
+          encryptedMessage!,
+          await signer.getPublicKeyAsync(),
+        );
+
+        expect(decryptedMessage, equals(testMessage));
+      },
+    );
 
     test('decryptNip44 should request remote NIP-44 decryption', () async {
       // Create a local event signer to encrypt a test message with NIP-44
@@ -141,34 +144,37 @@ void main() {
       expect(decryptedText, equals(testMessage));
     });
 
-    test('encryptNip44 should request remote NIP-44 encryption and be verifiable', () async {
-      const testMessage = 'Hello, this is a NIP-44 encryption test!';
-      
-      // Create a local event signer to verify decryption
-      final keyPair = KeyPair.generate();
-      final localSigner = Bip340EventSigner(
-        privateKey: keyPair.privateKey,
-        publicKey: keyPair.publicKey,
-      );
-      
-      // Test encrypting with the NIP-46 signer
-      final encryptedMessage = await signer.encryptNip44(
-        plaintext: testMessage,
-        recipientPubKey: keyPair.publicKey,
-      );
-      
-      expect(encryptedMessage, isNotNull);
-      expect(encryptedMessage, isNotEmpty);
-      expect(encryptedMessage, isNot(equals(testMessage)));
-      
-      // Verify by decrypting with local signer
-      final decryptedMessage = await localSigner.decryptNip44(
-        ciphertext: encryptedMessage!,
-        senderPubKey: await signer.getPublicKeyAsync(),
-      );
-      
-      expect(decryptedMessage, equals(testMessage));
-    });
+    test(
+      'encryptNip44 should request remote NIP-44 encryption and be verifiable',
+      () async {
+        const testMessage = 'Hello, this is a NIP-44 encryption test!';
+
+        // Create a local event signer to verify decryption
+        final keyPair = KeyPair.generate();
+        final localSigner = Bip340EventSigner(
+          privateKey: keyPair.privateKey,
+          publicKey: keyPair.publicKey,
+        );
+
+        // Test encrypting with the NIP-46 signer
+        final encryptedMessage = await signer.encryptNip44(
+          plaintext: testMessage,
+          recipientPubKey: keyPair.publicKey,
+        );
+
+        expect(encryptedMessage, isNotNull);
+        expect(encryptedMessage, isNotEmpty);
+        expect(encryptedMessage, isNot(equals(testMessage)));
+
+        // Verify by decrypting with local signer
+        final decryptedMessage = await localSigner.decryptNip44(
+          ciphertext: encryptedMessage!,
+          senderPubKey: await signer.getPublicKeyAsync(),
+        );
+
+        expect(decryptedMessage, equals(testMessage));
+      },
+    );
 
     test('ping should return pong', () async {
       final response = await signer.ping();

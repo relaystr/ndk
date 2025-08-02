@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ndk/ndk.dart';
@@ -24,7 +25,9 @@ void main() {
     appName: "Demo app",
   );
   nostrConnectLogin.stream.listen((event) {
-    print(event.toJson());
+    if (kDebugMode) {
+      print(event.toJson());
+    }
   });
   Get.put(nostrConnectLogin);
 
@@ -63,7 +66,9 @@ class Nip46LoginView extends StatelessWidget {
                   bunkerUrl: Get.find<TextEditingController>().text,
                 );
                 bunkerLogin.stream.listen((event) {
-                  print(event.toJson());
+                  if (kDebugMode) {
+                    print(event.toJson());
+                  }
                 });
               },
               child: Text("Connect"),
@@ -87,7 +92,9 @@ class Nip46LoginView extends StatelessWidget {
 
             ndk.accounts.loginExternalSigner(signer: signer);
 
-            print(ndk.accounts.getPublicKey());
+            if (kDebugMode) {
+              print(ndk.accounts.getPublicKey());
+            }
           },
           child: Text("Use global account"),
         ),

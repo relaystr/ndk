@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:ndk/ndk.dart';
 import 'package:nip01/nip01.dart';
 import 'package:nip46_event_signer/nip46_event_signer.dart';
-import 'package:nip46_event_signer/src/models/bunker_event.dart';
 import 'package:nip46_event_signer/src/utils.dart';
 
 class Nip46EventSigner implements EventSigner {

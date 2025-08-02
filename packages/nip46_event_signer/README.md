@@ -1,39 +1,60 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Nostr nip46 event signer.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+`bunker://` and `nostrconnect://` support.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+### Bunker login
 
 ```dart
-const like = 'sample';
+final bunkerLogin = BunkerLogin(bunkerUrl: "bunker://");
+bunkerLogin.stream.listen((event) {
+    if (event is AuthRequired) {
+        // user must authenticate using the url in event.url
+    }
+
+    if (event is Connected) {
+        // successful connection, use event.settings to create the signer
+    }
+});
 ```
 
-## Additional information
+### Nostr connect login
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+```dart
+final nostrConnectLogin = NostrConnectLogin(
+    relays: ["wss://relay.nsec.app"], // at least one relay is required
+    appName: "My app", // appName is recommended, some apps may require it
+);
+nostrConnectLogin.stream.listen((event) {
+    if (event is AuthRequired) {
+        // user must authenticate using the url in event.url
+    }
+
+    if (event is Connected) {
+        // successful connection, use event.settings to create the signer
+    }
+});
+```
+
+### Signing things
+
+```dart
+// at this point you should have connectionSettings
+final connectionSettings = ConnectionSettings.fromJson({
+    "privateKey": "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
+    "remotePubkey": "b836aab8e635e41e62b832d68dc0f1857b717689df248290be9efa02f02de672",
+    "relays": ["wss://relay.nsec.app"],
+});
+final nip46EventSigner = Nip46EventSigner(
+    connectionSettings: connectionSettings,
+);
+await nip46EventSigner.getPublicKeyAsync(); // you should call this
+// your signer is ready
+```
+
+### Tips
+
+Use `connectionSettings.toJson()` to persist connection between app start.

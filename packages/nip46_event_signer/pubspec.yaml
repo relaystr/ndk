@@ -1,16 +1,20 @@
 name: nip46_event_signer
-description: A starting point for Dart libraries or applications.
+description: Nostr nip46 event signer for ndk
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/relaystr/ndk
+topics:
+  - nostr
+  - nip46
+  - remote-signer
+  - event-signer
+  - ndk
 
 environment:
   sdk: ^3.8.1
 
-# Add regular dependencies here.
 dependencies:
   ndk: ^0.5.0
   nip01: ^0.3.0+1
-  # path: ^1.8.0
 
 dev_dependencies:
   lints: ^5.0.0
