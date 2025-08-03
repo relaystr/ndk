@@ -12,6 +12,10 @@ icon: person
 
 :::code source="../../packages/nip07_event_signer/example/nip07_event_signer_example.dart" language="dart"  title="" :::
 
+### External Signer (bunker)
+
+:::code source="../../packages/ndk/example/nip46_event_signer_example.dart" language="dart"  title="" :::
+
 ## When to use
 
 Use it to log in an account.
