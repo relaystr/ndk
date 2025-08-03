@@ -13,8 +13,12 @@ void main() {
         privateKey:
             "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
         remotePubkey:
-            "b836aab8e635e41e62b832d68dc0f1857b717689df248290be9efa02f02de672",
-        relays: ["wss://relay.nsec.app"],
+            "324d7280df042e8705af8b7af44929e8e3cb48e4f4be20965ce96d3ab263f726",
+        relays: [
+          "wss://relay.damus.io",
+          "wss://relay.nostr.band",
+          "wss://relay.nsec.app",
+        ],
       );
 
       signer = Nip46EventSigner(connectionSettings: connectionSettings);
