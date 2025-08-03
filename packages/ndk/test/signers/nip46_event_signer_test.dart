@@ -13,7 +13,7 @@ void main() {
         privateKey:
             "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
         remotePubkey:
-            "324d7280df042e8705af8b7af44929e8e3cb48e4f4be20965ce96d3ab263f726",
+            "a1fe3664f7a2b24db97e5b63869e8011c947f9abd8c03f98befafd27c38467d2",
         relays: [
           "wss://relay.damus.io",
           "wss://relay.nostr.band",
