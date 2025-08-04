@@ -1,3 +1,5 @@
+import 'package:rxdart/rxdart.dart';
+
 import '../../../config/cashu_config.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/cashu/wallet_cashu_blinded_message.dart';
@@ -8,6 +10,7 @@ import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_repo.dart';
 import '../wallet/wallet.dart';
 import 'cashu_bdhke.dart';
+import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
 
 import 'cashu_token_encoder.dart';
@@ -18,6 +21,7 @@ import 'cashu_wallet_proof_select.dart';
 class CashuWallet {
   final CashuRepo _cashuRepo;
   final CacheManager _cacheManager;
+  late final CashuCacheDecorator _cacheManagerCashu;
 
   late final CashuKeysets _cashuKeysets;
   late final CashuWalletProofSelect _cashuWalletProofSelect;
@@ -33,11 +37,14 @@ class CashuWallet {
     _cashuWalletProofSelect = CashuWalletProofSelect(
       cashuRepo: _cashuRepo,
     );
+    _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
   }
 
   Set<CashuWalletAccount> cashuWalletAccounts = {};
 
-  // final Set<Transaction> _transactions = {};
+  final Set<Transaction> _pendingTransactions = {};
+  BehaviorSubject<Set<Transaction>> pendingTransactionsSubject =
+      BehaviorSubject<Set<Transaction>>.seeded({});
 
   // final Set<Mint> _mints = {};
 
@@ -46,6 +53,50 @@ class CashuWallet {
   // final Set<Pending> _pending = {};
 
   getBalance({required String unit}) {}
+
+  Future<CashuTransaction> initiateFund({
+    required String mintUrl,
+    required int amount,
+    required String unit,
+    required String method,
+  }) async {
+    final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+
+    if (keysets.isEmpty) {
+      throw Exception('No keysets found for mint: $mintUrl');
+    }
+
+    final keyset = CashuTools.filterKeysetsByUnitActive(
+      keysets: keysets,
+      unit: unit,
+    );
+
+    final quote = await _cashuRepo.getMintQuote(
+      mintUrl: mintUrl,
+      amount: amount,
+      unit: unit,
+      method: method,
+    );
+
+    CashuTransaction transaction = CashuTransaction(
+      id: quote.quoteId, //todo use a better id
+      mintUrl: mintUrl,
+      accountId: mintUrl,
+      changeAmount: amount,
+      unit: unit,
+      accountType: AccountType.CASHU,
+      state: TransactionState.draft,
+      initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      qoute: quote,
+      usedKeyset: keyset,
+    );
+
+    // add to pending transactions
+    _pendingTransactions.add(transaction);
+    pendingTransactionsSubject.add(_pendingTransactions);
+
+    return transaction;
+  }
 
   /// funds the wallet (usually with lightning) and get ecash
   Future<List<WalletCashuProof>> fund({
@@ -387,16 +438,16 @@ class CashuWallet {
         .where((e) => ownTokens.any((ownToken) => ownToken.secret == e.secret))
         .toList();
 
-    await _cacheManager.removeProofs(
-      proofs: sameSendRcv,
-      mintUrl: rcvToken.mintUrl,
-    );
-
-    // save new proofs
-    await _cacheManager.saveProofs(
-      tokens: myUnblindedTokens,
-      mintUrl: rcvToken.mintUrl,
-    );
+    await _cacheManagerCashu.runInTransaction(() async {
+      await _cacheManagerCashu.removeProofs(
+        proofs: sameSendRcv,
+        mintUrl: rcvToken.mintUrl,
+      );
+      await _cacheManagerCashu.saveProofs(
+        tokens: myUnblindedTokens,
+        mintUrl: rcvToken.mintUrl,
+      );
+    });
 
     return myUnblindedTokens;
   }

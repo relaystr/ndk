@@ -1,23 +1,30 @@
 import 'package:rxdart/rxdart.dart';
 
 import '../../entities/cashu/wallet_cashu_proof.dart';
+import '../../repositories/cache_manager.dart';
 import '../wallet/wallet.dart';
 import 'cashu_wallet.dart';
 
 class CashuWalletAccount implements WalletAccount {
   @override
-  String id;
+  final String id;
 
   @override
   String name;
 
   @override
-  AccountType type;
+  final AccountType type;
 
   @override
-  String unit;
+  final String unit;
 
-  String mintUrl;
+  final String mintUrl;
+
+  final CacheManager _cacheManager;
+
+  final List<Transaction> _latestTransactions = [];
+
+  BehaviorSubject<List<Transaction>>? _latestTransactionsSubject;
 
   CashuWalletAccount({
     required this.id,
@@ -25,15 +32,40 @@ class CashuWalletAccount implements WalletAccount {
     this.type = AccountType.CASHU,
     required this.unit,
     required this.mintUrl,
-  });
+    required CacheManager cacheManager,
+  }) : _cacheManager = cacheManager;
+
   @override
   // TODO: implement balance
   BehaviorSubject<int> get balance => throw UnimplementedError();
 
+  Future<List<Transaction>> _getLatestTransactions({int limit = 10}) async {
+    final transactions = await _cacheManager.getTransactions(
+      accountId: id,
+      unit: unit,
+      limit: limit,
+    );
+
+    return transactions;
+  }
+
   @override
   BehaviorSubject<List<Transaction>> latestTransactions({int count = 10}) {
-    // TODO: implement latestTransactions
-    throw UnimplementedError();
+    if (_latestTransactionsSubject == null) {
+      _latestTransactionsSubject =
+          BehaviorSubject<List<Transaction>>.seeded([]);
+
+      _getLatestTransactions(limit: count).then((transactions) {
+        _latestTransactionsSubject?.add(transactions);
+        _latestTransactions.addAll(transactions);
+      }).catchError((error) {
+        _latestTransactionsSubject?.addError(
+          Exception('Failed to load latest transactions: $error'),
+        );
+      });
+    }
+
+    return _latestTransactionsSubject!;
   }
 
   @override

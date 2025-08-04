@@ -1,8 +1,7 @@
 import 'dart:core';
 
-import 'package:ndk/domain_layer/entities/cashu/wallet_cashu_proof.dart';
-
 import '../../../domain_layer/entities/cashu/wallet_cashu_keyset.dart';
+import '../../../domain_layer/entities/cashu/wallet_cashu_proof.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
@@ -10,6 +9,7 @@ import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
+import '../../../domain_layer/usecases/wallet/wallet.dart';
 
 /// In memory database implementation
 /// benefits: very fast
@@ -38,6 +38,8 @@ class MemCacheManager implements CacheManager {
 
   /// String for mint Url
   Map<String, Set<WalletCashuProof>> cashuProofs = {};
+
+  List<Transaction> transactions = [];
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -367,5 +369,50 @@ class MemCacheManager implements CacheManager {
     } else {
       return Future.error('No proofs found for mint URL: $mintUrl');
     }
+  }
+
+  @override
+  Future<List<Transaction>> getTransactions({
+    int? limit,
+    String? accountId,
+    String? unit,
+  }) {
+    if (accountId != null && unit != null) {
+      return Future.value(transactions
+          .where((transaction) =>
+              transaction.accountId == accountId && transaction.unit == unit)
+          .take(limit ?? transactions.length)
+          .toList());
+    } else if (unit != null) {
+      return Future.value(transactions
+          .where((transaction) => transaction.unit == unit)
+          .take(limit ?? transactions.length)
+          .toList());
+    } else if (accountId != null) {
+      return Future.value(transactions
+          .where((transaction) => transaction.accountId == accountId)
+          .take(limit ?? transactions.length)
+          .toList());
+    } else {
+      return Future.value(
+          transactions.take(limit ?? transactions.length).toList());
+    }
+  }
+
+  @override
+  Future<void> saveTransactions({required List<Transaction> transactions}) {
+    /// Check if transactions are already present
+    /// if so update them
+
+    for (final transaction in transactions) {
+      final existingIndex = this.transactions.indexWhere((t) =>
+          t.id == transaction.id && t.accountId == transaction.accountId);
+      if (existingIndex != -1) {
+        this.transactions[existingIndex] = transaction;
+      } else {
+        this.transactions.add(transaction);
+      }
+    }
+    return Future.value();
   }
 }

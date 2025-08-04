@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
+import '../../entities/cashu/wallet_cashu_keyset.dart';
+import '../../entities/cashu/wallet_cashu_quote.dart';
+
 /// Proposal for a unified wallet system that can handle multiple account types (NWC, Cashu).
 class Wallet {
   List<WalletAccount> accounts;
@@ -153,9 +156,9 @@ enum AccountType {
   }
 }
 
-abstract class Transaction<D, A> {
-  String id;
-  String accountId;
+abstract class Transaction {
+  final String id;
+  final String accountId;
   int changeAmount;
   String unit;
   AccountType accountType;
@@ -167,12 +170,6 @@ abstract class Transaction<D, A> {
   /// Date in milliseconds since epoch
   int? initiatedDate;
 
-  /// Optional details about the pending transaction, e.g., objects by NWC or cashu
-  D? details;
-
-  /// Actions that can be performed on this transaction, e.g., approve, reject
-  A? actions;
-
   Transaction({
     required this.id,
     required this.accountId,
@@ -180,6 +177,30 @@ abstract class Transaction<D, A> {
     required this.unit,
     required this.accountType,
     required this.state,
+    this.transactionDate,
+    this.initiatedDate,
+  });
+}
+
+class CashuTransaction extends Transaction {
+  String? mintUrl;
+  String? note;
+  WalletCashuQuote? qoute;
+  WalletCahsuKeyset? usedKeyset;
+
+  CashuTransaction({
+    required super.id,
+    required super.accountId,
+    required super.changeAmount,
+    required super.unit,
+    required super.accountType,
+    required super.state,
+    this.mintUrl,
+    this.note,
+    this.qoute,
+    this.usedKeyset,
+    super.transactionDate,
+    super.initiatedDate,
   });
 }
 
