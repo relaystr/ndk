@@ -6,7 +6,7 @@ Title: Wallet Cashu - api design
 
 In progress
 
-Updated on 29-07-2025
+Updated on 04-08-2025
 
 ## contributors
 
@@ -42,7 +42,7 @@ main(){
 
   /// user code listen to pending transactions
   pendingTransactions.listen((transaction) {
-    
+
     /// tbd if we have a stauts pending or a diffrent subscription for done (sucessfull, err) transactions
     if (transaction.type == TransactionType.spend && transaction.status == TransactionStatus.pending) {
 
@@ -94,9 +94,10 @@ Using this approach, the available options to the user/dev are quite clear.
 ## Alternative proposals
 
 Use functions for each transaction step and user/dev uses them manualy.
-pro:
-    - a lot more control
-con:
-    - more complex, requires cashu knolege
+pro: - a lot more control
+con: - more complex, requires cashu knolege
 
 ## Final Notes
+
+Proposal discussed
+Required more detail and experiments to proceed.
