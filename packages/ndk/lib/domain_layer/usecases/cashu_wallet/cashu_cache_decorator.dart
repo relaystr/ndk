@@ -1,22 +1,25 @@
-import 'package:synchronized/synchronized.dart';
+import 'dart:async';
 
+import '../../../shared/helpers/mutex_simple.dart';
 import '../../entities/cashu/wallet_cashu_proof.dart';
 import '../../repositories/cache_manager.dart';
 
 class CashuCacheDecorator implements CacheManager {
-  final Lock _operationLock = Lock();
+  final MutexSimple _mutex;
   final CacheManager _delegate;
 
   CashuCacheDecorator({
     required CacheManager cacheManager,
-  }) : _delegate = cacheManager;
+    MutexSimple? mutex,
+  })  : _delegate = cacheManager,
+        _mutex = mutex ?? MutexSimple();
 
   @override
   Future<void> saveProofs({
     required List<WalletCashuProof> tokens,
     required String mintUrl,
   }) async {
-    await _operationLock.synchronized(() async {
+    await _mutex.synchronized(() async {
       await _delegate.saveProofs(tokens: tokens, mintUrl: mintUrl);
     });
   }
@@ -26,7 +29,7 @@ class CashuCacheDecorator implements CacheManager {
     required List<WalletCashuProof> proofs,
     required String mintUrl,
   }) async {
-    await _operationLock.synchronized(() async {
+    await _mutex.synchronized(() async {
       await _delegate.removeProofs(proofs: proofs, mintUrl: mintUrl);
     });
   }
@@ -36,7 +39,7 @@ class CashuCacheDecorator implements CacheManager {
     required String mintUrl,
     String? keysetId,
   }) async {
-    return await _operationLock.synchronized(() async {
+    return await _mutex.synchronized(() async {
       return await _delegate.getProofs(mintUrl: mintUrl, keysetId: keysetId);
     });
   }
@@ -52,7 +55,7 @@ class CashuCacheDecorator implements CacheManager {
   }
 
   Future<T> runInTransaction<T>(Future<T> Function() action) async {
-    return await _operationLock.synchronized(() async {
+    return await _mutex.synchronized(() async {
       return await action();
     });
   }
