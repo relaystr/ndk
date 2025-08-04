@@ -300,9 +300,9 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<WalletCahsuKeyset>> getKeysets({required String mintURL}) {
-    if (cashuKeysets.containsKey(mintURL)) {
-      return Future.value(cashuKeysets[mintURL]?.toList() ?? []);
+  Future<List<WalletCahsuKeyset>> getKeysets({required String mintUrl}) {
+    if (cashuKeysets.containsKey(mintUrl)) {
+      return Future.value(cashuKeysets[mintUrl]?.toList() ?? []);
     } else {
       return Future.value([]);
     }
@@ -310,10 +310,10 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveKeyset(WalletCahsuKeyset keyset) {
-    if (cashuKeysets.containsKey(keyset.mintURL)) {
-      cashuKeysets[keyset.mintURL]!.add(keyset);
+    if (cashuKeysets.containsKey(keyset.mintUrl)) {
+      cashuKeysets[keyset.mintUrl]!.add(keyset);
     } else {
-      cashuKeysets[keyset.mintURL] = {keyset};
+      cashuKeysets[keyset.mintUrl] = {keyset};
     }
     return Future.value();
   }

@@ -8,10 +8,10 @@ void main() {
     test('fund', () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-      final mintURL = 'http://127.0.0.1:8085';
+      final mintUrl = 'http://127.0.0.1:8085';
 
       final fundResponse = await ndk.cashuWallet.fund(
-        mintURL: mintURL,
+        mintUrl: mintUrl,
         amount: 52,
         unit: 'sat',
         method: 'bolt11',
@@ -23,10 +23,10 @@ void main() {
     test('receive', () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-      final mintURL = 'http://127.0.0.1:8085';
+      final mintUrl = 'http://127.0.0.1:8085';
 
       final fundResponse = await ndk.cashuWallet.fund(
-        mintURL: mintURL,
+        mintUrl: mintUrl,
         amount: 52,
         unit: 'sat',
         method: 'bolt11',
@@ -34,7 +34,7 @@ void main() {
 
       final eCashToken = ndk.cashuWallet.proofsToToken(
         proofs: fundResponse,
-        mintUrl: mintURL,
+        mintUrl: mintUrl,
         unit: 'sat',
       );
 
@@ -48,17 +48,17 @@ void main() {
     test('spend test', () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-      final mintURL = 'http://127.0.0.1:8085';
+      final mintUrl = 'http://127.0.0.1:8085';
 
       final fundResponse = await ndk.cashuWallet.fund(
-        mintURL: mintURL,
+        mintUrl: mintUrl,
         amount: 52,
         unit: 'sat',
         method: 'bolt11',
       );
 
       final spendResult = await ndk.cashuWallet.spend(
-        mint: mintURL,
+        mintUrl: mintUrl,
         amount: 16,
         unit: 'sat',
       );

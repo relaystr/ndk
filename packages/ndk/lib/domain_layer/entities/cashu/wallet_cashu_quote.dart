@@ -11,7 +11,7 @@ class WalletCashuQuote {
 
   /// expires in seconds
   final int expiry;
-  final String mintURL;
+  final String mintUrl;
 
   WalletCashuQuote({
     required this.quoteId,
@@ -20,13 +20,13 @@ class WalletCashuQuote {
     required this.unit,
     required this.state,
     required this.expiry,
-    required this.mintURL,
+    required this.mintUrl,
     required this.quoteKey,
   });
 
   factory WalletCashuQuote.fromServerMap({
     required Map<String, dynamic> map,
-    required String mintURL,
+    required String mintUrl,
     required CashuKeypair quoteKey,
   }) {
     return WalletCashuQuote(
@@ -36,7 +36,7 @@ class WalletCashuQuote {
       unit: map['unit'] as String,
       state: CashuQuoteState.fromValue(map['state'] as String),
       expiry: map['expiry'] as int,
-      mintURL: mintURL,
+      mintUrl: mintUrl,
       quoteKey: quoteKey,
     );
   }

@@ -85,7 +85,7 @@ abstract class CacheManager {
 
   Future<void> saveKeyset(WalletCahsuKeyset keyset);
   Future<List<WalletCahsuKeyset>> getKeysets({
-    required String mintURL,
+    required String mintUrl,
   });
 
   Future<void> saveProofs({

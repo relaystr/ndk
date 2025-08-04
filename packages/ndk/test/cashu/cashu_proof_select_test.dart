@@ -79,7 +79,7 @@ void main() {
 
     List<WalletCahsuKeyset> keysets = [
       WalletCahsuKeyset(
-        mintURL: "debug",
+        mintUrl: "debug",
         unit: "test",
         active: true,
         id: 'test-keyset',
@@ -88,7 +88,7 @@ void main() {
         fetchedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       ),
       WalletCahsuKeyset(
-        mintURL: "debug",
+        mintUrl: "debug",
         unit: "test",
         active: false,
         id: 'other-keyset',

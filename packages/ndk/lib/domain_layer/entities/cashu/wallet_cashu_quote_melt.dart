@@ -7,7 +7,7 @@ class WalletCashuQuoteMelt {
   final int? feeReserve;
   final bool paid;
   final int? expiry;
-  final String mintURL;
+  final String mintUrl;
   final CashuQuoteState state;
   final String unit;
 
@@ -17,7 +17,7 @@ class WalletCashuQuoteMelt {
     required this.feeReserve,
     required this.paid,
     required this.expiry,
-    required this.mintURL,
+    required this.mintUrl,
     required this.state,
     required this.unit,
     required this.request,
@@ -25,7 +25,7 @@ class WalletCashuQuoteMelt {
 
   factory WalletCashuQuoteMelt.fromServerMap({
     required Map<String, dynamic> json,
-    required String mintURL,
+    required String mintUrl,
     String? request,
   }) {
     return WalletCashuQuoteMelt(
@@ -39,7 +39,7 @@ class WalletCashuQuoteMelt {
           (json['fee_reserve'] != null ? json['fee_reserve'] as int : 0),
       request:
           request ?? (json['request'] != null ? json['request'] as String : ''),
-      mintURL: mintURL,
+      mintUrl: mintUrl,
     );
   }
 }

@@ -22,11 +22,11 @@ class CashuRepoImpl implements CashuRepo {
   });
   @override
   Future<List<WalletCashuBlindedSignature>> swap({
-    required String mintURL,
+    required String mintUrl,
     required List<WalletCashuProof> proofs,
     required List<WalletCashuBlindedMessage> outputs,
   }) async {
-    final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'swap');
+    final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'swap');
 
     outputs.sort((a, b) => a.amount.compareTo(b.amount));
 
@@ -65,9 +65,9 @@ class CashuRepoImpl implements CashuRepo {
 
   @override
   Future<List<WalletCahsuKeysetResponse>> getKeysets({
-    required String mintURL,
+    required String mintUrl,
   }) async {
-    final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'keysets');
+    final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'keysets');
 
     final response = await client.get(
       url: Uri.parse(url),
@@ -88,17 +88,17 @@ class CashuRepoImpl implements CashuRepo {
     return keysetsUnparsed
         .map((e) => WalletCahsuKeysetResponse.fromServerMap(
               map: e as Map<String, dynamic>,
-              mintURL: mintURL,
+              mintUrl: mintUrl,
             ))
         .toList();
   }
 
   @override
   Future<List<WalletCahsuKeysResponse>> getKeys({
-    required String mintURL,
+    required String mintUrl,
     String? keysetId,
   }) async {
-    final baseUrl = CashuTools.composeUrl(mintUrl: mintURL, path: 'keys');
+    final baseUrl = CashuTools.composeUrl(mintUrl: mintUrl, path: 'keys');
 
     final String url;
     if (keysetId != null) {
@@ -124,14 +124,14 @@ class CashuRepoImpl implements CashuRepo {
     return keysUnparsed
         .map((e) => WalletCahsuKeysResponse.fromServerMap(
               map: e as Map<String, dynamic>,
-              mintURL: mintURL,
+              mintUrl: mintUrl,
             ))
         .toList();
   }
 
   @override
   Future<WalletCashuQuote> getMintQuote({
-    required String mintURL,
+    required String mintUrl,
     required int amount,
     required String unit,
     required String method,
@@ -140,7 +140,7 @@ class CashuRepoImpl implements CashuRepo {
     CashuKeypair quoteKey = CashuKeypair.generateCashuKeyPair();
 
     final url =
-        CashuTools.composeUrl(mintUrl: mintURL, path: 'mint/quote/$method');
+        CashuTools.composeUrl(mintUrl: mintUrl, path: 'mint/quote/$method');
 
     final body = {
       'amount': amount,
@@ -168,19 +168,19 @@ class CashuRepoImpl implements CashuRepo {
 
     return WalletCashuQuote.fromServerMap(
       map: responseBody,
-      mintURL: mintURL,
+      mintUrl: mintUrl,
       quoteKey: quoteKey,
     );
   }
 
   @override
   Future<CashuQuoteState> checkMintQuoteState({
-    required String mintURL,
+    required String mintUrl,
     required String quoteID,
     required String method,
   }) async {
     final url = CashuTools.composeUrl(
-        mintUrl: mintURL, path: 'mint/quote/$method/$quoteID');
+        mintUrl: mintUrl, path: 'mint/quote/$method/$quoteID');
 
     final response = await client.get(
       url: Uri.parse(url),
@@ -205,13 +205,13 @@ class CashuRepoImpl implements CashuRepo {
 
   @override
   Future<List<WalletCashuBlindedSignature>> mintTokens({
-    required String mintURL,
+    required String mintUrl,
     required String quote,
     required List<WalletCashuBlindedMessage> blindedMessagesOutputs,
     required String method,
     required CashuKeypair quoteKey,
   }) async {
-    final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'mint/$method');
+    final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'mint/$method');
 
     if (blindedMessagesOutputs.isEmpty) {
       throw Exception('No outputs provided for minting');
@@ -265,13 +265,13 @@ class CashuRepoImpl implements CashuRepo {
 
   @override
   Future<WalletCashuQuoteMelt> getMeltQuote({
-    required String mintURL,
+    required String mintUrl,
     required String request,
     required String unit,
     required String method,
   }) async {
     final url =
-        CashuTools.composeUrl(mintUrl: mintURL, path: 'melt/quote/$method');
+        CashuTools.composeUrl(mintUrl: mintUrl, path: 'melt/quote/$method');
 
     final body = {
       'request': request,
@@ -292,19 +292,19 @@ class CashuRepoImpl implements CashuRepo {
 
     return WalletCashuQuoteMelt.fromServerMap(
       json: jsonDecode(response.body) as Map<String, dynamic>,
-      mintURL: mintURL,
+      mintUrl: mintUrl,
       request: request,
     );
   }
 
   @override
   Future<WalletCashuQuoteMelt> checkMeltQuoteState({
-    required String mintURL,
+    required String mintUrl,
     required String quoteID,
     required String method,
   }) async {
     final url = CashuTools.composeUrl(
-        mintUrl: mintURL, path: 'melt/quote/$method/$quoteID');
+        mintUrl: mintUrl, path: 'melt/quote/$method/$quoteID');
 
     final response = await client.get(
       url: Uri.parse(url),
@@ -324,13 +324,13 @@ class CashuRepoImpl implements CashuRepo {
 
     return WalletCashuQuoteMelt.fromServerMap(
       json: responseBody,
-      mintURL: mintURL,
+      mintUrl: mintUrl,
     );
   }
 
   @override
   Future<WalletCashuMeltResponse> meltTokens({
-    required String mintURL,
+    required String mintUrl,
     required String quoteId,
     required List<WalletCashuProof> proofs,
     required List<WalletCashuBlindedMessage> outputs,
@@ -341,7 +341,7 @@ class CashuRepoImpl implements CashuRepo {
       'inputs': proofs.map((e) => e.toJson()).toList(),
       'outputs': outputs.map((e) => e.toJson()).toList()
     };
-    final url = CashuTools.composeUrl(mintUrl: mintURL, path: 'melt/$method');
+    final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'melt/$method');
 
     final response = await client.post(
       url: Uri.parse(url),
@@ -360,7 +360,7 @@ class CashuRepoImpl implements CashuRepo {
     }
     return WalletCashuMeltResponse.fromServerMap(
       map: responseBody,
-      mintUrl: mintURL,
+      mintUrl: mintUrl,
       quoteId: quoteId,
     );
   }

@@ -201,7 +201,7 @@ class CashuWalletProofSelect {
     );
 
     final blindedSignatures = await _cashuRepo.swap(
-      mintURL: mint,
+      mintUrl: mint,
       proofs: proofsToSplit,
       outputs: blindedMessagesOutputs
           .map(
