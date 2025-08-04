@@ -1,3 +1,5 @@
+import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
+
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
@@ -47,6 +49,28 @@ class Accounts {
     addAccount(
         pubkey: pubkey, type: AccountType.externalSigner, signer: signer);
     _loggedPubkey = pubkey;
+  }
+
+  /// adds a new Account and sets the logged pubkey
+  Future<ConnectionSettings> loginWithBunkerUrl({required String bunkerUrl}) async {
+    final bunkerLogin = BunkerLogin(bunkerUrl: bunkerUrl);
+    ConnectionSettings? settings;
+    await for (final event in bunkerLogin.stream) {
+      if (event is Connected) {
+        settings = event.settings;
+        break;
+      }
+    }
+    bunkerLogin.dispose();
+    await loginWithBunker(settings: settings!);
+    return settings;
+  }
+
+  /// adds a new Account and sets the logged pubkey
+  Future<void> loginWithBunker({required ConnectionSettings settings}) async {
+    final signer = Nip46EventSigner(connectionSettings: settings);
+    await signer.getPublicKeyAsync();
+    loginExternalSigner(signer: signer);
   }
 
   void logout() {
