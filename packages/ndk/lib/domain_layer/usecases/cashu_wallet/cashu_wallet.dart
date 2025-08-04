@@ -35,7 +35,7 @@ class CashuWallet {
     );
   }
 
-  Set<WalletAccount<CashuWalletAccount>> cashuWalletAccounts = {};
+  Set<CashuWalletAccount> cashuWalletAccounts = {};
 
   // final Set<Transaction> _transactions = {};
 

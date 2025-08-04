@@ -103,38 +103,36 @@ class Wallet {
 
 /// generic wallet account interface
 /// This interface allows for different types of wallet accounts (e.g., NWC, Cashu) to be used interchangeably.
-abstract class WalletAccount<T> {
+abstract class WalletAccount {
   /// local wallet identifier
-  String id;
+  final String id;
 
-  AccountType type;
+  final AccountType type;
 
   /// unit like sat, usd, etc.
-  String unit;
+  final String unit;
 
   /// user defined name for the account
   String name;
-
-  /// the actual account object, e.g., NWC or Cashu wallet
-  T account;
 
   WalletAccount({
     required this.id,
     required this.name,
     required this.type,
     required this.unit,
-    required this.account,
   });
 
-  /// stream of the latest transactions for this account
+  /// stream of the latest transactions for this account \
+  /// e.g. history, including all transactions, pending, completed, etc.
   BehaviorSubject<List<Transaction>> latestTransactions({int count = 10});
 
   /// stream of the current balance for this account
   /// BehaviorSubject to allow for immediate access to the current balance.
   BehaviorSubject<int> get balance;
 
-  /// stream of pending transactions for this account
-  BehaviorSubject<List<PendingTransaction>> get pendingTransactions;
+  /// stream of pending transactions for this account \
+  ///
+  BehaviorSubject<List<Transaction>> get pendingTransactions;
 }
 
 enum AccountType {
@@ -155,13 +153,25 @@ enum AccountType {
   }
 }
 
-abstract class Transaction {
+abstract class Transaction<D, A> {
   String id;
   String accountId;
   int changeAmount;
   String unit;
   AccountType accountType;
   TransactionState state;
+
+  /// Date in milliseconds since epoch
+  int? transactionDate;
+
+  /// Date in milliseconds since epoch
+  int? initiatedDate;
+
+  /// Optional details about the pending transaction, e.g., objects by NWC or cashu
+  D? details;
+
+  /// Actions that can be performed on this transaction, e.g., approve, reject
+  A? actions;
 
   Transaction({
     required this.id,
@@ -173,52 +183,28 @@ abstract class Transaction {
   });
 }
 
-abstract class SettledTransaction<T> extends Transaction {
-  /// Date in milliseconds since epoch
-  int transactionDate;
-  T? details;
-
-  SettledTransaction({
-    required this.transactionDate,
-    this.details,
-    required super.id,
-    required super.accountId,
-    required super.unit,
-    required super.accountType,
-    required super.state,
-    required super.changeAmount,
-  });
-}
-
-abstract class PendingTransaction<T, Z> extends Transaction {
-  /// Date in milliseconds since epoch
-  int initiatedDate;
-
-  /// Optional details about the pending transaction, e.g., objects by NWC or cashu
-  T? details;
-
-  /// Actions that can be performed on this transaction, e.g., approve, reject
-  Z? actions;
-
-  PendingTransaction({
-    required this.initiatedDate,
-    this.details,
-    this.actions,
-    required super.id,
-    required super.accountId,
-    required super.changeAmount,
-    required super.unit,
-    required super.accountType,
-    required super.state,
-  });
-}
-
 enum TransactionState {
+  /// pending states
+
+  /// draft requires user confirmation
   draft('DRAFT'),
-  canceled('CANCELED'),
+
+  /// payment is in flight
   pending('PENDING'),
-  completed('COMPLETED'),
+
+  /// done states
+  /// transaction went through
+  completed('SUCCESS'),
+
+  /// canceld by user - usually a canceld draft, or not sufficient funds
+  canceled('CANCELED'),
+
+  /// transaction failed
   failed('FAILED');
+
+  bool get isPending => this == draft || this == pending;
+
+  bool get isDone => this == completed || this == canceled || this == failed;
 
   final String value;
 
