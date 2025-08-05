@@ -171,7 +171,14 @@ class CashuTools {
   static List<WalletCashuProof> filterProofsByUnit({
     required List<WalletCashuProof> proofs,
     required String unit,
+    required List<WalletCahsuKeyset> keysets,
   }) {
-    return proofs.where((proof) => proof.keysetId == unit).toList();
+    return proofs.where((proof) {
+      final keyset = keysets.firstWhere(
+        (keyset) => keyset.id == proof.keysetId,
+        orElse: () => throw Exception('Keyset not found for proof: $proof'),
+      );
+      return keyset.unit == unit;
+    }).toList();
   }
 }
