@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
+
 import 'package:ndk_objectbox/data_layer/db/object_box/schema/db_nip_05.dart';
 
 import '../../../objectbox.g.dart';
 import 'db_init_object_box.dart';
+import 'schema/db_cashu_keyset.dart';
+import 'schema/db_cashu_proof.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
@@ -561,5 +564,127 @@ class DbObjectBox implements CacheManager {
     }
 
     return filteredResults.map((dbEvent) => dbEvent.toNdk()).take(limit);
+  }
+
+  @override
+  Future<List<WalletCahsuKeyset>> getKeysets({required String mintUrl}) async {
+    await dbRdy;
+    return _objectBox.store
+        .box<DbWalletCahsuKeyset>()
+        .query(DbWalletCahsuKeyset_.mintUrl.equals(mintUrl))
+        .build()
+        .find()
+        .map((dbKeyset) => dbKeyset.toNdk())
+        .toList();
+  }
+
+  @override
+  Future<List<WalletCashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+  }) async {
+    /// returns all proofs if no filters are applied
+    await dbRdy;
+
+    final proofBox = _objectBox.store.box<DbWalletCashuProof>();
+
+    // Build conditions
+    Condition<DbWalletCashuProof>? condition;
+
+    /// specify keysetId
+    if (keysetId != null && keysetId.isNotEmpty) {
+      condition =
+          DbWalletCashuProof_.keysetId.contains(keysetId, caseSensitive: false);
+    }
+
+    if (mintUrl != null && mintUrl.isNotEmpty) {
+      /// get all keysets for the mintUrl
+      /// and filter proofs by keysetId
+      ///
+      final keysets = await getKeysets(mintUrl: mintUrl);
+      if (keysets.isNotEmpty) {
+        final keysetIds = keysets.map((k) => k.id).toList();
+        final mintUrlCondition = DbWalletCashuProof_.keysetId.oneOf(keysetIds);
+        condition = (condition == null)
+            ? mintUrlCondition
+            : condition.and(mintUrlCondition);
+      } else {
+        // If no keysets found for the mintUrl, return empty list
+        return [];
+      }
+    }
+
+    QueryBuilder<DbWalletCashuProof> queryBuilder;
+    if (condition != null) {
+      queryBuilder = proofBox.query(condition);
+    } else {
+      queryBuilder = proofBox.query();
+    }
+
+    // Apply sorting
+    queryBuilder.order(DbWalletCashuProof_.amount, flags: Order.descending);
+
+    // Build and execute the query
+    final query = queryBuilder.build();
+
+    final results = query.find();
+    return results.map((dbProof) => dbProof.toNdk()).toList();
+  }
+
+  @override
+  Future<void> removeProofs({
+    required List<WalletCashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    await dbRdy;
+    final proofBox = _objectBox.store.box<DbWalletCashuProof>();
+
+    // find all proofs, ignoring mintUrl
+    final proofSecrets = proofs.map((p) => p.secret).toList();
+    final existingProofs = proofBox
+        .query(DbWalletCashuProof_.secret.oneOf(proofSecrets))
+        .build()
+        .find();
+
+    // remove them
+    if (existingProofs.isNotEmpty) {
+      proofBox.removeMany(existingProofs.map((p) => p.dbId).toList());
+    }
+  }
+
+  @override
+  Future<void> saveKeyset(WalletCahsuKeyset keyset) async {
+    _objectBox.store.box<DbWalletCahsuKeyset>().put(
+          DbWalletCahsuKeyset.fromNdk(keyset),
+        );
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveProofs({
+    required List<WalletCashuProof> tokens,
+    required String mintUrl,
+  }) async {
+    await dbRdy;
+
+    final proofBox = _objectBox.store.box<DbWalletCashuProof>();
+
+    await proofBox.putMany(
+      tokens.map((t) => DbWalletCashuProof.fromNdk(t)).toList(),
+    );
+    return Future.value();
+  }
+
+  @override
+  Future<List<Transaction>> getTransactions(
+      {int? limit, String? accountId, String? unit}) {
+    // TODO: implement getTransactions
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> saveTransactions({required List<Transaction> transactions}) {
+    // TODO: implement saveTransactions
+    throw UnimplementedError();
   }
 }

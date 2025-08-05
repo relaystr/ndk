@@ -311,9 +311,92 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "7:698131493043166579",
+      "lastPropertyId": "8:7773840598494674606",
+      "name": "DbWalletCahsuKeyset",
+      "properties": [
+        {
+          "id": "1:7970259218906410302",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7668438476871712459",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "3:7282319240912033654",
+          "name": "mintUrl",
+          "type": 9
+        },
+        {
+          "id": "4:3585001127367148469",
+          "name": "unit",
+          "type": 9
+        },
+        {
+          "id": "5:6312611343850591444",
+          "name": "active",
+          "type": 1
+        },
+        {
+          "id": "6:4301618904982221632",
+          "name": "inputFeePPK",
+          "type": 6
+        },
+        {
+          "id": "7:890317222791666643",
+          "name": "mintKeyPairs",
+          "type": 30
+        },
+        {
+          "id": "8:7773840598494674606",
+          "name": "fetchedAt",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "8:7203634548589534122",
+      "lastPropertyId": "5:6294656987537494684",
+      "name": "DbWalletCashuProof",
+      "properties": [
+        {
+          "id": "1:4429724214335608001",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1857417425121530563",
+          "name": "keysetId",
+          "type": 9
+        },
+        {
+          "id": "3:5749621417965180854",
+          "name": "amount",
+          "type": 6
+        },
+        {
+          "id": "4:4446254104193824225",
+          "name": "secret",
+          "type": 9
+        },
+        {
+          "id": "5:6294656987537494684",
+          "name": "unblindedSig",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "6:263734506821907740",
+  "lastEntityId": "8:7203634548589534122",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

@@ -110,7 +110,7 @@ abstract class WalletAccount {
   /// local wallet identifier
   final String id;
 
-  final AccountType type;
+  final WalletAccountType type;
 
   /// unit like sat, usd, etc.
   final String unit;
@@ -138,7 +138,7 @@ abstract class WalletAccount {
   BehaviorSubject<List<Transaction>> get pendingTransactions;
 }
 
-enum AccountType {
+enum WalletAccountType {
   // ignore: constant_identifier_names
   NWC('nwc'),
   // ignore: constant_identifier_names
@@ -146,10 +146,10 @@ enum AccountType {
 
   final String value;
 
-  const AccountType(this.value);
+  const WalletAccountType(this.value);
 
-  factory AccountType.fromValue(String value) {
-    return AccountType.values.firstWhere(
+  factory WalletAccountType.fromValue(String value) {
+    return WalletAccountType.values.firstWhere(
       (kind) => kind.value == value,
       orElse: () => throw ArgumentError('Invalid event kind value: $value'),
     );
@@ -161,7 +161,7 @@ abstract class Transaction {
   final String accountId;
   int changeAmount;
   String unit;
-  AccountType accountType;
+  WalletAccountType accountType;
   TransactionState state;
   String? completionMsg;
 
@@ -223,7 +223,7 @@ class CashuTransaction extends Transaction {
     String? accountId,
     int? changeAmount,
     String? unit,
-    AccountType? accountType,
+    WalletAccountType? accountType,
     TransactionState? state,
     String? mintUrl,
     String? note,

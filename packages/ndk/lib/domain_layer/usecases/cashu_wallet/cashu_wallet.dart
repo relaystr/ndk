@@ -91,7 +91,7 @@ class CashuWallet {
       accountId: mintUrl,
       changeAmount: amount,
       unit: unit,
-      accountType: AccountType.CASHU,
+      accountType: WalletAccountType.CASHU,
       state: TransactionState.draft,
       initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       qoute: quote,
