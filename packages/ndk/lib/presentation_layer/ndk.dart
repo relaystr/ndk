@@ -21,6 +21,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+import '../domain_layer/usecases/wallet/wallet.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import 'init.dart';
 import 'ndk_config.dart';
@@ -147,6 +148,10 @@ class Ndk {
   /// Cashu Wallet
   @experimental // in development
   CashuWallet get cashuWallet => _initialization.cashuWallet;
+
+  /// Wallet combining all wallet accounts \
+  @experimental
+  Wallet get wallet => _initialization.wallet;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {

@@ -8,7 +8,8 @@ import '../../entities/cashu/wallet_cashu_quote.dart';
 /// Proposal for a unified wallet system that can handle multiple account types (NWC, Cashu).
 class Wallet {
   List<WalletAccount> accounts;
-  BehaviorSubject<List<Transaction>> latestTransactions;
+  BehaviorSubject<List<Transaction>> latestTransactions =
+      BehaviorSubject<List<Transaction>>.seeded([]);
 
   /// Private subject to control the balances stream.
   final BehaviorSubject<Map<String, int>> _balancesSubject =
@@ -31,7 +32,6 @@ class Wallet {
 
   Wallet({
     required this.accounts,
-    required this.latestTransactions,
     this.latestTransactionCount = 10,
   }) {
     for (final account in accounts) {
