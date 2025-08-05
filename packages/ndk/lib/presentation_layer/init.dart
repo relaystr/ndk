@@ -36,6 +36,7 @@ import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+import '../domain_layer/usecases/wallet/wallet.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import '../shared/logger/logger.dart';
 import 'ndk_config.dart';
@@ -80,6 +81,7 @@ class Initialization {
   late GiftWrap giftWrap;
   late Connectivy connectivity;
   late CashuWallet cashuWallet;
+  late Wallet wallet;
 
   late VerifyNip05 verifyNip05;
 
@@ -243,6 +245,10 @@ class Initialization {
     cashuWallet = CashuWallet(
       cashuRepo: cashuRepo,
       cacheManager: _ndkConfig.cache,
+    );
+
+    wallet = Wallet(
+      accounts: [],
     );
 
     /// set the user configured log level
