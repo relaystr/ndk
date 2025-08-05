@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:rxdart/rxdart.dart';
 
 import '../../../shared/logger/logger.dart';
@@ -124,26 +126,37 @@ class CashuWalletAccount implements WalletAccount {
       draftTransaction: draftTransaction,
     );
 
+    final List<CashuTransaction> stateList = [];
+    final completer = Completer<CashuTransaction>();
+
     final subscription = transactionStream.listen(
       (data) {
+        stateList.add(data);
         _pendingTransactions.add(data);
         pendingTransactionsSubject.add(_pendingTransactions.toList());
       },
       onDone: () {
         _pendingTransactions.remove(draftTransaction);
         pendingTransactionsSubject.add(_pendingTransactions.toList());
+
+        if (stateList.isNotEmpty) {
+          _latestTransactions.add(stateList.last);
+          _latestTransactionsSubject?.add(_latestTransactions);
+          completer.complete(stateList.last);
+        } else {
+          completer.completeError('No transactions received');
+        }
       },
       onError: (error) {
         _pendingTransactions.remove(draftTransaction);
         pendingTransactionsSubject.add(_pendingTransactions.toList());
-        throw error;
+        completer.completeError(error);
       },
     );
 
-    final stateList = await transactionStream.toList();
-    _latestTransactions.add(stateList.last);
-    _latestTransactionsSubject?.add(_latestTransactions);
-    subscription.cancel();
+    await completer.future;
+    await subscription.cancel();
+    await updateBalance();
     return stateList.last;
   }
 }

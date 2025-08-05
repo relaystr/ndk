@@ -52,10 +52,11 @@ class CashuWallet {
     required String unit,
     String? mintUrl,
   }) async {
-    final proofs = await _cacheManager.getProofs(mintUrl: mintUrl);
+    final proofs = await _cacheManager.getProofs(mintUrl: null);
     final filteredProofs = CashuTools.filterProofsByUnit(
       proofs: proofs,
       unit: unit,
+      keysets: await _cashuKeysets.getKeysetsFromMint(mintUrl ?? ''),
     );
 
     return CashuTools.sumOfProofs(proofs: filteredProofs);
@@ -96,6 +97,7 @@ class CashuWallet {
       initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       qoute: quote,
       usedKeyset: keyset,
+      method: method,
     );
 
     return transaction;
@@ -314,8 +316,16 @@ class CashuWallet {
     final proofsUnfiltered = await _cacheManager.getProofs(
       mintUrl: mintUrl,
     );
-    final proofs =
-        CashuTools.filterProofsByUnit(proofs: proofsUnfiltered, unit: unit);
+
+    final mintKeysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+    if (mintKeysets.isEmpty) {
+      throw Exception('No keysets found for mint: $mintUrl');
+    }
+    final keysetsForUnit =
+        CashuTools.filterKeysetsByUnit(keysets: mintKeysets, unit: unit);
+
+    final proofs = CashuTools.filterProofsByUnit(
+        proofs: proofsUnfiltered, unit: unit, keysets: keysetsForUnit);
 
     if (proofs.isEmpty) {
       throw Exception('No proofs found for mint: $mintUrl and unit: $unit');
@@ -330,14 +340,6 @@ class CashuWallet {
     } else {
       amountToSpend = meltQuote.amount;
     }
-
-    final mintKeysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
-    if (mintKeysets.isEmpty) {
-      throw Exception('No keysets found for mint: $mintUrl');
-    }
-
-    final keysetsForUnit =
-        CashuTools.filterKeysetsByUnit(keysets: mintKeysets, unit: unit);
 
     final selectionResult = CashuWalletProofSelect.selectProofsForSpending(
       proofs: proofs,
