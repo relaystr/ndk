@@ -58,7 +58,7 @@ class Wallet {
 
       newBalances.update(
         account.unit,
-        (existingTotal) => existingTotal + currentBalance,
+        (existingTotal) => currentBalance,
         ifAbsent: () => currentBalance,
       );
     }
