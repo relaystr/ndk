@@ -31,3 +31,10 @@ export 'domain_layer/entities/user_relay_list.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/ndk_file.dart';
 export 'domain_layer/entities/account.dart';
+
+/// Cashu entities
+export 'domain_layer/entities/cashu/wallet_cashu_keyset.dart';
+export 'domain_layer/entities/cashu/wallet_cashu_proof.dart';
+
+// testing
+export 'domain_layer/usecases/wallet/wallet.dart';

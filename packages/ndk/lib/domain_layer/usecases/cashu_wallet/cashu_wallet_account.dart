@@ -13,7 +13,7 @@ class CashuWalletAccount implements WalletAccount {
   String name;
 
   @override
-  final AccountType type;
+  final WalletAccountType type;
 
   @override
   final String unit;
@@ -37,7 +37,7 @@ class CashuWalletAccount implements WalletAccount {
   CashuWalletAccount({
     required this.id,
     required this.name,
-    this.type = AccountType.CASHU,
+    this.type = WalletAccountType.CASHU,
     required this.unit,
     required this.mintUrl,
     required CacheManager cacheManager,
