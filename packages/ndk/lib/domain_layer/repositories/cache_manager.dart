@@ -95,7 +95,7 @@ abstract class CacheManager {
   });
 
   Future<List<WalletCashuProof>> getProofs({
-    required String mintUrl,
+    String? mintUrl,
     String? keysetId,
   });
 

@@ -163,6 +163,7 @@ abstract class Transaction {
   String unit;
   AccountType accountType;
   TransactionState state;
+  String? completionMsg;
 
   /// Date in milliseconds since epoch
   int? transactionDate;
@@ -177,15 +178,17 @@ abstract class Transaction {
     required this.unit,
     required this.accountType,
     required this.state,
+    this.completionMsg,
     this.transactionDate,
     this.initiatedDate,
   });
 }
 
 class CashuTransaction extends Transaction {
-  String? mintUrl;
+  String mintUrl;
   String? note;
   WalletCashuQuote? qoute;
+  String? method;
   WalletCahsuKeyset? usedKeyset;
 
   CashuTransaction({
@@ -195,13 +198,59 @@ class CashuTransaction extends Transaction {
     required super.unit,
     required super.accountType,
     required super.state,
-    this.mintUrl,
+    required this.mintUrl,
+    super.completionMsg,
     this.note,
+    this.method,
     this.qoute,
     this.usedKeyset,
     super.transactionDate,
     super.initiatedDate,
   });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CashuTransaction &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  CashuTransaction copyWith({
+    String? id,
+    String? accountId,
+    int? changeAmount,
+    String? unit,
+    AccountType? accountType,
+    TransactionState? state,
+    String? mintUrl,
+    String? note,
+    String? method,
+    WalletCashuQuote? qoute,
+    WalletCahsuKeyset? usedKeyset,
+    int? transactionDate,
+    int? initiatedDate,
+    String? completionMsg,
+  }) {
+    return CashuTransaction(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      changeAmount: changeAmount ?? this.changeAmount,
+      unit: unit ?? this.unit,
+      accountType: accountType ?? this.accountType,
+      state: state ?? this.state,
+      mintUrl: mintUrl ?? this.mintUrl,
+      note: note ?? this.note,
+      method: method ?? this.method,
+      qoute: qoute ?? this.qoute,
+      usedKeyset: usedKeyset ?? this.usedKeyset,
+      transactionDate: transactionDate ?? this.transactionDate,
+      initiatedDate: initiatedDate ?? this.initiatedDate,
+      completionMsg: completionMsg ?? this.completionMsg,
+    );
+  }
 }
 
 enum TransactionState {

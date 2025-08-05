@@ -42,17 +42,24 @@ class CashuWallet {
 
   Set<CashuWalletAccount> cashuWalletAccounts = {};
 
-  final Set<Transaction> _pendingTransactions = {};
-  BehaviorSubject<Set<Transaction>> pendingTransactionsSubject =
-      BehaviorSubject<Set<Transaction>>.seeded({});
-
   // final Set<Mint> _mints = {};
 
   // final Set<Proof> _proofs = {};
 
   // final Set<Pending> _pending = {};
 
-  getBalance({required String unit}) {}
+  Future<int> getBalance({
+    required String unit,
+    String? mintUrl,
+  }) async {
+    final proofs = await _cacheManager.getProofs(mintUrl: mintUrl);
+    final filteredProofs = CashuTools.filterProofsByUnit(
+      proofs: proofs,
+      unit: unit,
+    );
+
+    return CashuTools.sumOfProofs(proofs: filteredProofs);
+  }
 
   Future<CashuTransaction> initiateFund({
     required String mintUrl,
@@ -91,14 +98,112 @@ class CashuWallet {
       usedKeyset: keyset,
     );
 
-    // add to pending transactions
-    _pendingTransactions.add(transaction);
-    pendingTransactionsSubject.add(_pendingTransactions);
-
     return transaction;
   }
 
+  Stream<CashuTransaction> retriveFunds({
+    required CashuTransaction draftTransaction,
+  }) async* {
+    if (draftTransaction.qoute == null) {
+      throw Exception("Quote is not available in the transaction");
+    }
+    if (draftTransaction.method == null) {
+      throw Exception("Method is not specified in the transaction");
+    }
+    if (draftTransaction.usedKeyset == null) {
+      throw Exception("Used keyset is not specified in the transaction");
+    }
+    final quote = draftTransaction.qoute!;
+    final mintUrl = draftTransaction.mintUrl;
+
+    CashuQuoteState payStatus;
+
+    final pendingTransaction = draftTransaction.copyWith(
+      state: TransactionState.pending,
+    );
+
+    yield pendingTransaction;
+
+    while (true) {
+      payStatus = await _cashuRepo.checkMintQuoteState(
+        mintUrl: mintUrl,
+        quoteID: quote.quoteId,
+        method: draftTransaction.method!,
+      );
+
+      if (payStatus == CashuQuoteState.paid) {
+        break;
+      }
+
+      // check if quote has expired
+      final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      if (currentTime >= quote.expiry) {
+        yield pendingTransaction.copyWith(
+          state: TransactionState.failed,
+          completionMsg: 'Quote expired before payment was received',
+        );
+        Logger.log.w('Quote expired before payment was received');
+        return;
+      }
+      await Future.delayed(CashuConfig.FUNDING_CHECK_INTERVAL);
+    }
+
+    List<int> splittedAmounts = CashuTools.splitAmount(quote.amount);
+    final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
+      keysetId: draftTransaction.usedKeyset!.id,
+      amounts: splittedAmounts,
+    );
+
+    final mintResponse = await _cashuRepo.mintTokens(
+      mintUrl: mintUrl,
+      quote: quote.quoteId,
+      blindedMessagesOutputs: blindedMessagesOutputs
+          .map(
+            (e) => WalletCashuBlindedMessage(
+                amount: e.amount,
+                id: e.blindedMessage.id,
+                blindedMessage: e.blindedMessage.blindedMessage),
+          )
+          .toList(),
+      method: draftTransaction.method!,
+      quoteKey: quote.quoteKey,
+    );
+
+    if (mintResponse.isEmpty) {
+      yield pendingTransaction.copyWith(
+        state: TransactionState.failed,
+        completionMsg: 'Minting failed, no signatures returned',
+      );
+      throw Exception('Minting failed, no signatures returned');
+    }
+
+    // unblind
+    final unblindedTokens = CashuBdhke.unblindSignatures(
+      mintSignatures: mintResponse,
+      blindedMessages: blindedMessagesOutputs,
+      mintPublicKeys: draftTransaction.usedKeyset!,
+    );
+    if (unblindedTokens.isEmpty) {
+      yield pendingTransaction.copyWith(
+        state: TransactionState.failed,
+        completionMsg: 'Unblinding failed, no tokens returned',
+      );
+      throw Exception('Unblinding failed, no tokens returned');
+    }
+    await _cacheManager.saveProofs(
+      tokens: unblindedTokens,
+      mintUrl: mintUrl,
+    );
+
+    final completedTransaction = pendingTransaction.copyWith(
+      state: TransactionState.completed,
+      transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+    yield completedTransaction;
+  }
+
   /// funds the wallet (usually with lightning) and get ecash
+  ///! reference
   Future<List<WalletCashuProof>> fund({
     required String mintUrl,
     required int amount,
@@ -438,16 +543,11 @@ class CashuWallet {
         .where((e) => ownTokens.any((ownToken) => ownToken.secret == e.secret))
         .toList();
 
-    await _cacheManagerCashu.runInTransaction(() async {
-      await _cacheManagerCashu.removeProofs(
-        proofs: sameSendRcv,
-        mintUrl: rcvToken.mintUrl,
-      );
-      await _cacheManagerCashu.saveProofs(
-        tokens: myUnblindedTokens,
-        mintUrl: rcvToken.mintUrl,
-      );
-    });
+    await _cacheManagerCashu.atomicSaveAndRemove(
+      proofsToRemove: sameSendRcv,
+      tokensToSave: myUnblindedTokens,
+      mintUrl: rcvToken.mintUrl,
+    );
 
     return myUnblindedTokens;
   }

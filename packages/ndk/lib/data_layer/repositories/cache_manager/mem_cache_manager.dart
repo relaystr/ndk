@@ -322,16 +322,17 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<WalletCashuProof>> getProofs({
-    required String mintUrl,
+    String? mintUrl,
     String? keysetId,
   }) {
+    if (mintUrl == null) {
+      return Future.value(cashuProofs.values.expand((e) => e).toList());
+    }
     if (cashuProofs.containsKey(mintUrl)) {
       if (keysetId != null) {
-        return Future.value(
-          cashuProofs[mintUrl]!
-              .where((proof) => proof.keysetId == keysetId)
-              .toList(),
-        );
+        return Future.value(cashuProofs[mintUrl]!
+            .where((proof) => proof.keysetId == keysetId)
+            .toList());
       } else {
         return Future.value(cashuProofs[mintUrl]?.toList() ?? []);
       }

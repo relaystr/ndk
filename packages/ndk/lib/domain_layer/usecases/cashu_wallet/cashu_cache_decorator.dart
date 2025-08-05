@@ -36,7 +36,7 @@ class CashuCacheDecorator implements CacheManager {
 
   @override
   Future<List<WalletCashuProof>> getProofs({
-    required String mintUrl,
+    String? mintUrl,
     String? keysetId,
   }) async {
     return await _mutex.synchronized(() async {

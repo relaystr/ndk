@@ -1,6 +1,6 @@
 import 'package:rxdart/rxdart.dart';
 
-import '../../entities/cashu/wallet_cashu_proof.dart';
+import '../../../shared/logger/logger.dart';
 import '../../repositories/cache_manager.dart';
 import '../wallet/wallet.dart';
 import 'cashu_wallet.dart';
@@ -26,6 +26,14 @@ class CashuWalletAccount implements WalletAccount {
 
   BehaviorSubject<List<Transaction>>? _latestTransactionsSubject;
 
+  final Set<CashuTransaction> _pendingTransactions = {};
+  BehaviorSubject<List<CashuTransaction>> pendingTransactionsSubject =
+      BehaviorSubject<List<CashuTransaction>>.seeded([]);
+
+  BehaviorSubject<int>? _balanceSubject;
+
+  final CashuWallet cashuWallet;
+
   CashuWalletAccount({
     required this.id,
     required this.name,
@@ -33,13 +41,29 @@ class CashuWalletAccount implements WalletAccount {
     required this.unit,
     required this.mintUrl,
     required CacheManager cacheManager,
+    required this.cashuWallet,
   }) : _cacheManager = cacheManager;
 
   @override
-  // TODO: implement balance
-  BehaviorSubject<int> get balance => throw UnimplementedError();
+  BehaviorSubject<int> get balance {
+    if (_balanceSubject == null) {
+      _balanceSubject = BehaviorSubject<int>.seeded(0);
+      updateBalance();
+    }
 
-  Future<List<Transaction>> _getLatestTransactions({int limit = 10}) async {
+    return _balanceSubject!;
+  }
+
+  Future<int> _getBalanceDb() async {
+    return await cashuWallet.getBalance(unit: unit, mintUrl: mintUrl);
+  }
+
+  Future<void> updateBalance() async {
+    final balance = await _getBalanceDb();
+    _balanceSubject?.add(balance);
+  }
+
+  Future<List<Transaction>> _getLatestTransactionsDb({int limit = 10}) async {
     final transactions = await _cacheManager.getTransactions(
       accountId: id,
       unit: unit,
@@ -55,7 +79,7 @@ class CashuWalletAccount implements WalletAccount {
       _latestTransactionsSubject =
           BehaviorSubject<List<Transaction>>.seeded([]);
 
-      _getLatestTransactions(limit: count).then((transactions) {
+      _getLatestTransactionsDb(limit: count).then((transactions) {
         _latestTransactionsSubject?.add(transactions);
         _latestTransactions.addAll(transactions);
       }).catchError((error) {
@@ -69,58 +93,57 @@ class CashuWalletAccount implements WalletAccount {
   }
 
   @override
-  // TODO: implement pendingTransactions
-  BehaviorSubject<List<Transaction>> get pendingTransactions =>
-      throw UnimplementedError();
-}
+  BehaviorSubject<List<CashuTransaction>> get pendingTransactions =>
+      pendingTransactionsSubject;
 
-/// re exports the actions by CashuWallet with account details already set
-class CashuWalletAccountActions {
-  final CashuWallet cashuWallet;
-  final String mintUrl;
-  final String unit;
-
-  CashuWalletAccountActions({
-    required this.cashuWallet,
-    required this.mintUrl,
-    required this.unit,
-  });
-
-  Future<List<WalletCashuProof>> fund({
+  /// initiate funding the account
+  Future<CashuTransaction> initiateFund({
     required int amount,
     String method = 'bolt11',
-  }) {
-    return cashuWallet.fund(
+  }) async {
+    final draftTransaction = await cashuWallet.initiateFund(
       mintUrl: mintUrl,
       amount: amount,
       unit: unit,
       method: method,
     );
+
+    // add to pending transactions
+    _pendingTransactions.add(draftTransaction);
+    pendingTransactionsSubject.add(_pendingTransactions.toList());
+
+    return draftTransaction;
   }
 
-  Future redeem({
-    required String request,
-    String method = 'bolt11',
-  }) {
-    return cashuWallet.redeem(
-      mintUrl: mintUrl,
-      request: request,
-      unit: unit,
-      method: method,
+  /// call this when you payed the invoice and want to retrieve the funds
+  /// it will update the streams and return the final transaction
+  Future<CashuTransaction> retriveFunds({
+    required CashuTransaction draftTransaction,
+  }) async {
+    final transactionStream = cashuWallet.retriveFunds(
+      draftTransaction: draftTransaction,
     );
-  }
 
-  Future<List<WalletCashuProof>> spend({required int amount}) {
-    return cashuWallet.spend(
-      mintUrl: mintUrl,
-      amount: amount,
-      unit: unit,
+    final subscription = transactionStream.listen(
+      (data) {
+        _pendingTransactions.add(data);
+        pendingTransactionsSubject.add(_pendingTransactions.toList());
+      },
+      onDone: () {
+        _pendingTransactions.remove(draftTransaction);
+        pendingTransactionsSubject.add(_pendingTransactions.toList());
+      },
+      onError: (error) {
+        _pendingTransactions.remove(draftTransaction);
+        pendingTransactionsSubject.add(_pendingTransactions.toList());
+        throw error;
+      },
     );
-  }
 
-  /// can be called on any Account, if the account does not exist, it will be created
-  Future<List<WalletCashuProof>> receive(String token) {
-    // todo: create account if it does not exist
-    return cashuWallet.receive(token);
+    final stateList = await transactionStream.toList();
+    _latestTransactions.add(stateList.last);
+    _latestTransactionsSubject?.add(_latestTransactions);
+    subscription.cancel();
+    return stateList.last;
   }
 }
