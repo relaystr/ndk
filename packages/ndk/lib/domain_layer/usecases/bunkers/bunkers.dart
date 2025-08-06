@@ -19,6 +19,8 @@ class Bunkers {
   final Broadcast _broadcast;
   final Requests _requests;
 
+  static const int kMaxWaitingTimeForConnectionSeconds=600;
+
   Bunkers({
     required Broadcast broadcast,
     required Requests requests,
@@ -87,7 +89,7 @@ class Bunkers {
     BunkerConnection? result;
 
     await for (final event in subscription.stream.timeout(
-        Duration(seconds: 20))) {
+        Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: remotePubkey,
@@ -144,7 +146,7 @@ class Bunkers {
     BunkerConnection? result;
 
     await for (final event in subscription.stream.timeout(
-        Duration(seconds: 20))) {
+        Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: event.pubKey,
