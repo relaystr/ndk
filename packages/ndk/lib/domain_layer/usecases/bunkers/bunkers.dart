@@ -234,15 +234,6 @@ class Bunkers {
       specificRelays: settings.relays,
     );
 
-    await for (final event in subscription.stream) {
-      final decryptedContent = await localSigner.decryptNip44(
-        ciphertext: event.content,
-        senderPubKey: settings.remotePubkey,
-      );
-
-      final response = jsonDecode(decryptedContent!);
-
-    }
     late StreamSubscription streamSub;
     streamSub = subscription.stream.listen((event) async {
       final decryptedContent = await localSigner.decryptNip44(
