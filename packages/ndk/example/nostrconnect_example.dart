@@ -8,6 +8,7 @@ Future<void> main() async {
       relays: ["wss://relay.nsec.app"],
       appName: "NDK nostr connect example",
       appUrl: "https://dart-nostr.com/");
+
   print('Logging in with ${nostrConnect.nostrConnectURL}');
   print('Enter this URI into your Nostr Connect client to log in.');
 
