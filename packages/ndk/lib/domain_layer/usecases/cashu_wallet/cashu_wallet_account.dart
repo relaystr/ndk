@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
-import '../../../shared/logger/logger.dart';
 import '../../repositories/cache_manager.dart';
 import '../wallet/wallet.dart';
 import 'cashu_wallet.dart';
@@ -18,7 +17,7 @@ class CashuWalletAccount implements WalletAccount {
   final WalletAccountType type;
 
   @override
-  final String unit;
+  final Set<String> supportedUnits;
 
   final String mintUrl;
 
@@ -32,7 +31,7 @@ class CashuWalletAccount implements WalletAccount {
   BehaviorSubject<List<CashuTransaction>> pendingTransactionsSubject =
       BehaviorSubject<List<CashuTransaction>>.seeded([]);
 
-  BehaviorSubject<int>? _balanceSubject;
+  BehaviorSubject<Map<String, int>>? _balanceSubject;
 
   final CashuWallet cashuWallet;
 
@@ -40,24 +39,32 @@ class CashuWalletAccount implements WalletAccount {
     required this.id,
     required this.name,
     this.type = WalletAccountType.CASHU,
-    required this.unit,
+    required this.supportedUnits,
     required this.mintUrl,
     required CacheManager cacheManager,
     required this.cashuWallet,
   }) : _cacheManager = cacheManager;
 
   @override
-  BehaviorSubject<int> get balance {
+  BehaviorSubject<Map<String, int>> get balances {
     if (_balanceSubject == null) {
-      _balanceSubject = BehaviorSubject<int>.seeded(0);
+      _balanceSubject = BehaviorSubject<Map<String, int>>.seeded({});
       updateBalance();
     }
 
     return _balanceSubject!;
   }
 
-  Future<int> _getBalanceDb() async {
-    return await cashuWallet.getBalance(unit: unit, mintUrl: mintUrl);
+  Future<Map<String, int>> _getBalanceDb() async {
+    final balances = <String, int>{};
+    for (final unit in supportedUnits) {
+      final balance = await cashuWallet.getBalance(
+        unit: unit,
+        mintUrl: mintUrl,
+      );
+      balances[unit] = balance;
+    }
+    return balances;
   }
 
   Future<void> updateBalance() async {
@@ -68,7 +75,6 @@ class CashuWalletAccount implements WalletAccount {
   Future<List<Transaction>> _getLatestTransactionsDb({int limit = 10}) async {
     final transactions = await _cacheManager.getTransactions(
       accountId: id,
-      unit: unit,
       limit: limit,
     );
 
@@ -102,6 +108,7 @@ class CashuWalletAccount implements WalletAccount {
   Future<CashuTransaction> initiateFund({
     required int amount,
     String method = 'bolt11',
+    String unit = 'sat',
   }) async {
     final draftTransaction = await cashuWallet.initiateFund(
       mintUrl: mintUrl,

@@ -44,7 +44,7 @@ class Wallet {
     // Ensure there's no existing subscription for this account
     _balanceSubscriptions[account.id]?.cancel();
 
-    _balanceSubscriptions[account.id] = account.balance.listen((_) {
+    _balanceSubscriptions[account.id] = account.balances.listen((_) {
       _recalculateAndEmitBalances();
     });
   }
@@ -53,14 +53,10 @@ class Wallet {
   void _recalculateAndEmitBalances() {
     final newBalances = <String, int>{};
     for (final account in accounts) {
-      // Use the latest value from the account's balance BehaviorSubject
-      final currentBalance = account.balance.value;
-
-      newBalances.update(
-        account.unit,
-        (existingTotal) => currentBalance,
-        ifAbsent: () => currentBalance,
-      );
+      final accountBalances = account.balances.value;
+      for (final entry in accountBalances.entries) {
+        newBalances[entry.key] = (newBalances[entry.key] ?? 0) + entry.value;
+      }
     }
     _balancesSubject.add(newBalances);
   }
@@ -113,7 +109,7 @@ abstract class WalletAccount {
   final WalletAccountType type;
 
   /// unit like sat, usd, etc.
-  final String unit;
+  final Set<String> supportedUnits;
 
   /// user defined name for the account
   String name;
@@ -122,16 +118,17 @@ abstract class WalletAccount {
     required this.id,
     required this.name,
     required this.type,
-    required this.unit,
+    required this.supportedUnits,
   });
 
   /// stream of the latest transactions for this account \
   /// e.g. history, including all transactions, pending, completed, etc.
   BehaviorSubject<List<Transaction>> latestTransactions({int count = 10});
 
-  /// stream of the current balance for this account
+  /// stream of balances for all supported currencies
+  /// Map key is the unit (e.g., 'sat', 'usd'), value is the balance
   /// BehaviorSubject to allow for immediate access to the current balance.
-  BehaviorSubject<int> get balance;
+  BehaviorSubject<Map<String, int>> get balances;
 
   /// stream of pending transactions for this account \
   ///
