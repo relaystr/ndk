@@ -116,7 +116,7 @@ class Bunkers {
     return result;
   }
 
-  /// Connects to a bunker using a bunker URL (bunker://)
+  /// Connects to a bunker using a nostr connect URL (nostrconnect://)
   Future<BunkerConnection?> connectWithNostrConnect(NostrConnect nostrConnect) async {
     final relays = nostrConnect.relays;
     final secret = nostrConnect.secret;
