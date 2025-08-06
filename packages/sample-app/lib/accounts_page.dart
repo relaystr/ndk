@@ -1,6 +1,8 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart' as bip340_utils;
 import 'package:ndk/shared/nips/nip19/nip19.dart' as nip19_decoder;
 
@@ -18,6 +20,7 @@ class AccountsPage extends StatefulWidget {
 class _AccountsPageState extends State<AccountsPage> {
   final _privateKeyController = TextEditingController();
   final _publicKeyController = TextEditingController();
+  final _bunkerUrlController = TextEditingController();
   String? _currentAccount; // Stores hex pubkey of the current user
   List<String> _accounts = // Stores list of known hex pubkeys
       []; // This would ideally be managed by NDK's account manager
@@ -232,6 +235,168 @@ class _AccountsPageState extends State<AccountsPage> {
     }
   }
 
+  Future<void> _loginWithBunkerUrl() async {
+    final bunkerUrl = _bunkerUrlController.text;
+    if (bunkerUrl.isNotEmpty) {
+      // Show loading dialog while waiting for bunker confirmation
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Bunker Login'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text(
+                  'Connecting to bunker...',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Please confirm the connection in your bunker app if prompted.',
+                  style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      );
+
+      try {
+        await ndk.accounts.loginWithBunkerUrl(
+          bunkerUrl: bunkerUrl,
+          bunkers: ndk.bunkers,
+        );
+
+        // Close the loading dialog on success
+        if (mounted) {
+          Navigator.of(context).pop();
+          _loadCurrentUser();
+          _loadAccounts();
+          widget.onAccountChanged?.call();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Logged in with bunker URL!')),
+          );
+        }
+      } catch (e) {
+        // Close dialog on error
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Bunker URL login failed: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _loginWithNostrConnect() async {
+    try {
+      // Create NostrConnect with nsec.app relay
+      final nostrConnect = NostrConnect(
+        relays: ['wss://relay.nsec.app'],
+        appName: 'NDK Sample App',
+      );
+
+      // Show the nostr connect URL in a dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Nostr Connect'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                    'Paste this URL in your nsecbunker to authorize the connection:'),
+                SizedBox(height: 16),
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: SelectableText(
+                    nostrConnect.nostrConnectURL,
+                    style: TextStyle(fontFamily: 'monospace', fontSize: 12),
+                  ),
+                ),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(
+                              text: nostrConnect.nostrConnectURL));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('URL copied to clipboard!')),
+                          );
+                        },
+                        child: Text('Copy URL'),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Waiting for authorization...',
+                  style: TextStyle(fontStyle: FontStyle.italic),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      );
+
+      // Try to connect with NostrConnect
+      await ndk.accounts.loginWithNostrConnect(
+        nostrConnect: nostrConnect,
+        bunkers: ndk.bunkers,
+      );
+
+      // Close the dialog on success
+      if (mounted) {
+        Navigator.of(context).pop();
+        _loadCurrentUser();
+        _loadAccounts();
+        widget.onAccountChanged?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logged in with Nostr Connect!')),
+        );
+      }
+    } catch (e) {
+      // Close dialog on error
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Nostr Connect login failed: $e')),
+        );
+      }
+    }
+  }
+
   void _loadCurrentUser() {
     final currentAccountPubkey = ndk.accounts.getLoggedAccount()?.pubkey;
     setState(() {
@@ -398,6 +563,40 @@ class _AccountsPageState extends State<AccountsPage> {
                   child: const Text('Login with Amber'),
                 ),
               ],
+              const SizedBox(height: 20),
+              TextField(
+                controller: _bunkerUrlController,
+                decoration: const InputDecoration(
+                    hintText:
+                        'Enter bunker URL (bunker://pubkey@relay?secret=...)'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await _loginWithBunkerUrl();
+                  if (mounted && _currentAccount != null) {
+                    // If login was successful
+                    setState(() {
+                      _isAddingAccount =
+                          false; // Exit adding mode after successful login
+                    });
+                  }
+                },
+                child: const Text('Login with Bunker URL'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  await _loginWithNostrConnect();
+                  if (mounted && _currentAccount != null) {
+                    // If login was successful
+                    setState(() {
+                      _isAddingAccount =
+                          false; // Exit adding mode after successful login
+                    });
+                  }
+                },
+                child: const Text('Login with Nostr Connect'),
+              ),
             ] else ...[
               // Logged in view (not adding account)
               Row(
