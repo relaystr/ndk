@@ -1,4 +1,4 @@
-import 'connection_settings.dart';
+import 'bunker_connection.dart';
 
 sealed class BunkerEvent {
   Map<String, dynamic> toJson();
@@ -13,7 +13,7 @@ class AuthRequired extends BunkerEvent {
 }
 
 class Connected extends BunkerEvent {
-  final ConnectionSettings settings;
+  final BunkerConnection settings;
   Connected(this.settings);
 
   @override

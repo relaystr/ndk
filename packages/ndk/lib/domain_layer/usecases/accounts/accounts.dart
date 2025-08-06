@@ -1,9 +1,10 @@
-import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
-
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
+import '../bunkers/bunkers.dart';
+import '../bunkers/models/bunker_event.dart';
+import '../bunkers/models/bunker_connection.dart';
 
 /// A usecase that handles accounts
 class Accounts {
@@ -52,24 +53,27 @@ class Accounts {
   }
 
   /// adds a new Account and sets the logged pubkey
-  Future<ConnectionSettings> loginWithBunkerUrl({required String bunkerUrl}) async {
-    final bunkerLogin = BunkerLogin(bunkerUrl: bunkerUrl);
-    ConnectionSettings? settings;
-    await for (final event in bunkerLogin.stream) {
+  Future<BunkerConnection> loginWithBunkerUrl({
+    required String bunkerUrl,
+    required Bunkers bunkers,
+  }) async {
+    BunkerConnection? connection;
+    await for (final event in bunkers.connectWithBunkerUrl(bunkerUrl)) {
       if (event is Connected) {
-        settings = event.settings;
+        connection = event.settings;
         break;
       }
     }
-    bunkerLogin.dispose();
-    await loginWithBunker(settings: settings!);
-    return settings;
+    await loginWithBunker(connection: connection!, bunkers: bunkers);
+    return connection;
   }
 
   /// adds a new Account and sets the logged pubkey
-  Future<void> loginWithBunker({required ConnectionSettings settings}) async {
-    final signer = Nip46EventSigner(connectionSettings: settings);
-    await signer.getPublicKeyAsync();
+  Future<void> loginWithBunker({
+    required BunkerConnection connection,
+    required Bunkers bunkers,
+  }) async {
+    final signer = bunkers.createSigner(connection);
     loginExternalSigner(signer: signer);
   }
 
