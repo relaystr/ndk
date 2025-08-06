@@ -1,13 +1,19 @@
+import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 import 'package:ndk/ndk.dart';
 
 Future<void> main() async {
   final ndk = Ndk.emptyBootstrapRelaysConfig();
 
+  final nostrConnect = NostrConnect(
+      relays: ["wss://relay.nsec.app"],
+      appName: "NDK nostr connect example",
+      appUrl: "https://dart-nostr.com/");
+  print('Logging in with ${nostrConnect.nostrConnectURL}');
+  print('Enter this URI into your Nostr Connect client to log in.');
+
   try {
-    await ndk.accounts.loginWithBunkerUrl(
-        bunkerUrl:
-            "bunker://a1fe3664f7a2b24db97e5b63869e8011c947f9abd8c03f98befafd27c38467d2?relay=wss://relay.nsec.app&secret=devsecret123",
-        bunkers: ndk.bunkers);
+    await ndk.accounts.loginWithNostrConnect(
+        nostrConnect: nostrConnect, bunkers: ndk.bunkers);
 
     print('Successfully logged in with bunker!');
     print('Logged in as: ${ndk.accounts.getPublicKey()}');
@@ -23,7 +29,6 @@ Future<void> main() async {
     await ndk.accounts.sign(event);
     print('Event signed successfully!');
     print('Event ID: ${event.id}');
-
   } catch (e) {
     print('Error: $e');
   }

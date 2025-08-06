@@ -3,8 +3,8 @@ import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../bunkers/bunkers.dart';
-import '../bunkers/models/bunker_event.dart';
 import '../bunkers/models/bunker_connection.dart';
+import '../bunkers/models/nostr_connect.dart';
 
 /// A usecase that handles accounts
 class Accounts {
@@ -52,28 +52,28 @@ class Accounts {
     _loggedPubkey = pubkey;
   }
 
-  /// adds a new Account and sets the logged pubkey
-  Future<BunkerConnection> loginWithBunkerUrl({
+  Future<void> loginWithBunkerUrl({
     required String bunkerUrl,
     required Bunkers bunkers,
   }) async {
-    BunkerConnection? connection;
-    await for (final event in bunkers.connectWithBunkerUrl(bunkerUrl)) {
-      if (event is Connected) {
-        connection = event.settings;
-        break;
-      }
-    }
-    await loginWithBunker(connection: connection!, bunkers: bunkers);
-    return connection;
+    BunkerConnection? connection = await bunkers.connectWithBunkerUrl(bunkerUrl);
+    await loginWithBunkerConnection(connection: connection!, bunkers: bunkers);
   }
 
-  /// adds a new Account and sets the logged pubkey
-  Future<void> loginWithBunker({
+  Future<void> loginWithNostrConnect({
+    required NostrConnect nostrConnect,
+    required Bunkers bunkers,
+  }) async {
+    BunkerConnection? connection = await bunkers.connectWithNostrConnect(nostrConnect);
+    await loginWithBunkerConnection(connection: connection!, bunkers: bunkers);
+  }
+
+  Future<void> loginWithBunkerConnection({
     required BunkerConnection connection,
     required Bunkers bunkers,
   }) async {
     final signer = bunkers.createSigner(connection);
+    await signer.getPublicKeyAsync();
     loginExternalSigner(signer: signer);
   }
 
