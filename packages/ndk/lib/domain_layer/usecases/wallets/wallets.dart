@@ -8,52 +8,45 @@ import '../../repositories/wallets_operations_repo.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../entities/wallet/wallet.dart';
 
-/// Proposal for a unified wallet system that can handle multiple account types (NWC, Cashu).
+/// Proposal for a unified wallet system that can handle multiple wallet types (NWC, Cashu).
 class Wallets {
-  final Set<Wallet> _wallets = {};
-  final List<WalletBalance> _walletsBalances = [];
-  final List<WalletTransaction> _walletsPendingTransactions = [];
-  final List<WalletTransaction> _walletsRecentTransactions = [];
+  final WalletsRepo _walletsRepository;
+  final WalletsOperationsRepo _walletsOperationsRepository;
 
-  // Combined streams for all wallets
+  int latestTransactionCount;
+
+  String defaultWalletId = '';
+
+  /// in memory storage
+  final Set<Wallet> _wallets = {};
+  final Map<String, List<WalletBalance>> _walletsBalances = {};
+  final Map<String, List<WalletTransaction>> _walletsPendingTransactions = {};
+  final Map<String, List<WalletTransaction>> _walletsRecentTransactions = {};
+
+  /// combined streams for all wallets
   final BehaviorSubject<List<WalletBalance>> _combinedBalancesSubject =
       BehaviorSubject<List<WalletBalance>>();
+
   final BehaviorSubject<List<WalletTransaction>>
       _combinedPendingTransactionsSubject =
       BehaviorSubject<List<WalletTransaction>>();
+
   final BehaviorSubject<List<WalletTransaction>>
       _combinedRecentTransactionsSubject =
       BehaviorSubject<List<WalletTransaction>>();
 
-  // Individual account streams
+  /// individual wallet streams - created on demand
   final Map<String, BehaviorSubject<List<WalletBalance>>>
-      _accountBalancesSubjects = {};
+      _walletBalanceStreams = {};
+
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-      _accountPendingTransactionsSubjects = {};
+      _walletPendingStreams = {};
+
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-      _accountRecentTransactionsSubjects = {};
+      _walletRecentStreams = {};
 
-  final WalletsRepo _walletsRepository;
-  final WalletsOperationsRepo _walletsOperationsRepository;
-
-  /// Private subject to control the balances stream.
-  final BehaviorSubject<Map<String, int>> _balancesSubject =
-      BehaviorSubject<Map<String, int>>.seeded({});
-
-  final Map<String, StreamSubscription> _balanceSubscriptions = {};
-
-  /// Public-facing stream of combined balances, grouped by currency.
-  ValueStream<Map<String, int>> get balances => _balancesSubject.stream;
-
-  int latestTransactionCount;
-  String defaultAccountId = '';
-
-  Wallet? get defaultAccount {
-    if (defaultAccountId.isEmpty) {
-      return null;
-    }
-    return _wallets.firstWhere((account) => account.id == defaultAccountId);
-  }
+  /// stream subscriptions for cleanup
+  final Map<String, List<StreamSubscription>> _subscriptions = {};
 
   Wallets({
     required WalletsRepo walletsRepository,
@@ -61,68 +54,209 @@ class Wallets {
     this.latestTransactionCount = 10,
   })  : _walletsRepository = walletsRepository,
         _walletsOperationsRepository = walletsOperationsRepository {
-    for (final account in _wallets) {
-      _subscribeToAccountBalance(account);
+    _initializeWallet();
+  }
+
+  /// public-facing stream of combined balances, grouped by currency.
+  Stream<List<WalletBalance>> get combinedBalances =>
+      _combinedBalancesSubject.stream;
+
+  /// public-facing stream of combined pending transactions.
+  Stream<List<WalletTransaction>> get combinedPendingTransactions =>
+      _combinedPendingTransactionsSubject.stream;
+
+  /// public-facing stream of combined recent transactions.
+  Stream<List<WalletTransaction>> get combinedRecentTransactions =>
+      _combinedRecentTransactionsSubject.stream;
+
+  Wallet? get defaultWallet {
+    if (defaultWalletId.isEmpty) {
+      return null;
     }
-    _recalculateAndEmitBalances();
+    return _wallets.firstWhere((wallet) => wallet.id == defaultWalletId);
   }
 
-  void _subscribeToAccountBalance(Wallet account) {
-    // Ensure there's no existing subscription for this account
-    _balanceSubscriptions[account.id]?.cancel();
+  Future<void> _initializeWallet() async {
+    // load wallets from repository
+    final wallets = await _walletsRepository.getWallets();
 
-    _balanceSubscriptions[account.id] = account.balances.listen((_) {
-      _recalculateAndEmitBalances();
-    });
+    for (final wallet in wallets) {
+      await _addWalletToMemory(wallet);
+    }
+
+    _updateCombinedStreams();
   }
 
-  /// Recalculates the total balance for each currency and emits an update.
-  void _recalculateAndEmitBalances() {
+  void _ensureWalletStreamExists(String walletId) {
+    _walletBalanceStreams[walletId] ??= BehaviorSubject<List<WalletBalance>>();
+    _walletPendingStreams[walletId] ??=
+        BehaviorSubject<List<WalletTransaction>>();
+    _walletRecentStreams[walletId] ??=
+        BehaviorSubject<List<WalletTransaction>>();
+  }
+
+  void _updateCombinedStreams() {
+    // combine all wallet balances
     final newBalances = <String, int>{};
-    for (final account in _wallets) {
-      final accountBalances = account.balances.value;
-      for (final entry in accountBalances.entries) {
+    for (final wallet in _wallets) {
+      final walletBalances = wallet.balances.value;
+      for (final entry in walletBalances.entries) {
         newBalances[entry.key] = (newBalances[entry.key] ?? 0) + entry.value;
       }
     }
-    _balancesSubject.add(newBalances);
+    _combinedBalancesSubject.add(newBalances.entries
+        .map((entry) => WalletBalance(
+              unit: entry.key,
+              amount: entry.value,
+              walletId: '',
+            ))
+        .toList());
+
+    // combine all pending transactions
+    final allPending = _walletsPendingTransactions.values
+        .expand((transactions) => transactions)
+        .toList();
+    _combinedPendingTransactionsSubject.add(allPending);
+
+    // combine all recent transactions
+    final allRecent = _walletsRecentTransactions.values
+        .expand((transactions) => transactions)
+        .toList();
+    _combinedRecentTransactionsSubject.add(allRecent);
   }
 
-  void addAccount(Wallet account) {
-    _wallets.add(account);
-    if (defaultAccountId.isEmpty) {
-      defaultAccountId = account.id;
-    }
-    _subscribeToAccountBalance(account);
-    _recalculateAndEmitBalances();
+  Future<void> _addWalletToMemory(Wallet wallet) async {
+    // store wallet in memory
+    _wallets.add(wallet);
+
+    // initialize empty data collections
+    _walletsBalances[wallet.id] = [];
+    _walletsPendingTransactions[wallet.id] = [];
+    _walletsRecentTransactions[wallet.id] = [];
+
+    // create individual streams if they don't exist
+    _ensureWalletStreamExists(wallet.id);
+
+    // subscribe to repository streams and update in memory data
+    final subscriptions = <StreamSubscription>[];
+
+    // balance stream
+    subscriptions
+        .add(_walletsRepository.getBalancesStream(wallet.id).listen((balances) {
+      _walletsBalances[wallet.id] = balances;
+      _walletBalanceStreams[wallet.id]?.add(balances);
+      _updateCombinedStreams();
+    }));
+
+    // pending transactions stream
+    subscriptions.add(_walletsRepository
+        .getPendingTransactionsStream(wallet.id)
+        .listen((transactions) {
+      _walletsPendingTransactions[wallet.id] = transactions;
+      _walletPendingStreams[wallet.id]?.add(transactions);
+      _updateCombinedStreams();
+    }));
+
+    // recent transactions stream
+    subscriptions.add(_walletsRepository
+        .getRecentTransactionsStream(wallet.id)
+        .listen((transactions) {
+      _walletsRecentTransactions[wallet.id] = transactions;
+      _walletRecentStreams[wallet.id]?.add(transactions);
+      _updateCombinedStreams();
+    }));
+
+    _subscriptions[wallet.id] = subscriptions;
   }
 
-  void removeAccount(String accountId) {
-    _wallets.removeWhere((account) => account.id == accountId);
-
-    _balanceSubscriptions[accountId]?.cancel();
-    _balanceSubscriptions.remove(accountId);
-    if (defaultAccountId == accountId) {
-      defaultAccountId = _wallets.isNotEmpty ? _wallets.first.id : '';
-    }
-    _recalculateAndEmitBalances();
+  /// add a new wallet to the system
+  Future<void> addWallet(Wallet wallet) async {
+    await _walletsRepository.addWallet(wallet);
+    await _addWalletToMemory(wallet);
+    _updateCombinedStreams();
   }
 
-  void setDefaultAccount(String accountId) {
-    if (_wallets.any((account) => account.id == accountId)) {
-      defaultAccountId = accountId;
+  /// remove wallet - persists on disk
+  Future<void> removeWallet(String walletId) async {
+    await _walletsRepository.removeWallet(walletId);
+
+    // clean up in-memory data
+    _wallets.removeWhere((wallet) => wallet.id == walletId);
+    _walletsBalances.remove(walletId);
+    _walletsPendingTransactions.remove(walletId);
+    _walletsRecentTransactions.remove(walletId);
+
+    // clean up streams
+    _walletBalanceStreams[walletId]?.close();
+    _walletPendingStreams[walletId]?.close();
+    _walletRecentStreams[walletId]?.close();
+
+    _walletBalanceStreams.remove(walletId);
+    _walletPendingStreams.remove(walletId);
+    _walletRecentStreams.remove(walletId);
+
+    // clean up subscriptions
+    _subscriptions[walletId]?.forEach((sub) => sub.cancel());
+    _subscriptions.remove(walletId);
+
+    _updateCombinedStreams();
+  }
+
+  /// set the default wallet to use by common operations \
+
+  void setDefaultWallet(String walletId) {
+    if (_wallets.any((wallet) => wallet.id == walletId)) {
+      defaultWalletId = walletId;
     } else {
-      throw ArgumentError('Account with id $accountId does not exist.');
+      throw ArgumentError('Wallet with id $walletId does not exist.');
     }
   }
 
-  /// here could be unified actions like zap, rcv ln (invoice) etc.
+  /// calculate combined balance for a specific currency
+  int getCombinedBalance(String unit) {
+    return _walletsBalances.values
+        .expand((balances) => balances)
+        .where((balance) => balance.unit == unit)
+        .fold(0, (sum, balance) => sum + balance.amount);
+  }
+
+  /// get wallets that support a specific currency
+  List<Wallet> getWalletsForUnit(String unit) {
+    return _wallets
+        .where((wallet) => wallet.supportedUnits.any((u) => u == unit))
+        .toList();
+  }
 
   void dispose() {
-    for (final subscription in _balanceSubscriptions.values) {
-      subscription.cancel();
+    // cancel all subscriptions
+    for (final subs in _subscriptions.values) {
+      for (final sub in subs) {
+        sub.cancel();
+      }
     }
-    _balanceSubscriptions.clear();
-    _balancesSubject.close();
+
+    // close all streams
+    _combinedBalancesSubject.close();
+    _combinedPendingTransactionsSubject.close();
+    _combinedRecentTransactionsSubject.close();
+
+    for (final stream in _walletBalanceStreams.values) {
+      stream.close();
+    }
+    for (final stream in _walletPendingStreams.values) {
+      stream.close();
+    }
+    for (final stream in _walletRecentStreams.values) {
+      stream.close();
+    }
+  }
+
+  /**
+   * here unified actions like zap, rcv ln (invoice) etc.
+   */
+
+  /// todo: just as an example
+  Future<void> zap() {
+    return _walletsOperationsRepository.zap();
   }
 }

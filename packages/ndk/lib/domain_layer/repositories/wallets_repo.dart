@@ -1,5 +1,3 @@
-import 'package:ndk/domain_layer/usecases/wallets/wallets.dart';
-
 import '../entities/wallet/wallet.dart';
 import '../entities/wallet/wallet_balance.dart';
 import '../entities/wallet/wallet_transaction.dart';
