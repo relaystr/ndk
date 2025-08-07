@@ -7,6 +7,9 @@ import '../../../domain_layer/repositories/wallets_repo.dart';
 import '../../../domain_layer/usecases/cashu_wallet/cashu.dart';
 import '../../../domain_layer/usecases/nwc/nwc.dart';
 
+/// this class manages the wallets (storage) and
+/// glues the specific wallet implementation to the generic wallets usecase  \
+/// the glue code is readonly for actions look at [WalletsOperationsRepo]
 class WalletsRepoImpl implements WalletsRepo {
   final Cashu _cashuUseCase;
   final Nwc _nwcUseCase;
