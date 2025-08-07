@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../entities/wallet/wallet_balance.dart';
 import '../../entities/wallet/wallet_transaction.dart';
+import '../../repositories/wallets_operations_repo.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../entities/wallet/wallet.dart';
 
@@ -33,6 +34,7 @@ class Wallets {
       _accountRecentTransactionsSubjects = {};
 
   final WalletsRepo _walletsRepository;
+  final WalletsOperationsRepo _walletsOperationsRepository;
 
   /// Private subject to control the balances stream.
   final BehaviorSubject<Map<String, int>> _balancesSubject =
@@ -55,8 +57,10 @@ class Wallets {
 
   Wallets({
     required WalletsRepo walletsRepository,
+    required WalletsOperationsRepo walletsOperationsRepository,
     this.latestTransactionCount = 10,
-  }) : _walletsRepository = walletsRepository {
+  })  : _walletsRepository = walletsRepository,
+        _walletsOperationsRepository = walletsOperationsRepository {
     for (final account in _wallets) {
       _subscribeToAccountBalance(account);
     }
