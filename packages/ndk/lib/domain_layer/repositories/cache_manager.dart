@@ -85,8 +85,10 @@ abstract class CacheManager {
   /// cashu methods
 
   Future<void> saveKeyset(CahsuKeyset keyset);
+
+  /// get all keysets if no mintUrl is provided \
   Future<List<CahsuKeyset>> getKeysets({
-    required String mintUrl,
+    String? mintUrl,
   });
 
   Future<void> saveProofs({
