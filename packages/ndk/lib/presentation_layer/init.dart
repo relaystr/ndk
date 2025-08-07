@@ -6,12 +6,16 @@ import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
+import '../data_layer/repositories/wallets/wallets_operations_impl.dart';
+import '../data_layer/repositories/wallets/wallets_repo_impl.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
+import '../domain_layer/repositories/wallets_operations_repo.dart';
+import '../domain_layer/repositories/wallets_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
@@ -143,6 +147,8 @@ class Initialization {
       client: _httpRequestDS,
     );
 
+    final WalletsOperationsRepo walletsOperationsRepo = WalletsOperationsImpl();
+
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
     cacheRead = CacheRead(_ndkConfig.cache);
@@ -247,8 +253,15 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
     );
 
+    final WalletsRepo walletsRepo = WalletsRepoImpl(
+      cashuUseCase: cashuWallet,
+      nwcUseCase: nwc,
+      cacheManager: _ndkConfig.cache,
+    );
+
     wallet = Wallets(
-      accounts: [],
+      walletsRepository: walletsRepo,
+      walletsOperationsRepository: walletsOperationsRepo,
     );
 
     /// set the user configured log level
