@@ -303,11 +303,11 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<CahsuKeyset>> getKeysets({required String mintUrl}) {
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) {
     if (cashuKeysets.containsKey(mintUrl)) {
       return Future.value(cashuKeysets[mintUrl]?.toList() ?? []);
     } else {
-      return Future.value([]);
+      return Future.value(cashuKeysets.values.expand((e) => e).toList());
     }
   }
 
