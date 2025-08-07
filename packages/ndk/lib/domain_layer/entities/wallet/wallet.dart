@@ -1,6 +1,3 @@
-import 'package:rxdart/rxdart.dart';
-
-import 'wallet_transaction.dart';
 import 'wallet_type.dart';
 
 /// generic wallet account interface
@@ -17,23 +14,15 @@ abstract class Wallet {
   /// user defined name for the wallet
   String name;
 
+  /// metadata to store additional information for the specific wallet type
+  /// e.g. for Cashu store the mintUrl here
+  final Map<String, dynamic> metadata;
+
   Wallet({
     required this.id,
     required this.name,
     required this.type,
     required this.supportedUnits,
+    required this.metadata,
   });
-
-  /// stream of the latest transactions for this wallet \
-  /// e.g. history, including all transactions, pending, completed, etc.
-  BehaviorSubject<List<WalletTransaction>> latestTransactions({int count = 10});
-
-  /// stream of balances for all supported currencies
-  /// Map key is the unit (e.g., 'sat', 'usd'), value is the balance
-  /// BehaviorSubject to allow for immediate access to the current balance.
-  BehaviorSubject<Map<String, int>> get balances;
-
-  /// stream of pending transactions for this wallet \
-  ///
-  BehaviorSubject<List<WalletTransaction>> get pendingTransactions;
 }
