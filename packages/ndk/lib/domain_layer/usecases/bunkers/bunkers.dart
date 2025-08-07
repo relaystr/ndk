@@ -5,7 +5,6 @@ import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
-import '../../../shared/nips/nip01/helpers.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
 import '../../../shared/nips/nip01/bip340.dart';

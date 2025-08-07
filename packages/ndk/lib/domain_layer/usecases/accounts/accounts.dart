@@ -52,20 +52,28 @@ class Accounts {
     _loggedPubkey = pubkey;
   }
 
-  Future<void> loginWithBunkerUrl({
+  Future<BunkerConnection?> loginWithBunkerUrl({
     required String bunkerUrl,
     required Bunkers bunkers,
   }) async {
     BunkerConnection? connection = await bunkers.connectWithBunkerUrl(bunkerUrl);
-    await loginWithBunkerConnection(connection: connection!, bunkers: bunkers);
+    if (connection!=null) {
+      await loginWithBunkerConnection(
+          connection: connection, bunkers: bunkers);
+    }
+    return connection;
   }
 
-  Future<void> loginWithNostrConnect({
+  Future<BunkerConnection?> loginWithNostrConnect({
     required NostrConnect nostrConnect,
     required Bunkers bunkers,
   }) async {
     BunkerConnection? connection = await bunkers.connectWithNostrConnect(nostrConnect);
-    await loginWithBunkerConnection(connection: connection!, bunkers: bunkers);
+    if (connection!=null) {
+      await loginWithBunkerConnection(
+          connection: connection, bunkers: bunkers);
+    }
+    return connection;
   }
 
   Future<void> loginWithBunkerConnection({

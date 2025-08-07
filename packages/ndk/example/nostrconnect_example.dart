@@ -1,4 +1,3 @@
-import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 import 'package:ndk/ndk.dart';
 
 Future<void> main() async {
