@@ -9,12 +9,11 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import '../../../domain_layer/usecases/bunkers/models/bunker_request.dart';
 
 class Nip46EventSigner implements EventSigner {
-  final _streamController = StreamController<dynamic>.broadcast();
-  Stream<dynamic> get stream => _streamController.stream;
 
   BunkerConnection connection;
   Requests requests;
   Broadcast broadcast;
+  Function(String)? authCallback;
 
   NdkResponse? subscription;
 
@@ -24,7 +23,12 @@ class Nip46EventSigner implements EventSigner {
 
   late Bip340EventSigner localEventSigner;
 
-  Nip46EventSigner({required this.connection, required this.requests, required this.broadcast}) {
+  Nip46EventSigner({
+    required this.connection,
+    required this.requests,
+    required this.broadcast,
+    this.authCallback,
+  }) {
     final privKey = connection.privateKey;
     final pubKey = Bip340.getPublicKey(privKey);
 
@@ -65,7 +69,9 @@ class Nip46EventSigner implements EventSigner {
     final response = jsonDecode(decryptedContent!);
 
     if (response["result"] == "auth_url") {
-      _streamController.add(AuthRequired(response["error"]));
+      if (authCallback != null) {
+        authCallback!(response["error"]);
+      }
       return;
     }
 
@@ -206,13 +212,8 @@ class Nip46EventSigner implements EventSigner {
     return response;
   }
 
-  void closeSubscription() async {
+  void dispose() async {
     if (subscription == null) return;
     await requests.closeSubscription(subscription!.requestId);
-  }
-
-  void dispose() {
-    _streamController.close();
-    closeSubscription();
   }
 }

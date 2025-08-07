@@ -55,11 +55,18 @@ class Accounts {
   Future<BunkerConnection?> loginWithBunkerUrl({
     required String bunkerUrl,
     required Bunkers bunkers,
+    Function(String)? authCallback,
   }) async {
-    BunkerConnection? connection = await bunkers.connectWithBunkerUrl(bunkerUrl);
-    if (connection!=null) {
+    BunkerConnection? connection = await bunkers.connectWithBunkerUrl(
+      bunkerUrl,
+      authCallback: authCallback,
+    );
+    if (connection != null) {
       await loginWithBunkerConnection(
-          connection: connection, bunkers: bunkers);
+        connection: connection,
+        bunkers: bunkers,
+        authCallback: authCallback,
+      );
     }
     return connection;
   }
@@ -67,11 +74,18 @@ class Accounts {
   Future<BunkerConnection?> loginWithNostrConnect({
     required NostrConnect nostrConnect,
     required Bunkers bunkers,
+    Function(String)? authCallback,
   }) async {
-    BunkerConnection? connection = await bunkers.connectWithNostrConnect(nostrConnect);
-    if (connection!=null) {
+    BunkerConnection? connection = await bunkers.connectWithNostrConnect(
+      nostrConnect,
+      authCallback: authCallback,
+    );
+    if (connection != null) {
       await loginWithBunkerConnection(
-          connection: connection, bunkers: bunkers);
+        connection: connection,
+        bunkers: bunkers,
+        authCallback: authCallback,
+      );
     }
     return connection;
   }
@@ -79,8 +93,9 @@ class Accounts {
   Future<void> loginWithBunkerConnection({
     required BunkerConnection connection,
     required Bunkers bunkers,
+    Function(String)? authCallback,
   }) async {
-    final signer = bunkers.createSigner(connection);
+    final signer = bunkers.createSigner(connection, authCallback: authCallback);
     await signer.getPublicKeyAsync();
     loginExternalSigner(signer: signer);
   }

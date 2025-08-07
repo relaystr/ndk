@@ -18,17 +18,19 @@ class Bunkers {
   final Broadcast _broadcast;
   final Requests _requests;
 
-  static const int kMaxWaitingTimeForConnectionSeconds=600;
+  static const int kMaxWaitingTimeForConnectionSeconds = 600;
 
   Bunkers({
     required Broadcast broadcast,
     required Requests requests,
-  })
-      : _broadcast = broadcast,
+  })  : _broadcast = broadcast,
         _requests = requests;
 
   /// Connects to a bunker using a bunker URL (bunker://)
-  Future<BunkerConnection?> connectWithBunkerUrl(String bunkerUrl) async {
+  Future<BunkerConnection?> connectWithBunkerUrl(
+    String bunkerUrl, {
+    Function(String)? authCallback,
+  }) async {
     final uri = Uri.parse(bunkerUrl);
     if (uri.scheme != 'bunker') {
       throw ArgumentError('Invalid bunker URL scheme');
@@ -87,8 +89,8 @@ class Bunkers {
     );
     BunkerConnection? result;
 
-    await for (final event in subscription.stream.timeout(
-        Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
+    await for (final event in subscription.stream
+        .timeout(Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: remotePubkey,
@@ -99,8 +101,9 @@ class Bunkers {
       if (response["id"] != request.id) continue;
 
       if (response["result"] == "auth_url") {
-        // _streamController.add(AuthRequired(response["error"]));
-        // TODO what can we do about this?
+        if (authCallback != null) {
+          authCallback(response["error"]);
+        }
         continue;
       }
 
@@ -118,7 +121,10 @@ class Bunkers {
   }
 
   /// Connects to a bunker using a nostr connect URL (nostrconnect://)
-  Future<BunkerConnection?> connectWithNostrConnect(NostrConnect nostrConnect) async {
+  Future<BunkerConnection?> connectWithNostrConnect(
+    NostrConnect nostrConnect, {
+    Function(String)? authCallback,
+  }) async {
     final relays = nostrConnect.relays;
     final secret = nostrConnect.secret;
 
@@ -144,8 +150,8 @@ class Bunkers {
     );
     BunkerConnection? result;
 
-    await for (final event in subscription.stream.timeout(
-        Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
+    await for (final event in subscription.stream
+        .timeout(Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
       final decryptedContent = await localEventSigner.decryptNip44(
         ciphertext: event.content,
         senderPubKey: event.pubKey,
@@ -167,15 +173,17 @@ class Bunkers {
   }
 
   int someTimeAgo({Duration duration = const Duration(minutes: 5)}) {
-    return (DateTime
-        .now()
-        .millisecondsSinceEpoch ~/ 1000) - duration.inSeconds;
+    return (DateTime.now().millisecondsSinceEpoch ~/ 1000) - duration.inSeconds;
   }
 
   /// Creates a simple signer that delegates to this bunker instance
-  Nip46EventSigner createSigner(BunkerConnection connection) {
+  Nip46EventSigner createSigner(BunkerConnection connection,
+      {Function(String)? authCallback}) {
     return Nip46EventSigner(
-        connection: connection, requests: _requests, broadcast: _broadcast);
+      connection: connection,
+      requests: _requests,
+      broadcast: _broadcast,
+      authCallback: authCallback,
+    );
   }
 }
-

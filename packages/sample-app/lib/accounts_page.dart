@@ -5,6 +5,7 @@ import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart' as bip340_utils;
 import 'package:ndk/shared/nips/nip19/nip19.dart' as nip19_decoder;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'main.dart';
 
@@ -278,6 +279,10 @@ class _AccountsPageState extends State<AccountsPage> {
         await ndk.accounts.loginWithBunkerUrl(
           bunkerUrl: bunkerUrl,
           bunkers: ndk.bunkers,
+          authCallback: (authUrl) {
+            // Handle auth URL - show it in a proper dialog
+            _showAuthUrlDialog(authUrl);
+          },
         );
 
         // Close the loading dialog on success
@@ -374,6 +379,10 @@ class _AccountsPageState extends State<AccountsPage> {
       await ndk.accounts.loginWithNostrConnect(
         nostrConnect: nostrConnect,
         bunkers: ndk.bunkers,
+        authCallback: (authUrl) {
+          // Handle auth URL - show it in a proper dialog
+          _showAuthUrlDialog(authUrl);
+        },
       );
 
       // Close the dialog on success
@@ -476,6 +485,96 @@ class _AccountsPageState extends State<AccountsPage> {
     widget.onAccountChanged?.call(); // Notify listener
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Logged out')),
+    );
+  }
+
+  void _showAuthUrlDialog(String authUrl) {
+    if (!mounted) return;
+
+    final isHttpsUrl = authUrl.startsWith('https://');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Authorization Required'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Please complete the authorization process using the URL below:',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey[50],
+                ),
+                child: SelectableText(
+                  authUrl,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    color: isHttpsUrl ? Colors.blue : Colors.black,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: authUrl));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('URL copied to clipboard!')),
+                        );
+                      },
+                      icon: Icon(Icons.copy),
+                      label: Text('Copy URL'),
+                    ),
+                  ),
+                  if (isHttpsUrl) ...[
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final uri = Uri.parse(authUrl);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Could not open URL')),
+                            );
+                          }
+                        },
+                        icon: Icon(Icons.open_in_browser),
+                        label: Text('Open URL'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 
