@@ -568,8 +568,17 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<CahsuKeyset>> getKeysets({required String mintUrl}) async {
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) async {
     await dbRdy;
+    if (mintUrl == null || mintUrl.isEmpty) {
+      // return all keysets if no mintUrl
+      return _objectBox.store
+          .box<DbWalletCahsuKeyset>()
+          .getAll()
+          .map((dbKeyset) => dbKeyset.toNdk())
+          .toList();
+    }
+
     return _objectBox.store
         .box<DbWalletCahsuKeyset>()
         .query(DbWalletCahsuKeyset_.mintUrl.equals(mintUrl))
