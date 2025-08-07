@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
@@ -676,14 +677,15 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<Transaction>> getTransactions(
-      {int? limit, String? accountId, String? unit}) {
+  Future<List<WalletTransaction>> getTransactions(
+      {int? limit, String? walletId, String? unit}) {
     // TODO: implement getTransactions
     throw UnimplementedError();
   }
 
   @override
-  Future<void> saveTransactions({required List<Transaction> transactions}) {
+  Future<void> saveTransactions(
+      {required List<WalletTransaction> transactions}) {
     // TODO: implement saveTransactions
     throw UnimplementedError();
   }

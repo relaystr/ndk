@@ -33,8 +33,8 @@ export 'domain_layer/entities/ndk_file.dart';
 export 'domain_layer/entities/account.dart';
 
 /// Cashu entities
-export 'domain_layer/entities/cashu/wallet_cashu_keyset.dart';
-export 'domain_layer/entities/cashu/wallet_cashu_proof.dart';
+export 'domain_layer/entities/cashu/cashu_keyset.dart';
+export 'domain_layer/entities/cashu/cashu_proof.dart';
 
 // testing
-export 'domain_layer/usecases/wallet/wallet.dart';
+export 'domain_layer/usecases/wallets/wallets.dart';

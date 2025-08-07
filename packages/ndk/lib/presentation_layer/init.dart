@@ -16,7 +16,7 @@ import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
-import '../domain_layer/usecases/cashu_wallet/cashu_wallet.dart';
+import '../domain_layer/usecases/cashu_wallet/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/files/blossom.dart';
@@ -36,7 +36,7 @@ import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
-import '../domain_layer/usecases/wallet/wallet.dart';
+import '../domain_layer/usecases/wallets/wallets.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import '../shared/logger/logger.dart';
 import 'ndk_config.dart';
@@ -80,8 +80,8 @@ class Initialization {
   late Search search;
   late GiftWrap giftWrap;
   late Connectivy connectivity;
-  late CashuWallet cashuWallet;
-  late Wallet wallet;
+  late Cashu cashuWallet;
+  late Wallets wallet;
 
   late VerifyNip05 verifyNip05;
 
@@ -242,12 +242,12 @@ class Initialization {
 
     connectivity = Connectivy(relayManager);
 
-    cashuWallet = CashuWallet(
+    cashuWallet = Cashu(
       cashuRepo: cashuRepo,
       cacheManager: _ndkConfig.cache,
     );
 
-    wallet = Wallet(
+    wallet = Wallets(
       accounts: [],
     );
 

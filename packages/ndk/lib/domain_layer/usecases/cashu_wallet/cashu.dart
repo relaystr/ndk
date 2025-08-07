@@ -1,5 +1,3 @@
-import 'package:rxdart/rxdart.dart';
-
 import '../../../config/cashu_config.dart';
 import '../../../data_layer/repositories/cashu/cashu_wallet_account_impl.dart';
 import '../../../shared/logger/logger.dart';
@@ -8,6 +6,7 @@ import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
 import '../../entities/cashu/cashu_token.dart';
 import '../../entities/wallet/wallet_transaction.dart';
+import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_repo.dart';
 import 'cashu_bdhke.dart';
@@ -40,7 +39,7 @@ class Cashu {
     _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
   }
 
-  Set<CashuWalletAccount> cashuWalletAccounts = {};
+  Set<CashuWallet> cashuWalletAccounts = {};
 
   // final Set<Mint> _mints = {};
 
@@ -89,10 +88,10 @@ class Cashu {
     CashuWalletTransaction transaction = CashuWalletTransaction(
       id: quote.quoteId, //todo use a better id
       mintUrl: mintUrl,
-      accountId: mintUrl,
+      walletId: mintUrl,
       changeAmount: amount,
       unit: unit,
-      accountType: WalletAccountType.CASHU,
+      walletType: WalletType.CASHU,
       state: WalletTransactionState.draft,
       initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       qoute: quote,

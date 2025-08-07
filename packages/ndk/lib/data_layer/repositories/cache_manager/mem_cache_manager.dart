@@ -8,6 +8,7 @@ import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../domain_layer/usecases/wallets/wallets.dart';
 
@@ -39,7 +40,7 @@ class MemCacheManager implements CacheManager {
   /// String for mint Url
   Map<String, Set<CashuProof>> cashuProofs = {};
 
-  List<Transaction> transactions = [];
+  List<WalletTransaction> transactions = [];
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -373,15 +374,15 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<Transaction>> getTransactions({
+  Future<List<WalletTransaction>> getTransactions({
     int? limit,
-    String? accountId,
+    String? walletId,
     String? unit,
   }) {
-    if (accountId != null && unit != null) {
+    if (walletId != null && unit != null) {
       return Future.value(transactions
           .where((transaction) =>
-              transaction.accountId == accountId && transaction.unit == unit)
+              transaction.walletId == walletId && transaction.unit == unit)
           .take(limit ?? transactions.length)
           .toList());
     } else if (unit != null) {
@@ -389,9 +390,9 @@ class MemCacheManager implements CacheManager {
           .where((transaction) => transaction.unit == unit)
           .take(limit ?? transactions.length)
           .toList());
-    } else if (accountId != null) {
+    } else if (walletId != null) {
       return Future.value(transactions
-          .where((transaction) => transaction.accountId == accountId)
+          .where((transaction) => transaction.walletId == walletId)
           .take(limit ?? transactions.length)
           .toList());
     } else {
@@ -401,13 +402,14 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> saveTransactions({required List<Transaction> transactions}) {
+  Future<void> saveTransactions(
+      {required List<WalletTransaction> transactions}) {
     /// Check if transactions are already present
     /// if so update them
 
     for (final transaction in transactions) {
-      final existingIndex = this.transactions.indexWhere((t) =>
-          t.id == transaction.id && t.accountId == transaction.accountId);
+      final existingIndex = this.transactions.indexWhere(
+          (t) => t.id == transaction.id && t.walletId == transaction.walletId);
       if (existingIndex != -1) {
         this.transactions[existingIndex] = transaction;
       } else {
