@@ -15,7 +15,7 @@ class Wallets {
 
   int latestTransactionCount;
 
-  String defaultWalletId = '';
+  String? defaultWalletId;
 
   /// in memory storage
   final Set<Wallet> _wallets = {};
@@ -70,7 +70,7 @@ class Wallets {
       _combinedRecentTransactionsSubject.stream;
 
   Wallet? get defaultWallet {
-    if (defaultWalletId.isEmpty) {
+    if (defaultWalletId == null) {
       return null;
     }
     return _wallets.firstWhere((wallet) => wallet.id == defaultWalletId);
