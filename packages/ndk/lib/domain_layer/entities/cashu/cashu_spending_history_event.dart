@@ -38,7 +38,7 @@ enum CashuSpendMarker {
   }
 }
 
-class WalletCashuSpendingHistoryEvent {
+class CashuSpendingHistoryEvent {
   static const int kSpendingHistoryKind = 7376;
 
   final CashuSpendDirection direction;
@@ -49,7 +49,7 @@ class WalletCashuSpendingHistoryEvent {
 
   final String? nutzapTokenId;
 
-  WalletCashuSpendingHistoryEvent({
+  CashuSpendingHistoryEvent({
     required this.direction,
     required this.amount,
     required this.tokens,

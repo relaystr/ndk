@@ -1,12 +1,12 @@
-import '../../entities/cashu/wallet_cashu_keyset.dart';
-import '../../entities/cashu/wallet_cashu_blinded_message.dart';
-import '../../entities/cashu/wallet_cashu_proof.dart';
+import '../../entities/cashu/cashu_keyset.dart';
+import '../../entities/cashu/cashu_blinded_message.dart';
+import '../../entities/cashu/cashu_proof.dart';
 import '../../repositories/cashu_repo.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_tools.dart';
 
 class ProofSelectionResult {
-  final List<WalletCashuProof> selectedProofs;
+  final List<CashuProof> selectedProofs;
   final int totalSelected;
   final int fees;
 
@@ -28,8 +28,8 @@ class ProofSelectionResult {
 }
 
 class SplitResult {
-  final List<WalletCashuProof> exactProofs;
-  final List<WalletCashuProof> changeProofs;
+  final List<CashuProof> exactProofs;
+  final List<CashuProof> changeProofs;
 
   SplitResult({
     required this.exactProofs,
@@ -37,16 +37,16 @@ class SplitResult {
   });
 }
 
-class CashuWalletProofSelect {
+class CashuProofSelect {
   final CashuRepo _cashuRepo;
 
-  CashuWalletProofSelect({
+  CashuProofSelect({
     required CashuRepo cashuRepo,
   }) : _cashuRepo = cashuRepo;
 
   /// Find keyset by ID from list
-  static WalletCahsuKeyset? _findKeysetById(
-      List<WalletCahsuKeyset> keysets, String keysetId) {
+  static CahsuKeyset? _findKeysetById(
+      List<CahsuKeyset> keysets, String keysetId) {
     try {
       return keysets.firstWhere((keyset) => keyset.id == keysetId);
     } catch (e) {
@@ -56,8 +56,8 @@ class CashuWalletProofSelect {
 
   /// Calculate fees for a list of proofs across multiple keysets
   static int calculateFees(
-    List<WalletCashuProof> proofs,
-    List<WalletCahsuKeyset> keysets,
+    List<CashuProof> proofs,
+    List<CahsuKeyset> keysets,
   ) {
     if (proofs.isEmpty) return 0;
 
@@ -79,8 +79,8 @@ class CashuWalletProofSelect {
 
   /// Calculate fees with breakdown by keyset
   static Map<String, dynamic> calculateFeesWithBreakdown({
-    required List<WalletCashuProof> proofs,
-    required List<WalletCahsuKeyset> keysets,
+    required List<CashuProof> proofs,
+    required List<CahsuKeyset> keysets,
   }) {
     if (proofs.isEmpty) {
       return {
@@ -126,7 +126,7 @@ class CashuWalletProofSelect {
   }
 
   /// Get the active keyset for creating new outputs
-  static WalletCahsuKeyset? getActiveKeyset(List<WalletCahsuKeyset> keysets) {
+  static CahsuKeyset? getActiveKeyset(List<CahsuKeyset> keysets) {
     try {
       return keysets.firstWhere((keyset) => keyset.active);
     } catch (e) {
@@ -135,11 +135,11 @@ class CashuWalletProofSelect {
   }
 
   /// Sort proofs optimally considering both amount and fees
-  static List<WalletCashuProof> sortProofsOptimally(
-    List<WalletCashuProof> proofs,
-    List<WalletCahsuKeyset> keysets,
+  static List<CashuProof> sortProofsOptimally(
+    List<CashuProof> proofs,
+    List<CahsuKeyset> keysets,
   ) {
-    return List<WalletCashuProof>.from(proofs)
+    return List<CashuProof>.from(proofs)
       ..sort((a, b) {
         // Primary: prefer larger amounts
         final amountComparison = b.amount.compareTo(a.amount);
@@ -167,10 +167,10 @@ class CashuWalletProofSelect {
   /// Swaps proofs in target amount and change
   Future<SplitResult> performSplit({
     required String mint,
-    required List<WalletCashuProof> proofsToSplit,
+    required List<CashuProof> proofsToSplit,
     required int targetAmount,
     required int changeAmount,
-    required List<WalletCahsuKeyset> keysets,
+    required List<CahsuKeyset> keysets,
   }) async {
     final activeKeyset = getActiveKeyset(keysets);
 
@@ -205,7 +205,7 @@ class CashuWalletProofSelect {
       proofs: proofsToSplit,
       outputs: blindedMessagesOutputs
           .map(
-            (e) => WalletCashuBlindedMessage(
+            (e) => CashuBlindedMessage(
               amount: e.amount,
               id: e.blindedMessage.id,
               blindedMessage: e.blindedMessage.blindedMessage,
@@ -231,9 +231,9 @@ class CashuWalletProofSelect {
 
   /// Selects proofs for spending target amount with multiple keysets
   static ProofSelectionResult selectProofsForSpending({
-    required List<WalletCashuProof> proofs,
+    required List<CashuProof> proofs,
     required int targetAmount,
-    required List<WalletCahsuKeyset> keysets,
+    required List<CahsuKeyset> keysets,
     int maxIterations = 15,
   }) {
     if (keysets.isEmpty) {
@@ -269,12 +269,12 @@ class CashuWalletProofSelect {
 
   /// Iteratively select proofs accounting for fees across multiple keysets
   static ProofSelectionResult _selectWithFeeIteration({
-    required List<WalletCashuProof> sortedProofs,
+    required List<CashuProof> sortedProofs,
     required int targetAmount,
-    required List<WalletCahsuKeyset> keysets,
+    required List<CahsuKeyset> keysets,
     required int maxIterations,
   }) {
-    final selected = <WalletCashuProof>[];
+    final selected = <CashuProof>[];
     int iteration = 0;
 
     while (iteration < maxIterations) {
@@ -303,7 +303,7 @@ class CashuWalletProofSelect {
       final shortage = requiredTotal - currentTotal;
 
       // Find next best proof to add (prefer efficient proofs)
-      WalletCashuProof? nextProof = _selectNextOptimalProof(
+      CashuProof? nextProof = _selectNextOptimalProof(
         sortedProofs,
         selected,
         shortage.toInt(),
@@ -326,13 +326,13 @@ class CashuWalletProofSelect {
   }
 
   /// Select the next optimal proof considering amount and fee efficiency
-  static WalletCashuProof? _selectNextOptimalProof(
-    List<WalletCashuProof> sortedProofs,
-    List<WalletCashuProof> alreadySelected,
+  static CashuProof? _selectNextOptimalProof(
+    List<CashuProof> sortedProofs,
+    List<CashuProof> alreadySelected,
     int shortage,
-    List<WalletCahsuKeyset> keysets,
+    List<CahsuKeyset> keysets,
   ) {
-    WalletCashuProof? bestProof;
+    CashuProof? bestProof;
     double bestEfficiency = -1;
 
     for (final proof in sortedProofs) {
@@ -378,10 +378,10 @@ class CashuWalletProofSelect {
   }
 
   /// Find exact match including fees across multiple keysets
-  static List<WalletCashuProof> _findExactMatchWithFees(
-    List<WalletCashuProof> proofs,
+  static List<CashuProof> _findExactMatchWithFees(
+    List<CashuProof> proofs,
     int targetAmount,
-    List<WalletCahsuKeyset> keysets,
+    List<CahsuKeyset> keysets,
   ) {
     // Check single proof exact match
     for (final proof in proofs) {
@@ -397,10 +397,10 @@ class CashuWalletProofSelect {
   }
 
   /// Find exact combination accounting for fees across multiple keysets
-  static List<WalletCashuProof> _findExactCombinationWithFees(
-    List<WalletCashuProof> proofs,
+  static List<CashuProof> _findExactCombinationWithFees(
+    List<CashuProof> proofs,
     int targetAmount,
-    List<WalletCahsuKeyset> keysets, {
+    List<CahsuKeyset> keysets, {
     int maxProofs = 5,
   }) {
     if (proofs.length > 20) return [];
@@ -415,15 +415,15 @@ class CashuWalletProofSelect {
   }
 
   /// Find combination of specific length with fee consideration
-  static List<WalletCashuProof> _findCombinationOfLengthWithFees(
-    List<WalletCashuProof> proofs,
+  static List<CashuProof> _findCombinationOfLengthWithFees(
+    List<CashuProof> proofs,
     int targetAmount,
-    List<WalletCahsuKeyset> keysets,
+    List<CahsuKeyset> keysets,
     int length,
   ) {
-    List<WalletCashuProof> result = [];
+    List<CashuProof> result = [];
 
-    void backtrack(int start, List<WalletCashuProof> current, int currentSum) {
+    void backtrack(int start, List<CashuProof> current, int currentSum) {
       if (current.length == length) {
         final fees = calculateFees(current, keysets);
         if (currentSum == targetAmount + fees) {

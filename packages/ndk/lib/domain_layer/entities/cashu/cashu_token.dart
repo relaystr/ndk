@@ -1,9 +1,9 @@
 import '../../usecases/cashu_wallet/cashu_token_encoder.dart';
 import '../../usecases/cashu_wallet/cashu_tools.dart';
-import 'wallet_cashu_proof.dart';
+import 'cashu_proof.dart';
 
-class WalletCashuToken {
-  final List<WalletCashuProof> proofs;
+class CashuToken {
+  final List<CashuProof> proofs;
 
   /// user msg
   final String memo;
@@ -12,7 +12,7 @@ class WalletCashuToken {
 
   final String mintUrl;
 
-  WalletCashuToken({
+  CashuToken({
     required this.proofs,
     required this.memo,
     required this.unit,
@@ -49,7 +49,7 @@ class WalletCashuToken {
     );
   }
 
-  factory WalletCashuToken.fromV4Json(Map json) {
+  factory CashuToken.fromV4Json(Map json) {
     final mint = json['m']?.toString() ?? '';
     final unit = json['u']?.toString() ?? '';
     final memo = json['d']?.toString() ?? '';
@@ -59,7 +59,7 @@ class WalletCashuToken {
       throw Exception('Invalid token format: "t" should be a list');
     }
 
-    final myProofs = List<WalletCashuProof>.empty(growable: true);
+    final myProofs = List<CashuProof>.empty(growable: true);
 
     for (final tokenJson in tokensJson) {
       final keysetId = tokenJson['i'] as String;
@@ -67,7 +67,7 @@ class WalletCashuToken {
       final proofsJson = tokenJson['p'] as List<dynamic>? ?? [];
 
       for (final proofJson in proofsJson) {
-        final myProof = WalletCashuProof.fromV4Json(
+        final myProof = CashuProof.fromV4Json(
           json: proofJson as Map,
           keysetId: keysetId,
         );
@@ -75,7 +75,7 @@ class WalletCashuToken {
       }
     }
 
-    return WalletCashuToken(
+    return CashuToken(
       mintUrl: mint,
       proofs: myProofs,
       memo: memo,

@@ -567,7 +567,7 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<WalletCahsuKeyset>> getKeysets({required String mintUrl}) async {
+  Future<List<CahsuKeyset>> getKeysets({required String mintUrl}) async {
     await dbRdy;
     return _objectBox.store
         .box<DbWalletCahsuKeyset>()
@@ -579,7 +579,7 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<WalletCashuProof>> getProofs({
+  Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
   }) async {
@@ -633,7 +633,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> removeProofs({
-    required List<WalletCashuProof> proofs,
+    required List<CashuProof> proofs,
     required String mintUrl,
   }) async {
     await dbRdy;
@@ -653,7 +653,7 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<void> saveKeyset(WalletCahsuKeyset keyset) async {
+  Future<void> saveKeyset(CahsuKeyset keyset) async {
     _objectBox.store.box<DbWalletCahsuKeyset>().put(
           DbWalletCahsuKeyset.fromNdk(keyset),
         );
@@ -662,7 +662,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveProofs({
-    required List<WalletCashuProof> tokens,
+    required List<CashuProof> tokens,
     required String mintUrl,
   }) async {
     await dbRdy;

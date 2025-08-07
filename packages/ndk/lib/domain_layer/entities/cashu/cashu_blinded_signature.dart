@@ -1,5 +1,5 @@
-class WalletCashuBlindedSignature {
-  WalletCashuBlindedSignature({
+class CashuBlindedSignature {
+  CashuBlindedSignature({
     required this.id,
     required this.amount,
     required this.blindedSignature,
@@ -11,8 +11,8 @@ class WalletCashuBlindedSignature {
   /// C_ blinded signature
   final String blindedSignature;
 
-  factory WalletCashuBlindedSignature.fromServerMap(Map json) {
-    return WalletCashuBlindedSignature(
+  factory CashuBlindedSignature.fromServerMap(Map json) {
+    return CashuBlindedSignature(
       id: json['id'],
       amount: json['amount'] is int
           ? json['amount']

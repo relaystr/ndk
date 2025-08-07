@@ -1,12 +1,12 @@
-import '../entities/cashu/wallet_cashu_keyset.dart';
-import '../entities/cashu/wallet_cashu_proof.dart';
+import '../entities/cashu/cashu_keyset.dart';
+import '../entities/cashu/cashu_proof.dart';
 import '../entities/contact_list.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
-import '../usecases/wallet/wallet.dart';
+import '../entities/wallet/wallet_transaction.dart';
 
 abstract class CacheManager {
   /// closes the cache manger \
@@ -84,27 +84,27 @@ abstract class CacheManager {
 
   /// cashu methods
 
-  Future<void> saveKeyset(WalletCahsuKeyset keyset);
-  Future<List<WalletCahsuKeyset>> getKeysets({
+  Future<void> saveKeyset(CahsuKeyset keyset);
+  Future<List<CahsuKeyset>> getKeysets({
     required String mintUrl,
   });
 
   Future<void> saveProofs({
-    required List<WalletCashuProof> tokens,
+    required List<CashuProof> tokens,
     required String mintUrl,
   });
 
-  Future<List<WalletCashuProof>> getProofs({
+  Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
   });
 
   Future<void> removeProofs({
-    required List<WalletCashuProof> proofs,
+    required List<CashuProof> proofs,
     required String mintUrl,
   });
 
-  Future<List<Transaction>> getTransactions({
+  Future<List<WalletTransaction>> getTransactions({
     int? limit,
     String? accountId,
     String? unit,
@@ -113,6 +113,6 @@ abstract class CacheManager {
   /// upserts transactions \
   /// if transaction with same id exists, it will be updated
   Future<void> saveTransactions({
-    required List<Transaction> transactions,
+    required List<WalletTransaction> transactions,
   });
 }

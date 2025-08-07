@@ -24,7 +24,7 @@ class DbWalletCashuProof {
     required this.unblindedSig,
   });
 
-  factory DbWalletCashuProof.fromNdk(ndk_entities.WalletCashuProof ndkM) {
+  factory DbWalletCashuProof.fromNdk(ndk_entities.CashuProof ndkM) {
     final dbM = DbWalletCashuProof(
       keysetId: ndkM.keysetId,
       amount: ndkM.amount,
@@ -35,8 +35,8 @@ class DbWalletCashuProof {
     return dbM;
   }
 
-  ndk_entities.WalletCashuProof toNdk() {
-    final ndkM = ndk_entities.WalletCashuProof(
+  ndk_entities.CashuProof toNdk() {
+    final ndkM = ndk_entities.CashuProof(
       keysetId: keysetId,
       amount: amount,
       secret: secret,

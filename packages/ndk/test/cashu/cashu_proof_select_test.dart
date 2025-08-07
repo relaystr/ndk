@@ -1,75 +1,75 @@
-import 'package:ndk/domain_layer/entities/cashu/wallet_cashu_keyset.dart';
-import 'package:ndk/domain_layer/entities/cashu/wallet_cashu_proof.dart';
-import 'package:ndk/domain_layer/usecases/cashu_wallet/cashu_wallet_proof_select.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_keyset.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
+import 'package:ndk/domain_layer/usecases/cashu_wallet/cashu_proof_select.dart';
 import 'package:test/test.dart';
 
 void main() {
   setUp(() {});
 
-  List<WalletCahsuMintKeyPair> generateWalletKeyPairs(int length) {
+  List<CahsuMintKeyPair> generateWalletKeyPairs(int length) {
     return List.generate(length, (index) {
       int amount = 1 << index; // 2^index: 1, 2, 4, 8, 16, 32, etc.
-      return WalletCahsuMintKeyPair(amount: amount, pubkey: "pubkey${amount}");
+      return CahsuMintKeyPair(amount: amount, pubkey: "pubkey${amount}");
     });
   }
 
   group('proof select', () {
-    final List<WalletCashuProof> myproofs = [
-      WalletCashuProof(
+    final List<CashuProof> myproofs = [
+      CashuProof(
         amount: 50,
         keysetId: 'test-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 4,
         keysetId: 'test-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 2,
         keysetId: 'test-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 50,
         keysetId: 'test-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 4,
         keysetId: 'test-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 2,
         keysetId: 'test-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 101,
         keysetId: 'test-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 1,
         keysetId: 'test-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 1,
         keysetId: 'other-keyset',
         secret: "",
         unblindedSig: "",
       ),
-      WalletCashuProof(
+      CashuProof(
         amount: 2,
         keysetId: 'other-keyset',
         secret: "",
@@ -77,8 +77,8 @@ void main() {
       ),
     ];
 
-    List<WalletCahsuKeyset> keysets = [
-      WalletCahsuKeyset(
+    List<CahsuKeyset> keysets = [
+      CahsuKeyset(
         mintUrl: "debug",
         unit: "test",
         active: true,
@@ -87,7 +87,7 @@ void main() {
         mintKeyPairs: generateWalletKeyPairs(10).toSet(),
         fetchedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       ),
-      WalletCahsuKeyset(
+      CahsuKeyset(
         mintUrl: "debug",
         unit: "test",
         active: false,
@@ -99,7 +99,7 @@ void main() {
     ];
 
     test('split test - exact', () async {
-      final exact = CashuWalletProofSelect.selectProofsForSpending(
+      final exact = CashuProofSelect.selectProofsForSpending(
         proofs: myproofs,
         keysets: keysets,
         targetAmount: 50,
@@ -115,14 +115,14 @@ void main() {
 
     test('split test - insufficient', () {
       expect(
-          () => CashuWalletProofSelect.selectProofsForSpending(
+          () => CashuProofSelect.selectProofsForSpending(
               proofs: myproofs, targetAmount: 9999999, keysets: keysets),
           throwsA(isA<Exception>()));
     });
 
     test('split test - combination', () {
       const target = 52;
-      final combination = CashuWalletProofSelect.selectProofsForSpending(
+      final combination = CashuProofSelect.selectProofsForSpending(
         proofs: myproofs,
         keysets: keysets,
         targetAmount: target,
@@ -138,7 +138,7 @@ void main() {
 
     test('split test - combination - greedy', () {
       const target = 103;
-      final combination = CashuWalletProofSelect.selectProofsForSpending(
+      final combination = CashuProofSelect.selectProofsForSpending(
         proofs: myproofs,
         keysets: keysets,
         targetAmount: target,
@@ -151,7 +151,7 @@ void main() {
 
     test('split test - combination - split needed', () {
       const target = 123;
-      final combination = CashuWalletProofSelect.selectProofsForSpending(
+      final combination = CashuProofSelect.selectProofsForSpending(
         proofs: myproofs,
         keysets: keysets,
         targetAmount: target,
@@ -167,39 +167,39 @@ void main() {
 
     test('fee calculation - mixed keysets', () {
       final mixedProofs = [
-        WalletCashuProof(
+        CashuProof(
             amount: 10,
             keysetId: 'test-keyset',
             secret: "",
             unblindedSig: ""), // 1000 ppk
-        WalletCashuProof(
+        CashuProof(
             amount: 20,
             keysetId: 'other-keyset',
             secret: "",
             unblindedSig: ""), // 100 ppk
-        WalletCashuProof(
+        CashuProof(
             amount: 30,
             keysetId: 'test-keyset',
             secret: "",
             unblindedSig: ""), // 1000 ppk
       ];
 
-      final fees = CashuWalletProofSelect.calculateFees(mixedProofs, keysets);
+      final fees = CashuProofSelect.calculateFees(mixedProofs, keysets);
       // 2100 ppk total = 3 sats (rounded up)
       expect(fees, 3);
     });
 
     test('fee calculation - breakdown by keyset', () {
       final mixedProofs = [
-        WalletCashuProof(
+        CashuProof(
             amount: 10, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
-        WalletCashuProof(
+        CashuProof(
             amount: 20, keysetId: 'other-keyset', secret: "", unblindedSig: ""),
-        WalletCashuProof(
+        CashuProof(
             amount: 30, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
       ];
 
-      final breakdown = CashuWalletProofSelect.calculateFeesWithBreakdown(
+      final breakdown = CashuProofSelect.calculateFeesWithBreakdown(
         proofs: mixedProofs,
         keysets: keysets,
       );
@@ -211,10 +211,10 @@ void main() {
     });
 
     test('fee calculation - empty proofs', () {
-      final fees = CashuWalletProofSelect.calculateFees([], keysets);
+      final fees = CashuProofSelect.calculateFees([], keysets);
       expect(fees, 0);
 
-      final breakdown = CashuWalletProofSelect.calculateFeesWithBreakdown(
+      final breakdown = CashuProofSelect.calculateFeesWithBreakdown(
         proofs: [],
         keysets: keysets,
       );
@@ -224,7 +224,7 @@ void main() {
 
     test('fee calculation - unknown keyset throws exception', () {
       final invalidProofs = [
-        WalletCashuProof(
+        CashuProof(
             amount: 10,
             keysetId: 'unknown-keyset',
             secret: "",
@@ -232,23 +232,23 @@ void main() {
       ];
 
       expect(
-        () => CashuWalletProofSelect.calculateFees(invalidProofs, keysets),
+        () => CashuProofSelect.calculateFees(invalidProofs, keysets),
         throwsA(isA<Exception>()),
       );
     });
 
     test('proof sorting - amount priority', () {
       final unsortedProofs = [
-        WalletCashuProof(
+        CashuProof(
             amount: 10, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
-        WalletCashuProof(
+        CashuProof(
             amount: 50, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
-        WalletCashuProof(
+        CashuProof(
             amount: 25, keysetId: 'test-keyset', secret: "", unblindedSig: ""),
       ];
 
       final sorted =
-          CashuWalletProofSelect.sortProofsOptimally(unsortedProofs, keysets);
+          CashuProofSelect.sortProofsOptimally(unsortedProofs, keysets);
       expect(sorted[0].amount, 50);
       expect(sorted[1].amount, 25);
       expect(sorted[2].amount, 10);
@@ -256,34 +256,34 @@ void main() {
 
     test('proof sorting - fee priority when amounts equal', () {
       final equalAmountProofs = [
-        WalletCashuProof(
+        CashuProof(
             amount: 10,
             keysetId: 'test-keyset',
             secret: "",
             unblindedSig: ""), // 1000 ppk
-        WalletCashuProof(
+        CashuProof(
             amount: 10,
             keysetId: 'other-keyset',
             secret: "",
             unblindedSig: ""), // 100 ppk
       ];
 
-      final sorted = CashuWalletProofSelect.sortProofsOptimally(
-          equalAmountProofs, keysets);
+      final sorted =
+          CashuProofSelect.sortProofsOptimally(equalAmountProofs, keysets);
       // Lower fee keyset should come first
       expect(sorted[0].keysetId, 'other-keyset');
       expect(sorted[1].keysetId, 'test-keyset');
     });
 
     test('active keyset selection', () {
-      final activeKeyset = CashuWalletProofSelect.getActiveKeyset(keysets);
+      final activeKeyset = CashuProofSelect.getActiveKeyset(keysets);
       expect(activeKeyset?.id, 'test-keyset');
       expect(activeKeyset?.active, true);
     });
 
     test('selection with no keysets throws exception', () {
       expect(
-        () => CashuWalletProofSelect.selectProofsForSpending(
+        () => CashuProofSelect.selectProofsForSpending(
           proofs: myproofs,
           targetAmount: 50,
           keysets: [],
@@ -293,14 +293,14 @@ void main() {
     });
 
     test('selection prefers cheaper keysets', () {
-      final cheaperFirst = CashuWalletProofSelect.selectProofsForSpending(
+      final cheaperFirst = CashuProofSelect.selectProofsForSpending(
         proofs: [
-          WalletCashuProof(
+          CashuProof(
               amount: 50,
               keysetId: 'test-keyset',
               secret: "",
               unblindedSig: ""), // 1000 ppk
-          WalletCashuProof(
+          CashuProof(
               amount: 50,
               keysetId: 'other-keyset',
               secret: "",
@@ -319,14 +319,14 @@ void main() {
     test('maximum iterations exceeded', () {
       final manySmallProofs = List.generate(
           20,
-          (i) => WalletCashuProof(
+          (i) => CashuProof(
               amount: 1,
               keysetId: 'test-keyset',
               secret: "",
               unblindedSig: ""));
 
       expect(
-        () => CashuWalletProofSelect.selectProofsForSpending(
+        () => CashuProofSelect.selectProofsForSpending(
           proofs: manySmallProofs,
           targetAmount: 50,
           keysets: keysets,
@@ -338,29 +338,29 @@ void main() {
 
     test('fee breakdown accuracy', () {
       final mixedProofs = [
-        WalletCashuProof(
+        CashuProof(
             amount: 10,
             keysetId: 'test-keyset',
             secret: "",
             unblindedSig: ""), // 1000 ppk
-        WalletCashuProof(
+        CashuProof(
             amount: 20,
             keysetId: 'test-keyset',
             secret: "",
             unblindedSig: ""), // 1000 ppk
-        WalletCashuProof(
+        CashuProof(
             amount: 30,
             keysetId: 'other-keyset',
             secret: "",
             unblindedSig: ""), // 100 ppk
-        WalletCashuProof(
+        CashuProof(
             amount: 40,
             keysetId: 'other-keyset',
             secret: "",
             unblindedSig: ""), // 100 ppk
       ];
 
-      final result = CashuWalletProofSelect.selectProofsForSpending(
+      final result = CashuProofSelect.selectProofsForSpending(
         proofs: mixedProofs,
         targetAmount: 90,
         keysets: keysets,
@@ -378,7 +378,7 @@ void main() {
     test('single sat amounts with high fees - impossible', () {
       final singleSatProofs = List.generate(
           11,
-          (i) => WalletCashuProof(
+          (i) => CashuProof(
               amount: 1,
               keysetId: 'test-keyset',
               secret: "",
@@ -387,7 +387,7 @@ void main() {
       // fee for each is 1 + 1 sat => never enough to spend
 
       expect(
-          () => CashuWalletProofSelect.selectProofsForSpending(
+          () => CashuProofSelect.selectProofsForSpending(
                 proofs: singleSatProofs,
                 targetAmount: 1,
                 keysets: keysets,

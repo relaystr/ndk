@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import '../../../domain_layer/entities/cashu/wallet_cashu_keyset.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_message.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_blinded_signature.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_melt_response.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_proof.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_quote.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_quote_melt.dart';
+import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
+import '../../../domain_layer/entities/cashu/cashu_blinded_message.dart';
+import '../../../domain_layer/entities/cashu/cashu_blinded_signature.dart';
+import '../../../domain_layer/entities/cashu/cashu_melt_response.dart';
+import '../../../domain_layer/entities/cashu/cashu_proof.dart';
+import '../../../domain_layer/entities/cashu/cashu_quote.dart';
+import '../../../domain_layer/entities/cashu/cashu_quote_melt.dart';
 import '../../../domain_layer/repositories/cashu_repo.dart';
 import '../../../domain_layer/usecases/cashu_wallet/cashu_keypair.dart';
 import '../../../domain_layer/usecases/cashu_wallet/cashu_tools.dart';
@@ -21,10 +21,10 @@ class CashuRepoImpl implements CashuRepo {
     required this.client,
   });
   @override
-  Future<List<WalletCashuBlindedSignature>> swap({
+  Future<List<CashuBlindedSignature>> swap({
     required String mintUrl,
-    required List<WalletCashuProof> proofs,
-    required List<WalletCashuBlindedMessage> outputs,
+    required List<CashuProof> proofs,
+    required List<CashuBlindedMessage> outputs,
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'swap');
 
@@ -59,12 +59,12 @@ class CashuRepoImpl implements CashuRepo {
     }
 
     return signaturesUnparsed
-        .map((e) => WalletCashuBlindedSignature.fromServerMap(e))
+        .map((e) => CashuBlindedSignature.fromServerMap(e))
         .toList();
   }
 
   @override
-  Future<List<WalletCahsuKeysetResponse>> getKeysets({
+  Future<List<CahsuKeysetResponse>> getKeysets({
     required String mintUrl,
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'keysets');
@@ -86,7 +86,7 @@ class CashuRepoImpl implements CashuRepo {
     }
     final List<dynamic> keysetsUnparsed = responseBody['keysets'];
     return keysetsUnparsed
-        .map((e) => WalletCahsuKeysetResponse.fromServerMap(
+        .map((e) => CahsuKeysetResponse.fromServerMap(
               map: e as Map<String, dynamic>,
               mintUrl: mintUrl,
             ))
@@ -94,7 +94,7 @@ class CashuRepoImpl implements CashuRepo {
   }
 
   @override
-  Future<List<WalletCahsuKeysResponse>> getKeys({
+  Future<List<CahsuKeysResponse>> getKeys({
     required String mintUrl,
     String? keysetId,
   }) async {
@@ -122,7 +122,7 @@ class CashuRepoImpl implements CashuRepo {
     }
     final List<dynamic> keysUnparsed = responseBody['keysets'];
     return keysUnparsed
-        .map((e) => WalletCahsuKeysResponse.fromServerMap(
+        .map((e) => CahsuKeysResponse.fromServerMap(
               map: e as Map<String, dynamic>,
               mintUrl: mintUrl,
             ))
@@ -130,7 +130,7 @@ class CashuRepoImpl implements CashuRepo {
   }
 
   @override
-  Future<WalletCashuQuote> getMintQuote({
+  Future<CashuQuote> getMintQuote({
     required String mintUrl,
     required int amount,
     required String unit,
@@ -166,7 +166,7 @@ class CashuRepoImpl implements CashuRepo {
       throw Exception('Invalid response format: $responseBody');
     }
 
-    return WalletCashuQuote.fromServerMap(
+    return CashuQuote.fromServerMap(
       map: responseBody,
       mintUrl: mintUrl,
       quoteKey: quoteKey,
@@ -204,10 +204,10 @@ class CashuRepoImpl implements CashuRepo {
   }
 
   @override
-  Future<List<WalletCashuBlindedSignature>> mintTokens({
+  Future<List<CashuBlindedSignature>> mintTokens({
     required String mintUrl,
     required String quote,
-    required List<WalletCashuBlindedMessage> blindedMessagesOutputs,
+    required List<CashuBlindedMessage> blindedMessagesOutputs,
     required String method,
     required CashuKeypair quoteKey,
   }) async {
@@ -259,12 +259,12 @@ class CashuRepoImpl implements CashuRepo {
     }
 
     return signaturesUnparsed
-        .map((e) => WalletCashuBlindedSignature.fromServerMap(e))
+        .map((e) => CashuBlindedSignature.fromServerMap(e))
         .toList();
   }
 
   @override
-  Future<WalletCashuQuoteMelt> getMeltQuote({
+  Future<CashuQuoteMelt> getMeltQuote({
     required String mintUrl,
     required String request,
     required String unit,
@@ -290,7 +290,7 @@ class CashuRepoImpl implements CashuRepo {
       );
     }
 
-    return WalletCashuQuoteMelt.fromServerMap(
+    return CashuQuoteMelt.fromServerMap(
       json: jsonDecode(response.body) as Map<String, dynamic>,
       mintUrl: mintUrl,
       request: request,
@@ -298,7 +298,7 @@ class CashuRepoImpl implements CashuRepo {
   }
 
   @override
-  Future<WalletCashuQuoteMelt> checkMeltQuoteState({
+  Future<CashuQuoteMelt> checkMeltQuoteState({
     required String mintUrl,
     required String quoteID,
     required String method,
@@ -322,18 +322,18 @@ class CashuRepoImpl implements CashuRepo {
       throw Exception('Invalid response format: $responseBody');
     }
 
-    return WalletCashuQuoteMelt.fromServerMap(
+    return CashuQuoteMelt.fromServerMap(
       json: responseBody,
       mintUrl: mintUrl,
     );
   }
 
   @override
-  Future<WalletCashuMeltResponse> meltTokens({
+  Future<CashuMeltResponse> meltTokens({
     required String mintUrl,
     required String quoteId,
-    required List<WalletCashuProof> proofs,
-    required List<WalletCashuBlindedMessage> outputs,
+    required List<CashuProof> proofs,
+    required List<CashuBlindedMessage> outputs,
     String method = 'bolt11',
   }) async {
     final body = {
@@ -358,7 +358,7 @@ class CashuRepoImpl implements CashuRepo {
     if (responseBody is! Map<String, dynamic>) {
       throw Exception('Invalid response format: $responseBody');
     }
-    return WalletCashuMeltResponse.fromServerMap(
+    return CashuMeltResponse.fromServerMap(
       map: responseBody,
       mintUrl: mintUrl,
       quoteId: quoteId,

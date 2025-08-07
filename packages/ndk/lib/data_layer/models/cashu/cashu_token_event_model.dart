@@ -1,17 +1,17 @@
 import 'dart:convert';
 
-import '../../../domain_layer/entities/cashu/wallet_cashu_token_event.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_token_event_content.dart';
+import '../../../domain_layer/entities/cashu/cashu_token_event.dart';
+import '../../../domain_layer/entities/cashu/cashu_token_event_content.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 
-class WalletCashuTokenEventModel extends WalletCashuTokenEvent {
-  WalletCashuTokenEventModel(
+class CashuTokenEventModel extends CashuTokenEvent {
+  CashuTokenEventModel(
       {required super.mintUrl,
       required super.proofs,
       required super.deletedIds});
 
-  Future<WalletCashuTokenEventModel> fromNip01Event({
+  Future<CashuTokenEventModel> fromNip01Event({
     required Nip01Event nostrEvent,
     required EventSigner signer,
   }) async {
@@ -24,9 +24,9 @@ class WalletCashuTokenEventModel extends WalletCashuTokenEvent {
     }
     final jsonContent = jsonDecode(decryptedContent);
 
-    final extractedContent = WalletCashuTokenEventContent.fromJson(jsonContent);
+    final extractedContent = CashuTokenEventContent.fromJson(jsonContent);
 
-    return WalletCashuTokenEventModel(
+    return CashuTokenEventModel(
       mintUrl: extractedContent.mintUrl,
       proofs: extractedContent.proofs.toSet(),
       deletedIds: extractedContent.deletedIds.toSet(),

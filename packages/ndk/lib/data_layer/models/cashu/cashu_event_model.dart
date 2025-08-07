@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import '../../../domain_layer/entities/cashu/wallet_cashu_event_content.dart';
+import '../../../domain_layer/entities/cashu/cashu_event_content.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_event.dart';
+import '../../../domain_layer/entities/cashu/cashu_event.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 
-class WalletCashuEventModel extends WalletCashuEvent {
-  WalletCashuEventModel({
+class CashuEventModel extends CashuEvent {
+  CashuEventModel({
     required super.mints,
     required super.walletPrivkey,
     required super.userPubkey,
@@ -18,7 +18,7 @@ class WalletCashuEventModel extends WalletCashuEvent {
   }) async {
     final encryptedContent = await signer.encryptNip44(
         plaintext: jsonEncode(
-          WalletCashuEventContent(privKey: walletPrivkey, mints: mints)
+          CashuEventContent(privKey: walletPrivkey, mints: mints)
               .toCashuEventContent(),
         ),
         recipientPubKey: userPubkey);
@@ -31,14 +31,14 @@ class WalletCashuEventModel extends WalletCashuEvent {
     return Nip01Event(
       pubKey: userPubkey,
       tags: [],
-      kind: WalletCashuEvent.kWalletKind,
+      kind: CashuEvent.kWalletKind,
       createdAt: now,
       content: encryptedContent,
     );
   }
 
   /// creates a WalletCashuEvent from a nip01Event
-  Future<WalletCashuEventModel> fromNip01Event({
+  Future<CashuEventModel> fromNip01Event({
     required Nip01Event nostrEvent,
     required EventSigner signer,
   }) async {
@@ -52,9 +52,9 @@ class WalletCashuEventModel extends WalletCashuEvent {
     final jsonContent = jsonDecode(decryptedContent);
 
     final extractedContent =
-        WalletCashuEventContent.fromCashuEventContent(jsonContent);
+        CashuEventContent.fromCashuEventContent(jsonContent);
 
-    return WalletCashuEventModel(
+    return CashuEventModel(
       walletPrivkey: extractedContent.privKey,
       mints: extractedContent.mints,
       userPubkey: nostrEvent.pubKey,

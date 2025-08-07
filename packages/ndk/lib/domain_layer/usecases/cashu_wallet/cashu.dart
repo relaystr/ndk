@@ -1,31 +1,31 @@
 import 'package:rxdart/rxdart.dart';
 
 import '../../../config/cashu_config.dart';
+import '../../../data_layer/repositories/cashu/cashu_wallet_account_impl.dart';
 import '../../../shared/logger/logger.dart';
-import '../../entities/cashu/wallet_cashu_blinded_message.dart';
-import '../../entities/cashu/wallet_cashu_proof.dart';
-import '../../entities/cashu/wallet_cashu_quote.dart';
-import '../../entities/cashu/wallet_cashu_token.dart';
+import '../../entities/cashu/cashu_blinded_message.dart';
+import '../../entities/cashu/cashu_proof.dart';
+import '../../entities/cashu/cashu_quote.dart';
+import '../../entities/cashu/cashu_token.dart';
+import '../../entities/wallet/wallet_transaction.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_repo.dart';
-import '../wallet/wallet.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
 
 import 'cashu_token_encoder.dart';
 import 'cashu_tools.dart';
-import 'cashu_wallet_account.dart';
-import 'cashu_wallet_proof_select.dart';
+import 'cashu_proof_select.dart';
 
-class CashuWallet {
+class Cashu {
   final CashuRepo _cashuRepo;
   final CacheManager _cacheManager;
   late final CashuCacheDecorator _cacheManagerCashu;
 
   late final CashuKeysets _cashuKeysets;
-  late final CashuWalletProofSelect _cashuWalletProofSelect;
-  CashuWallet({
+  late final CashuProofSelect _cashuWalletProofSelect;
+  Cashu({
     required CashuRepo cashuRepo,
     required CacheManager cacheManager,
   })  : _cashuRepo = cashuRepo,
@@ -34,7 +34,7 @@ class CashuWallet {
       cashuRepo: _cashuRepo,
       cacheManager: _cacheManager,
     );
-    _cashuWalletProofSelect = CashuWalletProofSelect(
+    _cashuWalletProofSelect = CashuProofSelect(
       cashuRepo: _cashuRepo,
     );
     _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
@@ -62,7 +62,7 @@ class CashuWallet {
     return CashuTools.sumOfProofs(proofs: filteredProofs);
   }
 
-  Future<CashuTransaction> initiateFund({
+  Future<CashuWalletTransaction> initiateFund({
     required String mintUrl,
     required int amount,
     required String unit,
@@ -86,14 +86,14 @@ class CashuWallet {
       method: method,
     );
 
-    CashuTransaction transaction = CashuTransaction(
+    CashuWalletTransaction transaction = CashuWalletTransaction(
       id: quote.quoteId, //todo use a better id
       mintUrl: mintUrl,
       accountId: mintUrl,
       changeAmount: amount,
       unit: unit,
       accountType: WalletAccountType.CASHU,
-      state: TransactionState.draft,
+      state: WalletTransactionState.draft,
       initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       qoute: quote,
       usedKeyset: keyset,
@@ -103,8 +103,8 @@ class CashuWallet {
     return transaction;
   }
 
-  Stream<CashuTransaction> retriveFunds({
-    required CashuTransaction draftTransaction,
+  Stream<CashuWalletTransaction> retriveFunds({
+    required CashuWalletTransaction draftTransaction,
   }) async* {
     if (draftTransaction.qoute == null) {
       throw Exception("Quote is not available in the transaction");
@@ -121,7 +121,7 @@ class CashuWallet {
     CashuQuoteState payStatus;
 
     final pendingTransaction = draftTransaction.copyWith(
-      state: TransactionState.pending,
+      state: WalletTransactionState.pending,
     );
 
     yield pendingTransaction;
@@ -141,7 +141,7 @@ class CashuWallet {
       final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       if (currentTime >= quote.expiry) {
         yield pendingTransaction.copyWith(
-          state: TransactionState.failed,
+          state: WalletTransactionState.failed,
           completionMsg: 'Quote expired before payment was received',
         );
         Logger.log.w('Quote expired before payment was received');
@@ -161,7 +161,7 @@ class CashuWallet {
       quote: quote.quoteId,
       blindedMessagesOutputs: blindedMessagesOutputs
           .map(
-            (e) => WalletCashuBlindedMessage(
+            (e) => CashuBlindedMessage(
                 amount: e.amount,
                 id: e.blindedMessage.id,
                 blindedMessage: e.blindedMessage.blindedMessage),
@@ -173,7 +173,7 @@ class CashuWallet {
 
     if (mintResponse.isEmpty) {
       yield pendingTransaction.copyWith(
-        state: TransactionState.failed,
+        state: WalletTransactionState.failed,
         completionMsg: 'Minting failed, no signatures returned',
       );
       throw Exception('Minting failed, no signatures returned');
@@ -187,7 +187,7 @@ class CashuWallet {
     );
     if (unblindedTokens.isEmpty) {
       yield pendingTransaction.copyWith(
-        state: TransactionState.failed,
+        state: WalletTransactionState.failed,
         completionMsg: 'Unblinding failed, no tokens returned',
       );
       throw Exception('Unblinding failed, no tokens returned');
@@ -198,7 +198,7 @@ class CashuWallet {
     );
 
     final completedTransaction = pendingTransaction.copyWith(
-      state: TransactionState.completed,
+      state: WalletTransactionState.completed,
       transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
     yield completedTransaction;
@@ -206,7 +206,7 @@ class CashuWallet {
 
   /// funds the wallet (usually with lightning) and get ecash
   ///! reference
-  Future<List<WalletCashuProof>> fund({
+  Future<List<CashuProof>> fund({
     required String mintUrl,
     required int amount,
     required String unit,
@@ -262,7 +262,7 @@ class CashuWallet {
       quote: quote.quoteId,
       blindedMessagesOutputs: blindedMessagesOutputs
           .map(
-            (e) => WalletCashuBlindedMessage(
+            (e) => CashuBlindedMessage(
                 amount: e.amount,
                 id: e.blindedMessage.id,
                 blindedMessage: e.blindedMessage.blindedMessage),
@@ -341,7 +341,7 @@ class CashuWallet {
       amountToSpend = meltQuote.amount;
     }
 
-    final selectionResult = CashuWalletProofSelect.selectProofsForSpending(
+    final selectionResult = CashuProofSelect.selectProofsForSpending(
       proofs: proofs,
       targetAmount: amountToSpend,
       keysets: keysetsForUnit,
@@ -351,7 +351,7 @@ class CashuWallet {
         CashuTools.filterKeysetsByUnitActive(keysets: mintKeysets, unit: unit);
 
     /// outputs to send to mint
-    final List<WalletCashuBlindedMessageItem> myOutputs = [];
+    final List<CashuBlindedMessageItem> myOutputs = [];
 
     /// we dont have the exact amount
     if (selectionResult.needsSplit) {
@@ -384,7 +384,7 @@ class CashuWallet {
       proofs: selectionResult.selectedProofs,
       outputs: myOutputs
           .map(
-            (e) => WalletCashuBlindedMessage(
+            (e) => CashuBlindedMessage(
               amount: e.amount,
               id: e.blindedMessage.id,
               blindedMessage: e.blindedMessage.blindedMessage,
@@ -418,7 +418,7 @@ class CashuWallet {
   }
 
   /// send token to user
-  Future<List<WalletCashuProof>> spend({
+  Future<List<CashuProof>> spend({
     required String mintUrl,
     required int amount,
     required String unit,
@@ -442,7 +442,7 @@ class CashuWallet {
       throw Exception('No proofs found for mint: $mintUrl');
     }
 
-    final selectionResult = CashuWalletProofSelect.selectProofsForSpending(
+    final selectionResult = CashuProofSelect.selectProofsForSpending(
         proofs: proofs, targetAmount: amount, keysets: keysetsForUnit);
 
     if (selectionResult.selectedProofs.isEmpty) {
@@ -484,7 +484,7 @@ class CashuWallet {
   }
 
   /// accept token from user
-  Future<List<WalletCashuProof>> receive(String token) async {
+  Future<List<CashuProof>> receive(String token) async {
     final rcvToken = CashuTokenEncoder.decodedToken(token);
     if (rcvToken == null) {
       throw Exception('Invalid Cashu token format');
@@ -518,7 +518,7 @@ class CashuWallet {
       proofs: rcvToken.proofs,
       outputs: blindedMessagesOutputs
           .map(
-            (e) => WalletCashuBlindedMessage(
+            (e) => CashuBlindedMessage(
               amount: e.amount,
               id: e.blindedMessage.id,
               blindedMessage: e.blindedMessage.blindedMessage,
@@ -555,7 +555,7 @@ class CashuWallet {
   }
 
   String proofsToToken({
-    required List<WalletCashuProof> proofs,
+    required List<CashuProof> proofs,
     required String mintUrl,
     required String unit,
     String memo = "",
@@ -563,7 +563,7 @@ class CashuWallet {
     if (proofs.isEmpty) {
       throw Exception('No proofs provided for token conversion');
     }
-    final cashuToken = WalletCashuToken(
+    final cashuToken = CashuToken(
       proofs: proofs,
       mintUrl: mintUrl,
       memo: memo,

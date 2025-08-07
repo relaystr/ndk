@@ -1,6 +1,6 @@
 import '../../usecases/cashu_wallet/cashu_tools.dart';
 
-class WalletCashuProof {
+class CashuProof {
   final String keysetId;
   final int amount;
 
@@ -9,7 +9,7 @@ class WalletCashuProof {
   /// C unblinded signature
   final String unblindedSig;
 
-  WalletCashuProof({
+  CashuProof({
     required this.keysetId,
     required this.amount,
     required this.secret,
@@ -33,7 +33,7 @@ class WalletCashuProof {
     };
   }
 
-  factory WalletCashuProof.fromV4Json({
+  factory CashuProof.fromV4Json({
     required Map json,
     required String keysetId,
   }) {
@@ -42,7 +42,7 @@ class WalletCashuProof {
       throw Exception('Unblinded signature is missing or empty');
     }
 
-    return WalletCashuProof(
+    return CashuProof(
       keysetId: keysetId,
       amount: json['a'] ?? 0,
       secret: json['s']?.toString() ?? '',

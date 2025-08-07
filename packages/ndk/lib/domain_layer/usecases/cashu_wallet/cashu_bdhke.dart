@@ -4,20 +4,20 @@ import 'package:pointycastle/export.dart';
 
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
-import '../../entities/cashu/wallet_cashu_keyset.dart';
-import '../../entities/cashu/wallet_cashu_blinded_message.dart';
-import '../../entities/cashu/wallet_cashu_blinded_signature.dart';
-import '../../entities/cashu/wallet_cashu_proof.dart';
+import '../../entities/cashu/cashu_keyset.dart';
+import '../../entities/cashu/cashu_blinded_message.dart';
+import '../../entities/cashu/cashu_blinded_signature.dart';
+import '../../entities/cashu/cashu_proof.dart';
 import 'cashu_tools.dart';
 
 typedef BlindMessageResult = (String B_, BigInt r);
 
 class CashuBdhke {
-  static List<WalletCashuBlindedMessageItem> createBlindedMsgForAmounts({
+  static List<CashuBlindedMessageItem> createBlindedMsgForAmounts({
     required String keysetId,
     required List<int> amounts,
   }) {
-    List<WalletCashuBlindedMessageItem> items = [];
+    List<CashuBlindedMessageItem> items = [];
 
     for (final amount in amounts) {
       try {
@@ -28,13 +28,13 @@ class CashuBdhke {
           continue;
         }
 
-        final blindedMessage = WalletCashuBlindedMessage(
+        final blindedMessage = CashuBlindedMessage(
           id: keysetId,
           amount: amount,
           blindedMessage: B_,
         );
 
-        items.add(WalletCashuBlindedMessageItem(
+        items.add(CashuBlindedMessageItem(
           blindedMessage: blindedMessage,
           secret: secret,
           r: r,
@@ -82,12 +82,12 @@ class CashuBdhke {
     return C_ - rK;
   }
 
-  static List<WalletCashuProof> unblindSignatures({
-    required List<WalletCashuBlindedSignature> mintSignatures,
-    required List<WalletCashuBlindedMessageItem> blindedMessages,
-    required WalletCahsuKeyset mintPublicKeys,
+  static List<CashuProof> unblindSignatures({
+    required List<CashuBlindedSignature> mintSignatures,
+    required List<CashuBlindedMessageItem> blindedMessages,
+    required CahsuKeyset mintPublicKeys,
   }) {
-    List<WalletCashuProof> tokens = [];
+    List<CashuProof> tokens = [];
 
     for (int i = 0; i < mintSignatures.length; i++) {
       final signature = mintSignatures[i];
@@ -112,7 +112,7 @@ class CashuBdhke {
         throw Exception('Failed to unblind signature');
       }
 
-      tokens.add(WalletCashuProof(
+      tokens.add(CashuProof(
         secret: blindedMsg.secret,
         amount: blindedMsg.amount,
         unblindedSig: CashuTools.ecPointToHex(unblindedSig),

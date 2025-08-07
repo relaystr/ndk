@@ -1,8 +1,8 @@
-class WalletCashuEventContent {
+class CashuEventContent {
   final String privKey;
   final Set<String> mints;
 
-  WalletCashuEventContent({
+  CashuEventContent({
     required this.privKey,
     required this.mints,
   });
@@ -19,7 +19,7 @@ class WalletCashuEventContent {
   }
 
   /// extracts data from plain lists
-  factory WalletCashuEventContent.fromCashuEventContent(
+  factory CashuEventContent.fromCashuEventContent(
     List<List<String>> jsonList,
   ) {
     String? privKey;
@@ -42,6 +42,6 @@ class WalletCashuEventContent {
       throw ArgumentError('Input list does not contain a private key.');
     }
 
-    return WalletCashuEventContent(privKey: privKey, mints: mints);
+    return CashuEventContent(privKey: privKey, mints: mints);
   }
 }

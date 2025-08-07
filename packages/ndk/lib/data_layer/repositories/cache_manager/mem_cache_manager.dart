@@ -1,7 +1,7 @@
 import 'dart:core';
 
-import '../../../domain_layer/entities/cashu/wallet_cashu_keyset.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_proof.dart';
+import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
+import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
@@ -9,7 +9,7 @@ import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
-import '../../../domain_layer/usecases/wallet/wallet.dart';
+import '../../../domain_layer/usecases/wallets/wallets.dart';
 
 /// In memory database implementation
 /// benefits: very fast
@@ -34,10 +34,10 @@ class MemCacheManager implements CacheManager {
   Map<String, Nip01Event> events = {};
 
   /// String for mint Url
-  Map<String, Set<WalletCahsuKeyset>> cashuKeysets = {};
+  Map<String, Set<CahsuKeyset>> cashuKeysets = {};
 
   /// String for mint Url
-  Map<String, Set<WalletCashuProof>> cashuProofs = {};
+  Map<String, Set<CashuProof>> cashuProofs = {};
 
   List<Transaction> transactions = [];
 
@@ -302,7 +302,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<WalletCahsuKeyset>> getKeysets({required String mintUrl}) {
+  Future<List<CahsuKeyset>> getKeysets({required String mintUrl}) {
     if (cashuKeysets.containsKey(mintUrl)) {
       return Future.value(cashuKeysets[mintUrl]?.toList() ?? []);
     } else {
@@ -311,7 +311,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> saveKeyset(WalletCahsuKeyset keyset) {
+  Future<void> saveKeyset(CahsuKeyset keyset) {
     if (cashuKeysets.containsKey(keyset.mintUrl)) {
       cashuKeysets[keyset.mintUrl]!.add(keyset);
     } else {
@@ -321,7 +321,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<WalletCashuProof>> getProofs({
+  Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
   }) {
@@ -343,20 +343,20 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveProofs({
-    required List<WalletCashuProof> tokens,
+    required List<CashuProof> tokens,
     required String mintUrl,
   }) {
     if (cashuProofs.containsKey(mintUrl)) {
       cashuProofs[mintUrl]!.addAll(tokens);
     } else {
-      cashuProofs[mintUrl] = Set<WalletCashuProof>.from(tokens);
+      cashuProofs[mintUrl] = Set<CashuProof>.from(tokens);
     }
     return Future.value();
   }
 
   @override
   Future<void> removeProofs(
-      {required List<WalletCashuProof> proofs, required String mintUrl}) {
+      {required List<CashuProof> proofs, required String mintUrl}) {
     if (cashuProofs.containsKey(mintUrl)) {
       final existingProofs = cashuProofs[mintUrl]!;
       for (final proof in proofs) {

@@ -1,14 +1,14 @@
-import 'wallet_cashu_blinded_signature.dart';
-import 'wallet_cashu_quote.dart';
+import 'cashu_blinded_signature.dart';
+import 'cashu_quote.dart';
 
-class WalletCashuMeltResponse {
+class CashuMeltResponse {
   final String qoteId;
   final String mintUrl;
   final CashuQuoteState state;
   final String? paymentPreimage;
-  final List<WalletCashuBlindedSignature> change;
+  final List<CashuBlindedSignature> change;
 
-  WalletCashuMeltResponse({
+  CashuMeltResponse({
     required this.qoteId,
     required this.mintUrl,
     required this.state,
@@ -16,18 +16,18 @@ class WalletCashuMeltResponse {
     required this.change,
   });
 
-  factory WalletCashuMeltResponse.fromServerMap({
+  factory CashuMeltResponse.fromServerMap({
     required Map<String, dynamic> map,
     required String mintUrl,
     required String quoteId,
   }) {
-    return WalletCashuMeltResponse(
+    return CashuMeltResponse(
       qoteId: quoteId,
       mintUrl: mintUrl,
       state: CashuQuoteState.fromValue(map['state'] as String),
       paymentPreimage: map['payment_preimage'] as String?,
       change: (map['change'] as List<Map<String, dynamic>>)
-          .map((e) => WalletCashuBlindedSignature.fromServerMap(e))
+          .map((e) => CashuBlindedSignature.fromServerMap(e))
           .toList(),
     );
   }

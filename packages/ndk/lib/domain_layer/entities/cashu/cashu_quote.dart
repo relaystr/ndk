@@ -1,6 +1,6 @@
 import '../../usecases/cashu_wallet/cashu_keypair.dart';
 
-class WalletCashuQuote {
+class CashuQuote {
   final String quoteId;
   final String request;
   final int amount;
@@ -13,7 +13,7 @@ class WalletCashuQuote {
   final int expiry;
   final String mintUrl;
 
-  WalletCashuQuote({
+  CashuQuote({
     required this.quoteId,
     required this.request,
     required this.amount,
@@ -24,12 +24,12 @@ class WalletCashuQuote {
     required this.quoteKey,
   });
 
-  factory WalletCashuQuote.fromServerMap({
+  factory CashuQuote.fromServerMap({
     required Map<String, dynamic> map,
     required String mintUrl,
     required CashuKeypair quoteKey,
   }) {
-    return WalletCashuQuote(
+    return CashuQuote(
       quoteId: map['quote'] as String,
       request: map['request'] as String,
       amount: map['amount'] as int,
