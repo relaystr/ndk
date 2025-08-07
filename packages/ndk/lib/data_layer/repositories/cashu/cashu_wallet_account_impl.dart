@@ -8,6 +8,8 @@ import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/usecases/cashu_wallet/cashu.dart';
 
+///! not used reference only
+///todo: port state to cashu usecase
 class CashuWallet implements Wallet {
   @override
   final String id;
