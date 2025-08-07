@@ -80,7 +80,6 @@ export 'domain_layer/usecases/search/search.dart';
 export 'domain_layer/usecases/gift_wrap/gift_wrap.dart';
 export 'domain_layer/usecases/bunkers/bunkers.dart';
 export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
-export 'domain_layer/usecases/bunkers/models/bunker_event.dart';
 export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
 /**
