@@ -97,20 +97,9 @@ class Wallets {
 
   void _updateCombinedStreams() {
     // combine all wallet balances
-    final newBalances = <String, int>{};
-    for (final wallet in _wallets) {
-      final walletBalances = wallet.balances.value;
-      for (final entry in walletBalances.entries) {
-        newBalances[entry.key] = (newBalances[entry.key] ?? 0) + entry.value;
-      }
-    }
-    _combinedBalancesSubject.add(newBalances.entries
-        .map((entry) => WalletBalance(
-              unit: entry.key,
-              amount: entry.value,
-              walletId: '',
-            ))
-        .toList());
+    final allBalances =
+        _walletsBalances.values.expand((balances) => balances).toList();
+    _combinedBalancesSubject.add(allBalances);
 
     // combine all pending transactions
     final allPending = _walletsPendingTransactions.values

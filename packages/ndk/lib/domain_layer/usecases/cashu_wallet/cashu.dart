@@ -1,7 +1,9 @@
+import 'package:rxdart/rxdart.dart';
+
 import '../../../config/cashu_config.dart';
-import '../../../data_layer/repositories/cashu/cashu_wallet_account_impl.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
+import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
 import '../../entities/cashu/cashu_token.dart';
@@ -39,26 +41,89 @@ class Cashu {
     _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
   }
 
-  Set<CashuWallet> cashuWalletAccounts = {};
-
   // final Set<Mint> _mints = {};
 
   // final Set<Proof> _proofs = {};
 
   // final Set<Pending> _pending = {};
 
-  Future<int> getBalance({
+  final List<CashuWalletTransaction> _latestTransactions = [];
+
+  BehaviorSubject<List<CashuWalletTransaction>>? _latestTransactionsSubject;
+
+  final Set<CashuWalletTransaction> _pendingTransactions = {};
+  final BehaviorSubject<List<CashuWalletTransaction>>
+      _pendingTransactionsSubject =
+      BehaviorSubject<List<CashuWalletTransaction>>.seeded([]);
+
+  /// stream of balances \
+  BehaviorSubject<List<CashuMintBalance>>? _balanceSubject;
+
+  Future<int> getBalanceMintUnit({
     required String unit,
-    String? mintUrl,
+    required String mintUrl,
   }) async {
-    final proofs = await _cacheManager.getProofs(mintUrl: null);
+    final proofs = await _cacheManager.getProofs(mintUrl: mintUrl);
     final filteredProofs = CashuTools.filterProofsByUnit(
       proofs: proofs,
       unit: unit,
-      keysets: await _cashuKeysets.getKeysetsFromMint(mintUrl ?? ''),
+      keysets: await _cashuKeysets.getKeysetsFromMint(mintUrl),
     );
 
     return CashuTools.sumOfProofs(proofs: filteredProofs);
+  }
+
+  /// get balances for all mints \
+  Future<List<CashuMintBalance>> getBalances() async {
+    final allProofs = await _cacheManagerCashu.getProofs();
+    final allKeysets = await _cacheManagerCashu.getKeysets();
+    // {"mintUrl": {unit: balance}}
+    final balances = <String, Map<String, int>>{};
+
+    final distinctKeysetIds = allKeysets.map((keyset) => keyset.id).toSet();
+
+    for (final keysetId in distinctKeysetIds) {
+      final keysetProofs =
+          allProofs.where((proof) => proof.keysetId == keysetId).toList();
+
+      if (keysetProofs.isEmpty) continue;
+
+      final unit =
+          allKeysets.firstWhere((keyset) => keyset.id == keysetId).unit;
+      final totalBalance = CashuTools.sumOfProofs(
+        proofs: keysetProofs,
+      );
+
+      if (totalBalance > 0) {
+        balances[keysetId] = {unit: totalBalance};
+      }
+    }
+    final mintBalances = balances.entries
+        .map((entry) => CashuMintBalance(
+              mintUrl: entry.key,
+              balances: entry.value,
+            ))
+        .toList();
+    return mintBalances;
+  }
+
+  Future<void> _updateBalances() async {
+    final balances = await getBalances();
+    _balanceSubject ??=
+        BehaviorSubject<List<CashuMintBalance>>.seeded(balances);
+    _balanceSubject!.add(balances);
+  }
+
+  BehaviorSubject<List<CashuMintBalance>> get balances {
+    if (_balanceSubject == null) {
+      getBalances().then((balances) {
+        _balanceSubject = BehaviorSubject<List<CashuMintBalance>>.seeded(
+          balances,
+        );
+      });
+    }
+
+    return _balanceSubject!;
   }
 
   Future<CashuWalletTransaction> initiateFund({
@@ -85,7 +150,7 @@ class Cashu {
       method: method,
     );
 
-    CashuWalletTransaction transaction = CashuWalletTransaction(
+    CashuWalletTransaction draftTransaction = CashuWalletTransaction(
       id: quote.quoteId, //todo use a better id
       mintUrl: mintUrl,
       walletId: mintUrl,
@@ -99,7 +164,11 @@ class Cashu {
       method: method,
     );
 
-    return transaction;
+    // add to pending transactions
+    _pendingTransactions.add(draftTransaction);
+    _pendingTransactionsSubject.add(_pendingTransactions.toList());
+
+    return draftTransaction;
   }
 
   Stream<CashuWalletTransaction> retriveFunds({
@@ -123,6 +192,9 @@ class Cashu {
       state: WalletTransactionState.pending,
     );
 
+    // update pending transactions
+    _pendingTransactions.add(pendingTransaction);
+    _pendingTransactionsSubject.add(_pendingTransactions.toList());
     yield pendingTransaction;
 
     while (true) {
@@ -139,10 +211,14 @@ class Cashu {
       // check if quote has expired
       final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       if (currentTime >= quote.expiry) {
-        yield pendingTransaction.copyWith(
+        final expiredTransaction = pendingTransaction.copyWith(
           state: WalletTransactionState.failed,
           completionMsg: 'Quote expired before payment was received',
         );
+        yield expiredTransaction;
+        // remove expired transaction
+        _pendingTransactions.remove(expiredTransaction);
+        _pendingTransactionsSubject.add(_pendingTransactions.toList());
         Logger.log.w('Quote expired before payment was received');
         return;
       }
@@ -171,10 +247,14 @@ class Cashu {
     );
 
     if (mintResponse.isEmpty) {
-      yield pendingTransaction.copyWith(
+      final failedTransaction = pendingTransaction.copyWith(
         state: WalletTransactionState.failed,
         completionMsg: 'Minting failed, no signatures returned',
       );
+      // remove expired transaction
+      _pendingTransactions.remove(failedTransaction);
+      _pendingTransactionsSubject.add(_pendingTransactions.toList());
+      yield failedTransaction;
       throw Exception('Minting failed, no signatures returned');
     }
 
@@ -185,10 +265,14 @@ class Cashu {
       mintPublicKeys: draftTransaction.usedKeyset!,
     );
     if (unblindedTokens.isEmpty) {
-      yield pendingTransaction.copyWith(
+      final failedTransaction = pendingTransaction.copyWith(
         state: WalletTransactionState.failed,
         completionMsg: 'Unblinding failed, no tokens returned',
       );
+      // remove expired transaction
+      _pendingTransactions.remove(failedTransaction);
+      _pendingTransactionsSubject.add(_pendingTransactions.toList());
+      yield failedTransaction;
       throw Exception('Unblinding failed, no tokens returned');
     }
     await _cacheManager.saveProofs(
@@ -200,6 +284,13 @@ class Cashu {
       state: WalletTransactionState.completed,
       transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
+
+    // update balance
+    await _updateBalances();
+
+    // remove completed transaction
+    _pendingTransactions.remove(completedTransaction);
+    _pendingTransactionsSubject.add(_pendingTransactions.toList());
     yield completedTransaction;
   }
 
