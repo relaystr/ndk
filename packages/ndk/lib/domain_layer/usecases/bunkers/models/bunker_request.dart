@@ -23,6 +23,8 @@ Map<BunkerRequestMethods, String> methodToString = {
 };
 
 class BunkerRequest {
+  static const int kKind = 24133;
+
   final String id;
   final BunkerRequestMethods method;
   final List<String> params;

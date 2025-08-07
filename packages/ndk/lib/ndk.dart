@@ -78,6 +78,9 @@ export 'domain_layer/usecases/accounts/accounts.dart';
 export 'domain_layer/usecases/files/blossom_user_server_list.dart';
 export 'domain_layer/usecases/search/search.dart';
 export 'domain_layer/usecases/gift_wrap/gift_wrap.dart';
+export 'domain_layer/usecases/bunkers/bunkers.dart';
+export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
+export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
 /**
  * other stuff

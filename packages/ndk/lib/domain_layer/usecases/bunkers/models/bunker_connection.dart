@@ -1,9 +1,9 @@
-class ConnectionSettings {
+class BunkerConnection {
   String privateKey;
   String remotePubkey;
   List<String> relays;
 
-  ConnectionSettings({
+  BunkerConnection({
     required this.privateKey,
     required this.remotePubkey,
     required this.relays,
@@ -15,8 +15,8 @@ class ConnectionSettings {
     'relays': relays,
   };
 
-  factory ConnectionSettings.fromJson(Map<String, dynamic> json) {
-    return ConnectionSettings(
+  factory BunkerConnection.fromJson(Map<String, dynamic> json) {
+    return BunkerConnection(
       privateKey: json['privateKey'] as String,
       remotePubkey: json['remotePubkey'] as String,
       relays: List<String>.from(json['relays'] as List),
