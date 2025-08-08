@@ -8,6 +8,7 @@ import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../domain_layer/usecases/wallets/wallets.dart';
@@ -41,6 +42,8 @@ class MemCacheManager implements CacheManager {
   Map<String, Set<CashuProof>> cashuProofs = {};
 
   List<WalletTransaction> transactions = [];
+
+  Set<Wallet> wallets = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -416,6 +419,29 @@ class MemCacheManager implements CacheManager {
         this.transactions.add(transaction);
       }
     }
+    return Future.value();
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets(List<String>? ids) {
+    if (ids == null || ids.isEmpty) {
+      return Future.value(wallets.toList());
+    } else {
+      final result =
+          wallets.where((wallet) => ids.contains(wallet.id)).toList();
+      return Future.value(result.isNotEmpty ? result : null);
+    }
+  }
+
+  @override
+  Future<void> removeWallet(String id) {
+    wallets.removeWhere((wallet) => wallet.id == id);
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveWallet(Wallet wallet) {
+    wallets.add(wallet);
     return Future.value();
   }
 }

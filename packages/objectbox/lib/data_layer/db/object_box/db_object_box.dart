@@ -14,6 +14,7 @@ import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
 import 'schema/db_user_relay_list.dart';
+import 'schema/db_wallet.dart';
 
 class DbObjectBox implements CacheManager {
   final Completer _initCompleter = Completer();
@@ -697,5 +698,43 @@ class DbObjectBox implements CacheManager {
       {required List<WalletTransaction> transactions}) {
     // TODO: implement saveTransactions
     throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets(List<String>? ids) async {
+    await dbRdy;
+
+    return Future.value(
+      _objectBox.store.box<DbWallet>().getAll().map((dbWallet) {
+        return dbWallet.toNdk();
+      }).where((wallet) {
+        if (ids == null || ids.isEmpty) {
+          return true; // return all wallets
+        }
+        return ids.contains(wallet.id);
+      }).toList(),
+    );
+  }
+
+  @override
+  Future<void> removeWallet(String walletId) async {
+    await dbRdy;
+    // find wallet by id
+    final walletBox = _objectBox.store.box<DbWallet>();
+    final existingWallet = await walletBox
+        .query(DbWallet_.id.equals(walletId))
+        .build()
+        .findFirst();
+    if (existingWallet != null) {
+      await walletBox.remove(existingWallet.dbId);
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveWallet(Wallet wallet) async {
+    await dbRdy;
+    await _objectBox.store.box<DbWallet>().put(DbWallet.fromNdk(wallet));
+    return Future.value();
   }
 }

@@ -10,7 +10,7 @@ import '../../../domain_layer/usecases/cashu_wallet/cashu.dart';
 
 ///! not used reference only
 ///todo: port state to cashu usecase
-class CashuWallet implements Wallet {
+class CashuWalletReferenceONLY implements Wallet {
   @override
   final String id;
 
@@ -39,7 +39,7 @@ class CashuWallet implements Wallet {
 
   final Cashu cashuWallet;
 
-  CashuWallet({
+  CashuWalletReferenceONLY({
     required this.id,
     required this.name,
     this.type = WalletType.CASHU,

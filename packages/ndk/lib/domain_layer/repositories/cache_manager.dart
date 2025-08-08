@@ -6,6 +6,7 @@ import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
+import '../entities/wallet/wallet.dart';
 import '../entities/wallet/wallet_transaction.dart';
 
 abstract class CacheManager {
@@ -81,6 +82,15 @@ abstract class CacheManager {
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
+
+  /// wallets methods
+
+  Future<void> saveWallet(Wallet wallet);
+
+  Future<void> removeWallet(String id);
+
+  /// return all if [ids] is null
+  Future<List<Wallet>?> getWallets(List<String>? ids);
 
   /// cashu methods
 

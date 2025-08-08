@@ -36,5 +36,10 @@ export 'domain_layer/entities/account.dart';
 export 'domain_layer/entities/cashu/cashu_keyset.dart';
 export 'domain_layer/entities/cashu/cashu_proof.dart';
 
+/// Wallet entities
+export 'domain_layer/entities/wallet/wallet.dart';
+export 'domain_layer/entities/wallet/wallet_transaction.dart';
+export 'domain_layer/entities/wallet/wallet_type.dart';
+
 // testing
 export 'domain_layer/usecases/wallets/wallets.dart';
