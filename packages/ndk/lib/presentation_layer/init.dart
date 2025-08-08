@@ -84,7 +84,7 @@ class Initialization {
   late Search search;
   late GiftWrap giftWrap;
   late Connectivy connectivity;
-  late Cashu cashuWallet;
+  late Cashu cashu;
   late Wallets wallets;
 
   late VerifyNip05 verifyNip05;
@@ -248,13 +248,13 @@ class Initialization {
 
     connectivity = Connectivy(relayManager);
 
-    cashuWallet = Cashu(
+    cashu = Cashu(
       cashuRepo: cashuRepo,
       cacheManager: _ndkConfig.cache,
     );
 
     final WalletsRepo walletsRepo = WalletsRepoImpl(
-      cashuUseCase: cashuWallet,
+      cashuUseCase: cashu,
       nwcUseCase: nwc,
       cacheManager: _ndkConfig.cache,
     );

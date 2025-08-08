@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../../shared/helpers/mutex_simple.dart';
+import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../repositories/cache_manager.dart';
 
@@ -41,6 +42,22 @@ class CashuCacheDecorator implements CacheManager {
   }) async {
     return await _mutex.synchronized(() async {
       return await _delegate.getProofs(mintUrl: mintUrl, keysetId: keysetId);
+    });
+  }
+
+  @override
+  Future<List<CahsuKeyset>> getKeysets({
+    String? mintUrl,
+  }) {
+    return _mutex.synchronized(() async {
+      return await _delegate.getKeysets(mintUrl: mintUrl);
+    });
+  }
+
+  @override
+  Future<void> saveKeyset(CahsuKeyset keyset) async {
+    await _mutex.synchronized(() async {
+      await _delegate.saveKeyset(keyset);
     });
   }
 

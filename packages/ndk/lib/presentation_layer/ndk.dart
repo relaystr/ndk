@@ -147,7 +147,7 @@ class Ndk {
 
   /// Cashu Wallet
   @experimental // in development
-  Cashu get cashuWallet => _initialization.cashuWallet;
+  Cashu get cashu => _initialization.cashu;
 
   /// Wallet combining all wallet accounts \
   @experimental

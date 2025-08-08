@@ -35,7 +35,13 @@ class CashuKeysets {
       }
     }
 
-    return getKeysetMintFromNetwork(mintUrl: mintUrl);
+    final networkKeyset = await getKeysetMintFromNetwork(mintUrl: mintUrl);
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    for (final keyset in networkKeyset) {
+      keyset.fetchedAt = now;
+      await saveKeyset(keyset);
+    }
+    return networkKeyset;
   }
 
   Future<List<CahsuKeyset>> getKeysetMintFromNetwork({
