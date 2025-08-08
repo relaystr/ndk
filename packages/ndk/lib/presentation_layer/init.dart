@@ -85,7 +85,7 @@ class Initialization {
   late GiftWrap giftWrap;
   late Connectivy connectivity;
   late Cashu cashuWallet;
-  late Wallets wallet;
+  late Wallets wallets;
 
   late VerifyNip05 verifyNip05;
 
@@ -259,7 +259,7 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
     );
 
-    wallet = Wallets(
+    wallets = Wallets(
       walletsRepository: walletsRepo,
       walletsOperationsRepository: walletsOperationsRepo,
     );
