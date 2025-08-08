@@ -1,6 +1,6 @@
 import '../nip_01_event.dart';
 
-class WalletCashuTokenEvent {
+class CashuTokenEvent {
   static const int kUnspendProofKind = 7375;
 
   final String mintUrl;
@@ -9,7 +9,7 @@ class WalletCashuTokenEvent {
 
   late final Nip01Event? nostrEvent;
 
-  WalletCashuTokenEvent({
+  CashuTokenEvent({
     required this.mintUrl,
     required this.proofs,
     required this.deletedIds,

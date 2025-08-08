@@ -5,7 +5,7 @@ import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
-import '../domain_layer/usecases/cashu_wallet/cashu_wallet.dart';
+import '../domain_layer/usecases/cashu_wallet/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
@@ -21,7 +21,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
-import '../domain_layer/usecases/wallet/wallet.dart';
+import '../domain_layer/usecases/wallets/wallets.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import 'init.dart';
 import 'ndk_config.dart';
@@ -147,11 +147,11 @@ class Ndk {
 
   /// Cashu Wallet
   @experimental // in development
-  CashuWallet get cashuWallet => _initialization.cashuWallet;
+  Cashu get cashuWallet => _initialization.cashuWallet;
 
   /// Wallet combining all wallet accounts \
   @experimental
-  Wallet get wallet => _initialization.wallet;
+  Wallets get wallet => _initialization.wallet;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {

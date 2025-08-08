@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
-import '../../../shared/logger/logger.dart';
-import '../../repositories/cache_manager.dart';
-import '../wallet/wallet.dart';
-import 'cashu_wallet.dart';
+import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
+import '../../../domain_layer/entities/wallet/wallet_type.dart';
+import '../../../domain_layer/repositories/cache_manager.dart';
+import '../../../domain_layer/entities/wallet/wallet.dart';
+import '../../../domain_layer/usecases/cashu_wallet/cashu.dart';
 
-class CashuWalletAccount implements WalletAccount {
+///! not used reference only
+///todo: port state to cashu usecase
+class CashuWalletReferenceONLY implements Wallet {
   @override
   final String id;
 
@@ -15,49 +18,57 @@ class CashuWalletAccount implements WalletAccount {
   String name;
 
   @override
-  final WalletAccountType type;
+  final WalletType type;
 
   @override
-  final String unit;
+  final Set<String> supportedUnits;
 
   final String mintUrl;
 
   final CacheManager _cacheManager;
 
-  final List<Transaction> _latestTransactions = [];
+  final List<WalletTransaction> _latestTransactions = [];
 
-  BehaviorSubject<List<Transaction>>? _latestTransactionsSubject;
+  BehaviorSubject<List<WalletTransaction>>? _latestTransactionsSubject;
 
-  final Set<CashuTransaction> _pendingTransactions = {};
-  BehaviorSubject<List<CashuTransaction>> pendingTransactionsSubject =
-      BehaviorSubject<List<CashuTransaction>>.seeded([]);
+  final Set<CashuWalletTransaction> _pendingTransactions = {};
+  BehaviorSubject<List<CashuWalletTransaction>> pendingTransactionsSubject =
+      BehaviorSubject<List<CashuWalletTransaction>>.seeded([]);
 
-  BehaviorSubject<int>? _balanceSubject;
+  BehaviorSubject<Map<String, int>>? _balanceSubject;
 
-  final CashuWallet cashuWallet;
+  final Cashu cashuWallet;
 
-  CashuWalletAccount({
+  CashuWalletReferenceONLY({
     required this.id,
     required this.name,
-    this.type = WalletAccountType.CASHU,
-    required this.unit,
+    this.type = WalletType.CASHU,
+    required this.supportedUnits,
     required this.mintUrl,
     required CacheManager cacheManager,
     required this.cashuWallet,
   }) : _cacheManager = cacheManager;
 
   @override
-  BehaviorSubject<int> get balance {
+  BehaviorSubject<Map<String, int>> get balances {
     if (_balanceSubject == null) {
-      _balanceSubject = BehaviorSubject<int>.seeded(0);
+      _balanceSubject = BehaviorSubject<Map<String, int>>.seeded({});
       updateBalance();
     }
 
     return _balanceSubject!;
   }
 
-  Future<int> _getBalanceDb() async {
-    return await cashuWallet.getBalance(unit: unit, mintUrl: mintUrl);
+  Future<Map<String, int>> _getBalanceDb() async {
+    final balances = <String, int>{};
+    for (final unit in supportedUnits) {
+      final balance = await cashuWallet.getBalance(
+        unit: unit,
+        mintUrl: mintUrl,
+      );
+      balances[unit] = balance;
+    }
+    return balances;
   }
 
   Future<void> updateBalance() async {
@@ -65,10 +76,10 @@ class CashuWalletAccount implements WalletAccount {
     _balanceSubject?.add(balance);
   }
 
-  Future<List<Transaction>> _getLatestTransactionsDb({int limit = 10}) async {
+  Future<List<WalletTransaction>> _getLatestTransactionsDb(
+      {int limit = 10}) async {
     final transactions = await _cacheManager.getTransactions(
-      accountId: id,
-      unit: unit,
+      walletId: id,
       limit: limit,
     );
 
@@ -76,10 +87,11 @@ class CashuWalletAccount implements WalletAccount {
   }
 
   @override
-  BehaviorSubject<List<Transaction>> latestTransactions({int count = 10}) {
+  BehaviorSubject<List<WalletTransaction>> latestTransactions(
+      {int count = 10}) {
     if (_latestTransactionsSubject == null) {
       _latestTransactionsSubject =
-          BehaviorSubject<List<Transaction>>.seeded([]);
+          BehaviorSubject<List<WalletTransaction>>.seeded([]);
 
       _getLatestTransactionsDb(limit: count).then((transactions) {
         _latestTransactionsSubject?.add(transactions);
@@ -95,13 +107,14 @@ class CashuWalletAccount implements WalletAccount {
   }
 
   @override
-  BehaviorSubject<List<CashuTransaction>> get pendingTransactions =>
+  BehaviorSubject<List<CashuWalletTransaction>> get pendingTransactions =>
       pendingTransactionsSubject;
 
-  /// initiate funding the account
-  Future<CashuTransaction> initiateFund({
+  /// initiate funding the wallet
+  Future<CashuWalletTransaction> initiateFund({
     required int amount,
     String method = 'bolt11',
+    String unit = 'sat',
   }) async {
     final draftTransaction = await cashuWallet.initiateFund(
       mintUrl: mintUrl,
@@ -119,15 +132,15 @@ class CashuWalletAccount implements WalletAccount {
 
   /// call this when you payed the invoice and want to retrieve the funds
   /// it will update the streams and return the final transaction
-  Future<CashuTransaction> retriveFunds({
-    required CashuTransaction draftTransaction,
+  Future<CashuWalletTransaction> retriveFunds({
+    required CashuWalletTransaction draftTransaction,
   }) async {
     final transactionStream = cashuWallet.retriveFunds(
       draftTransaction: draftTransaction,
     );
 
-    final List<CashuTransaction> stateList = [];
-    final completer = Completer<CashuTransaction>();
+    final List<CashuWalletTransaction> stateList = [];
+    final completer = Completer<CashuWalletTransaction>();
 
     final subscription = transactionStream.listen(
       (data) {

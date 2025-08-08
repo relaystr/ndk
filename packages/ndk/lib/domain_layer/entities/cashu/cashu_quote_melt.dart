@@ -1,6 +1,6 @@
-import 'wallet_cashu_quote.dart';
+import 'cashu_quote.dart';
 
-class WalletCashuQuoteMelt {
+class CashuQuoteMelt {
   final String request;
   final String quoteId;
   final int amount;
@@ -11,7 +11,7 @@ class WalletCashuQuoteMelt {
   final CashuQuoteState state;
   final String unit;
 
-  WalletCashuQuoteMelt({
+  CashuQuoteMelt({
     required this.quoteId,
     required this.amount,
     required this.feeReserve,
@@ -23,12 +23,12 @@ class WalletCashuQuoteMelt {
     required this.request,
   });
 
-  factory WalletCashuQuoteMelt.fromServerMap({
+  factory CashuQuoteMelt.fromServerMap({
     required Map<String, dynamic> json,
     required String mintUrl,
     String? request,
   }) {
-    return WalletCashuQuoteMelt(
+    return CashuQuoteMelt(
       quoteId: json['quote'] as String,
       amount: json['amount'] as int,
       unit: json['unit'] as String,

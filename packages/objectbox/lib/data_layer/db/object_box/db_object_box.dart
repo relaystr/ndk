@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
@@ -13,6 +14,7 @@ import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
 import 'schema/db_user_relay_list.dart';
+import 'schema/db_wallet.dart';
 
 class DbObjectBox implements CacheManager {
   final Completer _initCompleter = Completer();
@@ -567,8 +569,17 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<WalletCahsuKeyset>> getKeysets({required String mintUrl}) async {
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) async {
     await dbRdy;
+    if (mintUrl == null || mintUrl.isEmpty) {
+      // return all keysets if no mintUrl
+      return _objectBox.store
+          .box<DbWalletCahsuKeyset>()
+          .getAll()
+          .map((dbKeyset) => dbKeyset.toNdk())
+          .toList();
+    }
+
     return _objectBox.store
         .box<DbWalletCahsuKeyset>()
         .query(DbWalletCahsuKeyset_.mintUrl.equals(mintUrl))
@@ -579,7 +590,7 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<WalletCashuProof>> getProofs({
+  Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
   }) async {
@@ -633,7 +644,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> removeProofs({
-    required List<WalletCashuProof> proofs,
+    required List<CashuProof> proofs,
     required String mintUrl,
   }) async {
     await dbRdy;
@@ -653,7 +664,7 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<void> saveKeyset(WalletCahsuKeyset keyset) async {
+  Future<void> saveKeyset(CahsuKeyset keyset) async {
     _objectBox.store.box<DbWalletCahsuKeyset>().put(
           DbWalletCahsuKeyset.fromNdk(keyset),
         );
@@ -662,7 +673,7 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveProofs({
-    required List<WalletCashuProof> tokens,
+    required List<CashuProof> tokens,
     required String mintUrl,
   }) async {
     await dbRdy;
@@ -676,15 +687,54 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<Transaction>> getTransactions(
-      {int? limit, String? accountId, String? unit}) {
+  Future<List<WalletTransaction>> getTransactions(
+      {int? limit, String? walletId, String? unit}) {
     // TODO: implement getTransactions
     throw UnimplementedError();
   }
 
   @override
-  Future<void> saveTransactions({required List<Transaction> transactions}) {
+  Future<void> saveTransactions(
+      {required List<WalletTransaction> transactions}) {
     // TODO: implement saveTransactions
     throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
+    await dbRdy;
+
+    return Future.value(
+      _objectBox.store.box<DbWallet>().getAll().map((dbWallet) {
+        return dbWallet.toNdk();
+      }).where((wallet) {
+        if (ids == null || ids.isEmpty) {
+          return true; // return all wallets
+        }
+        return ids.contains(wallet.id);
+      }).toList(),
+    );
+  }
+
+  @override
+  Future<void> removeWallet(String walletId) async {
+    await dbRdy;
+    // find wallet by id
+    final walletBox = _objectBox.store.box<DbWallet>();
+    final existingWallet = await walletBox
+        .query(DbWallet_.id.equals(walletId))
+        .build()
+        .findFirst();
+    if (existingWallet != null) {
+      await walletBox.remove(existingWallet.dbId);
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveWallet(Wallet wallet) async {
+    await dbRdy;
+    await _objectBox.store.box<DbWallet>().put(DbWallet.fromNdk(wallet));
+    return Future.value();
   }
 }

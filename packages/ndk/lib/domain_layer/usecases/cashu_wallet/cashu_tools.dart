@@ -9,9 +9,9 @@ import 'package:convert/convert.dart';
 
 import '../../../config/cashu_config.dart';
 import '../../../shared/nips/nip01/bip340.dart';
-import '../../entities/cashu/wallet_cashu_keyset.dart';
-import '../../entities/cashu/wallet_cashu_blinded_message.dart';
-import '../../entities/cashu/wallet_cashu_proof.dart';
+import '../../entities/cashu/cashu_keyset.dart';
+import '../../entities/cashu/cashu_blinded_message.dart';
+import '../../entities/cashu/cashu_proof.dart';
 
 class CashuTools {
   static String composeUrl({
@@ -82,7 +82,7 @@ class CashuTools {
 
   static String createMintSignature({
     required String quote,
-    required List<WalletCashuBlindedMessage> blindedMessagesOutputs,
+    required List<CashuBlindedMessage> blindedMessagesOutputs,
     required String privateKeyHex,
   }) {
     final StringBuffer messageBuffer = StringBuffer();
@@ -123,8 +123,8 @@ class CashuTools {
   /// Filters keysets by unit and returns the active keyset.
   /// Throws an exception if no keysets are found with the specified unit
   /// or if no active keyset is found.
-  static WalletCahsuKeyset filterKeysetsByUnitActive({
-    required List<WalletCahsuKeyset> keysets,
+  static CahsuKeyset filterKeysetsByUnitActive({
+    required List<CahsuKeyset> keysets,
     required String unit,
   }) {
     final keysetsFiltered =
@@ -142,8 +142,8 @@ class CashuTools {
   }
 
   /// filters keysets by unit
-  static List<WalletCahsuKeyset> filterKeysetsByUnit({
-    required List<WalletCahsuKeyset> keysets,
+  static List<CahsuKeyset> filterKeysetsByUnit({
+    required List<CahsuKeyset> keysets,
     required String unit,
   }) {
     return keysets.where((keyset) => keyset.unit == unit).toList();
@@ -151,7 +151,7 @@ class CashuTools {
 
   /// Sums the amounts of all proofs in the list. \
   /// Returns the total amount.
-  static int sumOfProofs({required List<WalletCashuProof> proofs}) {
+  static int sumOfProofs({required List<CashuProof> proofs}) {
     return proofs.fold(0, (sum, proof) => sum + proof.amount);
   }
 
@@ -168,10 +168,10 @@ class CashuTools {
     return max((log(feeReserveSat) / ln2).ceil(), 1);
   }
 
-  static List<WalletCashuProof> filterProofsByUnit({
-    required List<WalletCashuProof> proofs,
+  static List<CashuProof> filterProofsByUnit({
+    required List<CashuProof> proofs,
     required String unit,
-    required List<WalletCahsuKeyset> keysets,
+    required List<CahsuKeyset> keysets,
   }) {
     return proofs.where((proof) {
       final keyset = keysets.firstWhere(

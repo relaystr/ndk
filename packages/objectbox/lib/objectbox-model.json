@@ -394,9 +394,48 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "9:4843976069028406780",
+      "lastPropertyId": "7:4491916464072815310",
+      "name": "DbWallet",
+      "properties": [
+        {
+          "id": "1:2803460968575242300",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5928177294242770624",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "3:4931878169587094779",
+          "name": "type",
+          "type": 9
+        },
+        {
+          "id": "4:5124323927135367950",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "5:3582256459096368032",
+          "name": "supportedUnits",
+          "type": 30
+        },
+        {
+          "id": "7:4491916464072815310",
+          "name": "metadataJsonString",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "8:7203634548589534122",
+  "lastEntityId": "9:4843976069028406780",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
@@ -405,7 +444,8 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    4248118904091022656
+    4248118904091022656,
+    693682162918032185
   ],
   "retiredRelationUids": [],
   "version": 1

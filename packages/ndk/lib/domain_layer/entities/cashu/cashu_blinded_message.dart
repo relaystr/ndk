@@ -1,5 +1,5 @@
-class WalletCashuBlindedMessage {
-  WalletCashuBlindedMessage({
+class CashuBlindedMessage {
+  CashuBlindedMessage({
     required this.id,
     required this.amount,
     required this.blindedMessage,
@@ -11,8 +11,8 @@ class WalletCashuBlindedMessage {
   /// B_
   final String blindedMessage;
 
-  factory WalletCashuBlindedMessage.fromServerMap(Map json) {
-    return WalletCashuBlindedMessage(
+  factory CashuBlindedMessage.fromServerMap(Map json) {
+    return CashuBlindedMessage(
       id: json['id'],
       amount: int.tryParse(json['amount']) ?? 0,
       blindedMessage: json['B_'],
@@ -33,13 +33,13 @@ class WalletCashuBlindedMessage {
   }
 }
 
-class WalletCashuBlindedMessageItem {
-  final WalletCashuBlindedMessage blindedMessage;
+class CashuBlindedMessageItem {
+  final CashuBlindedMessage blindedMessage;
   final String secret;
   final BigInt r;
   final int amount;
 
-  WalletCashuBlindedMessageItem({
+  CashuBlindedMessageItem({
     required this.blindedMessage,
     required this.secret,
     required this.r,

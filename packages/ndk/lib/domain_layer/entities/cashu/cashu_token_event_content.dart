@@ -1,21 +1,21 @@
-import 'wallet_cashu_token_event.dart';
+import 'cashu_token_event.dart';
 
-class WalletCashuTokenEventContent {
+class CashuTokenEventContent {
   final String mintUrl;
   final List<CashuProof> proofs;
   final List<String> deletedIds;
 
-  WalletCashuTokenEventContent({
+  CashuTokenEventContent({
     required this.mintUrl,
     required this.proofs,
     required this.deletedIds,
   });
 
   /// extracts data from plain lists
-  factory WalletCashuTokenEventContent.fromJson(
+  factory CashuTokenEventContent.fromJson(
     Map<String, dynamic> jsonList,
   ) {
-    return WalletCashuTokenEventContent(
+    return CashuTokenEventContent(
       mintUrl: jsonList['mint'] as String,
       proofs: (jsonList['proofs'] as List<dynamic>)
           .map((proofJson) =>

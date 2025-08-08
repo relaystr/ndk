@@ -21,6 +21,7 @@ import 'data_layer/db/object_box/schema/db_metadata.dart';
 import 'data_layer/db/object_box/schema/db_nip_01_event.dart';
 import 'data_layer/db/object_box/schema/db_nip_05.dart';
 import 'data_layer/db/object_box/schema/db_user_relay_list.dart';
+import 'data_layer/db/object_box/schema/db_wallet.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -416,6 +417,45 @@ final _entities = <obx_int.ModelEntity>[
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(9, 4843976069028406780),
+      name: 'DbWallet',
+      lastPropertyId: const obx_int.IdUid(7, 4491916464072815310),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 2803460968575242300),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 5928177294242770624),
+            name: 'id',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 4931878169587094779),
+            name: 'type',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 5124323927135367950),
+            name: 'name',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 3582256459096368032),
+            name: 'supportedUnits',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 4491916464072815310),
+            name: 'metadataJsonString',
+            type: 9,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[])
 ];
 
@@ -454,13 +494,13 @@ Future<obx.Store> openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(8, 7203634548589534122),
+      lastEntityId: const obx_int.IdUid(9, 4843976069028406780),
       lastIndexId: const obx_int.IdUid(0, 0),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [],
       retiredIndexUids: const [],
-      retiredPropertyUids: const [4248118904091022656],
+      retiredPropertyUids: const [4248118904091022656, 693682162918032185],
       retiredRelationUids: const [],
       modelVersion: 5,
       modelVersionParserMinimum: 5,
@@ -955,6 +995,59 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
+        }),
+    DbWallet: obx_int.EntityDefinition<DbWallet>(
+        model: _entities[8],
+        toOneRelations: (DbWallet object) => [],
+        toManyRelations: (DbWallet object) => {},
+        getId: (DbWallet object) => object.dbId,
+        setId: (DbWallet object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbWallet object, fb.Builder fbb) {
+          final idOffset = fbb.writeString(object.id);
+          final typeOffset = fbb.writeString(object.type);
+          final nameOffset = fbb.writeString(object.name);
+          final supportedUnitsOffset = fbb.writeList(object.supportedUnits
+              .map(fbb.writeString)
+              .toList(growable: false));
+          final metadataJsonStringOffset =
+              fbb.writeString(object.metadataJsonString);
+          fbb.startTable(8);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, idOffset);
+          fbb.addOffset(2, typeOffset);
+          fbb.addOffset(3, nameOffset);
+          fbb.addOffset(4, supportedUnitsOffset);
+          fbb.addOffset(6, metadataJsonStringOffset);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final idParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 6, '');
+          final typeParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 8, '');
+          final supportedUnitsParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGet(buffer, rootOffset, 12, []);
+          final nameParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 10, '');
+          final metadataJsonStringParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGet(buffer, rootOffset, 16, '');
+          final object = DbWallet(
+              id: idParam,
+              type: typeParam,
+              supportedUnits: supportedUnitsParam,
+              name: nameParam,
+              metadataJsonString: metadataJsonStringParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
         })
   };
 
@@ -1238,4 +1331,31 @@ class DbWalletCashuProof_ {
   /// See [DbWalletCashuProof.unblindedSig].
   static final unblindedSig =
       obx.QueryStringProperty<DbWalletCashuProof>(_entities[7].properties[4]);
+}
+
+/// [DbWallet] entity fields to define ObjectBox queries.
+class DbWallet_ {
+  /// See [DbWallet.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbWallet>(_entities[8].properties[0]);
+
+  /// See [DbWallet.id].
+  static final id =
+      obx.QueryStringProperty<DbWallet>(_entities[8].properties[1]);
+
+  /// See [DbWallet.type].
+  static final type =
+      obx.QueryStringProperty<DbWallet>(_entities[8].properties[2]);
+
+  /// See [DbWallet.name].
+  static final name =
+      obx.QueryStringProperty<DbWallet>(_entities[8].properties[3]);
+
+  /// See [DbWallet.supportedUnits].
+  static final supportedUnits =
+      obx.QueryStringVectorProperty<DbWallet>(_entities[8].properties[4]);
+
+  /// See [DbWallet.metadataJsonString].
+  static final metadataJsonString =
+      obx.QueryStringProperty<DbWallet>(_entities[8].properties[5]);
 }

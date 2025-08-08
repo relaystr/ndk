@@ -1,15 +1,17 @@
 import 'dart:core';
 
-import '../../../domain_layer/entities/cashu/wallet_cashu_keyset.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_proof.dart';
+import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
+import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/entities/wallet/wallet.dart';
+import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
-import '../../../domain_layer/usecases/wallet/wallet.dart';
+import '../../../domain_layer/usecases/wallets/wallets.dart';
 
 /// In memory database implementation
 /// benefits: very fast
@@ -34,12 +36,14 @@ class MemCacheManager implements CacheManager {
   Map<String, Nip01Event> events = {};
 
   /// String for mint Url
-  Map<String, Set<WalletCahsuKeyset>> cashuKeysets = {};
+  Map<String, Set<CahsuKeyset>> cashuKeysets = {};
 
   /// String for mint Url
-  Map<String, Set<WalletCashuProof>> cashuProofs = {};
+  Map<String, Set<CashuProof>> cashuProofs = {};
 
-  List<Transaction> transactions = [];
+  List<WalletTransaction> transactions = [];
+
+  Set<Wallet> wallets = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -302,16 +306,16 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<WalletCahsuKeyset>> getKeysets({required String mintUrl}) {
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) {
     if (cashuKeysets.containsKey(mintUrl)) {
       return Future.value(cashuKeysets[mintUrl]?.toList() ?? []);
     } else {
-      return Future.value([]);
+      return Future.value(cashuKeysets.values.expand((e) => e).toList());
     }
   }
 
   @override
-  Future<void> saveKeyset(WalletCahsuKeyset keyset) {
+  Future<void> saveKeyset(CahsuKeyset keyset) {
     if (cashuKeysets.containsKey(keyset.mintUrl)) {
       cashuKeysets[keyset.mintUrl]!.add(keyset);
     } else {
@@ -321,7 +325,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<WalletCashuProof>> getProofs({
+  Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
   }) {
@@ -343,20 +347,20 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveProofs({
-    required List<WalletCashuProof> tokens,
+    required List<CashuProof> tokens,
     required String mintUrl,
   }) {
     if (cashuProofs.containsKey(mintUrl)) {
       cashuProofs[mintUrl]!.addAll(tokens);
     } else {
-      cashuProofs[mintUrl] = Set<WalletCashuProof>.from(tokens);
+      cashuProofs[mintUrl] = Set<CashuProof>.from(tokens);
     }
     return Future.value();
   }
 
   @override
   Future<void> removeProofs(
-      {required List<WalletCashuProof> proofs, required String mintUrl}) {
+      {required List<CashuProof> proofs, required String mintUrl}) {
     if (cashuProofs.containsKey(mintUrl)) {
       final existingProofs = cashuProofs[mintUrl]!;
       for (final proof in proofs) {
@@ -373,15 +377,15 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<Transaction>> getTransactions({
+  Future<List<WalletTransaction>> getTransactions({
     int? limit,
-    String? accountId,
+    String? walletId,
     String? unit,
   }) {
-    if (accountId != null && unit != null) {
+    if (walletId != null && unit != null) {
       return Future.value(transactions
           .where((transaction) =>
-              transaction.accountId == accountId && transaction.unit == unit)
+              transaction.walletId == walletId && transaction.unit == unit)
           .take(limit ?? transactions.length)
           .toList());
     } else if (unit != null) {
@@ -389,9 +393,9 @@ class MemCacheManager implements CacheManager {
           .where((transaction) => transaction.unit == unit)
           .take(limit ?? transactions.length)
           .toList());
-    } else if (accountId != null) {
+    } else if (walletId != null) {
       return Future.value(transactions
-          .where((transaction) => transaction.accountId == accountId)
+          .where((transaction) => transaction.walletId == walletId)
           .take(limit ?? transactions.length)
           .toList());
     } else {
@@ -401,19 +405,43 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> saveTransactions({required List<Transaction> transactions}) {
+  Future<void> saveTransactions(
+      {required List<WalletTransaction> transactions}) {
     /// Check if transactions are already present
     /// if so update them
 
     for (final transaction in transactions) {
-      final existingIndex = this.transactions.indexWhere((t) =>
-          t.id == transaction.id && t.accountId == transaction.accountId);
+      final existingIndex = this.transactions.indexWhere(
+          (t) => t.id == transaction.id && t.walletId == transaction.walletId);
       if (existingIndex != -1) {
         this.transactions[existingIndex] = transaction;
       } else {
         this.transactions.add(transaction);
       }
     }
+    return Future.value();
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets({List<String>? ids}) {
+    if (ids == null || ids.isEmpty) {
+      return Future.value(wallets.toList());
+    } else {
+      final result =
+          wallets.where((wallet) => ids.contains(wallet.id)).toList();
+      return Future.value(result.isNotEmpty ? result : null);
+    }
+  }
+
+  @override
+  Future<void> removeWallet(String id) {
+    wallets.removeWhere((wallet) => wallet.id == id);
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveWallet(Wallet wallet) {
+    wallets.add(wallet);
     return Future.value();
   }
 }

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import '../../../shared/helpers/mutex_simple.dart';
-import '../../entities/cashu/wallet_cashu_proof.dart';
+import '../../entities/cashu/cashu_proof.dart';
 import '../../repositories/cache_manager.dart';
 
 class CashuCacheDecorator implements CacheManager {
@@ -16,7 +16,7 @@ class CashuCacheDecorator implements CacheManager {
 
   @override
   Future<void> saveProofs({
-    required List<WalletCashuProof> tokens,
+    required List<CashuProof> tokens,
     required String mintUrl,
   }) async {
     await _mutex.synchronized(() async {
@@ -26,7 +26,7 @@ class CashuCacheDecorator implements CacheManager {
 
   @override
   Future<void> removeProofs({
-    required List<WalletCashuProof> proofs,
+    required List<CashuProof> proofs,
     required String mintUrl,
   }) async {
     await _mutex.synchronized(() async {
@@ -35,7 +35,7 @@ class CashuCacheDecorator implements CacheManager {
   }
 
   @override
-  Future<List<WalletCashuProof>> getProofs({
+  Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
   }) async {
@@ -61,8 +61,8 @@ class CashuCacheDecorator implements CacheManager {
   }
 
   Future<void> atomicSaveAndRemove({
-    required List<WalletCashuProof> proofsToRemove,
-    required List<WalletCashuProof> tokensToSave,
+    required List<CashuProof> proofsToRemove,
+    required List<CashuProof> tokensToSave,
     required String mintUrl,
   }) async {
     await runInTransaction(() async {

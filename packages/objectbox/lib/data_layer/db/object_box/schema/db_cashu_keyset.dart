@@ -36,7 +36,7 @@ class DbWalletCahsuKeyset {
     this.fetchedAt,
   });
 
-  factory DbWalletCahsuKeyset.fromNdk(ndk_entities.WalletCahsuKeyset ndkM) {
+  factory DbWalletCahsuKeyset.fromNdk(ndk_entities.CahsuKeyset ndkM) {
     final dbM = DbWalletCahsuKeyset(
       id: ndkM.id,
       mintUrl: ndkM.mintUrl,
@@ -53,8 +53,8 @@ class DbWalletCahsuKeyset {
     return dbM;
   }
 
-  ndk_entities.WalletCahsuKeyset toNdk() {
-    final ndkM = ndk_entities.WalletCahsuKeyset(
+  ndk_entities.CahsuKeyset toNdk() {
+    final ndkM = ndk_entities.CahsuKeyset(
       id: id,
       mintUrl: mintUrl,
       unit: unit,
@@ -62,7 +62,7 @@ class DbWalletCahsuKeyset {
       inputFeePPK: inputFeePPK,
       mintKeyPairs: mintKeyPairs.map((pair) {
         final parts = pair.split(':');
-        return ndk_entities.WalletCahsuMintKeyPair(
+        return ndk_entities.CahsuMintKeyPair(
           amount: int.parse(parts[0]),
           pubkey: parts[1],
         );

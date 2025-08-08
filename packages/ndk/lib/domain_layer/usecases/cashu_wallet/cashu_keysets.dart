@@ -1,4 +1,4 @@
-import '../../entities/cashu/wallet_cashu_keyset.dart';
+import '../../entities/cashu/cashu_keyset.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_repo.dart';
 
@@ -14,10 +14,10 @@ class CashuKeysets {
 
   /// Fetches keysets from the cache or network. \
   /// If the cache is stale or empty, it fetches from the network. \
-  /// Returns a list of [WalletCahsuKeyset]. \
+  /// Returns a list of [CahsuKeyset]. \
   /// [mintUrl] The URL of the mint to fetch keysets from. \
   /// [validityDurationSeconds] The duration in seconds for which the cache is valid.
-  Future<List<WalletCahsuKeyset>> getKeysetsFromMint(
+  Future<List<CahsuKeyset>> getKeysetsFromMint(
     String mintUrl, {
     int validityDurationSeconds = 24 * 60 * 60, // 24 hours
   }) async {
@@ -38,10 +38,10 @@ class CashuKeysets {
     return getKeysetMintFromNetwork(mintUrl: mintUrl);
   }
 
-  Future<List<WalletCahsuKeyset>> getKeysetMintFromNetwork({
+  Future<List<CahsuKeyset>> getKeysetMintFromNetwork({
     required String mintUrl,
   }) async {
-    final List<WalletCahsuKeyset> mintKeys = [];
+    final List<CahsuKeyset> mintKeys = [];
     final keySets = await _cashuRepo.getKeysets(
       mintUrl: mintUrl,
     );
@@ -53,7 +53,7 @@ class CashuKeysets {
       );
 
       mintKeys.add(
-        WalletCahsuKeyset.fromResponses(
+        CahsuKeyset.fromResponses(
           keysetResponse: keySet,
           keysResponse: keys.first,
         ),
@@ -62,11 +62,11 @@ class CashuKeysets {
     return mintKeys;
   }
 
-  Future<void> saveKeyset(WalletCahsuKeyset keyset) async {
+  Future<void> saveKeyset(CahsuKeyset keyset) async {
     await _cacheManager.saveKeyset(keyset);
   }
 
-  Future<List<WalletCahsuKeyset>?> getKeysetFromCache(String mintUrl) async {
+  Future<List<CahsuKeyset>?> getKeysetFromCache(String mintUrl) async {
     try {
       return await _cacheManager.getKeysets(mintUrl: mintUrl);
     } catch (e) {

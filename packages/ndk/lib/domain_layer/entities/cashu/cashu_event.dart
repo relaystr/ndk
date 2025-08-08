@@ -1,6 +1,6 @@
 import '../nip_01_event.dart';
 
-class WalletCashuEvent {
+class CashuEvent {
   static const int kWalletKind = 17375;
 
   final String walletPrivkey;
@@ -10,7 +10,7 @@ class WalletCashuEvent {
 
   late final Nip01Event? nostrEvent;
 
-  WalletCashuEvent({
+  CashuEvent({
     required this.walletPrivkey,
     required this.mints,
     required this.userPubkey,

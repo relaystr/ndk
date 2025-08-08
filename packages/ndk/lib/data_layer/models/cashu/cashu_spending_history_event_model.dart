@@ -1,19 +1,18 @@
 import 'dart:convert';
 
-import '../../../domain_layer/entities/cashu/wallet_cashu_spending_history_event.dart';
-import '../../../domain_layer/entities/cashu/wallet_cashu_spending_history_event_content.dart';
+import '../../../domain_layer/entities/cashu/cashu_spending_history_event.dart';
+import '../../../domain_layer/entities/cashu/cashu_spending_history_event_content.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 
-class WalletCashuSpendingHistoryEventModel
-    extends WalletCashuSpendingHistoryEvent {
-  WalletCashuSpendingHistoryEventModel({
+class CashuSpendingHistoryEventModel extends CashuSpendingHistoryEvent {
+  CashuSpendingHistoryEventModel({
     required super.direction,
     required super.amount,
     required super.tokens,
   });
 
-  Future<WalletCashuSpendingHistoryEventModel> fromNip01Event({
+  Future<CashuSpendingHistoryEventModel> fromNip01Event({
     required Nip01Event nostrEvent,
     required EventSigner signer,
   }) async {
@@ -27,9 +26,9 @@ class WalletCashuSpendingHistoryEventModel
     final jsonContent = jsonDecode(decryptedContent);
 
     final extractedContent =
-        WalletCashuSpendingHistoryEventContent.fromJson(jsonContent);
+        CashuSpendingHistoryEventContent.fromJson(jsonContent);
 
-    return WalletCashuSpendingHistoryEventModel(
+    return CashuSpendingHistoryEventModel(
       amount: extractedContent.amount,
       direction: extractedContent.direction,
       tokens: extractedContent.tokens,

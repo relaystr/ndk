@@ -1,12 +1,13 @@
-import '../entities/cashu/wallet_cashu_keyset.dart';
-import '../entities/cashu/wallet_cashu_proof.dart';
+import '../entities/cashu/cashu_keyset.dart';
+import '../entities/cashu/cashu_proof.dart';
 import '../entities/contact_list.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
-import '../usecases/wallet/wallet.dart';
+import '../entities/wallet/wallet.dart';
+import '../entities/wallet/wallet_transaction.dart';
 
 abstract class CacheManager {
   /// closes the cache manger \
@@ -82,37 +83,48 @@ abstract class CacheManager {
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
 
+  /// wallets methods
+
+  Future<void> saveWallet(Wallet wallet);
+
+  Future<void> removeWallet(String id);
+
+  /// return all if [ids] is null
+  Future<List<Wallet>?> getWallets({List<String>? ids});
+
   /// cashu methods
 
-  Future<void> saveKeyset(WalletCahsuKeyset keyset);
-  Future<List<WalletCahsuKeyset>> getKeysets({
-    required String mintUrl,
+  Future<void> saveKeyset(CahsuKeyset keyset);
+
+  /// get all keysets if no mintUrl is provided \
+  Future<List<CahsuKeyset>> getKeysets({
+    String? mintUrl,
   });
 
   Future<void> saveProofs({
-    required List<WalletCashuProof> tokens,
+    required List<CashuProof> tokens,
     required String mintUrl,
   });
 
-  Future<List<WalletCashuProof>> getProofs({
+  Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
   });
 
   Future<void> removeProofs({
-    required List<WalletCashuProof> proofs,
+    required List<CashuProof> proofs,
     required String mintUrl,
   });
 
-  Future<List<Transaction>> getTransactions({
+  Future<List<WalletTransaction>> getTransactions({
     int? limit,
-    String? accountId,
+    String? walletId,
     String? unit,
   });
 
   /// upserts transactions \
   /// if transaction with same id exists, it will be updated
   Future<void> saveTransactions({
-    required List<Transaction> transactions,
+    required List<WalletTransaction> transactions,
   });
 }

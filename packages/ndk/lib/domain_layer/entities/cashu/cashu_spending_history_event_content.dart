@@ -1,21 +1,21 @@
 import '../tuple.dart';
-import 'wallet_cashu_spending_history_event.dart';
+import 'cashu_spending_history_event.dart';
 
-class WalletCashuSpendingHistoryEventContent {
+class CashuSpendingHistoryEventContent {
   final CashuSpendDirection direction;
   final int amount;
 
   /// tokens < TOKEN,SPEND_MARKER >
   final List<Tuple<String, CashuSpendMarker>> tokens;
 
-  WalletCashuSpendingHistoryEventContent({
+  CashuSpendingHistoryEventContent({
     required this.direction,
     required this.amount,
     required this.tokens,
   });
 
   /// extracts data from plain lists
-  factory WalletCashuSpendingHistoryEventContent.fromJson(
+  factory CashuSpendingHistoryEventContent.fromJson(
     List<List<String>> jsonList,
   ) {
     CashuSpendDirection? direction;
@@ -58,7 +58,7 @@ class WalletCashuSpendingHistoryEventContent {
       throw Exception("err parsing amount");
     }
 
-    return WalletCashuSpendingHistoryEventContent(
+    return CashuSpendingHistoryEventContent(
       direction: direction,
       amount: amount,
       tokens: tokens,

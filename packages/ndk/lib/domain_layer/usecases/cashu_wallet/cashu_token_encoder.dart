@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:cbor/cbor.dart';
 
 import '../../../shared/logger/logger.dart';
-import '../../entities/cashu/wallet_cashu_token.dart';
+import '../../entities/cashu/cashu_token.dart';
 
 class CashuTokenEncoder {
   static final v4Prefix = 'cashuB';
 
   static String encodeTokenV4({
-    required WalletCashuToken token,
+    required CashuToken token,
   }) {
     final json = token.toV4Json();
     final myCbor = CborValue(json);
@@ -18,7 +18,7 @@ class CashuTokenEncoder {
     return v4Prefix + base64URL;
   }
 
-  static WalletCashuToken? decodedToken(String token) {
+  static CashuToken? decodedToken(String token) {
     Map? obj;
     try {
       // remove prefix before decoding
@@ -35,7 +35,7 @@ class CashuTokenEncoder {
 
     if (obj == null) return null;
 
-    return WalletCashuToken.fromV4Json(obj);
+    return CashuToken.fromV4Json(obj);
   }
 
   static String _base64urlFromBase64(String base64String) {
