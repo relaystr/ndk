@@ -423,7 +423,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<Wallet>?> getWallets(List<String>? ids) {
+  Future<List<Wallet>?> getWallets({List<String>? ids}) {
     if (ids == null || ids.isEmpty) {
       return Future.value(wallets.toList());
     } else {

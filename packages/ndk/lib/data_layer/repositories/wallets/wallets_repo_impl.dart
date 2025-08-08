@@ -25,27 +25,30 @@ class WalletsRepoImpl implements WalletsRepo {
 
   @override
   Future<void> addWallet(Wallet account) {
-    // TODO: implement addWallet
-    throw UnimplementedError();
+    return _cacheManger.saveWallet(account);
   }
 
   @override
-  Future<Wallet> getWallet(String id) {
-    /// load from db
-    // TODO: implement getWallet
-    throw UnimplementedError();
+  Future<Wallet> getWallet(String id) async {
+    final wallets = await _cacheManger.getWallets(ids: [id]);
+    if (wallets == null || wallets.isEmpty) {
+      throw Exception('Wallet with id $id not found');
+    }
+    return wallets.first;
   }
 
   @override
-  Future<List<Wallet>> getWallets() {
-    // TODO: implement getWallets
-    throw UnimplementedError();
+  Future<List<Wallet>> getWallets() async {
+    final wallets = await _cacheManger.getWallets();
+    if (wallets == null) {
+      return [];
+    }
+    return wallets;
   }
 
   @override
   Future<void> removeWallet(String id) {
-    // TODO: implement removeWallet
-    throw UnimplementedError();
+    return _cacheManger.removeWallet(id);
   }
 
   @override

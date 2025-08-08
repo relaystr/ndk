@@ -701,7 +701,7 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<Wallet>?> getWallets(List<String>? ids) async {
+  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
     await dbRdy;
 
     return Future.value(

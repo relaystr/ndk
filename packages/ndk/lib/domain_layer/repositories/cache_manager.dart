@@ -90,7 +90,7 @@ abstract class CacheManager {
   Future<void> removeWallet(String id);
 
   /// return all if [ids] is null
-  Future<List<Wallet>?> getWallets(List<String>? ids);
+  Future<List<Wallet>?> getWallets({List<String>? ids});
 
   /// cashu methods
 
