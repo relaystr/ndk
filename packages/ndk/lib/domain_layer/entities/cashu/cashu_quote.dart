@@ -40,6 +40,32 @@ class CashuQuote {
       quoteKey: quoteKey,
     );
   }
+
+  factory CashuQuote.fromJson(Map<String, dynamic> json) {
+    return CashuQuote(
+      quoteId: json['quoteId'] as String,
+      request: json['request'] as String,
+      amount: json['amount'] as int,
+      unit: json['unit'] as String,
+      state: CashuQuoteState.fromValue(json['state'] as String),
+      expiry: json['expiry'] as int,
+      mintUrl: json['mintUrl'] as String,
+      quoteKey: CashuKeypair.fromJson(json['quoteKey'] as Map<String, dynamic>),
+    );
+  }
+
+  Map<String, Object> toJson() {
+    return {
+      'quoteId': quoteId,
+      'request': request,
+      'amount': amount,
+      'unit': unit,
+      'state': state.value,
+      'expiry': expiry,
+      'mintUrl': mintUrl,
+      'quoteKey': quoteKey.toJson(),
+    };
+  }
 }
 
 enum CashuQuoteState {

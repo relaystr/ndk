@@ -5,17 +5,22 @@ import 'wallet_type.dart';
 abstract class WalletTransaction {
   final String id;
   final String walletId;
-  int changeAmount;
-  String unit;
-  WalletType walletType;
-  WalletTransactionState state;
-  String? completionMsg;
+
+  /// positive for incoming, negative for outgoing
+  final int changeAmount;
+  final String unit;
+  final WalletType walletType;
+  final WalletTransactionState state;
+  final String? completionMsg;
 
   /// Date in milliseconds since epoch
   int? transactionDate;
 
   /// Date in milliseconds since epoch
   int? initiatedDate;
+
+  /// metadata to store additional information for the specific transaction type
+  final Map<String, dynamic> metadata;
 
   WalletTransaction({
     required this.id,
@@ -24,17 +29,74 @@ abstract class WalletTransaction {
     required this.unit,
     required this.walletType,
     required this.state,
+    required this.metadata,
     this.completionMsg,
     this.transactionDate,
     this.initiatedDate,
   });
+
+  /// constructs the concrete wallet type based on the type string \
+  /// metadata is used to provide additional information required for the wallet type
+  static WalletTransaction toWalletType({
+    required String id,
+    required String walletId,
+    required int changeAmount,
+    required String unit,
+    required WalletType walletType,
+    required WalletTransactionState state,
+    required String typeUnparsed,
+    required Map<String, dynamic> metadata,
+    String? completionMsg,
+    int? transactionDate,
+    int? initiatedDate,
+  }) {
+    final type = WalletType.fromValue(typeUnparsed);
+
+    switch (type) {
+      case WalletType.CASHU:
+        return CashuWalletTransaction(
+          id: id,
+          walletId: walletId,
+          changeAmount: changeAmount,
+          unit: unit,
+          walletType: walletType,
+          state: state,
+          mintUrl: metadata['mintUrl'] as String,
+          completionMsg: completionMsg,
+          transactionDate: transactionDate,
+          initiatedDate: initiatedDate,
+          note: metadata['note'] as String?,
+          method: metadata['method'] as String?,
+          qoute: metadata['qoute'] != null
+              ? CashuQuote.fromJson(metadata['qoute'] as Map<String, dynamic>)
+              : null,
+          usedKeyset: metadata['usedKeyset'] != null
+              ? CahsuKeyset.fromJson(
+                  metadata['usedKeyset'] as Map<String, dynamic>)
+              : null,
+        );
+      case WalletType.NWC:
+        return NwcWalletTransaction(
+          id: id,
+          walletId: walletId,
+          changeAmount: changeAmount,
+          unit: unit,
+          walletType: walletType,
+          state: state,
+          metadata: metadata,
+          completionMsg: completionMsg,
+          transactionDate: transactionDate,
+          initiatedDate: initiatedDate,
+        );
+    }
+  }
 }
 
 class CashuWalletTransaction extends WalletTransaction {
   String mintUrl;
   String? note;
-  CashuQuote? qoute;
   String? method;
+  CashuQuote? qoute;
   CahsuKeyset? usedKeyset;
 
   CashuWalletTransaction({
@@ -52,7 +114,17 @@ class CashuWalletTransaction extends WalletTransaction {
     this.usedKeyset,
     super.transactionDate,
     super.initiatedDate,
-  });
+    Map<String, dynamic>? metadata,
+  }) : super(
+          metadata: metadata ??
+              {
+                'mintUrl': mintUrl,
+                'note': note,
+                'method': method,
+                'qoute': qoute?.toJson(),
+                'usedKeyset': usedKeyset?.toJson(),
+              },
+        );
 
   @override
   bool operator ==(Object other) =>
@@ -97,6 +169,21 @@ class CashuWalletTransaction extends WalletTransaction {
       completionMsg: completionMsg ?? this.completionMsg,
     );
   }
+}
+
+class NwcWalletTransaction extends WalletTransaction {
+  NwcWalletTransaction({
+    required super.id,
+    required super.walletId,
+    required super.changeAmount,
+    required super.unit,
+    required super.walletType,
+    required super.state,
+    required super.metadata,
+    super.completionMsg,
+    super.transactionDate,
+    super.initiatedDate,
+  });
 }
 
 enum WalletTransactionState {

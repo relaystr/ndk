@@ -38,6 +38,36 @@ class CahsuKeyset {
       mintKeyPairs: keysResponse.mintKeyPairs,
     );
   }
+
+  factory CahsuKeyset.fromJson(Map<String, dynamic> json) {
+    return CahsuKeyset(
+      id: json['id'] as String,
+      mintUrl: json['mintUrl'] as String,
+      unit: json['unit'] as String,
+      active: json['active'] as bool,
+      inputFeePPK: json['inputFeePPK'] as int,
+      mintKeyPairs: (json['mintKeyPairs'] as List<dynamic>)
+          .map((e) => CahsuMintKeyPair(
+                amount: e['amount'] as int,
+                pubkey: e['pubkey'] as String,
+              ))
+          .toSet(),
+    );
+  }
+
+  Map<String, Object?> toJson() {
+    return {
+      'id': id,
+      'mintUrl': mintUrl,
+      'unit': unit,
+      'active': active,
+      'inputFeePPK': inputFeePPK,
+      'mintKeyPairs': mintKeyPairs
+          .map((pair) => {'amount': pair.amount, 'pubkey': pair.pubkey})
+          .toList(),
+      'fetchedAt': fetchedAt,
+    };
+  }
 }
 
 class CahsuMintKeyPair {
