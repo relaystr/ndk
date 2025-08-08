@@ -8,6 +8,7 @@ import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
 import '../entities/wallet/wallet.dart';
 import '../entities/wallet/wallet_transaction.dart';
+import '../entities/wallet/wallet_type.dart';
 
 abstract class CacheManager {
   /// closes the cache manger \
@@ -120,6 +121,7 @@ abstract class CacheManager {
     int? limit,
     String? walletId,
     String? unit,
+    WalletType? walletType,
   });
 
   /// upserts transactions \

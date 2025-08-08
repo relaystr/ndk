@@ -126,6 +126,40 @@ class Cashu {
     return _balanceSubject!;
   }
 
+  BehaviorSubject<List<CashuWalletTransaction>> get latestTransactions {
+    if (_latestTransactionsSubject == null) {
+      _latestTransactionsSubject =
+          BehaviorSubject<List<CashuWalletTransaction>>.seeded(
+        _latestTransactions,
+      );
+      _getLatestTransactionsDb().then((transactions) {
+        _latestTransactions.clear();
+        _latestTransactions.addAll(transactions);
+        _latestTransactionsSubject?.add(_latestTransactions);
+      }).catchError((error) {
+        _latestTransactionsSubject?.addError(
+          Exception('Failed to load latest transactions: $error'),
+        );
+      });
+    }
+
+    return _latestTransactionsSubject!;
+  }
+
+  Future<List<CashuWalletTransaction>> _getLatestTransactionsDb({
+    int limit = 10,
+  }) async {
+    final transactions = await _cacheManagerCashu.getTransactions(
+      walletType: WalletType.CASHU,
+      limit: limit,
+    );
+
+    final fTransactions =
+        transactions.whereType<CashuWalletTransaction>().toList();
+
+    return fTransactions;
+  }
+
   Future<CashuWalletTransaction> initiateFund({
     required String mintUrl,
     required int amount,
@@ -291,6 +325,11 @@ class Cashu {
     // remove completed transaction
     _pendingTransactions.remove(completedTransaction);
     _pendingTransactionsSubject.add(_pendingTransactions.toList());
+
+    // add to latest transactions
+    _latestTransactions.add(completedTransaction);
+    _latestTransactionsSubject?.add(_latestTransactions);
+
     yield completedTransaction;
   }
 

@@ -41,4 +41,18 @@ class CashuKeypair {
 
     return publicKeyPoint!;
   }
+
+  factory CashuKeypair.fromJson(Map<String, dynamic> json) {
+    return CashuKeypair(
+      privateKey: json['privateKey'] as String,
+      publicKey: json['publicKey'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'privateKey': privateKey,
+      'publicKey': publicKey,
+    };
+  }
 }

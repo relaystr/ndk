@@ -22,6 +22,7 @@ import 'data_layer/db/object_box/schema/db_nip_01_event.dart';
 import 'data_layer/db/object_box/schema/db_nip_05.dart';
 import 'data_layer/db/object_box/schema/db_user_relay_list.dart';
 import 'data_layer/db/object_box/schema/db_wallet.dart';
+import 'data_layer/db/object_box/schema/db_wallet_transaction.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -456,6 +457,70 @@ final _entities = <obx_int.ModelEntity>[
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(10, 2707870737906176084),
+      name: 'DbWalletTransaction',
+      lastPropertyId: const obx_int.IdUid(11, 3092540118635965720),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 4964215471626448888),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 2268171515152137881),
+            name: 'id',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 3815553497512932992),
+            name: 'walletId',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 1284545487035067139),
+            name: 'changeAmount',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 8089333082593198860),
+            name: 'unit',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 8810607312851014784),
+            name: 'walletType',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 662120020381927996),
+            name: 'state',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(8, 7366719423178014878),
+            name: 'completionMsg',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(9, 6641644784457917076),
+            name: 'transactionDate',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(10, 2365111131666685128),
+            name: 'initiatedDate',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(11, 3092540118635965720),
+            name: 'metadataJsonString',
+            type: 9,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[])
 ];
 
@@ -494,7 +559,7 @@ Future<obx.Store> openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(9, 4843976069028406780),
+      lastEntityId: const obx_int.IdUid(10, 2707870737906176084),
       lastIndexId: const obx_int.IdUid(0, 0),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
@@ -1048,6 +1113,80 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
+        }),
+    DbWalletTransaction: obx_int.EntityDefinition<DbWalletTransaction>(
+        model: _entities[9],
+        toOneRelations: (DbWalletTransaction object) => [],
+        toManyRelations: (DbWalletTransaction object) => {},
+        getId: (DbWalletTransaction object) => object.dbId,
+        setId: (DbWalletTransaction object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbWalletTransaction object, fb.Builder fbb) {
+          final idOffset = fbb.writeString(object.id);
+          final walletIdOffset = fbb.writeString(object.walletId);
+          final unitOffset = fbb.writeString(object.unit);
+          final walletTypeOffset = fbb.writeString(object.walletType);
+          final stateOffset = fbb.writeString(object.state);
+          final completionMsgOffset = object.completionMsg == null
+              ? null
+              : fbb.writeString(object.completionMsg!);
+          final metadataJsonStringOffset =
+              fbb.writeString(object.metadataJsonString);
+          fbb.startTable(12);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, idOffset);
+          fbb.addOffset(2, walletIdOffset);
+          fbb.addInt64(3, object.changeAmount);
+          fbb.addOffset(4, unitOffset);
+          fbb.addOffset(5, walletTypeOffset);
+          fbb.addOffset(6, stateOffset);
+          fbb.addOffset(7, completionMsgOffset);
+          fbb.addInt64(8, object.transactionDate);
+          fbb.addInt64(9, object.initiatedDate);
+          fbb.addOffset(10, metadataJsonStringOffset);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final idParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 6, '');
+          final walletIdParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 8, '');
+          final changeAmountParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0);
+          final unitParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 12, '');
+          final walletTypeParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 14, '');
+          final stateParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 16, '');
+          final completionMsgParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 18);
+          final transactionDateParam =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 20);
+          final initiatedDateParam =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 22);
+          final metadataJsonStringParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGet(buffer, rootOffset, 24, '');
+          final object = DbWalletTransaction(
+              id: idParam,
+              walletId: walletIdParam,
+              changeAmount: changeAmountParam,
+              unit: unitParam,
+              walletType: walletTypeParam,
+              state: stateParam,
+              completionMsg: completionMsgParam,
+              transactionDate: transactionDateParam,
+              initiatedDate: initiatedDateParam,
+              metadataJsonString: metadataJsonStringParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
         })
   };
 
@@ -1358,4 +1497,51 @@ class DbWallet_ {
   /// See [DbWallet.metadataJsonString].
   static final metadataJsonString =
       obx.QueryStringProperty<DbWallet>(_entities[8].properties[5]);
+}
+
+/// [DbWalletTransaction] entity fields to define ObjectBox queries.
+class DbWalletTransaction_ {
+  /// See [DbWalletTransaction.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbWalletTransaction>(_entities[9].properties[0]);
+
+  /// See [DbWalletTransaction.id].
+  static final id =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[1]);
+
+  /// See [DbWalletTransaction.walletId].
+  static final walletId =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[2]);
+
+  /// See [DbWalletTransaction.changeAmount].
+  static final changeAmount =
+      obx.QueryIntegerProperty<DbWalletTransaction>(_entities[9].properties[3]);
+
+  /// See [DbWalletTransaction.unit].
+  static final unit =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[4]);
+
+  /// See [DbWalletTransaction.walletType].
+  static final walletType =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[5]);
+
+  /// See [DbWalletTransaction.state].
+  static final state =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[6]);
+
+  /// See [DbWalletTransaction.completionMsg].
+  static final completionMsg =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[7]);
+
+  /// See [DbWalletTransaction.transactionDate].
+  static final transactionDate =
+      obx.QueryIntegerProperty<DbWalletTransaction>(_entities[9].properties[8]);
+
+  /// See [DbWalletTransaction.initiatedDate].
+  static final initiatedDate =
+      obx.QueryIntegerProperty<DbWalletTransaction>(_entities[9].properties[9]);
+
+  /// See [DbWalletTransaction.metadataJsonString].
+  static final metadataJsonString =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[10]);
 }

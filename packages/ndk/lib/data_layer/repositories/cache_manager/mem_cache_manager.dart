@@ -10,8 +10,8 @@ import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
+import '../../../domain_layer/entities/wallet/wallet_type.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
-import '../../../domain_layer/usecases/wallets/wallets.dart';
 
 /// In memory database implementation
 /// benefits: very fast
@@ -381,27 +381,26 @@ class MemCacheManager implements CacheManager {
     int? limit,
     String? walletId,
     String? unit,
+    WalletType? walletType,
   }) {
-    if (walletId != null && unit != null) {
-      return Future.value(transactions
-          .where((transaction) =>
-              transaction.walletId == walletId && transaction.unit == unit)
-          .take(limit ?? transactions.length)
-          .toList());
-    } else if (unit != null) {
-      return Future.value(transactions
-          .where((transaction) => transaction.unit == unit)
-          .take(limit ?? transactions.length)
-          .toList());
-    } else if (walletId != null) {
-      return Future.value(transactions
-          .where((transaction) => transaction.walletId == walletId)
-          .take(limit ?? transactions.length)
-          .toList());
-    } else {
-      return Future.value(
-          transactions.take(limit ?? transactions.length).toList());
+    List<WalletTransaction> result = transactions.where((transaction) {
+      if (walletId != null && transaction.walletId != walletId) {
+        return false;
+      }
+      if (unit != null && transaction.unit != unit) {
+        return false;
+      }
+      if (walletType != null && transaction.walletType != walletType) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    if (limit != null && limit > 0) {
+      result = result.take(limit).toList();
     }
+
+    return Future.value(result);
   }
 
   @override

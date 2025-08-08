@@ -4,7 +4,7 @@ import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
 import '../../../domain_layer/entities/wallet/wallet_type.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../domain_layer/repositories/wallets_repo.dart';
-import '../../../domain_layer/usecases/cashu_wallet/cashu.dart';
+import '../../../domain_layer/usecases/cashu/cashu.dart';
 import '../../../domain_layer/usecases/nwc/nwc.dart';
 
 /// this class manages the wallets (storage) and

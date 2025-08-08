@@ -15,6 +15,7 @@ import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
 import 'schema/db_user_relay_list.dart';
 import 'schema/db_wallet.dart';
+import 'schema/db_wallet_transaction.dart';
 
 class DbObjectBox implements CacheManager {
   final Completer _initCompleter = Completer();
@@ -687,17 +688,83 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<WalletTransaction>> getTransactions(
-      {int? limit, String? walletId, String? unit}) {
-    // TODO: implement getTransactions
-    throw UnimplementedError();
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) async {
+    await dbRdy;
+
+    final transactionBox = _objectBox.store.box<DbWalletTransaction>();
+
+    Condition<DbWalletTransaction>? condition;
+    if (walletId != null && walletId.isNotEmpty) {
+      condition = DbWalletTransaction_.walletId.equals(walletId);
+    }
+    if (unit != null && unit.isNotEmpty) {
+      final unitCondition = DbWalletTransaction_.unit.equals(unit);
+      condition =
+          (condition == null) ? unitCondition : condition.and(unitCondition);
+    }
+    if (walletType != null) {
+      final typeCondition =
+          DbWalletTransaction_.walletType.equals(walletType.toString());
+      condition =
+          (condition == null) ? typeCondition : condition.and(typeCondition);
+    }
+    QueryBuilder<DbWalletTransaction> queryBuilder;
+    if (condition != null) {
+      queryBuilder = transactionBox.query(condition);
+    } else {
+      queryBuilder = transactionBox.query();
+    }
+
+    // sort
+    queryBuilder.order(DbWalletTransaction_.transactionDate,
+        flags: Order.descending);
+
+    final query = queryBuilder.build();
+    // limit
+    if (limit != null) {
+      query..limit = limit;
+    }
+
+    final results = query.find();
+    return results.map((dbTransaction) => dbTransaction.toNdk()).toList();
   }
 
-  @override
-  Future<void> saveTransactions(
-      {required List<WalletTransaction> transactions}) {
-    // TODO: implement saveTransactions
-    throw UnimplementedError();
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  }) async {
+    await dbRdy;
+
+    final store = _objectBox.store;
+
+    store.runInTransaction(TxMode.write, () async {
+      final box = store.box<DbWalletTransaction>();
+      final dbTransactions =
+          transactions.map((t) => DbWalletTransaction.fromNdk(t)).toList();
+
+      // find existing transactions by id
+      final idsToCheck = dbTransactions.map((t) => t.id).toList();
+
+      final query =
+          box.query(DbWalletTransaction_.id.oneOf(idsToCheck)).build();
+
+      try {
+        final existing = query.find();
+
+        if (existing.isNotEmpty) {
+          box.removeMany(existing.map((t) => t.dbId).toList());
+        }
+
+        // insert
+        box.putMany(dbTransactions);
+      } finally {
+        query.close();
+      }
+    });
   }
 
   @override

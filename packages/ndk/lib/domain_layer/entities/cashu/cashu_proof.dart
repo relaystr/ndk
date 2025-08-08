@@ -1,4 +1,4 @@
-import '../../usecases/cashu_wallet/cashu_tools.dart';
+import '../../usecases/cashu/cashu_tools.dart';
 
 class CashuProof {
   final String keysetId;
