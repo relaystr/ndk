@@ -116,6 +116,7 @@ class Cashu {
 
   BehaviorSubject<List<CashuMintBalance>> get balances {
     if (_balanceSubject == null) {
+      _balanceSubject = BehaviorSubject<List<CashuMintBalance>>.seeded([]);
       getBalances().then((balances) {
         _balanceSubject = BehaviorSubject<List<CashuMintBalance>>.seeded(
           balances,
