@@ -1,4 +1,4 @@
-import '../../usecases/cashu_wallet/cashu_keypair.dart';
+import '../../usecases/cashu/cashu_keypair.dart';
 
 class CashuQuote {
   final String quoteId;

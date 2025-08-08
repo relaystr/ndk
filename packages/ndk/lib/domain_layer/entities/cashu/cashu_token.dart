@@ -1,5 +1,5 @@
-import '../../usecases/cashu_wallet/cashu_token_encoder.dart';
-import '../../usecases/cashu_wallet/cashu_tools.dart';
+import '../../usecases/cashu/cashu_token_encoder.dart';
+import '../../usecases/cashu/cashu_tools.dart';
 import 'cashu_proof.dart';
 
 class CashuToken {

@@ -8,8 +8,8 @@ import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/cashu/cashu_quote.dart';
 import '../../../domain_layer/entities/cashu/cashu_quote_melt.dart';
 import '../../../domain_layer/repositories/cashu_repo.dart';
-import '../../../domain_layer/usecases/cashu_wallet/cashu_keypair.dart';
-import '../../../domain_layer/usecases/cashu_wallet/cashu_tools.dart';
+import '../../../domain_layer/usecases/cashu/cashu_keypair.dart';
+import '../../../domain_layer/usecases/cashu/cashu_tools.dart';
 import '../../data_sources/http_request.dart';
 
 final headers = {'Content-Type': 'application/json'};

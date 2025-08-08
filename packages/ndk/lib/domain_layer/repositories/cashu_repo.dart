@@ -5,7 +5,7 @@ import '../entities/cashu/cashu_melt_response.dart';
 import '../entities/cashu/cashu_proof.dart';
 import '../entities/cashu/cashu_quote.dart';
 import '../entities/cashu/cashu_quote_melt.dart';
-import '../usecases/cashu_wallet/cashu_keypair.dart';
+import '../usecases/cashu/cashu_keypair.dart';
 
 abstract class CashuRepo {
   Future<List<CashuBlindedSignature>> swap({
