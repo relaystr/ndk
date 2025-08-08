@@ -37,22 +37,19 @@ abstract class WalletTransaction {
 
   /// constructs the concrete wallet type based on the type string \
   /// metadata is used to provide additional information required for the wallet type
-  static WalletTransaction toWalletType({
+  static WalletTransaction toTransactionType({
     required String id,
     required String walletId,
     required int changeAmount,
     required String unit,
     required WalletType walletType,
     required WalletTransactionState state,
-    required String typeUnparsed,
     required Map<String, dynamic> metadata,
     String? completionMsg,
     int? transactionDate,
     int? initiatedDate,
   }) {
-    final type = WalletType.fromValue(typeUnparsed);
-
-    switch (type) {
+    switch (walletType) {
       case WalletType.CASHU:
         return CashuWalletTransaction(
           id: id,

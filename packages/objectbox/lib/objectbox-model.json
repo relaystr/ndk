@@ -433,9 +433,73 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "10:2707870737906176084",
+      "lastPropertyId": "11:3092540118635965720",
+      "name": "DbWalletTransaction",
+      "properties": [
+        {
+          "id": "1:4964215471626448888",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2268171515152137881",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "3:3815553497512932992",
+          "name": "walletId",
+          "type": 9
+        },
+        {
+          "id": "4:1284545487035067139",
+          "name": "changeAmount",
+          "type": 6
+        },
+        {
+          "id": "5:8089333082593198860",
+          "name": "unit",
+          "type": 9
+        },
+        {
+          "id": "6:8810607312851014784",
+          "name": "walletType",
+          "type": 9
+        },
+        {
+          "id": "7:662120020381927996",
+          "name": "state",
+          "type": 9
+        },
+        {
+          "id": "8:7366719423178014878",
+          "name": "completionMsg",
+          "type": 9
+        },
+        {
+          "id": "9:6641644784457917076",
+          "name": "transactionDate",
+          "type": 6
+        },
+        {
+          "id": "10:2365111131666685128",
+          "name": "initiatedDate",
+          "type": 6
+        },
+        {
+          "id": "11:3092540118635965720",
+          "name": "metadataJsonString",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "9:4843976069028406780",
+  "lastEntityId": "10:2707870737906176084",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
