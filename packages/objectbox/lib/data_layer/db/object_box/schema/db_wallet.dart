@@ -47,7 +47,7 @@ class DbWallet {
     final ndkM = ndk_entities.Wallet.toWalletType(
       id: id,
       name: name,
-      typeUnparsed: type,
+      type: ndk_entities.WalletType.fromValue(type),
       supportedUnits: supportedUnits.toSet(),
       metadata: jsonDecode(metadataJsonString),
     );

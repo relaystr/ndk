@@ -31,12 +31,10 @@ abstract class Wallet {
   static Wallet toWalletType({
     required String id,
     required String name,
-    required String typeUnparsed,
+    required WalletType type,
     required Set<String> supportedUnits,
     required Map<String, dynamic> metadata,
   }) {
-    final type = WalletType.fromValue(typeUnparsed);
-
     switch (type) {
       case WalletType.CASHU:
         final mintUrl = metadata['mintUrl'] as String?;

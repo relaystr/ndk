@@ -14,4 +14,7 @@ enum WalletType {
       orElse: () => throw ArgumentError('Invalid event kind value: $value'),
     );
   }
+
+  @override
+  String toString() => value;
 }
