@@ -10,7 +10,7 @@ void main() {
 
       final mintUrl = 'http://127.0.0.1:8085';
 
-      final fundResponse = await ndk.cashuWallet.fund(
+      final fundResponse = await ndk.cashu.fund(
         mintUrl: mintUrl,
         amount: 52,
         unit: 'sat',
@@ -25,14 +25,14 @@ void main() {
 
       final mintUrl = 'http://127.0.0.1:8085';
 
-      final fundResponse = await ndk.cashuWallet.fund(
+      final fundResponse = await ndk.cashu.fund(
         mintUrl: mintUrl,
         amount: 52,
         unit: 'sat',
         method: 'bolt11',
       );
 
-      final eCashToken = ndk.cashuWallet.proofsToToken(
+      final eCashToken = ndk.cashu.proofsToToken(
         proofs: fundResponse,
         mintUrl: mintUrl,
         unit: 'sat',
@@ -40,7 +40,7 @@ void main() {
 
       print(eCashToken);
 
-      final receiveResponse = await ndk.cashuWallet.receive(eCashToken);
+      final receiveResponse = await ndk.cashu.receive(eCashToken);
 
       print(receiveResponse);
     });
@@ -50,14 +50,14 @@ void main() {
 
       final mintUrl = 'http://127.0.0.1:8085';
 
-      final fundResponse = await ndk.cashuWallet.fund(
+      final fundResponse = await ndk.cashu.fund(
         mintUrl: mintUrl,
         amount: 52,
         unit: 'sat',
         method: 'bolt11',
       );
 
-      final spendResult = await ndk.cashuWallet.spend(
+      final spendResult = await ndk.cashu.spend(
         mintUrl: mintUrl,
         amount: 16,
         unit: 'sat',
