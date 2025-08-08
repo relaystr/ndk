@@ -151,7 +151,7 @@ class Ndk {
 
   /// Wallet combining all wallet accounts \
   @experimental
-  Wallets get wallet => _initialization.wallet;
+  Wallets get wallets => _initialization.wallets;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
