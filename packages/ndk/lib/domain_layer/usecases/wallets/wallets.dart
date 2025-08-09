@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../entities/wallet/wallet_balance.dart';
 import '../../entities/wallet/wallet_transaction.dart';
+import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_operations_repo.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../entities/wallet/wallet.dart';
