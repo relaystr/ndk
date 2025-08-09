@@ -27,6 +27,7 @@ class Bunkers {
         _requests = requests;
 
   /// Connects to a bunker using a bunker URL (bunker://)
+  /// authCallback is called with the auth URL if the bunker requires authentication
   Future<BunkerConnection?> connectWithBunkerUrl(
     String bunkerUrl, {
     Function(String)? authCallback,
@@ -121,6 +122,7 @@ class Bunkers {
   }
 
   /// Connects to a bunker using a nostr connect URL (nostrconnect://)
+  /// authCallback is called with the auth URL if the bunker requires authentication
   Future<BunkerConnection?> connectWithNostrConnect(
     NostrConnect nostrConnect, {
     Function(String)? authCallback,
