@@ -54,7 +54,7 @@ class WalletsRepoImpl implements WalletsRepo {
   @override
   Stream<List<WalletBalance>> getBalancesStream(String accountId) async* {
     // delegate to appropriate use case based on account type
-    final useCase = await _getAccountUseCase(accountId);
+    final useCase = await _getWalletUseCase(accountId);
     if (useCase is Cashu) {
       // transform to WalletBalance
       yield* useCase.balances.map((balances) => balances.expand((b) {
@@ -73,19 +73,47 @@ class WalletsRepoImpl implements WalletsRepo {
 
   @override
   Stream<List<WalletTransaction>> getPendingTransactionsStream(
-      String accountId) {
-    // TODO: implement getPendingTransactionsStream
-    throw UnimplementedError();
+    String accountId,
+  ) async* {
+    final useCase = await _getWalletUseCase(accountId);
+    if (useCase is Cashu) {
+      /// filter transaction stream by id
+      yield* useCase.pendingTransactions.map(
+        (transactions) => transactions
+            .where((transaction) => transaction.walletId == accountId)
+            .toList(),
+      );
+    } else if (useCase is Nwc) {
+      throw UnimplementedError(
+          'NWC pending transactions stream not implemented yet');
+    } else {
+      throw UnimplementedError(
+          'Unknown account type for pending transactions stream');
+    }
   }
 
   @override
   Stream<List<WalletTransaction>> getRecentTransactionsStream(
-      String accountId) {
-    // TODO: implement getRecentTransactionsStream
-    throw UnimplementedError();
+    String accountId,
+  ) async* {
+    final useCase = await _getWalletUseCase(accountId);
+    if (useCase is Cashu) {
+      /// filter transaction stream by id
+      yield* useCase.latestTransactions.map(
+        (transactions) => transactions
+            .where((transaction) => transaction.walletId == accountId)
+            .toList(),
+      );
+    } else if (useCase is Nwc) {
+      throw UnimplementedError(
+          'NWC recent transactions stream not implemented yet');
+    } else {
+      throw UnimplementedError(
+          'Unknown account type for recent transactions stream');
+    }
   }
 
-  Future<dynamic> _getAccountUseCase(String accountId) async {
+  Future<dynamic> _getWalletUseCase(String accountId) async {
     final account = await getWallet(accountId);
     switch (account.type) {
       case WalletType.CASHU:

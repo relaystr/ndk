@@ -147,6 +147,10 @@ class Cashu {
     return _latestTransactionsSubject!;
   }
 
+  BehaviorSubject<List<CashuWalletTransaction>> get pendingTransactions {
+    return _pendingTransactionsSubject;
+  }
+
   Future<List<CashuWalletTransaction>> _getLatestTransactionsDb({
     int limit = 10,
   }) async {
