@@ -497,9 +497,78 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "11:7685475375528365740",
+      "lastPropertyId": "12:5248840734946600657",
+      "name": "DbCashuMintInfo",
+      "properties": [
+        {
+          "id": "1:3986862540339028259",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:782681889938728815",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:6446557892342141409",
+          "name": "version",
+          "type": 9
+        },
+        {
+          "id": "4:5222801161447007866",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "5:1315350861179276877",
+          "name": "descriptionLong",
+          "type": 9
+        },
+        {
+          "id": "6:7239671510889020768",
+          "name": "contactJson",
+          "type": 9
+        },
+        {
+          "id": "7:4128030923595712840",
+          "name": "motd",
+          "type": 9
+        },
+        {
+          "id": "8:5203040174417421240",
+          "name": "iconUrl",
+          "type": 9
+        },
+        {
+          "id": "9:3724773223411020767",
+          "name": "urls",
+          "type": 30
+        },
+        {
+          "id": "10:6472773197434133274",
+          "name": "time",
+          "type": 6
+        },
+        {
+          "id": "11:987809007158169655",
+          "name": "tosUrl",
+          "type": 9
+        },
+        {
+          "id": "12:5248840734946600657",
+          "name": "nutsJson",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "10:2707870737906176084",
+  "lastEntityId": "11:7685475375528365740",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

@@ -29,6 +29,10 @@ class CashuMintInfo {
     this.tosUrl,
   });
 
+  bool isMintUrl(String url) {
+    return urls.any((u) => u == url);
+  }
+
   factory CashuMintInfo.fromJson(Map<String, dynamic> json) {
     final nutsJson = (json['nuts'] as Map?) ?? {};
     final parsedNuts = <int, CashuMintNut>{};

@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
+import '../../../domain_layer/entities/cashu/cashu_mint_info.dart';
 import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
@@ -44,6 +45,8 @@ class MemCacheManager implements CacheManager {
   List<WalletTransaction> transactions = [];
 
   Set<Wallet> wallets = {};
+
+  Set<CashuMintInfo> cashuMintInfos = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -441,6 +444,32 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> saveWallet(Wallet wallet) {
     wallets.add(wallet);
+    return Future.value();
+  }
+
+  @override
+  Future<List<CashuMintInfo>?> getMintInfos({
+    List<String>? mintUrls,
+  }) {
+    if (mintUrls == null) {
+      return Future.value(cashuMintInfos.toList());
+    } else {
+      final result = cashuMintInfos
+          .where(
+            (info) => mintUrls.any((url) => info.isMintUrl(url)),
+          )
+          .toList();
+      return Future.value(result.isNotEmpty ? result : null);
+    }
+  }
+
+  @override
+  Future<void> saveMintInfo({
+    required CashuMintInfo mintInfo,
+  }) {
+    cashuMintInfos
+        .removeWhere((info) => info.urls.any((url) => mintInfo.isMintUrl(url)));
+    cashuMintInfos.add(mintInfo);
     return Future.value();
   }
 }

@@ -41,12 +41,6 @@ class Cashu {
     _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
   }
 
-  // final Set<Mint> _mints = {};
-
-  // final Set<Proof> _proofs = {};
-
-  // final Set<Pending> _pending = {};
-
   final List<CashuWalletTransaction> _latestTransactions = [];
 
   BehaviorSubject<List<CashuWalletTransaction>>? _latestTransactionsSubject;
@@ -313,7 +307,7 @@ class Cashu {
       yield failedTransaction;
       throw Exception('Unblinding failed, no tokens returned');
     }
-    await _cacheManager.saveProofs(
+    await _cacheManagerCashu.saveProofs(
       tokens: unblindedTokens,
       mintUrl: mintUrl,
     );
