@@ -155,7 +155,6 @@ class Cashu {
     int limit = 10,
   }) async {
     final transactions = await _cacheManagerCashu.getTransactions(
-      walletType: WalletType.CASHU,
       limit: limit,
     );
 
@@ -330,6 +329,10 @@ class Cashu {
     // remove completed transaction
     _pendingTransactions.remove(completedTransaction);
     _pendingTransactionsSubject.add(_pendingTransactions.toList());
+
+    // save completed transaction
+    await _cacheManagerCashu
+        .saveTransactions(transactions: [completedTransaction]);
 
     // add to latest transactions
     _latestTransactions.add(completedTransaction);
