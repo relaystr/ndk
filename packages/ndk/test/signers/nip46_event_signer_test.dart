@@ -4,24 +4,35 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('Nip46EventSigner', () {
+  group('Nip46EventSigner', skip: true, () {
     late Nip46EventSigner signer;
-    late ConnectionSettings connectionSettings;
+    late BunkerConnection connection;
+    late Ndk ndk;
 
     setUp(() {
-      connectionSettings = ConnectionSettings(
+      ndk = Ndk(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: Bip340EventVerifier(),
+          bootstrapRelays: [],
+          logLevel: Logger.logLevels.trace,
+        ),
+      );
+
+      connection = BunkerConnection(
         privateKey:
-            "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
+        "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
         remotePubkey:
-            "a1fe3664f7a2b24db97e5b63869e8011c947f9abd8c03f98befafd27c38467d2",
+        "a1fe3664f7a2b24db97e5b63869e8011c947f9abd8c03f98befafd27c38467d2",
         relays: [
-          "wss://relay.damus.io",
-          "wss://relay.nostr.band",
-          "wss://relay.nsec.app",
+          // TODO use mock relay once nip46 support is added there
+          // "wss://relay.damus.io",
+          // "wss://relay.nostr.band",
+          // "wss://relay.nsec.app",
         ],
       );
 
-      signer = Nip46EventSigner(connectionSettings: connectionSettings);
+      signer = Nip46EventSigner(connection: connection, requests: ndk.requests, broadcast: ndk.broadcast);
     });
 
     tearDown(() {
@@ -34,7 +45,7 @@ void main() {
 
     test('sign should request remote signing and update event', () async {
       final event = Nip01Event(
-        pubKey: connectionSettings.remotePubkey,
+        pubKey: connection.remotePubkey,
         kind: 1,
         tags: [],
         content: 'Hello, world!',
@@ -73,7 +84,7 @@ void main() {
       // Encrypt the message using NIP-04
       final encryptedMessage = await localSigner.encrypt(
         testMessage,
-        connectionSettings.remotePubkey,
+        connection.remotePubkey,
       );
 
       expect(encryptedMessage, isNotNull);
@@ -90,7 +101,7 @@ void main() {
 
     test(
       'encrypt should request remote encryption and be verifiable',
-      () async {
+          () async {
         const testMessage = 'Hello, this is a test message to encrypt!';
 
         // Create a local event signer to verify decryption
@@ -133,7 +144,7 @@ void main() {
       // Encrypt the message using NIP-44
       final encryptedMessage = await localSigner.encryptNip44(
         plaintext: testMessage,
-        recipientPubKey: connectionSettings.remotePubkey,
+        recipientPubKey: connection.remotePubkey,
       );
 
       expect(encryptedMessage, isNotNull);
@@ -150,7 +161,7 @@ void main() {
 
     test(
       'encryptNip44 should request remote NIP-44 encryption and be verifiable',
-      () async {
+          () async {
         const testMessage = 'Hello, this is a NIP-44 encryption test!';
 
         // Create a local event signer to verify decryption

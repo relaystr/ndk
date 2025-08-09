@@ -12,6 +12,7 @@ import '../domain_layer/repositories/lnurl_transport.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
@@ -61,6 +62,7 @@ class Initialization {
   late CacheRead cacheRead;
   late Requests requests;
   late Accounts accounts;
+  late Bunkers bunkers;
   late Follows follows;
   late Metadatas metadatas;
   late UserRelayLists userRelayLists;
@@ -155,6 +157,11 @@ class Initialization {
       accounts: accounts,
       considerDonePercent: _ndkConfig.defaultBroadcastConsiderDonePercent,
       timeout: _ndkConfig.defaultBroadcastTimeout,
+    );
+
+    bunkers = Bunkers(
+      broadcast: broadcast,
+      requests: requests,
     );
 
     follows = Follows(
