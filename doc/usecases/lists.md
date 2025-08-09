@@ -18,7 +18,7 @@ icon: list-unordered
       print("set not found");
       return;
     }
-    print("recived a set with ${myset.elements.length} elements");
+    print("receive a set with ${myset.elements.length} elements");
 
 ```
 
