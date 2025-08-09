@@ -741,7 +741,7 @@ class DbObjectBox implements CacheManager {
 
     final store = _objectBox.store;
 
-    store.runInTransaction(TxMode.write, () async {
+    store.runInTransaction(TxMode.write, () {
       final box = store.box<DbWalletTransaction>();
       final dbTransactions =
           transactions.map((t) => DbWalletTransaction.fromNdk(t)).toList();
