@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../entities/wallet/wallet_balance.dart';
 import '../../entities/wallet/wallet_transaction.dart';
+import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_operations_repo.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../entities/wallet/wallet.dart';
@@ -216,28 +217,43 @@ class Wallets {
         .toList();
   }
 
-  void dispose() {
+  Future<void> dispose() async {
+    final futures = <Future>[];
+
     // cancel all subscriptions
     for (final subs in _subscriptions.values) {
       for (final sub in subs) {
-        sub.cancel();
+        futures.add(sub.cancel());
       }
     }
-
     // close all streams
-    _combinedBalancesSubject.close();
-    _combinedPendingTransactionsSubject.close();
-    _combinedRecentTransactionsSubject.close();
+    futures.addAll([
+      _combinedBalancesSubject.close(),
+      _combinedPendingTransactionsSubject.close(),
+      _combinedRecentTransactionsSubject.close(),
+    ]);
 
     for (final stream in _walletBalanceStreams.values) {
-      stream.close();
+      futures.add(stream.close());
     }
     for (final stream in _walletPendingStreams.values) {
-      stream.close();
+      futures.add(stream.close());
     }
     for (final stream in _walletRecentStreams.values) {
-      stream.close();
+      futures.add(stream.close());
     }
+
+    await Future.wait(futures);
+
+    _wallets.clear();
+    _walletsBalances.clear();
+    _walletsPendingTransactions.clear();
+    _walletsRecentTransactions.clear();
+    _walletBalanceStreams.clear();
+    _walletPendingStreams.clear();
+    _walletRecentStreams.clear();
+    _subscriptions.clear();
+    defaultWalletId = null;
   }
 
   /**

@@ -2,6 +2,7 @@ import '../entities/cashu/cashu_keyset.dart';
 import '../entities/cashu/cashu_blinded_message.dart';
 import '../entities/cashu/cashu_blinded_signature.dart';
 import '../entities/cashu/cashu_melt_response.dart';
+import '../entities/cashu/cashu_mint_info.dart';
 import '../entities/cashu/cashu_proof.dart';
 import '../entities/cashu/cashu_quote.dart';
 import '../entities/cashu/cashu_quote_melt.dart';
@@ -78,5 +79,9 @@ abstract class CashuRepo {
     required List<CashuProof> proofs,
     required List<CashuBlindedMessage> outputs,
     required String method,
+  });
+
+  Future<CashuMintInfo> getMintInfo({
+    required String mintUrl,
   });
 }

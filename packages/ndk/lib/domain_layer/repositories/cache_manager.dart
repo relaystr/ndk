@@ -1,4 +1,5 @@
 import '../entities/cashu/cashu_keyset.dart';
+import '../entities/cashu/cashu_mint_info.dart';
 import '../entities/cashu/cashu_proof.dart';
 import '../entities/contact_list.dart';
 import '../entities/nip_01_event.dart';
@@ -93,6 +94,19 @@ abstract class CacheManager {
   /// return all if [ids] is null
   Future<List<Wallet>?> getWallets({List<String>? ids});
 
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  });
+
+  /// upserts transactions \
+  /// if transaction with same id exists, it will be updated
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  });
+
   /// cashu methods
 
   Future<void> saveKeyset(CahsuKeyset keyset);
@@ -117,16 +131,12 @@ abstract class CacheManager {
     required String mintUrl,
   });
 
-  Future<List<WalletTransaction>> getTransactions({
-    int? limit,
-    String? walletId,
-    String? unit,
-    WalletType? walletType,
+  Future<void> saveMintInfo({
+    required CashuMintInfo mintInfo,
   });
 
-  /// upserts transactions \
-  /// if transaction with same id exists, it will be updated
-  Future<void> saveTransactions({
-    required List<WalletTransaction> transactions,
+  /// return all if no mintUrls are provided
+  Future<List<CashuMintInfo>?> getMintInfos({
+    List<String>? mintUrls,
   });
 }

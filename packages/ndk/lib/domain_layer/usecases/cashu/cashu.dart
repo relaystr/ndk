@@ -4,6 +4,7 @@ import '../../../config/cashu_config.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_mint_balance.dart';
+import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
 import '../../entities/cashu/cashu_token.dart';
@@ -41,11 +42,11 @@ class Cashu {
     _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
   }
 
-  // final Set<Mint> _mints = {};
+  /// mints this usecase has interacted with \
+  ///? does not mark trusted mints!
+  final Set<CashuMintInfo> _knownMints = {};
 
-  // final Set<Proof> _proofs = {};
-
-  // final Set<Pending> _pending = {};
+  BehaviorSubject<Set<CashuMintInfo>>? _knownMintsSubject;
 
   final List<CashuWalletTransaction> _latestTransactions = [];
 
@@ -114,6 +115,7 @@ class Cashu {
     _balanceSubject!.add(balances);
   }
 
+  /// list of balances for all mints
   BehaviorSubject<List<CashuMintBalance>> get balances {
     if (_balanceSubject == null) {
       _balanceSubject = BehaviorSubject<List<CashuMintBalance>>.seeded([]);
@@ -127,6 +129,7 @@ class Cashu {
     return _balanceSubject!;
   }
 
+  /// list of the latest transactions
   BehaviorSubject<List<CashuWalletTransaction>> get latestTransactions {
     if (_latestTransactionsSubject == null) {
       _latestTransactionsSubject =
@@ -147,8 +150,31 @@ class Cashu {
     return _latestTransactionsSubject!;
   }
 
+  /// pending transactions that are not yet completed \
+  /// e.g. funding transactions
   BehaviorSubject<List<CashuWalletTransaction>> get pendingTransactions {
     return _pendingTransactionsSubject;
+  }
+
+  /// mints this usecase has interacted with \
+  ///? does not mark trusted mints!
+  BehaviorSubject<Set<CashuMintInfo>> get knownMints {
+    if (_knownMintsSubject == null) {
+      _knownMintsSubject = BehaviorSubject<Set<CashuMintInfo>>.seeded(
+        _knownMints,
+      );
+      _getMintInfosDb().then((mintInfos) {
+        _knownMints.clear();
+        _knownMints.addAll(mintInfos);
+        _knownMintsSubject?.add(_knownMints);
+      }).catchError((error) {
+        _knownMintsSubject?.addError(
+          Exception('Failed to load known mints: $error'),
+        );
+      });
+    }
+
+    return _knownMintsSubject!;
   }
 
   Future<List<CashuWalletTransaction>> _getLatestTransactionsDb({
@@ -164,12 +190,48 @@ class Cashu {
     return fTransactions;
   }
 
+  Future<List<CashuMintInfo>> _getMintInfosDb() async {
+    final mintInfos = await _cacheManagerCashu.getMintInfos();
+    if (mintInfos == null) {
+      return [];
+    }
+    return mintInfos;
+  }
+
+  /// check if mint is known \
+  /// if not, it will be added to the known mints \
+  /// Returns true if mint is known, false otherwise
+  Future<bool> _checkIfMintIsKnown(String mintUrl) async {
+    final mintInfos = await _cacheManagerCashu.getMintInfos(
+      mintUrls: [mintUrl],
+    );
+
+    if (mintInfos == null || mintInfos.isEmpty) {
+      // fetch mint info from network
+      final mintInfoNetwork = await _cashuRepo.getMintInfo(mintUrl: mintUrl);
+
+      await _cacheManagerCashu.saveMintInfo(mintInfo: mintInfoNetwork);
+      _knownMints.add(mintInfoNetwork);
+      _knownMintsSubject?.add(_knownMints);
+      return false;
+    }
+    return true;
+  }
+
+  /// initiate funding e.g. minting tokens \
+  /// [mintUrl] - URL of the mint to fund from \
+  /// [amount] - amount to fund \
+  /// [unit] - unit of the amount (e.g. sat) \
+  /// [method] - payment method (e.g. bolt11) \
+  /// Returns a [CashuWalletTransaction] draft transaction that can be used to track the funding process.
+  /// Throws if there are no keysets available
   Future<CashuWalletTransaction> initiateFund({
     required String mintUrl,
     required int amount,
     required String unit,
     required String method,
   }) async {
+    await _checkIfMintIsKnown(mintUrl);
     final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
 
     if (keysets.isEmpty) {
@@ -209,6 +271,10 @@ class Cashu {
     return draftTransaction;
   }
 
+  /// retrieve funds from a pending funding transaction \
+  /// [draftTransaction] - the draft transaction from initiateFund() \
+  /// Returns a stream of [CashuWalletTransaction] that emits the transaction state as it progresses.
+  /// Throws if the draft transaction is missing required fields.
   Stream<CashuWalletTransaction> retriveFunds({
     required CashuWalletTransaction draftTransaction,
   }) async* {
@@ -223,6 +289,8 @@ class Cashu {
     }
     final quote = draftTransaction.qoute!;
     final mintUrl = draftTransaction.mintUrl;
+
+    await _checkIfMintIsKnown(mintUrl);
 
     CashuQuoteState payStatus;
 
@@ -313,7 +381,7 @@ class Cashu {
       yield failedTransaction;
       throw Exception('Unblinding failed, no tokens returned');
     }
-    await _cacheManager.saveProofs(
+    await _cacheManagerCashu.saveProofs(
       tokens: unblindedTokens,
       mintUrl: mintUrl,
     );

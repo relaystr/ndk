@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
@@ -9,6 +8,7 @@ import 'package:ndk_objectbox/data_layer/db/object_box/schema/db_nip_05.dart';
 import '../../../objectbox.g.dart';
 import 'db_init_object_box.dart';
 import 'schema/db_cashu_keyset.dart';
+import 'schema/db_cashu_mint_info.dart';
 import 'schema/db_cashu_proof.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
@@ -803,5 +803,50 @@ class DbObjectBox implements CacheManager {
     await dbRdy;
     await _objectBox.store.box<DbWallet>().put(DbWallet.fromNdk(wallet));
     return Future.value();
+  }
+
+  @override
+  Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
+    await dbRdy;
+
+    final box = _objectBox.store.box<DbCashuMintInfo>();
+
+    // return all if no filters provided
+    if (mintUrls == null || mintUrls.isEmpty) {
+      return box.getAll().map((e) => e.toNdk()).toList();
+    }
+
+    // build OR condition
+    Condition<DbCashuMintInfo>? cond;
+    for (final url in mintUrls) {
+      final c = DbCashuMintInfo_.urls.containsElement(url);
+      cond = (cond == null) ? c : (cond | c);
+    }
+
+    final query = box.query(cond).build();
+    try {
+      return query.find().map((e) => e.toNdk()).toList();
+    } finally {
+      query.close();
+    }
+  }
+
+  @override
+  Future<void> saveMintInfo({required CashuMintInfo mintInfo}) async {
+    await dbRdy;
+
+    final box = _objectBox.store.box<DbCashuMintInfo>();
+
+    /// upsert logic:
+    final existingMintInfo = box
+        .query(DbCashuMintInfo_.urls.containsElement(mintInfo.urls.first))
+        .build()
+        .findFirst();
+
+    if (existingMintInfo != null) {
+      box.remove(existingMintInfo.dbId);
+    }
+
+    box.put(DbCashuMintInfo.fromNdk(mintInfo));
   }
 }

@@ -4,6 +4,7 @@ import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
 import '../../../domain_layer/entities/cashu/cashu_blinded_message.dart';
 import '../../../domain_layer/entities/cashu/cashu_blinded_signature.dart';
 import '../../../domain_layer/entities/cashu/cashu_melt_response.dart';
+import '../../../domain_layer/entities/cashu/cashu_mint_info.dart';
 import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/cashu/cashu_quote.dart';
 import '../../../domain_layer/entities/cashu/cashu_quote_melt.dart';
@@ -363,5 +364,28 @@ class CashuRepoImpl implements CashuRepo {
       mintUrl: mintUrl,
       quoteId: quoteId,
     );
+  }
+
+  @override
+  Future<CashuMintInfo> getMintInfo({required String mintUrl}) {
+    final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'info');
+
+    return client
+        .get(
+      url: Uri.parse(url),
+      headers: headers,
+    )
+        .then((response) {
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Error fetching mint info: ${response.statusCode}, ${response.body}',
+        );
+      }
+      final responseBody = jsonDecode(response.body);
+      if (responseBody is! Map<String, dynamic>) {
+        throw Exception('Invalid response format: $responseBody');
+      }
+      return CashuMintInfo.fromJson(responseBody);
+    });
   }
 }

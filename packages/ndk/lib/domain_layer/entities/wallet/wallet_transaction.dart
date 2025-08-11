@@ -217,4 +217,9 @@ enum WalletTransactionState {
           throw ArgumentError('Invalid pending transaction state: $value'),
     );
   }
+
+  @override
+  String toString() {
+    return value;
+  }
 }

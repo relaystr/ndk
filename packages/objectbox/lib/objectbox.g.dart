@@ -15,6 +15,7 @@ import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'data_layer/db/object_box/schema/db_cashu_keyset.dart';
+import 'data_layer/db/object_box/schema/db_cashu_mint_info.dart';
 import 'data_layer/db/object_box/schema/db_cashu_proof.dart';
 import 'data_layer/db/object_box/schema/db_contact_list.dart';
 import 'data_layer/db/object_box/schema/db_metadata.dart';
@@ -521,6 +522,75 @@ final _entities = <obx_int.ModelEntity>[
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(11, 7685475375528365740),
+      name: 'DbCashuMintInfo',
+      lastPropertyId: const obx_int.IdUid(12, 5248840734946600657),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 3986862540339028259),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 782681889938728815),
+            name: 'name',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 6446557892342141409),
+            name: 'version',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 5222801161447007866),
+            name: 'description',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 1315350861179276877),
+            name: 'descriptionLong',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 7239671510889020768),
+            name: 'contactJson',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 4128030923595712840),
+            name: 'motd',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(8, 5203040174417421240),
+            name: 'iconUrl',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(9, 3724773223411020767),
+            name: 'urls',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(10, 6472773197434133274),
+            name: 'time',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(11, 987809007158169655),
+            name: 'tosUrl',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(12, 5248840734946600657),
+            name: 'nutsJson',
+            type: 9,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[])
 ];
 
@@ -559,7 +629,7 @@ Future<obx.Store> openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(10, 2707870737906176084),
+      lastEntityId: const obx_int.IdUid(11, 7685475375528365740),
       lastIndexId: const obx_int.IdUid(0, 0),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
@@ -1187,6 +1257,97 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
+        }),
+    DbCashuMintInfo: obx_int.EntityDefinition<DbCashuMintInfo>(
+        model: _entities[10],
+        toOneRelations: (DbCashuMintInfo object) => [],
+        toManyRelations: (DbCashuMintInfo object) => {},
+        getId: (DbCashuMintInfo object) => object.dbId,
+        setId: (DbCashuMintInfo object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbCashuMintInfo object, fb.Builder fbb) {
+          final nameOffset =
+              object.name == null ? null : fbb.writeString(object.name!);
+          final versionOffset =
+              object.version == null ? null : fbb.writeString(object.version!);
+          final descriptionOffset = object.description == null
+              ? null
+              : fbb.writeString(object.description!);
+          final descriptionLongOffset = object.descriptionLong == null
+              ? null
+              : fbb.writeString(object.descriptionLong!);
+          final contactJsonOffset = fbb.writeString(object.contactJson);
+          final motdOffset =
+              object.motd == null ? null : fbb.writeString(object.motd!);
+          final iconUrlOffset =
+              object.iconUrl == null ? null : fbb.writeString(object.iconUrl!);
+          final urlsOffset = fbb.writeList(
+              object.urls.map(fbb.writeString).toList(growable: false));
+          final tosUrlOffset =
+              object.tosUrl == null ? null : fbb.writeString(object.tosUrl!);
+          final nutsJsonOffset = fbb.writeString(object.nutsJson);
+          fbb.startTable(13);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, nameOffset);
+          fbb.addOffset(2, versionOffset);
+          fbb.addOffset(3, descriptionOffset);
+          fbb.addOffset(4, descriptionLongOffset);
+          fbb.addOffset(5, contactJsonOffset);
+          fbb.addOffset(6, motdOffset);
+          fbb.addOffset(7, iconUrlOffset);
+          fbb.addOffset(8, urlsOffset);
+          fbb.addInt64(9, object.time);
+          fbb.addOffset(10, tosUrlOffset);
+          fbb.addOffset(11, nutsJsonOffset);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final nameParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 6);
+          final versionParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 8);
+          final descriptionParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 10);
+          final descriptionLongParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 12);
+          final contactJsonParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGet(buffer, rootOffset, 14, '');
+          final motdParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 16);
+          final iconUrlParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 18);
+          final urlsParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGet(buffer, rootOffset, 20, []);
+          final timeParam =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 22);
+          final tosUrlParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 24);
+          final nutsJsonParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 26, '');
+          final object = DbCashuMintInfo(
+              name: nameParam,
+              version: versionParam,
+              description: descriptionParam,
+              descriptionLong: descriptionLongParam,
+              contactJson: contactJsonParam,
+              motd: motdParam,
+              iconUrl: iconUrlParam,
+              urls: urlsParam,
+              time: timeParam,
+              tosUrl: tosUrlParam,
+              nutsJson: nutsJsonParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
         })
   };
 
@@ -1544,4 +1705,55 @@ class DbWalletTransaction_ {
   /// See [DbWalletTransaction.metadataJsonString].
   static final metadataJsonString =
       obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[10]);
+}
+
+/// [DbCashuMintInfo] entity fields to define ObjectBox queries.
+class DbCashuMintInfo_ {
+  /// See [DbCashuMintInfo.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbCashuMintInfo>(_entities[10].properties[0]);
+
+  /// See [DbCashuMintInfo.name].
+  static final name =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[1]);
+
+  /// See [DbCashuMintInfo.version].
+  static final version =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[2]);
+
+  /// See [DbCashuMintInfo.description].
+  static final description =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[3]);
+
+  /// See [DbCashuMintInfo.descriptionLong].
+  static final descriptionLong =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[4]);
+
+  /// See [DbCashuMintInfo.contactJson].
+  static final contactJson =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[5]);
+
+  /// See [DbCashuMintInfo.motd].
+  static final motd =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[6]);
+
+  /// See [DbCashuMintInfo.iconUrl].
+  static final iconUrl =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[7]);
+
+  /// See [DbCashuMintInfo.urls].
+  static final urls = obx.QueryStringVectorProperty<DbCashuMintInfo>(
+      _entities[10].properties[8]);
+
+  /// See [DbCashuMintInfo.time].
+  static final time =
+      obx.QueryIntegerProperty<DbCashuMintInfo>(_entities[10].properties[9]);
+
+  /// See [DbCashuMintInfo.tosUrl].
+  static final tosUrl =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[10]);
+
+  /// See [DbCashuMintInfo.nutsJson].
+  static final nutsJson =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[11]);
 }
