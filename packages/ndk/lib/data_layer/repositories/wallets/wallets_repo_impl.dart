@@ -57,7 +57,8 @@ class WalletsRepoImpl implements WalletsRepo {
     final useCase = await _getWalletUseCase(accountId);
     if (useCase is Cashu) {
       // transform to WalletBalance
-      yield* useCase.balances.map((balances) => balances.expand((b) {
+      yield* useCase.balances.map((balances) =>
+          balances.where((b) => b.mintUrl == accountId).expand((b) {
             return b.balances.entries.map((entry) => WalletBalance(
                   unit: entry.key,
                   amount: entry.value,

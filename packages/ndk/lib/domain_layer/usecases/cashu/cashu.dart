@@ -84,6 +84,12 @@ class Cashu {
     final distinctKeysetIds = allKeysets.map((keyset) => keyset.id).toSet();
 
     for (final keysetId in distinctKeysetIds) {
+      final mintUrl =
+          allKeysets.firstWhere((keyset) => keyset.id == keysetId).mintUrl;
+      if (!balances.containsKey(mintUrl)) {
+        balances[mintUrl] = {};
+      }
+
       final keysetProofs =
           allProofs.where((proof) => proof.keysetId == keysetId).toList();
 
@@ -96,14 +102,12 @@ class Cashu {
       );
 
       if (totalBalance > 0) {
-        balances[keysetId] = {unit: totalBalance};
+        balances[mintUrl]![unit] = totalBalance;
       }
     }
     final mintBalances = balances.entries
         .map((entry) => CashuMintBalance(
-              mintUrl: allKeysets
-                  .firstWhere((keyset) => keyset.id == entry.key)
-                  .mintUrl,
+              mintUrl: entry.key,
               balances: entry.value,
             ))
         .toList();
