@@ -11,4 +11,5 @@ abstract class WalletsRepo {
   Stream<List<WalletTransaction>> getPendingTransactionsStream(
       String accountId);
   Stream<List<WalletTransaction>> getRecentTransactionsStream(String accountId);
+  Stream<List<Wallet>> walletsUsecaseStream();
 }

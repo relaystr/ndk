@@ -385,7 +385,7 @@ class CashuRepoImpl implements CashuRepo {
       if (responseBody is! Map<String, dynamic>) {
         throw Exception('Invalid response format: $responseBody');
       }
-      return CashuMintInfo.fromJson(responseBody);
+      return CashuMintInfo.fromJson(responseBody, mintUrl: mintUrl);
     });
   }
 }

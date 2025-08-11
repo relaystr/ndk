@@ -57,39 +57,56 @@ class DbCashuMintInfo {
 
   factory DbCashuMintInfo.fromNdk(ndk_entities.CashuMintInfo ndkM) {
     final dbM = DbCashuMintInfo(
-        name: ndkM.name,
-        version: ndkM.version,
-        description: ndkM.description,
-        descriptionLong: ndkM.descriptionLong,
-        contactJson: jsonEncode(ndkM.contact),
-        motd: ndkM.motd,
-        iconUrl: ndkM.iconUrl,
-        urls: ndkM.urls,
-        time: ndkM.time,
-        tosUrl: ndkM.tosUrl,
-        nutsJson: jsonEncode(ndkM.nuts));
-
+      name: ndkM.name,
+      version: ndkM.version,
+      description: ndkM.description,
+      descriptionLong: ndkM.descriptionLong,
+      contactJson: jsonEncode(
+        ndkM.contact.map((c) => c.toJson()).toList(),
+      ),
+      motd: ndkM.motd,
+      iconUrl: ndkM.iconUrl,
+      urls: ndkM.urls,
+      time: ndkM.time,
+      tosUrl: ndkM.tosUrl,
+      nutsJson: jsonEncode(
+        ndkM.nuts.map((k, v) => MapEntry(k.toString(), v.toJson())),
+      ),
+    );
     return dbM;
   }
 
   ndk_entities.CashuMintInfo toNdk() {
+    final decodedContact = (jsonDecode(contactJson) as List<dynamic>)
+        .map((e) => ndk_entities.CashuMintContact.fromJson(
+              Map<String, dynamic>.from(e as Map),
+            ))
+        .toList();
+
+    final decodedNutsRaw = Map<String, dynamic>.from(
+      jsonDecode(nutsJson) as Map,
+    );
+    final decodedNuts = decodedNutsRaw.map(
+      (key, value) => MapEntry(
+        int.parse(key),
+        ndk_entities.CashuMintNut.fromJson(
+          Map<String, dynamic>.from(value as Map),
+        ),
+      ),
+    );
+
     final ndkM = ndk_entities.CashuMintInfo(
       name: name,
       version: version,
       description: description,
       descriptionLong: descriptionLong,
-      contact: (jsonDecode(contactJson) as List)
-          .map((e) => ndk_entities.CashuMintContact.fromJson(e))
-          .toList(),
+      contact: decodedContact,
       motd: motd,
       iconUrl: iconUrl,
       urls: urls,
       time: time,
       tosUrl: tosUrl,
-      nuts: (jsonDecode(nutsJson) as Map<String, dynamic>).map(
-        (key, value) =>
-            MapEntry(int.parse(key), ndk_entities.CashuMintNut.fromJson(value)),
-      ),
+      nuts: decodedNuts,
     );
 
     return ndkM;

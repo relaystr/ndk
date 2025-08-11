@@ -33,7 +33,28 @@ class CashuMintInfo {
     return urls.any((u) => u == url);
   }
 
-  factory CashuMintInfo.fromJson(Map<String, dynamic> json) {
+  Set<String> get supportedUnits {
+    final units = <String>{};
+    for (final nut in nuts.values) {
+      final all = <CashuMintPaymentMethod>[
+        if (nut.methods != null) ...nut.methods!,
+        if (nut.supportedMethods != null) ...nut.supportedMethods!,
+      ];
+      for (final pm in all) {
+        final u = pm.unit?.trim();
+        if (u != null && u.isNotEmpty) {
+          units.add(u.toLowerCase());
+        }
+      }
+    }
+    return units;
+  }
+
+  /// [mintUrl] is used when json['urls'] is not present \
+  factory CashuMintInfo.fromJson(
+    Map<String, dynamic> json, {
+    String? mintUrl,
+  }) {
     final nutsJson = (json['nuts'] as Map?) ?? {};
     final parsedNuts = <int, CashuMintNut>{};
     nutsJson.forEach((k, v) {
@@ -55,7 +76,7 @@ class CashuMintInfo {
           .toList(),
       motd: json['motd'] as String?,
       iconUrl: json['icon_url'] as String?,
-      urls: ((json['urls'] as List?) ?? const [])
+      urls: ((json['urls'] as List?) ?? [mintUrl])
           .map((e) => e.toString())
           .toList(),
       time: (json['time'] is num) ? (json['time'] as num).toInt() : null,
