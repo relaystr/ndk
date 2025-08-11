@@ -101,7 +101,9 @@ class Cashu {
     }
     final mintBalances = balances.entries
         .map((entry) => CashuMintBalance(
-              mintUrl: entry.key,
+              mintUrl: allKeysets
+                  .firstWhere((keyset) => keyset.id == entry.key)
+                  .mintUrl,
               balances: entry.value,
             ))
         .toList();
@@ -119,10 +121,11 @@ class Cashu {
   BehaviorSubject<List<CashuMintBalance>> get balances {
     if (_balanceSubject == null) {
       _balanceSubject = BehaviorSubject<List<CashuMintBalance>>.seeded([]);
+
       getBalances().then((balances) {
-        _balanceSubject = BehaviorSubject<List<CashuMintBalance>>.seeded(
-          balances,
-        );
+        _balanceSubject?.add(balances);
+      }).catchError((error) {
+        _balanceSubject?.addError(error);
       });
     }
 
@@ -191,7 +194,7 @@ class Cashu {
   }
 
   Future<List<CashuMintInfo>> _getMintInfosDb() async {
-    final mintInfos = await _cacheManagerCashu.getMintInfos();
+    final mintInfos = await _cacheManager.getMintInfos();
     if (mintInfos == null) {
       return [];
     }
@@ -202,7 +205,7 @@ class Cashu {
   /// if not, it will be added to the known mints \
   /// Returns true if mint is known, false otherwise
   Future<bool> _checkIfMintIsKnown(String mintUrl) async {
-    final mintInfos = await _cacheManagerCashu.getMintInfos(
+    final mintInfos = await _cacheManager.getMintInfos(
       mintUrls: [mintUrl],
     );
 
@@ -210,7 +213,7 @@ class Cashu {
       // fetch mint info from network
       final mintInfoNetwork = await _cashuRepo.getMintInfo(mintUrl: mintUrl);
 
-      await _cacheManagerCashu.saveMintInfo(mintInfo: mintInfoNetwork);
+      await _cacheManager.saveMintInfo(mintInfo: mintInfoNetwork);
       _knownMints.add(mintInfoNetwork);
       _knownMintsSubject?.add(_knownMints);
       return false;
