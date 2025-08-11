@@ -4,7 +4,6 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../entities/wallet/wallet_balance.dart';
 import '../../entities/wallet/wallet_transaction.dart';
-import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_operations_repo.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../entities/wallet/wallet.dart';
@@ -18,11 +17,16 @@ class Wallets {
 
   String? defaultWalletId;
 
+  StreamSubscription<List<Wallet>>? _walletsUsecaseSubscription;
+
   /// in memory storage
   final Set<Wallet> _wallets = {};
   final Map<String, List<WalletBalance>> _walletsBalances = {};
   final Map<String, List<WalletTransaction>> _walletsPendingTransactions = {};
   final Map<String, List<WalletTransaction>> _walletsRecentTransactions = {};
+
+  final BehaviorSubject<List<Wallet>> _walletsSubject =
+      BehaviorSubject<List<Wallet>>();
 
   /// combined streams for all wallets
   final BehaviorSubject<List<WalletBalance>> _combinedBalancesSubject =
@@ -70,6 +74,10 @@ class Wallets {
   Stream<List<WalletTransaction>> get combinedRecentTransactions =>
       _combinedRecentTransactionsSubject.stream;
 
+  /// stream of all wallets, \
+  /// usecases can add new wallets dynamically
+  Stream<List<Wallet>> get walletsStream => _walletsSubject.stream;
+
   Wallet? get defaultWallet {
     if (defaultWalletId == null) {
       return null;
@@ -84,6 +92,16 @@ class Wallets {
     for (final wallet in wallets) {
       await _addWalletToMemory(wallet);
     }
+
+    // listen to wallet updates from usecases
+    _walletsUsecaseSubscription =
+        _walletsRepository.walletsUsecaseStream().listen((wallets) {
+      for (final wallet in wallets) {
+        if (!_wallets.any((w) => w.id == wallet.id)) {
+          addWallet(wallet);
+        }
+      }
+    });
 
     _updateCombinedStreams();
   }
@@ -118,6 +136,7 @@ class Wallets {
   Future<void> _addWalletToMemory(Wallet wallet) async {
     // store wallet in memory
     _wallets.add(wallet);
+    _walletsSubject.add(_wallets.toList());
 
     // initialize empty data collections
     _walletsBalances[wallet.id] = [];
@@ -220,6 +239,8 @@ class Wallets {
   Future<void> dispose() async {
     final futures = <Future>[];
 
+    _walletsUsecaseSubscription?.cancel();
+
     // cancel all subscriptions
     for (final subs in _subscriptions.values) {
       for (final sub in subs) {
@@ -261,7 +282,11 @@ class Wallets {
    */
 
   /// todo: just as an example
-  Future<void> zap() {
+  Future<void> zap({
+    required String pubkey,
+    required int amount,
+    String? comment,
+  }) {
     return _walletsOperationsRepository.zap();
   }
 }

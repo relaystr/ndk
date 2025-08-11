@@ -71,6 +71,24 @@ class WalletsRepoImpl implements WalletsRepo {
     }
   }
 
+  /// get notified about possible new wallets \
+  /// this is used to update the UI when new wallets are implicitly added \
+  /// like when receiving something on a not yet existing wallet
+  @override
+  Stream<List<Wallet>> walletsUsecaseStream() {
+    return _cashuUseCase.knownMints.map((mints) {
+      return mints
+          .map((mint) => CashuWallet(
+                id: mint.urls.first,
+                mintUrl: mint.urls.first,
+                type: WalletType.CASHU,
+                name: mint.name ?? mint.urls.first,
+                supportedUnits: mint.supportedUnits,
+              ))
+          .toList();
+    });
+  }
+
   @override
   Stream<List<WalletTransaction>> getPendingTransactionsStream(
     String accountId,

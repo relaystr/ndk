@@ -41,6 +41,7 @@ export 'domain_layer/entities/cashu/cashu_mint_info.dart';
 export 'domain_layer/entities/wallet/wallet.dart';
 export 'domain_layer/entities/wallet/wallet_transaction.dart';
 export 'domain_layer/entities/wallet/wallet_type.dart';
+export 'domain_layer/entities/wallet/wallet_balance.dart';
 
 // testing
 export 'domain_layer/usecases/wallets/wallets.dart';
