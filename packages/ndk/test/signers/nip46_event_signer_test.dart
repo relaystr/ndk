@@ -123,6 +123,56 @@ void main() {
       bunkerSigner.dispose();
     });
 
+    test('loginWithBunkerUrl should set up account correctly', () async {
+      // Create bunker URL with mock relay's remote signer
+      final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
+          '?relay=${mockRelay.url}'
+          '&secret=bunker-url-test-secret';
+      
+      // Create bunkers and accounts instances
+      final bunkers = Bunkers(
+        requests: ndk.requests,
+        broadcast: ndk.broadcast,
+      );
+      
+      final accounts = Accounts();
+      
+      // Login with the bunker URL
+      final connection = await accounts.loginWithBunkerUrl(
+        bunkerUrl: bunkerUrl,
+        bunkers: bunkers,
+        authCallback: (authUrl) {
+          // In a real app, this would open the auth URL
+        },
+      );
+      
+      // Verify connection was established
+      expect(connection, isNotNull);
+      expect(connection!.remotePubkey, equals(MockRelay.remoteSignerPublicKey));
+      expect(connection.relays, contains(mockRelay.url));
+      
+      // Verify the account was set up correctly
+      expect(accounts.isLoggedIn, isTrue);
+      expect(accounts.getPublicKey(), equals(MockRelay.remoteSignerPublicKey));
+      
+      // Test signing an event through the accounts system
+      final testEvent = Nip01Event(
+        pubKey: accounts.getPublicKey()!,
+        kind: 1,
+        tags: [],
+        content: 'Test event via loginWithBunkerUrl',
+      );
+      
+      await accounts.sign(testEvent);
+      
+      expect(testEvent.id, isNotNull);
+      expect(testEvent.sig, isNotNull);
+      
+      // Cleanup
+      accounts.logout();
+      expect(accounts.isLoggedIn, isFalse);
+    });
+
     test('loginWithBunkerConnection should set up account correctly', () async {
       // Create a bunker connection directly
       final bunkerConnection = BunkerConnection(
