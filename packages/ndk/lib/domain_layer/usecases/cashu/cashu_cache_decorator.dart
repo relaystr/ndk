@@ -19,11 +19,11 @@ class CashuCacheDecorator implements CacheManager {
 
   @override
   Future<void> saveProofs({
-    required List<CashuProof> tokens,
+    required List<CashuProof> proofs,
     required String mintUrl,
   }) async {
     await _mutex.synchronized(() async {
-      await _delegate.saveProofs(tokens: tokens, mintUrl: mintUrl);
+      await _delegate.saveProofs(proofs: proofs, mintUrl: mintUrl);
     });
   }
 
@@ -41,9 +41,14 @@ class CashuCacheDecorator implements CacheManager {
   Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
   }) async {
     return await _mutex.synchronized(() async {
-      return await _delegate.getProofs(mintUrl: mintUrl, keysetId: keysetId);
+      return await _delegate.getProofs(
+        mintUrl: mintUrl,
+        keysetId: keysetId,
+        state: state,
+      );
     });
   }
 
@@ -108,7 +113,7 @@ class CashuCacheDecorator implements CacheManager {
   }) async {
     await runInTransaction(() async {
       await _delegate.removeProofs(proofs: proofsToRemove, mintUrl: mintUrl);
-      await _delegate.saveProofs(tokens: tokensToSave, mintUrl: mintUrl);
+      await _delegate.saveProofs(proofs: tokensToSave, mintUrl: mintUrl);
     });
   }
 }

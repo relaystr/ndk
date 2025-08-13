@@ -331,14 +331,21 @@ class MemCacheManager implements CacheManager {
   Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
   }) {
     if (mintUrl == null) {
-      return Future.value(cashuProofs.values.expand((e) => e).toList());
+      return Future.value(
+        cashuProofs.values
+            .expand((e) => e)
+            .where((proof) => proof.state == state)
+            .toList(),
+      );
     }
     if (cashuProofs.containsKey(mintUrl)) {
       if (keysetId != null) {
         return Future.value(cashuProofs[mintUrl]!
-            .where((proof) => proof.keysetId == keysetId)
+            .where(
+                (proof) => proof.keysetId == keysetId && proof.state == state)
             .toList());
       } else {
         return Future.value(cashuProofs[mintUrl]?.toList() ?? []);
@@ -350,13 +357,13 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveProofs({
-    required List<CashuProof> tokens,
+    required List<CashuProof> proofs,
     required String mintUrl,
   }) {
     if (cashuProofs.containsKey(mintUrl)) {
-      cashuProofs[mintUrl]!.addAll(tokens);
+      cashuProofs[mintUrl]!.addAll(proofs);
     } else {
-      cashuProofs[mintUrl] = Set<CashuProof>.from(tokens);
+      cashuProofs[mintUrl] = Set<CashuProof>.from(proofs);
     }
     return Future.value();
   }

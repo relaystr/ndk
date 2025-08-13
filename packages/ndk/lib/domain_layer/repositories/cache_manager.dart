@@ -117,13 +117,14 @@ abstract class CacheManager {
   });
 
   Future<void> saveProofs({
-    required List<CashuProof> tokens,
+    required List<CashuProof> proofs,
     required String mintUrl,
   });
 
   Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
   });
 
   Future<void> removeProofs({

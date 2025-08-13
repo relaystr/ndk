@@ -6,4 +6,5 @@ class CashuConfig {
       'Secp256k1_HashToCurve_Cashu_';
 
   static const Duration FUNDING_CHECK_INTERVAL = Duration(seconds: 2);
+  static const Duration SPEND_CHECK_INTERVAL = Duration(seconds: 5);
 }

@@ -17,11 +17,15 @@ class DbWalletCashuProof {
   @Property()
   String unblindedSig;
 
+  @Property()
+  String state;
+
   DbWalletCashuProof({
     required this.keysetId,
     required this.amount,
     required this.secret,
     required this.unblindedSig,
+    required this.state,
   });
 
   factory DbWalletCashuProof.fromNdk(ndk_entities.CashuProof ndkM) {
@@ -30,6 +34,7 @@ class DbWalletCashuProof {
       amount: ndkM.amount,
       secret: ndkM.secret,
       unblindedSig: ndkM.unblindedSig,
+      state: ndkM.state.toString(),
     );
 
     return dbM;
@@ -41,6 +46,7 @@ class DbWalletCashuProof {
       amount: amount,
       secret: secret,
       unblindedSig: unblindedSig,
+      state: ndk_entities.CashuProofState.fromValue(state),
     );
 
     return ndkM;

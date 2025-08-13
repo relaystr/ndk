@@ -2,6 +2,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../../config/cashu_config.dart';
 import '../../../shared/logger/logger.dart';
+import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
@@ -267,7 +268,7 @@ class Cashu {
       state: WalletTransactionState.draft,
       initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       qoute: quote,
-      usedKeyset: keyset,
+      usedKeysets: [keyset],
       method: method,
     );
 
@@ -291,8 +292,8 @@ class Cashu {
     if (draftTransaction.method == null) {
       throw Exception("Method is not specified in the transaction");
     }
-    if (draftTransaction.usedKeyset == null) {
-      throw Exception("Used keyset is not specified in the transaction");
+    if (draftTransaction.usedKeysets == null) {
+      throw Exception("Used keysets is not specified in the transaction");
     }
     final quote = draftTransaction.qoute!;
     final mintUrl = draftTransaction.mintUrl;
@@ -340,7 +341,7 @@ class Cashu {
 
     List<int> splittedAmounts = CashuTools.splitAmount(quote.amount);
     final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
-      keysetId: draftTransaction.usedKeyset!.id,
+      keysetId: draftTransaction.usedKeysets!.first.id,
       amounts: splittedAmounts,
     );
 
@@ -375,7 +376,7 @@ class Cashu {
     final unblindedTokens = CashuBdhke.unblindSignatures(
       mintSignatures: mintResponse,
       blindedMessages: blindedMessagesOutputs,
-      mintPublicKeys: draftTransaction.usedKeyset!,
+      mintPublicKeys: draftTransaction.usedKeysets!.first,
     );
     if (unblindedTokens.isEmpty) {
       final failedTransaction = pendingTransaction.copyWith(
@@ -389,7 +390,7 @@ class Cashu {
       throw Exception('Unblinding failed, no tokens returned');
     }
     await _cacheManagerCashu.saveProofs(
-      tokens: unblindedTokens,
+      proofs: unblindedTokens,
       mintUrl: mintUrl,
     );
 
@@ -499,7 +500,7 @@ class Cashu {
       throw Exception('Unblinding failed, no tokens returned');
     }
     await _cacheManager.saveProofs(
-      tokens: unblindedTokens,
+      proofs: unblindedTokens,
       mintUrl: mintUrl,
     );
 
@@ -622,11 +623,210 @@ class Cashu {
       );
 
       await _cacheManager.saveProofs(
-        tokens: changeUnblinded,
+        proofs: changeUnblinded,
         mintUrl: mintUrl,
       );
     }
     return meltResult;
+  }
+
+  Future<List<CashuProof>> initiateSpend({
+    required String mintUrl,
+    required int amount,
+    required String unit,
+  }) async {
+    if (amount <= 0) {
+      throw Exception('Amount must be greater than zero');
+    }
+
+    final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+    if (keysets.isEmpty) {
+      throw Exception('No keysets found for mint: $mintUrl');
+    }
+
+    final keysetsForUnit = CashuTools.filterKeysetsByUnit(
+      keysets: keysets,
+      unit: unit,
+    );
+
+    late final ProofSelectionResult selectionResult;
+
+    await _cacheManagerCashu.runInTransaction(
+      () async {
+        // fetch proofs for the mint
+        final proofs = await _cacheManager.getProofs(mintUrl: mintUrl);
+        if (proofs.isEmpty) {
+          throw Exception('No proofs found for mint: $mintUrl');
+        }
+
+        // select proofs for spending
+        selectionResult = CashuProofSelect.selectProofsForSpending(
+          proofs: proofs,
+          targetAmount: amount,
+          keysets: keysetsForUnit,
+        );
+
+        if (selectionResult.selectedProofs.isEmpty) {
+          throw Exception('Not enough funds to spend the requested amount');
+        }
+
+        Logger.log.d(
+            'Selected ${selectionResult.selectedProofs.length} proofs for spending, total: ${selectionResult.totalSelected} $unit');
+
+        // mark proofs as pending
+        _changeProofState(
+          proofs: selectionResult.selectedProofs,
+          state: CashuProofState.pending,
+        );
+
+        await _cacheManager.saveProofs(
+          proofs: selectionResult.selectedProofs,
+          mintUrl: mintUrl,
+        );
+      },
+    );
+
+    final transactionId = "spend-${Helpers.getRandomString(5)}";
+
+    CashuWalletTransaction pendingTransaction = CashuWalletTransaction(
+      id: transactionId,
+      mintUrl: mintUrl,
+      walletId: mintUrl,
+      changeAmount: -1 * amount,
+      unit: unit,
+      walletType: WalletType.CASHU,
+      state: WalletTransactionState.pending,
+      initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      usedKeysets: keysetsForUnit,
+    );
+    // add to pending transactions
+
+    _addPendingTransaction(pendingTransaction);
+    Logger.log.d(
+        'Initiated spend for $amount $unit from mint $mintUrl, using ${selectionResult.selectedProofs.length} proofs');
+
+    if (selectionResult.needsSplit) {
+      Logger.log.d(
+          'Need to split ${selectionResult.splitAmount} $unit from ${selectionResult.totalSelected} total');
+
+      final SplitResult splitResult;
+      try {
+        // split to get exact change
+        splitResult = await _cashuWalletProofSelect.performSplit(
+          mint: mintUrl,
+          proofsToSplit: selectionResult.selectedProofs,
+          targetAmount: amount,
+          changeAmount: selectionResult.splitAmount,
+          keysets: keysetsForUnit,
+        );
+      } catch (e) {
+        _changeProofState(
+          proofs: selectionResult.selectedProofs,
+          state: CashuProofState.unspend,
+        );
+
+        // update proofs so they can be used again
+        await _cacheManagerCashu.saveProofs(
+          proofs: selectionResult.selectedProofs,
+          mintUrl: mintUrl,
+        );
+
+        _removePendingTransaction(pendingTransaction);
+        // mark transaction as failed
+        final completedTransaction = pendingTransaction.copyWith(
+          state: WalletTransactionState.failed,
+          completionMsg: 'Failed to swap proofs to get exact change: $e',
+        );
+        await _addAndSaveLatestTransaction(completedTransaction);
+
+        Logger.log.e('Error during spend initiation: $e');
+        throw Exception('Spend initiation failed: $e');
+      }
+
+      /// mark selected proofs as spend
+      _changeProofState(
+        proofs: selectionResult.selectedProofs,
+        state: CashuProofState.spend,
+      );
+
+      /// update proofs in cache
+      await _cacheManagerCashu.saveProofs(
+        proofs: selectionResult.selectedProofs,
+        mintUrl: mintUrl,
+      );
+      // save change proofs
+      await _cacheManagerCashu.saveProofs(
+        proofs: splitResult.changeProofs,
+        mintUrl: mintUrl,
+      );
+
+      pendingTransaction = pendingTransaction.copyWith(
+        proofPubKeys: splitResult.exactProofs.map((e) => e.Y).toList(),
+      );
+      _addPendingTransaction(pendingTransaction);
+
+      await _updateBalances();
+
+      _checkSpendingState(
+        transaction: pendingTransaction,
+      );
+
+      return splitResult.exactProofs;
+    } else {
+      Logger.log.d('No split needed, using selected proofs directly');
+      _changeProofState(
+        proofs: selectionResult.selectedProofs,
+        state: CashuProofState.spend,
+      );
+      await _cacheManagerCashu.saveProofs(
+        proofs: selectionResult.selectedProofs,
+        mintUrl: mintUrl,
+      );
+      pendingTransaction = pendingTransaction.copyWith(
+        proofPubKeys: selectionResult.selectedProofs.map((e) => e.Y).toList(),
+      );
+      _addPendingTransaction(pendingTransaction);
+
+      await _updateBalances();
+
+      _checkSpendingState(
+        transaction: pendingTransaction,
+      );
+
+      return selectionResult.selectedProofs;
+    }
+  }
+
+  /// todo: restore pending transaction from cache
+  /// todo: recover funds
+  void _checkSpendingState({
+    required CashuWalletTransaction transaction,
+  }) async {
+    if (transaction.proofPubKeys == null || transaction.proofPubKeys!.isEmpty) {
+      throw Exception('No proof public keys provided for checking state');
+    }
+
+    while (true) {
+      final checkResult = await _cashuRepo.checkTokenState(
+        proofPubkeys: transaction.proofPubKeys!,
+        mintUrl: transaction.mintUrl,
+      );
+
+      /// check that all proofs are spent
+      if (checkResult.every((e) => e.state == CashuProofState.spend)) {
+        Logger.log.d('All proofs are spent for transaction ${transaction.id}');
+        final completedTransaction = transaction.copyWith(
+          state: WalletTransactionState.completed,
+          transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        );
+        await _addAndSaveLatestTransaction(completedTransaction);
+        _removePendingTransaction(transaction);
+        return;
+      }
+
+      // retry after a delay
+      await Future.delayed(CashuConfig.SPEND_CHECK_INTERVAL);
+    }
   }
 
   /// send token to user
@@ -680,7 +880,7 @@ class Cashu {
       );
       // save change proofs
       await _cacheManager.saveProofs(
-        tokens: splitResult.changeProofs,
+        proofs: splitResult.changeProofs,
         mintUrl: mintUrl,
       );
 
@@ -782,5 +982,36 @@ class Cashu {
       unit: unit,
     );
     return cashuToken.toV4TokenString();
+  }
+
+  void _addPendingTransaction(
+    CashuWalletTransaction transaction,
+  ) {
+    _pendingTransactions.add(transaction);
+    _pendingTransactionsSubject.add(_pendingTransactions.toList());
+  }
+
+  void _removePendingTransaction(
+    CashuWalletTransaction transaction,
+  ) {
+    _pendingTransactions.remove(transaction);
+    _pendingTransactionsSubject.add(_pendingTransactions.toList());
+  }
+
+  Future<void> _addAndSaveLatestTransaction(
+    CashuWalletTransaction transaction,
+  ) async {
+    _latestTransactions.add(transaction);
+    _latestTransactionsSubject?.add(_latestTransactions);
+    await _cacheManagerCashu.saveTransactions(transactions: [transaction]);
+  }
+}
+
+void _changeProofState({
+  required List<CashuProof> proofs,
+  required CashuProofState state,
+}) {
+  for (final proof in proofs) {
+    proof.state = state;
   }
 }

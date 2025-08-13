@@ -389,7 +389,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(8, 7203634548589534122),
       name: 'DbWalletCashuProof',
-      lastPropertyId: const obx_int.IdUid(5, 6294656987537494684),
+      lastPropertyId: const obx_int.IdUid(6, 6868293576511935265),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -415,6 +415,11 @@ final _entities = <obx_int.ModelEntity>[
         obx_int.ModelProperty(
             id: const obx_int.IdUid(5, 6294656987537494684),
             name: 'unblindedSig',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 6868293576511935265),
+            name: 'state',
             type: 9,
             flags: 0)
       ],
@@ -1101,12 +1106,14 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final keysetIdOffset = fbb.writeString(object.keysetId);
           final secretOffset = fbb.writeString(object.secret);
           final unblindedSigOffset = fbb.writeString(object.unblindedSig);
-          fbb.startTable(6);
+          final stateOffset = fbb.writeString(object.state);
+          fbb.startTable(7);
           fbb.addInt64(0, object.dbId);
           fbb.addOffset(1, keysetIdOffset);
           fbb.addInt64(2, object.amount);
           fbb.addOffset(3, secretOffset);
           fbb.addOffset(4, unblindedSigOffset);
+          fbb.addOffset(5, stateOffset);
           fbb.finish(fbb.endTable());
           return object.dbId;
         },
@@ -1122,11 +1129,14 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final unblindedSigParam =
               const fb.StringReader(asciiOptimization: true)
                   .vTableGet(buffer, rootOffset, 12, '');
+          final stateParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 14, '');
           final object = DbWalletCashuProof(
               keysetId: keysetIdParam,
               amount: amountParam,
               secret: secretParam,
-              unblindedSig: unblindedSigParam)
+              unblindedSig: unblindedSigParam,
+              state: stateParam)
             ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
@@ -1631,6 +1641,10 @@ class DbWalletCashuProof_ {
   /// See [DbWalletCashuProof.unblindedSig].
   static final unblindedSig =
       obx.QueryStringProperty<DbWalletCashuProof>(_entities[7].properties[4]);
+
+  /// See [DbWalletCashuProof.state].
+  static final state =
+      obx.QueryStringProperty<DbWalletCashuProof>(_entities[7].properties[5]);
 }
 
 /// [DbWallet] entity fields to define ObjectBox queries.
