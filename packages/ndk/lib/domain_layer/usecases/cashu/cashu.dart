@@ -713,6 +713,9 @@ class Cashu {
     Logger.log.d(
         'Initiated spend for $amount $unit from mint $mintUrl, using ${selectionResult.selectedProofs.length} proofs');
 
+    final List<CashuProof> proofsToReturn;
+
+    // split so we get exact change
     if (selectionResult.needsSplit) {
       Logger.log.d(
           'Need to split ${selectionResult.splitAmount} $unit from ${selectionResult.totalSelected} total');
@@ -751,62 +754,47 @@ class Cashu {
         throw Exception('Spend initiation failed: $e');
       }
 
-      /// mark selected proofs as spend
-      _changeProofState(
-        proofs: selectionResult.selectedProofs,
-        state: CashuProofState.spend,
-      );
-
-      /// update proofs in cache
-      await _cacheManagerCashu.saveProofs(
-        proofs: selectionResult.selectedProofs,
-        mintUrl: mintUrl,
-      );
       // save change proofs
       await _cacheManagerCashu.saveProofs(
         proofs: splitResult.changeProofs,
         mintUrl: mintUrl,
       );
 
-      pendingTransaction = pendingTransaction.copyWith(
-        proofPubKeys: splitResult.exactProofs.map((e) => e.Y).toList(),
-      );
-      _addPendingTransaction(pendingTransaction);
-
-      await _updateBalances();
-
-      _checkSpendingState(
-        transaction: pendingTransaction,
-      );
-
-      return splitResult.exactProofs;
+      proofsToReturn = splitResult.exactProofs;
     } else {
+      proofsToReturn = selectionResult.selectedProofs;
       Logger.log.d('No split needed, using selected proofs directly');
-      _changeProofState(
-        proofs: selectionResult.selectedProofs,
-        state: CashuProofState.spend,
-      );
-      await _cacheManagerCashu.saveProofs(
-        proofs: selectionResult.selectedProofs,
-        mintUrl: mintUrl,
-      );
-      pendingTransaction = pendingTransaction.copyWith(
-        proofPubKeys: selectionResult.selectedProofs.map((e) => e.Y).toList(),
-      );
-      _addPendingTransaction(pendingTransaction);
-
-      await _updateBalances();
-
-      _checkSpendingState(
-        transaction: pendingTransaction,
-      );
-
-      return selectionResult.selectedProofs;
     }
+
+    /// mark proofs as spent
+    _changeProofState(
+      proofs: selectionResult.selectedProofs,
+      state: CashuProofState.spend,
+    );
+
+    /// update proofs in cache
+    await _cacheManagerCashu.saveProofs(
+      proofs: selectionResult.selectedProofs,
+      mintUrl: mintUrl,
+    );
+
+    pendingTransaction = pendingTransaction.copyWith(
+      proofPubKeys: proofsToReturn.map((e) => e.Y).toList(),
+    );
+    _addPendingTransaction(pendingTransaction);
+
+    await _updateBalances();
+
+    _checkSpendingState(
+      transaction: pendingTransaction,
+    );
+
+    return proofsToReturn;
   }
 
   /// todo: restore pending transaction from cache
   /// todo: recover funds
+  /// todo: timeout
   void _checkSpendingState({
     required CashuWalletTransaction transaction,
   }) async {
