@@ -654,14 +654,22 @@ class Cashu {
     await _cacheManagerCashu.runInTransaction(
       () async {
         // fetch proofs for the mint
-        final proofs = await _cacheManager.getProofs(mintUrl: mintUrl);
-        if (proofs.isEmpty) {
-          throw Exception('No proofs found for mint: $mintUrl');
+        final allProofs = await _cacheManager.getProofs(
+          mintUrl: mintUrl,
+        );
+
+        final proofsForUnit = CashuTools.filterProofsByUnit(
+          proofs: allProofs,
+          unit: unit,
+          keysets: keysets,
+        );
+        if (proofsForUnit.isEmpty) {
+          throw Exception('No proofs found for mint: $mintUrl and unit: $unit');
         }
 
         // select proofs for spending
         selectionResult = CashuProofSelect.selectProofsForSpending(
-          proofs: proofs,
+          proofs: proofsForUnit,
           targetAmount: amount,
           keysets: keysetsForUnit,
         );
