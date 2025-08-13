@@ -594,6 +594,7 @@ class DbObjectBox implements CacheManager {
   Future<List<CashuProof>> getProofs({
     String? mintUrl,
     String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
   }) async {
     /// returns all proofs if no filters are applied
     await dbRdy;
@@ -601,12 +602,16 @@ class DbObjectBox implements CacheManager {
     final proofBox = _objectBox.store.box<DbWalletCashuProof>();
 
     // Build conditions
-    Condition<DbWalletCashuProof>? condition;
+    Condition<DbWalletCashuProof> condition;
+
+    /// filter spend state
+
+    condition = DbWalletCashuProof_.state.equals(state.toString());
 
     /// specify keysetId
     if (keysetId != null && keysetId.isNotEmpty) {
-      condition =
-          DbWalletCashuProof_.keysetId.contains(keysetId, caseSensitive: false);
+      final keysetCondition = DbWalletCashuProof_.keysetId.equals(keysetId);
+      condition = condition.and(keysetCondition);
     }
 
     if (mintUrl != null && mintUrl.isNotEmpty) {
@@ -617,9 +622,8 @@ class DbObjectBox implements CacheManager {
       if (keysets.isNotEmpty) {
         final keysetIds = keysets.map((k) => k.id).toList();
         final mintUrlCondition = DbWalletCashuProof_.keysetId.oneOf(keysetIds);
-        condition = (condition == null)
-            ? mintUrlCondition
-            : condition.and(mintUrlCondition);
+
+        condition = condition.and(mintUrlCondition);
       } else {
         // If no keysets found for the mintUrl, return empty list
         return [];
@@ -627,11 +631,8 @@ class DbObjectBox implements CacheManager {
     }
 
     QueryBuilder<DbWalletCashuProof> queryBuilder;
-    if (condition != null) {
-      queryBuilder = proofBox.query(condition);
-    } else {
-      queryBuilder = proofBox.query();
-    }
+
+    queryBuilder = proofBox.query(condition);
 
     // Apply sorting
     queryBuilder.order(DbWalletCashuProof_.amount, flags: Order.descending);
@@ -674,17 +675,38 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveProofs({
-    required List<CashuProof> tokens,
+    required List<CashuProof> proofs,
     required String mintUrl,
   }) async {
     await dbRdy;
 
-    final proofBox = _objectBox.store.box<DbWalletCashuProof>();
+    /// upsert logic:
 
-    await proofBox.putMany(
-      tokens.map((t) => DbWalletCashuProof.fromNdk(t)).toList(),
-    );
-    return Future.value();
+    final store = _objectBox.store;
+    store.runInTransaction(TxMode.write, () {
+      final box = store.box<DbWalletCashuProof>();
+
+      final dbTokens =
+          proofs.map((t) => DbWalletCashuProof.fromNdk(t)).toList();
+
+      // find existing proofs by secret
+      final secretsToCheck = dbTokens.map((t) => t.secret).toList();
+      final query =
+          box.query(DbWalletCashuProof_.secret.oneOf(secretsToCheck)).build();
+
+      try {
+        final existing = query.find();
+
+        if (existing.isNotEmpty) {
+          box.removeMany(existing.map((t) => t.dbId).toList());
+        }
+
+        // insert
+        box.putMany(dbTokens);
+      } finally {
+        query.close();
+      }
+    });
   }
 
   @override

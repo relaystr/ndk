@@ -48,6 +48,8 @@ abstract class WalletTransaction {
     String? completionMsg,
     int? transactionDate,
     int? initiatedDate,
+    String? token,
+    List<String>? proofPubKeys,
   }) {
     switch (walletType) {
       case WalletType.CASHU:
@@ -67,10 +69,13 @@ abstract class WalletTransaction {
           qoute: metadata['qoute'] != null
               ? CashuQuote.fromJson(metadata['qoute'] as Map<String, dynamic>)
               : null,
-          usedKeyset: metadata['usedKeyset'] != null
-              ? CahsuKeyset.fromJson(
-                  metadata['usedKeyset'] as Map<String, dynamic>)
+          usedKeysets: metadata['usedKeyset'] != null
+              ? (metadata['usedKeyset'] as List<dynamic>)
+                  .map((k) => CahsuKeyset.fromJson(k as Map<String, dynamic>))
+                  .toList()
               : null,
+          token: token,
+          proofPubKeys: proofPubKeys,
         );
       case WalletType.NWC:
         return NwcWalletTransaction(
@@ -94,7 +99,11 @@ class CashuWalletTransaction extends WalletTransaction {
   String? note;
   String? method;
   CashuQuote? qoute;
-  CahsuKeyset? usedKeyset;
+  List<CahsuKeyset>? usedKeysets;
+
+  String? token;
+
+  List<String>? proofPubKeys;
 
   CashuWalletTransaction({
     required super.id,
@@ -105,12 +114,14 @@ class CashuWalletTransaction extends WalletTransaction {
     required super.state,
     required this.mintUrl,
     super.completionMsg,
+    super.transactionDate,
+    super.initiatedDate,
     this.note,
     this.method,
     this.qoute,
-    this.usedKeyset,
-    super.transactionDate,
-    super.initiatedDate,
+    this.usedKeysets,
+    this.token,
+    this.proofPubKeys,
     Map<String, dynamic>? metadata,
   }) : super(
           metadata: metadata ??
@@ -119,7 +130,9 @@ class CashuWalletTransaction extends WalletTransaction {
                 'note': note,
                 'method': method,
                 'qoute': qoute?.toJson(),
-                'usedKeyset': usedKeyset?.toJson(),
+                'usedKeyset': usedKeysets?.map((k) => k.toJson()).toList(),
+                'token': token,
+                'proofPubKeys': proofPubKeys,
               },
         );
 
@@ -144,10 +157,12 @@ class CashuWalletTransaction extends WalletTransaction {
     String? note,
     String? method,
     CashuQuote? qoute,
-    CahsuKeyset? usedKeyset,
+    List<CahsuKeyset>? usedKeysets,
     int? transactionDate,
     int? initiatedDate,
     String? completionMsg,
+    String? token,
+    List<String>? proofPubKeys,
   }) {
     return CashuWalletTransaction(
       id: id ?? this.id,
@@ -160,10 +175,12 @@ class CashuWalletTransaction extends WalletTransaction {
       note: note ?? this.note,
       method: method ?? this.method,
       qoute: qoute ?? this.qoute,
-      usedKeyset: usedKeyset ?? this.usedKeyset,
+      usedKeysets: usedKeysets ?? this.usedKeysets,
       transactionDate: transactionDate ?? this.transactionDate,
       initiatedDate: initiatedDate ?? this.initiatedDate,
       completionMsg: completionMsg ?? this.completionMsg,
+      token: token ?? this.token,
+      proofPubKeys: proofPubKeys ?? this.proofPubKeys,
     );
   }
 }

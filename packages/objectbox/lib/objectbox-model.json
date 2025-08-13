@@ -363,7 +363,7 @@
     },
     {
       "id": "8:7203634548589534122",
-      "lastPropertyId": "5:6294656987537494684",
+      "lastPropertyId": "6:6868293576511935265",
       "name": "DbWalletCashuProof",
       "properties": [
         {
@@ -390,6 +390,11 @@
         {
           "id": "5:6294656987537494684",
           "name": "unblindedSig",
+          "type": 9
+        },
+        {
+          "id": "6:6868293576511935265",
+          "name": "state",
           "type": 9
         }
       ],

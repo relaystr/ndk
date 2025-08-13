@@ -8,6 +8,7 @@ import '../../../domain_layer/entities/cashu/cashu_mint_info.dart';
 import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/cashu/cashu_quote.dart';
 import '../../../domain_layer/entities/cashu/cashu_quote_melt.dart';
+import '../../../domain_layer/entities/cashu/cashu_token_state_response.dart';
 import '../../../domain_layer/repositories/cashu_repo.dart';
 import '../../../domain_layer/usecases/cashu/cashu_keypair.dart';
 import '../../../domain_layer/usecases/cashu/cashu_tools.dart';
@@ -387,5 +388,41 @@ class CashuRepoImpl implements CashuRepo {
       }
       return CashuMintInfo.fromJson(responseBody, mintUrl: mintUrl);
     });
+  }
+
+  @override
+  Future<List<CashuTokenStateResponse>> checkTokenState({
+    required List<String> proofPubkeys,
+    required String mintUrl,
+  }) async {
+    final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'checkstate');
+
+    final body = {
+      'Ys': proofPubkeys,
+    };
+    final response = await client.post(
+      url: Uri.parse(url),
+      body: jsonEncode(body),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error checking token state: ${response.statusCode}, ${response.body}',
+      );
+    }
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+    final List<dynamic> statesUnparsed = responseBody['states'];
+    if (statesUnparsed.isEmpty) {
+      throw Exception('No states returned from check state');
+    }
+
+    return statesUnparsed
+        .map((e) => CashuTokenStateResponse.fromServerMap(
+              e as Map<String, dynamic>,
+            ))
+        .toList();
   }
 }

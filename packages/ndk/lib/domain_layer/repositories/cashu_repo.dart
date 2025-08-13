@@ -6,6 +6,7 @@ import '../entities/cashu/cashu_mint_info.dart';
 import '../entities/cashu/cashu_proof.dart';
 import '../entities/cashu/cashu_quote.dart';
 import '../entities/cashu/cashu_quote_melt.dart';
+import '../entities/cashu/cashu_token_state_response.dart';
 import '../usecases/cashu/cashu_keypair.dart';
 
 abstract class CashuRepo {
@@ -82,6 +83,11 @@ abstract class CashuRepo {
   });
 
   Future<CashuMintInfo> getMintInfo({
+    required String mintUrl,
+  });
+
+  Future<List<CashuTokenStateResponse>> checkTokenState({
+    required List<String> proofPubkeys,
     required String mintUrl,
   });
 }
