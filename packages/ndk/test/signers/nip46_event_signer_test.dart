@@ -123,6 +123,53 @@ void main() {
       bunkerSigner.dispose();
     });
 
+    test('loginWithBunkerConnection should set up account correctly', () async {
+      // Create a bunker connection directly
+      final bunkerConnection = BunkerConnection(
+        privateKey: "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
+        remotePubkey: MockRelay.remoteSignerPublicKey,
+        relays: [mockRelay.url],
+      );
+      
+      // Create bunkers and accounts instances
+      final bunkers = Bunkers(
+        requests: ndk.requests,
+        broadcast: ndk.broadcast,
+      );
+      
+      final accounts = Accounts();
+      
+      // Login with the bunker connection
+      await accounts.loginWithBunkerConnection(
+        connection: bunkerConnection,
+        bunkers: bunkers,
+        authCallback: (authUrl) {
+          // In a real app, this would open the auth URL
+        },
+      );
+      
+      // Verify the account was set up correctly
+      expect(accounts.isLoggedIn, isTrue);
+      expect(accounts.getPublicKey(), equals(MockRelay.remoteSignerPublicKey));
+      
+      // Test signing an event through the accounts system
+      final testEvent = Nip01Event(
+        pubKey: accounts.getPublicKey()!,
+        kind: 1,
+        tags: [],
+        content: 'Test event via loginWithBunkerConnection',
+      );
+      
+      await accounts.sign(testEvent);
+      
+      expect(testEvent.id, isNotNull);
+      expect(testEvent.sig, isNotNull);
+      
+      // Cleanup
+      accounts.logout();
+      expect(accounts.isLoggedIn, isFalse);
+    });
+
     test('decrypt should request remote decryption', () async {
       // Create a local event signer to encrypt a test message
       final keyPair = Bip340.generatePrivateKey();
