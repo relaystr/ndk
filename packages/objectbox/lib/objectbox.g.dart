@@ -14,11 +14,16 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'data_layer/db/object_box/schema/db_cashu_keyset.dart';
+import 'data_layer/db/object_box/schema/db_cashu_mint_info.dart';
+import 'data_layer/db/object_box/schema/db_cashu_proof.dart';
 import 'data_layer/db/object_box/schema/db_contact_list.dart';
 import 'data_layer/db/object_box/schema/db_metadata.dart';
 import 'data_layer/db/object_box/schema/db_nip_01_event.dart';
 import 'data_layer/db/object_box/schema/db_nip_05.dart';
 import 'data_layer/db/object_box/schema/db_user_relay_list.dart';
+import 'data_layer/db/object_box/schema/db_wallet.dart';
+import 'data_layer/db/object_box/schema/db_wallet_transaction.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -331,6 +336,266 @@ final _entities = <obx_int.ModelEntity>[
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(7, 698131493043166579),
+      name: 'DbWalletCahsuKeyset',
+      lastPropertyId: const obx_int.IdUid(8, 7773840598494674606),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 7970259218906410302),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 7668438476871712459),
+            name: 'id',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 7282319240912033654),
+            name: 'mintUrl',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 3585001127367148469),
+            name: 'unit',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 6312611343850591444),
+            name: 'active',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 4301618904982221632),
+            name: 'inputFeePPK',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 890317222791666643),
+            name: 'mintKeyPairs',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(8, 7773840598494674606),
+            name: 'fetchedAt',
+            type: 6,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(8, 7203634548589534122),
+      name: 'DbWalletCashuProof',
+      lastPropertyId: const obx_int.IdUid(6, 6868293576511935265),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 4429724214335608001),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 1857417425121530563),
+            name: 'keysetId',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 5749621417965180854),
+            name: 'amount',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 4446254104193824225),
+            name: 'secret',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 6294656987537494684),
+            name: 'unblindedSig',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 6868293576511935265),
+            name: 'state',
+            type: 9,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(9, 4843976069028406780),
+      name: 'DbWallet',
+      lastPropertyId: const obx_int.IdUid(7, 4491916464072815310),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 2803460968575242300),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 5928177294242770624),
+            name: 'id',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 4931878169587094779),
+            name: 'type',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 5124323927135367950),
+            name: 'name',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 3582256459096368032),
+            name: 'supportedUnits',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 4491916464072815310),
+            name: 'metadataJsonString',
+            type: 9,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(10, 2707870737906176084),
+      name: 'DbWalletTransaction',
+      lastPropertyId: const obx_int.IdUid(11, 3092540118635965720),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 4964215471626448888),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 2268171515152137881),
+            name: 'id',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 3815553497512932992),
+            name: 'walletId',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 1284545487035067139),
+            name: 'changeAmount',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 8089333082593198860),
+            name: 'unit',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 8810607312851014784),
+            name: 'walletType',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 662120020381927996),
+            name: 'state',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(8, 7366719423178014878),
+            name: 'completionMsg',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(9, 6641644784457917076),
+            name: 'transactionDate',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(10, 2365111131666685128),
+            name: 'initiatedDate',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(11, 3092540118635965720),
+            name: 'metadataJsonString',
+            type: 9,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(11, 7685475375528365740),
+      name: 'DbCashuMintInfo',
+      lastPropertyId: const obx_int.IdUid(12, 5248840734946600657),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 3986862540339028259),
+            name: 'dbId',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 782681889938728815),
+            name: 'name',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 6446557892342141409),
+            name: 'version',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 5222801161447007866),
+            name: 'description',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 1315350861179276877),
+            name: 'descriptionLong',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 7239671510889020768),
+            name: 'contactJson',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 4128030923595712840),
+            name: 'motd',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(8, 5203040174417421240),
+            name: 'iconUrl',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(9, 3724773223411020767),
+            name: 'urls',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(10, 6472773197434133274),
+            name: 'time',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(11, 987809007158169655),
+            name: 'tosUrl',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(12, 5248840734946600657),
+            name: 'nutsJson',
+            type: 9,
+            flags: 0)
+      ],
+      relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[])
 ];
 
@@ -369,13 +634,13 @@ Future<obx.Store> openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(6, 263734506821907740),
+      lastEntityId: const obx_int.IdUid(11, 7685475375528365740),
       lastIndexId: const obx_int.IdUid(0, 0),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [],
       retiredIndexUids: const [],
-      retiredPropertyUids: const [4248118904091022656],
+      retiredPropertyUids: const [4248118904091022656, 693682162918032185],
       retiredRelationUids: const [],
       modelVersion: 5,
       modelVersionParserMinimum: 5,
@@ -771,6 +1036,328 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
+        }),
+    DbWalletCahsuKeyset: obx_int.EntityDefinition<DbWalletCahsuKeyset>(
+        model: _entities[6],
+        toOneRelations: (DbWalletCahsuKeyset object) => [],
+        toManyRelations: (DbWalletCahsuKeyset object) => {},
+        getId: (DbWalletCahsuKeyset object) => object.dbId,
+        setId: (DbWalletCahsuKeyset object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbWalletCahsuKeyset object, fb.Builder fbb) {
+          final idOffset = fbb.writeString(object.id);
+          final mintUrlOffset = fbb.writeString(object.mintUrl);
+          final unitOffset = fbb.writeString(object.unit);
+          final mintKeyPairsOffset = fbb.writeList(
+              object.mintKeyPairs.map(fbb.writeString).toList(growable: false));
+          fbb.startTable(9);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, idOffset);
+          fbb.addOffset(2, mintUrlOffset);
+          fbb.addOffset(3, unitOffset);
+          fbb.addBool(4, object.active);
+          fbb.addInt64(5, object.inputFeePPK);
+          fbb.addOffset(6, mintKeyPairsOffset);
+          fbb.addInt64(7, object.fetchedAt);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final idParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 6, '');
+          final mintUrlParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 8, '');
+          final unitParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 10, '');
+          final activeParam =
+              const fb.BoolReader().vTableGet(buffer, rootOffset, 12, false);
+          final inputFeePPKParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 14, 0);
+          final mintKeyPairsParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGet(buffer, rootOffset, 16, []);
+          final fetchedAtParam =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 18);
+          final object = DbWalletCahsuKeyset(
+              id: idParam,
+              mintUrl: mintUrlParam,
+              unit: unitParam,
+              active: activeParam,
+              inputFeePPK: inputFeePPKParam,
+              mintKeyPairs: mintKeyPairsParam,
+              fetchedAt: fetchedAtParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
+        }),
+    DbWalletCashuProof: obx_int.EntityDefinition<DbWalletCashuProof>(
+        model: _entities[7],
+        toOneRelations: (DbWalletCashuProof object) => [],
+        toManyRelations: (DbWalletCashuProof object) => {},
+        getId: (DbWalletCashuProof object) => object.dbId,
+        setId: (DbWalletCashuProof object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbWalletCashuProof object, fb.Builder fbb) {
+          final keysetIdOffset = fbb.writeString(object.keysetId);
+          final secretOffset = fbb.writeString(object.secret);
+          final unblindedSigOffset = fbb.writeString(object.unblindedSig);
+          final stateOffset = fbb.writeString(object.state);
+          fbb.startTable(7);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, keysetIdOffset);
+          fbb.addInt64(2, object.amount);
+          fbb.addOffset(3, secretOffset);
+          fbb.addOffset(4, unblindedSigOffset);
+          fbb.addOffset(5, stateOffset);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final keysetIdParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 6, '');
+          final amountParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0);
+          final secretParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 10, '');
+          final unblindedSigParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGet(buffer, rootOffset, 12, '');
+          final stateParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 14, '');
+          final object = DbWalletCashuProof(
+              keysetId: keysetIdParam,
+              amount: amountParam,
+              secret: secretParam,
+              unblindedSig: unblindedSigParam,
+              state: stateParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
+        }),
+    DbWallet: obx_int.EntityDefinition<DbWallet>(
+        model: _entities[8],
+        toOneRelations: (DbWallet object) => [],
+        toManyRelations: (DbWallet object) => {},
+        getId: (DbWallet object) => object.dbId,
+        setId: (DbWallet object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbWallet object, fb.Builder fbb) {
+          final idOffset = fbb.writeString(object.id);
+          final typeOffset = fbb.writeString(object.type);
+          final nameOffset = fbb.writeString(object.name);
+          final supportedUnitsOffset = fbb.writeList(object.supportedUnits
+              .map(fbb.writeString)
+              .toList(growable: false));
+          final metadataJsonStringOffset =
+              fbb.writeString(object.metadataJsonString);
+          fbb.startTable(8);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, idOffset);
+          fbb.addOffset(2, typeOffset);
+          fbb.addOffset(3, nameOffset);
+          fbb.addOffset(4, supportedUnitsOffset);
+          fbb.addOffset(6, metadataJsonStringOffset);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final idParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 6, '');
+          final typeParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 8, '');
+          final supportedUnitsParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGet(buffer, rootOffset, 12, []);
+          final nameParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 10, '');
+          final metadataJsonStringParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGet(buffer, rootOffset, 16, '');
+          final object = DbWallet(
+              id: idParam,
+              type: typeParam,
+              supportedUnits: supportedUnitsParam,
+              name: nameParam,
+              metadataJsonString: metadataJsonStringParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
+        }),
+    DbWalletTransaction: obx_int.EntityDefinition<DbWalletTransaction>(
+        model: _entities[9],
+        toOneRelations: (DbWalletTransaction object) => [],
+        toManyRelations: (DbWalletTransaction object) => {},
+        getId: (DbWalletTransaction object) => object.dbId,
+        setId: (DbWalletTransaction object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbWalletTransaction object, fb.Builder fbb) {
+          final idOffset = fbb.writeString(object.id);
+          final walletIdOffset = fbb.writeString(object.walletId);
+          final unitOffset = fbb.writeString(object.unit);
+          final walletTypeOffset = fbb.writeString(object.walletType);
+          final stateOffset = fbb.writeString(object.state);
+          final completionMsgOffset = object.completionMsg == null
+              ? null
+              : fbb.writeString(object.completionMsg!);
+          final metadataJsonStringOffset =
+              fbb.writeString(object.metadataJsonString);
+          fbb.startTable(12);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, idOffset);
+          fbb.addOffset(2, walletIdOffset);
+          fbb.addInt64(3, object.changeAmount);
+          fbb.addOffset(4, unitOffset);
+          fbb.addOffset(5, walletTypeOffset);
+          fbb.addOffset(6, stateOffset);
+          fbb.addOffset(7, completionMsgOffset);
+          fbb.addInt64(8, object.transactionDate);
+          fbb.addInt64(9, object.initiatedDate);
+          fbb.addOffset(10, metadataJsonStringOffset);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final idParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 6, '');
+          final walletIdParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 8, '');
+          final changeAmountParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0);
+          final unitParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 12, '');
+          final walletTypeParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 14, '');
+          final stateParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 16, '');
+          final completionMsgParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 18);
+          final transactionDateParam =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 20);
+          final initiatedDateParam =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 22);
+          final metadataJsonStringParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGet(buffer, rootOffset, 24, '');
+          final object = DbWalletTransaction(
+              id: idParam,
+              walletId: walletIdParam,
+              changeAmount: changeAmountParam,
+              unit: unitParam,
+              walletType: walletTypeParam,
+              state: stateParam,
+              completionMsg: completionMsgParam,
+              transactionDate: transactionDateParam,
+              initiatedDate: initiatedDateParam,
+              metadataJsonString: metadataJsonStringParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
+        }),
+    DbCashuMintInfo: obx_int.EntityDefinition<DbCashuMintInfo>(
+        model: _entities[10],
+        toOneRelations: (DbCashuMintInfo object) => [],
+        toManyRelations: (DbCashuMintInfo object) => {},
+        getId: (DbCashuMintInfo object) => object.dbId,
+        setId: (DbCashuMintInfo object, int id) {
+          object.dbId = id;
+        },
+        objectToFB: (DbCashuMintInfo object, fb.Builder fbb) {
+          final nameOffset =
+              object.name == null ? null : fbb.writeString(object.name!);
+          final versionOffset =
+              object.version == null ? null : fbb.writeString(object.version!);
+          final descriptionOffset = object.description == null
+              ? null
+              : fbb.writeString(object.description!);
+          final descriptionLongOffset = object.descriptionLong == null
+              ? null
+              : fbb.writeString(object.descriptionLong!);
+          final contactJsonOffset = fbb.writeString(object.contactJson);
+          final motdOffset =
+              object.motd == null ? null : fbb.writeString(object.motd!);
+          final iconUrlOffset =
+              object.iconUrl == null ? null : fbb.writeString(object.iconUrl!);
+          final urlsOffset = fbb.writeList(
+              object.urls.map(fbb.writeString).toList(growable: false));
+          final tosUrlOffset =
+              object.tosUrl == null ? null : fbb.writeString(object.tosUrl!);
+          final nutsJsonOffset = fbb.writeString(object.nutsJson);
+          fbb.startTable(13);
+          fbb.addInt64(0, object.dbId);
+          fbb.addOffset(1, nameOffset);
+          fbb.addOffset(2, versionOffset);
+          fbb.addOffset(3, descriptionOffset);
+          fbb.addOffset(4, descriptionLongOffset);
+          fbb.addOffset(5, contactJsonOffset);
+          fbb.addOffset(6, motdOffset);
+          fbb.addOffset(7, iconUrlOffset);
+          fbb.addOffset(8, urlsOffset);
+          fbb.addInt64(9, object.time);
+          fbb.addOffset(10, tosUrlOffset);
+          fbb.addOffset(11, nutsJsonOffset);
+          fbb.finish(fbb.endTable());
+          return object.dbId;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final nameParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 6);
+          final versionParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 8);
+          final descriptionParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 10);
+          final descriptionLongParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGetNullable(buffer, rootOffset, 12);
+          final contactJsonParam =
+              const fb.StringReader(asciiOptimization: true)
+                  .vTableGet(buffer, rootOffset, 14, '');
+          final motdParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 16);
+          final iconUrlParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 18);
+          final urlsParam = const fb.ListReader<String>(
+                  fb.StringReader(asciiOptimization: true),
+                  lazy: false)
+              .vTableGet(buffer, rootOffset, 20, []);
+          final timeParam =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 22);
+          final tosUrlParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGetNullable(buffer, rootOffset, 24);
+          final nutsJsonParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 26, '');
+          final object = DbCashuMintInfo(
+              name: nameParam,
+              version: versionParam,
+              description: descriptionParam,
+              descriptionLong: descriptionLongParam,
+              contactJson: contactJsonParam,
+              motd: motdParam,
+              iconUrl: iconUrlParam,
+              urls: urlsParam,
+              time: timeParam,
+              tosUrl: tosUrlParam,
+              nutsJson: nutsJsonParam)
+            ..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+          return object;
         })
   };
 
@@ -995,4 +1582,192 @@ class DbUserRelayList_ {
   /// See [DbUserRelayList.relaysJson].
   static final relaysJson =
       obx.QueryStringProperty<DbUserRelayList>(_entities[5].properties[4]);
+}
+
+/// [DbWalletCahsuKeyset] entity fields to define ObjectBox queries.
+class DbWalletCahsuKeyset_ {
+  /// See [DbWalletCahsuKeyset.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbWalletCahsuKeyset>(_entities[6].properties[0]);
+
+  /// See [DbWalletCahsuKeyset.id].
+  static final id =
+      obx.QueryStringProperty<DbWalletCahsuKeyset>(_entities[6].properties[1]);
+
+  /// See [DbWalletCahsuKeyset.mintUrl].
+  static final mintUrl =
+      obx.QueryStringProperty<DbWalletCahsuKeyset>(_entities[6].properties[2]);
+
+  /// See [DbWalletCahsuKeyset.unit].
+  static final unit =
+      obx.QueryStringProperty<DbWalletCahsuKeyset>(_entities[6].properties[3]);
+
+  /// See [DbWalletCahsuKeyset.active].
+  static final active =
+      obx.QueryBooleanProperty<DbWalletCahsuKeyset>(_entities[6].properties[4]);
+
+  /// See [DbWalletCahsuKeyset.inputFeePPK].
+  static final inputFeePPK =
+      obx.QueryIntegerProperty<DbWalletCahsuKeyset>(_entities[6].properties[5]);
+
+  /// See [DbWalletCahsuKeyset.mintKeyPairs].
+  static final mintKeyPairs =
+      obx.QueryStringVectorProperty<DbWalletCahsuKeyset>(
+          _entities[6].properties[6]);
+
+  /// See [DbWalletCahsuKeyset.fetchedAt].
+  static final fetchedAt =
+      obx.QueryIntegerProperty<DbWalletCahsuKeyset>(_entities[6].properties[7]);
+}
+
+/// [DbWalletCashuProof] entity fields to define ObjectBox queries.
+class DbWalletCashuProof_ {
+  /// See [DbWalletCashuProof.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbWalletCashuProof>(_entities[7].properties[0]);
+
+  /// See [DbWalletCashuProof.keysetId].
+  static final keysetId =
+      obx.QueryStringProperty<DbWalletCashuProof>(_entities[7].properties[1]);
+
+  /// See [DbWalletCashuProof.amount].
+  static final amount =
+      obx.QueryIntegerProperty<DbWalletCashuProof>(_entities[7].properties[2]);
+
+  /// See [DbWalletCashuProof.secret].
+  static final secret =
+      obx.QueryStringProperty<DbWalletCashuProof>(_entities[7].properties[3]);
+
+  /// See [DbWalletCashuProof.unblindedSig].
+  static final unblindedSig =
+      obx.QueryStringProperty<DbWalletCashuProof>(_entities[7].properties[4]);
+
+  /// See [DbWalletCashuProof.state].
+  static final state =
+      obx.QueryStringProperty<DbWalletCashuProof>(_entities[7].properties[5]);
+}
+
+/// [DbWallet] entity fields to define ObjectBox queries.
+class DbWallet_ {
+  /// See [DbWallet.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbWallet>(_entities[8].properties[0]);
+
+  /// See [DbWallet.id].
+  static final id =
+      obx.QueryStringProperty<DbWallet>(_entities[8].properties[1]);
+
+  /// See [DbWallet.type].
+  static final type =
+      obx.QueryStringProperty<DbWallet>(_entities[8].properties[2]);
+
+  /// See [DbWallet.name].
+  static final name =
+      obx.QueryStringProperty<DbWallet>(_entities[8].properties[3]);
+
+  /// See [DbWallet.supportedUnits].
+  static final supportedUnits =
+      obx.QueryStringVectorProperty<DbWallet>(_entities[8].properties[4]);
+
+  /// See [DbWallet.metadataJsonString].
+  static final metadataJsonString =
+      obx.QueryStringProperty<DbWallet>(_entities[8].properties[5]);
+}
+
+/// [DbWalletTransaction] entity fields to define ObjectBox queries.
+class DbWalletTransaction_ {
+  /// See [DbWalletTransaction.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbWalletTransaction>(_entities[9].properties[0]);
+
+  /// See [DbWalletTransaction.id].
+  static final id =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[1]);
+
+  /// See [DbWalletTransaction.walletId].
+  static final walletId =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[2]);
+
+  /// See [DbWalletTransaction.changeAmount].
+  static final changeAmount =
+      obx.QueryIntegerProperty<DbWalletTransaction>(_entities[9].properties[3]);
+
+  /// See [DbWalletTransaction.unit].
+  static final unit =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[4]);
+
+  /// See [DbWalletTransaction.walletType].
+  static final walletType =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[5]);
+
+  /// See [DbWalletTransaction.state].
+  static final state =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[6]);
+
+  /// See [DbWalletTransaction.completionMsg].
+  static final completionMsg =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[7]);
+
+  /// See [DbWalletTransaction.transactionDate].
+  static final transactionDate =
+      obx.QueryIntegerProperty<DbWalletTransaction>(_entities[9].properties[8]);
+
+  /// See [DbWalletTransaction.initiatedDate].
+  static final initiatedDate =
+      obx.QueryIntegerProperty<DbWalletTransaction>(_entities[9].properties[9]);
+
+  /// See [DbWalletTransaction.metadataJsonString].
+  static final metadataJsonString =
+      obx.QueryStringProperty<DbWalletTransaction>(_entities[9].properties[10]);
+}
+
+/// [DbCashuMintInfo] entity fields to define ObjectBox queries.
+class DbCashuMintInfo_ {
+  /// See [DbCashuMintInfo.dbId].
+  static final dbId =
+      obx.QueryIntegerProperty<DbCashuMintInfo>(_entities[10].properties[0]);
+
+  /// See [DbCashuMintInfo.name].
+  static final name =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[1]);
+
+  /// See [DbCashuMintInfo.version].
+  static final version =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[2]);
+
+  /// See [DbCashuMintInfo.description].
+  static final description =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[3]);
+
+  /// See [DbCashuMintInfo.descriptionLong].
+  static final descriptionLong =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[4]);
+
+  /// See [DbCashuMintInfo.contactJson].
+  static final contactJson =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[5]);
+
+  /// See [DbCashuMintInfo.motd].
+  static final motd =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[6]);
+
+  /// See [DbCashuMintInfo.iconUrl].
+  static final iconUrl =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[7]);
+
+  /// See [DbCashuMintInfo.urls].
+  static final urls = obx.QueryStringVectorProperty<DbCashuMintInfo>(
+      _entities[10].properties[8]);
+
+  /// See [DbCashuMintInfo.time].
+  static final time =
+      obx.QueryIntegerProperty<DbCashuMintInfo>(_entities[10].properties[9]);
+
+  /// See [DbCashuMintInfo.tosUrl].
+  static final tosUrl =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[10]);
+
+  /// See [DbCashuMintInfo.nutsJson].
+  static final nutsJson =
+      obx.QueryStringProperty<DbCashuMintInfo>(_entities[10].properties[11]);
 }
