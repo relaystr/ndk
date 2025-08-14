@@ -4,10 +4,14 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:bip340/bip340.dart';
+import 'package:ndk/domain_layer/usecases/bunkers/models/bunker_request.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip09/deletion.dart';
+import 'package:ndk/shared/nips/nip04/nip04.dart';
+import 'package:ndk/shared/nips/nip44/nip44.dart';
 
 class MockRelay {
   String name;
@@ -19,8 +23,19 @@ class MockRelay {
   Map<String, Nip01Event> _contactLists = {};
   Map<String, Nip01Event> _metadatas = {};
   final Set<Nip01Event> _storedEvents = {}; // Store received events
+  final Map<String, List<Filter>> _activeSubscriptions =
+      {}; // Track active subscriptions
   bool signEvents;
   bool requireAuthForRequests;
+
+  // NIP-46 Remote Signer Support
+  static const int kNip46Kind = BunkerRequest.kKind;
+
+  // Hardcoded remote signer keys
+  static const String _remoteSignerPrivateKey =
+      "e7158a4379e743889f8ea8cfcdf4bd904cdfde4ff8a1c545aad4590d8a3acccc";
+  static const String remoteSignerPublicKey =
+      "52f58988d7aaea17936581db7ff19074633557fad37f354323cea579b1025cef";
 
   static int _startPort = 4040;
 
@@ -123,6 +138,9 @@ class MockRelay {
               _metadatas[newEvent.pubKey] = newEvent;
             } else if (newEvent.kind == Deletion.kKind) {
               _storedEvents.removeWhere((e) => newEvent.getEId() == e.id);
+            } else if (newEvent.kind == kNip46Kind) {
+              // Handle NIP-46 remote signer request
+              _handleNip46Request(newEvent, webSocket);
             } else {
               _storedEvents.add(newEvent);
             }
@@ -151,11 +169,25 @@ class MockRelay {
             }
           }
           if (filters.isNotEmpty) {
+            // Store the active subscription
+            _activeSubscriptions[requestId] = filters;
             _respondToRequest(filters, requestId);
           } else {
             // If no valid filters are provided, send EOSE immediately for this request ID
             log("MockRelay: No valid filters provided for REQ $requestId, sending EOSE.");
             _webSocket!.add(jsonEncode(["EOSE", requestId]));
+          }
+          return;
+        }
+
+        if (eventJson[0] == "CLOSE") {
+          String subscriptionId = eventJson[1];
+          // Remove the subscription from active subscriptions
+          if (_activeSubscriptions.containsKey(subscriptionId)) {
+            _activeSubscriptions.remove(subscriptionId);
+            log("MockRelay: Closed subscription $subscriptionId");
+          } else {
+            log("MockRelay: Attempted to close non-existent subscription $subscriptionId");
           }
           return;
         }
@@ -305,6 +337,259 @@ class MockRelay {
     if (server != null) {
       log('Closing server on localhost:$url');
       await server!.close();
+    }
+  }
+
+  /// Handle NIP-46 remote signer requests
+  void _handleNip46Request(Nip01Event event, WebSocket webSocket) async {
+    try {
+      // Get the 'p' tag which contains the remote signer's public key
+      String? targetPubkey = event.getFirstTag('p');
+      if (targetPubkey != remoteSignerPublicKey) {
+        // This request is not for our remote signer
+        return;
+      }
+
+      // Decrypt the content using NIP-44 (as per NIP-46 spec)
+      String decryptedContent;
+      try {
+        decryptedContent = await Nip44.decryptMessage(
+            event.content, _remoteSignerPrivateKey, event.pubKey);
+      } catch (e) {
+        log('MockRelay: Failed to decrypt NIP-46 request: $e');
+        return;
+      }
+
+      // Parse the JSON request
+      Map<String, dynamic> request = jsonDecode(decryptedContent);
+      String? id = request['id'];
+      String? method = request['method'];
+      List<dynamic>? params = request['params'];
+
+      if (id == null || method == null) {
+        log('MockRelay: Invalid NIP-46 request format');
+        return;
+      }
+
+      // Process the request and generate response
+      Map<String, dynamic> response = await _processNip46Method(method, params);
+      response['id'] = id;
+
+      // Create response event
+      String responseContent = jsonEncode(response);
+      String encryptedResponse;
+      try {
+        encryptedResponse = await Nip44.encryptMessage(
+            responseContent, _remoteSignerPrivateKey, event.pubKey);
+      } catch (e) {
+        log('MockRelay: Failed to encrypt NIP-46 response: $e');
+        return;
+      }
+
+      // Create NIP-46 response event
+      Nip01Event responseEvent = Nip01Event(
+        pubKey: remoteSignerPublicKey,
+        kind: kNip46Kind,
+        tags: [
+          ['p', event.pubKey], // Tag the requester
+        ],
+        content: encryptedResponse,
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+
+      // Sign the response event
+      responseEvent.id = responseEvent.id;
+      responseEvent.sig =
+          Bip340.sign(responseEvent.id, _remoteSignerPrivateKey);
+
+      // NIP-46 events are ephemeral (kind 24133), don't store them
+      // Instead, deliver directly to matching subscriptions
+
+      // Find matching subscriptions for this NIP-46 response
+      for (var entry in _activeSubscriptions.entries) {
+        String subscriptionId = entry.key;
+        List<Filter> filters = entry.value;
+
+        // Check if any filter matches this event
+        for (var filter in filters) {
+          bool matches = true;
+
+          // Check kinds filter
+          if (filter.kinds != null &&
+              !filter.kinds!.contains(responseEvent.kind)) {
+            matches = false;
+          }
+
+          // Check authors filter
+          if (matches &&
+              filter.authors != null &&
+              !filter.authors!.contains(responseEvent.pubKey)) {
+            matches = false;
+          }
+
+          // Check #p tag filter
+          if (matches && filter.pTags != null) {
+            List<String> eventPTags = responseEvent.tags
+                .where((tag) => tag.isNotEmpty && tag[0] == 'p')
+                .map((tag) => tag[1])
+                .toList();
+            bool hasPTag =
+                filter.pTags!.any((pTag) => eventPTags.contains(pTag));
+            if (!hasPTag) {
+              matches = false;
+            }
+          }
+
+          // If this filter matches, send the event with the correct subscription ID
+          if (matches) {
+            webSocket.add(
+                jsonEncode(["EVENT", subscriptionId, responseEvent.toJson()]));
+            break; // Only send once per subscription
+          }
+        }
+      }
+    } catch (e) {
+      log('MockRelay: Error handling NIP-46 request: $e');
+    }
+  }
+
+  /// Process NIP-46 methods
+  Future<Map<String, dynamic>> _processNip46Method(
+      String method, List<dynamic>? params) async {
+    try {
+      switch (method) {
+        case 'connect':
+          // Handle connection request with optional secret
+          if (params != null && params.isNotEmpty) {
+            // In a real implementation, you'd validate the secret here
+            String? secret = params[0];
+            log('MockRelay: NIP-46 connect with secret: ${secret != null}');
+          }
+          return {
+            'result': 'ack',
+          };
+
+        case 'ping':
+          return {
+            'result': 'pong',
+          };
+
+        case 'get_relays':
+          // Return the relay URL where this signer is available
+          return {
+            'result': {
+              url: {'read': true, 'write': true},
+            },
+          };
+
+        case 'disconnect':
+          // Handle disconnection
+          return {
+            'result': 'ack',
+          };
+
+        case 'get_public_key':
+          return {
+            'result': remoteSignerPublicKey,
+          };
+
+        case 'sign_event':
+          if (params == null || params.isEmpty) {
+            return {'error': 'Missing event parameter'};
+          }
+
+          // NIP-46 sends the event as a JSON string in params[0]
+          Map<String, dynamic> eventData;
+          if (params[0] is String) {
+            eventData = jsonDecode(params[0]);
+          } else {
+            eventData = params[0];
+          }
+          
+          // Use the Nip01Event constructor directly
+          Nip01Event eventToSign = Nip01Event(
+            pubKey: remoteSignerPublicKey,
+            kind: eventData["kind"] ?? 1,
+            tags: List<List<String>>.from(eventData["tags"] ?? []),
+            content: eventData["content"] ?? "",
+            createdAt: eventData["created_at"] ?? eventData["createdAt"] ?? 0,
+          );
+
+          // Sign the event
+          eventToSign.sig = Bip340.sign(
+            eventToSign.id,
+            _remoteSignerPrivateKey,
+          );
+
+          return {
+            'result': jsonEncode(eventToSign.toJson()),
+          };
+
+        case 'nip04_encrypt':
+          if (params == null || params.length < 2) {
+            return {'error': 'Missing parameters for nip04_encrypt'};
+          }
+
+          String pubkey = params[0];
+          String plaintext = params[1];
+          String encrypted =
+              Nip04.encrypt(_remoteSignerPrivateKey, pubkey, plaintext);
+
+          return {
+            'result': encrypted,
+          };
+
+        case 'nip04_decrypt':
+          if (params == null || params.length < 2) {
+            return {'error': 'Missing parameters for nip04_decrypt'};
+          }
+
+          String pubkey = params[0];
+          String ciphertext = params[1];
+          String decrypted =
+              Nip04.decrypt(_remoteSignerPrivateKey, pubkey, ciphertext);
+
+          return {
+            'result': decrypted,
+          };
+
+        case 'nip44_encrypt':
+          if (params == null || params.length < 2) {
+            return {'error': 'Missing parameters for nip44_encrypt'};
+          }
+
+          String pubkey = params[0];
+          String plaintext = params[1];
+          String encrypted = await Nip44.encryptMessage(
+              plaintext, _remoteSignerPrivateKey, pubkey);
+
+          return {
+            'result': encrypted,
+          };
+
+        case 'nip44_decrypt':
+          if (params == null || params.length < 2) {
+            return {'error': 'Missing parameters for nip44_decrypt'};
+          }
+
+          String pubkey = params[0];
+          String ciphertext = params[1];
+          String decrypted = await Nip44.decryptMessage(
+              ciphertext, _remoteSignerPrivateKey, pubkey);
+
+          return {
+            'result': decrypted,
+          };
+
+        default:
+          return {
+            'error': 'Unknown method: $method',
+          };
+      }
+    } catch (e) {
+      return {
+        'error': 'Error processing method $method: $e',
+      };
     }
   }
 }
