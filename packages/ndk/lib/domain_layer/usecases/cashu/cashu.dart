@@ -817,6 +817,26 @@ class Cashu {
         );
         await _addAndSaveLatestTransaction(completedTransaction);
         _removePendingTransaction(transaction);
+
+        // mark proofs as spent in db
+        final allPendingProofs = await _cacheManagerCashu.getProofs(
+          mintUrl: transaction.mintUrl,
+          state: CashuProofState.pending,
+        );
+
+        final transactionProofs = allPendingProofs
+            .where((e) => transaction.proofPubKeys!.contains(e.Y))
+            .toList();
+
+        _changeProofState(
+          proofs: transactionProofs,
+          state: CashuProofState.spend,
+        );
+        await _cacheManagerCashu.saveProofs(
+          proofs: transactionProofs,
+          mintUrl: transaction.mintUrl,
+        );
+
         return;
       }
 
