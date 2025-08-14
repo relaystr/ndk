@@ -13,8 +13,6 @@ import 'package:ndk/shared/nips/nip09/deletion.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
-//! it do not handle close messages
-
 class MockRelay {
   String name;
   int? _port;
@@ -178,6 +176,18 @@ class MockRelay {
             // If no valid filters are provided, send EOSE immediately for this request ID
             log("MockRelay: No valid filters provided for REQ $requestId, sending EOSE.");
             _webSocket!.add(jsonEncode(["EOSE", requestId]));
+          }
+          return;
+        }
+
+        if (eventJson[0] == "CLOSE") {
+          String subscriptionId = eventJson[1];
+          // Remove the subscription from active subscriptions
+          if (_activeSubscriptions.containsKey(subscriptionId)) {
+            _activeSubscriptions.remove(subscriptionId);
+            log("MockRelay: Closed subscription $subscriptionId");
+          } else {
+            log("MockRelay: Attempted to close non-existent subscription $subscriptionId");
           }
           return;
         }
