@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:bip340/bip340.dart';
+import 'package:ndk/domain_layer/usecases/bunkers/models/bunker_request.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -30,7 +31,7 @@ class MockRelay {
   bool requireAuthForRequests;
 
   // NIP-46 Remote Signer Support
-  static const int kNip46Kind = 24133;
+  static const int kNip46Kind = BunkerRequest.kKind;
 
   // Hardcoded remote signer keys
   static const String _remoteSignerPrivateKey =

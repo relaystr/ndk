@@ -51,7 +51,7 @@ class Nip46EventSigner implements EventSigner {
       filters: [
         Filter(
           authors: [connection.remotePubkey],
-          kinds: [24133],
+          kinds: [BunkerRequest.kKind],
           pTags: [localEventSigner.publicKey],
         ),
       ],
@@ -97,7 +97,7 @@ class Nip46EventSigner implements EventSigner {
 
     final requestEvent = Nip01Event(
       pubKey: localEventSigner.publicKey,
-      kind: 24133,
+      kind: BunkerRequest.kKind,
       tags: [
         ["p", connection.remotePubkey],
       ],
