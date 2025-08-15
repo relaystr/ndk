@@ -40,6 +40,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.4.15
+  build_version: ^2.1.2
   flutter_lints: ^6.0.0
   mockito: ^5.4.6
   test: any
