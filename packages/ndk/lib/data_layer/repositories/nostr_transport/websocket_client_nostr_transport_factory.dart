@@ -16,10 +16,7 @@ class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
 
     final backoff = BinaryExponentialBackoff(
         initial: Duration(seconds: 1), maximumStep: 10);
-    final client = WebSocket(
-      Uri.parse(myUrl),
-      backoff: backoff,
-    );
+    final client = WebSocket(Uri.parse(myUrl),backoff: backoff);
 
     final WebsocketDSClient myDataSource = WebsocketDSClient(client, myUrl);
     return WebSocketClientNostrTransport(myDataSource, onReconnect);

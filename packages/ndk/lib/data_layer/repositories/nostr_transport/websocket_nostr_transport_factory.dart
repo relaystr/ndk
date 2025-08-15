@@ -18,12 +18,7 @@ class WebSocketNostrTransportFactory implements NostrTransportFactory {
     }
 
     final wsUrl = Uri.parse(myUrl);
-    // HttpClient httpClient = HttpClient();
-    // httpClient.userAgent = RequestDefaults.DEFAULT_USER_AGENT;
-    final IOWebSocketChannel webSocketChannel = IOWebSocketChannel.connect(
-      wsUrl,
-      // customClient: httpClient
-    );
+    final IOWebSocketChannel webSocketChannel = IOWebSocketChannel.connect(wsUrl);
     final WebsocketDS myDataSource = WebsocketDS(webSocketChannel);
     return WebSocketNostrTransport(myDataSource);
   }
