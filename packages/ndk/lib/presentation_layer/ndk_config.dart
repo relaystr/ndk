@@ -50,6 +50,8 @@ class NdkConfig {
   /// log level
   lib_logger.Level logLevel;
 
+  String userAgent;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -72,6 +74,7 @@ class NdkConfig {
     this.defaultBroadcastConsiderDonePercent =
         BroadcastDefaults.CONSIDER_DONE_PERCENT,
     this.logLevel = defaultLogLevel,
+    this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
   });
 }
 

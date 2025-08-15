@@ -92,7 +92,7 @@ class Initialization {
   })  : _globalState = globalState,
         _ndkConfig = ndkConfig {
     // Configure global WebSocket User-Agent on dart:io platforms
-    configureDefaultUserAgent(RequestDefaults.DEFAULT_USER_AGENT);
+    configureDefaultUserAgent(ndkConfig.userAgent);
 
     accounts = Accounts();
 
