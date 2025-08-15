@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:ndk/src/version.dart';
+
 /// defaults used by a low level nostr request
 class RequestDefaults {
   /// timeout for query streams
@@ -19,4 +21,7 @@ class RequestDefaults {
 
   /// query timeout
   static const Duration DEFAULT_QUERY_TIMEOUT = Duration(seconds: 10);
+
+  /// default User-Agent header value used for websocket connections
+  static const String DEFAULT_USER_AGENT = "dart-NDK/$packageVersion";
 }
