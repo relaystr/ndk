@@ -50,6 +50,7 @@ class NdkConfig {
   /// log level
   lib_logger.Level logLevel;
 
+  /// User agent string for Http requests and websockets.
   String userAgent;
 
   /// Creates a new instance of [NdkConfig].
