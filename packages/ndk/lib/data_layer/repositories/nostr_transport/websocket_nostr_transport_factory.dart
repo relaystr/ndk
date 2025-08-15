@@ -1,8 +1,7 @@
 import 'dart:io';
 
-import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../../config/request_defaults.dart';
 import '../../../domain_layer/repositories/nostr_transport.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../../data_sources/websocket.dart';
@@ -18,7 +17,7 @@ class WebSocketNostrTransportFactory implements NostrTransportFactory {
     }
 
     final wsUrl = Uri.parse(myUrl);
-    final IOWebSocketChannel webSocketChannel = IOWebSocketChannel.connect(wsUrl);
+    final WebSocketChannel webSocketChannel = WebSocketChannel.connect(wsUrl);
     final WebsocketDS myDataSource = WebsocketDS(webSocketChannel);
     return WebSocketNostrTransport(myDataSource);
   }
