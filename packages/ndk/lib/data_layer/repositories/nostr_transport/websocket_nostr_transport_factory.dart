@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:web_socket_channel/io.dart';
 
 import '../../../config/request_defaults.dart';
@@ -16,11 +18,11 @@ class WebSocketNostrTransportFactory implements NostrTransportFactory {
     }
 
     final wsUrl = Uri.parse(myUrl);
+    // HttpClient httpClient = HttpClient();
+    // httpClient.userAgent = RequestDefaults.DEFAULT_USER_AGENT;
     final IOWebSocketChannel webSocketChannel = IOWebSocketChannel.connect(
       wsUrl,
-      headers: {
-        'User-Agent': RequestDefaults.DEFAULT_USER_AGENT,
-      },
+      // customClient: httpClient
     );
     final WebsocketDS myDataSource = WebsocketDS(webSocketChannel);
     return WebSocketNostrTransport(myDataSource);

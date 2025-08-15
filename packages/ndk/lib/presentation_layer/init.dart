@@ -1,4 +1,7 @@
 import 'package:http/http.dart' as http;
+import '../config/request_defaults.dart';
+import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import '../shared/net/user_agent.dart';
 
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
@@ -88,6 +91,9 @@ class Initialization {
     required GlobalState globalState,
   })  : _globalState = globalState,
         _ndkConfig = ndkConfig {
+    // Configure global WebSocket User-Agent on dart:io platforms
+    configureDefaultUserAgent(RequestDefaults.DEFAULT_USER_AGENT);
+
     accounts = Accounts();
 
     switch (_ndkConfig.engine) {
