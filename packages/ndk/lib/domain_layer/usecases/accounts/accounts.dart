@@ -2,6 +2,9 @@ import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
+import '../bunkers/bunkers.dart';
+import '../bunkers/models/bunker_connection.dart';
+import '../bunkers/models/nostr_connect.dart';
 
 /// A usecase that handles accounts
 class Accounts {
@@ -47,6 +50,54 @@ class Accounts {
     addAccount(
         pubkey: pubkey, type: AccountType.externalSigner, signer: signer);
     _loggedPubkey = pubkey;
+  }
+
+  Future<BunkerConnection?> loginWithBunkerUrl({
+    required String bunkerUrl,
+    required Bunkers bunkers,
+    Function(String)? authCallback,
+  }) async {
+    BunkerConnection? connection = await bunkers.connectWithBunkerUrl(
+      bunkerUrl,
+      authCallback: authCallback,
+    );
+    if (connection != null) {
+      await loginWithBunkerConnection(
+        connection: connection,
+        bunkers: bunkers,
+        authCallback: authCallback,
+      );
+    }
+    return connection;
+  }
+
+  Future<BunkerConnection?> loginWithNostrConnect({
+    required NostrConnect nostrConnect,
+    required Bunkers bunkers,
+    Function(String)? authCallback,
+  }) async {
+    BunkerConnection? connection = await bunkers.connectWithNostrConnect(
+      nostrConnect,
+      authCallback: authCallback,
+    );
+    if (connection != null) {
+      await loginWithBunkerConnection(
+        connection: connection,
+        bunkers: bunkers,
+        authCallback: authCallback,
+      );
+    }
+    return connection;
+  }
+
+  Future<void> loginWithBunkerConnection({
+    required BunkerConnection connection,
+    required Bunkers bunkers,
+    Function(String)? authCallback,
+  }) async {
+    final signer = bunkers.createSigner(connection, authCallback: authCallback);
+    await signer.getPublicKeyAsync();
+    loginExternalSigner(signer: signer);
   }
 
   void logout() {

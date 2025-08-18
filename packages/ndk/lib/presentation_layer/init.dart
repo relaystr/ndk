@@ -1,4 +1,7 @@
 import 'package:http/http.dart' as http;
+import '../config/request_defaults.dart';
+import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
+import '../shared/net/user_agent.dart';
 
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
@@ -18,6 +21,7 @@ import '../domain_layer/repositories/wallets_operations_repo.dart';
 import '../domain_layer/repositories/wallets_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
@@ -69,6 +73,7 @@ class Initialization {
   late CacheRead cacheRead;
   late Requests requests;
   late Accounts accounts;
+  late Bunkers bunkers;
   late Follows follows;
   late Metadatas metadatas;
   late UserRelayLists userRelayLists;
@@ -98,6 +103,9 @@ class Initialization {
     required GlobalState globalState,
   })  : _globalState = globalState,
         _ndkConfig = ndkConfig {
+    // Configure global WebSocket User-Agent on dart:io platforms
+    configureDefaultUserAgent(ndkConfig.userAgent);
+
     accounts = Accounts();
 
     switch (_ndkConfig.engine) {
@@ -171,6 +179,11 @@ class Initialization {
       accounts: accounts,
       considerDonePercent: _ndkConfig.defaultBroadcastConsiderDonePercent,
       timeout: _ndkConfig.defaultBroadcastTimeout,
+    );
+
+    bunkers = Bunkers(
+      broadcast: broadcast,
+      requests: requests,
     );
 
     follows = Follows(

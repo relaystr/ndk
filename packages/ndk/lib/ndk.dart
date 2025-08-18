@@ -80,6 +80,9 @@ export 'domain_layer/usecases/search/search.dart';
 export 'domain_layer/usecases/gift_wrap/gift_wrap.dart';
 export 'domain_layer/usecases/cashu/cashu.dart';
 export 'domain_layer/usecases/wallets/wallets.dart';
+export 'domain_layer/usecases/bunkers/bunkers.dart';
+export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
+export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
 /**
  * other stuff

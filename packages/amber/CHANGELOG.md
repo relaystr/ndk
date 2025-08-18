@@ -1,3 +1,7 @@
+## 0.3.2
+ - upgrade to ndk 0.5.0
+
+
 ## 0.3.1
 
  - upgrade to ndk 0.4.0
