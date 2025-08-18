@@ -14,7 +14,39 @@ icon: person
 
 ### External Signer (bunker)
 
-:::code source="../../packages/ndk/example/nip46_event_signer_example.dart" language="dart"  title="" :::
+```dart login with bunker url
+final bunkerConnection = await ndk.accounts.loginWithBunkerUrl(
+    bunkerUrl: "bunker://xxx",
+    bunkers: ndk.bunkers,
+    authCallback: (challenge) {},
+);
+```
+
+```dart login with nostr connect
+final nostrConnect = NostrConnect(relays: ["wss://relay.example.com"]);
+final bunkerConnection = await ndk.accounts.loginWithNostrConnect(
+    nostrConnect: nostrConnect,
+    bunkers: ndk.bunkers,
+    authCallback: (challenge) {},
+);
+```
+
+```dart login with bunker connection
+final bunkerConnection = BunkerConnection(
+    privateKey: "privateKey",
+    remotePubkey: "remotePubkey",
+    relays: ["wss://relay.example.com"]
+);
+await ndk.accounts.loginWithBunkerConnection(
+    connection: bunkerConnection,
+    bunkers: ndk.bunkers,
+    authCallback: (challenge) {},
+);
+```
+
+!!!warning Important
+Store the `BunkerConnection` details locally to re-establish the connection in future sessions. Use `bunkerConnection.toJson()` to serialize and `BunkerConnection.fromJson()` to restore. Without storing these, users will need to re-authenticate each time.
+!!!
 
 ## When to use
 
