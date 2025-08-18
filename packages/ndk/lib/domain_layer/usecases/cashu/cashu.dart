@@ -4,6 +4,7 @@ import '../../../config/cashu_config.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
+import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
@@ -912,7 +913,9 @@ class Cashu {
   }
 
   /// accept token from user
-  Future<List<CashuProof>> receive(String token) async {
+  /// [token] - the Cashu token string to receive \
+  /// returns a stream of [CashuWalletTransaction] that emits the transaction state as it progresses.
+  Stream<CashuWalletTransaction> receive(String token) async* {
     final rcvToken = CashuTokenEncoder.decodedToken(token);
     if (rcvToken == null) {
       throw Exception('Invalid Cashu token format');
@@ -921,6 +924,8 @@ class Cashu {
     if (rcvToken.proofs.isEmpty) {
       throw Exception('No proofs found in the Cashu token');
     }
+
+    await _checkIfMintIsKnown(rcvToken.mintUrl);
 
     final keysets = await _cashuKeysets.getKeysetsFromMint(rcvToken.mintUrl);
 
@@ -935,25 +940,56 @@ class Cashu {
 
     final rcvSum = CashuTools.sumOfProofs(proofs: rcvToken.proofs);
 
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    CashuWalletTransaction pendingTransaction = CashuWalletTransaction(
+      id: rcvToken.mintUrl + now.toString(), //todo use a better id
+      mintUrl: rcvToken.mintUrl,
+      walletId: rcvToken.mintUrl,
+      changeAmount: rcvSum,
+      unit: rcvToken.unit,
+      walletType: WalletType.CASHU,
+      state: WalletTransactionState.pending,
+      initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+
+      usedKeysets: [keyset],
+      note: rcvToken.memo,
+    );
+
+    _addPendingTransaction(pendingTransaction);
+    yield pendingTransaction;
+
     List<int> splittedAmounts = CashuTools.splitAmount(rcvSum);
     final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
       keysetId: keyset.id,
       amounts: splittedAmounts,
     );
 
-    final myBlindedSingatures = await _cashuRepo.swap(
-      mintUrl: rcvToken.mintUrl,
-      proofs: rcvToken.proofs,
-      outputs: blindedMessagesOutputs
-          .map(
-            (e) => CashuBlindedMessage(
-              amount: e.amount,
-              id: e.blindedMessage.id,
-              blindedMessage: e.blindedMessage.blindedMessage,
-            ),
-          )
-          .toList(),
-    );
+    final List<CashuBlindedSignature> myBlindedSingatures;
+    try {
+      myBlindedSingatures = await _cashuRepo.swap(
+        mintUrl: rcvToken.mintUrl,
+        proofs: rcvToken.proofs,
+        outputs: blindedMessagesOutputs
+            .map(
+              (e) => CashuBlindedMessage(
+                amount: e.amount,
+                id: e.blindedMessage.id,
+                blindedMessage: e.blindedMessage.blindedMessage,
+              ),
+            )
+            .toList(),
+      );
+    } catch (e) {
+      _removePendingTransaction(pendingTransaction);
+      final failedTransaction = pendingTransaction.copyWith(
+        state: WalletTransactionState.failed,
+        completionMsg: 'Failed to swap proofs: $e',
+      );
+      await _addAndSaveLatestTransaction(failedTransaction);
+      yield failedTransaction;
+      throw Exception('Failed to swap proofs: $e');
+    }
 
     // unblind
     final myUnblindedTokens = CashuBdhke.unblindSignatures(
@@ -963,6 +999,13 @@ class Cashu {
     );
 
     if (myUnblindedTokens.isEmpty) {
+      _removePendingTransaction(pendingTransaction);
+      final failedTransaction = pendingTransaction.copyWith(
+        state: WalletTransactionState.failed,
+        completionMsg: 'Unblinding failed, no tokens returned',
+      );
+      await _addAndSaveLatestTransaction(failedTransaction);
+      yield failedTransaction;
       throw Exception('Unblinding failed, no tokens returned');
     }
 
@@ -979,7 +1022,16 @@ class Cashu {
       mintUrl: rcvToken.mintUrl,
     );
 
-    return myUnblindedTokens;
+    _pendingTransactions.remove(pendingTransaction);
+    final completedTransaction = pendingTransaction.copyWith(
+      state: WalletTransactionState.completed,
+      transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+    _addAndSaveLatestTransaction(completedTransaction);
+
+    _updateBalances();
+
+    yield completedTransaction;
   }
 
   CashuToken proofsToToken({
