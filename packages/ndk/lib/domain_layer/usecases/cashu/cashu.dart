@@ -982,7 +982,7 @@ class Cashu {
     return myUnblindedTokens;
   }
 
-  String proofsToToken({
+  CashuToken proofsToToken({
     required List<CashuProof> proofs,
     required String mintUrl,
     required String unit,
@@ -997,7 +997,7 @@ class Cashu {
       memo: memo,
       unit: unit,
     );
-    return cashuToken.toV4TokenString();
+    return cashuToken;
   }
 
   void _addPendingTransaction(
