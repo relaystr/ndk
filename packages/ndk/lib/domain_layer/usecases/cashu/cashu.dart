@@ -337,8 +337,7 @@ class Cashu {
         );
         yield expiredTransaction;
         // remove expired transaction
-        _pendingTransactions.remove(expiredTransaction);
-        _pendingTransactionsSubject.add(_pendingTransactions.toList());
+        _removePendingTransaction(expiredTransaction);
         Logger.log.w('Quote expired before payment was received');
         return;
       }
@@ -372,8 +371,8 @@ class Cashu {
         completionMsg: 'Minting failed, no signatures returned',
       );
       // remove expired transaction
-      _pendingTransactions.remove(failedTransaction);
-      _pendingTransactionsSubject.add(_pendingTransactions.toList());
+
+      _removePendingTransaction(failedTransaction);
       yield failedTransaction;
       throw Exception('Minting failed, no signatures returned');
     }
@@ -390,8 +389,7 @@ class Cashu {
         completionMsg: 'Unblinding failed, no tokens returned',
       );
       // remove expired transaction
-      _pendingTransactions.remove(failedTransaction);
-      _pendingTransactionsSubject.add(_pendingTransactions.toList());
+      _removePendingTransaction(failedTransaction);
       yield failedTransaction;
       throw Exception('Unblinding failed, no tokens returned');
     }
@@ -409,8 +407,7 @@ class Cashu {
     await _updateBalances();
 
     // remove completed transaction
-    _pendingTransactions.remove(completedTransaction);
-    _pendingTransactionsSubject.add(_pendingTransactions.toList());
+    _removePendingTransaction(completedTransaction);
 
     // save completed transaction
     await _cacheManagerCashu
@@ -1038,7 +1035,8 @@ class Cashu {
       mintUrl: rcvToken.mintUrl,
     );
 
-    _pendingTransactions.remove(pendingTransaction);
+    _removePendingTransaction(pendingTransaction);
+
     final completedTransaction = pendingTransaction.copyWith(
       state: WalletTransactionState.completed,
       transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
