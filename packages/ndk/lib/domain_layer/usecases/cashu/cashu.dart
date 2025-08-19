@@ -9,6 +9,7 @@ import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
+import '../../entities/cashu/cashu_spending_result.dart';
 import '../../entities/cashu/cashu_token.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
@@ -635,10 +636,11 @@ class Cashu {
     return meltResult;
   }
 
-  Future<List<CashuProof>> initiateSpend({
+  Future<CashuSpendingResult> initiateSpend({
     required String mintUrl,
     required int amount,
     required String unit,
+    String? memo,
   }) async {
     if (amount <= 0) {
       throw Exception('Amount must be greater than zero');
@@ -794,7 +796,17 @@ class Cashu {
       transaction: pendingTransaction,
     );
 
-    return proofsToReturn;
+    final token = proofsToToken(
+      proofs: proofsToReturn,
+      mintUrl: mintUrl,
+      unit: unit,
+      memo: memo ?? '',
+    );
+
+    return CashuSpendingResult(
+      token: token,
+      transaction: pendingTransaction,
+    );
   }
 
   /// todo: restore pending transaction from cache
