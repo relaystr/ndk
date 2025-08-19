@@ -77,7 +77,9 @@ class Cashu {
   }
 
   /// get balances for all mints \
-  Future<List<CashuMintBalance>> getBalances() async {
+  Future<List<CashuMintBalance>> getBalances({
+    bool returnZeroValues = true,
+  }) async {
     final allProofs = await _cacheManagerCashu.getProofs();
     final allKeysets = await _cacheManagerCashu.getKeysets();
     // {"mintUrl": {unit: balance}}
@@ -95,7 +97,9 @@ class Cashu {
       final keysetProofs =
           allProofs.where((proof) => proof.keysetId == keysetId).toList();
 
-      if (keysetProofs.isEmpty) continue;
+      if (!returnZeroValues && keysetProofs.isEmpty) {
+        continue;
+      }
 
       final unit =
           allKeysets.firstWhere((keyset) => keyset.id == keysetId).unit;
@@ -103,7 +107,7 @@ class Cashu {
         proofs: keysetProofs,
       );
 
-      if (totalBalance > 0) {
+      if (totalBalance >= 0) {
         balances[mintUrl]![unit] = totalBalance;
       }
     }
