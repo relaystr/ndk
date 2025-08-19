@@ -12,7 +12,7 @@ icon: person
 
 :::code source="../../packages/nip07_event_signer/example/nip07_event_signer_example.dart" language="dart"  title="" :::
 
-### External Signer (bunker)
+### External Signer (nip-46 bunker)
 
 ```dart login with bunker url
 final bunkerConnection = await ndk.accounts.loginWithBunkerUrl(
