@@ -652,7 +652,7 @@ class DbObjectBox implements CacheManager {
     queryBuilder = proofBox.query(condition);
 
     // Apply sorting
-    queryBuilder.order(DbWalletCashuProof_.amount, flags: Order.descending);
+    queryBuilder.order(DbWalletCashuProof_.amount);
 
     // Build and execute the query
     final query = queryBuilder.build();

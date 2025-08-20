@@ -67,7 +67,7 @@ class Cashu {
     required String unit,
     required String mintUrl,
   }) async {
-    final proofs = await _cacheManager.getProofs(mintUrl: mintUrl);
+    final proofs = await _cacheManagerCashu.getProofs(mintUrl: mintUrl);
     final filteredProofs = CashuTools.filterProofsByUnit(
       proofs: proofs,
       unit: unit,

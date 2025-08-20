@@ -58,6 +58,13 @@ class CashuProof {
         unblindedSig: unblindedSig,
         state: state);
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is CashuProof && runtimeType == other.runtimeType && Y == other.Y;
+
+  @override
+  int get hashCode => Y.hashCode;
 }
 
 enum CashuProofState {

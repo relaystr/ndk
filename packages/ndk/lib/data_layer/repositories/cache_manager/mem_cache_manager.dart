@@ -340,26 +340,20 @@ class MemCacheManager implements CacheManager {
     String? mintUrl,
     String? keysetId,
     CashuProofState state = CashuProofState.unspend,
-  }) {
-    if (mintUrl == null) {
-      return Future.value(
-        cashuProofs.values
-            .expand((e) => e)
-            .where((proof) => proof.state == state)
-            .toList(),
-      );
-    }
+  }) async {
     if (cashuProofs.containsKey(mintUrl)) {
-      if (keysetId != null) {
-        return Future.value(cashuProofs[mintUrl]!
-            .where(
-                (proof) => proof.keysetId == keysetId && proof.state == state)
-            .toList());
-      } else {
-        return Future.value(cashuProofs[mintUrl]?.toList() ?? []);
-      }
+      return cashuProofs[mintUrl]!
+          .where((proof) =>
+              proof.state == state &&
+              (keysetId == null || proof.keysetId == keysetId))
+          .toList();
     } else {
-      return Future.value([]);
+      return cashuProofs.values
+          .expand((proofs) => proofs)
+          .where((proof) =>
+              proof.state == state &&
+              (keysetId == null || proof.keysetId == keysetId))
+          .toList();
     }
   }
 
