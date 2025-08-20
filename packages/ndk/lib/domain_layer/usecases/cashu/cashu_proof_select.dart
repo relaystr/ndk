@@ -220,12 +220,25 @@ class CashuProofSelect {
       mintPublicKeys: activeKeyset,
     );
 
+    final List<CashuProof> exactProofs = [];
+    final List<CashuProof> changeProofs = [];
+
+    int sum = 0;
+    for (final proof in myUnblindedTokens) {
+      if (sum < targetAmount) {
+        exactProofs.add(proof);
+        sum += proof.amount;
+      } else {
+        changeProofs.add(proof);
+      }
+    }
+
     return SplitResult(
       /// first proofs is exact amount
-      exactProofs: myUnblindedTokens.take(targetAmountsSplit.length).toList(),
+      exactProofs: exactProofs,
 
       /// change
-      changeProofs: myUnblindedTokens.skip(changeAmountsSplit.length).toList(),
+      changeProofs: changeProofs,
     );
   }
 
