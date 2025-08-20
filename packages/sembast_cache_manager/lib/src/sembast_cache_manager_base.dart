@@ -66,6 +66,7 @@ class SembastCacheManager extends CacheManager {
     String? pTag,
     int? since,
     int? until,
+    int? limit,
   }) async {
     var finder = sembast.Finder();
 
@@ -88,21 +89,31 @@ class SembastCacheManager extends CacheManager {
       filters.add(sembast.Filter.lessThanOrEquals('created_at', until));
     }
 
-    if (filters.isNotEmpty) {
-      finder = sembast.Finder(filter: sembast.Filter.and(filters));
+    if (pTag != null) {
+      filters.add(
+        sembast.Filter.custom((record) {
+          final tags = record['tags'] as List<dynamic>?;
+          if (tags == null) return false;
+          return tags.any((tag) {
+            if (tag is List && tag.length > 1 && tag[0] == 'p') {
+              return tag[1] == pTag;
+            }
+            return false;
+          });
+        }),
+      );
     }
+
+    finder = sembast.Finder(
+      filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      limit: limit,
+      sortOrders: [sembast.SortOrder('created_at', false)],
+    );
 
     final records = await _eventsStore.find(_database, finder: finder);
-    final events = records
+    return records
         .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
         .toList();
-
-    // Filter by pTag if specified
-    if (pTag != null) {
-      return events.where((event) => event.pTags.contains(pTag)).toList();
-    }
-
-    return events;
   }
 
   @override
