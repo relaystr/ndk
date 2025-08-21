@@ -212,6 +212,28 @@ class Cashu {
     return mintInfos;
   }
 
+  /// get mint info from network \
+  /// [mintUrl] is the URL of the mint \
+  /// Returns a [CashuMintInfo] object containing the mint details.
+  /// throws if the mint info cannot be fetched
+  Future<CashuMintInfo> getMintInfoNetwork({
+    required String mintUrl,
+  }) {
+    return _cashuRepo.getMintInfo(mintUrl: mintUrl);
+  }
+
+  /// checks if the mint can be fetched \
+  /// and adds it to known mints \
+  /// [mintUrl] is the URL of the mint \
+  /// Returns true if the mint was added to known mints, false otherwise (already known).
+  /// Throws if the mint info cannot be fetched
+  Future<bool> addMintToKnownMints({
+    required String mintUrl,
+  }) async {
+    final result = await _checkIfMintIsKnown(mintUrl);
+    return !result;
+  }
+
   /// check if mint is known \
   /// if not, it will be added to the known mints \
   /// Returns true if mint is known, false otherwise
