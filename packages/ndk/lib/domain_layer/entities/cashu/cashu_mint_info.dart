@@ -1,3 +1,5 @@
+import '../../../shared/logger/logger.dart';
+
 class CashuMintInfo {
   final String? name;
   final String? pubkey;
@@ -60,8 +62,19 @@ class CashuMintInfo {
     nutsJson.forEach((k, v) {
       final key = int.tryParse(k.toString());
       if (key != null) {
-        parsedNuts[key] =
-            CashuMintNut.fromJson((v ?? {}) as Map<String, dynamic>);
+        try {
+          if (v is List) {
+            // skip  (non-spec compliant)
+            Logger.log.w(
+                'Warning: Skipping nut $key - received List instead of Map (non-spec compliant)');
+            return;
+          }
+
+          parsedNuts[key] =
+              CashuMintNut.fromJson((v ?? {}) as Map<String, dynamic>);
+        } catch (e) {
+          Logger.log.w('Warning: Skipping nut $key due to parsing error: $e');
+        }
       }
     });
 
