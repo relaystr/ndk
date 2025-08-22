@@ -668,13 +668,13 @@ class Cashu {
       throw Exception('Amount must be greater than zero');
     }
 
-    final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
-    if (keysets.isEmpty) {
+    final allKeysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+    if (allKeysets.isEmpty) {
       throw Exception('No keysets found for mint: $mintUrl');
     }
 
     final keysetsForUnit = CashuTools.filterKeysetsByUnit(
-      keysets: keysets,
+      keysets: allKeysets,
       unit: unit,
     );
 
@@ -690,7 +690,7 @@ class Cashu {
         final proofsForUnit = CashuTools.filterProofsByUnit(
           proofs: allProofs,
           unit: unit,
-          keysets: keysets,
+          keysets: allKeysets,
         );
         if (proofsForUnit.isEmpty) {
           throw Exception('No proofs found for mint: $mintUrl and unit: $unit');
@@ -1001,6 +1001,10 @@ class Cashu {
     final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
       keysetId: keyset.id,
       amounts: splittedAmounts,
+    );
+
+    blindedMessagesOutputs.sort(
+      (a, b) => a.blindedMessage.amount.compareTo(b.blindedMessage.amount),
     );
 
     final List<CashuBlindedSignature> myBlindedSingatures;
