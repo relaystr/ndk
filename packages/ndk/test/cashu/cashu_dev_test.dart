@@ -168,5 +168,44 @@ void main() {
 
       expect(loadedProofs[0].amount, equals(2));
     });
+
+    test('swap test 2', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final mintUrl1 = 'http://127.0.0.1:8085';
+      final initalAmount = 100;
+
+      final unit = 'sat';
+
+      final swapAmount = 50;
+
+      final fundResponse = await ndk.cashu.fund(
+        mintUrl: mintUrl1,
+        amount: initalAmount,
+        unit: unit,
+        method: 'bolt11',
+      );
+
+      final spend = await ndk.cashu.initiateSpend(
+        mintUrl: mintUrl1,
+        amount: swapAmount,
+        unit: unit,
+      );
+
+      final rcv = ndk.cashu.receive(spend.token.toV4TokenString());
+
+      // final rcv = ndk.cashu.receive(ndk.cashu
+      //     .proofsToToken(proofs: spend, mintUrl: mintUrl1, unit: unit)
+      //     .toV4TokenString());
+
+      await rcv.last;
+
+      final currentAmount = await ndk.cashu.getBalanceMintUnit(
+        unit: unit,
+        mintUrl: mintUrl1,
+      );
+
+      expect(currentAmount, equals(initalAmount));
+    });
   }, skip: true);
 }

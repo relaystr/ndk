@@ -200,6 +200,11 @@ class CashuProofSelect {
       amounts: outputs,
     );
 
+    // sort to increase privacy
+    blindedMessagesOutputs.sort(
+      (a, b) => a.amount.compareTo(b.amount),
+    );
+
     final blindedSignatures = await _cashuRepo.swap(
       mintUrl: mint,
       proofs: proofsToSplit,
@@ -223,11 +228,11 @@ class CashuProofSelect {
     final List<CashuProof> exactProofs = [];
     final List<CashuProof> changeProofs = [];
 
-    int sum = 0;
+    List<int> targetAmountsWorkingList = List.from(targetAmountsSplit);
     for (final proof in myUnblindedTokens) {
-      if (sum < targetAmount) {
+      if (targetAmountsWorkingList.contains(proof.amount)) {
         exactProofs.add(proof);
-        sum += proof.amount;
+        targetAmountsWorkingList.remove(proof.amount);
       } else {
         changeProofs.add(proof);
       }
