@@ -85,6 +85,7 @@ class WalletsRepoImpl implements WalletsRepo {
                 type: WalletType.CASHU,
                 name: mint.name ?? mint.urls.first,
                 supportedUnits: mint.supportedUnits,
+                mintInfo: mint,
               ))
           .toList();
     });
