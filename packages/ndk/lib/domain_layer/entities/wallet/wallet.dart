@@ -1,3 +1,4 @@
+import '../cashu/cashu_mint_info.dart';
 import 'wallet_type.dart';
 
 /// compatitability layer for generic wallets usecase as well as storage.
@@ -48,6 +49,9 @@ abstract class Wallet {
           supportedUnits: supportedUnits,
           metadata: metadata,
           mintUrl: mintUrl,
+          mintInfo: CashuMintInfo.fromJson(
+            metadata['mintInfo'] as Map<String, dynamic>,
+          ),
         );
       case WalletType.NWC:
         final nwcUrl = metadata['nwcUrl'] as String?;
@@ -68,6 +72,7 @@ abstract class Wallet {
 
 class CashuWallet extends Wallet {
   final String mintUrl;
+  final CashuMintInfo mintInfo;
 
   CashuWallet({
     required super.id,
@@ -75,12 +80,14 @@ class CashuWallet extends Wallet {
     super.type = WalletType.CASHU,
     required super.supportedUnits,
     required this.mintUrl,
+    required this.mintInfo,
     Map<String, dynamic>? metadata,
   }) : super(
           /// update metadata to include mintUrl
           metadata: Map.unmodifiable({
             ...(metadata ?? const {}),
             'mintUrl': mintUrl,
+            'mintInfo': mintInfo.toJson(),
           }),
         );
 }
