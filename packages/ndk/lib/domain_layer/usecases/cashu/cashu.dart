@@ -104,12 +104,13 @@ class Cashu {
 
       final unit =
           allKeysets.firstWhere((keyset) => keyset.id == keysetId).unit;
-      final totalBalance = CashuTools.sumOfProofs(
+      final totalBalanceForKeyset = CashuTools.sumOfProofs(
         proofs: keysetProofs,
       );
 
-      if (totalBalance >= 0) {
-        balances[mintUrl]![unit] = totalBalance;
+      if (totalBalanceForKeyset >= 0) {
+        balances[mintUrl]![unit] =
+            totalBalanceForKeyset + (balances[mintUrl]![unit] ?? 0);
       }
     }
     final mintBalances = balances.entries
@@ -266,6 +267,7 @@ class Cashu {
     required int amount,
     required String unit,
     required String method,
+    String? memo,
   }) async {
     await _checkIfMintIsKnown(mintUrl);
     final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
@@ -284,6 +286,7 @@ class Cashu {
       amount: amount,
       unit: unit,
       method: method,
+      description: memo ?? '',
     );
 
     CashuWalletTransaction draftTransaction = CashuWalletTransaction(
@@ -425,9 +428,6 @@ class Cashu {
       transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
 
-    // update balance
-    await _updateBalances();
-
     // remove completed transaction
     _removePendingTransaction(completedTransaction);
 
@@ -438,6 +438,9 @@ class Cashu {
     // add to latest transactions
     _latestTransactions.add(completedTransaction);
     _latestTransactionsSubject?.add(_latestTransactions);
+
+    // update balance
+    await _updateBalances();
 
     yield completedTransaction;
   }
@@ -1045,15 +1048,19 @@ class Cashu {
     }
 
     // check if we recived our own proofs
-    final ownTokens = await _cacheManager.getProofs(mintUrl: rcvToken.mintUrl);
+    // final ownTokens = await _cacheManager.getProofs(mintUrl: rcvToken.mintUrl);
 
-    final sameSendRcv = rcvToken.proofs
-        .where((e) => ownTokens.any((ownToken) => ownToken.secret == e.secret))
-        .toList();
+    // final sameSendRcv = rcvToken.proofs
+    //     .where((e) => ownTokens.any((ownToken) => ownToken.Y == e.Y))
+    //     .toList();
 
-    await _cacheManagerCashu.atomicSaveAndRemove(
-      proofsToRemove: sameSendRcv,
-      tokensToSave: myUnblindedTokens,
+    // await _cacheManagerCashu.atomicSaveAndRemove(
+    //   proofsToRemove: sameSendRcv,
+    //   tokensToSave: myUnblindedTokens,
+    //   mintUrl: rcvToken.mintUrl,
+    // );
+    await _cacheManagerCashu.saveProofs(
+      proofs: myUnblindedTokens,
       mintUrl: rcvToken.mintUrl,
     );
 
