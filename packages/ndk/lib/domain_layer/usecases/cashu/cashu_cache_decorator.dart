@@ -71,6 +71,7 @@ class CashuCacheDecorator implements CacheManager {
   @override
   Future<List<WalletTransaction>> getTransactions({
     int? limit,
+    int? offset,
     String? walletId,
     String? unit,
     WalletType? walletType,
@@ -78,6 +79,7 @@ class CashuCacheDecorator implements CacheManager {
     return _mutex.synchronized(() async {
       return await _delegate.getTransactions(
         limit: limit,
+        offset: offset,
         walletId: walletId,
         unit: unit,
         walletType: walletType,
