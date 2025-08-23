@@ -729,6 +729,7 @@ class DbObjectBox implements CacheManager {
   @override
   Future<List<WalletTransaction>> getTransactions({
     int? limit,
+    int? offset,
     String? walletId,
     String? unit,
     WalletType? walletType,
@@ -767,6 +768,11 @@ class DbObjectBox implements CacheManager {
     // limit
     if (limit != null) {
       query..limit = limit;
+    }
+
+    // offset
+    if (offset != null) {
+      query..offset = offset;
     }
 
     final results = query.find();

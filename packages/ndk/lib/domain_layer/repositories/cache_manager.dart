@@ -97,6 +97,7 @@ abstract class CacheManager {
 
   Future<List<WalletTransaction>> getTransactions({
     int? limit,
+    int? offset,
     String? walletId,
     String? unit,
     WalletType? walletType,

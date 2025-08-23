@@ -133,6 +133,23 @@ class WalletsRepoImpl implements WalletsRepo {
     }
   }
 
+  @override
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) {
+    return _cacheManger.getTransactions(
+      limit: limit,
+      offset: offset,
+      walletId: walletId,
+      unit: unit,
+      walletType: walletType,
+    );
+  }
+
   Future<dynamic> _getWalletUseCase(String accountId) async {
     final account = await getWallet(accountId);
     switch (account.type) {

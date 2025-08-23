@@ -1,6 +1,7 @@
 import '../entities/wallet/wallet.dart';
 import '../entities/wallet/wallet_balance.dart';
 import '../entities/wallet/wallet_transaction.dart';
+import '../entities/wallet/wallet_type.dart';
 
 abstract class WalletsRepo {
   Future<List<Wallet>> getWallets();
@@ -11,5 +12,12 @@ abstract class WalletsRepo {
   Stream<List<WalletTransaction>> getPendingTransactionsStream(
       String accountId);
   Stream<List<WalletTransaction>> getRecentTransactionsStream(String accountId);
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  });
   Stream<List<Wallet>> walletsUsecaseStream();
 }

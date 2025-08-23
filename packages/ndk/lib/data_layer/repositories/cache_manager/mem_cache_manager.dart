@@ -391,6 +391,7 @@ class MemCacheManager implements CacheManager {
   @override
   Future<List<WalletTransaction>> getTransactions({
     int? limit,
+    int? offset,
     String? walletId,
     String? unit,
     WalletType? walletType,
@@ -407,6 +408,10 @@ class MemCacheManager implements CacheManager {
       }
       return true;
     }).toList();
+
+    if (offset != null && offset > 0) {
+      result = result.skip(offset).toList();
+    }
 
     if (limit != null && limit > 0) {
       result = result.take(limit).toList();

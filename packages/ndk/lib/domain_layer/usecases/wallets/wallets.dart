@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../entities/wallet/wallet_balance.dart';
 import '../../entities/wallet/wallet_transaction.dart';
+import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_operations_repo.dart';
 import '../../repositories/wallets_repo.dart';
 import '../../entities/wallet/wallet.dart';
@@ -73,6 +74,22 @@ class Wallets {
   /// public-facing stream of combined recent transactions.
   Stream<List<WalletTransaction>> get combinedRecentTransactions =>
       _combinedRecentTransactionsSubject.stream;
+
+  Future<List<WalletTransaction>> combinedTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) {
+    return _walletsRepository.getTransactions(
+      limit: limit,
+      offset: offset,
+      walletId: walletId,
+      unit: unit,
+      walletType: walletType,
+    );
+  }
 
   /// stream of all wallets, \
   /// usecases can add new wallets dynamically
