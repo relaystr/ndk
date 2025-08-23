@@ -126,17 +126,27 @@ class CahsuKeysResponse {
     required Map<String, dynamic> map,
     required String mintUrl,
   }) {
+    final mintKeyPairs = <CahsuMintKeyPair>{};
+    final keys = map['keys'] as Map<String, dynamic>;
+
+    for (final entry in keys.entries) {
+      /// some mints have keysets with values like: 9223372036854775808, larger then int max \
+      /// even accounting for fiat values these proofs are unrealistic \
+      /// => skipped
+      final amount = int.tryParse(entry.key);
+      if (amount != null) {
+        mintKeyPairs.add(CahsuMintKeyPair(
+          amount: amount,
+          pubkey: entry.value,
+        ));
+      }
+    }
+
     return CahsuKeysResponse(
       id: map['id'] as String,
       mintUrl: mintUrl,
       unit: map['unit'] as String,
-      mintKeyPairs: (map['keys'] as Map<String, dynamic>)
-          .entries
-          .map((e) => CahsuMintKeyPair(
-                amount: int.parse(e.key),
-                pubkey: e.value,
-              ))
-          .toSet(),
+      mintKeyPairs: mintKeyPairs,
     );
   }
 }
