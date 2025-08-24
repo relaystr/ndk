@@ -775,6 +775,7 @@ class Cashu {
         // mark transaction as failed
         final completedTransaction = pendingTransaction.copyWith(
           state: WalletTransactionState.failed,
+          transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
           completionMsg: 'Failed to swap proofs to get exact change: $e',
         );
         await _addAndSaveLatestTransaction(completedTransaction);
@@ -1027,6 +1028,7 @@ class Cashu {
       final failedTransaction = pendingTransaction.copyWith(
         state: WalletTransactionState.failed,
         completionMsg: 'Failed to swap proofs: $e',
+        transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
       await _addAndSaveLatestTransaction(failedTransaction);
       yield failedTransaction;
