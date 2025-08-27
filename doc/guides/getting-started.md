@@ -23,6 +23,10 @@ import 'package:ndk/ndk.dart';
 ## Usage
 
 !!!
+If you code with AI then your AI must read https://github.com/relaystr/ndk/blob/master/AI_GUIDE.md
+!!!
+
+!!!
 We strongly recommend using `RustEventVerifier()` for client applications. It uses a separate thread for signature verification and is therefore more performant. \
 How to install below.
 !!!
