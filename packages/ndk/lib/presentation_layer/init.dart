@@ -1,6 +1,4 @@
 import 'package:http/http.dart' as http;
-import '../config/request_defaults.dart';
-import '../data_layer/repositories/nostr_transport/websocket_nostr_transport_factory.dart';
 import '../shared/net/user_agent.dart';
 
 import '../data_layer/data_sources/http_request.dart';

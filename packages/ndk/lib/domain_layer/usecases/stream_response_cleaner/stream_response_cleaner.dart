@@ -35,7 +35,7 @@ class StreamResponseCleaner {
     }
   }
 
-  _addStreamListener(Stream<Nip01Event> stream) {
+  void _addStreamListener(Stream<Nip01Event> stream) {
     stream.listen((event) {
       // check if event id is in the set
       if (_trackingSet.contains(event.id)) {
