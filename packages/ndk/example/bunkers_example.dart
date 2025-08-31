@@ -23,7 +23,6 @@ Future<void> main() async {
     await ndk.accounts.sign(event);
     print('Event signed successfully!');
     print('Event ID: ${event.id}');
-
   } catch (e) {
     print('Error: $e');
   }

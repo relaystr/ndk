@@ -2,7 +2,6 @@ import '../../../../shared/nips/nip01/bip340.dart';
 import '../../../../shared/nips/nip01/helpers.dart';
 
 class NostrConnect {
-
   List<String> relays;
   List<String>? perms;
   String? appName;

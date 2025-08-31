@@ -30,8 +30,8 @@ class BunkerRequest {
   final List<String> params;
 
   BunkerRequest({required this.method, String? id, List<String>? params})
-    : id = id ?? Helpers.getRandomString(16),
-      params = params ?? [];
+      : id = id ?? Helpers.getRandomString(16),
+        params = params ?? [];
 
   Map<String, dynamic> toJson() {
     return {

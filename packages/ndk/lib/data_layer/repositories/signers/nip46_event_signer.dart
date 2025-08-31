@@ -9,7 +9,6 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import '../../../domain_layer/usecases/bunkers/models/bunker_request.dart';
 
 class Nip46EventSigner implements EventSigner {
-
   BunkerConnection connection;
   Requests requests;
   Broadcast broadcast;

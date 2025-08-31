@@ -32,12 +32,16 @@ void main() {
 
       connection = BunkerConnection(
         privateKey:
-        "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
-        remotePubkey: MockRelay.remoteSignerPublicKey, // Use the mock relay's remote signer public key
+            "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
+        remotePubkey: MockRelay
+            .remoteSignerPublicKey, // Use the mock relay's remote signer public key
         relays: [mockRelay.url], // Use the mock relay
       );
 
-      signer = Nip46EventSigner(connection: connection, requests: ndk.requests, broadcast: ndk.broadcast);
+      signer = Nip46EventSigner(
+          connection: connection,
+          requests: ndk.requests,
+          broadcast: ndk.broadcast);
     });
 
     tearDown(() async {
@@ -51,7 +55,8 @@ void main() {
 
     test('sign should request remote signing and update event', () async {
       final event = Nip01Event(
-        pubKey: MockRelay.remoteSignerPublicKey, // Use the mock relay's signer public key
+        pubKey: MockRelay
+            .remoteSignerPublicKey, // Use the mock relay's signer public key
         kind: 1,
         tags: [],
         content: 'Hello, world!',
@@ -82,13 +87,13 @@ void main() {
       final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=test-secret-123';
-      
+
       // Use bunkers to connect with the URL
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
       );
-      
+
       final bunkerConnection = await bunkers.connectWithBunkerUrl(
         bunkerUrl,
         authCallback: (authUrl) {
@@ -96,30 +101,31 @@ void main() {
           // Auth URL received: authUrl
         },
       );
-      
+
       expect(bunkerConnection, isNotNull);
-      expect(bunkerConnection!.remotePubkey, equals(MockRelay.remoteSignerPublicKey));
+      expect(bunkerConnection!.remotePubkey,
+          equals(MockRelay.remoteSignerPublicKey));
       expect(bunkerConnection.relays, contains(mockRelay.url));
-      
+
       // Create a signer with the connection and test signing
       final bunkerSigner = Nip46EventSigner(
         connection: bunkerConnection,
         requests: ndk.requests,
         broadcast: ndk.broadcast,
       );
-      
+
       final testEvent = Nip01Event(
         pubKey: MockRelay.remoteSignerPublicKey,
         kind: 1,
         tags: [],
         content: 'Test event via bunker URL',
       );
-      
+
       await bunkerSigner.sign(testEvent);
-      
+
       expect(testEvent.id, isNotNull);
       expect(testEvent.sig, isNotNull);
-      
+
       bunkerSigner.dispose();
     });
 
@@ -128,15 +134,15 @@ void main() {
       final bunkerUrl = 'bunker://${MockRelay.remoteSignerPublicKey}'
           '?relay=${mockRelay.url}'
           '&secret=bunker-url-test-secret';
-      
+
       // Create bunkers and accounts instances
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
       );
-      
+
       final accounts = Accounts();
-      
+
       // Login with the bunker URL
       final connection = await accounts.loginWithBunkerUrl(
         bunkerUrl: bunkerUrl,
@@ -145,16 +151,16 @@ void main() {
           // In a real app, this would open the auth URL
         },
       );
-      
+
       // Verify connection was established
       expect(connection, isNotNull);
       expect(connection!.remotePubkey, equals(MockRelay.remoteSignerPublicKey));
       expect(connection.relays, contains(mockRelay.url));
-      
+
       // Verify the account was set up correctly
       expect(accounts.isLoggedIn, isTrue);
       expect(accounts.getPublicKey(), equals(MockRelay.remoteSignerPublicKey));
-      
+
       // Test signing an event through the accounts system
       final testEvent = Nip01Event(
         pubKey: accounts.getPublicKey()!,
@@ -162,12 +168,12 @@ void main() {
         tags: [],
         content: 'Test event via loginWithBunkerUrl',
       );
-      
+
       await accounts.sign(testEvent);
-      
+
       expect(testEvent.id, isNotNull);
       expect(testEvent.sig, isNotNull);
-      
+
       // Cleanup
       accounts.logout();
       expect(accounts.isLoggedIn, isFalse);
@@ -176,19 +182,20 @@ void main() {
     test('loginWithBunkerConnection should set up account correctly', () async {
       // Create a bunker connection directly
       final bunkerConnection = BunkerConnection(
-        privateKey: "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
+        privateKey:
+            "7a8317f947fff0526749e9fe53f79def8eb0afd378c01058f37140cc8732fecc",
         remotePubkey: MockRelay.remoteSignerPublicKey,
         relays: [mockRelay.url],
       );
-      
+
       // Create bunkers and accounts instances
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
       );
-      
+
       final accounts = Accounts();
-      
+
       // Login with the bunker connection
       await accounts.loginWithBunkerConnection(
         connection: bunkerConnection,
@@ -197,11 +204,11 @@ void main() {
           // In a real app, this would open the auth URL
         },
       );
-      
+
       // Verify the account was set up correctly
       expect(accounts.isLoggedIn, isTrue);
       expect(accounts.getPublicKey(), equals(MockRelay.remoteSignerPublicKey));
-      
+
       // Test signing an event through the accounts system
       final testEvent = Nip01Event(
         pubKey: accounts.getPublicKey()!,
@@ -209,12 +216,12 @@ void main() {
         tags: [],
         content: 'Test event via loginWithBunkerConnection',
       );
-      
+
       await accounts.sign(testEvent);
-      
+
       expect(testEvent.id, isNotNull);
       expect(testEvent.sig, isNotNull);
-      
+
       // Cleanup
       accounts.logout();
       expect(accounts.isLoggedIn, isFalse);
@@ -233,7 +240,8 @@ void main() {
       // Encrypt the message using NIP-04
       final encryptedMessage = await localSigner.encrypt(
         testMessage,
-        MockRelay.remoteSignerPublicKey, // Use the mock relay's signer public key
+        MockRelay
+            .remoteSignerPublicKey, // Use the mock relay's signer public key
       );
 
       expect(encryptedMessage, isNotNull);
@@ -250,7 +258,7 @@ void main() {
 
     test(
       'encrypt should request remote encryption and be verifiable',
-          () async {
+      () async {
         const testMessage = 'Hello, this is a test message to encrypt!';
 
         // Create a local event signer to verify decryption
@@ -293,7 +301,8 @@ void main() {
       // Encrypt the message using NIP-44
       final encryptedMessage = await localSigner.encryptNip44(
         plaintext: testMessage,
-        recipientPubKey: MockRelay.remoteSignerPublicKey, // Use the mock relay's signer public key
+        recipientPubKey: MockRelay
+            .remoteSignerPublicKey, // Use the mock relay's signer public key
       );
 
       expect(encryptedMessage, isNotNull);
@@ -310,7 +319,7 @@ void main() {
 
     test(
       'encryptNip44 should request remote NIP-44 encryption and be verifiable',
-          () async {
+      () async {
         const testMessage = 'Hello, this is a NIP-44 encryption test!';
 
         // Create a local event signer to verify decryption

@@ -10,10 +10,10 @@ class BunkerConnection {
   });
 
   Map<String, dynamic> toJson() => {
-    'privateKey': privateKey,
-    'remotePubkey': remotePubkey,
-    'relays': relays,
-  };
+        'privateKey': privateKey,
+        'remotePubkey': remotePubkey,
+        'relays': relays,
+      };
 
   factory BunkerConnection.fromJson(Map<String, dynamic> json) {
     return BunkerConnection(

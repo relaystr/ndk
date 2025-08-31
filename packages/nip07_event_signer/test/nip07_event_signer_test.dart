@@ -301,7 +301,12 @@ void main() {
       setupNostrExtension();
 
       final pubkey = await nip07Signer.getPublicKeyAsync();
-      expect(pubkey, equals('9ba2e8c5dc7e85e5c2cfec3baa6c3c8b7b6b60b7bb7e85e5c2cfec3baa6c3c8b'));
+      expect(
+        pubkey,
+        equals(
+          '9ba2e8c5dc7e85e5c2cfec3baa6c3c8b7b6b60b7bb7e85e5c2cfec3baa6c3c8b',
+        ),
+      );
     });
 
     test('getPublicKey throws exception for sync call', () {
@@ -369,11 +374,11 @@ void main() {
 
       const message = 'Hello round trip';
       final nip07PubKey = await nip07Signer.getPublicKeyAsync();
-      
+
       // For round-trip, encrypt to self and decrypt from self
       final encrypted = await nip07Signer.encrypt(message, nip07PubKey);
       final decrypted = await nip07Signer.decrypt(encrypted!, nip07PubKey);
-      
+
       expect(decrypted, equals(message));
     });
 
@@ -410,17 +415,17 @@ void main() {
 
       const message = 'Hello NIP-44 round trip';
       final nip07PubKey = await nip07Signer.getPublicKeyAsync();
-      
+
       // For round-trip, encrypt to self and decrypt from self
       final encrypted = await nip07Signer.encryptNip44(
-        plaintext: message, 
-        recipientPubKey: nip07PubKey
+        plaintext: message,
+        recipientPubKey: nip07PubKey,
       );
       final decrypted = await nip07Signer.decryptNip44(
-        ciphertext: encrypted!, 
-        senderPubKey: nip07PubKey
+        ciphertext: encrypted!,
+        senderPubKey: nip07PubKey,
       );
-      
+
       expect(decrypted, equals(message));
     });
 
@@ -507,36 +512,33 @@ void main() {
     group('Interoperability with Bip340EventSigner', () {
       test('nip07 encrypts and bip340 decrypts (NIP-04)', () async {
         setupNostrExtension();
-        
+
         const message = 'Hello from NIP-07';
-        
+
         // Encrypt with nip07
         final encrypted = await nip07Signer.encrypt(
           message,
           bip340EventSigner.publicKey,
         );
-        
+
         // Verify encryption happened
         expect(encrypted, isNotNull);
         expect(encrypted!.length, greaterThan(0));
         expect(RegExp(r'^[A-Za-z0-9+/]+={0,2}$').hasMatch(encrypted), isTrue);
-        
+
         // In real scenario, bip340EventSigner would decrypt this
       });
 
       test('bip340 encrypts and nip07 decrypts (NIP-04)', () async {
         setupNostrExtension();
-        
+
         const message = 'Hello from BIP-340';
         final nip07PubKey = await nip07Signer.getPublicKeyAsync();
-        
+
         // Encrypt with bip340
-        final encrypted = await bip340EventSigner.encrypt(
-          message,
-          nip07PubKey,
-        );
-        
-        // Decrypt with nip07 - this will fail because bip340 and nip07 
+        final encrypted = await bip340EventSigner.encrypt(message, nip07PubKey);
+
+        // Decrypt with nip07 - this will fail because bip340 and nip07
         // use different encryption implementations
         expect(
           () => nip07Signer.decrypt(encrypted!, bip340EventSigner.publicKey),
@@ -546,37 +548,37 @@ void main() {
 
       test('nip07 encrypts and bip340 decrypts (NIP-44)', () async {
         setupNostrExtension();
-        
+
         const message = 'NIP-44 message from NIP-07';
-        
+
         // Encrypt with nip07
         final encrypted = await nip07Signer.encryptNip44(
           plaintext: message,
           recipientPubKey: bip340EventSigner.publicKey,
         );
-        
+
         // Verify encryption happened
         expect(encrypted, isNotNull);
         expect(encrypted!.length, greaterThan(0));
         expect(RegExp(r'^[A-Za-z0-9+/]+={0,2}$').hasMatch(encrypted), isTrue);
-        
+
         // In real scenario, bip340EventSigner would decrypt this
       });
 
       test('bip340 encrypts and nip07 decrypts (NIP-44)', () async {
         setupNostrExtension();
-        
+
         const message = 'NIP-44 message from BIP-340';
         final nip07PubKey = await nip07Signer.getPublicKeyAsync();
-        
+
         // Encrypt with bip340
         final encrypted = await bip340EventSigner.encryptNip44(
           plaintext: message,
           recipientPubKey: nip07PubKey,
         );
-        
-        // Decrypt with nip07 - this will fail because bip340 and nip07 
-        // use different encryption implementations  
+
+        // Decrypt with nip07 - this will fail because bip340 and nip07
+        // use different encryption implementations
         expect(
           () => nip07Signer.decryptNip44(
             ciphertext: encrypted!,
@@ -588,7 +590,7 @@ void main() {
 
       test('event signed by nip07 can be verified', () async {
         setupNostrExtension();
-        
+
         final pubKey = await nip07Signer.getPublicKeyAsync();
         final event = Nip01Event(
           pubKey: pubKey,
@@ -599,9 +601,9 @@ void main() {
           ],
           content: 'GM',
         );
-        
+
         await nip07Signer.sign(event);
-        
+
         // Verify event was signed
         expect(event.id, isNotNull);
         expect(event.sig, isNotNull);

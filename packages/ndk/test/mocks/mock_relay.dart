@@ -505,7 +505,7 @@ class MockRelay {
           } else {
             eventData = params[0];
           }
-          
+
           // Use the Nip01Event constructor directly
           Nip01Event eventToSign = Nip01Event(
             pubKey: remoteSignerPublicKey,
