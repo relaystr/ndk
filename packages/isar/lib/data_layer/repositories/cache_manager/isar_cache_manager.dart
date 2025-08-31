@@ -311,6 +311,7 @@ class IsarCacheManager extends CacheManager {
     String? pTag,
     int? since,
     int? until,
+    int? limit,
   }) async {
     if (since != null || until != null) {
       throw Exception("since | until not implemented");
@@ -324,7 +325,9 @@ class IsarCacheManager extends CacheManager {
             (q) => q.anyOf(pubKeys!, (q, pubKey) => q.pubKeyEqualTo(pubKey)))
         // .and()
         // .optional(Helpers.isNotBlank(pTag), (q) => q.pTagsElementEqualTo(pTag!))
-        .findAll();
+        .sortByCreatedAtDesc()
+        .findAll(limit: limit);
+
     events = Helpers.isNotBlank(pTag)
         ? events.where((event) => event.pTags.contains(pTag)).toList()
         : events;
