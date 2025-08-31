@@ -52,12 +52,11 @@ packages:
   bip340:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "3df68acea5641dd3180aefa17e9d3f13f514f087"
-      url: "https://github.com/1-leo/dart-bip340.git"
-    source: git
-    version: "0.3.0"
+      name: bip340
+      sha256: "4c2df9fa2409d26f1d9334b2801015ebe4dc3978191f186743e60e89a90230c4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1"
   boolean_selector:
     dependency: transitive
     description:
