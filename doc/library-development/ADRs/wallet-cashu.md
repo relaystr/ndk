@@ -4,9 +4,9 @@ Title: Wallet Cashu - api design
 
 ## status
 
-In progress
+completed
 
-Updated on 04-08-2025
+Updated on 03-09-2025
 
 ## contributors
 
@@ -98,6 +98,6 @@ pro: - a lot more control
 con: - more complex, requires cashu knolege
 
 ## Final Notes
-
-Proposal discussed
-Required more detail and experiments to proceed.
+ 13-08-2025
+Proposal dismissed
+Proceeding with a simpler method-based approach in combination with transaction streams.
