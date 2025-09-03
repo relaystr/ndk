@@ -14,7 +14,7 @@ void main() {
 
       final mintUrl = 'http://127.0.0.1:8085';
 
-      final fundResponse = await ndk.cashu.fund(
+      final fundResponse = await ndk.cashu.initiateFund(
         mintUrl: mintUrl,
         amount: 52,
         unit: 'sat',
@@ -22,52 +22,6 @@ void main() {
       );
 
       print(fundResponse);
-    });
-
-    test('receive', () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
-
-      final mintUrl = 'http://127.0.0.1:8085';
-
-      final fundResponse = await ndk.cashu.fund(
-        mintUrl: mintUrl,
-        amount: 52,
-        unit: 'sat',
-        method: 'bolt11',
-      );
-
-      final eCashToken = ndk.cashu.proofsToToken(
-        proofs: fundResponse,
-        mintUrl: mintUrl,
-        unit: 'sat',
-      );
-
-      print(eCashToken);
-
-      final receiveResponse =
-          await ndk.cashu.receive(eCashToken.toV4TokenString());
-
-      print(receiveResponse);
-    });
-
-    test('spend test', () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
-
-      final mintUrl = 'http://127.0.0.1:8085';
-
-      final fundResponse = await ndk.cashu.fund(
-        mintUrl: mintUrl,
-        amount: 52,
-        unit: 'sat',
-        method: 'bolt11',
-      );
-
-      final spendResult = await ndk.cashu.spend(
-        mintUrl: mintUrl,
-        amount: 16,
-        unit: 'sat',
-      );
-      print(spendResult);
     });
 
     test('parse mint info', () async {
@@ -80,52 +34,6 @@ void main() {
       final mintInfo = await repo.getMintInfo(mintUrl: mintUrl);
 
       print(mintInfo);
-    });
-
-    test('swap test', () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
-
-      final mintUrl1 = 'http://127.0.0.1:8085';
-      final initalAmount = 100;
-      final unit = 'sat';
-
-      final swapAmount = 1;
-
-      final fundResponse = await ndk.cashu.fund(
-        mintUrl: mintUrl1,
-        amount: initalAmount,
-        unit: unit,
-        method: 'bolt11',
-      );
-
-      final totalAfterFund = await ndk.cashu.getBalanceMintUnit(
-        unit: unit,
-        mintUrl: mintUrl1,
-      );
-      expect(totalAfterFund, equals(initalAmount));
-
-      final spend = await ndk.cashu.initiateSpend(
-        mintUrl: mintUrl1,
-        amount: swapAmount,
-        unit: unit,
-      );
-
-      final totalAfterSpend = await ndk.cashu.getBalanceMintUnit(
-        unit: unit,
-        mintUrl: mintUrl1,
-      );
-      expect(totalAfterSpend, equals(initalAmount - swapAmount));
-
-      final rcv = ndk.cashu.receive(spend.token.toV4TokenString());
-
-      await rcv.last;
-
-      final currentAmount = await ndk.cashu.getBalanceMintUnit(
-        unit: unit,
-        mintUrl: mintUrl1,
-      );
-
-      expect(currentAmount, equals(initalAmount));
     });
 
     test('proof storage upsert test', () async {
@@ -167,45 +75,6 @@ void main() {
       expect(loadedProofs[0].state, equals(CashuProofState.unspend));
 
       expect(loadedProofs[0].amount, equals(2));
-    });
-
-    test('swap test 2', () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
-
-      final mintUrl1 = 'http://127.0.0.1:8085';
-      final initalAmount = 100;
-
-      final unit = 'sat';
-
-      final swapAmount = 50;
-
-      final fundResponse = await ndk.cashu.fund(
-        mintUrl: mintUrl1,
-        amount: initalAmount,
-        unit: unit,
-        method: 'bolt11',
-      );
-
-      final spend = await ndk.cashu.initiateSpend(
-        mintUrl: mintUrl1,
-        amount: swapAmount,
-        unit: unit,
-      );
-
-      final rcv = ndk.cashu.receive(spend.token.toV4TokenString());
-
-      // final rcv = ndk.cashu.receive(ndk.cashu
-      //     .proofsToToken(proofs: spend, mintUrl: mintUrl1, unit: unit)
-      //     .toV4TokenString());
-
-      await rcv.last;
-
-      final currentAmount = await ndk.cashu.getBalanceMintUnit(
-        unit: unit,
-        mintUrl: mintUrl1,
-      );
-
-      expect(currentAmount, equals(initalAmount));
     });
   }, skip: true);
 }
