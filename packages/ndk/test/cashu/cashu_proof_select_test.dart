@@ -18,61 +18,61 @@ void main() {
       CashuProof(
         amount: 50,
         keysetId: 'test-keyset',
-        secret: "",
+        secret: "proofSecret50-0",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 4,
         keysetId: 'test-keyset',
-        secret: "",
+        secret: "proofSecret4-0",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 2,
         keysetId: 'test-keyset',
-        secret: "",
+        secret: "proofSecret2-0",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 50,
         keysetId: 'test-keyset',
-        secret: "",
+        secret: "proofSecret50-1",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 4,
         keysetId: 'test-keyset',
-        secret: "",
+        secret: "proofSecret4-1",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 2,
         keysetId: 'test-keyset',
-        secret: "",
+        secret: "proofSecret2-1",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 101,
         keysetId: 'test-keyset',
-        secret: "",
+        secret: "proofSecret101-0",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 1,
         keysetId: 'test-keyset',
-        secret: "",
+        secret: "proofSecret1-0",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 1,
         keysetId: 'other-keyset',
-        secret: "",
+        secret: "proofSecret1-1",
         unblindedSig: "",
       ),
       CashuProof(
         amount: 2,
         keysetId: 'other-keyset',
-        secret: "",
+        secret: "proofSecret2-2",
         unblindedSig: "",
       ),
     ];
@@ -341,22 +341,22 @@ void main() {
         CashuProof(
             amount: 10,
             keysetId: 'test-keyset',
-            secret: "",
+            secret: "proofSecret10-0",
             unblindedSig: ""), // 1000 ppk
         CashuProof(
             amount: 20,
             keysetId: 'test-keyset',
-            secret: "",
+            secret: "proofSecret20-0",
             unblindedSig: ""), // 1000 ppk
         CashuProof(
             amount: 30,
             keysetId: 'other-keyset',
-            secret: "",
+            secret: "proofSecret30-0",
             unblindedSig: ""), // 100 ppk
         CashuProof(
             amount: 40,
             keysetId: 'other-keyset',
-            secret: "",
+            secret: "proofSecret40-0",
             unblindedSig: ""), // 100 ppk
       ];
 
