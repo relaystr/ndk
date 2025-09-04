@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:ndk/domain_layer/entities/cashu/cashu_quote.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_keypair.dart';
@@ -128,8 +130,41 @@ void main() {
   });
 
   group('fund', () {
-    final ndk = Ndk.emptyBootstrapRelaysConfig();
+    test("fund - initiateFund", () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      const fundAmount = 5;
+      const fundUnit = "sat";
+
+      final draftTransaction = await ndk.cashu.initiateFund(
+        mintUrl: devMintUrl,
+        amount: fundAmount,
+        unit: fundUnit,
+        method: "bolt11",
+      );
+
+      expect(draftTransaction, isA<CashuWalletTransaction>());
+      expect(draftTransaction.changeAmount, equals(fundAmount));
+      expect(draftTransaction.unit, equals(fundUnit));
+      expect(draftTransaction.mintUrl, equals(devMintUrl));
+      expect(draftTransaction.state, equals(WalletTransactionState.draft));
+      expect(draftTransaction.qoute, isA<CashuQuote>());
+      expect(draftTransaction.qoute!.amount, equals(fundAmount));
+      expect(draftTransaction.qoute!.unit, equals(fundUnit));
+      expect(draftTransaction.qoute!.mintUrl, equals(devMintUrl));
+      expect(draftTransaction.qoute!.state, equals(CashuQuoteState.unpaid));
+      expect(draftTransaction.qoute!.request, isNotEmpty);
+      expect(draftTransaction.qoute!.quoteId, isNotEmpty);
+      expect(draftTransaction.qoute!.quoteKey, isA<CashuKeypair>());
+      expect(draftTransaction.qoute!.expiry, isA<int>());
+      expect(draftTransaction.method, equals("bolt11"));
+      expect(draftTransaction.usedKeysets!.length, greaterThan(0));
+      expect(draftTransaction.transactionDate, isNull);
+      expect(draftTransaction.initiatedDate, isNotNull);
+      expect(draftTransaction.id, isNotEmpty);
+    });
+
     test("fund - successfull", () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
       const fundAmount = 100;
       const fundUnit = "sat";
 
@@ -160,6 +195,56 @@ void main() {
       final balance = balanceForMint.first.balances[fundUnit];
 
       expect(balance, equals(fundAmount));
+    });
+
+    test("fund - expired quote", () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      const fundAmount = 14;
+      const fundUnit = "sat";
+
+      final draftTransaction = await ndk.cashu.initiateFund(
+        mintUrl: devMintUrl,
+        amount: fundAmount,
+        unit: fundUnit,
+        method: "bolt11",
+      );
+
+      final expiredQuoteTransaction = draftTransaction.copyWith(
+        qoute: CashuQuote(
+          amount: draftTransaction.qoute!.amount,
+          unit: draftTransaction.qoute!.unit,
+          mintUrl: draftTransaction.qoute!.mintUrl,
+          quoteId: draftTransaction.qoute!.quoteId,
+          request: draftTransaction.qoute!.request,
+          state: CashuQuoteState.unpaid,
+          expiry: DateTime.now()
+                  .subtract(const Duration(minutes: 5))
+                  .millisecondsSinceEpoch ~/
+              1000,
+          quoteKey: draftTransaction.qoute!.quoteKey,
+        ),
+      );
+
+      final transactionStream =
+          ndk.cashu.retriveFunds(draftTransaction: expiredQuoteTransaction);
+
+      await expectLater(
+        transactionStream,
+        emitsInOrder([
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.failed),
+        ]),
+      );
+      // check balance
+      final allBalances = await ndk.cashu.getBalances();
+      final balanceForMint =
+          allBalances.where((element) => element.mintUrl == devMintUrl);
+      expect(balanceForMint.length, 1);
+      final balance = balanceForMint.first.balances[fundUnit];
+
+      expect(balance, equals(0));
     });
   });
 }
