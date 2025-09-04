@@ -95,6 +95,23 @@ void main() {
         ),
       );
 
+      final Stream<CashuWalletTransaction> responseNoKeysets =
+          ndk.cashu.retriveFunds(
+        draftTransaction: baseDraftTransaction.copyWith(
+          method: "sat",
+          qoute: CashuQuote(
+            quoteId: "quoteId",
+            request: "request",
+            amount: 5,
+            unit: 'sat',
+            state: CashuQuoteState.paid,
+            expiry: 0,
+            mintUrl: devMintUrl,
+            quoteKey: CashuKeypair.generateCashuKeyPair(),
+          ),
+        ),
+      );
+
       expect(
         responseNoQuote,
         emitsError(isA<Exception>()),
@@ -103,6 +120,46 @@ void main() {
         responseNoMethod,
         emitsError(isA<Exception>()),
       );
+      expect(
+        responseNoKeysets,
+        emitsError(isA<Exception>()),
+      );
+    });
+  });
+
+  group('fund', () {
+    final ndk = Ndk.emptyBootstrapRelaysConfig();
+    test("fund - successfull", () async {
+      const fundAmount = 100;
+      const fundUnit = "sat";
+
+      final draftTransaction = await ndk.cashu.initiateFund(
+        mintUrl: devMintUrl,
+        amount: fundAmount,
+        unit: fundUnit,
+        method: "bolt11",
+      );
+      final transactionStream =
+          ndk.cashu.retriveFunds(draftTransaction: draftTransaction);
+
+      await expectLater(
+        transactionStream,
+        emitsInOrder([
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.completed)
+              .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
+        ]),
+      );
+      // check balance
+      final allBalances = await ndk.cashu.getBalances();
+      final balanceForMint =
+          allBalances.where((element) => element.mintUrl == devMintUrl);
+      expect(balanceForMint.length, 1);
+      final balance = balanceForMint.first.balances[fundUnit];
+
+      expect(balance, equals(fundAmount));
     });
   });
 }
