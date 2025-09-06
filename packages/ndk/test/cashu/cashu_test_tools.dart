@@ -6,7 +6,10 @@ import 'package:ndk/ndk.dart';
 import 'mocks/cashu_http_client_mock.dart';
 
 class CashuTestTools {
-  static Cashu mockHttpCashu({MockCashuHttpClient? customMockClient}) {
+  static Cashu mockHttpCashu({
+    MockCashuHttpClient? customMockClient,
+    CacheManager? customCache,
+  }) {
     final MockCashuHttpClient mockClient =
         customMockClient ?? MockCashuHttpClient();
     final HttpRequestDS httpRequestDS = HttpRequestDS(mockClient);
@@ -15,7 +18,7 @@ class CashuTestTools {
       client: httpRequestDS,
     );
 
-    final CacheManager cache = MemCacheManager();
+    final CacheManager cache = customCache ?? MemCacheManager();
 
     final cashu = Cashu(
       cashuRepo: cashuRepo,
