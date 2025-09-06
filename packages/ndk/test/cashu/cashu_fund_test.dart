@@ -1,11 +1,10 @@
-import 'dart:math';
-
 import 'package:ndk/domain_layer/entities/cashu/cashu_quote.dart';
-import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_keypair.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
+
+import 'cashu_test_tools.dart';
 
 const devMintUrl = 'https://dev.mint.camelus.app';
 const failingMintUrl = 'https://mint.example.com';
@@ -198,12 +197,14 @@ void main() {
     });
 
     test("fund - expired quote", () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
-      const fundAmount = 14;
+      const fundAmount = 5;
       const fundUnit = "sat";
+      const mockMintUrl = "http://mock.mint";
 
-      final draftTransaction = await ndk.cashu.initiateFund(
-        mintUrl: devMintUrl,
+      final cashu = CashuTestTools.mockHttpCashu();
+
+      final draftTransaction = await cashu.initiateFund(
+        mintUrl: mockMintUrl,
         amount: fundAmount,
         unit: fundUnit,
         method: "bolt11",
@@ -226,7 +227,7 @@ void main() {
       );
 
       final transactionStream =
-          ndk.cashu.retriveFunds(draftTransaction: expiredQuoteTransaction);
+          cashu.retriveFunds(draftTransaction: expiredQuoteTransaction);
 
       await expectLater(
         transactionStream,
@@ -238,9 +239,9 @@ void main() {
         ]),
       );
       // check balance
-      final allBalances = await ndk.cashu.getBalances();
+      final allBalances = await cashu.getBalances();
       final balanceForMint =
-          allBalances.where((element) => element.mintUrl == devMintUrl);
+          allBalances.where((element) => element.mintUrl == mockMintUrl);
       expect(balanceForMint.length, 1);
       final balance = balanceForMint.first.balances[fundUnit];
 
