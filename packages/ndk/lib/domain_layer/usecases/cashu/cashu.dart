@@ -349,6 +349,10 @@ class Cashu {
         method: draftTransaction.method!,
       );
 
+      if (payStatus == CashuQuoteState.paid) {
+        break;
+      }
+
       // check if quote has expired
       final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       if (currentTime >= quote.expiry) {
@@ -363,9 +367,6 @@ class Cashu {
         return;
       }
 
-      if (payStatus == CashuQuoteState.paid) {
-        break;
-      }
       await Future.delayed(CashuConfig.FUNDING_CHECK_INTERVAL);
     }
 

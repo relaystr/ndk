@@ -11,6 +11,8 @@ class MockCashuHttpClient extends http.BaseClient {
   }
 
   void _setupDefaultResponses() {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
     _responses['GET:/v1/info'] = http.Response(
       jsonEncode({
         "name": "testmint1",
@@ -265,7 +267,7 @@ class MockCashuHttpClient extends http.BaseClient {
         "amount": 5,
         "unit": "sat",
         "state": "UNPAID",
-        "expiry": 1757106960
+        "expiry": now + 60
       }),
       200,
       headers: {'content-type': 'application/json'},
@@ -280,9 +282,16 @@ class MockCashuHttpClient extends http.BaseClient {
             "lnbc50p1p5tctmqdqqpp5y7jyyyq3ezyu3p4c9dh6qpnjj6znuzrz35ernjjpkmw6lz7y2mxqsp59g4z52329g4z52329g4z52329g4z52329g4z52329g4z52329g4q9qrsgqcqzysl62hzvm9s5nf53gk22v5nqwf9nuy2uh32wn9rfx6grkjh6vr5jmy09mra5cna504azyhkd2ehdel9sm7fm72ns6ws2fk4m8cwc99hdgptq8hv4",
         "amount": 5,
         "unit": "sat",
-        "state": "UNPAID",
-        "expiry": 1757166960
+        "state": "PAID",
+        "expiry": now + 60
       }),
+      200,
+      headers: {'content-type': 'application/json'},
+    );
+    _responses['POST:/v1/mint/bolt11'] = http.Response(
+      jsonEncode(
+        {"signatures": []},
+      ),
       200,
       headers: {'content-type': 'application/json'},
     );
@@ -320,7 +329,8 @@ class MockCashuHttpClient extends http.BaseClient {
 
     // default 404
     return http.StreamedResponse(
-      Stream.value(utf8.encode(jsonEncode({'error': 'Not found'}))),
+      Stream.value(
+          utf8.encode(jsonEncode({'error': 'Not found, method: $key'}))),
       404,
       headers: {'content-type': 'application/json'},
     );
