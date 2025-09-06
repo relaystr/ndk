@@ -166,40 +166,6 @@ void main() {
       expect(draftTransaction.id, isNotEmpty);
     });
 
-    test("fund - successfull", () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
-      const fundAmount = 100;
-      const fundUnit = "sat";
-
-      final draftTransaction = await ndk.cashu.initiateFund(
-        mintUrl: devMintUrl,
-        amount: fundAmount,
-        unit: fundUnit,
-        method: "bolt11",
-      );
-      final transactionStream =
-          ndk.cashu.retriveFunds(draftTransaction: draftTransaction);
-
-      await expectLater(
-        transactionStream,
-        emitsInOrder([
-          isA<CashuWalletTransaction>()
-              .having((t) => t.state, 'state', WalletTransactionState.pending),
-          isA<CashuWalletTransaction>()
-              .having((t) => t.state, 'state', WalletTransactionState.completed)
-              .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
-        ]),
-      );
-      // check balance
-      final allBalances = await ndk.cashu.getBalances();
-      final balanceForMint =
-          allBalances.where((element) => element.mintUrl == devMintUrl);
-      expect(balanceForMint.length, 1);
-      final balance = balanceForMint.first.balances[fundUnit];
-
-      expect(balance, equals(fundAmount));
-    });
-
     test("fund - expired quote", () async {
       const fundAmount = 5;
       const fundUnit = "sat";
@@ -308,6 +274,113 @@ void main() {
       final balance = balanceForMint.first.balances[fundUnit];
 
       expect(balance, equals(0));
+    });
+    test("fund - successfull", () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      const fundAmount = 100;
+      const fundUnit = "sat";
+
+      final draftTransaction = await ndk.cashu.initiateFund(
+        mintUrl: devMintUrl,
+        amount: fundAmount,
+        unit: fundUnit,
+        method: "bolt11",
+      );
+      final transactionStream =
+          ndk.cashu.retriveFunds(draftTransaction: draftTransaction);
+
+      await expectLater(
+        transactionStream,
+        emitsInOrder([
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.completed)
+              .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
+        ]),
+      );
+      // check balance
+      final allBalances = await ndk.cashu.getBalances();
+      final balanceForMint =
+          allBalances.where((element) => element.mintUrl == devMintUrl);
+      expect(balanceForMint.length, 1);
+      final balance = balanceForMint.first.balances[fundUnit];
+
+      expect(balance, equals(fundAmount));
+    });
+
+    test("fund - successfull - e2e", () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      const fundAmount = 250;
+      const fundUnit = "sat";
+
+      final draftTransaction = await ndk.cashu.initiateFund(
+        mintUrl: devMintUrl,
+        amount: fundAmount,
+        unit: fundUnit,
+        method: "bolt11",
+      );
+      final transactionStream =
+          ndk.cashu.retriveFunds(draftTransaction: draftTransaction);
+
+      await expectLater(
+        transactionStream,
+        emitsInOrder([
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.completed)
+              .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
+        ]),
+      );
+      // check balance
+      final allBalances = await ndk.cashu.getBalances();
+      final balanceForMint =
+          allBalances.where((element) => element.mintUrl == devMintUrl);
+      expect(balanceForMint.length, 1);
+      final balance = balanceForMint.first.balances[fundUnit];
+
+      expect(balance, equals(fundAmount));
+
+      final spend200 = await ndk.cashu
+          .initiateSpend(mintUrl: devMintUrl, amount: 200, unit: "sat");
+      final spend19 = await ndk.cashu
+          .initiateSpend(mintUrl: devMintUrl, amount: 18, unit: "sat");
+      final spend31 = await ndk.cashu
+          .initiateSpend(mintUrl: devMintUrl, amount: 32, unit: "sat");
+
+      final spend200Token = spend200.token.toV4TokenString();
+      final spend19Token = spend19.token.toV4TokenString();
+      final spend31Token = spend31.token.toV4TokenString();
+
+      final allBalancesSpend = await ndk.cashu.getBalances();
+      final balanceForMintSpend =
+          allBalancesSpend.where((element) => element.mintUrl == devMintUrl);
+
+      final balanceSpend = balanceForMintSpend.first.balances[fundUnit];
+
+      expect(balanceSpend, equals(0));
+
+      final rcv = ndk.cashu.receive(spend200Token);
+
+      await expectLater(
+        rcv,
+        emitsInOrder([
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.completed)
+              .having((t) => t.transactionDate!, 'transactionDate', isA<int>()),
+        ]),
+      );
+
+      final allBalancesRcv = await ndk.cashu.getBalances();
+      final balanceForMintRcv =
+          allBalancesRcv.where((element) => element.mintUrl == devMintUrl);
+
+      final balanceSpendRcv = balanceForMintRcv.first.balances[fundUnit];
+
+      expect(balanceSpendRcv, equals(200));
     });
   });
 }
