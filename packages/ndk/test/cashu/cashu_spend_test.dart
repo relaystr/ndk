@@ -1,3 +1,6 @@
+import 'package:http/http.dart' as http;
+import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
@@ -91,6 +94,53 @@ void main() {
   });
 
   group('spend', () {
-    test("spend - initiateSpend", () async {});
+    test("spend - initiateSpend", () async {
+      final cache = MemCacheManager();
+
+      final client = HttpRequestDS(http.Client());
+      final cashuRepo = CashuRepoImpl(client: client);
+      final cashu = Cashu(cashuRepo: cashuRepo, cacheManager: cache);
+
+      const fundAmount = 32;
+      const fundUnit = "sat";
+
+      final draftTransaction = await cashu.initiateFund(
+        mintUrl: devMintUrl,
+        amount: fundAmount,
+        unit: fundUnit,
+        method: "bolt11",
+      );
+      final transactionStream =
+          cashu.retriveFunds(draftTransaction: draftTransaction);
+
+      final transaction = await transactionStream.last;
+      expect(transaction.state, WalletTransactionState.completed);
+
+      final spendWithoutSplit = await cashu.initiateSpend(
+        mintUrl: devMintUrl,
+        amount: 3,
+        unit: fundUnit,
+      );
+
+      final spendwithSplit = await cashu.initiateSpend(
+        mintUrl: devMintUrl,
+        amount: 1,
+        unit: fundUnit,
+      );
+
+      expect(spendWithoutSplit.token.toV4TokenString(), isNotEmpty);
+      expect(spendwithSplit.token.toV4TokenString(), isNotEmpty);
+
+      final balance =
+          await cashu.getBalanceMintUnit(unit: "sat", mintUrl: devMintUrl);
+      expect(balance, equals(fundAmount - 4));
+
+      final pendingProofs =
+          await cache.getProofs(state: CashuProofState.pending);
+      expect(pendingProofs, isEmpty);
+
+      final spendProofs = await cache.getProofs(state: CashuProofState.spend);
+      expect(spendProofs, isNotEmpty);
+    });
   });
 }
