@@ -42,4 +42,32 @@ class CashuQuoteMelt {
       mintUrl: mintUrl,
     );
   }
+
+  factory CashuQuoteMelt.fromJson(Map<String, dynamic> json) {
+    return CashuQuoteMelt(
+      quoteId: json['quoteId'] as String,
+      amount: json['amount'] as int,
+      unit: json['unit'] as String,
+      state: CashuQuoteState.fromValue(json['state'] as String),
+      expiry: json['expiry'] as int?,
+      paid: json['paid'] as bool,
+      feeReserve: json['feeReserve'] as int?,
+      request: json['request'] as String,
+      mintUrl: json['mintUrl'] as String,
+    );
+  }
+
+  Map<String, Object> toJson() {
+    return {
+      'quoteId': quoteId,
+      'amount': amount,
+      'feeReserve': feeReserve ?? 0,
+      'paid': paid,
+      'expiry': expiry ?? 0,
+      'mintUrl': mintUrl,
+      'state': state.value,
+      'unit': unit,
+      'request': request,
+    };
+  }
 }

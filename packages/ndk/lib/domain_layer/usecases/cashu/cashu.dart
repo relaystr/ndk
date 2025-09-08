@@ -451,7 +451,9 @@ class Cashu {
   /// [request] - the method request to redeem (like lightning invoice)
   /// [unit] - the unit of the token (sat)
   /// [method] - the method to use for redemption (bolt11)
-  Future redeem({
+  /// Returns a [CashuWalletTransaction] with info about fees. \
+  /// use redeem() to complete the redeem process.
+  Future<CashuWalletTransaction> initiateRedeem({
     required String mintUrl,
     required String request,
     required String unit,
@@ -463,41 +465,95 @@ class Cashu {
       unit: unit,
       method: method,
     );
-    final feeReserve = meltQuote.feeReserve;
 
-    final proofsUnfiltered = await _cacheManager.getProofs(
+    final draftTransaction = CashuWalletTransaction(
+      id: meltQuote.quoteId,
+      walletId: mintUrl,
+      changeAmount: -1 * meltQuote.amount,
+      unit: unit,
+      walletType: WalletType.CASHU,
+      state: WalletTransactionState.draft,
       mintUrl: mintUrl,
+      qouteMelt: meltQuote,
+      initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
+    return draftTransaction;
+  }
+
+  /// redeem tokens from a pending redeem transaction \
+  /// use initiateRedeem() to create a draft transaction [CashuWalletTransaction] \
+  Stream<CashuWalletTransaction> redeem({
+    required CashuWalletTransaction draftRedeemTransaction,
+  }) async* {
+    if (draftRedeemTransaction.qouteMelt == null) {
+      throw Exception("Melt Quote is not available in the transaction");
+    }
+    final meltQuote = draftRedeemTransaction.qouteMelt!;
+    final mintUrl = draftRedeemTransaction.mintUrl;
+    if (mintUrl.isEmpty) {
+      throw Exception("Mint URL is not specified in the transaction");
+    }
+    if (draftRedeemTransaction.method == null) {
+      throw Exception("Method is not specified in the transaction");
+    }
+    final method = draftRedeemTransaction.method!;
+    await _checkIfMintIsKnown(mintUrl);
+
+    final unit = draftRedeemTransaction.unit;
+    if (unit.isEmpty) {
+      throw Exception("Unit is not specified in the transaction");
+    }
+    final request = meltQuote.request;
+    if (request.isEmpty) {
+      throw Exception("Request is not specified in the transaction");
+    }
 
     final mintKeysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
     if (mintKeysets.isEmpty) {
       throw Exception('No keysets found for mint: $mintUrl');
     }
+
     final keysetsForUnit =
         CashuTools.filterKeysetsByUnit(keysets: mintKeysets, unit: unit);
 
-    final proofs = CashuTools.filterProofsByUnit(
-        proofs: proofsUnfiltered, unit: unit, keysets: keysetsForUnit);
-
-    if (proofs.isEmpty) {
-      throw Exception('No proofs found for mint: $mintUrl and unit: $unit');
-    }
-
     final int amountToSpend;
 
-    // todo: add mint fees
-
-    if (feeReserve != null) {
-      amountToSpend = meltQuote.amount + feeReserve;
+    if (meltQuote.feeReserve != null) {
+      amountToSpend = meltQuote.amount + meltQuote.feeReserve!;
     } else {
       amountToSpend = meltQuote.amount;
     }
 
-    final selectionResult = CashuProofSelect.selectProofsForSpending(
-      proofs: proofs,
-      targetAmount: amountToSpend,
-      keysets: keysetsForUnit,
-    );
+    late final ProofSelectionResult selectionResult;
+
+    await _cacheManagerCashu.runInTransaction(() async {
+      final proofsUnfiltered = await _cacheManager.getProofs(
+        mintUrl: mintUrl,
+      );
+
+      final proofs = CashuTools.filterProofsByUnit(
+          proofs: proofsUnfiltered, unit: unit, keysets: keysetsForUnit);
+
+      if (proofs.isEmpty) {
+        throw Exception('No proofs found for mint: $mintUrl and unit: $unit');
+      }
+
+      selectionResult = CashuProofSelect.selectProofsForSpending(
+        proofs: proofs,
+        targetAmount: amountToSpend,
+        keysets: keysetsForUnit,
+      );
+
+      _changeProofState(
+        proofs: selectionResult.selectedProofs,
+        state: CashuProofState.pending,
+      );
+
+      await _cacheManager.saveProofs(
+        proofs: selectionResult.selectedProofs,
+        mintUrl: mintUrl,
+      );
+    });
 
     final activeKeyset =
         CashuTools.filterKeysetsByUnitActive(keysets: mintKeysets, unit: unit);
@@ -528,45 +584,86 @@ class Cashu {
       myOutputs.addAll(blankOutputs);
     }
 
-    // todo communicate with user to check if everything is ok (fees, overpay, etc)
-
-    final meltResult = await _cashuRepo.meltTokens(
-      mintUrl: mintUrl,
-      quoteId: meltQuote.quoteId,
-      proofs: selectionResult.selectedProofs,
-      outputs: myOutputs
-          .map(
-            (e) => CashuBlindedMessage(
-              amount: e.amount,
-              id: e.blindedMessage.id,
-              blindedMessage: e.blindedMessage.blindedMessage,
-            ),
-          )
-          .toList(),
-      method: method,
+    final pendingTransaction = draftRedeemTransaction.copyWith(
+      state: WalletTransactionState.pending,
     );
+    _addPendingTransaction(pendingTransaction);
+    yield pendingTransaction;
 
-    /// remove used proofs
-    await _cacheManager.removeProofs(
-      proofs: selectionResult.selectedProofs,
-      mintUrl: mintUrl,
-    );
-
-    /// save change proofs if any
-    if (meltResult.change.isNotEmpty) {
-      /// unblind change proofs
-      final changeUnblinded = CashuBdhke.unblindSignatures(
-        mintSignatures: meltResult.change,
-        blindedMessages: myOutputs,
-        mintPublicKeys: activeKeyset,
+    try {
+      final meltResult = await _cashuRepo.meltTokens(
+        mintUrl: mintUrl,
+        quoteId: meltQuote.quoteId,
+        proofs: selectionResult.selectedProofs,
+        outputs: myOutputs
+            .map(
+              (e) => CashuBlindedMessage(
+                amount: e.amount,
+                id: e.blindedMessage.id,
+                blindedMessage: e.blindedMessage.blindedMessage,
+              ),
+            )
+            .toList(),
+        method: method,
       );
 
+      /// mark used proofs as spent
+      _changeProofState(
+        proofs: selectionResult.selectedProofs,
+        state: CashuProofState.spend,
+      );
       await _cacheManager.saveProofs(
-        proofs: changeUnblinded,
+        proofs: selectionResult.selectedProofs,
         mintUrl: mintUrl,
       );
+
+      /// save change proofs if any
+      if (meltResult.change.isNotEmpty) {
+        /// unblind change proofs
+        final changeUnblinded = CashuBdhke.unblindSignatures(
+          mintSignatures: meltResult.change,
+          blindedMessages: myOutputs,
+          mintPublicKeys: activeKeyset,
+        );
+
+        await _cacheManagerCashu.saveProofs(
+          proofs: changeUnblinded,
+          mintUrl: mintUrl,
+        );
+      }
+
+      final completedTransaction = pendingTransaction.copyWith(
+        state: WalletTransactionState.completed,
+        transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+      // remove completed transaction
+      _removePendingTransaction(completedTransaction);
+      // save completed transaction
+      _addAndSaveLatestTransaction(completedTransaction);
+
+      // update balance
+      await _updateBalances();
+      yield completedTransaction;
+    } catch (e) {
+      final failedTransaction = pendingTransaction.copyWith(
+        state: WalletTransactionState.failed,
+        completionMsg: 'Redeeming failed: $e',
+      );
+
+      // release proofs
+      _changeProofState(
+        proofs: selectionResult.selectedProofs,
+        state: CashuProofState.unspend,
+      );
+      await _cacheManagerCashu.saveProofs(
+        proofs: selectionResult.selectedProofs,
+        mintUrl: mintUrl,
+      );
+
+      _removePendingTransaction(failedTransaction);
+      yield failedTransaction;
+      return;
     }
-    return meltResult;
   }
 
   Future<CashuSpendingResult> initiateSpend({

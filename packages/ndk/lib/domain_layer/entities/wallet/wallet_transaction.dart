@@ -1,5 +1,6 @@
 import '../cashu/cashu_keyset.dart';
 import '../cashu/cashu_quote.dart';
+import '../cashu/cashu_quote_melt.dart';
 import 'wallet_type.dart';
 
 abstract class WalletTransaction {
@@ -69,6 +70,10 @@ abstract class WalletTransaction {
           qoute: metadata['qoute'] != null
               ? CashuQuote.fromJson(metadata['qoute'] as Map<String, dynamic>)
               : null,
+          qouteMelt: metadata['qouteMelt'] != null
+              ? CashuQuoteMelt.fromJson(
+                  metadata['qouteMelt'] as Map<String, dynamic>)
+              : null,
           usedKeysets: metadata['usedKeyset'] != null
               ? (metadata['usedKeyset'] as List<dynamic>)
                   .map((k) => CahsuKeyset.fromJson(k as Map<String, dynamic>))
@@ -99,6 +104,7 @@ class CashuWalletTransaction extends WalletTransaction {
   String? note;
   String? method;
   CashuQuote? qoute;
+  CashuQuoteMelt? qouteMelt;
   List<CahsuKeyset>? usedKeysets;
 
   String? token;
@@ -119,6 +125,7 @@ class CashuWalletTransaction extends WalletTransaction {
     this.note,
     this.method,
     this.qoute,
+    this.qouteMelt,
     this.usedKeysets,
     this.token,
     this.proofPubKeys,
@@ -130,6 +137,7 @@ class CashuWalletTransaction extends WalletTransaction {
                 'note': note,
                 'method': method,
                 'qoute': qoute?.toJson(),
+                'qouteMelt': qouteMelt?.toJson(),
                 'usedKeyset': usedKeysets?.map((k) => k.toJson()).toList(),
                 'token': token,
                 'proofPubKeys': proofPubKeys,
@@ -157,6 +165,7 @@ class CashuWalletTransaction extends WalletTransaction {
     String? note,
     String? method,
     CashuQuote? qoute,
+    CashuQuoteMelt? qouteMelt,
     List<CahsuKeyset>? usedKeysets,
     int? transactionDate,
     int? initiatedDate,
@@ -175,6 +184,7 @@ class CashuWalletTransaction extends WalletTransaction {
       note: note ?? this.note,
       method: method ?? this.method,
       qoute: qoute ?? this.qoute,
+      qouteMelt: qouteMelt ?? this.qouteMelt,
       usedKeysets: usedKeysets ?? this.usedKeysets,
       transactionDate: transactionDate ?? this.transactionDate,
       initiatedDate: initiatedDate ?? this.initiatedDate,
