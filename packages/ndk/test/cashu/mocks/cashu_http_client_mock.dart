@@ -295,6 +295,34 @@ class MockCashuHttpClient extends http.BaseClient {
       200,
       headers: {'content-type': 'application/json'},
     );
+
+    _responses['POST:/v1/melt/quote/bolt11'] = http.Response(
+      jsonEncode(
+        {
+          "quote": "ff477714-ae17-4b3a-88f1-d5be3a18bc01",
+          "amount": 1,
+          "fee_reserve": 2,
+          "paid": false,
+          "state": "UNPAID",
+          "expiry": now + 60,
+          "request": "lnbc1...",
+          "unit": "sat"
+        },
+      ),
+      200,
+      headers: {'content-type': 'application/json'},
+    );
+
+    _responses['POST:/v1/melt/bolt11'] = http.Response(
+      jsonEncode(
+        {
+          "payment_preimage": "mock_preimage_1234567890abcdef",
+          "state": "PAID",
+        },
+      ),
+      200,
+      headers: {'content-type': 'application/json'},
+    );
   }
 
   void setCustomResponse(String method, String path, http.Response response) {

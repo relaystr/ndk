@@ -475,6 +475,7 @@ class Cashu {
       state: WalletTransactionState.draft,
       mintUrl: mintUrl,
       qouteMelt: meltQuote,
+      method: method,
       initiatedDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
     return draftTransaction;

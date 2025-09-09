@@ -9,7 +9,7 @@ import 'cashu_test_tools.dart';
 
 const devMintUrl = 'https://dev.mint.camelus.app';
 const failingMintUrl = 'https://mint.example.com';
-const mockMintUrl = "htps://mock.mint";
+const mockMintUrl = "https://mock.mint";
 
 void main() {
   setUp(() {});
