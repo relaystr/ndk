@@ -96,10 +96,14 @@ void main() {
   group('spend', () {
     test("spend - initiateSpend", () async {
       final cache = MemCacheManager();
+      final cache2 = MemCacheManager();
 
       final client = HttpRequestDS(http.Client());
       final cashuRepo = CashuRepoImpl(client: client);
+      final cashuRepo2 = CashuRepoImpl(client: client);
       final cashu = Cashu(cashuRepo: cashuRepo, cacheManager: cache);
+
+      final cashu2 = Cashu(cashuRepo: cashuRepo2, cacheManager: cache2);
 
       const fundAmount = 32;
       const fundUnit = "sat";
@@ -130,6 +134,24 @@ void main() {
 
       expect(spendWithoutSplit.token.toV4TokenString(), isNotEmpty);
       expect(spendwithSplit.token.toV4TokenString(), isNotEmpty);
+
+      /// rcv on other party
+
+      final rcvStream = cashu2.receive(spendwithSplit.token.toV4TokenString());
+      await rcvStream.last;
+
+      /// check the state update
+      await expectLater(
+        cashu.latestTransactions.stream,
+        emitsInOrder([
+          isA<List<CashuWalletTransaction>>()
+              .having((list) => list.length, 'length', greaterThan(0))
+              .having((list) => list.last.state, 'first transaction state',
+                  WalletTransactionState.completed)
+              .having((list) => list.last.transactionDate!,
+                  'first transaction date', isA<int>()),
+        ]),
+      );
 
       final balance =
           await cashu.getBalanceMintUnit(unit: "sat", mintUrl: devMintUrl);
