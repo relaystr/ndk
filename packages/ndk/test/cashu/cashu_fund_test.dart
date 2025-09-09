@@ -1,14 +1,17 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_quote.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_keypair.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
+import 'cashu_spend_test.dart';
 import 'cashu_test_tools.dart';
 import 'mocks/cashu_http_client_mock.dart';
+import 'mocks/cashu_repo_mock.dart';
 
 const devMintUrl = 'https://dev.mint.camelus.app';
 const failingMintUrl = 'https://mint.example.com';
@@ -381,6 +384,51 @@ void main() {
       final balanceSpendRcv = balanceForMintRcv.first.balances[fundUnit];
 
       expect(balanceSpendRcv, equals(200));
+    });
+
+    test("fund - swap err, recovery of funds", () async {
+      final cache = MemCacheManager();
+
+      final myHttpMock = MockCashuHttpClient();
+
+      final cashuRepo = CashuRepoMock(client: HttpRequestDS(myHttpMock));
+
+      final cashu = Cashu(cashuRepo: cashuRepo, cacheManager: cache);
+
+      await cache.saveProofs(proofs: [
+        CashuProof(
+          keysetId: '00c726786980c4d9',
+          amount: 2,
+          secret: 'proof-s-2',
+          unblindedSig: '',
+        ),
+        CashuProof(
+          keysetId: '00c726786980c4d9',
+          amount: 4,
+          secret: 'proof-s-4',
+          unblindedSig: '',
+        ),
+      ], mintUrl: mockMintUrl);
+
+      await expectLater(
+        () async => await cashu.initiateSpend(
+          mintUrl: mockMintUrl,
+          amount: 3,
+          unit: "sat",
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      final proofs = await cache.getProofs(mintUrl: mockMintUrl);
+      expect(proofs.length, equals(2));
+
+      final pendingProofs = await cache.getProofs(
+          mintUrl: mockMintUrl, state: CashuProofState.pending);
+      expect(pendingProofs.length, equals(0));
+
+      final spendProofs = await cache.getProofs(
+          mintUrl: mockMintUrl, state: CashuProofState.spend);
+      expect(spendProofs.length, equals(0));
     });
   });
 }
