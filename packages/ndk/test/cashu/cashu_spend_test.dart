@@ -140,18 +140,18 @@ void main() {
       final rcvStream = cashu2.receive(spendwithSplit.token.toV4TokenString());
       await rcvStream.last;
 
-      /// check the state update
-      await expectLater(
-        cashu.latestTransactions.stream,
-        emitsInOrder([
-          isA<List<CashuWalletTransaction>>()
-              .having((list) => list.length, 'length', greaterThan(0))
-              .having((list) => list.last.state, 'first transaction state',
-                  WalletTransactionState.completed)
-              .having((list) => list.last.transactionDate!,
-                  'first transaction date', isA<int>()),
-        ]),
-      );
+      /// check transaction completion on rcv
+
+      final myCompletedTransaction = await cashu.latestTransactions.stream
+          // first is the funding
+          .where((transactions) => transactions.length >= 2)
+          .take(1)
+          .first;
+
+      expect(myCompletedTransaction, isNotEmpty);
+      expect(
+          myCompletedTransaction.last.state, WalletTransactionState.completed);
+      expect(myCompletedTransaction.last.transactionDate, isNotNull);
 
       final balance =
           await cashu.getBalanceMintUnit(unit: "sat", mintUrl: devMintUrl);
