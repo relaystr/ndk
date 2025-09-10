@@ -72,7 +72,7 @@ void main() {
         method: "bolt11",
       );
       final transactionStream =
-          cashu.retriveFunds(draftTransaction: draftTransaction);
+          cashu.retrieveFunds(draftTransaction: draftTransaction);
 
       final transaction = await transactionStream.last;
       expect(transaction.state, WalletTransactionState.completed);

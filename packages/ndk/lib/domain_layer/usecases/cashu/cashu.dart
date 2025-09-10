@@ -314,7 +314,7 @@ class Cashu {
   /// [draftTransaction] - the draft transaction from initiateFund() \
   /// Returns a stream of [CashuWalletTransaction] that emits the transaction state as it progresses.
   /// Throws if the draft transaction is missing required fields.
-  Stream<CashuWalletTransaction> retriveFunds({
+  Stream<CashuWalletTransaction> retrieveFunds({
     required CashuWalletTransaction draftTransaction,
   }) async* {
     if (draftTransaction.qoute == null) {

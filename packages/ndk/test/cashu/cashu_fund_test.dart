@@ -50,7 +50,7 @@ void main() {
     test('fund - retriveFunds no quote throws exception', () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-      final Stream<CashuWalletTransaction> response = ndk.cashu.retriveFunds(
+      final Stream<CashuWalletTransaction> response = ndk.cashu.retrieveFunds(
         draftTransaction: CashuWalletTransaction(
             id: 'test0',
             walletId: '',
@@ -83,12 +83,12 @@ void main() {
       );
 
       final Stream<CashuWalletTransaction> responseNoQuote =
-          ndk.cashu.retriveFunds(
+          ndk.cashu.retrieveFunds(
         draftTransaction: baseDraftTransaction,
       );
 
       final Stream<CashuWalletTransaction> responseNoMethod =
-          ndk.cashu.retriveFunds(
+          ndk.cashu.retrieveFunds(
         draftTransaction: baseDraftTransaction.copyWith(
           qoute: CashuQuote(
             quoteId: "quoteId",
@@ -104,7 +104,7 @@ void main() {
       );
 
       final Stream<CashuWalletTransaction> responseNoKeysets =
-          ndk.cashu.retriveFunds(
+          ndk.cashu.retrieveFunds(
         draftTransaction: baseDraftTransaction.copyWith(
           method: "sat",
           qoute: CashuQuote(
@@ -220,7 +220,7 @@ void main() {
       );
 
       final transactionStream =
-          cashu.retriveFunds(draftTransaction: draftTransaction);
+          cashu.retrieveFunds(draftTransaction: draftTransaction);
 
       await expectLater(
         transactionStream,
@@ -258,7 +258,7 @@ void main() {
       );
 
       final transactionStream =
-          cashu.retriveFunds(draftTransaction: draftTransaction);
+          cashu.retrieveFunds(draftTransaction: draftTransaction);
 
       await expectLater(
         transactionStream,
@@ -290,7 +290,7 @@ void main() {
         method: "bolt11",
       );
       final transactionStream =
-          ndk.cashu.retriveFunds(draftTransaction: draftTransaction);
+          ndk.cashu.retrieveFunds(draftTransaction: draftTransaction);
 
       await expectLater(
         transactionStream,
@@ -324,7 +324,7 @@ void main() {
         method: "bolt11",
       );
       final transactionStream =
-          ndk.cashu.retriveFunds(draftTransaction: draftTransaction);
+          ndk.cashu.retrieveFunds(draftTransaction: draftTransaction);
 
       await expectLater(
         transactionStream,
