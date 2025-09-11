@@ -34,6 +34,8 @@ dependencies:
   xxh3: ^1.2.0
   ascii_qr: ^1.0.1 # Add ascii_qr dependency
   cbor: ^6.3.7
+  bip32_keys: ^3.1.1
+  bip39_mnemonic: ^4.0.1
 
 dev_dependencies:
   build_runner: ^2.4.15
