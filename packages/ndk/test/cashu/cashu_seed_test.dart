@@ -1,3 +1,4 @@
+import 'package:bip39_mnemonic/bip39_mnemonic.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_seed.dart';
 import 'package:test/test.dart';
 
@@ -64,6 +65,18 @@ void main() {
 
       expect(result.secretHex, equals(expectedSecrets["secret_0"]));
       expect(result.blindingHex, equals(expectedBlindingFactors["r_0"]));
+    });
+
+    test('generating seedPhrase', () async {
+      final generated = CashuSeed.generateSeedPhrase(
+        length: MnemonicLength.words24,
+      );
+      expect(generated.split(' ').length, equals(24));
+
+      final seed = CashuSeed(userSeedPhrase: generated);
+      final result = seed.deriveSecret(counter: 0, keysetId: keysetId);
+      expect(result.secretHex.length, equals(64));
+      expect(result.blindingHex.length, equals(64));
     });
   });
 }
