@@ -11,6 +11,7 @@ import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
 import '../../entities/cashu/cashu_spending_result.dart';
 import '../../entities/cashu/cashu_token.dart';
+import '../../entities/cashu/cashu_user_seedphrase.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/cache_manager.dart';
@@ -19,6 +20,7 @@ import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
 
+import 'cashu_seed.dart';
 import 'cashu_token_encoder.dart';
 import 'cashu_tools.dart';
 import 'cashu_proof_select.dart';
@@ -30,9 +32,13 @@ class Cashu {
 
   late final CashuKeysets _cashuKeysets;
   late final CashuProofSelect _cashuWalletProofSelect;
+
+  late final CashuSeed _cashuSeed;
+
   Cashu({
     required CashuRepo cashuRepo,
     required CacheManager cacheManager,
+    CashuUserSeedphrase? cashuUserSeedphrase,
   })  : _cashuRepo = cashuRepo,
         _cacheManager = cacheManager {
     _cashuKeysets = CashuKeysets(
@@ -43,6 +49,14 @@ class Cashu {
       cashuRepo: _cashuRepo,
     );
     _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
+
+    _cashuSeed = CashuSeed(
+      userSeedPhrase: cashuUserSeedphrase,
+    );
+    if (cashuUserSeedphrase == null) {
+      Logger.log.w(
+          'Cashu initialized without user seed phrase, cashu features will not work \nSet the seed phrase using NdkConfig or Cashu.setCashuSeedPhrase()');
+    }
   }
 
   /// mints this usecase has interacted with \
@@ -62,6 +76,15 @@ class Cashu {
 
   /// stream of balances \
   BehaviorSubject<List<CashuMintBalance>>? _balanceSubject;
+
+  /// set cashu user seed phrase, required for using cashu features \
+  /// ideally use the NdkConfig to set the seed phrase on initialization \
+  /// you can use CashuSeed.generateSeedPhrase() to generate a new seed phrase
+  void setCashuSeedPhrase(CashuUserSeedphrase userSeedPhrase) {
+    _cashuSeed.setSeedPhrase(
+      seedPhrase: userSeedPhrase.seedPhrase,
+    );
+  }
 
   Future<int> getBalanceMintUnit({
     required String unit,

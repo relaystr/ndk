@@ -251,6 +251,7 @@ class Initialization {
     cashu = Cashu(
       cashuRepo: cashuRepo,
       cacheManager: _ndkConfig.cache,
+      cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
     );
 
     final WalletsRepo walletsRepo = WalletsRepoImpl(

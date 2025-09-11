@@ -1,5 +1,6 @@
 import 'package:bip39_mnemonic/bip39_mnemonic.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_seed.dart';
+import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -39,7 +40,8 @@ void main() {
     });
 
     test('deriveSecret', () async {
-      final seed = CashuSeed(userSeedPhrase: mnemonic);
+      final seed =
+          CashuSeed(userSeedPhrase: CashuUserSeedphrase(seedPhrase: mnemonic));
       for (int i = 0; i < 5; i++) {
         final result = seed.deriveSecret(counter: i, keysetId: keysetId);
 
@@ -73,7 +75,8 @@ void main() {
       );
       expect(generated.split(' ').length, equals(24));
 
-      final seed = CashuSeed(userSeedPhrase: generated);
+      final seed =
+          CashuSeed(userSeedPhrase: CashuUserSeedphrase(seedPhrase: generated));
       final result = seed.deriveSecret(counter: 0, keysetId: keysetId);
       expect(result.secretHex.length, equals(64));
       expect(result.blindingHex.length, equals(64));

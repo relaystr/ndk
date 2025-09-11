@@ -4,6 +4,8 @@ import 'package:bip32_keys/bip32_keys.dart';
 import 'package:bip39_mnemonic/bip39_mnemonic.dart';
 import 'package:convert/convert.dart';
 
+import '../../entities/cashu/cashu_user_seedphrase.dart';
+
 class CashuSeedDeriveSecretResult {
   final String secretHex;
   final String blindingHex;
@@ -21,10 +23,14 @@ class CashuSeed {
   Mnemonic? _userSeedPhrase;
 
   CashuSeed({
-    String? userSeedPhrase,
+    CashuUserSeedphrase? userSeedPhrase,
   }) {
     if (userSeedPhrase != null) {
-      setSeedPhrase(seedPhrase: userSeedPhrase);
+      setSeedPhrase(
+        seedPhrase: userSeedPhrase.seedPhrase,
+        language: userSeedPhrase.language,
+        passphrase: userSeedPhrase.passphrase,
+      );
     }
   }
 
