@@ -38,7 +38,9 @@ dependencies:
   xxh3: ^1.2.0
   ascii_qr: ^1.0.1 # Add ascii_qr dependency
   cbor: ^6.3.7
-  bip32_keys: ^3.1.1
+  bip32_keys:
+    git:
+      url: https://github.com/1-leo/dart-bip32-keys
   bip39_mnemonic: ^4.0.1
 
 
