@@ -213,7 +213,7 @@ class RelaySets {
     return Map<String, Set<PubkeyMapping>>.fromEntries(sortedEntries);
   }
 
-  _handleRelayUrlForPubKey(
+  void _handleRelayUrlForPubKey(
       String pubKey,
       RelayDirection direction,
       String url,

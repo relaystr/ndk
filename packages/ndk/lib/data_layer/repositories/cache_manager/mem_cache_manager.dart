@@ -255,6 +255,7 @@ class MemCacheManager implements CacheManager {
     String? pTag,
     int? since,
     int? until,
+    int? limit,
   }) async {
     List<Nip01Event> result = [];
     for (var event in events.values) {
@@ -278,6 +279,13 @@ class MemCacheManager implements CacheManager {
 
       result.add(event);
     }
+
+    result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (limit != null && limit > 0 && result.length > limit) {
+      result = result.take(limit).toList();
+    }
+
     return result;
   }
 

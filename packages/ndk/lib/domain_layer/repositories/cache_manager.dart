@@ -25,6 +25,7 @@ abstract class CacheManager {
     String? pTag,
     int? since,
     int? until,
+    int? limit,
   });
   Future<void> removeEvent(String id);
   Future<void> removeAllEventsByPubKey(String pubKey);

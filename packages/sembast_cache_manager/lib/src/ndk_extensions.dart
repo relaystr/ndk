@@ -22,16 +22,16 @@ extension Nip01EventExtension on Nip01Event {
 
   static Nip01Event fromJsonStorage(Map<String, Object?> json) {
     final event = Nip01Event.fromJson(json);
-    
+
     // Restore additional properties not handled by fromJson
     if (json['validSig'] != null) {
       event.validSig = json['validSig'] as bool?;
     }
-    
+
     if (json['sources'] != null) {
       event.sources = List<String>.from(json['sources'] as List);
     }
-    
+
     return event;
   }
 }
@@ -58,16 +58,19 @@ extension ContactListExtension on ContactList {
       pubKey: json['pubKey'] as String,
       contacts: List<String>.from(json['contacts'] as List),
     );
-    
-    contactList.contactRelays = List<String>.from(json['contactRelays'] as List);
+
+    contactList.contactRelays =
+        List<String>.from(json['contactRelays'] as List);
     contactList.petnames = List<String>.from(json['petnames'] as List);
     contactList.followedTags = List<String>.from(json['followedTags'] as List);
-    contactList.followedCommunities = List<String>.from(json['followedCommunities'] as List);
-    contactList.followedEvents = List<String>.from(json['followedEvents'] as List);
+    contactList.followedCommunities =
+        List<String>.from(json['followedCommunities'] as List);
+    contactList.followedEvents =
+        List<String>.from(json['followedEvents'] as List);
     contactList.createdAt = json['createdAt'] as int;
     contactList.loadedTimestamp = json['loadedTimestamp'] as int?;
     contactList.sources = List<String>.from(json['sources'] as List);
-    
+
     return contactList;
   }
 }
@@ -107,11 +110,11 @@ extension MetadataExtension on Metadata {
       updatedAt: json['updatedAt'] as int?,
       refreshedTimestamp: json['refreshedTimestamp'] as int?,
     );
-    
+
     if (json['sources'] != null) {
       metadata.sources = List<String>.from(json['sources'] as List);
     }
-    
+
     return metadata;
   }
 }
@@ -134,7 +137,7 @@ extension Nip05Extension on Nip05 {
       nip05: json['nip05'] as String,
       valid: json['valid'] as bool? ?? false,
       networkFetchTime: json['networkFetchTime'] as int?,
-      relays: json['relays'] != null 
+      relays: json['relays'] != null
           ? List<String>.from(json['relays'] as List)
           : const [],
     );
@@ -150,14 +153,14 @@ extension RelaySetExtension on RelaySet {
       'relayMinCountPerPubkey': relayMinCountPerPubkey,
       'direction': direction.index,
       'relaysMap': relaysMap.map((key, value) => MapEntry(
-        key, 
-        value.map((mapping) => mapping.toJsonForStorage()).toList()
-      )),
+          key, value.map((mapping) => mapping.toJsonForStorage()).toList())),
       'fallbackToBootstrapRelays': fallbackToBootstrapRelays,
-      'notCoveredPubkeys': notCoveredPubkeys.map((pubkey) => {
-        'pubKey': pubkey.pubKey,
-        'coverage': pubkey.coverage,
-      }).toList(),
+      'notCoveredPubkeys': notCoveredPubkeys
+          .map((pubkey) => {
+                'pubKey': pubkey.pubKey,
+                'coverage': pubkey.coverage,
+              })
+          .toList(),
     };
   }
 
@@ -165,7 +168,7 @@ extension RelaySetExtension on RelaySet {
     // Reconstruct relaysMap
     final relaysMapJson = json['relaysMap'] as Map<String, dynamic>? ?? {};
     final relaysMap = <String, List<PubkeyMapping>>{};
-    
+
     relaysMapJson.forEach((key, value) {
       final mappings = (value as List)
           .map((mapping) => PubkeyMappingExtension.fromJsonStorage(mapping))
@@ -175,10 +178,12 @@ extension RelaySetExtension on RelaySet {
 
     // Reconstruct notCoveredPubkeys
     final notCoveredJson = json['notCoveredPubkeys'] as List? ?? [];
-    final notCoveredPubkeys = notCoveredJson.map((item) => NotCoveredPubKey(
-      item['pubKey'] as String,
-      item['coverage'] as int,
-    )).toList();
+    final notCoveredPubkeys = notCoveredJson
+        .map((item) => NotCoveredPubKey(
+              item['pubKey'] as String,
+              item['coverage'] as int,
+            ))
+        .toList();
 
     return RelaySet(
       name: json['name'] as String,
@@ -187,7 +192,8 @@ extension RelaySetExtension on RelaySet {
       direction: RelayDirection.values[json['direction'] as int? ?? 0],
       relaysMap: relaysMap,
       notCoveredPubkeys: notCoveredPubkeys,
-      fallbackToBootstrapRelays: json['fallbackToBootstrapRelays'] as bool? ?? true,
+      fallbackToBootstrapRelays:
+          json['fallbackToBootstrapRelays'] as bool? ?? true,
     );
   }
 }
@@ -204,7 +210,8 @@ extension PubkeyMappingExtension on PubkeyMapping {
   static PubkeyMapping fromJsonStorage(Map<String, Object?> json) {
     return PubkeyMapping(
       pubKey: json['pubKey'] as String,
-      rwMarker: ReadWriteMarkerExtension.fromJsonStorage(json['rwMarker'] as Map<String, Object?>),
+      rwMarker: ReadWriteMarkerExtension.fromJsonStorage(
+          json['rwMarker'] as Map<String, Object?>),
     );
   }
 }
@@ -221,7 +228,7 @@ extension ReadWriteMarkerExtension on ReadWriteMarker {
   static ReadWriteMarker fromJsonStorage(Map<String, Object?> json) {
     final read = json['read'] as bool? ?? false;
     final write = json['write'] as bool? ?? false;
-    
+
     return ReadWriteMarker.from(read: read, write: write);
   }
 }
@@ -233,7 +240,8 @@ extension UserRelayListExtension on UserRelayList {
       'pubKey': pubKey,
       'createdAt': createdAt,
       'refreshedTimestamp': refreshedTimestamp,
-      'relays': relays.map((key, value) => MapEntry(key, value.toJsonForStorage())),
+      'relays':
+          relays.map((key, value) => MapEntry(key, value.toJsonForStorage())),
     };
   }
 
@@ -241,9 +249,10 @@ extension UserRelayListExtension on UserRelayList {
     // Reconstruct relays map
     final relaysJson = json['relays'] as Map<String, dynamic>? ?? {};
     final relays = <String, ReadWriteMarker>{};
-    
+
     relaysJson.forEach((key, value) {
-      relays[key] = ReadWriteMarkerExtension.fromJsonStorage(value as Map<String, Object?>);
+      relays[key] = ReadWriteMarkerExtension.fromJsonStorage(
+          value as Map<String, Object?>);
     });
 
     return UserRelayList(
@@ -254,4 +263,3 @@ extension UserRelayListExtension on UserRelayList {
     );
   }
 }
-

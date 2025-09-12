@@ -1,3 +1,10 @@
+## 0.5.1
+
+- feat: nip46 signer
+- feat: useragent identifier
+- fix: limit in loadEvents
+- dep: upgrade to pointycastle v4
+
 ## 0.5.0
 
 - feat: NIP07 web signer support

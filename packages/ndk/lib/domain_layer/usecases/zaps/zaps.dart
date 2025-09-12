@@ -244,7 +244,7 @@ class ZapResponse {
   }
 
   /// emit the receipt
-  emitReceipt(ZapReceipt? receipt) {
+  void emitReceipt(ZapReceipt? receipt) {
     _receiptCompleter.complete(receipt);
   }
 

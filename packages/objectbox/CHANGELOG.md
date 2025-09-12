@@ -1,3 +1,8 @@
+## 0.2.6
+
+- limit in loadEvents
+- upgrade to ndk 0.5.1
+
 ## 0.2.5
 
  - upgrade to ndk 0.4.1

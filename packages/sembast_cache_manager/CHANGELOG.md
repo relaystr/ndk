@@ -1,3 +1,8 @@
-## 1.0.1
+## 1.0.3
 
-- Add SembastCacheManager.create
+- limit in loadEvents
+- upgrade to ndk 0.5.1
+
+## 1.0.2
+
+- Update dependencies
