@@ -48,6 +48,11 @@ class MemCacheManager implements CacheManager {
 
   Set<CashuMintInfo> cashuMintInfos = {};
 
+  /// In memory storage for cashu secret counters
+  /// Key is a combination of mintUrl and keysetId
+  /// value is the counter
+  final Map<String, int> _cashuSecretCounters = {};
+
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
     userRelayLists[userRelayList.pubKey] = userRelayList;
@@ -477,5 +482,26 @@ class MemCacheManager implements CacheManager {
         .removeWhere((info) => info.urls.any((url) => mintInfo.isMintUrl(url)));
     cashuMintInfos.add(mintInfo);
     return Future.value();
+  }
+
+  @override
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  }) {
+    final key = '$mintUrl|$keysetId';
+    return Future.value(_cashuSecretCounters[key] ?? 0);
+  }
+
+  @override
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  }) async {
+    final key = '$mintUrl|$keysetId';
+    _cashuSecretCounters[key] = counter;
+
+    return;
   }
 }

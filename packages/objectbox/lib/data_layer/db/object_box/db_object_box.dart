@@ -10,6 +10,7 @@ import 'db_init_object_box.dart';
 import 'schema/db_cashu_keyset.dart';
 import 'schema/db_cashu_mint_info.dart';
 import 'schema/db_cashu_proof.dart';
+import 'schema/db_cashu_secret_counter.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
@@ -876,5 +877,24 @@ class DbObjectBox implements CacheManager {
     }
 
     box.put(DbCashuMintInfo.fromNdk(mintInfo));
+  }
+
+  @override
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  }) async {
+    // TODO: implement getCashuSecretCounter
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  }) async {
+    await dbRdy;
+    throw UnimplementedError();
   }
 }

@@ -141,4 +141,15 @@ abstract class CacheManager {
   Future<List<CashuMintInfo>?> getMintInfos({
     List<String>? mintUrls,
   });
+
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  });
+
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  });
 }
