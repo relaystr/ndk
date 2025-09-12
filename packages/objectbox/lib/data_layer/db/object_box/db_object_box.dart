@@ -901,8 +901,18 @@ class DbObjectBox implements CacheManager {
     required String mintUrl,
     required String keysetId,
   }) async {
-    // TODO: implement getCashuSecretCounter
-    throw UnimplementedError();
+    await dbRdy;
+    final box = _objectBox.store.box<DbCashuSecretCounter>();
+    final existing = box
+        .query(DbCashuSecretCounter_.mintUrl
+            .equals(mintUrl)
+            .and(DbCashuSecretCounter_.keysetId.equals(keysetId)))
+        .build()
+        .findFirst();
+    if (existing == null) {
+      return 0;
+    }
+    return existing.counter;
   }
 
   @override
@@ -912,6 +922,21 @@ class DbObjectBox implements CacheManager {
     required int counter,
   }) async {
     await dbRdy;
-    throw UnimplementedError();
+    final box = _objectBox.store.box<DbCashuSecretCounter>();
+    final existing = box
+        .query(DbCashuSecretCounter_.mintUrl
+            .equals(mintUrl)
+            .and(DbCashuSecretCounter_.keysetId.equals(keysetId)))
+        .build()
+        .findFirst();
+    if (existing != null) {
+      box.remove(existing.dbId);
+    }
+    box.put(DbCashuSecretCounter(
+      mintUrl: mintUrl,
+      keysetId: keysetId,
+      counter: counter,
+    ));
+    return Future.value();
   }
 }
