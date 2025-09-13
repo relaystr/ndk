@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:rxdart/rxdart.dart';
+
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
@@ -13,10 +15,10 @@ class Accounts {
   /// pubKey -> Account
   final Map<String, Account> accounts = {};
   String? _loggedPubkey;
-  
+
   /// Stream controller for authentication state changes
-  final _authStateController = StreamController<Account?>.broadcast();
-  
+  final _authStateController = BehaviorSubject<Account?>();
+
   /// Stream of authentication state changes
   /// Emits the current Account when logged in, or null when logged out
   Stream<Account?> get authStateChanges => _authStateController.stream;
@@ -184,12 +186,12 @@ class Accounts {
   String? getPublicKey() {
     return getLoggedAccount()?.pubkey;
   }
-  
+
   /// Notifies listeners of auth state changes
   void _notifyAuthStateChange() {
     _authStateController.add(getLoggedAccount());
   }
-  
+
   /// Dispose of resources
   void dispose() {
     _authStateController.close();
