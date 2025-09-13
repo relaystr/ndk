@@ -48,6 +48,23 @@ await ndk.accounts.loginWithBunkerConnection(
 Store the `BunkerConnection` details locally to re-establish the connection in future sessions. Use `bunkerConnection.toJson()` to serialize and `BunkerConnection.fromJson()` to restore. Without storing these, users will need to re-authenticate each time.
 !!!
 
+### Authentication state
+
+```dart
+ndk.accounts.authStateChanges.listen((account) {
+if (account == null) {
+    print('No active user');
+} else {
+    print('Active user: ${account.pubkey}');
+}
+});
+```
+
+Events are fired when the following occurs:
+- On login
+- On logout
+- On switch account
+
 ## When to use
 
 Use it to log in an account.
