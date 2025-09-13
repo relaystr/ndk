@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 
 import '../../shared/helpers/list_casting.dart';
 import '../../shared/nips/nip01/bip340.dart';
+import '../../shared/nips/nip13/nip13.dart';
 
 /// basic nostr nip01 event data structure
 class Nip01Event {
@@ -110,6 +111,10 @@ class Nip01Event {
   bool get isIdValid {
     // Validate event data
     if (id != _calculateId(pubKey, createdAt, kind, tags, content)) {
+      return false;
+    }
+    // Validate proof of work if present
+    if (!Nip13.validateEvent(this)) {
       return false;
     }
     return true;
@@ -228,4 +233,23 @@ class Nip01Event {
       sig ?? this.sig,
     )..sources = sources ?? this.sources;
   }
+
+  /// Mine this event with proof of work
+  Nip01Event minePoW(int targetDifficulty, {int? maxIterations}) {
+    return Nip13.mineEvent(this, targetDifficulty, maxIterations: maxIterations);
+  }
+
+  /// Get the proof of work difficulty of this event
+  int get powDifficulty => Nip13.getDifficulty(id);
+
+  /// Check if this event meets a specific difficulty target
+  bool checkPoWDifficulty(int targetDifficulty) {
+    return Nip13.checkDifficulty(id, targetDifficulty);
+  }
+
+  /// Get the target difficulty from nonce tag if present
+  int? get targetPoWDifficulty => Nip13.getTargetDifficultyFromEvent(this);
+
+  /// Calculate the commitment (work done) for this event
+  int get powCommitment => Nip13.calculateCommitment(id);
 }
