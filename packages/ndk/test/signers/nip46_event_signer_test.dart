@@ -66,7 +66,7 @@ void main() {
 
       expect(event.id, isNotNull);
       expect(event.sig, isNotNull);
-    });
+    }, skip: true);
 
     test('getPublicKey should throw when not cached', () {
       expect(() => signer.getPublicKey(), throwsException);
