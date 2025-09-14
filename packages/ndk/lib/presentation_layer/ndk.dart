@@ -149,8 +149,14 @@ class Ndk {
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
-    await nwc.disconnectAll();
-    await _initialization.requests.closeAllSubscription();
-    await _initialization.relayManager.closeAllTransports();
+    final allFutures = [
+      nwc.disconnectAll(),
+      _initialization.requests.closeAllSubscription(),
+      _initialization.relayManager.closeAllTransports(),
+      _initialization.requests.closeAllSubscription(),
+      accounts.dispose(),
+    ];
+
+    await Future.wait(allFutures);
   }
 }

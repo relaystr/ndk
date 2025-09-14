@@ -193,7 +193,7 @@ class Accounts {
   }
 
   /// Dispose of resources
-  void dispose() {
-    _authStateController.close();
+  Future<void> dispose() async {
+    await _authStateController.close();
   }
 }

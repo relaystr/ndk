@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:test/test.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -11,13 +9,10 @@ void main() {
 
     final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-    final streamController = StreamController<Account?>();
-    ndk.accounts.authStateChanges.listen((account) {
-      streamController.add(account);
-    });
+    final stream = ndk.accounts.authStateChanges;
 
     final expectation = expectLater(
-      streamController.stream,
+      stream,
       emitsInOrder([
         predicate<Account?>((a) => a?.pubkey == firstAccount.publicKey),
         predicate<Account?>((a) => a?.pubkey == secondAccount.publicKey),
@@ -38,6 +33,16 @@ void main() {
     ndk.accounts.logout();
 
     await expectation;
-    await streamController.close();
+  });
+
+  test("dispose closes stream", () async {
+    final ndk = Ndk.emptyBootstrapRelaysConfig();
+    final stream = ndk.accounts.authStateChanges;
+    await ndk.destroy();
+
+    await expectLater(
+      stream,
+      emitsDone,
+    );
   });
 }
