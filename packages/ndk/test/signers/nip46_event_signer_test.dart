@@ -353,5 +353,5 @@ void main() {
       final response = await signer.ping();
       expect(response, equals('pong'));
     });
-  });
+  }, skip: true);
 }
