@@ -59,7 +59,30 @@ void main() {
     });
   });
 
-  test('validate event', () {
+  test('validate event: greater POW', () {
+    final keypair = Bip340.generatePrivateKey();
+
+    final minedEvent = Nip01Event(
+      pubKey: keypair.publicKey,
+      kind: 1,
+      tags: [],
+      content: 'Hello, Nostr!',
+      createdAt: 1234567890,
+    ).minePoW(10);
+
+    final value = Nip13.validateEvent(minedEvent);
+
+    expect(value, isTrue);
+
+    final invalidEvent = minedEvent.copyWith(tags: [
+      ['nonce', '123', '14']
+    ]);
+
+    final invalidValue = Nip13.validateEvent(invalidEvent);
+    expect(invalidValue, isFalse);
+  });
+
+  test('validate event: id check', () {
     final keypair = Bip340.generatePrivateKey();
 
     final minedEvent = Nip01Event(
@@ -78,7 +101,7 @@ void main() {
       ['nonce', '123', '4']
     ]);
 
-    final invalidValue = Nip13.validateEvent(invalidEvent);
+    final invalidValue = invalidEvent.isIdValid;
     expect(invalidValue, isFalse);
   });
 
