@@ -41,5 +41,59 @@ void main() {
 
       expect(minedEvent.checkPoWDifficulty(2), isTrue);
     });
+
+    test('check target difficulty', () {
+      final keypair = Bip340.generatePrivateKey();
+
+      final minedEvent = Nip01Event(
+        pubKey: keypair.publicKey,
+        kind: 1,
+        tags: [],
+        content: 'Hello, Nostr!',
+        createdAt: 1234567890,
+      ).minePoW(4);
+
+      final value = Nip13.getTargetDifficultyFromEvent(minedEvent);
+
+      expect(value, equals(4));
+    });
+  });
+
+  test('validate event', () {
+    final keypair = Bip340.generatePrivateKey();
+
+    final minedEvent = Nip01Event(
+      pubKey: keypair.publicKey,
+      kind: 1,
+      tags: [],
+      content: 'Hello, Nostr!',
+      createdAt: 1234567890,
+    ).minePoW(10);
+
+    final value = Nip13.validateEvent(minedEvent);
+
+    expect(value, isTrue);
+
+    final invalidEvent = minedEvent.copyWith(tags: [
+      ['nonce', '123', '4']
+    ]);
+
+    final invalidValue = Nip13.validateEvent(invalidEvent);
+    expect(invalidValue, isFalse);
+  });
+
+  test('check commitment', () {
+    final keypair = Bip340.generatePrivateKey();
+
+    final minedEvent = Nip01Event(
+      pubKey: keypair.publicKey,
+      kind: 1,
+      tags: [],
+      content: 'Hello, Nostr!',
+      createdAt: 1234567890,
+    ).minePoW(4);
+
+    final commitment = Nip13.calculateCommitment(minedEvent.id);
+    expect(commitment, greaterThan(0));
   });
 }
