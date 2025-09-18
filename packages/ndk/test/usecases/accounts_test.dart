@@ -141,5 +141,48 @@ void main() async {
       ndk.accounts.logout();
       expect(ndk.accounts.isNotLoggedIn, true);
     });
+    test('state Changes Listener', () async {
+      final firstAccount = Bip340.generatePrivateKey();
+      final secondAccount = Bip340.generatePrivateKey();
+
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final stream = ndk.accounts.stateChanges;
+
+      final expectation = expectLater(
+        stream,
+        emitsInOrder([
+          predicate<Account?>((a) => a?.pubkey == firstAccount.publicKey),
+          predicate<Account?>((a) => a?.pubkey == secondAccount.publicKey),
+          predicate<Account?>((a) => a?.pubkey == firstAccount.publicKey),
+          predicate<Account?>((a) => a?.pubkey == null),
+        ]),
+      );
+
+      ndk.accounts.loginPrivateKey(
+        pubkey: firstAccount.publicKey,
+        privkey: firstAccount.privateKey!,
+      );
+
+      ndk.accounts.loginPublicKey(pubkey: secondAccount.publicKey);
+
+      ndk.accounts.switchAccount(pubkey: firstAccount.publicKey);
+
+      ndk.accounts.logout();
+
+      await expectation;
+    });
+
+    test("dispose closes stream", () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final stream = ndk.accounts.stateChanges;
+      await ndk.destroy();
+
+      await expectLater(
+        stream,
+        emitsDone,
+      );
+    });
+
   });
 }

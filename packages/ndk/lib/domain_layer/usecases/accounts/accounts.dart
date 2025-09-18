@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:rxdart/rxdart.dart';
+
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
@@ -12,6 +16,13 @@ class Accounts {
   final Map<String, Account> accounts = {};
   String? _loggedPubkey;
 
+  /// Stream controller for authentication state changes
+  final _stateController = BehaviorSubject<Account?>();
+
+  /// Stream of authentication state changes
+  /// Emits the current Account when logged in, or null when logged out
+  Stream<Account?> get stateChanges => _stateController.stream;
+
   /// adds a new Account and sets the logged pubkey
   void loginPrivateKey({required String pubkey, required String privkey}) {
     if (accounts.containsKey(pubkey)) {
@@ -22,6 +33,7 @@ class Accounts {
         type: AccountType.privateKey,
         signer: Bip340EventSigner(privateKey: privkey, publicKey: pubkey));
     _loggedPubkey = pubkey;
+    _notifyAuthStateChange();
   }
 
   /// do we have the account for this pubkey?
@@ -39,6 +51,7 @@ class Accounts {
         type: AccountType.publicKey,
         signer: Bip340EventSigner(privateKey: null, publicKey: pubkey));
     _loggedPubkey = pubkey;
+    _notifyAuthStateChange();
   }
 
   /// adds a new read-only Account and sets the logged pubkey
@@ -50,6 +63,7 @@ class Accounts {
     addAccount(
         pubkey: pubkey, type: AccountType.externalSigner, signer: signer);
     _loggedPubkey = pubkey;
+    _notifyAuthStateChange();
   }
 
   Future<BunkerConnection?> loginWithBunkerUrl({
@@ -104,6 +118,7 @@ class Accounts {
     if (_loggedPubkey != null) {
       accounts.remove(_loggedPubkey);
       _loggedPubkey = null;
+      _notifyAuthStateChange();
     }
   }
 
@@ -111,6 +126,7 @@ class Accounts {
   void switchAccount({required String pubkey}) {
     if (pubkey.isNotEmpty && accounts.containsKey(pubkey)) {
       _loggedPubkey = pubkey;
+      _notifyAuthStateChange();
     } else {
       throw Exception("unknown account for pubkey");
     }
@@ -127,6 +143,7 @@ class Accounts {
   // /// clears the logged pubkey
   void _clearLoggedPubkey() {
     _loggedPubkey = null;
+    _notifyAuthStateChange();
   }
 
   /// removes an Account
@@ -168,5 +185,15 @@ class Accounts {
   /// returns public key of currently logged in account or null if not logged in
   String? getPublicKey() {
     return getLoggedAccount()?.pubkey;
+  }
+
+  /// Notifies listeners of auth state changes
+  void _notifyAuthStateChange() {
+    _stateController.add(getLoggedAccount());
+  }
+
+  /// Dispose of resources
+  Future<void> dispose() async {
+    await _stateController.close();
   }
 }
