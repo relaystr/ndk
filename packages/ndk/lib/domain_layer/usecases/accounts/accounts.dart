@@ -17,11 +17,11 @@ class Accounts {
   String? _loggedPubkey;
 
   /// Stream controller for authentication state changes
-  final _authStateController = BehaviorSubject<Account?>();
+  final _stateController = BehaviorSubject<Account?>();
 
   /// Stream of authentication state changes
   /// Emits the current Account when logged in, or null when logged out
-  Stream<Account?> get authStateChanges => _authStateController.stream;
+  Stream<Account?> get stateChanges => _stateController.stream;
 
   /// adds a new Account and sets the logged pubkey
   void loginPrivateKey({required String pubkey, required String privkey}) {
@@ -189,11 +189,11 @@ class Accounts {
 
   /// Notifies listeners of auth state changes
   void _notifyAuthStateChange() {
-    _authStateController.add(getLoggedAccount());
+    _stateController.add(getLoggedAccount());
   }
 
   /// Dispose of resources
   Future<void> dispose() async {
-    await _authStateController.close();
+    await _stateController.close();
   }
 }
