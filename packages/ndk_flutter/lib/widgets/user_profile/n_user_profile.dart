@@ -46,7 +46,6 @@ class NUserProfile extends StatelessWidget {
           width: 10,
           color: pubkeyColorScheme.primaryContainer,
         );
-        Widget picture = Container(height: 100, width: 100, color: pkColor);
 
         if (snapshot.hasData) {
           final metadata = snapshot.data!;
@@ -54,10 +53,6 @@ class NUserProfile extends StatelessWidget {
 
           if (metadata.banner != null) {
             banner = Image.network(metadata.banner!, fit: BoxFit.cover);
-          }
-
-          if (metadata.picture != null) {
-            picture = Image.network(metadata.picture!, fit: BoxFit.cover);
           }
 
           if (metadata.cleanNip05 != null) {
@@ -119,11 +114,10 @@ class NUserProfile extends StatelessWidget {
                     child: Container(
                       color: Theme.of(context).colorScheme.surface,
                       padding: EdgeInsets.all(8),
-                      child: CircleAvatar(
-                        radius: 40,
-                        child: ClipOval(
-                          child: AspectRatio(aspectRatio: 1, child: picture),
-                        ),
+                      child: NPicture(
+                        ndk: ndk,
+                        metadata: snapshot.data,
+                        circleAvatarRadius: 40,
                       ),
                     ),
                   ),
