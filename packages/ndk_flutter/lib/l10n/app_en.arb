@@ -1,0 +1,117 @@
+{
+  "@@locale": "en",
+  "createAccount": "Create your account",
+  "@createAccount": {
+    "description": "Button text for creating a new account"
+  },
+  "newHere": "Are you new here?",
+  "@newHere": {
+    "description": "Question asking if the user is new to the platform"
+  },
+  "nostrAddress": "Nostr Address",
+  "@nostrAddress": {
+    "description": "Label for nostr address input field"
+  },
+  "publicKey": "Public Key",
+  "@publicKey": {
+    "description": "Label for public key input field"
+  },
+  "privateKey": "Private Key (insecure)",
+  "@privateKey": {
+    "description": "Label for private key input field"
+  },
+  "browserExtension": "Browser extension",
+  "@browserExtension": {
+    "description": "Label for browser extension login section"
+  },
+  "connect": "Connect",
+  "@connect": {
+    "description": "Button text to connect with browser extension"
+  },
+  "install": "Install",
+  "@install": {
+    "description": "Button text to install browser extension"
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Button text to logout from the application"
+  },
+  "nostrAddressHint": "name@example.com",
+  "@nostrAddressHint": {
+    "description": "Placeholder text for nostr address input field"
+  },
+  "invalidAddress": "Invalid Address",
+  "@invalidAddress": {
+    "description": "Error message for invalid nostr address"
+  },
+  "unableToConnect": "Unable to connect",
+  "@unableToConnect": {
+    "description": "Error message when unable to connect to nostr address"
+  },
+  "publicKeyHint": "npub1...",
+  "@publicKeyHint": {
+    "description": "Placeholder text for public key input field"
+  },
+  "privateKeyHint": "nsec1...",
+  "@privateKeyHint": {
+    "description": "Placeholder text for private key input field"
+  },
+  "newToNostr": "New to Nostr?",
+  "@newToNostr": {
+    "description": "Question asking if the user is new to Nostr"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Button text to get started with Nostr"
+  },
+  "bunker": "Bunker",
+  "@bunker": {
+    "description": "Label for bunker login section"
+  },
+  "bunkerAuthentication": "Bunker Authentication",
+  "@bunkerAuthentication": {
+    "description": "Title for bunker authentication toast"
+  },
+  "tapToOpen": "Tap to open: {url}",
+  "@tapToOpen": {
+    "description": "Description for bunker authentication toast",
+    "placeholders": {
+      "url": {
+        "type": "String",
+        "example": "https://example.com/auth"
+      }
+    }
+  },
+  "showNostrConnectQrcode": "Show nostr connect qrcode",
+  "@showNostrConnectQrcode": {
+    "description": "Button text to show nostr connect QR code"
+  },
+  "loginWithAmber": "Login with amber",
+  "@loginWithAmber": {
+    "description": "Button text to login with Amber"
+  },
+  "nostrConnectUrl": "Nostr connect URL",
+  "@nostrConnectUrl": {
+    "description": "Title for nostr connect URL dialog"
+  },
+  "copy": "Copy",
+  "@copy": {
+    "description": "Button text to copy to clipboard"
+  },
+  "addAccount": "Add account",
+  "@addAccount": {
+    "description": "Button text to add a new account"
+  },
+  "readOnly": "Read-only",
+  "@readOnly": {
+    "description": "Label for read-only account type"
+  },
+  "nsec": "Nsec",
+  "@nsec": {
+    "description": "Label for nsec (private key) account type"
+  },
+  "extension": "Extension",
+  "@extension": {
+    "description": "Label for browser extension account type"
+  }
+}
