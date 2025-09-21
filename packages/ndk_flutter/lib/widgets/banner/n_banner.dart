@@ -5,19 +5,39 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 class NBanner extends StatelessWidget {
   final Ndk ndk;
   final String? pubkey;
+  final Metadata? metadata;
 
-  String? get _pubkey => pubkey ?? ndk.accounts.getPublicKey();
+  String? get _pubkey =>
+      metadata?.pubKey ?? pubkey ?? ndk.accounts.getPublicKey();
 
-  const NBanner({super.key, required this.ndk, this.pubkey});
+  const NBanner({super.key, required this.ndk, this.pubkey, this.metadata})
+    : assert(
+        pubkey == null || metadata == null,
+        'Cannot provide both pubkey and metadata parameters. Use one or the other.',
+      );
 
   @override
   Widget build(BuildContext context) {
+    // If metadata is provided, use it directly
+    if (metadata != null) {
+      return _buildBannerFromMetadata(context, metadata);
+    }
+
+    // Otherwise, load metadata
     return FutureBuilder(
       future: ndk.metadata.loadMetadata(_pubkey!),
       builder: (context, snapshot) {
         return _buildBannerContent(context, snapshot);
       },
     );
+  }
+
+  Widget _buildBannerFromMetadata(BuildContext context, Metadata? metadata) {
+    final banner = metadata?.banner;
+    if (banner == null) {
+      return _buildDefaultBanner(context);
+    }
+    return _buildImageBanner(context, banner);
   }
 
   Widget _buildBannerContent(
@@ -28,12 +48,7 @@ class NBanner extends StatelessWidget {
       return _buildDefaultBanner(context);
     }
 
-    final banner = snapshot.data?.banner;
-    if (banner == null) {
-      return _buildDefaultBanner(context);
-    }
-
-    return _buildImageBanner(context, banner);
+    return _buildBannerFromMetadata(context, snapshot.data);
   }
 
   Widget _buildDefaultBanner(BuildContext context) {

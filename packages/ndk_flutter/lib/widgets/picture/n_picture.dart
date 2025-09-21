@@ -19,7 +19,10 @@ class NPicture extends StatelessWidget {
     this.metadata,
     this.useCircleAvatar = true,
     this.circleAvatarRadius,
-  });
+  }) : assert(
+         pubkey == null || metadata == null,
+         'Cannot provide both pubkey and metadata parameters. Use one or the other.',
+       );
 
   @override
   Widget build(BuildContext context) {
