@@ -11,7 +11,8 @@ class NName extends StatelessWidget {
   final TextOverflow? overflow;
   final bool displayNpub;
 
-  String? get _pubkey => pubkey ?? ndk.accounts.getPublicKey();
+  String? get _pubkey =>
+      metadata?.pubKey ?? pubkey ?? ndk.accounts.getPublicKey();
 
   const NName({
     super.key,
@@ -22,7 +23,10 @@ class NName extends StatelessWidget {
     this.maxLines = 1,
     this.overflow = TextOverflow.ellipsis,
     this.displayNpub = false,
-  });
+  }) : assert(
+         pubkey == null || metadata == null,
+         'Cannot provide both pubkey and metadata parameters. Use one or the other.',
+       );
 
   @override
   Widget build(BuildContext context) {
