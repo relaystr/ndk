@@ -27,10 +27,7 @@ class NUserProfile extends StatelessWidget {
     this.showNip05Indicator = true,
     this.showNip05 = true,
     this.onLogout,
-  }) : assert(
-         pubkey == null || metadata == null,
-         'Cannot provide both pubkey and metadata parameters. Use one or the other.',
-       );
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +50,9 @@ class NUserProfile extends StatelessWidget {
   Widget _buildProfile(BuildContext context, Metadata? metadata) {
     String name = _formatNpub(profilePubkey!);
     String? nip05;
+
+    // Check if this is the logged account
+    final isLoggedAccount = profilePubkey == ndk.accounts.getPublicKey();
 
     if (metadata != null) {
       name = metadata.getName();
@@ -86,7 +86,7 @@ class NUserProfile extends StatelessWidget {
                 ),
                 SizedBox(height: 8),
                 Visibility(
-                  visible: showLogoutButton,
+                  visible: showLogoutButton && isLoggedAccount,
                   maintainSize: true,
                   maintainAnimation: true,
                   maintainState: true,

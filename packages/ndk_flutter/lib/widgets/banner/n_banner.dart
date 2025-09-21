@@ -10,11 +10,7 @@ class NBanner extends StatelessWidget {
   String? get _pubkey =>
       metadata?.pubKey ?? pubkey ?? ndk.accounts.getPublicKey();
 
-  const NBanner({super.key, required this.ndk, this.pubkey, this.metadata})
-    : assert(
-        pubkey == null || metadata == null,
-        'Cannot provide both pubkey and metadata parameters. Use one or the other.',
-      );
+  const NBanner({super.key, required this.ndk, this.pubkey, this.metadata});
 
   @override
   Widget build(BuildContext context) {

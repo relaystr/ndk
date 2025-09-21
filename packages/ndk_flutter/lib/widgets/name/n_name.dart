@@ -23,10 +23,7 @@ class NName extends StatelessWidget {
     this.maxLines = 1,
     this.overflow = TextOverflow.ellipsis,
     this.displayNpub = false,
-  }) : assert(
-         pubkey == null || metadata == null,
-         'Cannot provide both pubkey and metadata parameters. Use one or the other.',
-       );
+  });
 
   @override
   Widget build(BuildContext context) {
