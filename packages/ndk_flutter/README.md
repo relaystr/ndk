@@ -1,39 +1,62 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+This package helps you to easily produce Nostr apps by providing generics Widgets and functions.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Nostr widgets
+- Login persistence
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+### Add dependencies
+
+```bash
+flutter pub add ndk
+flutter pub add ndk_flutter
+```
+
+### Add internationalization
+
+Follow the [Official documentation](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization)
+
+```dart
+import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
+
+MaterialApp(
+    localizationsDelegates: [
+        ndk_flutter.AppLocalizations.delegate, // add this line
+    ],
+);
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+By default, the logged user is used for user widgets, you can overwrite it by providing a pubkey as parameter.
 
 ```dart
-const like = 'sample';
+import 'package:nostr_widgets/nostr_widgets.dart';
+
+// available widgets
+NBanner(ndk);
+NPicture(ndk);
+NName(ndk);
+NUserProfile(ndk);
+NLogin(ndk);
+NSwitchAccount(ndk);
+
+final ndkFlutter = NdkFlutter(ndk: ndk)
+
+// call this to connect user from local storage
+ndkFlutter.restoreAccountsState();
+
+// call this every time the auth state change
+ndkFlutter.saveAccountsState();
 ```
 
-## Additional information
+## TODO
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+- [ ] NUserProfile optionnal show nsec and copy
+- [ ] NUserProfile show the letter in the Picture and make it as big as possible
+
+## Need more Widgets
+
+Open an Issue
