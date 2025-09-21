@@ -89,9 +89,20 @@ class NPicture extends StatelessWidget {
     return Container(
       color: color,
       child: Center(
-        child: Text(
-          initial,
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final fontSize = constraints.maxHeight > 0
+                ? constraints.maxHeight * 0.4
+                : 16.0;
+            return Text(
+              initial,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: fontSize,
+              ),
+            );
+          },
         ),
       ),
     );
