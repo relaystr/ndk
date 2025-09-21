@@ -9,7 +9,8 @@ class NPicture extends StatelessWidget {
   final bool useCircleAvatar;
   final double? circleAvatarRadius;
 
-  String? get _pubkey => pubkey ?? ndk.accounts.getPublicKey();
+  String? get _pubkey =>
+      metadata?.pubKey ?? pubkey ?? ndk.accounts.getPublicKey();
 
   const NPicture({
     super.key,
