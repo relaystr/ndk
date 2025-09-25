@@ -3,7 +3,9 @@ import 'package:ndk/ndk.dart';
 import 'js_interop.dart' as js;
 
 class Nip07EventSigner implements EventSigner {
-  String? _cachedPublicKey;
+  String? cachedPublicKey;
+
+  Nip07EventSigner({this.cachedPublicKey});
 
   @override
   bool canSign() {
@@ -70,10 +72,10 @@ class Nip07EventSigner implements EventSigner {
 
   @override
   String getPublicKey() {
-    if (_cachedPublicKey != null) return _cachedPublicKey!;
+    if (cachedPublicKey != null) return cachedPublicKey!;
 
     js.nostr!.getPublicKey().toDart.then((pubkey) {
-      _cachedPublicKey = pubkey.toDart;
+      cachedPublicKey = pubkey.toDart;
     });
 
     throw Exception("Use getPublicKeyAsync with Nip07EventSigner");
@@ -81,7 +83,7 @@ class Nip07EventSigner implements EventSigner {
 
   Future<String> getPublicKeyAsync() async {
     final pubkey = (await js.nostr!.getPublicKey().toDart).toDart;
-    _cachedPublicKey = pubkey;
+    cachedPublicKey = pubkey;
 
     return pubkey;
   }
