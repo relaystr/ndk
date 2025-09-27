@@ -1,5 +1,6 @@
 ```dart
 import 'package:ndk/ndk.dart';
+import 'package:ndk_rust_verifier/ndk_rust_verifier.dart';
 import 'package:nip01/nip01.dart';
 import 'package:nip49/nip49.dart';
 final cacheManager = MemCacheManager();
