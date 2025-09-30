@@ -79,7 +79,7 @@ abstract class WalletTransaction {
                   .map((k) => CahsuKeyset.fromJson(k as Map<String, dynamic>))
                   .toList()
               : null,
-          token: token,
+          token: metadata['token'] as String? ?? token,
           proofPubKeys: proofPubKeys,
         );
       case WalletType.NWC:
@@ -149,7 +149,8 @@ class CashuWalletTransaction extends WalletTransaction {
       identical(this, other) ||
       other is CashuWalletTransaction &&
           runtimeType == other.runtimeType &&
-          id == other.id;
+          id == other.id &&
+          token == other.token;
 
   @override
   int get hashCode => id.hashCode;

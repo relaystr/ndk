@@ -858,6 +858,11 @@ class Cashu {
       memo: memo ?? '',
     );
 
+    pendingTransaction = pendingTransaction.copyWith(
+      token: token.toV4TokenString(),
+    );
+    _addPendingTransaction(pendingTransaction);
+
     return CashuSpendingResult(
       token: token,
       transaction: pendingTransaction,
@@ -1070,6 +1075,9 @@ class Cashu {
   void _addPendingTransaction(
     CashuWalletTransaction transaction,
   ) {
+    // update transaction
+    _pendingTransactions.removeWhere((t) => t.id == transaction.id);
+
     _pendingTransactions.add(transaction);
     _pendingTransactionsSubject.add(_pendingTransactions.toList());
   }
@@ -1077,7 +1085,7 @@ class Cashu {
   void _removePendingTransaction(
     CashuWalletTransaction transaction,
   ) {
-    _pendingTransactions.remove(transaction);
+    _pendingTransactions.removeWhere((t) => t.id == transaction.id);
     _pendingTransactionsSubject.add(_pendingTransactions.toList());
   }
 
