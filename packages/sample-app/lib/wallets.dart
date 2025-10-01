@@ -53,6 +53,13 @@ class _WalletsPageState extends State<WalletsPage> {
               height: 150,
               child: Pending(ndk: widget.ndk),
             ),
+            Text("Recent transactions",
+                style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 150,
+              child: RecentTransactions(ndk: widget.ndk),
+            ),
 
             const SizedBox(height: 24),
 
@@ -130,9 +137,31 @@ class _WalletsPageState extends State<WalletsPage> {
                     },
                     child: const Text("receive"),
                   ),
+                  TextButton(
+                    onPressed: () async {
+                      try {
+                        final draftTransaction =
+                            await widget.ndk.cashu.initiateRedeem(
+                          unit: "sat",
+                          method: "bolt11",
+                          request: "lnbc",
+                          mintUrl: mintUrl,
+                        );
+                        final redeemStream = widget.ndk.cashu
+                            .redeem(draftRedeemTransaction: draftTransaction);
+                        await redeemStream.last;
+                      } catch (e) {
+                        displayError(e.toString());
+                      }
+                    },
+                    child: const Text("melt"),
+                  ),
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            Text("NWC", style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
 
             const SizedBox(height: 16),
           ],
@@ -195,6 +224,7 @@ class Pending extends StatelessWidget {
         } else {
           final transactions = snapshot.data!;
           return ListView.builder(
+            reverse: true,
             itemCount: transactions.length,
             itemBuilder: (context, index) {
               final transaction = transactions[index];
@@ -218,6 +248,44 @@ class Pending extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     }
                   },
+                ),
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+}
+
+class RecentTransactions extends StatelessWidget {
+  final Ndk ndk;
+  const RecentTransactions({super.key, required this.ndk});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: ndk.wallets.combinedRecentTransactions,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No recent transactions'));
+        } else {
+          final transactions = snapshot.data!;
+          return ListView.builder(
+            reverse: true,
+            itemCount: transactions.length,
+            itemBuilder: (context, index) {
+              final transaction = transactions[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 2),
+                child: ListTile(
+                  dense: true,
+                  title: Text(
+                      '${transaction.changeAmount} ${transaction.unit} type: ${transaction.walletType}, state: ${transaction.state}'),
                 ),
               );
             },
