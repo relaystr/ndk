@@ -66,7 +66,10 @@ class WalletsRepoImpl implements WalletsRepo {
                 ));
           }).toList());
     } else if (useCase is Nwc) {
-      throw UnimplementedError('NWC balances stream not implemented yet');
+      Wallet wallet = await getWallet(accountId);
+      final connection = await useCase.connect(wallet.metadata["nwcUrl"] );
+      final balanceResponse = await useCase.getBalance(connection);
+      yield [WalletBalance(walletId: accountId, unit: "sat", amount: balanceResponse.balanceSats)];
     } else {
       throw UnimplementedError('Unknown account type for balances stream');
     }
@@ -125,8 +128,22 @@ class WalletsRepoImpl implements WalletsRepo {
             .toList(),
       );
     } else if (useCase is Nwc) {
-      throw UnimplementedError(
-          'NWC recent transactions stream not implemented yet');
+      Wallet wallet = await getWallet(accountId);
+      final connection = await useCase.connect(wallet.metadata["nwcUrl"]);
+      final transactions = await useCase.listTransactions(connection, unpaid: false);
+      yield transactions.transactions
+          .map((e) => NwcWalletTransaction(
+                id: e.paymentHash,
+                walletId: accountId,
+                changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
+                unit: "sats",
+                walletType: WalletType.NWC,
+                state: e.state != null  && e.state == "settled"? WalletTransactionState.completed: WalletTransactionState.pending,
+                metadata: e.metadata ?? {},
+                transactionDate: e.settledAt ?? e.createdAt,
+                initiatedDate: e.createdAt,
+              ))
+          .toList();
     } else {
       throw UnimplementedError(
           'Unknown account type for recent transactions stream');
