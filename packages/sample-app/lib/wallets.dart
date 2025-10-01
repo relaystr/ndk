@@ -29,142 +29,144 @@ class _WalletsPageState extends State<WalletsPage> {
     }
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Wallets Balance Section
-            Text("Wallets Balance",
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 140,
-              child: Balances(ndk: widget.ndk),
-            ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Wallets Balance Section
+              Text("Wallets Balance",
+                  style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 140,
+                child: Balances(ndk: widget.ndk),
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Pending Transactions Section
-            Text("Pending transactions",
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 150,
-              child: Pending(ndk: widget.ndk),
-            ),
-            Text("Recent transactions",
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 150,
-              child: RecentTransactions(ndk: widget.ndk),
-            ),
+              // Pending Transactions Section
+              Text("Pending transactions",
+                  style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 150,
+                child: Pending(ndk: widget.ndk),
+              ),
+              Text("Recent transactions",
+                  style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 150,
+                child: RecentTransactions(ndk: widget.ndk),
+              ),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // CASHU Section
-            Text("CASHU", style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
+              // CASHU Section
+              Text("CASHU", style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
 
-            // CASHU Controls
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  TextButton(
-                    onPressed: () async {
-                      final draftTransaction =
-                          await widget.ndk.cashu.initiateFund(
-                        mintUrl: mintUrl,
-                        amount: 10,
-                        unit: "sat",
-                        method: "bolt11",
-                      );
-                      final tStream = widget.ndk.cashu
-                          .retrieveFunds(draftTransaction: draftTransaction);
-                      await tStream.last;
-                    },
-                    child: const Text("mint 10 sat"),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () async {
-                      try {
-                        final spendingResult =
-                            await widget.ndk.cashu.initiateSpend(
+              // CASHU Controls
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    TextButton(
+                      onPressed: () async {
+                        final draftTransaction =
+                            await widget.ndk.cashu.initiateFund(
                           mintUrl: mintUrl,
                           amount: 10,
                           unit: "sat",
-                        );
-                        final cashuString =
-                            spendingResult.token.toV4TokenString();
-
-                        Clipboard.setData(ClipboardData(text: cashuString));
-                      } catch (e) {
-                        displayError(e.toString());
-                      }
-                    },
-                    child: const Text("send 10 sat"),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 200,
-                    child: TextField(
-                      controller: cashuInController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'CASHU Token',
-                      ),
-                      onChanged: (value) {
-                        cashuIn = value;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () async {
-                      try {
-                        final rcvStream = widget.ndk.cashu.receive(cashuIn);
-                        await rcvStream.last;
-                        setState(() {
-                          cashuIn = "";
-                          cashuInController.text = "";
-                        });
-                      } catch (e) {
-                        displayError(e.toString());
-                      }
-                    },
-                    child: const Text("receive"),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      try {
-                        final draftTransaction =
-                            await widget.ndk.cashu.initiateRedeem(
-                          unit: "sat",
                           method: "bolt11",
-                          request: "lnbc",
-                          mintUrl: mintUrl,
                         );
-                        final redeemStream = widget.ndk.cashu
-                            .redeem(draftRedeemTransaction: draftTransaction);
-                        await redeemStream.last;
-                      } catch (e) {
-                        displayError(e.toString());
-                      }
-                    },
-                    child: const Text("melt"),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text("NWC", style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
+                        final tStream = widget.ndk.cashu
+                            .retrieveFunds(draftTransaction: draftTransaction);
+                        await tStream.last;
+                      },
+                      child: const Text("mint 10 sat"),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () async {
+                        try {
+                          final spendingResult =
+                              await widget.ndk.cashu.initiateSpend(
+                            mintUrl: mintUrl,
+                            amount: 10,
+                            unit: "sat",
+                          );
+                          final cashuString =
+                              spendingResult.token.toV4TokenString();
 
-            const SizedBox(height: 16),
-          ],
+                          Clipboard.setData(ClipboardData(text: cashuString));
+                        } catch (e) {
+                          displayError(e.toString());
+                        }
+                      },
+                      child: const Text("send 10 sat"),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 200,
+                      child: TextField(
+                        controller: cashuInController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'CASHU Token',
+                        ),
+                        onChanged: (value) {
+                          cashuIn = value;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () async {
+                        try {
+                          final rcvStream = widget.ndk.cashu.receive(cashuIn);
+                          await rcvStream.last;
+                          setState(() {
+                            cashuIn = "";
+                            cashuInController.text = "";
+                          });
+                        } catch (e) {
+                          displayError(e.toString());
+                        }
+                      },
+                      child: const Text("receive"),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        try {
+                          final draftTransaction =
+                              await widget.ndk.cashu.initiateRedeem(
+                            unit: "sat",
+                            method: "bolt11",
+                            request: "lnbc",
+                            mintUrl: mintUrl,
+                          );
+                          final redeemStream = widget.ndk.cashu
+                              .redeem(draftRedeemTransaction: draftTransaction);
+                          await redeemStream.last;
+                        } catch (e) {
+                          displayError(e.toString());
+                        }
+                      },
+                      child: const Text("melt"),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text("NWC", style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
