@@ -17,21 +17,20 @@ class _WalletsPageState extends State<WalletsPage> {
   String cashuIn = "";
   TextEditingController cashuInController = TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    displayError(String error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+  displayError(String error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(child: Padding(
+        body: SingleChildScrollView(
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,10 +200,12 @@ class _WalletsPageState extends State<WalletsPage> {
             TextButton(
               onPressed: () async {
                 try {
-                  final walletId = DateTime.now().millisecondsSinceEpoch.toString();
+                  final walletId =
+                      DateTime.now().millisecondsSinceEpoch.toString();
                   final nwcWallet = NwcWallet(
                     id: walletId,
-                    name: "NWC Wallet ${DateTime.now().toString().split(' ')[1].substring(0, 5)}",
+                    name:
+                        "NWC Wallet ${DateTime.now().toString().split(' ')[1].substring(0, 5)}",
                     supportedUnits: {'sat'},
                     nwcUrl: _nwcUriController.text,
                   );
