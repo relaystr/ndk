@@ -1,9 +1,11 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/blossom_page.dart';
+import 'package:ndk_demo/demo_app_config.dart';
 import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_demo/wallets.dart';
@@ -19,6 +21,9 @@ final ndk = Ndk(
     eventVerifier: Bip340EventVerifier(),
     cache: MemCacheManager(),
     logLevel: Logger.logLevels.trace,
+    cashuUserSeedphrase: CashuUserSeedphrase(
+      seedPhrase: DemoAppConfig.cashuSeedPhrase,
+    ),
   ),
 );
 
@@ -78,7 +83,7 @@ class MyApp extends StatelessWidget {
     // );
 
     return MaterialApp(
-      title: 'Nostr Developer Kit Demo',
+      title: DemoAppConfig.appName,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

@@ -39,7 +39,7 @@ class _WalletsPageState extends State<WalletsPage> {
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             SizedBox(
-              height: 130,
+              height: 140,
               child: Balances(ndk: widget.ndk),
             ),
 
