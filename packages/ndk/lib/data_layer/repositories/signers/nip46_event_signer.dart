@@ -18,7 +18,7 @@ class Nip46EventSigner implements EventSigner {
 
   final _pendingRequests = <String, Completer<dynamic>>{};
 
-  String? _cachedPublicKey;
+  String? cachedPublicKey;
 
   late Bip340EventSigner localEventSigner;
 
@@ -27,6 +27,7 @@ class Nip46EventSigner implements EventSigner {
     required this.requests,
     required this.broadcast,
     this.authCallback,
+    this.cachedPublicKey,
   }) {
     final privKey = connection.privateKey;
     final pubKey = Bip340.getPublicKey(privKey);
@@ -169,7 +170,7 @@ class Nip46EventSigner implements EventSigner {
 
   @override
   String getPublicKey() {
-    if (_cachedPublicKey != null) return _cachedPublicKey!;
+    if (cachedPublicKey != null) return cachedPublicKey!;
     throw Exception('Use getPublicKeyAsync() first to cache the user pubkey');
   }
 
@@ -178,7 +179,7 @@ class Nip46EventSigner implements EventSigner {
 
     final publicKey = await remoteRequest(request: request);
 
-    _cachedPublicKey = publicKey;
+    cachedPublicKey = publicKey;
 
     return publicKey;
   }
