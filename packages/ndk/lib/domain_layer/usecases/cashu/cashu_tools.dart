@@ -157,7 +157,7 @@ class CashuTools {
 
   /// Calculates the number of blank outputs needed for a given fee reserve.
   static int calculateNumberOfBlankOutputs(int feeReserveSat) {
-    if (feeReserveSat <= 0) {
+    if (feeReserveSat < 0) {
       throw Exception("Fee reserve can't be negative.");
     }
 
