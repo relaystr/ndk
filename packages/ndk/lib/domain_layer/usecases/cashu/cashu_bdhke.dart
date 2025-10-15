@@ -89,9 +89,20 @@ class CashuBdhke {
   }) {
     List<CashuProof> tokens = [];
 
-    for (int i = 0; i < mintSignatures.length; i++) {
-      final signature = mintSignatures[i];
-      final blindedMsg = blindedMessages[i];
+    if (mintSignatures.length != blindedMessages.length) {
+      throw Exception(
+          'Mismatched lengths: ${mintSignatures.length} signatures, ${blindedMessages.length} messages');
+    }
+
+    /// copy lists and sort by amount descending
+    final sortedSignatures = List<CashuBlindedSignature>.from(mintSignatures)
+      ..sort((a, b) => b.amount.compareTo(a.amount));
+    final sortedMessages = List<CashuBlindedMessageItem>.from(blindedMessages)
+      ..sort((a, b) => b.amount.compareTo(a.amount));
+
+    for (int i = 0; i < sortedSignatures.length; i++) {
+      final signature = sortedSignatures[i];
+      final blindedMsg = sortedMessages[i];
 
       final matchingKeys = mintPublicKeys.mintKeyPairs
           .where((e) => e.amount == blindedMsg.amount)

@@ -608,6 +608,9 @@ class Cashu {
       myOutputs.addAll(blankOutputs);
     }
 
+    myOutputs.sort(
+        (a, b) => b.amount.compareTo(a.amount)); // sort outputs by amount desc
+
     final pendingTransaction = draftRedeemTransaction.copyWith(
       state: WalletTransactionState.pending,
     );
