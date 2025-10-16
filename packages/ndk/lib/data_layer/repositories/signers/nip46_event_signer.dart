@@ -105,10 +105,11 @@ class Nip46EventSigner implements EventSigner {
     );
 
     await localEventSigner.sign(requestEvent);
-    broadcast.broadcast(
+    final broadcastRes = broadcast.broadcast(
       nostrEvent: requestEvent,
       specificRelays: connection.relays,
     );
+    await broadcastRes.broadcastDoneFuture;
 
     return completer.future;
   }
