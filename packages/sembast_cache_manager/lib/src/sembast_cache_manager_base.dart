@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
 import 'package:sembast/sembast_io.dart';
@@ -31,6 +32,13 @@ class SembastCacheManager extends CacheManager {
   late final sembast.StoreRef<String, Map<String, Object?>> _nip05Store;
   late final sembast.StoreRef<String, Map<String, Object?>> _relaySetStore;
 
+  late final sembast.StoreRef<String, Map<String, Object?>> _keysetStore;
+  late final sembast.StoreRef<String, Map<String, Object?>> _proofStore;
+  late final sembast.StoreRef<String, Map<String, Object?>> _transactionStore;
+  late final sembast.StoreRef<String, Map<String, Object?>> _walletStore;
+  late final sembast.StoreRef<String, Map<String, Object?>> _mintInfoStore;
+  late final sembast.StoreRef<String, Map<String, Object?>> _secretCounterStore;
+
   SembastCacheManager(this._database) {
     _eventsStore = sembast.stringMapStoreFactory.store('events');
     _metadataStore = sembast.stringMapStoreFactory.store('metadata');
@@ -38,6 +46,13 @@ class SembastCacheManager extends CacheManager {
     _relayListStore = sembast.stringMapStoreFactory.store('relay_lists');
     _nip05Store = sembast.stringMapStoreFactory.store('nip05');
     _relaySetStore = sembast.stringMapStoreFactory.store('relay_sets');
+    _keysetStore = sembast.stringMapStoreFactory.store('keysets');
+    _proofStore = sembast.stringMapStoreFactory.store('proofs');
+    _transactionStore = sembast.stringMapStoreFactory.store('transactions');
+    _walletStore = sembast.stringMapStoreFactory.store('wallets');
+    _mintInfoStore = sembast.stringMapStoreFactory.store('mint_infos');
+    _secretCounterStore =
+        sembast.stringMapStoreFactory.store('secret_counters');
   }
 
   @override
@@ -440,5 +455,262 @@ class SembastCacheManager extends CacheManager {
     }
 
     return metadatas;
+  }
+
+  @override
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) async {
+    if (mintUrl == null || mintUrl.isEmpty) {
+      // Return all keysets if no mintUrl
+      final records = await _keysetStore.find(_database);
+      return records
+          .map((record) => CahsuKeysetExtension.fromJsonStorage(record.value))
+          .toList();
+    }
+
+    final finder = sembast.Finder(
+      filter: sembast.Filter.equals('mintUrl', mintUrl),
+    );
+
+    final records = await _keysetStore.find(_database, finder: finder);
+    return records
+        .map((record) => CahsuKeysetExtension.fromJsonStorage(record.value))
+        .toList();
+  }
+
+  @override
+  Future<List<CashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
+  }) async {
+    final filters = <sembast.Filter>[];
+
+    // Filter by state
+    filters.add(sembast.Filter.equals('state', state.toString()));
+
+    // Filter by keysetId if provided
+    if (keysetId != null && keysetId.isNotEmpty) {
+      filters.add(sembast.Filter.equals('keysetId', keysetId));
+    }
+
+    // Filter by mintUrl if provided
+    if (mintUrl != null && mintUrl.isNotEmpty) {
+      // Get all keysets for the mintUrl
+      final keysets = await getKeysets(mintUrl: mintUrl);
+      if (keysets.isEmpty) {
+        return [];
+      }
+      final keysetIds = keysets.map((k) => k.id).toList();
+      filters.add(sembast.Filter.inList('keysetId', keysetIds));
+    }
+
+    final finder = sembast.Finder(
+      filter: sembast.Filter.and(filters),
+      sortOrders: [sembast.SortOrder('amount')],
+    );
+
+    final records = await _proofStore.find(_database, finder: finder);
+    return records
+        .map((record) => CashuProofExtension.fromJsonStorage(record.value))
+        .toList();
+  }
+
+  @override
+  Future<void> removeProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    final proofSecrets = proofs.map((p) => p.secret).toList();
+    final finder = sembast.Finder(
+      filter: sembast.Filter.inList('secret', proofSecrets),
+    );
+
+    await _proofStore.delete(_database, finder: finder);
+  }
+
+  @override
+  Future<void> saveKeyset(CahsuKeyset keyset) async {
+    await _keysetStore
+        .record(keyset.id)
+        .put(_database, keyset.toJsonForStorage());
+  }
+
+  @override
+  Future<void> saveProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    await _database.transaction((txn) async {
+      // Remove existing proofs by secret (upsert logic)
+      final secretsToCheck = proofs.map((p) => p.secret).toList();
+      final finder = sembast.Finder(
+        filter: sembast.Filter.inList('secret', secretsToCheck),
+      );
+      await _proofStore.delete(txn, finder: finder);
+
+      // Insert new proofs
+      for (final proof in proofs) {
+        await _proofStore
+            .record(proof.secret)
+            .put(txn, proof.toJsonForStorage());
+      }
+    });
+  }
+
+  @override
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) async {
+    final filters = <sembast.Filter>[];
+
+    if (walletId != null && walletId.isNotEmpty) {
+      filters.add(sembast.Filter.equals('walletId', walletId));
+    }
+
+    if (unit != null && unit.isNotEmpty) {
+      filters.add(sembast.Filter.equals('unit', unit));
+    }
+
+    if (walletType != null) {
+      filters.add(sembast.Filter.equals('walletType', walletType.toString()));
+    }
+
+    final finder = sembast.Finder(
+      filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      sortOrders: [sembast.SortOrder('transactionDate', false)],
+      limit: limit,
+      offset: offset,
+    );
+
+    final records = await _transactionStore.find(_database, finder: finder);
+    return records
+        .map((record) =>
+            WalletTransactionExtension.fromJsonStorage(record.value))
+        .toList();
+  }
+
+  @override
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  }) async {
+    await _database.transaction((txn) async {
+      // Remove existing transactions by id (upsert logic)
+      final idsToCheck = transactions.map((t) => t.id).toList();
+      final finder = sembast.Finder(
+        filter: sembast.Filter.inList('id', idsToCheck),
+      );
+      await _transactionStore.delete(txn, finder: finder);
+
+      // Insert new transactions
+      for (final transaction in transactions) {
+        await _transactionStore
+            .record(transaction.id)
+            .put(txn, transaction.toJsonForStorage());
+      }
+    });
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
+    if (ids == null || ids.isEmpty) {
+      // Return all wallets
+      final records = await _walletStore.find(_database);
+      return records
+          .map((record) => WalletExtension.fromJsonStorage(record.value))
+          .toList();
+    }
+
+    final finder = sembast.Finder(
+      filter: sembast.Filter.inList('id', ids),
+    );
+
+    final records = await _walletStore.find(_database, finder: finder);
+    return records
+        .map((record) => WalletExtension.fromJsonStorage(record.value))
+        .toList();
+  }
+
+  @override
+  Future<void> removeWallet(String walletId) async {
+    await _walletStore.record(walletId).delete(_database);
+  }
+
+  @override
+  Future<void> saveWallet(Wallet wallet) async {
+    await _walletStore
+        .record(wallet.id)
+        .put(_database, wallet.toJsonForStorage());
+  }
+
+  @override
+  Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
+    if (mintUrls == null || mintUrls.isEmpty) {
+      // Return all mint infos
+      final records = await _mintInfoStore.find(_database);
+      return records
+          .map((record) => CashuMintInfoExtension.fromJsonStorage(record.value))
+          .toList();
+    }
+
+    // For Sembast, we need to filter in memory since we can't do complex array operations
+    final allRecords = await _mintInfoStore.find(_database);
+    final allMintInfos = allRecords
+        .map((record) => CashuMintInfoExtension.fromJsonStorage(record.value))
+        .toList();
+
+    // Filter by URLs
+    return allMintInfos.where((mintInfo) {
+      return mintUrls.any((url) => mintInfo.urls.contains(url));
+    }).toList();
+  }
+
+  @override
+  Future<void> saveMintInfo({required CashuMintInfo mintInfo}) async {
+    // Use the first URL as the key for upsert logic
+    final key = mintInfo.urls.first;
+
+    // Remove existing mint info with the same URL
+    final allRecords = await _mintInfoStore.find(_database);
+    for (final record in allRecords) {
+      final existingMintInfo =
+          CashuMintInfoExtension.fromJsonStorage(record.value);
+      if (existingMintInfo.urls.contains(mintInfo.urls.first)) {
+        await _mintInfoStore.record(record.key).delete(_database);
+      }
+    }
+
+    // Insert new mint info
+    await _mintInfoStore
+        .record(key)
+        .put(_database, mintInfo.toJsonForStorage());
+  }
+
+  @override
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  }) async {
+    final key = '${mintUrl}_$keysetId';
+    final data = await _secretCounterStore.record(key).get(_database);
+    if (data == null) return 0;
+    return data['counter'] as int? ?? 0;
+  }
+
+  @override
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  }) async {
+    final key = '${mintUrl}_$keysetId';
+    await _secretCounterStore.record(key).put(_database, {
+      'mintUrl': mintUrl,
+      'keysetId': keysetId,
+      'counter': counter,
+    });
   }
 }
