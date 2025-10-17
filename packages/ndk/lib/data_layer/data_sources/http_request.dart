@@ -42,9 +42,12 @@ class HttpRequestDS {
     return response;
   }
 
+  ///
   Future<http.Response> post({
     required Uri url,
-    required Uint8List body,
+
+    /// String, Uint8List
+    required Object body,
     required headers,
   }) async {
     http.Response response = await _client.post(

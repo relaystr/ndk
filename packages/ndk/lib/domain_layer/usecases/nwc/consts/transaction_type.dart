@@ -12,4 +12,7 @@ enum TransactionType {
       orElse: () => TransactionType.incoming,
     );
   }
+
+  @override
+  String toString() => value;
 }
