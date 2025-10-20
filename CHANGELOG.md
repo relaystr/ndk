@@ -1,5 +1,55 @@
 # Change Log
 
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## 2025-10-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.5.2-dev.0+1`](#ndk---v052-dev01)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.0+1`](#ndk_rust_verifier---v042-dev01)
+ - [`nip07_event_signer` - `v1.0.4-dev.0`](#nip07_event_signer---v104-dev0)
+ - [`ndk_amber` - `v0.3.3-dev.0+1`](#ndk_amber---v033-dev01)
+ - [`ndk_isar` - `v0.2.3-dev.0+1`](#ndk_isar---v023-dev01)
+ - [`ndk_objectbox` - `v0.2.7-dev.0+1`](#ndk_objectbox---v027-dev01)
+ - [`sembast_cache_manager` - `v1.0.5-dev.0`](#sembast_cache_manager---v105-dev0)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.0+1`
+ - `ndk_isar` - `v0.2.3-dev.0+1`
+ - `ndk_objectbox` - `v0.2.7-dev.0+1`
+ - `sembast_cache_manager` - `v1.0.5-dev.0`
+
+---
+
+#### `ndk` - `v0.5.2-dev.0+1`
+
+ - **FIX**: call dispose on destroy.
+ - **FIX**: BehaviorSubject for immediate values.
+ - **FIX**: copy value to fix modification.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.0+1`
+
+ - **FIX**: flutter_rust_bridge no strict version.
+
+#### `nip07_event_signer` - `v1.0.4-dev.0`
+
+ - **DOCS**: mention web signer.
+
+# Change Log
+
 ## 2025-07-02
 
 ### Changes
@@ -50,10 +100,6 @@ Packages with other changes:
 - **DOCS**: blossom entities inline.
 - **DOCS**: better relay manager description.
 
-# Change Log
-
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 ## 2024-11-29
 

@@ -1,3 +1,7 @@
+## 0.4.2-dev.0+1
+
+ - **FIX**: flutter_rust_bridge no strict version.
+
 ## 0.4.0
 
  - new builder to support flutter 3.32.0
