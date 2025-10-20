@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk_objectbox/data_layer/db/object_box/schema/db_nip_05.dart';
 
 import '../../../objectbox.g.dart';
 import 'db_init_object_box.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
+import 'schema/db_nip_05.dart';
 import 'schema/db_user_relay_list.dart';
 
 class DbObjectBox implements CacheManager {
