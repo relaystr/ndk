@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/widgets/login/login_controller.dart';
-import 'package:nip01/nip01.dart';
 import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:nip19/nip19.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';
@@ -22,6 +22,7 @@ class NLogin extends StatefulWidget {
   final bool enablePubkeyLogin;
   final NostrConnect? nostrConnect;
   final String? nsecLabelText;
+  final String getStartedUrl;
 
   bool get enableNostrConnectLogin => nostrConnect != null;
 
@@ -39,6 +40,7 @@ class NLogin extends StatefulWidget {
     this.enablePubkeyLogin = true,
     this.nostrConnect,
     this.nsecLabelText,
+    this.getStartedUrl = 'https://nstart.me/',
   });
 
   @override
@@ -88,7 +90,7 @@ class _NLoginState extends State<NLogin> {
           SizedBox(height: 8),
           FilledButton(
             onPressed: () async {
-              await launchUrl(Uri.parse('https://nstart.me/'));
+              await launchUrl(Uri.parse(widget.getStartedUrl));
             },
             child: Text(AppLocalizations.of(context)!.getStarted),
           ),
@@ -292,22 +294,19 @@ class _NLoginState extends State<NLogin> {
   }
 
   Future<void> loginWithNsec(String nsec) async {
-    KeyPair? keyPair;
+    String? privateKey;
+    String? pubkey;
     try {
-      keyPair = Nip19KeyPair.fromNsec(nsec);
+      privateKey = Nip19.nsecToHex(nsec);
+      pubkey = Bip340.getPublicKey(privateKey);
     } catch (e) {
       return;
     }
 
-    final pubkey = keyPair.publicKey;
-
     if (widget.ndk.accounts.hasAccount(pubkey)) {
       widget.ndk.accounts.switchAccount(pubkey: pubkey);
     } else {
-      widget.ndk.accounts.loginPrivateKey(
-        pubkey: pubkey,
-        privkey: keyPair.privateKey,
-      );
+      widget.ndk.accounts.loginPrivateKey(pubkey: pubkey, privkey: privateKey);
     }
 
     await controller.loggedIn();

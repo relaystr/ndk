@@ -45,7 +45,8 @@ NSwitchAccount(ndk);
 
 final ndkFlutter = NdkFlutter(ndk: ndk)
 
-// call this to connect user from local storage
+// this method read the saved state from secure storage and add the signers in ndk
+// typicaly called before runApp
 ndkFlutter.restoreAccountsState();
 
 // call this every time the auth state change
