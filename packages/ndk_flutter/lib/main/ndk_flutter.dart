@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk_amber/ndk_amber.dart';
 import 'package:ndk_flutter/models/accounts.dart';
 import 'package:ndk_flutter/models/nip_05_result.dart';
-import 'package:nip01/nip01.dart';
 import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
@@ -45,8 +45,6 @@ class NdkFlutter {
   }
 
   static Future<Nip05Result> fetchNip05(String nip05) async {
-    await Future.delayed(Duration(seconds: 2));
-
     try {
       final parts = nip05.split('@');
       if (parts.length != 2) {
@@ -89,7 +87,7 @@ class NdkFlutter {
   NdkFlutter({required this.ndk});
 
   Future<void> saveAccountsState() async {
-    NostrWidgetsAccounts accounts = NostrWidgetsAccounts(accounts: []);
+    final accounts = NostrWidgetsAccounts(accounts: []);
 
     for (var account in ndk.accounts.accounts.values) {
       if (account.signer is Nip07EventSigner) {
@@ -209,13 +207,13 @@ class NdkFlutter {
       }
 
       if (account.kind == AccountKinds.privkey) {
-        final keyPair = KeyPair.fromPrivateKey(privateKey: account.signerSeed!);
+        final pubkey = Bip340.getPublicKey(account.signerSeed!);
         ndk.accounts.addAccount(
-          pubkey: keyPair.publicKey,
+          pubkey: pubkey,
           type: AccountType.privateKey,
           signer: Bip340EventSigner(
-            privateKey: keyPair.privateKey,
-            publicKey: keyPair.publicKey,
+            privateKey: account.signerSeed!,
+            publicKey: pubkey,
           ),
         );
         continue;
