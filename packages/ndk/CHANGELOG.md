@@ -1,3 +1,9 @@
+## 0.5.2-dev.0+1
+
+ - **FIX**: call dispose on destroy.
+ - **FIX**: BehaviorSubject for immediate values.
+ - **FIX**: copy value to fix modification.
+
 ## 0.5.1
 
 - feat: nip46 signer
