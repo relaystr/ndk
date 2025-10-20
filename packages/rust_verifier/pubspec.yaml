@@ -18,7 +18,7 @@ platforms:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_rust_bridge: 2.11.1
+  flutter_rust_bridge: ^2.11.1
   rust_lib_ndk: ^0.1.7
   ndk: ^0.5.1
 
