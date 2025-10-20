@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_objectbox` - `v0.2.7-dev.1`](#ndk_objectbox---v027-dev1)
+
+---
+
+#### `ndk_objectbox` - `v0.2.7-dev.1`
+
+ - **FIX**: import cosmetics.
+
+
+## 2025-10-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.5.2-dev.0+1`](#ndk---v052-dev01)
  - [`ndk_rust_verifier` - `v0.4.2-dev.0+1`](#ndk_rust_verifier---v042-dev01)
  - [`nip07_event_signer` - `v1.0.4-dev.0`](#nip07_event_signer---v104-dev0)
