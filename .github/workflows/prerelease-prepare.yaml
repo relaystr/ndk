@@ -11,7 +11,7 @@ on:
 
 jobs:
   prerelease:
-    name: Create Prerelease
+    name: Create pre-release
     runs-on: ubuntu-latest
     # Only run if the push wasn't made by the GitHub Action
     if: github.actor != 'github-actions[bot]'
@@ -42,12 +42,9 @@ jobs:
       - name: Run Melos
         uses: bluefireteam/melos-action@v3
         with:
-          run-bootstrap: true
           run-versioning: false
           run-versioning-prerelease: true
           publish-dry-run: true
-          publish: true
-          tag: true
+          create-pr: true
           git-email: "github-actions[bot]@users.noreply.github.com"
           git-name: "github-actions[bot]"
-          create-pr: true

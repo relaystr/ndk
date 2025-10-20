@@ -1,0 +1,32 @@
+name: Publish packages
+on:
+  # Enable to also publish, when pushing a tag
+  #push:
+  #  tags:
+  #    - '*'
+  workflow_dispatch:
+
+jobs:
+  publish-packages:
+    name: Publish packages
+    permissions:
+      contents: write
+      id-token: write # Required for authentication using OIDC
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          architecture: x64 # optional, x64 or arm64
+      - name: Publish packages
+        uses: bluefireteam/melos-action@v3
+        with:
+          publish: true
