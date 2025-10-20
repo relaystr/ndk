@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:amberflutter/amberflutter.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk_amber/ndk_amber.dart';
+import 'package:ndk_flutter/main/config.dart';
 import 'package:ndk_flutter/models/accounts.dart';
 import 'package:ndk_flutter/models/nip_05_result.dart';
 import 'package:nip07_event_signer/nip07_event_signer.dart';
@@ -15,9 +15,6 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 class NdkFlutter {
-  static String get accountsKey =>
-      kDebugMode ? 'dev_ndk_flutter_accounts' : 'ndk_flutter_accounts';
-
   static Color getColorFromPubkey(String pubkey) {
     if (pubkey.isEmpty) return const Color(0xFF808080);
 
