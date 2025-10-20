@@ -1,4 +1,4 @@
-name: Publish packages
+name: Prerelease - Publish packages
 on:
   # Enable to also publish, when pushing a tag
   #push:

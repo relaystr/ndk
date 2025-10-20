@@ -14,7 +14,8 @@ jobs:
     name: Create pre-release
     runs-on: ubuntu-latest
     # Only run if the push wasn't made by the GitHub Action
-    if: github.actor != 'github-actions[bot]'
+        # Only run if the push wasn't made by the GitHub Action AND doesn't contain release message
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release)')
 
     permissions:
       contents: write
