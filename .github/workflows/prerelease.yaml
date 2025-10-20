@@ -46,7 +46,8 @@ jobs:
           run-versioning: false
           run-versioning-prerelease: true
           publish-dry-run: true
-          publish: false
+          publish: true
           tag: true
           git-email: "github-actions[bot]@users.noreply.github.com"
           git-name: "github-actions[bot]"
+          create-pr: true
