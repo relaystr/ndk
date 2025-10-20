@@ -1,3 +1,7 @@
+## 0.2.3-dev.1
+
+ - **FIX**: missing default case.
+
 ## 0.2.3-dev.0+1
 
  - Update a dependency to the latest release.

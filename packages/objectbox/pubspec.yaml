@@ -1,6 +1,6 @@
 name: ndk_objectbox
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.2.7-dev.0+1
+version: 0.2.7-dev.1
 homepage: https://github.com/relaystr/ndk
 
 environment:
@@ -17,7 +17,7 @@ platforms:
 dependencies:
   objectbox: ^4.3.0 
   objectbox_flutter_libs: ^4.3.0
-  ndk: ^0.5.2-dev.0+1
+  ndk: ^0.5.2-dev.1
   flat_buffers: ^23.5.26
   path_provider: ^2.1.5
   path: ^1.9.1

@@ -1,3 +1,8 @@
+## 0.3.3-dev.1
+
+ - **FIX**: jit use bootstrapRelays if no data.
+ - **FEAT**: stream relayConnectivityChanges.
+
 ## 0.3.3-dev.0+1
 
  - Update a dependency to the latest release.

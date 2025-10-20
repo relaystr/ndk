@@ -1,3 +1,39 @@
+## 0.5.2-dev.1
+
+ - **REFACTOR**: remove RELAY_SET kind from constructor.
+ - **FIX**: call dispose on destroy.
+ - **FIX**: BehaviorSubject for immediate values.
+ - **FIX**: copy value to fix modification.
+ - **FIX**: on done for replay subject.
+ - **FIX**: register before connect, unregister.
+ - **FIX**: missing default case.
+ - **FIX**: missing await.
+ - **FIX**: tests port collision.
+ - **FIX**: force reconnect.
+ - **FIX**: loadMetadatas cached.
+ - **FIX**: use ephemeralSigner.
+ - **FIX**: blossom nip94 parsing List<String>?
+ - **FIX**: dimensions.
+ - **FIX**: handle null notifications list in GetInfoResponse.
+ - **FIX**: jit use bootstrapRelays if no data.
+ - **FIX**: const for reports.
+ - **FIX**: pass mediaOptimisation param.
+ - **FIX**: dont expose signer.
+ - **FIX**: throw Exception.
+ - **FIX**: json parsing.
+ - **FIX**: blossom spec put.
+ - **FIX**: mirror uploads.
+ - **FIX**: flanky test to overused ports.
+ - **FIX**: cache stream not closing.
+ - **FEAT**: explicit relay requests.
+ - **FEAT**: tlv decode nip19.
+ - **FEAT**: stream relayConnectivityChanges.
+ - **FEAT**: add a tag to zaps.
+ - **FEAT**: files checkUrl.
+ - **FEAT**: publishUserServerList.
+ - **DOCS**: blossom entities inline.
+ - **DOCS**: better relay manager description.
+
 ## 0.5.2-dev.0+1
 
  - **FIX**: call dispose on destroy.

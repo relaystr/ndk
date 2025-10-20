@@ -1,3 +1,10 @@
+## 0.4.2-dev.1
+
+ - **FIX**: flutter_rust_bridge no strict version.
+ - **FIX**: jit use bootstrapRelays if no data.
+ - **FEAT**: stream relayConnectivityChanges.
+ - **FEAT**: publishUserServerList.
+
 ## 0.4.2-dev.0+1
 
  - **FIX**: flutter_rust_bridge no strict version.
