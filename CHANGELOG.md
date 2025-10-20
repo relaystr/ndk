@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_objectbox` - `v0.2.7-dev.2`](#ndk_objectbox---v027-dev2)
+
+---
+
+#### `ndk_objectbox` - `v0.2.7-dev.2`
+
+ - **FIX**: import cosmetics.
+
+
+## 2025-10-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk_objectbox` - `v0.2.7-dev.1`](#ndk_objectbox---v027-dev1)
 
 ---

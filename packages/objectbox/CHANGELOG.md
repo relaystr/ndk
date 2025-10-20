@@ -1,3 +1,7 @@
+## 0.2.7-dev.2
+
+ - **FIX**: import cosmetics.
+
 ## 0.2.7-dev.1
 
  - **FIX**: import cosmetics.
