@@ -1,5 +1,5 @@
 use hex::decode;
-use secp256k1::{schnorr::Signature, Message, Secp256k1, XOnlyPublicKey};
+use k256::schnorr::{Signature, VerifyingKey};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 
@@ -57,8 +57,6 @@ pub fn verify_schnorr_signature(
     event_id_hex: &str,
     signature_hex: &str,
 ) -> bool {
-    let secp = Secp256k1::verification_only();
-
     let pub_key_bytes = match decode(pub_key_hex) {
         Ok(bytes) => bytes,
         Err(_) => {
@@ -98,7 +96,8 @@ pub fn verify_schnorr_signature(
         return false;
     }
 
-    let pub_key = match XOnlyPublicKey::from_slice(&pub_key_bytes) {
+    // Create verifying key from the x-only public key bytes
+    let verifying_key = match VerifyingKey::from_bytes(&pub_key_bytes) {
         Ok(key) => key,
         Err(_) => {
             eprintln!("Invalid public key format");
@@ -106,7 +105,8 @@ pub fn verify_schnorr_signature(
         }
     };
 
-    let signature = match Signature::from_slice(&signature_bytes) {
+    // Create signature from bytes
+    let signature = match Signature::try_from(signature_bytes.as_slice()) {
         Ok(sig) => sig,
         Err(_) => {
             eprintln!("Invalid signature format");
@@ -114,18 +114,14 @@ pub fn verify_schnorr_signature(
         }
     };
 
-    let message = match Message::from_digest_slice(&event_id_bytes) {
-        Ok(msg) => msg,
+    // Verify the signature
+    match verifying_key.verify_raw(&event_id_bytes, &signature) {
+        Ok(_) => true,
         Err(_) => {
-            eprintln!("Invalid message format");
-            return false;
+            eprintln!("Signature verification failed");
+            false
         }
-    };
-
-    let verification_result = secp.verify_schnorr(&signature, &message, &pub_key);
-    //println!("Verification result: {:?}", verification_result);
-
-    return verification_result.is_ok();
+    }
 }
 
 #[test]
