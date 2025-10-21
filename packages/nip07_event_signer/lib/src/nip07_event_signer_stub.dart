@@ -1,6 +1,10 @@
 import 'package:ndk/ndk.dart';
 
 class Nip07EventSigner implements EventSigner {
+  String? cachedPublicKey;
+
+  Nip07EventSigner({this.cachedPublicKey});
+  
   @override
   bool canSign() {
     return false;
