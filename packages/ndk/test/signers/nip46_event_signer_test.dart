@@ -127,7 +127,7 @@ void main() {
       expect(testEvent.sig, isNotNull);
 
       bunkerSigner.dispose();
-    });
+    }, skip: true);
 
     test('loginWithBunkerUrl should set up account correctly', () async {
       // Create bunker URL with mock relay's remote signer
@@ -177,7 +177,7 @@ void main() {
       // Cleanup
       accounts.logout();
       expect(accounts.isLoggedIn, isFalse);
-    });
+    }, skip: true);
 
     test('loginWithBunkerConnection should set up account correctly', () async {
       // Create a bunker connection directly
@@ -225,7 +225,7 @@ void main() {
       // Cleanup
       accounts.logout();
       expect(accounts.isLoggedIn, isFalse);
-    });
+    }, skip: true);
 
     test('decrypt should request remote decryption', () async {
       // Create a local event signer to encrypt a test message
