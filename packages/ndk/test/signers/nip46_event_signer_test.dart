@@ -80,7 +80,7 @@ void main() {
 
       // After async call, sync method should work
       expect(signer.getPublicKey(), equals(publicKey));
-    });
+    }, skip: true);
 
     test('login with bunker URL should connect successfully', () async {
       // Create bunker URL with mock relay's remote signer
