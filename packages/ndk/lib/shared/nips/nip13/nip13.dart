@@ -61,7 +61,8 @@ class Nip13 {
       iterations++;
     }
 
-    throw Exception('Failed to mine event with difficulty $targetDifficulty after $maxIter iterations');
+    throw Exception(
+        'Failed to mine event with difficulty $targetDifficulty after $maxIter iterations');
   }
 
   static int? getTargetDifficultyFromEvent(Nip01Event event) {

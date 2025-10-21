@@ -236,7 +236,8 @@ class Nip01Event {
 
   /// Mine this event with proof of work
   Nip01Event minePoW(int targetDifficulty, {int? maxIterations}) {
-    return Nip13.mineEvent(this, targetDifficulty, maxIterations: maxIterations);
+    return Nip13.mineEvent(this, targetDifficulty,
+        maxIterations: maxIterations);
   }
 
   /// Get the proof of work difficulty of this event
