@@ -6,7 +6,9 @@ Main package: [🔗 Dart Nostr Development Kit (NDK)](https://pub.dev/packages/n
 
 # Setup Web
 
-1. Copy `/pkg/` form `/web/pkg/` into your `project_root/web` folder. => `project_root/web/pkg/`
+
+1. Copy `/pkg/` from [`/web/pkg/`](https://github.com/relaystr/ndk/tree/master/packages/rust_verifier/web) into your `project_root/web` folder. => `project_root/web/pkg/`
+
 2. Run with `flutter run --web-header=Cross-Origin-Opener-Policy=same-origin --web-header=Cross-Origin-Embedder-Policy=require-corp`
 
 ## How to build
