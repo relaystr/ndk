@@ -66,7 +66,7 @@ void main() {
 
       expect(event.id, isNotNull);
       expect(event.sig, isNotNull);
-    }, skip: true);
+    });
 
     test('getPublicKey should throw when not cached', () {
       expect(() => signer.getPublicKey(), throwsException);
@@ -80,7 +80,7 @@ void main() {
 
       // After async call, sync method should work
       expect(signer.getPublicKey(), equals(publicKey));
-    }, skip: true);
+    });
 
     test('login with bunker URL should connect successfully', () async {
       // Create bunker URL with mock relay's remote signer
@@ -127,7 +127,7 @@ void main() {
       expect(testEvent.sig, isNotNull);
 
       bunkerSigner.dispose();
-    }, skip: true);
+    });
 
     test('loginWithBunkerUrl should set up account correctly', () async {
       // Create bunker URL with mock relay's remote signer
@@ -177,7 +177,7 @@ void main() {
       // Cleanup
       accounts.logout();
       expect(accounts.isLoggedIn, isFalse);
-    }, skip: true);
+    });
 
     test('loginWithBunkerConnection should set up account correctly', () async {
       // Create a bunker connection directly
@@ -225,7 +225,7 @@ void main() {
       // Cleanup
       accounts.logout();
       expect(accounts.isLoggedIn, isFalse);
-    }, skip: true);
+    });
 
     test('decrypt should request remote decryption', () async {
       // Create a local event signer to encrypt a test message
@@ -353,5 +353,5 @@ void main() {
       final response = await signer.ping();
       expect(response, equals('pong'));
     });
-  });
+  }, skip: true);
 }
