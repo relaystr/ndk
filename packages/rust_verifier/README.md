@@ -14,16 +14,14 @@ Main package: [🔗 Dart Nostr Development Kit (NDK)](https://pub.dev/packages/n
 
 The verifier runs in `wasm` to enable threading your server must send the following headers:
 
-```
-Cross-Origin-Embedder-Policy    credentialless
-or
-require-corp
+``` shell
+Cross-Origin-Embedder-Policy: credentialless or require-corp
 ```
 
 and
 
-```
-Cross-Origin-Opener-Policy  same-origin
+``` shell
+Cross-Origin-Opener-Policy: same-origin
 ```
 
 you can read more about it in the [flutter docs](https://docs.flutter.dev/platform-integration/web/wasm#serve-the-built-output-with-an-http-server), [flutter rust bridge](https://cjycode.com/flutter_rust_bridge/manual/miscellaneous/web-cross-origin).
@@ -34,19 +32,19 @@ When enabled the verification is done in a background thread/worker.
 
 ### normal build
 
-```
+``` shell
 flutter_rust_bridge_codegen generate
 ```
 
 upgrade
 
-```
+``` shell
 cargo install flutter_rust_bridge_codegen && flutter_rust_bridge_codegen generate
 ```
 
 ### web build
 
-```
+``` shell
 flutter_rust_bridge_codegen build-web
 ```
 
