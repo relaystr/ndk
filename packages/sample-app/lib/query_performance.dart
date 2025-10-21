@@ -23,7 +23,7 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
   bool _isVerifyingBip340 = false;
   bool _isVerifyingRust = false;
 
-  static const relays = ["wss://relay.primal.net"];
+  static const relays = ["ws://localhost:10547"];
 
   final ndkBip340 = Ndk(NdkConfig(
     eventVerifier: MyVerifiers.bip340Verifier,
@@ -73,9 +73,6 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
     final query = ndk.requests.query(filters: [
       Filter(
         kinds: [1],
-        authors: [
-          '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d'
-        ],
         limit: _eventCount,
       )
     ]);
