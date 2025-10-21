@@ -225,6 +225,9 @@ class Wallets {
     _subscriptions[walletId]?.forEach((sub) => sub.cancel());
     _subscriptions.remove(walletId);
 
+    // update wallets stream with the new list
+    _walletsSubject.add(_wallets.toList());
+
     _updateCombinedStreams();
   }
 

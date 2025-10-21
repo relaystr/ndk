@@ -67,9 +67,14 @@ class WalletsRepoImpl implements WalletsRepo {
           }).toList());
     } else if (useCase is Nwc) {
       Wallet wallet = await getWallet(accountId);
-      final connection = await useCase.connect(wallet.metadata["nwcUrl"] );
+      final connection = await useCase.connect(wallet.metadata["nwcUrl"]);
       final balanceResponse = await useCase.getBalance(connection);
-      yield [WalletBalance(walletId: accountId, unit: "sat", amount: balanceResponse.balanceSats)];
+      yield [
+        WalletBalance(
+            walletId: accountId,
+            unit: "sat",
+            amount: balanceResponse.balanceSats)
+      ];
     } else {
       throw UnimplementedError('Unknown account type for balances stream');
     }
@@ -107,8 +112,8 @@ class WalletsRepoImpl implements WalletsRepo {
             .toList(),
       );
     } else if (useCase is Nwc) {
-      throw UnimplementedError(
-          'NWC pending transactions stream not implemented yet');
+      // throw UnimplementedError(
+      //     'NWC pending transactions stream not implemented yet');
     } else {
       throw UnimplementedError(
           'Unknown account type for pending transactions stream');
@@ -130,7 +135,8 @@ class WalletsRepoImpl implements WalletsRepo {
     } else if (useCase is Nwc) {
       Wallet wallet = await getWallet(accountId);
       final connection = await useCase.connect(wallet.metadata["nwcUrl"]);
-      final transactions = await useCase.listTransactions(connection, unpaid: false);
+      final transactions =
+          await useCase.listTransactions(connection, unpaid: false);
       yield transactions.transactions
           .map((e) => NwcWalletTransaction(
                 id: e.paymentHash,
@@ -138,7 +144,9 @@ class WalletsRepoImpl implements WalletsRepo {
                 changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
                 unit: "sats",
                 walletType: WalletType.NWC,
-                state: e.state != null  && e.state == "settled"? WalletTransactionState.completed: WalletTransactionState.pending,
+                state: e.state != null && e.state == "settled"
+                    ? WalletTransactionState.completed
+                    : WalletTransactionState.pending,
                 metadata: e.metadata ?? {},
                 transactionDate: e.settledAt ?? e.createdAt,
                 initiatedDate: e.createdAt,

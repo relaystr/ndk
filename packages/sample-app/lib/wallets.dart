@@ -35,35 +35,12 @@ class _WalletsPageState extends State<WalletsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Wallets Balance Section
-            Text("Wallets Balance",
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
             SizedBox(
-              height: 140,
-              child: Balances(ndk: widget.ndk),
+              height: 120,
+              child: WalletsList(ndk: widget.ndk),
             ),
 
             const SizedBox(height: 16),
-
-            // Pending Transactions Section
-            Text("Pending transactions",
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 150,
-              child: Pending(ndk: widget.ndk),
-            ),
-            Text("Recent transactions",
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 150,
-              child: RecentTransactions(ndk: widget.ndk),
-            ),
-
-            const SizedBox(height: 24),
-
             // CASHU Section
             Text("CASHU", style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
@@ -170,6 +147,28 @@ class _WalletsPageState extends State<WalletsPage> {
               child: const Text("Add New NWC Wallet"),
             ),
             const SizedBox(height: 16),
+
+            // Wallets Balance Section
+            Text("Wallets Balance",
+                style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 140,
+              child: Balances(ndk: widget.ndk),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Pending Transactions Section (conditional)
+            PendingTransactionsSection(ndk: widget.ndk),
+
+            Text("Recent transactions",
+                style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 150,
+              child: RecentTransactions(ndk: widget.ndk),
+            ),
           ],
         ),
       ),
@@ -259,53 +258,77 @@ class Balances extends StatelessWidget {
   }
 }
 
-class Pending extends StatelessWidget {
+class PendingTransactionsSection extends StatelessWidget {
   final Ndk ndk;
-  const Pending({super.key, required this.ndk});
+  const PendingTransactionsSection({super.key, required this.ndk});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: ndk.wallets.combinedPendingTransactions,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('No pending transactions'));
-        } else {
-          final transactions = snapshot.data!;
-          return ListView.builder(
-            reverse: true,
-            itemCount: transactions.length,
-            itemBuilder: (context, index) {
-              final transaction = transactions[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 2),
-                child: ListTile(
-                  dense: true,
-                  title: Text(
-                      '${transaction.changeAmount} ${transaction.unit} type: ${transaction.walletType}'),
-                  onTap: () {
-                    if (transaction is CashuWalletTransaction) {
-                      Clipboard.setData(
-                          ClipboardData(text: transaction.token ?? ''));
+        // Hide section if no data or empty
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-                      // copy to clipboard
-                      const snackBar = SnackBar(
-                        content: Text('Copied to clipboard'),
-                        duration: Duration(seconds: 1),
-                      );
-
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }
-                  },
-                ),
-              );
-            },
+        if (snapshot.hasError) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Pending transactions",
+                  style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 150,
+                child: Center(child: Text('Error: ${snapshot.error}')),
+              ),
+              const SizedBox(height: 16),
+            ],
           );
         }
+
+        final transactions = snapshot.data!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Pending transactions",
+                style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 150,
+              child: ListView.builder(
+                reverse: true,
+                itemCount: transactions.length,
+                itemBuilder: (context, index) {
+                  final transaction = transactions[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    child: ListTile(
+                      dense: true,
+                      title: Text(
+                          '${transaction.changeAmount} ${transaction.unit} type: ${transaction.walletType}'),
+                      onTap: () {
+                        if (transaction is CashuWalletTransaction) {
+                          Clipboard.setData(
+                              ClipboardData(text: transaction.token ?? ''));
+
+                          const snackBar = SnackBar(
+                            content: Text('Copied to clipboard'),
+                            duration: Duration(seconds: 1),
+                          );
+
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        }
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        );
       },
     );
   }
@@ -344,6 +367,120 @@ class RecentTransactions extends StatelessWidget {
             },
           );
         }
+      },
+    );
+  }
+}
+
+class WalletsList extends StatefulWidget {
+  final Ndk ndk;
+  const WalletsList({super.key, required this.ndk});
+
+  @override
+  State<WalletsList> createState() => _WalletsListState();
+}
+
+class _WalletsListState extends State<WalletsList> {
+  void _showRemoveWalletDialog(
+      BuildContext context, String walletId, String walletType) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Remove Wallet'),
+          content:
+              Text('Are you sure you want to remove this $walletType wallet?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  await widget.ndk.wallets.removeWallet(walletId);
+                  if (mounted) {
+                    Navigator.of(context).pop();
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error removing wallet: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<Wallet>>(
+      stream: widget.ndk.wallets.walletsStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final wallets = snapshot.data ?? [];
+
+        if (wallets.isEmpty) {
+          return const Center(child: Text('No wallets added yet'));
+        }
+
+        return ListView.builder(
+          itemCount: wallets.length,
+          itemBuilder: (context, index) {
+            final wallet = wallets[index];
+            String walletType = 'Unknown';
+            String walletInfo = '';
+
+            if (wallet is CashuWallet) {
+              walletType = 'Cashu';
+              walletInfo = wallet.mintUrl;
+            } else if (wallet is NwcWallet) {
+              walletType = 'NWC';
+              walletInfo = wallet.name;
+            }
+
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 2),
+              child: ListTile(
+                dense: true,
+                leading: Icon(
+                  walletType == 'Cashu'
+                      ? Icons.account_balance_wallet
+                      : Icons.cloud,
+                  size: 20,
+                ),
+                title: Text('$walletType Wallet'),
+                subtitle: Text(
+                  walletInfo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, size: 20),
+                  color: Colors.red,
+                  onPressed: () {
+                    _showRemoveWalletDialog(context, wallet.id, walletType);
+                  },
+                  tooltip: 'Remove wallet',
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }
