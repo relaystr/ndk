@@ -18,6 +18,10 @@ project_root/
         └── rust_lib_ndk.js
 ```
 
+!!!
+The `RustEventVerifier()` object must only be created once! This is a limitation on the web due to the way web workers are handled.
+!!!
+
 ## Performance on Web
 
 The verifier runs in `wasm` to enable threading your server must send the following headers:
