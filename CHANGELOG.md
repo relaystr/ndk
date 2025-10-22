@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-10-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_rust_verifier` - `v0.4.2-dev.2`](#ndk_rust_verifier---v042-dev2)
+ - [`rust_lib_ndk` - `v0.1.7-dev.0+2`](#rust_lib_ndk---v017-dev02)
+
+---
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.2`
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FEAT**: rust verifier web assets.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.0+2`
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+
+
+## 2025-10-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_rust_verifier` - `v0.4.2-dev.1`](#ndk_rust_verifier---v042-dev1)
+ - [`rust_lib_ndk` - `v0.1.7+1`](#rust_lib_ndk---v0171)
+
+---
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.1`
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FEAT**: rust verifier web assets.
+
+#### `rust_lib_ndk` - `v0.1.7+1`
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+
+
 ## 2025-10-20
 
 ### Changes

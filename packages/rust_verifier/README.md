@@ -19,7 +19,7 @@ project_root/
 ```
 
 !!!
-The `RustEventVerifier()` object must only be created once! This is a limitation on the web due to the way web workers are handled.
+The `RustEventVerifier()` object must only be created once!
 Use a singleton pattern to ensure only one instance is created
 !!!
 
