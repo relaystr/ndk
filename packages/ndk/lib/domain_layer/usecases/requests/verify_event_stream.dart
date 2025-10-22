@@ -25,10 +25,10 @@ class VerifyEventStream {
       final future = _verifyEvent(event);
       buffer.add(future);
 
-      // Once we hit max concurrent, wait for some to complete
+      // Once we hit max concurrent, wait for the first one to complete
       if (buffer.length >= maxConcurrent) {
-        final verified = await Future.any(buffer);
-        buffer.removeWhere((f) => f == Future.value(verified));
+        final verified = await buffer.first;
+        buffer.removeAt(0);
 
         if (verified != null && verified.validSig == true) {
           yield verified;
