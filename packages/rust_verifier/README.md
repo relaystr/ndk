@@ -41,7 +41,7 @@ you can read more about it in the [flutter docs](https://docs.flutter.dev/platfo
 
 When enabled the verification is done in a background thread/worker.
 
-## How to build
+## How to build the rust_verifier from source [library development]
 
 ### normal build
 
