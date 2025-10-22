@@ -1,6 +1,6 @@
 name: ndk_rust_verifier
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.4.2-dev.0+1
+version: 0.4.2-dev.2
 homepage: https://github.com/relaystr/ndk
 
 environment:
@@ -19,7 +19,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_rust_bridge: ^2.11.1
-  rust_lib_ndk: ^0.1.7
+  rust_lib_ndk: ^0.1.7-dev.0+2
   ndk: ^0.5.2-dev.0+1
 
 #dependency_overrides:
@@ -32,6 +32,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  build_runner: ^2.4.15
+  build_runner: ^2.10.0
   integration_test:
     sdk: flutter
