@@ -15,6 +15,45 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.5.2-dev.1`](#ndk---v052-dev1)
+ - [`ndk_amber` - `v0.3.3-dev.1`](#ndk_amber---v033-dev1)
+ - [`ndk_isar` - `v0.2.3-dev.1`](#ndk_isar---v023-dev1)
+ - [`ndk_objectbox` - `v0.2.7-dev.3`](#ndk_objectbox---v027-dev3)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.3`](#ndk_rust_verifier---v042-dev3)
+ - [`nip07_event_signer` - `v1.0.4-dev.1`](#nip07_event_signer---v104-dev1)
+ - [`sembast_cache_manager` - `v1.0.5-dev.1`](#sembast_cache_manager---v105-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.1`
+ - `ndk_isar` - `v0.2.3-dev.1`
+ - `ndk_objectbox` - `v0.2.7-dev.3`
+ - `ndk_rust_verifier` - `v0.4.2-dev.3`
+ - `nip07_event_signer` - `v1.0.4-dev.1`
+ - `sembast_cache_manager` - `v1.0.5-dev.1`
+
+---
+
+#### `ndk` - `v0.5.2-dev.1`
+
+ - **FIX**: buffer not clearing.
+ - **FEAT**: concurrent event stream.
+
+
+## 2025-10-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk_rust_verifier` - `v0.4.2-dev.2`](#ndk_rust_verifier---v042-dev2)
  - [`rust_lib_ndk` - `v0.1.7-dev.0+2`](#rust_lib_ndk---v017-dev02)
 

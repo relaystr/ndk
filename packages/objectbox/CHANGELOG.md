@@ -1,3 +1,7 @@
+## 0.2.7-dev.3
+
+ - Update a dependency to the latest release.
+
 ## 0.2.7-dev.2
 
  - **FIX**: import cosmetics.

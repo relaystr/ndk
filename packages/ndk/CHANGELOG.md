@@ -1,3 +1,8 @@
+## 0.5.2-dev.1
+
+ - **FIX**: buffer not clearing.
+ - **FEAT**: concurrent event stream.
+
 ## 0.5.2-dev.0+1
 
  - **FIX**: call dispose on destroy.
