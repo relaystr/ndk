@@ -1,22 +1,22 @@
 ## 0.6.0-dev.0
 
- - Bump "ndk" to `0.6.0-dev.0`.
+- Bump "ndk" to `0.6.0-dev.0`.
 
 ## 0.5.2-dev.2
 
- - **FIX**: buffer not clearing.
- - **FEAT**: concurrent event stream.
+- **FIX**: buffer not clearing.
+- **FEAT**: concurrent event stream.
 
 ## 0.5.2-dev.1
 
- - **FIX**: buffer not clearing.
- - **FEAT**: concurrent event stream.
+- **FIX**: buffer not clearing.
+- **FEAT**: concurrent event stream.
 
 ## 0.5.2-dev.0+1
 
- - **FIX**: call dispose on destroy.
- - **FIX**: BehaviorSubject for immediate values.
- - **FIX**: copy value to fix modification.
+- **FIX**: call dispose on destroy.
+- **FIX**: BehaviorSubject for immediate values.
+- **FIX**: copy value to fix modification.
 
 ## 0.5.1
 
