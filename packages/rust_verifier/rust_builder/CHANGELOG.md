@@ -1,3 +1,7 @@
+## 0.1.7+1
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+
 ## 0.1.7
 
 - flutter requirements
