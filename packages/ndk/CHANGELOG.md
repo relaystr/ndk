@@ -1,3 +1,7 @@
+## 0.6.0-dev.0
+
+ - Bump "ndk" to `0.6.0-dev.0`.
+
 ## 0.5.2-dev.2
 
  - **FIX**: buffer not clearing.

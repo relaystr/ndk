@@ -15,6 +15,48 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.6.0-dev.0`](#ndk---v060-dev0)
+ - [`ndk_amber` - `v0.3.3-dev.3`](#ndk_amber---v033-dev3)
+ - [`ndk_isar` - `v0.2.3-dev.3`](#ndk_isar---v023-dev3)
+ - [`ndk_objectbox` - `v0.2.7-dev.5`](#ndk_objectbox---v027-dev5)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.5`](#ndk_rust_verifier---v042-dev5)
+ - [`nip07_event_signer` - `v1.0.4-dev.3`](#nip07_event_signer---v104-dev3)
+ - [`sembast_cache_manager` - `v1.0.5-dev.3`](#sembast_cache_manager---v105-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.3`
+ - `ndk_isar` - `v0.2.3-dev.3`
+ - `ndk_objectbox` - `v0.2.7-dev.5`
+ - `ndk_rust_verifier` - `v0.4.2-dev.5`
+ - `nip07_event_signer` - `v1.0.4-dev.3`
+ - `sembast_cache_manager` - `v1.0.5-dev.3`
+
+---
+
+#### `ndk` - `v0.6.0-dev.0`
+
+ - Bump "ndk" to `0.6.0-dev.0`.
+
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## 2025-10-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.5.2-dev.2`](#ndk---v052-dev2)
  - [`ndk_amber` - `v0.3.3-dev.2`](#ndk_amber---v033-dev2)
  - [`ndk_isar` - `v0.2.3-dev.2`](#ndk_isar---v023-dev2)
