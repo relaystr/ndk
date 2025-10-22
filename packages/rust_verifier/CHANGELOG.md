@@ -1,3 +1,11 @@
+## 0.4.2-dev.4
+
+ - Update a dependency to the latest release.
+
+## 0.4.2-dev.3
+
+ - Update a dependency to the latest release.
+
 ## 0.4.2-dev.2
 
  - **REFACTOR**: secp256k1 to rust native dep.
