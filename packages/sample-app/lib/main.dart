@@ -5,6 +5,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/blossom_page.dart';
 import 'package:ndk_demo/nwc_page.dart';
+import 'package:ndk_demo/query_performance.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_demo/verifiers_performance.dart';
 import 'package:ndk_demo/zaps_page.dart';
@@ -135,6 +136,7 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
+      const Tab(text: 'Query Performance'),
       // Conditionally add Amber tab if it's part of the design
       // For a fixed length of 6, ensure this list matches.
       // Example: if Amber is the 6th tab:
@@ -158,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage>
     // The main change is how _tabPages is constructed in build() to pass the callback.
 
     _tabController = TabController(
-        length: 6,
+        length: 7,
         vsync:
             this); // Fixed length to 5 (Accounts, Metadata, Relays, NWC, Blossom)
     _tabController.addListener(() {
@@ -246,6 +248,7 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
+      const Tab(text: 'Query Performance'),
       // Amber tab removed
     ];
 
@@ -256,6 +259,7 @@ class _MyHomePageState extends State<MyHomePage>
       const NwcPage(),
       BlossomMediaPage(ndk: ndk),
       VerifiersPerformancePage(ndk: ndk),
+      QueryPerformancePage(ndk: ndk),
       // AmberPage removed
     ];
 
