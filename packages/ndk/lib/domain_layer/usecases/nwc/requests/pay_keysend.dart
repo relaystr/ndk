@@ -11,7 +11,7 @@ class PayKeysendRequest extends NwcRequest {
   final List<TlvRecord>? tlvRecords;
 
   const PayKeysendRequest({
-    required amountMsat,
+    required int amountMsat,
     required this.pubkey,
     this.preimage,
     this.tlvRecords,

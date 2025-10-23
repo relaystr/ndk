@@ -164,7 +164,7 @@ class RelaySets {
             .toList());
   }
 
-  _buildPubKeysMapFromRelayLists(
+  Future<Map<String, Set<PubkeyMapping>>> _buildPubKeysMapFromRelayLists(
       List<String> pubKeys, RelayDirection direction) async {
     Map<String, Set<PubkeyMapping>> pubKeysByRelayUrl = {};
     int foundCount = 0;

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:ndk/ndk.dart';
 
 Future<void> main() async {
@@ -8,15 +10,15 @@ Future<void> main() async {
       appName: "NDK nostr connect example",
       appUrl: "https://dart-nostr.com/");
 
-  print('Logging in with ${nostrConnect.nostrConnectURL}');
-  print('Enter this URI into your Nostr Connect client to log in.');
+  log('Logging in with ${nostrConnect.nostrConnectURL}');
+  log('Enter this URI into your Nostr Connect client to log in.');
 
   try {
     await ndk.accounts.loginWithNostrConnect(
         nostrConnect: nostrConnect, bunkers: ndk.bunkers);
 
-    print('Successfully logged in with bunker!');
-    print('Logged in as: ${ndk.accounts.getPublicKey()}');
+    log('Successfully logged in with bunker!');
+    log('Logged in as: ${ndk.accounts.getPublicKey()}');
 
     // Test signing an event
     final event = Nip01Event(
@@ -27,10 +29,10 @@ Future<void> main() async {
     );
 
     await ndk.accounts.sign(event);
-    print('Event signed successfully!');
-    print('Event ID: ${event.id}');
+    log('Event signed successfully!');
+    log('Event ID: ${event.id}');
   } catch (e) {
-    print('Error: $e');
+    log('Error: $e');
   }
 
   await ndk.destroy();

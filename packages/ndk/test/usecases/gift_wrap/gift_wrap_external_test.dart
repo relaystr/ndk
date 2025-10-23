@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
@@ -43,7 +44,7 @@ void main() async {
         try {
           final messageEvent =
               await ndk.giftWrap.fromGiftWrap(giftWrap: giftWrap);
-          print(messageEvent.content);
+          log(messageEvent.content);
 
           expect(messageEvent.content.length, greaterThan(1));
 

@@ -68,7 +68,7 @@ class RelayManager<T> {
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
 
-  updateRelayConnectivity() {
+  void updateRelayConnectivity() {
     _relayUpdatesStreamController.add(globalState.relays);
   }
 
@@ -591,7 +591,7 @@ class RelayManager<T> {
   }
 
   /// Closes this url transport and removes
-  Future<void> closeTransport(url) async {
+  Future<void> closeTransport(String url) async {
     RelayConnectivity? connectivity = globalState.relays[url];
     if (connectivity != null && connectivity.relayTransport != null) {
       Logger.log.d("Disconnecting $url...");

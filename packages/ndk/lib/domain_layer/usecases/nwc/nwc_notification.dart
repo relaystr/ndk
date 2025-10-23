@@ -20,10 +20,10 @@ class NwcNotification {
   int? settleDeadline;
   Map<String, dynamic>? metadata;
 
-  get isIncoming => type == TransactionType.incoming.value;
-  get isPaymentReceived => notificationType == kPaymentReceived;
-  get isPaymentSent => notificationType == kPaymentSent;
-  get isHoldInvoiceAccepted => notificationType == kHoldInvoiceAccepted;
+  bool get isIncoming => type == TransactionType.incoming.value;
+  bool get isPaymentReceived => notificationType == kPaymentReceived;
+  bool get isPaymentSent => notificationType == kPaymentSent;
+  bool get isHoldInvoiceAccepted => notificationType == kHoldInvoiceAccepted;
 
   NwcNotification({
     required this.notificationType,
