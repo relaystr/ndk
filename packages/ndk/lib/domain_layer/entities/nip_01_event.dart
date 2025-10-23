@@ -113,6 +113,10 @@ class Nip01Event {
     if (id != _calculateId(pubKey, createdAt, kind, tags, content)) {
       return false;
     }
+    // Validate proof of work if present
+    if (!Nip13.validateEvent(this)) {
+      return false;
+    }
     return true;
   }
 
