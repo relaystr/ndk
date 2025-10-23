@@ -1,0 +1,51 @@
+name: Prerelease
+
+on:
+  push:
+    branches:
+      - master
+    # Exclude pushes made by the GitHub Action itself to prevent loops
+    paths-ignore:
+      - "**/CHANGELOG.md"
+      - "**/pubspec.yaml"
+
+jobs:
+  prerelease:
+    name: Create pre-release
+    runs-on: ubuntu-latest
+    # Only run if the push wasn't made by the GitHub Action
+        # Only run if the push wasn't made by the GitHub Action AND doesn't contain release message
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release)')
+
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for melos versioning
+          fetch-depth: 0
+          # Use a token that can trigger workflows
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          architecture: x64 # optional, x64 or arm64
+
+      - name: Run Melos
+        uses: bluefireteam/melos-action@v3
+        with:
+          run-versioning: true
+          run-versioning-prerelease: true
+          publish-dry-run: true
+          create-pr: true
+          git-email: "github-actions[bot]@users.noreply.github.com"
+          git-name: "github-actions[bot]"

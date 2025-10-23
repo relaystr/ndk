@@ -75,7 +75,9 @@ class Bunkers {
     );
 
     await localEventSigner.sign(requestEvent);
-    _broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
+    final broadcastRes =
+        _broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
+    await broadcastRes.broadcastDoneFuture;
 
     final subscription = _requests.subscription(
       explicitRelays: relays,

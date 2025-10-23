@@ -361,6 +361,10 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
+      sha256: a7967e31b703831a893bbc3c3dd11db08126fe5f369b5c648a36f821979f5be3
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.2"
   logging:
     dependency: transitive
     description:
@@ -472,6 +476,7 @@ packages:
       relative: true
     source: path
     version: "0.5.1"
+    version: "0.5.2-dev.0+1"
   ndk_amber:
     dependency: "direct main"
     description:
@@ -479,6 +484,7 @@ packages:
       relative: true
     source: path
     version: "0.3.2"
+    version: "0.3.3-dev.0+1"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
@@ -486,6 +492,7 @@ packages:
       relative: true
     source: path
     version: "0.4.1"
+    version: "0.4.2-dev.0+1"
   nested:
     dependency: transitive
     description:

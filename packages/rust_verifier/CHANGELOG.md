@@ -1,3 +1,29 @@
+## 0.4.2-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.4.2-dev.4
+
+ - Update a dependency to the latest release.
+
+## 0.4.2-dev.3
+
+ - Update a dependency to the latest release.
+
+## 0.4.2-dev.2
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FEAT**: rust verifier web assets.
+
+## 0.4.2-dev.1
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FEAT**: rust verifier web assets.
+
+## 0.4.2-dev.0+1
+
+ - **FIX**: flutter_rust_bridge no strict version.
+
 ## 0.4.0
 
  - new builder to support flutter 3.32.0

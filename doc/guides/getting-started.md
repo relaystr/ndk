@@ -28,7 +28,7 @@ If you code with AI then your AI must read https://github.com/relaystr/ndk/blob/
 
 !!!
 We strongly recommend using `RustEventVerifier()` for client applications. It uses a separate thread for signature verification and is therefore more performant. \
-How to install below.
+How to install below. For web look [here](https://github.com/relaystr/ndk/blob/master/packages/rust_verifier/README.md)
 !!!
 
 ```dart

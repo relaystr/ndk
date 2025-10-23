@@ -14,6 +14,7 @@ import 'schema/db_cashu_secret_counter.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
+import 'schema/db_nip_05.dart';
 import 'schema/db_user_relay_list.dart';
 import 'schema/db_wallet.dart';
 import 'schema/db_wallet_transaction.dart';
