@@ -3,13 +3,21 @@ import 'dart:async';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
+import 'package:ndk_objectbox/data_layer/db/object_box/schema/db_nip_05.dart';
+
 import '../../../objectbox.g.dart';
 import 'db_init_object_box.dart';
+import 'schema/db_cashu_keyset.dart';
+import 'schema/db_cashu_mint_info.dart';
+import 'schema/db_cashu_proof.dart';
+import 'schema/db_cashu_secret_counter.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
 import 'schema/db_nip_05.dart';
 import 'schema/db_user_relay_list.dart';
+import 'schema/db_wallet.dart';
+import 'schema/db_wallet_transaction.dart';
 
 class DbObjectBox implements CacheManager {
   final Completer _initCompleter = Completer();
@@ -578,5 +586,358 @@ class DbObjectBox implements CacheManager {
     }
 
     return filteredResults.map((dbEvent) => dbEvent.toNdk()).take(limit);
+  }
+
+  @override
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) async {
+    await dbRdy;
+    if (mintUrl == null || mintUrl.isEmpty) {
+      // return all keysets if no mintUrl
+      return _objectBox.store
+          .box<DbWalletCahsuKeyset>()
+          .getAll()
+          .map((dbKeyset) => dbKeyset.toNdk())
+          .toList();
+    }
+
+    return _objectBox.store
+        .box<DbWalletCahsuKeyset>()
+        .query(DbWalletCahsuKeyset_.mintUrl.equals(mintUrl))
+        .build()
+        .find()
+        .map((dbKeyset) => dbKeyset.toNdk())
+        .toList();
+  }
+
+  @override
+  Future<List<CashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
+  }) async {
+    /// returns all proofs if no filters are applied
+    await dbRdy;
+
+    final proofBox = _objectBox.store.box<DbWalletCashuProof>();
+
+    // Build conditions
+    Condition<DbWalletCashuProof> condition;
+
+    /// filter spend state
+
+    condition = DbWalletCashuProof_.state.equals(state.toString());
+
+    /// specify keysetId
+    if (keysetId != null && keysetId.isNotEmpty) {
+      final keysetCondition = DbWalletCashuProof_.keysetId.equals(keysetId);
+      condition = condition.and(keysetCondition);
+    }
+
+    if (mintUrl != null && mintUrl.isNotEmpty) {
+      /// get all keysets for the mintUrl
+      /// and filter proofs by keysetId
+      ///
+      final keysets = await getKeysets(mintUrl: mintUrl);
+      if (keysets.isNotEmpty) {
+        final keysetIds = keysets.map((k) => k.id).toList();
+        final mintUrlCondition = DbWalletCashuProof_.keysetId.oneOf(keysetIds);
+
+        condition = condition.and(mintUrlCondition);
+      } else {
+        // If no keysets found for the mintUrl, return empty list
+        return [];
+      }
+    }
+
+    QueryBuilder<DbWalletCashuProof> queryBuilder;
+
+    queryBuilder = proofBox.query(condition);
+
+    // Apply sorting
+    queryBuilder.order(DbWalletCashuProof_.amount);
+
+    // Build and execute the query
+    final query = queryBuilder.build();
+
+    final results = query.find();
+    return results.map((dbProof) => dbProof.toNdk()).toList();
+  }
+
+  @override
+  Future<void> removeProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    await dbRdy;
+    final proofBox = _objectBox.store.box<DbWalletCashuProof>();
+
+    // find all proofs, ignoring mintUrl
+    final proofSecrets = proofs.map((p) => p.secret).toList();
+    final existingProofs = proofBox
+        .query(DbWalletCashuProof_.secret.oneOf(proofSecrets))
+        .build()
+        .find();
+
+    // remove them
+    if (existingProofs.isNotEmpty) {
+      proofBox.removeMany(existingProofs.map((p) => p.dbId).toList());
+    }
+  }
+
+  @override
+  Future<void> saveKeyset(CahsuKeyset keyset) async {
+    _objectBox.store.box<DbWalletCahsuKeyset>().put(
+          DbWalletCahsuKeyset.fromNdk(keyset),
+        );
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    await dbRdy;
+
+    /// upsert logic:
+
+    final store = _objectBox.store;
+    store.runInTransaction(TxMode.write, () {
+      final box = store.box<DbWalletCashuProof>();
+
+      final dbTokens =
+          proofs.map((t) => DbWalletCashuProof.fromNdk(t)).toList();
+
+      // find existing proofs by secret
+      final secretsToCheck = dbTokens.map((t) => t.secret).toList();
+      final query =
+          box.query(DbWalletCashuProof_.secret.oneOf(secretsToCheck)).build();
+
+      try {
+        final existing = query.find();
+
+        if (existing.isNotEmpty) {
+          box.removeMany(existing.map((t) => t.dbId).toList());
+        }
+
+        // insert
+        box.putMany(dbTokens);
+      } finally {
+        query.close();
+      }
+    });
+  }
+
+  @override
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) async {
+    await dbRdy;
+
+    final transactionBox = _objectBox.store.box<DbWalletTransaction>();
+
+    Condition<DbWalletTransaction>? condition;
+    if (walletId != null && walletId.isNotEmpty) {
+      condition = DbWalletTransaction_.walletId.equals(walletId);
+    }
+    if (unit != null && unit.isNotEmpty) {
+      final unitCondition = DbWalletTransaction_.unit.equals(unit);
+      condition =
+          (condition == null) ? unitCondition : condition.and(unitCondition);
+    }
+    if (walletType != null) {
+      final typeCondition =
+          DbWalletTransaction_.walletType.equals(walletType.toString());
+      condition =
+          (condition == null) ? typeCondition : condition.and(typeCondition);
+    }
+    QueryBuilder<DbWalletTransaction> queryBuilder;
+    if (condition != null) {
+      queryBuilder = transactionBox.query(condition);
+    } else {
+      queryBuilder = transactionBox.query();
+    }
+
+    // sort
+    queryBuilder.order(DbWalletTransaction_.transactionDate,
+        flags: Order.descending);
+
+    final query = queryBuilder.build();
+    // limit
+    if (limit != null) {
+      query..limit = limit;
+    }
+
+    // offset
+    if (offset != null) {
+      query..offset = offset;
+    }
+
+    final results = query.find();
+    return results.map((dbTransaction) => dbTransaction.toNdk()).toList();
+  }
+
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  }) async {
+    await dbRdy;
+
+    final store = _objectBox.store;
+
+    store.runInTransaction(TxMode.write, () {
+      final box = store.box<DbWalletTransaction>();
+      final dbTransactions =
+          transactions.map((t) => DbWalletTransaction.fromNdk(t)).toList();
+
+      // find existing transactions by id
+      final idsToCheck = dbTransactions.map((t) => t.id).toList();
+
+      final query =
+          box.query(DbWalletTransaction_.id.oneOf(idsToCheck)).build();
+
+      try {
+        final existing = query.find();
+
+        if (existing.isNotEmpty) {
+          box.removeMany(existing.map((t) => t.dbId).toList());
+        }
+
+        // insert
+        box.putMany(dbTransactions);
+      } finally {
+        query.close();
+      }
+    });
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
+    await dbRdy;
+
+    return Future.value(
+      _objectBox.store.box<DbWallet>().getAll().map((dbWallet) {
+        return dbWallet.toNdk();
+      }).where((wallet) {
+        if (ids == null || ids.isEmpty) {
+          return true; // return all wallets
+        }
+        return ids.contains(wallet.id);
+      }).toList(),
+    );
+  }
+
+  @override
+  Future<void> removeWallet(String walletId) async {
+    await dbRdy;
+    // find wallet by id
+    final walletBox = _objectBox.store.box<DbWallet>();
+    final existingWallet = await walletBox
+        .query(DbWallet_.id.equals(walletId))
+        .build()
+        .findFirst();
+    if (existingWallet != null) {
+      await walletBox.remove(existingWallet.dbId);
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveWallet(Wallet wallet) async {
+    await dbRdy;
+    await _objectBox.store.box<DbWallet>().put(DbWallet.fromNdk(wallet));
+    return Future.value();
+  }
+
+  @override
+  Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
+    await dbRdy;
+
+    final box = _objectBox.store.box<DbCashuMintInfo>();
+
+    // return all if no filters provided
+    if (mintUrls == null || mintUrls.isEmpty) {
+      return box.getAll().map((e) => e.toNdk()).toList();
+    }
+
+    // build OR condition
+    Condition<DbCashuMintInfo>? cond;
+    for (final url in mintUrls) {
+      final c = DbCashuMintInfo_.urls.containsElement(url);
+      cond = (cond == null) ? c : (cond | c);
+    }
+
+    final query = box.query(cond).build();
+    try {
+      return query.find().map((e) => e.toNdk()).toList();
+    } finally {
+      query.close();
+    }
+  }
+
+  @override
+  Future<void> saveMintInfo({required CashuMintInfo mintInfo}) async {
+    await dbRdy;
+
+    final box = _objectBox.store.box<DbCashuMintInfo>();
+
+    /// upsert logic:
+    final existingMintInfo = box
+        .query(DbCashuMintInfo_.urls.containsElement(mintInfo.urls.first))
+        .build()
+        .findFirst();
+
+    if (existingMintInfo != null) {
+      box.remove(existingMintInfo.dbId);
+    }
+
+    box.put(DbCashuMintInfo.fromNdk(mintInfo));
+  }
+
+  @override
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  }) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbCashuSecretCounter>();
+    final existing = box
+        .query(DbCashuSecretCounter_.mintUrl
+            .equals(mintUrl)
+            .and(DbCashuSecretCounter_.keysetId.equals(keysetId)))
+        .build()
+        .findFirst();
+    if (existing == null) {
+      return 0;
+    }
+    return existing.counter;
+  }
+
+  @override
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  }) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbCashuSecretCounter>();
+    final existing = box
+        .query(DbCashuSecretCounter_.mintUrl
+            .equals(mintUrl)
+            .and(DbCashuSecretCounter_.keysetId.equals(keysetId)))
+        .build()
+        .findFirst();
+    if (existing != null) {
+      box.remove(existing.dbId);
+    }
+    box.put(DbCashuSecretCounter(
+      mintUrl: mintUrl,
+      keysetId: keysetId,
+      counter: counter,
+    ));
+    return Future.value();
   }
 }
