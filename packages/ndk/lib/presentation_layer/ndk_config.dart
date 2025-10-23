@@ -6,7 +6,7 @@ import '../config/request_defaults.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_verifier.dart';
-import 'package:logger/logger.dart' as lib_logger;
+import '../shared/logger/log_level.dart';
 
 /// Configuration class for the Nostr Development Kit (NDK)
 ///
@@ -48,7 +48,7 @@ class NdkConfig {
   double defaultBroadcastConsiderDonePercent;
 
   /// log level
-  lib_logger.Level logLevel;
+  LogLevel logLevel;
 
   /// User agent string for Http requests and websockets.
   String userAgent;
