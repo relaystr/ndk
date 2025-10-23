@@ -25,7 +25,7 @@ class Follows {
         _accounts = accounts,
         _broadcast = broadcast;
 
-  _checkSigner() {
+  void _checkSigner() {
     if (_accounts.cannotSign) {
       throw "cannot sign without a signer";
     }

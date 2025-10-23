@@ -10,7 +10,7 @@ class MakeInvoiceRequest extends NwcRequest {
   final int? expiry;
 
   const MakeInvoiceRequest({
-    required amountMsat,
+    required int amountMsat,
     this.description,
     this.descriptionHash,
     this.expiry,

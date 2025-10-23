@@ -31,7 +31,7 @@ class Metadatas {
         _accounts = accounts,
         _broadcast = broadcast;
 
-  _checkSigner() {
+  void _checkSigner() {
     if (!_accounts.canSign) {
       throw "Not logged in";
     }

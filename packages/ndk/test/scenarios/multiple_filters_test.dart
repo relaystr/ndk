@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -23,8 +21,6 @@ void main() async {
 
         await relay0.startServer();
         await relay1.startServer();
-
-        final cache = MemCacheManager();
       });
 
       tearDown(() async {
@@ -95,7 +91,6 @@ void main() async {
         KeyPair key2 = Bip340.generatePrivateKey();
 
         Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1, 1)};
-        Map<KeyPair, Nip01Event> key2TextNotes = {key2: textNote(key2, 1)};
 
         CacheManager cacheManager = MemCacheManager();
 

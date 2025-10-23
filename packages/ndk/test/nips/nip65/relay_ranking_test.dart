@@ -93,7 +93,7 @@ String getRandomReadWrite() {
   return options[_random.nextInt(options.length)];
 }
 
-getRandomTags() {
+List<List<String>> getRandomTags() {
   final tags = [
     [
       'r',

@@ -33,7 +33,7 @@ class Blossom {
         _userServerList = blossomUserServerList,
         _blossomImpl = blossomRepository;
 
-  _checkSigner() {
+  void _checkSigner() {
     if (!_accounts.canSign) {
       throw "Not logged in";
     }

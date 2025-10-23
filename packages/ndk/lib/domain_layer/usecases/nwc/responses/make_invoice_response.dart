@@ -26,7 +26,7 @@ class MakeInvoiceResponse extends NwcResponse {
   final int amountMsat;
 
   /// The amount of the invoice (in SATS)
-  get amountSat => amountMsat ~/ 1000;
+  int get amountSat => amountMsat ~/ 1000;
 
   /// The fees paid for the invoice (in MSATs).
   final int feesPaid;

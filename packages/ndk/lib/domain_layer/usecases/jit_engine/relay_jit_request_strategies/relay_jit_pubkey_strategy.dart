@@ -298,7 +298,7 @@ class RelayJitPubkeyStrategy with Logger {
   // }
 }
 
-_removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
+void _removeFullyCoveredPubkeys(List<CoveragePubkey> coveragePubkeys) {
   coveragePubkeys.removeWhere((element) => element.missingCoverage == 0);
 }
 

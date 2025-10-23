@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:ndk/ndk.dart';
 
 Future<void> main() async {
@@ -9,8 +11,8 @@ Future<void> main() async {
             "bunker://a1fe3664f7a2b24db97e5b63869e8011c947f9abd8c03f98befafd27c38467d2?relay=wss://relay.nsec.app&secret=devsecret123",
         bunkers: ndk.bunkers);
 
-    print('Successfully logged in with bunker!');
-    print('Logged in as: ${ndk.accounts.getPublicKey()}');
+    log('Successfully logged in with bunker!');
+    log('Logged in as: ${ndk.accounts.getPublicKey()}');
 
     // Test signing an event
     final event = Nip01Event(
@@ -21,10 +23,10 @@ Future<void> main() async {
     );
 
     await ndk.accounts.sign(event);
-    print('Event signed successfully!');
-    print('Event ID: ${event.id}');
+    log('Event signed successfully!');
+    log('Event ID: ${event.id}');
   } catch (e) {
-    print('Error: $e');
+    log('Error: $e');
   }
 
   await ndk.destroy();

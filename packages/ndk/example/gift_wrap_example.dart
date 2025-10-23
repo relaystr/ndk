@@ -4,7 +4,7 @@ import 'package:ndk/ndk.dart';
 
 import '../test/mocks/mock_event_verifier.dart';
 
-giftWrapExample() async {
+void giftWrapExample() async {
   /// example ndk
   final ndk = Ndk(
     NdkConfig(

@@ -1,8 +1,9 @@
+import 'dart:developer';
+
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
-import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:test/test.dart';
 import 'dart:developer' as developer;
 import '../../mocks/mock_event_verifier.dart';
@@ -110,18 +111,16 @@ void main() async {
         final t1 = DateTime.now();
 
         for (final relay in ndk.relays.globalState.relays.values) {
-          print(
+          log(
             "Relay: ${relay.url} - ${relay.specificEngineData.assignedPubkeys.length} pubkeys",
           );
         }
 
-        print(
-            "BEST ${ndk.relays.globalState.relays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
-        print(
-            "CONTACTS ${myContactList.contacts.length} WITH  ${nip65events.length} nip65 events");
-        print("${events.length} events");
+        log("BEST ${ndk.relays.globalState.relays.length} RELAYS (min $relayMinCountPerPubKey per pubKey):");
+        log("CONTACTS ${myContactList.contacts.length} WITH  ${nip65events.length} nip65 events");
+        log("${events.length} events");
 
-        print("=====  time took ${t1.difference(t0).inMilliseconds} ms");
+        log("=====  time took ${t1.difference(t0).inMilliseconds} ms");
 
         //developer.log("FEED: ${events.toString()}");
 
