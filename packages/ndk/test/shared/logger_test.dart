@@ -1,4 +1,5 @@
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/logger/log_event.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -50,20 +51,20 @@ void main() {
 
     test('Logger can have multiple outputs', () {
       final testOutputs = <LogEvent>[];
-      
+
       final testOutput = _TestLogOutput(testOutputs);
-      
+
       Logger.log.addOutput(testOutput);
       Logger.setLogLevel(LogLevel.debug);
-      
+
       Logger.log.d('Test message');
-      
+
       expect(testOutputs.length, 1);
       expect(testOutputs.first.message, 'Test message');
       expect(testOutputs.first.level, LogLevel.debug);
-      
+
       Logger.log.removeOutput(testOutput);
-      
+
       // Reset to default
       Logger.setLogLevel(LogLevel.warning);
     });
@@ -71,25 +72,25 @@ void main() {
     test('Logger respects log level filtering', () {
       final testOutputs = <LogEvent>[];
       final testOutput = _TestLogOutput(testOutputs);
-      
+
       Logger.log.addOutput(testOutput);
       Logger.setLogLevel(LogLevel.warning);
-      
+
       // These should not be logged
       Logger.log.t('Trace message');
       Logger.log.d('Debug message');
       Logger.log.i('Info message');
-      
+
       // These should be logged
       Logger.log.w('Warning message');
       Logger.log.e('Error message');
-      
+
       expect(testOutputs.length, 2);
       expect(testOutputs[0].level, LogLevel.warning);
       expect(testOutputs[1].level, LogLevel.error);
-      
+
       Logger.log.removeOutput(testOutput);
-      
+
       // Reset to default
       Logger.setLogLevel(LogLevel.warning);
     });
@@ -97,15 +98,15 @@ void main() {
     test('Custom NdkLogger instance works independently', () {
       final testOutputs = <LogEvent>[];
       final testOutput = _TestLogOutput(testOutputs);
-      
+
       final customLogger = NdkLogger(
         level: LogLevel.info,
         outputs: [testOutput],
       );
-      
+
       customLogger.i('Info message');
       customLogger.d('Debug message'); // Should be filtered out
-      
+
       expect(testOutputs.length, 1);
       expect(testOutputs.first.message, 'Info message');
     });
@@ -115,14 +116,14 @@ void main() {
 /// Test log output that captures events in a list
 class _TestLogOutput implements LogOutput {
   final List<LogEvent> events;
-  
+
   _TestLogOutput(this.events);
-  
+
   @override
   void output(LogEvent event) {
     events.add(event);
   }
-  
+
   @override
   void destroy() {
     // Nothing to clean up

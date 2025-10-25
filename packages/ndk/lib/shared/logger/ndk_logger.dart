@@ -3,32 +3,23 @@ import 'log_level.dart';
 import 'log_output.dart';
 
 /// Core logger implementation.
-/// 
+///
 /// This logger supports:
 /// - Multiple log outputs (console, file, network, etc.)
 /// - Configurable log levels
 /// - WASM compatibility (no dart:io dependency)
 class NdkLogger {
   /// Current minimum log level
-  LogLevel _level;
+  LogLevel level;
 
   /// List of outputs where logs will be sent
   final List<LogOutput> _outputs;
 
   /// Constructor
   NdkLogger({
-    required LogLevel level,
+    required this.level,
     List<LogOutput>? outputs,
-  })  : _level = level,
-        _outputs = outputs ?? [];
-
-  /// Get the current log level
-  LogLevel get level => _level;
-
-  /// Set the log level
-  set level(LogLevel newLevel) {
-    _level = newLevel;
-  }
+  }) : _outputs = outputs ?? [];
 
   /// Add an output to the logger
   void addOutput(LogOutput output) {
@@ -42,39 +33,39 @@ class NdkLogger {
 
   /// Clear all outputs
   void clearOutputs() {
-    for (var output in _outputs) {
+    for (final output in _outputs) {
       output.destroy();
     }
     _outputs.clear();
   }
 
   /// Log a trace message
-  void t(dynamic message, [Object? error, StackTrace? stackTrace]) {
+  void t(dynamic message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.trace, message, error, stackTrace);
   }
 
   /// Log a debug message
-  void d(dynamic message, [Object? error, StackTrace? stackTrace]) {
+  void d(dynamic message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.debug, message, error, stackTrace);
   }
 
   /// Log an info message
-  void i(dynamic message, [Object? error, StackTrace? stackTrace]) {
+  void i(dynamic message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.info, message, error, stackTrace);
   }
 
   /// Log a warning message
-  void w(dynamic message, [Object? error, StackTrace? stackTrace]) {
+  void w(dynamic message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.warning, message, error, stackTrace);
   }
 
   /// Log an error message
-  void e(dynamic message, [Object? error, StackTrace? stackTrace]) {
+  void e(dynamic message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.error, message, error, stackTrace);
   }
 
   /// Log a fatal message
-  void f(dynamic message, [Object? error, StackTrace? stackTrace]) {
+  void f(dynamic message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.fatal, message, error, stackTrace);
   }
 
@@ -85,7 +76,7 @@ class NdkLogger {
     Object? error,
     StackTrace? stackTrace,
   ) {
-    if (!logLevel.shouldLog(_level)) {
+    if (!logLevel.shouldLog(level)) {
       return;
     }
 
@@ -96,7 +87,7 @@ class NdkLogger {
       stackTrace: stackTrace,
     );
 
-    for (var output in _outputs) {
+    for (final output in _outputs) {
       output.output(event);
     }
   }
