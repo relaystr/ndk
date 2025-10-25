@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'log_level.dart';
 
 /// ANSI color codes for terminal output

@@ -156,6 +156,33 @@ void main() {
 
       expect(testOutputs3.length, 1); // Should still be 1
     });
+
+    test('NdkLogger constructor outputs parameter works', () {
+      final testOutputs = <LogEvent>[];
+      final testOutput = _TestLogOutput(testOutputs);
+
+      // Create logger with outputs in constructor
+      final logger = NdkLogger(
+        level: LogLevel.info,
+        outputs: [testOutput],
+      );
+
+      // Log a message
+      logger.i('Test message');
+
+      // Verify the output received the message
+      expect(testOutputs.length, 1);
+      expect(testOutputs.first.message, 'Test message');
+      expect(testOutputs.first.level, LogLevel.info);
+
+      // Test with null outputs (should default to empty list)
+      final loggerWithoutOutputs = NdkLogger(
+        level: LogLevel.debug,
+      );
+
+      // Should not throw when logging without outputs
+      expect(() => loggerWithoutOutputs.d('Debug message'), returnsNormally);
+    });
   });
 }
 
