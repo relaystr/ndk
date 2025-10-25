@@ -1,4 +1,3 @@
-import 'package:logger/logger.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -32,7 +31,7 @@ void main() async {
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay0.url],
         ignoreRelays: [],
-        logLevel: Level.all,
+        logLevel: LogLevel.all,
       );
 
       ndk = Ndk(config);

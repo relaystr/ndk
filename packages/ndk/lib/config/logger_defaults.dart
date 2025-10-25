@@ -1,4 +1,4 @@
-import 'package:logger/logger.dart' as lib_logger;
+import '../shared/logger/log_level.dart';
 
 /// The default log level for the logger.
-const defaultLogLevel = lib_logger.Level.warning;
+const defaultLogLevel = LogLevel.warning;
