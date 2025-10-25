@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'log_event.dart';
 import 'log_output.dart';
 import 'log_color.dart';
