@@ -1,47 +1,54 @@
 import 'log_event.dart';
 import 'log_output.dart';
+import 'log_color.dart';
 
-/// Console output for the logger that prints to stdout.
-/// 
-/// This output adds an "NDK: " prefix to all log messages.
-class ConsoleOutput implements LogOutput {
-  /// Whether to include timestamps in the output
-  final bool includeTimestamp;
+/// Console output with color support
+class ConsoleOutput extends LogOutput {
+  final bool useColors;
+  final bool showTime;
+  final bool detailedTime;
 
-  /// Constructor
-  ConsoleOutput({this.includeTimestamp = false});
+  ConsoleOutput({
+    this.useColors = true,
+    this.showTime = true,
+    this.detailedTime = false,
+  });
 
   @override
   void output(LogEvent event) {
-    final buffer = StringBuffer('NDK: ');
+    final levelStr = event.level.name.toUpperCase();
 
-    if (includeTimestamp) {
-      buffer.write('[${_formatTimestamp(event.timestamp)}] ');
+    String timestamp = '';
+    if (showTime) {
+      if (detailedTime) {
+        timestamp = '${event.timestamp.toIso8601String()} ';
+      } else {
+        final hour = event.timestamp.hour.toString().padLeft(2, '0');
+        final minute = event.timestamp.minute.toString().padLeft(2, '0');
+        timestamp = '$hour:$minute ';
+      }
     }
 
-    buffer.write('[${event.level.name.toUpperCase()}] ');
-    buffer.write(event.message);
+    String message;
+    if (useColors) {
+      final coloredLevel = LogColor.colorizeLevel(event.level, '[$levelStr]');
+      message = '$timestamp$coloredLevel ${event.message}';
+    } else {
+      message = '$timestamp[$levelStr] ${event.message}';
+    }
 
     if (event.error != null) {
-      buffer.write('\nError: ${event.error}');
+      message += '\nError: ${event.error}';
     }
-
     if (event.stackTrace != null) {
-      buffer.write('\n${event.stackTrace}');
+      message += '\n${event.stackTrace}';
     }
 
-    // ignore: avoid_print
-    print(buffer.toString());
-  }
-
-  String _formatTimestamp(DateTime timestamp) {
-    return '${timestamp.hour.toString().padLeft(2, '0')}:'
-        '${timestamp.minute.toString().padLeft(2, '0')}:'
-        '${timestamp.second.toString().padLeft(2, '0')}';
+    print(message);
   }
 
   @override
   void destroy() {
-    // Nothing to clean up for console output
+    // Nothing to cleanup for console output
   }
 }
