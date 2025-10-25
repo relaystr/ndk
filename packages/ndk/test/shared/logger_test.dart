@@ -110,6 +110,52 @@ void main() {
       expect(testOutputs.length, 1);
       expect(testOutputs.first.message, 'Info message');
     });
+
+    test('Logger output clearing and close works correctly', () {
+      final testOutputs1 = <LogEvent>[];
+      final testOutputs2 = <LogEvent>[];
+      final testOutput1 = _TestLogOutput(testOutputs1);
+      final testOutput2 = _TestLogOutput(testOutputs2);
+
+      final customLogger = NdkLogger(
+        level: LogLevel.all,
+        outputs: [testOutput1, testOutput2],
+      );
+
+      // Test fatal message logging
+      customLogger.f('Fatal error occurred');
+
+      expect(testOutputs1.length, 1);
+      expect(testOutputs2.length, 1);
+      expect(testOutputs1.first.level, LogLevel.fatal);
+      expect(testOutputs1.first.message, 'Fatal error occurred');
+      expect(testOutputs2.first.level, LogLevel.fatal);
+
+      // Test clearing outputs
+      customLogger.clearOutputs();
+
+      // After clearing, logging should not add to outputs
+      customLogger.e('Error after clear');
+
+      expect(testOutputs1.length, 1); // Should still be 1
+      expect(testOutputs2.length, 1); // Should still be 1
+
+      // Test close method
+      final testOutputs3 = <LogEvent>[];
+      final testOutput3 = _TestLogOutput(testOutputs3);
+
+      customLogger.addOutput(testOutput3);
+      customLogger.w('Warning before close');
+
+      expect(testOutputs3.length, 1);
+
+      customLogger.close();
+
+      // After close, logging should not work
+      customLogger.i('Info after close');
+
+      expect(testOutputs3.length, 1); // Should still be 1
+    });
   });
 }
 
