@@ -18,31 +18,70 @@ class VerifyEventStream {
   }
 
   Stream<Nip01Event> _verifyInParallel() async* {
-    final buffer = <Future<Nip01Event?>>[];
+    final activeFutures = <Future<Nip01Event?>>[];
+    var inputClosed = false;
 
-    await for (final event in unverifiedStreamInput) {
-      // Start verification without waiting
-      final future = _verifyEvent(event);
-      buffer.add(future);
+    // Listen to the input stream
+    final inputSubscription = unverifiedStreamInput.listen(
+      (event) {
+        // Start verification without waiting
+        final future = _verifyEvent(event);
+        activeFutures.add(future);
+      },
+      onDone: () {
+        inputClosed = true;
+      },
+    );
 
-      // Once we hit max concurrent, wait for the first one to complete
-      if (buffer.length >= maxConcurrent) {
-        final verified = await buffer.first;
-        buffer.removeAt(0);
+    try {
+      // Continuously process completed futures
+      while (!inputClosed || activeFutures.isNotEmpty) {
+        if (activeFutures.isEmpty) {
+          // Wait a bit for new events if input is still open
+          if (!inputClosed) {
+            await Future.delayed(Duration(milliseconds: 10));
+            continue;
+          } else {
+            break;
+          }
+        }
 
+        // Wait for any future to complete
+        final completedIndex = await _waitForAnyToComplete(activeFutures);
+        final completed = activeFutures.removeAt(completedIndex);
+        final verified = await completed;
+
+        // Yield the verified event if valid
         if (verified != null && verified.validSig == true) {
           yield verified;
         }
+
+        // If we're at max capacity and input is still open, wait for more to complete
+        while (activeFutures.length >= maxConcurrent && !inputClosed) {
+          final nextCompletedIndex = await _waitForAnyToComplete(activeFutures);
+          final nextCompleted = activeFutures.removeAt(nextCompletedIndex);
+          final nextVerified = await nextCompleted;
+
+          if (nextVerified != null && nextVerified.validSig == true) {
+            yield nextVerified;
+          }
+        }
       }
+    } finally {
+      await inputSubscription.cancel();
+    }
+  }
+
+  /// Wait for any future in the list to complete and return its index
+  Future<int> _waitForAnyToComplete(List<Future<Nip01Event?>> futures) async {
+    if (futures.isEmpty) {
+      throw StateError('Cannot wait for completion on empty futures list');
     }
 
-    // Process remaining events in buffer
-    final remaining = await Future.wait(buffer);
-    for (final event in remaining) {
-      if (event != null && event.validSig == true) {
-        yield event;
-      }
-    }
+    // Use Future.any with indexed futures to find which one completed
+    final indexedFutures = futures.asMap().entries.map((entry) => entry.value.then((_) => entry.key));
+
+    return await Future.any(indexedFutures);
   }
 
   Future<Nip01Event?> _verifyEvent(Nip01Event data) async {
