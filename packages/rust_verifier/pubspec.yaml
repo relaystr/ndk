@@ -30,7 +30,7 @@ dependencies:
     git:
       url: https://github.com/relaystr/ndk.git
       path: packages/ndk
-      ref: 3307438137fde2ec28e8f0697f5c6f4fe37943a4
+      ref: f9bc035ce643b43d2c981fd3e66ccb66d7efadfc
 
 dev_dependencies:
   flutter_test:
