@@ -21,7 +21,7 @@ class VerifyEventStream {
           maxConcurrent: maxConcurrent,
         )
         .where((event) => event?.validSig == true)
-        .cast<Nip01Event>()
+        .whereType<Nip01Event>() // filter nulls
         .shareReplay(maxSize: 1);
   }
 
