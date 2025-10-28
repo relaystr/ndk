@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-10-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.0-dev.1`](#ndk---v060-dev1)
+ - [`ndk_amber` - `v0.3.3-dev.4`](#ndk_amber---v033-dev4)
+ - [`ndk_isar` - `v0.2.3-dev.4`](#ndk_isar---v023-dev4)
+ - [`ndk_objectbox` - `v0.2.7-dev.6`](#ndk_objectbox---v027-dev6)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.6`](#ndk_rust_verifier---v042-dev6)
+ - [`nip07_event_signer` - `v1.0.4-dev.4`](#nip07_event_signer---v104-dev4)
+ - [`sembast_cache_manager` - `v1.0.5-dev.4`](#sembast_cache_manager---v105-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.4`
+ - `ndk_isar` - `v0.2.3-dev.4`
+ - `ndk_objectbox` - `v0.2.7-dev.6`
+ - `ndk_rust_verifier` - `v0.4.2-dev.6`
+ - `nip07_event_signer` - `v1.0.4-dev.4`
+ - `sembast_cache_manager` - `v1.0.5-dev.4`
+
+---
+
+#### `ndk` - `v0.6.0-dev.1`
+
+ - **REFACTOR**: concurrent streams with rxdart.
+ - **FIX**: improved null filter.
+ - **FIX**: drop invalid events.
+
+
 ## 2025-10-22
 
 ### Changes

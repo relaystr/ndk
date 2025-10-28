@@ -1,6 +1,6 @@
 name: ndk_isar
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.2.3-dev.3
+version: 0.2.3-dev.4
 homepage: https://github.com/relaystr/ndk
 
 environment:
@@ -16,7 +16,7 @@ platforms:
 
 dependencies:
   isar: ^4.0.0-dev.14
-  ndk: ^0.6.0-dev.0
+  ndk: ^0.6.0-dev.1
 
 dev_dependencies:
   build_runner: ^2.4.11
