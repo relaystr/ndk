@@ -79,7 +79,10 @@ class VerifyEventStream {
     }
 
     // Use Future.any with indexed futures to find which one completed
-    final indexedFutures = futures.asMap().entries.map((entry) => entry.value.then((_) => entry.key));
+    final indexedFutures = futures
+        .asMap()
+        .entries
+        .map((entry) => entry.value.then((_) => entry.key));
 
     return await Future.any(indexedFutures);
   }
@@ -90,6 +93,7 @@ class VerifyEventStream {
 
     if (!valid) {
       Logger.log.w('WARNING: Event with id ${data.id} has invalid signature');
+      return null;
     }
 
     return data;
