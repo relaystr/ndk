@@ -1,3 +1,11 @@
+## 0.6.0-dev.4
+
+ - **FEAT**: log color, params.
+
+## 0.6.0-dev.3
+
+ - **FEAT**: log color, params.
+
 ## 0.6.0-dev.2
 
  - **REFACTOR**: concurrent streams with rxdart.
