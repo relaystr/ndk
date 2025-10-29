@@ -70,12 +70,13 @@ class JitEngine with Logger implements NetworkEngine {
 
       if (requestState.request.explicitRelays != null &&
           requestState.request.explicitRelays!.isNotEmpty) {
+        final cleanedExplicitRelays = cleanRelayUrls(requestState.request.explicitRelays!.toList());
         RelayJitRequestSpecificStrategy.handleRequest(
           relayManager: relayManagerLight,
           requestState: requestState,
           filter: filter,
           closeOnEOSE: ndkRequest.closeOnEOSE,
-          specificRelays: requestState.request.explicitRelays!,
+          specificRelays: cleanedExplicitRelays,
         );
         continue;
       }
@@ -162,8 +163,9 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (specificRelays != null) {
+        final cleanedSpecificRelays = cleanRelayUrls(specificRelays.toList());
         return RelayJitBroadcastSpecificRelaysStrategy.broadcast(
-          specificRelays: specificRelays.toList(),
+          specificRelays: cleanedSpecificRelays,
           relayManager: relayManagerLight,
           eventToPublish: nostrEvent,
           connectedRelays: relayManagerLight.connectedRelays

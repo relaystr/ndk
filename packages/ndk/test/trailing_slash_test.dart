@@ -54,6 +54,8 @@ void main() {
         expect(event.content, equals("Test"));
         break;
       }
+
+      ndk.destroy();
     });
 
     test('Query with trailling /', () async {
@@ -70,6 +72,8 @@ void main() {
         expect(event.content, equals("Test"));
         break;
       }
+
+      ndk.destroy();
     });
 
     test('Subscription without trailling /', () async {
@@ -86,6 +90,8 @@ void main() {
         expect(event.content, equals("Test"));
         break;
       }
+
+      ndk.destroy();
     });
 
     test('Subscription with trailling /', () async {
@@ -102,6 +108,204 @@ void main() {
         expect(event.content, equals("Test"));
         break;
       }
+
+      ndk.destroy();
+    });
+
+    test('Broadcast without trailling /', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final keyPair = Bip340.generatePrivateKey();
+      ndk.accounts.loginPrivateKey(
+        pubkey: keyPair.publicKey,
+        privkey: keyPair.privateKey!,
+      );
+
+      final event = Nip01Event(
+        pubKey: keyPair.publicKey,
+        kind: 1,
+        tags: [],
+        content: "Test",
+      );
+
+      final broadcast = ndk.broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: [relay.url],
+      );
+      await broadcast.broadcastDoneFuture;
+
+      ndk.destroy();
+    });
+
+    test('Broadcast with trailling /', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final keyPair = Bip340.generatePrivateKey();
+      ndk.accounts.loginPrivateKey(
+        pubkey: keyPair.publicKey,
+        privkey: keyPair.privateKey!,
+      );
+
+      final event = Nip01Event(
+        pubKey: keyPair.publicKey,
+        kind: 1,
+        tags: [],
+        content: "Test",
+      );
+
+      final broadcast = ndk.broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: ["${relay.url}/"],
+      );
+      await broadcast.broadcastDoneFuture;
+
+      ndk.destroy();
+    });
+
+    test('Query without trailling / and JIT', () async {
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+      ));
+
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [1], limit: 1),
+        ],
+        explicitRelays: [relay.url],
+      );
+
+      await for (var event in query.stream) {
+        expect(event.content, equals("Test"));
+        break;
+      }
+
+      ndk.destroy();
+    });
+
+    test('Query with trailling / and JIT', () async {
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+      ));
+
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [1], limit: 1),
+        ],
+        explicitRelays: ["${relay.url}/"],
+      );
+
+      await for (var event in query.stream) {
+        expect(event.content, equals("Test"));
+        break;
+      }
+
+      ndk.destroy();
+    });
+
+    test('Subscription without trailling / and JIT', () async {
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+      ));
+
+      final query = ndk.requests.subscription(
+        filters: [
+          Filter(kinds: [1], limit: 1),
+        ],
+        explicitRelays: [relay.url],
+      );
+
+      await for (var event in query.stream) {
+        expect(event.content, equals("Test"));
+        break;
+      }
+
+      ndk.destroy();
+    });
+
+    test('Subscription with trailling / and JIT', () async {
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+      ));
+
+      final query = ndk.requests.subscription(
+        filters: [
+          Filter(kinds: [1], limit: 1),
+        ],
+        explicitRelays: ["${relay.url}/"],
+      );
+
+      await for (var event in query.stream) {
+        expect(event.content, equals("Test"));
+        break;
+      }
+
+      ndk.destroy();
+    });
+
+    test('Broadcast without trailling / and JIT', () async {
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+      ));
+
+      final keyPair = Bip340.generatePrivateKey();
+      ndk.accounts.loginPrivateKey(
+        pubkey: keyPair.publicKey,
+        privkey: keyPair.privateKey!,
+      );
+
+      final event = Nip01Event(
+        pubKey: keyPair.publicKey,
+        kind: 1,
+        tags: [],
+        content: "Test",
+      );
+
+      final broadcast = ndk.broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: [relay.url],
+      );
+      await broadcast.broadcastDoneFuture;
+
+      ndk.destroy();
+    });
+
+    test('Broadcast with trailling / and JIT', () async {
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: Bip340EventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.JIT,
+      ));
+
+      final keyPair = Bip340.generatePrivateKey();
+      ndk.accounts.loginPrivateKey(
+        pubkey: keyPair.publicKey,
+        privkey: keyPair.privateKey!,
+      );
+
+      final event = Nip01Event(
+        pubKey: keyPair.publicKey,
+        kind: 1,
+        tags: [],
+        content: "Test",
+      );
+
+      final broadcast = ndk.broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: ["${relay.url}/"],
+      );
+      await broadcast.broadcastDoneFuture;
+
+      ndk.destroy();
     });
   });
 }
