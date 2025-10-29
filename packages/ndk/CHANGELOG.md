@@ -1,3 +1,15 @@
+## 0.6.0-dev.2
+
+ - **REFACTOR**: concurrent streams with rxdart.
+ - **FIX**: improved null filter.
+ - **FIX**: drop invalid events.
+
+## 0.6.0-dev.1
+
+ - **REFACTOR**: concurrent streams with rxdart.
+ - **FIX**: improved null filter.
+ - **FIX**: drop invalid events.
+
 ## 0.6.0-dev.0
 
 - Bump "ndk" to `0.6.0-dev.0`.

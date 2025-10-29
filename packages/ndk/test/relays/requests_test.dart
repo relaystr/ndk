@@ -130,6 +130,97 @@ void main() async {
       expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
       await relay1.stopServer();
     });
+
+    test('Subscription processes events immediately without stream closing', () async {
+      // This test would FAIL with the previous VerifyEventStream implementation
+      // because events would remain stuck in buffer until stream closes
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      await relay1.startServer(textNotes: textNotes);
+
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [relay1.url],
+      ));
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      final filter = Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
+
+      // Use subscription instead of query - this creates a long-lived stream
+      final subscription = ndk.requests.subscription(filters: [filter]);
+
+      final receivedEvents = <Nip01Event>[];
+      final streamSubscription = subscription.stream.listen((event) {
+        receivedEvents.add(event);
+      });
+
+      // Wait for initial events to be processed
+      // Previous implementation would not yield these events from subscription
+      await Future.delayed(Duration(milliseconds: 200));
+
+      expect(receivedEvents.length, equals(1),
+          reason: 'Subscription should process events immediately without waiting for stream to close');
+      expect(receivedEvents[0].content, contains('key1'));
+
+      // Clean up
+      await streamSubscription.cancel();
+      await ndk.requests.closeSubscription(subscription.requestId);
+      await ndk.destroy();
+      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+      await relay1.stopServer();
+    });
+
+    test('Subscription handles continuous events from non-closing stream', () async {
+      // This test simulates a real-world scenario where a subscription
+      // receives events continuously without the stream ever closing
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+
+      // Start with multiple events to test continuous processing
+      final multipleEvents = {
+        key1: textNote(key1),
+        key2: textNote(key2),
+        key3: textNote(key3),
+        key4: textNote(key4),
+      };
+      await relay1.startServer(textNotes: multipleEvents);
+
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [relay1.url],
+      ));
+      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      final filter = Filter(
+          kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]);
+
+      final subscription = ndk.requests.subscription(filters: [filter]);
+
+      final receivedEvents = <Nip01Event>[];
+      final streamSubscription = subscription.stream.listen((event) {
+        receivedEvents.add(event);
+      });
+
+      // Wait for events to be processed
+      // Previous implementation would fail to process events from subscription
+      // because they would get stuck in the verification buffer
+      await Future.delayed(Duration(milliseconds: 300));
+
+      expect(receivedEvents.length, equals(4), reason: 'Subscription should process all matching events immediately');
+
+      // Verify we got events from different authors (showing parallel processing worked)
+      final uniqueAuthors = receivedEvents.map((e) => e.pubKey).toSet();
+      expect(uniqueAuthors.length, greaterThan(1), reason: 'Should receive events from multiple authors');
+
+      // Clean up
+      await streamSubscription.cancel();
+      await ndk.requests.closeSubscription(subscription.requestId);
+      await ndk.destroy();
+      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+      await relay1.stopServer();
+    });
   });
 
   group('immutable filters', () {
