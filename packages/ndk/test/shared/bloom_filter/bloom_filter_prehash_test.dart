@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/bloom_filter/bloom_filter_prehash.dart';
@@ -162,8 +163,8 @@ void main() {
       // Allow some margin of error (3x the expected rate)
       expect(actualFalsePositiveRate, lessThan(falsePositiveRate * 3));
 
-      print('Expected false positive rate: $falsePositiveRate');
-      print('Actual false positive rate: $actualFalsePositiveRate');
+      log('Expected false positive rate: $falsePositiveRate');
+      log('Actual false positive rate: $actualFalsePositiveRate');
     });
 
     test('fromNumHashFunctionsAndByteArray constructor validation', () {

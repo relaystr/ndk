@@ -11,7 +11,7 @@ import '../../relay_manager.dart';
 ///
 class RelayJitRequestSpecificStrategy {
   /// send out the request
-  static handleRequest({
+  static void handleRequest({
     required RequestState requestState,
     required Filter filter,
     required bool closeOnEOSE,
