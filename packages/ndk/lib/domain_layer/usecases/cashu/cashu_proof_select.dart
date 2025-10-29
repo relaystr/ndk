@@ -3,6 +3,8 @@ import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../repositories/cashu_repo.dart';
 import 'cashu_bdhke.dart';
+import 'cashu_cache_decorator.dart';
+import 'cashu_seed.dart';
 import 'cashu_tools.dart';
 
 class ProofSelectionResult {
@@ -171,6 +173,8 @@ class CashuProofSelect {
     required int targetAmount,
     required int changeAmount,
     required List<CahsuKeyset> keysets,
+    required CashuCacheDecorator cacheManagerCashu,
+    required CashuSeed cashuSeed,
   }) async {
     final activeKeyset = getActiveKeyset(keysets);
 
@@ -195,9 +199,12 @@ class CashuProofSelect {
       ...changeAmountsSplit,
     ];
 
-    final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
+    final blindedMessagesOutputs = await CashuBdhke.createBlindedMsgForAmounts(
       keysetId: activeKeyset.id,
       amounts: outputs,
+      cacheManager: cacheManagerCashu,
+      cashuSeed: cashuSeed,
+      mintUrl: mint,
     );
 
     // sort to increase privacy

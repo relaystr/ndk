@@ -394,9 +394,12 @@ class Cashu {
     }
 
     List<int> splittedAmounts = CashuTools.splitAmount(quote.amount);
-    final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
+    final blindedMessagesOutputs = await CashuBdhke.createBlindedMsgForAmounts(
       keysetId: draftTransaction.usedKeysets!.first.id,
       amounts: splittedAmounts,
+      cacheManager: _cacheManagerCashu,
+      cashuSeed: _cashuSeed,
+      mintUrl: mintUrl,
     );
 
     final mintResponse = await _cashuRepo.mintTokens(
@@ -588,9 +591,13 @@ class Cashu {
     /// we dont have the exact amount
     if (selectionResult.needsSplit) {
       final blindedMessagesOutputsOverpay =
-          CashuBdhke.createBlindedMsgForAmounts(
-              keysetId: activeKeyset.id,
-              amounts: CashuTools.splitAmount(selectionResult.splitAmount));
+          await CashuBdhke.createBlindedMsgForAmounts(
+        keysetId: activeKeyset.id,
+        amounts: CashuTools.splitAmount(selectionResult.splitAmount),
+        cacheManager: _cacheManagerCashu,
+        cashuSeed: _cashuSeed,
+        mintUrl: mintUrl,
+      );
       myOutputs.addAll(
         blindedMessagesOutputsOverpay,
       );
@@ -601,9 +608,12 @@ class Cashu {
       final numBlankOutputs =
           CashuTools.calculateNumberOfBlankOutputs(meltQuote.feeReserve!);
 
-      final blankOutputs = CashuBdhke.createBlindedMsgForAmounts(
+      final blankOutputs = await CashuBdhke.createBlindedMsgForAmounts(
         keysetId: activeKeyset.id,
         amounts: List.generate(numBlankOutputs, (_) => 0),
+        cacheManager: _cacheManagerCashu,
+        cashuSeed: _cashuSeed,
+        mintUrl: mintUrl,
       );
       myOutputs.addAll(blankOutputs);
     }
@@ -793,6 +803,8 @@ class Cashu {
           targetAmount: amount,
           changeAmount: selectionResult.splitAmount,
           keysets: keysetsForUnit,
+          cacheManagerCashu: _cacheManagerCashu,
+          cashuSeed: _cashuSeed,
         );
       } catch (e) {
         _changeProofState(
@@ -973,9 +985,12 @@ class Cashu {
     yield pendingTransaction;
 
     List<int> splittedAmounts = CashuTools.splitAmount(rcvSum);
-    final blindedMessagesOutputs = CashuBdhke.createBlindedMsgForAmounts(
+    final blindedMessagesOutputs = await CashuBdhke.createBlindedMsgForAmounts(
       keysetId: keyset.id,
       amounts: splittedAmounts,
+      cacheManager: _cacheManagerCashu,
+      cashuSeed: _cashuSeed,
+      mintUrl: rcvToken.mintUrl,
     );
 
     blindedMessagesOutputs.sort(

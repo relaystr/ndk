@@ -3,26 +3,42 @@ import 'dart:math';
 import 'package:pointycastle/export.dart';
 
 import '../../../shared/logger/logger.dart';
-import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_proof.dart';
+import 'cashu_cache_decorator.dart';
+import 'cashu_seed.dart';
 import 'cashu_tools.dart';
 
 typedef BlindMessageResult = (String B_, BigInt r);
 
 class CashuBdhke {
-  static List<CashuBlindedMessageItem> createBlindedMsgForAmounts({
+  static Future<List<CashuBlindedMessageItem>> createBlindedMsgForAmounts({
     required String keysetId,
     required List<int> amounts,
-  }) {
+    required CashuCacheDecorator cacheManager,
+    required CashuSeed cashuSeed,
+    required String mintUrl,
+  }) async {
     List<CashuBlindedMessageItem> items = [];
 
     for (final amount in amounts) {
       try {
-        final secret = Helpers.getSecureRandomString(32);
-        final (B_, r) = blindMessage(secret);
+        final myCount = await cacheManager.getAndIncrementDerivationCounter(
+          keysetId: keysetId,
+          mintUrl: mintUrl,
+        );
+
+        final mySecret =
+            await cashuSeed.deriveSecret(counter: myCount, keysetId: keysetId);
+        final secret = mySecret.secretHex;
+
+        final myR = BigInt.parse(mySecret.blindingHex, radix: 16);
+
+        //final secret = Helpers.getSecureRandomString(32);
+        // ignore: non_constant_identifier_names, constant_identifier_names
+        final (B_, r) = blindMessage(secret, r: myR);
 
         if (B_.isEmpty) {
           continue;
