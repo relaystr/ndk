@@ -1,62 +1,107 @@
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
 
+import 'mocks/mock_relay.dart';
+
 void main() {
-  test('Query without trailling /', () async {
-    final ndk = Ndk.emptyBootstrapRelaysConfig();
+  group('Trailing slash', () {
+    late MockRelay relay;
 
-    final query = ndk.requests.query(
-      filters: [
-        Filter(kinds: [1], limit: 1),
-      ],
-      explicitRelays: ["wss://nostr-01.yakihonne.com"],
-    );
+    setUp(() async {
+      relay = MockRelay(name: 'test');
+      await relay.startServer();
 
-    await query.future;
-  });
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-  test('Query with trailling /', () async {
-    final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final keyPair = Bip340.generatePrivateKey();
+      ndk.accounts.loginPrivateKey(
+        pubkey: keyPair.publicKey,
+        privkey: keyPair.privateKey!,
+      );
 
-    final query = ndk.requests.query(
-      filters: [
-        Filter(kinds: [1], limit: 1),
-      ],
-      explicitRelays: ["wss://nostr-01.yakihonne.com/"],
-    );
+      final event = Nip01Event(
+        pubKey: keyPair.publicKey,
+        kind: 1,
+        tags: [],
+        content: "Test",
+      );
 
-    await query.future;
-  });
+      final broadcast = ndk.broadcast.broadcast(
+        nostrEvent: event,
+        specificRelays: [relay.url],
+      );
+      await broadcast.broadcastDoneFuture;
 
-  test('Subscription without trailling /', () async {
-    final ndk = Ndk.emptyBootstrapRelaysConfig();
+      ndk.destroy();
+    });
 
-    final query = ndk.requests.subscription(
-      filters: [
-        Filter(kinds: [1], limit: 1),
-      ],
-      explicitRelays: ["wss://nostr-01.yakihonne.com"],
-    );
+    tearDown(() async {
+      await relay.stopServer();
+    });
 
-    await for (var event in query.stream) {
-      print(event);
-      break;
-    }
-  });
+    test('Query without trailling /', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-  test('Subscription with trailling /', () async {
-    final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [1], limit: 1),
+        ],
+        explicitRelays: [relay.url],
+      );
 
-    final query = ndk.requests.subscription(
-      filters: [
-        Filter(kinds: [1], limit: 1),
-      ],
-      explicitRelays: ["wss://nostr-01.yakihonne.com/"],
-    );
+      await for (var event in query.stream) {
+        expect(event.content, equals("Test"));
+        break;
+      }
+    });
 
-    await for (var event in query.stream) {
-      print(event);
-      break;
-    }
+    test('Query with trailling /', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [1], limit: 1),
+        ],
+        explicitRelays: ["${relay.url}/"],
+      );
+
+      await for (var event in query.stream) {
+        expect(event.content, equals("Test"));
+        break;
+      }
+    });
+
+    test('Subscription without trailling /', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final query = ndk.requests.subscription(
+        filters: [
+          Filter(kinds: [1], limit: 1),
+        ],
+        explicitRelays: [relay.url],
+      );
+
+      await for (var event in query.stream) {
+        expect(event.content, equals("Test"));
+        break;
+      }
+    });
+
+    test('Subscription with trailling /', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final query = ndk.requests.subscription(
+        filters: [
+          Filter(kinds: [1], limit: 1),
+        ],
+        explicitRelays: ["${relay.url}/"],
+      );
+
+      await for (var event in query.stream) {
+        expect(event.content, equals("Test"));
+        break;
+      }
+    });
   });
 }
