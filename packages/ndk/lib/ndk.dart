@@ -88,6 +88,10 @@ export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
  */
 
 export 'shared/logger/logger.dart';
+export 'shared/logger/log_level.dart';
+export 'shared/logger/log_output.dart';
+export 'shared/logger/ndk_logger.dart';
+export 'shared/logger/console_output.dart';
 
 /**
  * event filters
