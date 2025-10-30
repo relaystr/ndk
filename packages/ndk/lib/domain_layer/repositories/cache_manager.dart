@@ -1,9 +1,15 @@
+import '../entities/cashu/cashu_keyset.dart';
+import '../entities/cashu/cashu_mint_info.dart';
+import '../entities/cashu/cashu_proof.dart';
 import '../entities/contact_list.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
+import '../entities/wallet/wallet.dart';
+import '../entities/wallet/wallet_transaction.dart';
+import '../entities/wallet/wallet_type.dart';
 
 abstract class CacheManager {
   /// closes the cache manger \
@@ -79,4 +85,72 @@ abstract class CacheManager {
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
+
+  /// wallets methods
+
+  Future<void> saveWallet(Wallet wallet);
+
+  Future<void> removeWallet(String id);
+
+  /// return all if [ids] is null
+  Future<List<Wallet>?> getWallets({List<String>? ids});
+
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  });
+
+  /// upserts transactions \
+  /// if transaction with same id exists, it will be updated
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  });
+
+  /// cashu methods
+
+  Future<void> saveKeyset(CahsuKeyset keyset);
+
+  /// get all keysets if no mintUrl is provided \
+  Future<List<CahsuKeyset>> getKeysets({
+    String? mintUrl,
+  });
+
+  Future<void> saveProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  });
+
+  Future<List<CashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
+  });
+
+  Future<void> removeProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  });
+
+  Future<void> saveMintInfo({
+    required CashuMintInfo mintInfo,
+  });
+
+  /// return all if no mintUrls are provided
+  Future<List<CashuMintInfo>?> getMintInfos({
+    List<String>? mintUrls,
+  });
+
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  });
+
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  });
 }

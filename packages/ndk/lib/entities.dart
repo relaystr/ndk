@@ -31,3 +31,19 @@ export 'domain_layer/entities/user_relay_list.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/ndk_file.dart';
 export 'domain_layer/entities/account.dart';
+
+/// Cashu entities
+export 'domain_layer/entities/cashu/cashu_keyset.dart';
+export 'domain_layer/entities/cashu/cashu_proof.dart';
+export 'domain_layer/entities/cashu/cashu_mint_info.dart';
+export 'domain_layer/entities/cashu/cashu_token.dart';
+export 'domain_layer/entities/cashu/cashu_user_seedphrase.dart';
+
+/// Wallet entities
+export 'domain_layer/entities/wallet/wallet.dart';
+export 'domain_layer/entities/wallet/wallet_transaction.dart';
+export 'domain_layer/entities/wallet/wallet_type.dart';
+export 'domain_layer/entities/wallet/wallet_balance.dart';
+
+// testing
+export 'domain_layer/usecases/wallets/wallets.dart';

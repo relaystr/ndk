@@ -311,10 +311,303 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "7:698131493043166579",
+      "lastPropertyId": "8:7773840598494674606",
+      "name": "DbWalletCahsuKeyset",
+      "properties": [
+        {
+          "id": "1:7970259218906410302",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7668438476871712459",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "3:7282319240912033654",
+          "name": "mintUrl",
+          "type": 9
+        },
+        {
+          "id": "4:3585001127367148469",
+          "name": "unit",
+          "type": 9
+        },
+        {
+          "id": "5:6312611343850591444",
+          "name": "active",
+          "type": 1
+        },
+        {
+          "id": "6:4301618904982221632",
+          "name": "inputFeePPK",
+          "type": 6
+        },
+        {
+          "id": "7:890317222791666643",
+          "name": "mintKeyPairs",
+          "type": 30
+        },
+        {
+          "id": "8:7773840598494674606",
+          "name": "fetchedAt",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "8:7203634548589534122",
+      "lastPropertyId": "6:6868293576511935265",
+      "name": "DbWalletCashuProof",
+      "properties": [
+        {
+          "id": "1:4429724214335608001",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1857417425121530563",
+          "name": "keysetId",
+          "type": 9
+        },
+        {
+          "id": "3:5749621417965180854",
+          "name": "amount",
+          "type": 6
+        },
+        {
+          "id": "4:4446254104193824225",
+          "name": "secret",
+          "type": 9
+        },
+        {
+          "id": "5:6294656987537494684",
+          "name": "unblindedSig",
+          "type": 9
+        },
+        {
+          "id": "6:6868293576511935265",
+          "name": "state",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "9:4843976069028406780",
+      "lastPropertyId": "7:4491916464072815310",
+      "name": "DbWallet",
+      "properties": [
+        {
+          "id": "1:2803460968575242300",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5928177294242770624",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "3:4931878169587094779",
+          "name": "type",
+          "type": 9
+        },
+        {
+          "id": "4:5124323927135367950",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "5:3582256459096368032",
+          "name": "supportedUnits",
+          "type": 30
+        },
+        {
+          "id": "7:4491916464072815310",
+          "name": "metadataJsonString",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "10:2707870737906176084",
+      "lastPropertyId": "11:3092540118635965720",
+      "name": "DbWalletTransaction",
+      "properties": [
+        {
+          "id": "1:4964215471626448888",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2268171515152137881",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "3:3815553497512932992",
+          "name": "walletId",
+          "type": 9
+        },
+        {
+          "id": "4:1284545487035067139",
+          "name": "changeAmount",
+          "type": 6
+        },
+        {
+          "id": "5:8089333082593198860",
+          "name": "unit",
+          "type": 9
+        },
+        {
+          "id": "6:8810607312851014784",
+          "name": "walletType",
+          "type": 9
+        },
+        {
+          "id": "7:662120020381927996",
+          "name": "state",
+          "type": 9
+        },
+        {
+          "id": "8:7366719423178014878",
+          "name": "completionMsg",
+          "type": 9
+        },
+        {
+          "id": "9:6641644784457917076",
+          "name": "transactionDate",
+          "type": 6
+        },
+        {
+          "id": "10:2365111131666685128",
+          "name": "initiatedDate",
+          "type": 6
+        },
+        {
+          "id": "11:3092540118635965720",
+          "name": "metadataJsonString",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "11:7685475375528365740",
+      "lastPropertyId": "12:5248840734946600657",
+      "name": "DbCashuMintInfo",
+      "properties": [
+        {
+          "id": "1:3986862540339028259",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:782681889938728815",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:6446557892342141409",
+          "name": "version",
+          "type": 9
+        },
+        {
+          "id": "4:5222801161447007866",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "5:1315350861179276877",
+          "name": "descriptionLong",
+          "type": 9
+        },
+        {
+          "id": "6:7239671510889020768",
+          "name": "contactJson",
+          "type": 9
+        },
+        {
+          "id": "7:4128030923595712840",
+          "name": "motd",
+          "type": 9
+        },
+        {
+          "id": "8:5203040174417421240",
+          "name": "iconUrl",
+          "type": 9
+        },
+        {
+          "id": "9:3724773223411020767",
+          "name": "urls",
+          "type": 30
+        },
+        {
+          "id": "10:6472773197434133274",
+          "name": "time",
+          "type": 6
+        },
+        {
+          "id": "11:987809007158169655",
+          "name": "tosUrl",
+          "type": 9
+        },
+        {
+          "id": "12:5248840734946600657",
+          "name": "nutsJson",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "12:8398773073536877334",
+      "lastPropertyId": "4:7325103958591855882",
+      "name": "DbCashuSecretCounter",
+      "properties": [
+        {
+          "id": "1:2717389289624160416",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5432997359665615471",
+          "name": "mintUrl",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "1:8004850869961138997"
+        },
+        {
+          "id": "3:2389988473428542746",
+          "name": "keysetId",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "2:6502113043226887563"
+        },
+        {
+          "id": "4:7325103958591855882",
+          "name": "counter",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "6:263734506821907740",
-  "lastIndexId": "0:0",
+  "lastEntityId": "12:8398773073536877334",
+  "lastIndexId": "2:6502113043226887563",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
@@ -322,7 +615,8 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    4248118904091022656
+    4248118904091022656,
+    693682162918032185
   ],
   "retiredRelationUids": [],
   "version": 1

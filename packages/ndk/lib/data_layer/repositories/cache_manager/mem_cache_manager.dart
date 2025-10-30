@@ -1,11 +1,17 @@
 import 'dart:core';
 
+import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
+import '../../../domain_layer/entities/cashu/cashu_mint_info.dart';
+import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/entities/wallet/wallet.dart';
+import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
+import '../../../domain_layer/entities/wallet/wallet_type.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
 
 /// In memory database implementation
@@ -29,6 +35,23 @@ class MemCacheManager implements CacheManager {
 
   /// In memory storage
   Map<String, Nip01Event> events = {};
+
+  /// String for mint Url
+  Map<String, Set<CahsuKeyset>> cashuKeysets = {};
+
+  /// String for mint Url
+  Map<String, Set<CashuProof>> cashuProofs = {};
+
+  List<WalletTransaction> transactions = [];
+
+  Set<Wallet> wallets = {};
+
+  Set<CashuMintInfo> cashuMintInfos = {};
+
+  /// In memory storage for cashu secret counters
+  /// Key is a combination of mintUrl and keysetId
+  /// value is the counter
+  final Map<String, int> _cashuSecretCounters = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -295,6 +318,198 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> close() async {
+    return;
+  }
+
+  @override
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) {
+    if (cashuKeysets.containsKey(mintUrl)) {
+      return Future.value(cashuKeysets[mintUrl]?.toList() ?? []);
+    } else {
+      return Future.value(cashuKeysets.values.expand((e) => e).toList());
+    }
+  }
+
+  @override
+  Future<void> saveKeyset(CahsuKeyset keyset) {
+    if (cashuKeysets.containsKey(keyset.mintUrl)) {
+      cashuKeysets[keyset.mintUrl]!.add(keyset);
+    } else {
+      cashuKeysets[keyset.mintUrl] = {keyset};
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<List<CashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
+  }) async {
+    if (cashuProofs.containsKey(mintUrl)) {
+      return cashuProofs[mintUrl]!
+          .where((proof) =>
+              proof.state == state &&
+              (keysetId == null || proof.keysetId == keysetId))
+          .toList();
+    } else {
+      return cashuProofs.values
+          .expand((proofs) => proofs)
+          .where((proof) =>
+              proof.state == state &&
+              (keysetId == null || proof.keysetId == keysetId))
+          .toList();
+    }
+  }
+
+  @override
+  Future<void> saveProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) {
+    if (cashuProofs.containsKey(mintUrl)) {
+      cashuProofs[mintUrl]!.addAll(proofs);
+    } else {
+      cashuProofs[mintUrl] = Set<CashuProof>.from(proofs);
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<void> removeProofs(
+      {required List<CashuProof> proofs, required String mintUrl}) {
+    if (cashuProofs.containsKey(mintUrl)) {
+      final existingProofs = cashuProofs[mintUrl]!;
+      for (final proof in proofs) {
+        existingProofs.removeWhere((p) => p.secret == proof.secret);
+      }
+      if (existingProofs.isEmpty) {
+        cashuProofs.remove(mintUrl);
+      }
+
+      return Future.value();
+    } else {
+      return Future.error('No proofs found for mint URL: $mintUrl');
+    }
+  }
+
+  @override
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) {
+    List<WalletTransaction> result = transactions.where((transaction) {
+      if (walletId != null && transaction.walletId != walletId) {
+        return false;
+      }
+      if (unit != null && transaction.unit != unit) {
+        return false;
+      }
+      if (walletType != null && transaction.walletType != walletType) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    if (offset != null && offset > 0) {
+      result = result.skip(offset).toList();
+    }
+
+    if (limit != null && limit > 0) {
+      result = result.take(limit).toList();
+    }
+
+    return Future.value(result);
+  }
+
+  @override
+  Future<void> saveTransactions(
+      {required List<WalletTransaction> transactions}) {
+    /// Check if transactions are already present
+    /// if so update them
+
+    for (final transaction in transactions) {
+      final existingIndex = this.transactions.indexWhere(
+          (t) => t.id == transaction.id && t.walletId == transaction.walletId);
+      if (existingIndex != -1) {
+        this.transactions[existingIndex] = transaction;
+      } else {
+        this.transactions.add(transaction);
+      }
+    }
+    return Future.value();
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets({List<String>? ids}) {
+    if (ids == null || ids.isEmpty) {
+      return Future.value(wallets.toList());
+    } else {
+      final result =
+          wallets.where((wallet) => ids.contains(wallet.id)).toList();
+      return Future.value(result.isNotEmpty ? result : null);
+    }
+  }
+
+  @override
+  Future<void> removeWallet(String id) {
+    wallets.removeWhere((wallet) => wallet.id == id);
+    return Future.value();
+  }
+
+  @override
+  Future<void> saveWallet(Wallet wallet) {
+    wallets.add(wallet);
+    return Future.value();
+  }
+
+  @override
+  Future<List<CashuMintInfo>?> getMintInfos({
+    List<String>? mintUrls,
+  }) {
+    if (mintUrls == null) {
+      return Future.value(cashuMintInfos.toList());
+    } else {
+      final result = cashuMintInfos
+          .where(
+            (info) => mintUrls.any((url) => info.isMintUrl(url)),
+          )
+          .toList();
+      return Future.value(result.isNotEmpty ? result : null);
+    }
+  }
+
+  @override
+  Future<void> saveMintInfo({
+    required CashuMintInfo mintInfo,
+  }) {
+    cashuMintInfos
+        .removeWhere((info) => info.urls.any((url) => mintInfo.isMintUrl(url)));
+    cashuMintInfos.add(mintInfo);
+    return Future.value();
+  }
+
+  @override
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  }) {
+    final key = '$mintUrl|$keysetId';
+    return Future.value(_cashuSecretCounters[key] ?? 0);
+  }
+
+  @override
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  }) async {
+    final key = '$mintUrl|$keysetId';
+    _cashuSecretCounters[key] = counter;
+
     return;
   }
 }
