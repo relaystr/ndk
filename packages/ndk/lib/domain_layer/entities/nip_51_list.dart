@@ -254,6 +254,8 @@ class Nip51Set extends Nip51List {
     required super.elements,
     required super.kind,
     this.title,
+    this.description,
+    this.image,
   }) : super();
 
   static Future<Nip51Set?> fromEvent(
@@ -297,14 +299,19 @@ class Nip51Set extends Nip51List {
     List<dynamic> tags = [
       ["d", name]
     ];
-    if (Helpers.isNotBlank(image)) {
+    if (Helpers.isNotBlank(description)) {
       tags.add(["description", description]);
     }
     if (Helpers.isNotBlank(image)) {
       tags.add(["image", image]);
     }
+    if (Helpers.isNotBlank(title)) {
+      tags.add(["title", title]);
+    }
+
     tags.addAll(event.tags);
     event.tags = castToListOfListOfString(tags);
+    event.recalculateId();
     return event;
   }
 
