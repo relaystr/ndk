@@ -463,4 +463,19 @@ void main() {
       expect(reportRsp, equals(200));
     });
   });
+
+  test('Get blobs with NDK', () async {
+    final ndk = Ndk.defaultConfig();
+
+    final keyPair = Bip340.generatePrivateKey();
+    ndk.accounts.loginPrivateKey(
+      pubkey: keyPair.publicKey,
+      privkey: keyPair.privateKey!,
+    );
+
+    await ndk.blossom.listBlobs(
+      pubkey: ndk.accounts.getPublicKey()!,
+      serverUrls: ["http://localhost:3000"],
+    );
+  });
 }
