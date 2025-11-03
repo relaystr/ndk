@@ -390,7 +390,13 @@ class RelayManager<T> {
 
   void _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) {
-    List<dynamic> eventJson = json.decode(message);
+    List<dynamic> eventJson;
+    try {
+      eventJson = json.decode(message);
+    } on FormatException catch (e) {
+      Logger.log.e("FormatException in _handleIncomingMessage for relay ${relayConnectivity.url}: $e, message: $message");
+      return;
+    }
 
     if (eventJson[0] == 'OK') {
       //nip 20 used to notify clients if an EVENT was successful
