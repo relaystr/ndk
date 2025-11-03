@@ -26,6 +26,7 @@ class MockRelay {
   final Map<String, List<Filter>> _activeSubscriptions =
       {}; // Track active subscriptions
   bool signEvents;
+  bool alwaysReturnKind7;
   bool requireAuthForRequests;
 
   // NIP-46 Remote Signer Support
@@ -46,6 +47,7 @@ class MockRelay {
     Map<KeyPair, Nip65>? nip65s,
     this.signEvents = true,
     this.requireAuthForRequests = false,
+    this.alwaysReturnKind7 = false,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -297,6 +299,21 @@ class MockRelay {
         }
       }
       allMatchingEvents.addAll(eventsForThisFilter);
+    }
+
+    if (alwaysReturnKind7) {
+      // Create a dummy kind 7 event
+      final dummyKind7Event = Nip01Event(
+        pubKey: remoteSignerPublicKey, // Using a known public key for consistency
+        kind: 7,
+        content: 'This is a dummy kind 7 event',
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        tags: []
+      );
+      // Sign the event (optional, but good practice for consistency)
+      dummyKind7Event.id = dummyKind7Event.id;
+      dummyKind7Event.sig = Bip340.sign(dummyKind7Event.id, _remoteSignerPrivateKey);
+      allMatchingEvents.add(dummyKind7Event);
     }
 
     for (var event in allMatchingEvents) {
