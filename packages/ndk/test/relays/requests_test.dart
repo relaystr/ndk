@@ -268,6 +268,20 @@ void main() async {
       expect(originalFilterSub.authors!.length, equals(1));
     });
   });
+
+  test('Response with FormatException', () async {
+    final ndk = Ndk.defaultConfig();
+
+    final query = ndk.requests.query(
+      filters: [
+        Filter(kinds: [1], limit: 1),
+      ],
+      explicitRelays: ["wss://echo.websocket.org"],
+    );
+
+    final events = await query.future;
+    print(events.length);
+  });
 }
 
 class MockCacheRead extends CacheRead {
