@@ -15,6 +15,44 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.6.0-dev.6`](#ndk---v060-dev6)
+ - [`ndk_amber` - `v0.3.3-dev.9`](#ndk_amber---v033-dev9)
+ - [`ndk_isar` - `v0.2.3-dev.9`](#ndk_isar---v023-dev9)
+ - [`ndk_objectbox` - `v0.2.7-dev.11`](#ndk_objectbox---v027-dev11)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.11`](#ndk_rust_verifier---v042-dev11)
+ - [`nip07_event_signer` - `v1.0.4-dev.9`](#nip07_event_signer---v104-dev9)
+ - [`sembast_cache_manager` - `v1.0.5-dev.9`](#sembast_cache_manager---v105-dev9)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.9`
+ - `ndk_isar` - `v0.2.3-dev.9`
+ - `ndk_objectbox` - `v0.2.7-dev.11`
+ - `ndk_rust_verifier` - `v0.4.2-dev.11`
+ - `nip07_event_signer` - `v1.0.4-dev.9`
+ - `sembast_cache_manager` - `v1.0.5-dev.9`
+
+---
+
+#### `ndk` - `v0.6.0-dev.6`
+
+ - **FIX**: static analysis issues.
+
+
+## 2025-11-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.6.0-dev.5`](#ndk---v060-dev5)
  - [`ndk_amber` - `v0.3.3-dev.8`](#ndk_amber---v033-dev8)
  - [`ndk_isar` - `v0.2.3-dev.8`](#ndk_isar---v023-dev8)
