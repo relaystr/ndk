@@ -1,3 +1,7 @@
+## 0.6.0-dev.5
+
+ - **FIX**: static analysis issues.
+
 ## 0.6.0-dev.4
 
  - **FEAT**: log color, params.
