@@ -46,6 +46,7 @@ class ConsoleOutput extends LogOutput {
       message += '\n${event.stackTrace}';
     }
 
+    // ignore: avoid_print
     print(message);
   }
 
