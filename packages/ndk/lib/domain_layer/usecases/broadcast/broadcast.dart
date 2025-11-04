@@ -1,5 +1,6 @@
 import 'package:ndk/ndk.dart';
 
+import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
 import '../../entities/broadcast_state.dart';
@@ -67,10 +68,12 @@ class Broadcast {
     final signer =
         nostrEvent.sig == '' ? _checkSinger(customSigner: customSigner) : null;
 
+    final cleanedSpecificRelays = specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
+
     return _engine.handleEventBroadcast(
       nostrEvent: nostrEvent,
       signer: signer,
-      specificRelays: specificRelays,
+      specificRelays: cleanedSpecificRelays,
       doneStream: broadcastState.stateUpdates
           .map((state) => state.broadcasts.values.toList()),
     );
