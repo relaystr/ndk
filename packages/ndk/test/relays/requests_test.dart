@@ -270,17 +270,26 @@ void main() async {
   });
 
   test('Response with FormatException', () async {
+    final mockRelay = MockRelay(
+      name: 'test-relay-format-exception',
+      explicitPort: 6062,
+      allwaysSendBadJson: true,
+    );
+    await mockRelay.startServer();
+
     final ndk = Ndk.defaultConfig();
 
     final query = ndk.requests.query(
       filters: [
         Filter(kinds: [1], limit: 1),
       ],
-      explicitRelays: ["wss://echo.websocket.org"],
+      explicitRelays: [mockRelay.url],
     );
 
     final events = await query.future;
-    print(events.length);
+    expect(events, isEmpty);
+
+    await mockRelay.stopServer();
   });
 }
 

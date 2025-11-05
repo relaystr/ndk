@@ -27,6 +27,7 @@ class MockRelay {
       {}; // Track active subscriptions
   bool signEvents;
   bool requireAuthForRequests;
+  bool allwaysSendBadJson;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -46,6 +47,7 @@ class MockRelay {
     Map<KeyPair, Nip65>? nip65s,
     this.signEvents = true,
     this.requireAuthForRequests = false,
+    this.allwaysSendBadJson = false,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -93,6 +95,10 @@ class MockRelay {
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
       webSocket.listen((message) async {
+        if (allwaysSendBadJson) {
+          webSocket.add('{"bad_json":,}');
+          return;
+        }
         if (delayResponse != null) {
           await Future.delayed(delayResponse);
         }
