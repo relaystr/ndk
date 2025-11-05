@@ -1,3 +1,11 @@
+## 0.6.0-dev.8
+
+ - **FIX**: add test and call clean url during broadcast.
+
+## 0.6.0-dev.7
+
+ - **FIX**: add test and call clean url during broadcast.
+
 ## 0.6.0-dev.6
 
  - **FIX**: static analysis issues.

@@ -448,7 +448,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.6.0-dev.6"
+    version: "0.6.0-dev.8"
   package_config:
     dependency: transitive
     description:
