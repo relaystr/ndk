@@ -15,6 +15,44 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.6.0-dev.8`](#ndk---v060-dev8)
+ - [`ndk_amber` - `v0.3.3-dev.11`](#ndk_amber---v033-dev11)
+ - [`ndk_isar` - `v0.2.3-dev.11`](#ndk_isar---v023-dev11)
+ - [`ndk_objectbox` - `v0.2.7-dev.13`](#ndk_objectbox---v027-dev13)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.13`](#ndk_rust_verifier---v042-dev13)
+ - [`nip07_event_signer` - `v1.0.4-dev.11`](#nip07_event_signer---v104-dev11)
+ - [`sembast_cache_manager` - `v1.0.5-dev.11`](#sembast_cache_manager---v105-dev11)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.11`
+ - `ndk_isar` - `v0.2.3-dev.11`
+ - `ndk_objectbox` - `v0.2.7-dev.13`
+ - `ndk_rust_verifier` - `v0.4.2-dev.13`
+ - `nip07_event_signer` - `v1.0.4-dev.11`
+ - `sembast_cache_manager` - `v1.0.5-dev.11`
+
+---
+
+#### `ndk` - `v0.6.0-dev.8`
+
+ - **FIX**: add test and call clean url during broadcast.
+
+
+## 2025-11-05
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.6.0-dev.7`](#ndk---v060-dev7)
  - [`ndk_amber` - `v0.3.3-dev.10`](#ndk_amber---v033-dev10)
  - [`ndk_isar` - `v0.2.3-dev.10`](#ndk_isar---v023-dev10)
