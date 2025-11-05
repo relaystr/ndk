@@ -31,7 +31,8 @@ void main() {
         nostrEvent: event,
         specificRelays: [relay.url],
       );
-      await broadcast.broadcastDoneFuture;
+      final broadcastResponses = await broadcast.broadcastDoneFuture;
+      expect(broadcastResponses.first.broadcastSuccessful, isTrue);
 
       ndk.destroy();
     });
@@ -132,7 +133,8 @@ void main() {
         nostrEvent: event,
         specificRelays: [relay.url],
       );
-      await broadcast.broadcastDoneFuture;
+      final broadcastResponses = await broadcast.broadcastDoneFuture;
+      expect(broadcastResponses.first.broadcastSuccessful, isTrue);
 
       ndk.destroy();
     });
@@ -157,7 +159,8 @@ void main() {
         nostrEvent: event,
         specificRelays: ["${relay.url}/"],
       );
-      await broadcast.broadcastDoneFuture;
+      final broadcastResponses = await broadcast.broadcastDoneFuture;
+      expect(broadcastResponses.first.broadcastSuccessful, isTrue);
 
       ndk.destroy();
     });
@@ -274,7 +277,8 @@ void main() {
         nostrEvent: event,
         specificRelays: [relay.url],
       );
-      await broadcast.broadcastDoneFuture;
+      final broadcastResponses = await broadcast.broadcastDoneFuture;
+      expect(broadcastResponses.first.broadcastSuccessful, isTrue);
 
       ndk.destroy();
     });
@@ -303,7 +307,8 @@ void main() {
         nostrEvent: event,
         specificRelays: ["${relay.url}/"],
       );
-      await broadcast.broadcastDoneFuture;
+      final broadcastResponses = await broadcast.broadcastDoneFuture;
+      expect(broadcastResponses.first.broadcastSuccessful, isTrue);
 
       ndk.destroy();
     });
