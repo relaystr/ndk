@@ -109,8 +109,8 @@ class Nwc {
 
         await _subscribeToNotificationsAndResponses(connection);
 
-        if (doGetInfoMethod && ignoreCapabilitiesCheck ||
-            connection.permissions.contains(NwcMethod.GET_INFO.name)) {
+        if (doGetInfoMethod && (ignoreCapabilitiesCheck ||
+            connection.permissions.contains(NwcMethod.GET_INFO.name))) {
           try {
             await getInfo(connection, timeout: timeout).then((info) {
               connection.info = info;
