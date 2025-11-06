@@ -68,13 +68,13 @@ class NostrWalletConnectUri extends Equatable {
   factory NostrWalletConnectUri.parseConnectionUri(String uri) {
     Uri parsedUri = Uri.parse(uri);
 
-    String? pubkey = _extractPubkey(parsedUri.toString());
+    String pubkey = parsedUri.host;// _extractPubkey(parsedUri.toString());
     String? secret = parsedUri.queryParameters['secret'];
     String? lud16 = parsedUri.queryParameters['lud16'];
 
-    if (pubkey == null || secret == null) {
+    if (pubkey.isEmpty || secret == null || parsedUri.scheme != 'nostr+walletconnect') {
       throw Exception(
-          "Required fields (pubkey, secret) are missing in the connection URI.");
+          "Required fields (scheme, pubkey, secret) are missing or incorrect in the connection URI.");
     }
 
     // Parse relays - support both single relay and comma-separated relays

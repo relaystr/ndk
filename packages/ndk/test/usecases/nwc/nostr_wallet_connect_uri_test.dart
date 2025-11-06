@@ -5,7 +5,7 @@ void main() {
   group('NostrWalletConnectUri', () {
     test('should parse a valid connection URI with single relay', () {
       final uri =
-          'nostr://pubkey123?relay=wss://relay.example.com&secret=secret123&lud16=lud16value';
+          'nostr+walletconnect://pubkey123?relay=wss://relay.example.com&secret=secret123&lud16=lud16value';
       final nostrUri = NostrWalletConnectUri.parseConnectionUri(uri);
 
       expect(nostrUri.walletPubkey, equals('pubkey123'));
@@ -18,7 +18,7 @@ void main() {
 
     test('should parse a connection URI with comma-separated relays', () {
       final uri =
-          'nostr://pubkey123?relays=wss://relay1.example.com,wss://relay2.example.com,wss://relay3.example.com&secret=secret123';
+          'nostr+walletconnect://pubkey123?relays=wss://relay1.example.com,wss://relay2.example.com,wss://relay3.example.com&secret=secret123';
       final nostrUri = NostrWalletConnectUri.parseConnectionUri(uri);
 
       expect(nostrUri.walletPubkey, equals('pubkey123'));
@@ -34,7 +34,7 @@ void main() {
 
     test('should parse a connection URI with mixed relay parameters', () {
       final uri =
-          'nostr://pubkey123?relay=wss://relay1.example.com&relays=wss://relay2.example.com,wss://relay3.example.com&secret=secret123';
+          'nostr+walletconnect://pubkey123?relay=wss://relay1.example.com&relays=wss://relay2.example.com,wss://relay3.example.com&secret=secret123';
       final nostrUri = NostrWalletConnectUri.parseConnectionUri(uri);
 
       expect(nostrUri.walletPubkey, equals('pubkey123'));
@@ -50,7 +50,7 @@ void main() {
 
     test('should deduplicate relays when parsing', () {
       final uri =
-          'nostr://pubkey123?relay=wss://relay1.example.com&relays=wss://relay1.example.com,wss://relay2.example.com&secret=secret123';
+          'nostr+walletconnect://pubkey123?relay=wss://relay1.example.com&relays=wss://relay1.example.com,wss://relay2.example.com&secret=secret123';
       final nostrUri = NostrWalletConnectUri.parseConnectionUri(uri);
 
       expect(nostrUri.walletPubkey, equals('pubkey123'));
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('should throw an exception for missing required fields', () {
-      final uri = 'nostr://pubkey123?relays=wss://relay.example.com';
+      final uri = 'nostr+walletconnect://pubkey123?relays=wss://relay.example.com';
 
       expect(
         () => NostrWalletConnectUri.parseConnectionUri(uri),
@@ -69,7 +69,7 @@ void main() {
     });
 
     test('should throw an exception when no relays are provided', () {
-      final uri = 'nostr://pubkey123?secret=secret123';
+      final uri = 'nostr+walletconnect://pubkey123?secret=secret123';
 
       expect(
         () => NostrWalletConnectUri.parseConnectionUri(uri),
