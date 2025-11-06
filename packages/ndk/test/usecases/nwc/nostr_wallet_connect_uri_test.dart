@@ -31,6 +31,21 @@ void main() {
           ]));
       expect(nostrUri.secret, equals('secret123'));
     });
+    test('should parse a connection URI with multiple individual relay parameters', () {
+      final uri =
+          'nostr+walletconnect://pubkey123?relay=wss://relay1.example.com&relay=wss://relay2.example.com&relay=wss://relay3.example.com&secret=secret123';
+      final nostrUri = NostrWalletConnectUri.parseConnectionUri(uri);
+
+      expect(nostrUri.walletPubkey, equals('pubkey123'));
+      expect(
+          nostrUri.relays,
+          equals([
+            'wss://relay1.example.com',
+            'wss://relay2.example.com',
+            'wss://relay3.example.com'
+          ]));
+      expect(nostrUri.secret, equals('secret123'));
+    });
 
     test('should parse a connection URI with mixed relay parameters', () {
       final uri =
