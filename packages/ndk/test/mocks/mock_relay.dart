@@ -137,7 +137,10 @@ class MockRelay {
             } else if (newEvent.kind == Metadata.kKind) {
               _metadatas[newEvent.pubKey] = newEvent;
             } else if (newEvent.kind == Deletion.kKind) {
-              _storedEvents.removeWhere((e) => newEvent.getEId() == e.id);
+              final eventIdsToDelete = newEvent.getTags("e");
+              for (final idToDelete in eventIdsToDelete) {
+                _storedEvents.removeWhere((e) => idToDelete == e.id);
+              }
             } else if (newEvent.kind == kNip46Kind) {
               // Handle NIP-46 remote signer request
               _handleNip46Request(newEvent, webSocket);

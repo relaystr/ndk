@@ -103,6 +103,39 @@ void main() async {
       expect(list, isEmpty);
     });
 
+    test('broadcast deletion', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      Nip01Event event1 = Nip01Event(
+          pubKey: key0.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "1");
+      Nip01Event event2 = Nip01Event(
+          pubKey: key0.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "2");
+      NdkBroadcastResponse response1 =
+          ndk.broadcast.broadcast(nostrEvent: event1);
+      await response1.broadcastDoneFuture;
+      NdkBroadcastResponse response2 =
+          ndk.broadcast.broadcast(nostrEvent: event2);
+      await response2.broadcastDoneFuture;
+
+      List<Nip01Event> list = await ndk.requests.query(filters: [
+        Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
+      ]).future;
+
+      response1 = ndk.broadcast.broadcastDeletion(eventIds: [event1.id, event2.id]);
+      await response1.broadcastDoneFuture;
+
+      list = await ndk.requests.query(filters: [
+        Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
+      ]).future;
+      expect(list, isEmpty);
+    });
+
     test('broadcast reaction', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
