@@ -166,6 +166,15 @@ void main() async {
       expect(list.first.content, reaction);
     });
 
+    test('broadcast deletion with empty eventIds throws ArgumentError', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      expect(
+        () => ndk.broadcast.broadcastDeletion(eventIds: []),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
     test('broadcast respects timeout parameter', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);

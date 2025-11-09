@@ -136,6 +136,15 @@ void main() async {
       expect(list, isEmpty);
     });
 
+    test('broadcast deletion with empty eventIds throws ArgumentError', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      expect(
+        () => ndk.broadcast.broadcastDeletion(eventIds: []),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
     test('broadcast reaction', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
