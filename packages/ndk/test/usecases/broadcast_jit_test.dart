@@ -127,7 +127,8 @@ void main() async {
         Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
       ]).future;
 
-      response1 = ndk.broadcast.broadcastDeletion(eventIds: [event1.id, event2.id]);
+      response1 =
+          ndk.broadcast.broadcastDeletion(eventIds: [event1.id, event2.id]);
       await response1.broadcastDoneFuture;
 
       list = await ndk.requests.query(filters: [
@@ -136,7 +137,8 @@ void main() async {
       expect(list, isEmpty);
     });
 
-    test('broadcast deletion with empty eventIds throws ArgumentError', () async {
+    test('broadcast deletion with empty eventIds throws ArgumentError',
+        () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
       expect(

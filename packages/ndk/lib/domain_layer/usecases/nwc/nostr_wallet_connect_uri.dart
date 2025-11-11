@@ -72,8 +72,11 @@ class NostrWalletConnectUri extends Equatable {
     String? secret = parsedUri.queryParameters['secret'];
     String? lud16 = parsedUri.queryParameters['lud16'];
 
-    if (pubkey.isEmpty || secret == null || parsedUri.scheme != 'nostr+walletconnect') {
-      throw Exception("Required fields (scheme, pubkey, secret) are missing or incorrect in the connection URI.");
+    if (pubkey.isEmpty ||
+        secret == null ||
+        parsedUri.scheme != 'nostr+walletconnect') {
+      throw Exception(
+          "Required fields (scheme, pubkey, secret) are missing or incorrect in the connection URI.");
     }
 
     // Parse relays - support both single relay and comma-separated relays
@@ -83,7 +86,11 @@ class NostrWalletConnectUri extends Equatable {
     List<String>? relayParams = parsedUri.queryParametersAll['relay'];
     if (relayParams != null) {
       for (var relay in relayParams) {
-        List<String> commaSeparatedRelays = relay.split(',').map((r) => r.trim()).where((r) => r.isNotEmpty).toList();
+        List<String> commaSeparatedRelays = relay
+            .split(',')
+            .map((r) => r.trim())
+            .where((r) => r.isNotEmpty)
+            .toList();
         for (String relay in commaSeparatedRelays) {
           if (!relaysList.contains(relay)) {
             relaysList.add(relay);
@@ -95,8 +102,11 @@ class NostrWalletConnectUri extends Equatable {
     // Check for comma-separated relays in a single parameter
     String? relaysParam = parsedUri.queryParameters['relays'];
     if (relaysParam != null) {
-      List<String> commaSeparatedRelays =
-          relaysParam.split(',').map((r) => r.trim()).where((r) => r.isNotEmpty).toList();
+      List<String> commaSeparatedRelays = relaysParam
+          .split(',')
+          .map((r) => r.trim())
+          .where((r) => r.isNotEmpty)
+          .toList();
       for (String relay in commaSeparatedRelays) {
         if (!relaysList.contains(relay)) {
           relaysList.add(relay);

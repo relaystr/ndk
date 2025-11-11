@@ -1,5 +1,5 @@
 /// Log levels for the NDK logger.
-/// 
+///
 /// Defines the severity levels for logging messages.
 enum LogLevel {
   /// Log everything - lowest priority

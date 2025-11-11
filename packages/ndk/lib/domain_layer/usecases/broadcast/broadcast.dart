@@ -68,7 +68,8 @@ class Broadcast {
     final signer =
         nostrEvent.sig == '' ? _checkSinger(customSigner: customSigner) : null;
 
-    final cleanedSpecificRelays = specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
+    final cleanedSpecificRelays =
+        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
 
     return _engine.handleEventBroadcast(
       nostrEvent: nostrEvent,
@@ -127,7 +128,8 @@ class Broadcast {
     }
 
     if (idsToDelete.isEmpty) {
-      throw ArgumentError("At least one eventId must be provided for deletion.");
+      throw ArgumentError(
+          "At least one eventId must be provided for deletion.");
     }
 
     Nip01Event event = Nip01Event(

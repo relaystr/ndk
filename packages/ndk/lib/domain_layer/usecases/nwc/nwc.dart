@@ -109,8 +109,9 @@ class Nwc {
 
         await _subscribeToNotificationsAndResponses(connection);
 
-        if (doGetInfoMethod && (ignoreCapabilitiesCheck ||
-            connection.permissions.contains(NwcMethod.GET_INFO.name))) {
+        if (doGetInfoMethod &&
+            (ignoreCapabilitiesCheck ||
+                connection.permissions.contains(NwcMethod.GET_INFO.name))) {
           try {
             await getInfo(connection, timeout: timeout).then((info) {
               connection.info = info;
@@ -145,7 +146,8 @@ class Nwc {
     connection.subscription = _requests.subscription(
         name:
             "nwc-sub-${connection.useETagForEachRequest ? "notifs-only" : ""}",
-        explicitRelays: connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
+        explicitRelays:
+            connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
         filters: [
           Filter(
             kinds: kindsToSubscribe,
@@ -298,7 +300,8 @@ class Nwc {
       );
       dedicatedResponse = _requests.subscription(
           name: "nwc-response-",
-          explicitRelays: connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
+          explicitRelays:
+              connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
           filters: [responseFilter],
           cacheRead: false,
           cacheWrite: false);
@@ -323,7 +326,8 @@ class Nwc {
 
     final bResponse = _broadcast.broadcast(
       nostrEvent: event,
-      specificRelays: connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
+      specificRelays:
+          connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
       customSigner: connection.signer,
     );
     await bResponse.broadcastDoneFuture;
@@ -375,8 +379,10 @@ class Nwc {
   }
 
   /// Does a `get_balance` request
-  Future<GetBalanceResponse> getBalance(NwcConnection connection, {Duration? timeout}) async {
-    return _executeRequest<GetBalanceResponse>(connection, GetBalanceRequest(), timeout: timeout);
+  Future<GetBalanceResponse> getBalance(NwcConnection connection,
+      {Duration? timeout}) async {
+    return _executeRequest<GetBalanceResponse>(connection, GetBalanceRequest(),
+        timeout: timeout);
   }
 
   /// Does a `get_balance` request
