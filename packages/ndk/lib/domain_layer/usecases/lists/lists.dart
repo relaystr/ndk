@@ -12,14 +12,17 @@ import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
 import '../requests/requests.dart';
 
-/// Lists usecase for access to nip51 lists & sets
+/// Lists usecase for access to NIP-51 lists and sets.
+///
+/// This class provides methods to manage Nostr lists and sets according to NIP-51,
+/// including creating, reading, updating, and deleting list elements and sets.
 class Lists {
   final Requests _requests;
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
   final Accounts _accounts;
 
-  /// lists
+  /// Creates a Lists usecase instance.
   Lists({
     required Requests requests,
     required CacheManager cacheManager,
@@ -47,7 +50,17 @@ class Lists {
         : null;
   }
 
-  /// return nip51 list by given kind
+  /// Returns a NIP-51 list by the given kind.
+  ///
+  /// Retrieves the most recent list event for the specified kind and signer.
+  /// First checks cache unless [forceRefresh] is true, then queries relays.
+  ///
+  /// [kind] the kind of NIP-51 list to retrieve \
+  /// [signer] the event signer containing the public key \
+  /// [forceRefresh] if true, bypass cache and query relays directly \
+  /// [timeout] maximum duration to wait for relay responses
+  ///
+  /// Returns the list if found, null otherwise.
   Future<Nip51List?> getSingleNip51List(
     int kind,
     EventSigner signer, {
@@ -79,7 +92,19 @@ class Lists {
     return list;
   }
 
-  /// adds element to list
+  /// Adds an element to a NIP-51 list.
+  ///
+  /// If the list doesn't exist, it will be created. The updated list is
+  /// then broadcast to relays and cached locally.
+  ///
+  /// [kind] the kind of NIP-51 list \
+  /// [tag] the tag type for the element (e.g., 'p' for pubkey, 'e' for event) \
+  /// [value] the value to add to the list \
+  /// [broadcastRelays] optional specific relays to broadcast to \
+  /// [private] if true, encrypt the element in the list content
+  ///
+  /// Returns the updated list.\
+  /// Throws an exception if no event signer is available.
   Future<Nip51List> addElementToList({
     required int kind,
     required String tag,
@@ -121,7 +146,18 @@ class Lists {
     return list;
   }
 
-  /// removes entry from list
+  /// Removes an element from a NIP-51 list.
+  ///
+  /// Updates the list by removing the specified element, then broadcasts
+  /// the updated list to relays and updates the cache.
+  ///
+  /// [kind] the kind of NIP-51 list \
+  /// [tag] the tag type of the element to remove \
+  /// [value] the value to remove from the list \
+  /// [broadcastRelays] optional specific relays to broadcast to
+  ///
+  /// Returns the updated list, or null if the list doesn't exist.\
+  /// Throws an exception if no event signer is available.
   Future<Nip51List?> removeElementFromList({
     required int kind,
     required String tag,
@@ -229,12 +265,18 @@ class Lists {
         .defaultIfEmpty(<Nip51Set>[]);
   }
 
-  /// get a set by name identifier (d tag) for the logged in pubkey (or signer)
+  /// Gets a NIP-51 set by name identifier (d tag).
   ///
-  /// [name] name of the set \
-  /// [kind] kind of the set @see Nip51List class \
-  /// [customSigner] optional, logged in account used per default \
-  /// [forceRefresh] skip cache
+  /// Retrieves a specific set for the logged-in user or a custom signer.
+  /// The set is identified by its name (d tag) and kind.
+  ///
+  /// [name] name of the set (d tag identifier) \
+  /// [kind] kind of the set, see Nip51List class for constants \
+  /// [customSigner] optional signer, defaults to logged-in account \
+  /// [forceRefresh] if true, skip cache and query relays directly
+  ///
+  /// Returns the set if found, null otherwise. \
+  /// Throws an exception if no account is logged in and no custom signer is provided.
   Future<Nip51Set?> getSetByName({
     required String name,
     required int kind,
@@ -283,9 +325,16 @@ class Lists {
     return relaySet;
   }
 
-  /// returns the public sets of a given pubkey \
-  /// [kind] list type
-  /// [publicKey] of user
+  /// Returns a stream of public sets for a given public key.
+  ///
+  /// Queries relays for all sets of the specified kind belonging to the
+  /// given public key. Only public (non-encrypted) sets are returned.
+  ///
+  /// [kind] the kind of sets to retrieve \
+  /// [publicKey] the public key of the user whose sets to retrieve \
+  /// [forceRefresh] if true, skip cache and query relays directly
+  ///
+  /// Returns a stream that emits collections of sets as they are discovered.
   Stream<Iterable<Nip51Set>?> getPublicSets({
     required int kind,
     required String publicKey,
@@ -295,14 +344,19 @@ class Lists {
     return _getSets(kind, mySigner, forceRefresh: forceRefresh);
   }
 
-  /// add element to set, \
-  /// if the set does not exist it gets created
+  /// Adds an element to a NIP-51 set.
   ///
-  /// [name] of the set \
-  /// [tag] type of the element to add \
-  /// [value] your element \
-  /// [kind] type of the set \
-  /// [private] if the value is private
+  /// If the set doesn't exist, it will be created. The updated set is
+  /// then broadcast to relays and cached locally.
+  ///
+  /// [name] name of the set (d tag identifier) \
+  /// [tag] the tag type for the element (e.g., 'relay', 'p', 'e') \
+  /// [value] the value to add to the set \
+  /// [kind] kind of the set \
+  /// [private] if true, encrypt the element in the set content \
+  /// [specificRelays] optional specific relays to broadcast to
+  ///
+  /// Returns the updated set.
   Future<Nip51Set?> addElementToSet({
     required String name,
     required String tag,
@@ -346,13 +400,20 @@ class Lists {
     return set;
   }
 
-  /// removes element from set
+  /// Removes an element from a NIP-51 set.
   ///
-  /// [name] of the set \
-  /// [tag] type of the element to remove \
-  /// [value] your element \
-  /// [kind] type of the set \
-  /// [private] if the value is private
+  /// Updates the set by removing the specified element, then broadcasts
+  /// the updated set to relays and updates the cache.
+  ///
+  /// [name] name of the set (d tag identifier) \
+  /// [value] the value to remove from the set \
+  /// [tag] the tag type of the element to remove \
+  /// [kind] kind of the set \
+  /// [private] if true, the element was encrypted \
+  /// [specificRelays] optional specific relays to broadcast to
+  ///
+  /// Returns the updated set.
+  /// Throws an exception if no event signer is available.
   Future<Nip51Set?> removeElementFromSet({
     required String name,
     required String value,
@@ -407,12 +468,16 @@ class Lists {
     return mySet;
   }
 
-  /// overrides/creates a complete set \
-  /// be mindfull using this, instead look at add/removeElementFromSet()
+  /// Overwrites or creates a complete NIP-51 set.
   ///
-  /// [set] set to be updated/created \
-  /// [kind] type of the set \
-  /// [specificRelays] optional, realays to broadcast to
+  /// **Warning:** This replaces the entire set. Consider using
+  /// [addElementToSet] or [removeElementFromSet] for incremental updates.
+  ///
+  /// [set] the complete set to broadcast \
+  /// [kind] kind of the set \
+  /// [specificRelays] optional specific relays to broadcast to
+  ///
+  /// Returns the set after broadcasting.
   Future<Nip51Set> setCompleteSet({
     required Nip51Set set,
     required int kind,
@@ -446,10 +511,16 @@ class Lists {
     return set;
   }
 
-  /// deletes a set by name (logged in pubkey) \
-  /// [name] name of the set \
-  /// [kind] type of the set \
-  /// [specificRelays] optional, relays to broadcast to
+  /// Deletes a NIP-51 set by name.
+  ///
+  /// Broadcasts a deletion event for the set and removes it from the cache.
+  /// Uses the logged-in account's signer.
+  ///
+  /// [name] name of the set (d tag identifier) \
+  /// [kind] kind of the set \
+  /// [specificRelays] optional specific relays to broadcast the deletion to
+  ///
+  /// Throws an exception if no event signer is available.
   Future deleteSet({
     required String name,
     required int kind,
@@ -486,7 +557,7 @@ class Lists {
 
   //* deprecated methods *//
 
-  /// use getSetByName instead
+  /// Use [getSetByName] instead.
   @Deprecated("use getSetByName instead")
   Future<Nip51Set?> getSingleNip51RelaySet(
     String name,
@@ -500,7 +571,7 @@ class Lists {
     );
   }
 
-  /// return list of all nip51 relay sets that match a given kind
+  /// Use [getPublicSets] instead.
   @Deprecated("use getSet() instead")
   Future<List<Nip51Set>?> getNip51RelaySets(
     int kind,
@@ -537,6 +608,7 @@ class Lists {
     // return [];
   }
 
+  /// Use [getPublicSets] instead.
   @Deprecated("use getPublicSets()")
   Future<List<Nip51Set>?> getPublicNip51RelaySets({
     required int kind,
@@ -547,6 +619,7 @@ class Lists {
     return getNip51RelaySets(kind, mySigner, forceRefresh: forceRefresh);
   }
 
+  /// Use [addElementToSet] instead.
   @Deprecated("use addElementToSet()")
   Future<Nip51Set> broadcastAddNip51SetRelay(
     String relayUrl,
@@ -590,6 +663,7 @@ class Lists {
     return list;
   }
 
+  /// Use [removeElementFromSet] instead.
   @Deprecated("use removeElementFromSet()")
   Future<Nip51Set?> broadcastRemoveNip51SetRelay(
     String relayUrl,
@@ -647,6 +721,7 @@ class Lists {
     return relaySet;
   }
 
+  /// Use [addElementToList] instead.
   @Deprecated("use removeElementFromList()")
   Future<Nip51List> broadcastAddNip51ListRelay(
     int kind,
@@ -686,6 +761,7 @@ class Lists {
     return list;
   }
 
+  /// Use [removeElementFromSet] instead.
   @Deprecated("use removeElementFromSet()")
   Future<Nip51List?> broadcastRemoveNip51Relay(
     int kind,
@@ -735,6 +811,7 @@ class Lists {
     return list;
   }
 
+  /// Use [addElementToList] instead.
   @Deprecated("use broadcastAddElementToList()")
   Future<Nip51List> broadcastAddNip51ListElement(
     int kind,
@@ -746,6 +823,7 @@ class Lists {
     return addElementToList(kind: kind, tag: tag, value: value);
   }
 
+  /// Use [removeElementFromList] instead.
   @Deprecated("use broadcastRemoveElementFromList()")
   Future<Nip51List?> broadcastRemoveNip51ListElement(
     int kind,
@@ -757,7 +835,7 @@ class Lists {
   }
 
   /// return single public nip51 set that match given name and pubkey \
-  /// use getSetByName instead
+  /// use [getSetByName] instead
   @Deprecated("use getSetByName instead")
   Future<Nip51Set?> getSinglePublicNip51RelaySet({
     required String name,
