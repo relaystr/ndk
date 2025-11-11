@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
@@ -137,10 +136,12 @@ class Requests {
   }
 
   /// Closes a Nostr network subscription
-  Future<void> closeSubscription(String subId) async {
+  Future<void> closeSubscription(String subId, {String debugLabel = ""}) async {
     final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
+
     if (relayUrls == null) {
-      Logger.log.w("no relay urls found for subscription $subId, cannot close");
+      Logger.log.w(
+          "no relay urls found for subscription $subId, cannot close :: debug: $debugLabel");
       return;
     }
     Iterable<RelayConnectivity> relays = _relayManager.connectedRelays
@@ -187,7 +188,7 @@ class Requests {
     // define on timeout behavior
     state.onTimeout = (RequestState state) {
       // closing in case relay is alive but not sending events
-      closeSubscription(state.id);
+      closeSubscription(state.id, debugLabel: "timeout");
 
       // call our internal timeout function
       request.timeoutCallback?.call();
@@ -219,12 +220,11 @@ class Requests {
       eventOutFilters: _eventOutFilters,
     )();
 
-    /// cleanup on close
-    state.stream.doOnDone(() {
+    // cleanup on close
+    // use done future for replay subject
+    state.controller.done.then((_) {
       _globalState.inFlightRequests.remove(state.id);
-    });
-    state.stream.doOnError((error, stacktrace) {
-      _globalState.inFlightRequests.remove(state.id);
+      Logger.log.d("req done: ${state.id}");
     });
 
     /// avoids sending events to response stream before a listener could be attached

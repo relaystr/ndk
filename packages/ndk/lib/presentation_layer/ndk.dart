@@ -5,6 +5,7 @@ import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
@@ -72,6 +73,9 @@ class Ndk {
 
   /// Accounts
   Accounts get accounts => _initialization.accounts;
+
+  /// Bunker - NIP-46 remote signing protocol
+  Bunkers get bunkers => _initialization.bunkers;
 
   /// Provides access to low-level Nostr broadcast/publish.
   ///
@@ -145,8 +149,14 @@ class Ndk {
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
-    await nwc.disconnectAll();
-    await _initialization.requests.closeAllSubscription();
-    await _initialization.relayManager.closeAllTransports();
+    final allFutures = [
+      nwc.disconnectAll(),
+      _initialization.requests.closeAllSubscription(),
+      _initialization.relayManager.closeAllTransports(),
+      _initialization.requests.closeAllSubscription(),
+      accounts.dispose(),
+    ];
+
+    await Future.wait(allFutures);
   }
 }

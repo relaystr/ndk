@@ -90,6 +90,22 @@ class MockBlossomServer {
 
     // GET /list/<pubkey> - List Blobs
     router.get('/list/<pubkey>', (Request request, String pubkey) {
+      final authHeader = request.headers['authorization'];
+
+      if (authHeader == null) {
+        return Response.forbidden('Missing authorization');
+      }
+
+      try {
+        final authEvent =
+            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        if (!_verifyAuthEvent(authEvent, 'list')) {
+          return Response.forbidden('Invalid authorization event');
+        }
+      } catch (e) {
+        return Response.forbidden('Invalid authorization format');
+      }
+
       final since = int.tryParse(request.url.queryParameters['since'] ?? '');
       final until = int.tryParse(request.url.queryParameters['until'] ?? '');
 

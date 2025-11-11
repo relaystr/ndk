@@ -22,6 +22,8 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - [freeflow](https://github.com/nostrlabs-io/freeflow)
 - [hostr](https://github.com/sudonym-btc/hostr)
 - [bitblik](https://github.com/bitblik)
+- [donow](https://github.com/nogringo/donow)
+- [submarine](https://github.com/nogringo/submarine)
 
 [!ref](/guides/getting-started.md)
 
@@ -34,9 +36,9 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - cache responses to save network bandwidth
 - stream directly from cache and network (if needed)
 - query and subscription, e.g., get data once; subscribe to data.
-- plugin cache interface, bring your own db or use included ones: `inMemory`
+- plugin cache interface, bring your own db or use included ones: `inMemory, isar, objectbox, sembast`
 - plug in verifier interface, bring your own event verifier, or use included ones: `bip340, rust`
-- plug in event signer interface, bring your own event signer, or use included ones: `bip340, amber`
+- plug in event signer interface, bring your own event signer, or use included ones: `bip340, amber, nip07, nip46`
 - contact list support, you can convert nostr_event to contact_list
 - nip51 list support, you can convert nostr_event to nip51_list
 - nip05 caching

@@ -1,5 +1,6 @@
 import 'package:ndk/ndk.dart';
 
+import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
 import '../../entities/broadcast_state.dart';
@@ -67,10 +68,12 @@ class Broadcast {
     final signer =
         nostrEvent.sig == '' ? _checkSinger(customSigner: customSigner) : null;
 
+    final cleanedSpecificRelays = specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
+
     return _engine.handleEventBroadcast(
       nostrEvent: nostrEvent,
       signer: signer,
-      specificRelays: specificRelays,
+      specificRelays: cleanedSpecificRelays,
       doneStream: broadcastState.stateUpdates
           .map((state) => state.broadcasts.values.toList()),
     );
@@ -103,25 +106,40 @@ class Broadcast {
 
   /// request a deletion of an event \
   /// [eventId] event you want to delete \
+  /// [eventIds] events you want to delete \
   /// [customRelays] relay URls to send the deletion request to specific relays \
   /// [customSigner] if you want to use a different signer than the default specified in [NdkConfig]
   NdkBroadcastResponse broadcastDeletion({
-    required String eventId,
+    String? eventId,
+    List<String>? eventIds,
     Iterable<String>? customRelays,
     EventSigner? customSigner,
+    String reason = "delete",
   }) {
     final EventSigner mySigner = _checkSinger(customSigner: customSigner);
+
+    List<String> idsToDelete = [];
+    if (eventId != null) {
+      idsToDelete.add(eventId);
+    }
+    if (eventIds != null) {
+      idsToDelete.addAll(eventIds);
+    }
+
+    if (idsToDelete.isEmpty) {
+      throw ArgumentError("At least one eventId must be provided for deletion.");
+    }
 
     Nip01Event event = Nip01Event(
         pubKey: mySigner.getPublicKey(),
         kind: Deletion.kKind,
-        tags: [
-          ["e", eventId]
-        ],
-        content: "delete",
+        tags: idsToDelete.map((e) => ["e", e]).toList(),
+        content: reason,
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
     // TODO not bulletproof, think of better way
-    _cacheManager.removeEvent(eventId);
+    for (final id in idsToDelete) {
+      _cacheManager.removeEvent(id);
+    }
     return broadcast(
       nostrEvent: event,
       specificRelays: customRelays,

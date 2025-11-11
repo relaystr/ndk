@@ -4,6 +4,7 @@ import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/broadcast_response.dart';
 import '../../entities/broadcast_state.dart';
+import '../../entities/contact_list.dart';
 import '../../entities/global_state.dart';
 import '../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../entities/nip_01_event.dart';
@@ -69,12 +70,13 @@ class JitEngine with Logger implements NetworkEngine {
 
       if (requestState.request.explicitRelays != null &&
           requestState.request.explicitRelays!.isNotEmpty) {
+        final cleanedExplicitRelays = cleanRelayUrls(requestState.request.explicitRelays!.toList());
         RelayJitRequestSpecificStrategy.handleRequest(
           relayManager: relayManagerLight,
           requestState: requestState,
           filter: filter,
           closeOnEOSE: ndkRequest.closeOnEOSE,
-          specificRelays: requestState.request.explicitRelays!,
+          specificRelays: cleanedExplicitRelays,
         );
         continue;
       }
@@ -161,8 +163,9 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (specificRelays != null) {
+        final cleanedSpecificRelays = cleanRelayUrls(specificRelays.toList());
         return RelayJitBroadcastSpecificRelaysStrategy.broadcast(
-          specificRelays: specificRelays.toList(),
+          specificRelays: cleanedSpecificRelays,
           relayManager: relayManagerLight,
           eventToPublish: nostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
@@ -183,7 +186,7 @@ class JitEngine with Logger implements NetworkEngine {
       );
 
       // check if we need to publish to others inboxes
-      if (nostrEvent.pTags.isNotEmpty) {
+      if (nostrEvent.pTags.isNotEmpty && nostrEvent.kind != ContactList.kKind) {
         RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: nostrEvent,
           connectedRelays: relayManagerLight.connectedRelays

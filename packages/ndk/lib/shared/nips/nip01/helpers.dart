@@ -62,7 +62,7 @@ class Helpers {
   // }
 
   /// reads tags from a nostr event and returns a list of pubkeys
-  static List<String> getPubkeysFromTags(tag) {
+  static List<String> getPubkeysFromTags(List tag) {
     var pubkeys = <String>[];
     for (var i = 0; i < tag.length; i++) {
       if (tag[i][0] == "p") {
@@ -73,7 +73,7 @@ class Helpers {
   }
 
   /// reads tags from a nostr event and returns a list of events
-  static List<String> getEventsFromTags(tag) {
+  static List<String> getEventsFromTags(List tag) {
     var events = <String>[];
     for (var i = 0; i < tag.length; i++) {
       if (tag[i][0] == "e") {

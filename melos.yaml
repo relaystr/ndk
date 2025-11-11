@@ -9,6 +9,8 @@ packages:
   - packages/objectbox
   - packages/rust_verifier
   - packages/rust_verifier/rust_builder
+  - packages/nip07_event_signer
+  - packages/sembast_cache_manager
 
 scripts:
   analyze:

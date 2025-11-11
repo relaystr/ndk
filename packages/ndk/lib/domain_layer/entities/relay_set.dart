@@ -34,7 +34,7 @@ class RelaySet {
       required this.direction,
       this.fallbackToBootstrapRelays = true});
 
-  static buildId(String name, String pubKey) {
+  static String buildId(String name, String pubKey) {
     return "$name,$pubKey";
   }
 

@@ -1,3 +1,69 @@
+## 0.2.7-dev.13
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.12
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.11
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.10
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.9
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.8
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.7
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.4
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.3
+
+ - Update a dependency to the latest release.
+
+## 0.2.7-dev.2
+
+ - **FIX**: import cosmetics.
+
+## 0.2.7-dev.1
+
+ - **FIX**: import cosmetics.
+
+## 0.2.7-dev.0+1
+
+ - Update a dependency to the latest release.
+
+## 0.2.6
+
+- limit in loadEvents
+- upgrade to ndk 0.5.1
+
+## 0.2.5
+
+ - upgrade to ndk 0.4.1
+ - added delete methods
+
 ## 0.2.4
 
  - upgrade to ndk 0.4.0

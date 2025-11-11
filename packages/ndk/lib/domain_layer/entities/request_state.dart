@@ -92,15 +92,11 @@ class RequestState {
     }
   }
 
-  /// checks if all relays recieved EOSE or failed and closes the request
-  checkNetworkClose() {
-    if (didAllRequestsReceivedEOSE) {
-      networkController.close();
-    }
-  }
-
   /// closes all streams
   Future<void> close() async {
+    if (_timeout != null) {
+      _timeout!.cancel();
+    }
     await networkController.close();
     await cacheController.close();
     await controller.close();

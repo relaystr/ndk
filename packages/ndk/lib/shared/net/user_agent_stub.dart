@@ -1,0 +1,1 @@
+void configureDefaultUserAgent(String userAgent) {}

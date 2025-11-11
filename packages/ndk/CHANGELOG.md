@@ -1,3 +1,78 @@
+## 0.6.0-dev.8
+
+ - **FIX**: add test and call clean url during broadcast.
+
+## 0.6.0-dev.7
+
+ - **FIX**: add test and call clean url during broadcast.
+
+## 0.6.0-dev.6
+
+ - **FIX**: static analysis issues.
+
+## 0.6.0-dev.5
+
+ - **FIX**: static analysis issues.
+
+## 0.6.0-dev.4
+
+ - **FEAT**: log color, params.
+
+## 0.6.0-dev.3
+
+ - **FEAT**: log color, params.
+
+## 0.6.0-dev.2
+
+ - **REFACTOR**: concurrent streams with rxdart.
+ - **FIX**: improved null filter.
+ - **FIX**: drop invalid events.
+
+## 0.6.0-dev.1
+
+ - **REFACTOR**: concurrent streams with rxdart.
+ - **FIX**: improved null filter.
+ - **FIX**: drop invalid events.
+
+## 0.6.0-dev.0
+
+- Bump "ndk" to `0.6.0-dev.0`.
+
+## 0.5.2-dev.2
+
+- **FIX**: buffer not clearing.
+- **FEAT**: concurrent event stream.
+
+## 0.5.2-dev.1
+
+- **FIX**: buffer not clearing.
+- **FEAT**: concurrent event stream.
+
+## 0.5.2-dev.0+1
+
+- **FIX**: call dispose on destroy.
+- **FIX**: BehaviorSubject for immediate values.
+- **FIX**: copy value to fix modification.
+
+## 0.5.1
+
+- feat: nip46 signer
+- feat: useragent identifier
+- fix: limit in loadEvents
+- dep: upgrade to pointycastle v4
+
+## 0.5.0
+
+- feat: NIP07 web signer support
+- feat: sembast cache manager (+web support)
+
+## 0.4.1
+
+- fix: close relay only closes the specifi relay
+- fix: fixed common ndk warnings
+- fix: remove inFlight requests
+- fix: jit engine connections to low value relays
+
 ## 0.4.0
 
 - feat: nip 59 gift wrap

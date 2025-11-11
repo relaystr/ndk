@@ -38,7 +38,7 @@ void main() async {
     test('query simple note LISTS',
         timeout: const Timeout(Duration(seconds: 3)), () async {
       MockRelay relay1 =
-          MockRelay(name: "relay 1", explicitPort: 3900, signEvents: false);
+          MockRelay(name: "relay 1", explicitPort: 3960, signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
       final ndk = Ndk(
@@ -74,7 +74,7 @@ void main() async {
     test('query simple event by id',
         timeout: const Timeout(Duration(seconds: 3)), () async {
       MockRelay relay1 =
-          MockRelay(name: "relay 1", explicitPort: 3900, signEvents: false);
+          MockRelay(name: "relay 1", explicitPort: 3961, signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
       final cache = MemCacheManager();
@@ -108,7 +108,8 @@ void main() async {
     // ================================================================================================
 
     test('verify signatures of events', () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", signEvents: false);
+      MockRelay relay1 =
+          MockRelay(name: "relay 1", explicitPort: 3962, signEvents: false);
       await relay1.startServer(textNotes: key1TextNotes);
 
       final ndk = Ndk(

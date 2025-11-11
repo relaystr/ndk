@@ -1,4 +1,3 @@
-import 'package:logger/logger.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -32,7 +31,7 @@ void main() async {
         engine: NdkEngine.JIT,
         bootstrapRelays: [relay0.url],
         ignoreRelays: [],
-        logLevel: Level.all,
+        logLevel: LogLevel.all,
       );
 
       ndk = Ndk(config);
@@ -104,6 +103,48 @@ void main() async {
       expect(list, isEmpty);
     });
 
+    test('broadcast deletion', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      Nip01Event event1 = Nip01Event(
+          pubKey: key0.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "1");
+      Nip01Event event2 = Nip01Event(
+          pubKey: key0.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "2");
+      NdkBroadcastResponse response1 =
+          ndk.broadcast.broadcast(nostrEvent: event1);
+      await response1.broadcastDoneFuture;
+      NdkBroadcastResponse response2 =
+          ndk.broadcast.broadcast(nostrEvent: event2);
+      await response2.broadcastDoneFuture;
+
+      List<Nip01Event> list = await ndk.requests.query(filters: [
+        Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
+      ]).future;
+
+      response1 = ndk.broadcast.broadcastDeletion(eventIds: [event1.id, event2.id]);
+      await response1.broadcastDoneFuture;
+
+      list = await ndk.requests.query(filters: [
+        Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
+      ]).future;
+      expect(list, isEmpty);
+    });
+
+    test('broadcast deletion with empty eventIds throws ArgumentError', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+      expect(
+        () => ndk.broadcast.broadcastDeletion(eventIds: []),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
     test('broadcast reaction', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
@@ -139,11 +180,13 @@ void main() async {
 
     late MockRelay relay1;
     late MockRelay relay2;
+    late MockRelay relay3;
     late Ndk ndk;
 
     setUp(() async {
       relay1 = MockRelay(name: "relay 1", explicitPort: 5086);
       relay2 = MockRelay(name: "relay 2", explicitPort: 5087);
+      relay3 = MockRelay(name: "relay 3", explicitPort: 5088);
       await relay1.startServer(nip65s: {
         key1: Nip65(
             pubKey: key1.publicKey,
@@ -151,6 +194,8 @@ void main() async {
             createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000)
       });
       await relay2.startServer();
+
+      await relay3.startServer();
 
       final cache = MemCacheManager();
       final NdkConfig config = NdkConfig(
@@ -179,6 +224,17 @@ void main() async {
             relays: {relay2.url: ReadWriteMarker.readWrite},
             createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000),
       ));
+
+      await cache.saveUserRelayList(UserRelayList.fromNip65(
+        Nip65(
+            pubKey: key1.publicKey,
+            relays: {
+              relay1.url: ReadWriteMarker.readWrite,
+              relay3.url: ReadWriteMarker.readWrite, // Add new relay
+            },
+            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000),
+      ));
+
       await ndk.relays.seedRelaysConnected;
     });
 
@@ -186,6 +242,7 @@ void main() async {
       await ndk.destroy();
       await relay1.stopServer();
       await relay2.stopServer();
+      await relay3.stopServer();
     });
 
     test('broadcast JIT - specific', () async {
@@ -235,6 +292,40 @@ void main() async {
         ],
       ).future;
       expect(result.length, 1);
+    });
+
+    test('broadcast JIT - connect relay during broadcast', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      // verify relay3 is not initially connected
+      expect(ndk.relays.isRelayConnected(relay3.url), false);
+
+      Nip01Event event = Nip01Event(
+          pubKey: key1.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "test connection during broadcast");
+
+      // broadcast the event - this should trigger connection to relay3
+      await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
+
+      // verify the event was broadcast to both relays
+      List<Nip01Event> resultRelay1 = await ndk.requests.query(
+        explicitRelays: [relay1.url],
+        filters: [
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
+        ],
+      ).future;
+      expect(resultRelay1.length, 1);
+
+      List<Nip01Event> resultRelay3 = await ndk.requests.query(
+        explicitRelays: [relay3.url],
+        filters: [
+          Filter(authors: [key1.publicKey], kinds: [Nip01Event.kTextNodeKind])
+        ],
+      ).future;
+      expect(resultRelay3.length, 1);
     });
   });
 }

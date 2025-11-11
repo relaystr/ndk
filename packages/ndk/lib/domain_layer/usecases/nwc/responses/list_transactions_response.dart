@@ -59,7 +59,7 @@ class TransactionResult extends Equatable {
   final int amount;
 
   /// The amount of the invoice (in SATS)
-  get amountSat => amount ~/ 1000;
+  int get amountSat => amount ~/ 1000;
 
   /// The fees paid for the transaction (in MSATs). Optional.
   final int? feesPaid;
@@ -109,7 +109,7 @@ class TransactionResult extends Equatable {
       metadata: input['metadata'] as Map<String, dynamic>?,
     );
   }
-  get isIncoming => type == TransactionType.incoming.value;
+  bool get isIncoming => type == TransactionType.incoming.value;
 
   String? get zapperPubKey {
     if (metadata != null && metadata?['nostr'] != null) {
@@ -123,7 +123,7 @@ class TransactionResult extends Equatable {
   }
 
   /// creates a transaction result from a [NwcNotification]
-  static fromNotification(NwcNotification notification) {
+  static TransactionResult fromNotification(NwcNotification notification) {
     return TransactionResult(
       type: notification.type,
       invoice: notification.invoice,

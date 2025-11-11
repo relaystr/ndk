@@ -26,6 +26,7 @@ class CacheRead {
           kinds: filter.kinds ?? [],
           since: filter.since,
           until: filter.until,
+          limit: filter.limit,
         );
 
         foundEvents.addAll(cached);

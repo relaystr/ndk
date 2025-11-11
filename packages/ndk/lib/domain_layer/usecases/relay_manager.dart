@@ -68,7 +68,7 @@ class RelayManager<T> {
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
 
-  updateRelayConnectivity() {
+  void updateRelayConnectivity() {
     _relayUpdatesStreamController.add(globalState.relays);
   }
 
@@ -141,6 +141,12 @@ class RelayManager<T> {
       Logger.log.t("relay already connected: $url");
       updateRelayConnectivity();
       return Tuple(true, "");
+    }
+
+    if (isRelayConnecting(url)) {
+      Logger.log.t("relay is already connecting: $url");
+      updateRelayConnectivity();
+      return Tuple(true, "relay is still connecting");
     }
     RelayConnectivity? relayConnectivity = globalState.relays[url];
 
@@ -415,7 +421,7 @@ class RelayManager<T> {
     } else if (eventJson[0] == 'CLOSED') {
       Logger.log.w(
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
-      globalState.inFlightRequests.remove(eventJson[1]);
+      _handleClosed(eventJson, relayConnectivity);
     }
     if (eventJson[0] == ClientMsgType.kAuth) {
       // nip 42 used to send authentication challenges
@@ -449,8 +455,7 @@ class RelayManager<T> {
     var id = eventJson[1];
     if (globalState.inFlightRequests[id] == null) {
       Logger.log.w(
-          "RECEIVED EVENT from ${connectivity.url} for id $id, not in globalState inFlightRequests");
-      // send(url, jsonEncode(["CLOSE", id]));
+          "RECEIVED EVENT from ${connectivity.url} for id $id, not in globalState inFlightRequests. Likely data after EOSE on a query");
       return;
     }
 
@@ -494,6 +499,25 @@ class RelayManager<T> {
         _checkNetworkClose(state, relayConnectivity);
         _logActiveRequests();
       }
+    }
+    return;
+  }
+
+  /// handles CLOSED messages
+  void _handleClosed(
+      List<dynamic> eventJson, RelayConnectivity relayConnectivity) {
+    String id = eventJson[1];
+    RequestState? state = globalState.inFlightRequests[id];
+    if (state != null) {
+      Logger.log.t(
+          "⛁ received CLOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
+      RelayRequestState? request = state.requests[relayConnectivity.url];
+      if (request != null) {
+        request.receivedEOSE = true;
+      }
+
+      _checkNetworkClose(state, relayConnectivity);
+      _logActiveRequests();
     }
     return;
   }
@@ -567,7 +591,7 @@ class RelayManager<T> {
   }
 
   /// Closes this url transport and removes
-  Future<void> closeTransport(url) async {
+  Future<void> closeTransport(String url) async {
     RelayConnectivity? connectivity = globalState.relays[url];
     if (connectivity != null && connectivity.relayTransport != null) {
       Logger.log.d("Disconnecting $url...");

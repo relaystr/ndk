@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-_parseSize(dynamic size) {
+int _parseSize(dynamic size) {
   if (size is int) {
     return size;
   } else if (size is String) {

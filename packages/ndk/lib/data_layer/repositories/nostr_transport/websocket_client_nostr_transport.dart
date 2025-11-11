@@ -35,6 +35,12 @@ class WebSocketClientNostrTransport implements NostrTransport {
           completer = Completer();
           ready = completer.future;
           break;
+        case Connecting():
+          // Do nothing, just waiting for connection to be established
+          break;
+        case Reconnecting():
+          // Do nothing, just waiting for reconnection to be established
+          break;
         default:
           Logger.log.w(
               "${_websocketDS.url} connection state changed to unknown state: $state");

@@ -1,0 +1,193 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
+
+import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
+import 'models/bunker_request.dart';
+import 'models/bunker_connection.dart';
+import '../../../shared/nips/nip01/bip340.dart';
+import '../../entities/filter.dart';
+import '../../entities/nip_01_event.dart';
+import '../broadcast/broadcast.dart';
+import '../requests/requests.dart';
+
+/// Bunkers usecase that handles NIP-46 remote signing protocol operations
+class Bunkers {
+  final Broadcast _broadcast;
+  final Requests _requests;
+
+  static const int kMaxWaitingTimeForConnectionSeconds = 600;
+
+  Bunkers({
+    required Broadcast broadcast,
+    required Requests requests,
+  })  : _broadcast = broadcast,
+        _requests = requests;
+
+  /// Connects to a bunker using a bunker URL (bunker://)
+  /// authCallback is called with the auth URL if the bunker requires authentication
+  Future<BunkerConnection?> connectWithBunkerUrl(
+    String bunkerUrl, {
+    Function(String)? authCallback,
+  }) async {
+    final uri = Uri.parse(bunkerUrl);
+    if (uri.scheme != 'bunker') {
+      throw ArgumentError('Invalid bunker URL scheme');
+    }
+
+    final remotePubkey = uri.host;
+    final relays = uri.queryParametersAll['relay'] ?? [];
+    final secret = uri.queryParameters['secret'];
+
+    if (relays.isEmpty) {
+      throw ArgumentError('At least one relay is required in bunker URL');
+    }
+
+    if (secret == null) {
+      throw ArgumentError('Secret parameter is required in bunker URL');
+    }
+
+    final keyPair = Bip340.generatePrivateKey();
+    final localEventSigner = Bip340EventSigner(
+      privateKey: keyPair.privateKey,
+      publicKey: keyPair.publicKey,
+    );
+
+    final request = BunkerRequest(
+      method: BunkerRequestMethods.connect,
+      params: [remotePubkey, secret],
+    );
+
+    final encryptedRequest = await localEventSigner.encryptNip44(
+      plaintext: jsonEncode(request),
+      recipientPubKey: remotePubkey,
+    );
+
+    final requestEvent = Nip01Event(
+      pubKey: localEventSigner.publicKey,
+      kind: BunkerRequest.kKind,
+      tags: [
+        ["p", remotePubkey],
+      ],
+      content: encryptedRequest!,
+    );
+
+    await localEventSigner.sign(requestEvent);
+    final broadcastRes =
+        _broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
+    await broadcastRes.broadcastDoneFuture;
+
+    final subscription = _requests.subscription(
+      explicitRelays: relays,
+      filters: [
+        Filter(
+          authors: [remotePubkey],
+          kinds: [BunkerRequest.kKind],
+          pTags: [localEventSigner.publicKey],
+          since: someTimeAgo(),
+        ),
+      ],
+    );
+    BunkerConnection? result;
+
+    await for (final event in subscription.stream
+        .timeout(Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
+      final decryptedContent = await localEventSigner.decryptNip44(
+        ciphertext: event.content,
+        senderPubKey: remotePubkey,
+      );
+
+      final response = jsonDecode(decryptedContent!);
+
+      if (response["id"] != request.id) continue;
+
+      if (response["result"] == "auth_url") {
+        if (authCallback != null) {
+          authCallback(response["error"]);
+        }
+        continue;
+      }
+
+      if (response["result"] == "ack") {
+        result = BunkerConnection(
+          privateKey: localEventSigner.privateKey!,
+          remotePubkey: remotePubkey,
+          relays: relays,
+        );
+        break;
+      }
+    }
+    await _requests.closeSubscription(subscription.requestId);
+    return result;
+  }
+
+  /// Connects to a bunker using a nostr connect URL (nostrconnect://)
+  /// authCallback is called with the auth URL if the bunker requires authentication
+  Future<BunkerConnection?> connectWithNostrConnect(
+    NostrConnect nostrConnect, {
+    Function(String)? authCallback,
+  }) async {
+    final relays = nostrConnect.relays;
+    final secret = nostrConnect.secret;
+
+    if (relays.isEmpty) {
+      throw ArgumentError('At least one relay is required in bunker URL');
+    }
+
+    final keyPair = nostrConnect.keyPair;
+    final localEventSigner = Bip340EventSigner(
+      privateKey: keyPair.privateKey,
+      publicKey: keyPair.publicKey,
+    );
+
+    final subscription = _requests.subscription(
+      explicitRelays: relays,
+      filters: [
+        Filter(
+          kinds: [BunkerRequest.kKind],
+          pTags: [localEventSigner.publicKey],
+          since: someTimeAgo(),
+        ),
+      ],
+    );
+    BunkerConnection? result;
+
+    await for (final event in subscription.stream
+        .timeout(Duration(seconds: kMaxWaitingTimeForConnectionSeconds))) {
+      final decryptedContent = await localEventSigner.decryptNip44(
+        ciphertext: event.content,
+        senderPubKey: event.pubKey,
+      );
+
+      final response = jsonDecode(decryptedContent!);
+
+      if (response["result"] == secret) {
+        result = BunkerConnection(
+          privateKey: localEventSigner.privateKey!,
+          remotePubkey: event.pubKey,
+          relays: relays,
+        );
+        break;
+      }
+    }
+    await _requests.closeSubscription(subscription.requestId);
+    return result;
+  }
+
+  int someTimeAgo({Duration duration = const Duration(minutes: 5)}) {
+    return (DateTime.now().millisecondsSinceEpoch ~/ 1000) - duration.inSeconds;
+  }
+
+  /// Creates a simple signer that delegates to this bunker instance
+  Nip46EventSigner createSigner(BunkerConnection connection,
+      {Function(String)? authCallback}) {
+    return Nip46EventSigner(
+      connection: connection,
+      requests: _requests,
+      broadcast: _broadcast,
+      authCallback: authCallback,
+    );
+  }
+}

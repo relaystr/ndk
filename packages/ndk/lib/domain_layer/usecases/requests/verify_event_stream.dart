@@ -1,3 +1,4 @@
+import 'package:rxdart/rxdart.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_verifier.dart';
@@ -5,25 +6,34 @@ import '../../repositories/event_verifier.dart';
 class VerifyEventStream {
   final Stream<Nip01Event> unverifiedStreamInput;
   final EventVerifier eventVerifier;
+  final int maxConcurrent;
+
   VerifyEventStream({
     required this.unverifiedStreamInput,
     required this.eventVerifier,
+    this.maxConcurrent = 100,
   });
 
   Stream<Nip01Event> call() {
     return unverifiedStreamInput
-        .asyncMap<Nip01Event>((data) async {
-          final valid = await eventVerifier.verify(data);
-          data.validSig = valid; // assign validity
+        .flatMap(
+          (event) => Stream.fromFuture(_verifyEvent(event)),
+          maxConcurrent: maxConcurrent,
+        )
+        .where((event) => event?.validSig == true)
+        .whereType<Nip01Event>() // filter nulls
+        .shareReplay(maxSize: 1);
+  }
 
-          if (!valid) {
-            Logger.log
-                .w('WARNING: Event with id ${data.id} has invalid signature');
-          }
+  Future<Nip01Event?> _verifyEvent(Nip01Event data) async {
+    final valid = await eventVerifier.verify(data);
+    data.validSig = valid;
 
-          return data;
-        })
-        .where((event) => event.validSig == true) // Filter out invalid events
-        .asBroadcastStream();
+    if (!valid) {
+      Logger.log.w('WARNING: Event with id ${data.id} has invalid signature');
+      return null;
+    }
+
+    return data;
   }
 }

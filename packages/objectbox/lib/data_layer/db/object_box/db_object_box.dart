@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk_objectbox/data_layer/db/object_box/schema/db_nip_05.dart';
 
 import '../../../objectbox.g.dart';
 import 'db_init_object_box.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
+import 'schema/db_nip_05.dart';
 import 'schema/db_user_relay_list.dart';
 
 class DbObjectBox implements CacheManager {
@@ -72,10 +72,11 @@ class DbObjectBox implements CacheManager {
     String? pTag,
     int? since,
     int? until,
+    int? limit,
   }) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
-    var query;
+    QueryBuilder<DbNip01Event> query;
 
     if (pubKeys != null && pubKeys.isNotEmpty) {
       query = kinds != null && kinds.isNotEmpty
@@ -88,9 +89,20 @@ class DbObjectBox implements CacheManager {
     } else {
       throw Exception("cannot query without either kinds or pubKeys");
     }
+
     query = query.order(DbNip01Event_.createdAt, flags: Order.descending);
 
-    List<DbNip01Event> foundDb = query.build().find();
+    final Query<DbNip01Event> dbQuery;
+
+    // apply limit
+    if (limit != null && limit > 0) {
+      dbQuery = query.build()..limit = limit;
+    } else {
+      dbQuery = query.build();
+    }
+
+    // Otherwise, fetch more than needed and filter
+    List<DbNip01Event> foundDb = dbQuery.find();
 
     final foundValid = foundDb.where((event) {
       if (pTag != null && !event.pTags.contains(pTag)) {
@@ -108,7 +120,12 @@ class DbObjectBox implements CacheManager {
       return true;
     }).toList();
 
-    return foundValid.map((dbEvent) => dbEvent.toNdk()).toList();
+    // Apply limit after filtering
+    final limitedResults = limit != null && limit > 0
+        ? foundValid.take(limit).toList()
+        : foundValid;
+
+    return limitedResults.map((dbEvent) => dbEvent.toNdk()).toList();
   }
 
   @override
@@ -402,6 +419,7 @@ class DbObjectBox implements CacheManager {
   @override
   Future<void> saveRelaySet(RelaySet relaySet) async {
     // No operation for unimplemented method
+    throw UnimplementedError('saveRelaySet is not implemented in DbObjectBox');
   }
 
   @override

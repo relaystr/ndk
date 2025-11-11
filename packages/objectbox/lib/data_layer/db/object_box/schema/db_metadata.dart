@@ -87,7 +87,8 @@ class DbMetadata {
     data['name'] = name;
     data['display_name'] = displayName;
     data['splitNameWords'] = name?.trim().toLowerCase().split(" ");
-    data['splitDisplayNameWords'] = displayName?.trim().toLowerCase().split(" ");
+    data['splitDisplayNameWords'] =
+        displayName?.trim().toLowerCase().split(" ");
     data['picture'] = picture;
     data['banner'] = banner;
     data['website'] = website;
