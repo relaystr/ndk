@@ -236,5 +236,119 @@ void main() async {
               .getSetByName(name: 'test', kind: Nip51List.kRelaySet),
           throwsException);
     });
+
+    test('addElementToList creates new list when none exists', () async {
+      ndk.accounts.loginExternalSigner(signer: signer0);
+
+      // Use a kind that doesn't exist
+      const int nonExistentKind =
+          30078; // Generic list kind that wasn't initialized
+
+      final list = await ndk.lists.addElementToList(
+        kind: nonExistentKind,
+        tag: Nip51List.kPubkey,
+        value: 'newPubkey123',
+      );
+
+      expect(list, isNotNull);
+      expect(list.kind, nonExistentKind);
+      expect(list.pubKey, key0.publicKey);
+      expect(list.elements.length, 1);
+      expect(list.elements.first.value, 'newPubkey123');
+      expect(list.elements.first.tag, Nip51List.kPubkey);
+    });
+
+    test('removeElementFromList creates empty list when none exists', () async {
+      ndk.accounts.loginExternalSigner(signer: signer0);
+
+      // Use a kind that doesn't exist
+      const int nonExistentKind = 30079;
+
+      final list = await ndk.lists.removeElementFromList(
+        kind: nonExistentKind,
+        tag: Nip51List.kPubkey,
+        value: 'somePubkey',
+      );
+
+      expect(list, isNotNull);
+      expect(list!.kind, nonExistentKind);
+      expect(list.pubKey, key0.publicKey);
+      expect(list.elements.length, 0);
+    });
+
+    test('removeElementFromSetcreates empty list when none exists', () async {
+      ndk.accounts.loginExternalSigner(signer: signer0);
+
+      // Use a kind that doesn't exist
+
+      final list = await ndk.lists.removeElementFromSet(
+        name: 'nonExistentSet00',
+        kind: Nip51List.kRelaySet,
+        tag: Nip51List.kPubkey,
+        value: 'somePubkey',
+      );
+
+      expect(list, isNotNull);
+      expect(list!.pubKey, key0.publicKey);
+      expect(list.elements.length, 0);
+    });
+
+    test('getSetByName returns most recent set when multiple exist', () async {
+      ndk.accounts.loginExternalSigner(signer: signer1);
+
+      const setName = "test-set-with-multiple-versions";
+
+      final oldSet = Nip51Set(
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: setName,
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 -
+            100, // 100 seconds ago
+        elements: [
+          Nip51ListElement(
+            tag: Nip51List.kRelay,
+            value: "wss://old.com",
+            private: false,
+          )
+        ],
+      );
+
+      final newSet = Nip51Set(
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: setName,
+        createdAt:
+            DateTime.now().millisecondsSinceEpoch ~/ 1000, // current time
+        elements: [
+          Nip51ListElement(
+            tag: Nip51List.kRelay,
+            value: "wss://new.com",
+            private: false,
+          )
+        ],
+      );
+
+      // Convert to events and save to cache
+      final oldEvent = await oldSet.toEvent(signer1);
+      final newEvent = await newSet.toEvent(signer1);
+
+      await signer1.sign(oldEvent);
+      await signer1.sign(newEvent);
+
+      // Save both to cache
+      await ndk.config.cache.saveEvent(oldEvent);
+      await ndk.config.cache.saveEvent(newEvent);
+
+      // Fetch the set - should return the newer one
+      final fetchedSet = await ndk.lists.getSetByName(
+        name: setName,
+        kind: Nip51List.kRelaySet,
+      );
+
+      expect(fetchedSet, isNotNull);
+      expect(fetchedSet!.name, setName);
+      expect(fetchedSet.createdAt, newSet.createdAt);
+      expect(fetchedSet.elements.first.value, "wss://new.com");
+    });
   });
 }
