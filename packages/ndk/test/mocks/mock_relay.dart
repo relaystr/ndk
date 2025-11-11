@@ -140,6 +140,14 @@ class MockRelay {
               final eventIdsToDelete = newEvent.getTags("e");
               for (final idToDelete in eventIdsToDelete) {
                 _storedEvents.removeWhere((e) => idToDelete == e.id);
+                // remove from textNotes map
+                if (textNotes != null) {
+                  textNotes.removeWhere((key, event) => event.id == idToDelete);
+                }
+                //remove from contact lists and metadata
+                _contactLists
+                    .removeWhere((key, event) => event.id == idToDelete);
+                _metadatas.removeWhere((key, event) => event.id == idToDelete);
               }
             } else if (newEvent.kind == kNip46Kind) {
               // Handle NIP-46 remote signer request
