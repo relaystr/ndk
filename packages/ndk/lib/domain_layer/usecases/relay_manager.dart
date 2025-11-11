@@ -397,7 +397,7 @@ class RelayManager<T> {
       if (eventJson.length >= 2 && eventJson[2] == false) {
         Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
       }
-      if (!globalState.inFlightBroadcasts[eventJson[1]]!.networkController.isClosed) {
+      if (globalState.inFlightBroadcasts[eventJson[1]]!=null && !globalState.inFlightBroadcasts[eventJson[1]]!.networkController.isClosed) {
         globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
           RelayBroadcastResponse(
             relayUrl: relayConnectivity.url,
