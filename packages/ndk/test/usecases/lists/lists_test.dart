@@ -229,6 +229,23 @@ void main() async {
           throwsException);
     });
 
+    test('removeElementFromSet throws without signer', () async {
+      expect(
+          () async => await ndk.lists.removeElementFromSet(
+              name: 'test-set',
+              value: 'wss://test.com',
+              tag: Nip51List.kRelay,
+              kind: Nip51List.kRelaySet),
+          throwsException);
+    });
+
+    test('deleteSet throws without signer', () async {
+      expect(
+          () async => await ndk.lists
+              .deleteSet(name: 'test-set', kind: Nip51List.kRelaySet),
+          throwsException);
+    });
+
     test('getSetByName throws when not logged in and no custom signer',
         () async {
       expect(
