@@ -503,7 +503,7 @@ class RelayManager<T> {
         _checkNetworkClose(state, relayConnectivity);
         _logActiveRequests();
       }
-    }400
+    }
     return;
   }
 
