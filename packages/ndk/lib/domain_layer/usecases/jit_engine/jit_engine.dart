@@ -70,7 +70,8 @@ class JitEngine with Logger implements NetworkEngine {
 
       if (requestState.request.explicitRelays != null &&
           requestState.request.explicitRelays!.isNotEmpty) {
-        final cleanedExplicitRelays = cleanRelayUrls(requestState.request.explicitRelays!.toList());
+        final cleanedExplicitRelays =
+            cleanRelayUrls(requestState.request.explicitRelays!.toList());
         RelayJitRequestSpecificStrategy.handleRequest(
           relayManager: relayManagerLight,
           requestState: requestState,

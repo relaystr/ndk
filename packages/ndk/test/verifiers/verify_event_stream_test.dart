@@ -225,21 +225,25 @@ void main() {
 
       await Future.delayed(Duration(milliseconds: 50));
 
-      expect(resultList.length, equals(1), reason: 'First event should be processed immediately');
+      expect(resultList.length, equals(1),
+          reason: 'First event should be processed immediately');
       expect(resultList[0].content, equals('content1'));
 
       controller.add(createMockEvent('2'));
 
       await Future.delayed(Duration(milliseconds: 50));
 
-      expect(resultList.length, equals(2), reason: 'Second event should be processed immediately');
+      expect(resultList.length, equals(2),
+          reason: 'Second event should be processed immediately');
       expect(resultList[1].content, equals('content2'));
 
       await subscription.cancel();
       await controller.close();
     });
 
-    test('should process events from non-closing stream with fewer events than maxConcurrent', () async {
+    test(
+        'should process events from non-closing stream with fewer events than maxConcurrent',
+        () async {
       final controller = StreamController<Nip01Event>();
       final resultList = <Nip01Event>[];
 
@@ -259,7 +263,9 @@ void main() {
 
       await Future.delayed(Duration(milliseconds: 100));
 
-      expect(resultList.length, equals(3), reason: 'All events should be processed even when count < maxConcurrent');
+      expect(resultList.length, equals(3),
+          reason:
+              'All events should be processed even when count < maxConcurrent');
 
       await subscription.cancel();
       await controller.close();
@@ -286,8 +292,10 @@ void main() {
 
       await Future.delayed(Duration(milliseconds: 50));
 
-      expect(resultList.length, equals(1), reason: 'Fast event should complete first');
-      expect(resultList[0].content, equals('contentfast'), reason: 'Fast event should be yielded before slow event');
+      expect(resultList.length, equals(1),
+          reason: 'Fast event should complete first');
+      expect(resultList[0].content, equals('contentfast'),
+          reason: 'Fast event should be yielded before slow event');
 
       await Future.delayed(Duration(milliseconds: 80));
 
@@ -298,7 +306,8 @@ void main() {
       await controller.close();
     });
 
-    test('should handle continuous stream of events without blocking', () async {
+    test('should handle continuous stream of events without blocking',
+        () async {
       final controller = StreamController<Nip01Event>();
       final resultList = <Nip01Event>[];
 
@@ -319,19 +328,23 @@ void main() {
 
         if (i >= 2) {
           expect(resultList.length, greaterThan(0),
-              reason: 'Events should be processed continuously, not waiting for stream end');
+              reason:
+                  'Events should be processed continuously, not waiting for stream end');
         }
       }
 
       await Future.delayed(Duration(milliseconds: 100));
 
-      expect(resultList.length, equals(10), reason: 'All events should be processed from continuous stream');
+      expect(resultList.length, equals(10),
+          reason: 'All events should be processed from continuous stream');
 
       await subscription.cancel();
       await controller.close();
     });
 
-    test('should not deadlock when maxConcurrent is reached with non-closing stream', () async {
+    test(
+        'should not deadlock when maxConcurrent is reached with non-closing stream',
+        () async {
       final controller = StreamController<Nip01Event>();
       final resultList = <Nip01Event>[];
 
@@ -352,13 +365,15 @@ void main() {
 
       await Future.delayed(Duration(milliseconds: 200));
 
-      expect(resultList.length, equals(4), reason: 'Should process all events without deadlocking');
+      expect(resultList.length, equals(4),
+          reason: 'Should process all events without deadlocking');
 
       await subscription.cancel();
       await controller.close();
     });
 
-    test('should yield events immediately upon verification completion', () async {
+    test('should yield events immediately upon verification completion',
+        () async {
       final controller = StreamController<Nip01Event>();
       final resultTimes = <DateTime>[];
 
@@ -386,7 +401,9 @@ void main() {
 
       for (int i = 0; i < resultTimes.length; i++) {
         final timeDiff = resultTimes[i].difference(startTime).inMilliseconds;
-        expect(timeDiff, lessThan(200), reason: 'Event $i should be processed within 200ms, was ${timeDiff}ms');
+        expect(timeDiff, lessThan(200),
+            reason:
+                'Event $i should be processed within 200ms, was ${timeDiff}ms');
       }
 
       await subscription.cancel();

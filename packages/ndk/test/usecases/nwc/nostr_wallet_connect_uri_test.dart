@@ -31,7 +31,9 @@ void main() {
           ]));
       expect(nostrUri.secret, equals('secret123'));
     });
-    test('should parse a connection URI with multiple individual relay parameters', () {
+    test(
+        'should parse a connection URI with multiple individual relay parameters',
+        () {
       final uri =
           'nostr+walletconnect://pubkey123?relay=wss://relay1.example.com&relay=wss://relay2.example.com&relay=wss://relay3.example.com&secret=secret123';
       final nostrUri = NostrWalletConnectUri.parseConnectionUri(uri);
@@ -75,7 +77,8 @@ void main() {
     });
 
     test('should throw an exception for missing required fields', () {
-      final uri = 'nostr+walletconnect://pubkey123?relays=wss://relay.example.com';
+      final uri =
+          'nostr+walletconnect://pubkey123?relays=wss://relay.example.com';
 
       expect(
         () => NostrWalletConnectUri.parseConnectionUri(uri),
