@@ -1,3 +1,7 @@
+## 0.4.2-dev.15
+
+ - Update a dependency to the latest release.
+
 ## 0.4.2-dev.14
 
  - Update a dependency to the latest release.
