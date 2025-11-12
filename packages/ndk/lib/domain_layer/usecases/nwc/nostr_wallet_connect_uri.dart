@@ -126,11 +126,11 @@ class NostrWalletConnectUri extends Equatable {
     );
   }
 
-  static String? _extractPubkey(String uri) {
-    final RegExp regex = RegExp(r'nostr\+walletconnect:\/\/([^?]+)');
-    final Match? match = regex.firstMatch(uri);
-    return match?.group(1);
-  }
+  // static String? _extractPubkey(String uri) {
+  //   final RegExp regex = RegExp(r'nostr\+walletconnect:\/\/([^?]+)');
+  //   final Match? match = regex.firstMatch(uri);
+  //   return match?.group(1);
+  // }
 
   /// Creates a NWC URI string from the components
   /// Supports both single and multiple relays
