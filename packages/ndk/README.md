@@ -55,6 +55,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - **Domain verification** (NIP-05): Verify and cache Nostr addresses
 - **File management**: Upload, download, and delete files using Blossom servers
 - **Connectivity**: Get notified about connection issues
+- **Proof of Work** (NIP-13): Create and verify PoW events
 
 ### Developer Experience
 
