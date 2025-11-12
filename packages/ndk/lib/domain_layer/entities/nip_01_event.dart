@@ -141,11 +141,6 @@ class Nip01Event {
     return digest.toString();
   }
 
-  /// Recalculate the event ID based on the current event data.
-  void recalculateId() {
-    id = _calculateId(pubKey, createdAt, kind, tags, content);
-  }
-
   /// return first `e` tag found
   String? getEId() {
     return getFirstTag("e");
@@ -228,19 +223,16 @@ class Nip01Event {
     String? sig,
     List<String>? sources,
   }) {
-    final copy = Nip01Event._(
-      id,
-      pubKey ?? this.pubKey,
-      createdAt ?? this.createdAt,
-      kind ?? this.kind,
-      tags ?? this.tags,
-      content ?? this.content,
-      sig ?? this.sig,
-    )..sources = sources ?? this.sources;
-    final newId = _calculateId(
-        copy.pubKey, copy.createdAt, copy.kind, copy.tags, copy.content);
-    copy.id = newId;
-    return copy;
+    final event = Nip01Event(
+      pubKey: pubKey ?? this.pubKey,
+      createdAt: createdAt ?? this.createdAt,
+      kind: kind ?? this.kind,
+      tags: tags ?? this.tags,
+      content: content ?? this.content,
+    );
+    event.sig = sig ?? this.sig;
+    event.sources = sources ?? this.sources;
+    return event;
   }
 
   /// Mine this event with proof of work

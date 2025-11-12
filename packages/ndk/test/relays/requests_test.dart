@@ -283,6 +283,29 @@ void main() async {
       expect(originalFilterSub.authors!.length, equals(1));
     });
   });
+
+  test('Response with FormatException', () async {
+    final mockRelay = MockRelay(
+      name: 'test-relay-format-exception',
+      explicitPort: 6062,
+      allwaysSendBadJson: true,
+    );
+    await mockRelay.startServer();
+
+    final ndk = Ndk.defaultConfig();
+
+    final query = ndk.requests.query(
+      filters: [
+        Filter(kinds: [1], limit: 1),
+      ],
+      explicitRelays: [mockRelay.url],
+    );
+
+    final events = await query.future;
+    expect(events, isEmpty);
+
+    await mockRelay.stopServer();
+  });
 }
 
 class MockCacheRead extends CacheRead {
