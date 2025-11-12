@@ -310,9 +310,16 @@ class Nip51Set extends Nip51List {
     }
 
     tags.addAll(event.tags);
-    event.tags = castToListOfListOfString(tags);
-    event.recalculateId();
-    return event;
+
+    final copy = event.copyWith(
+      pubKey: event.pubKey,
+      kind: event.kind,
+      tags: castToListOfListOfString(tags),
+      content: event.content,
+      createdAt: event.createdAt,
+    );
+
+    return copy;
   }
 
   void parseSetTags(List tags) {
