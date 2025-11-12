@@ -223,15 +223,16 @@ class Nip01Event {
     String? sig,
     List<String>? sources,
   }) {
-    return Nip01Event._(
-      id,
-      pubKey ?? this.pubKey,
-      createdAt ?? this.createdAt,
-      kind ?? this.kind,
-      tags ?? this.tags,
-      content ?? this.content,
-      sig ?? this.sig,
-    )..sources = sources ?? this.sources;
+    final event = Nip01Event(
+      pubKey: pubKey ?? this.pubKey,
+      createdAt: createdAt ?? this.createdAt,
+      kind: kind ?? this.kind,
+      tags: tags ?? this.tags,
+      content: content ?? this.content,
+    );
+    event.sig = sig ?? this.sig;
+    event.sources = sources ?? this.sources;
+    return event;
   }
 
   /// Mine this event with proof of work
