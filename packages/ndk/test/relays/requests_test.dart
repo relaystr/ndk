@@ -131,7 +131,8 @@ void main() async {
       await relay1.stopServer();
     });
 
-    test('Subscription processes events immediately without stream closing', () async {
+    test('Subscription processes events immediately without stream closing',
+        () async {
       // This test would FAIL with the previous VerifyEventStream implementation
       // because events would remain stuck in buffer until stream closes
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
@@ -143,9 +144,11 @@ void main() async {
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url],
       ));
-      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
-      final filter = Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
+      final filter =
+          Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
 
       // Use subscription instead of query - this creates a long-lived stream
       final subscription = ndk.requests.subscription(filters: [filter]);
@@ -160,7 +163,8 @@ void main() async {
       await Future.delayed(Duration(milliseconds: 200));
 
       expect(receivedEvents.length, equals(1),
-          reason: 'Subscription should process events immediately without waiting for stream to close');
+          reason:
+              'Subscription should process events immediately without waiting for stream to close');
       expect(receivedEvents[0].content, contains('key1'));
 
       // Clean up
@@ -171,7 +175,8 @@ void main() async {
       await relay1.stopServer();
     });
 
-    test('Subscription handles continuous events from non-closing stream', () async {
+    test('Subscription handles continuous events from non-closing stream',
+        () async {
       // This test simulates a real-world scenario where a subscription
       // receives events continuously without the stream ever closing
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
@@ -191,10 +196,17 @@ void main() async {
         engine: NdkEngine.RELAY_SETS,
         bootstrapRelays: [relay1.url],
       ));
-      ndk.accounts.loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
-      final filter = Filter(
-          kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey, key2.publicKey, key3.publicKey, key4.publicKey]);
+      final filter = Filter(kinds: [
+        Nip01Event.kTextNodeKind
+      ], authors: [
+        key1.publicKey,
+        key2.publicKey,
+        key3.publicKey,
+        key4.publicKey
+      ]);
 
       final subscription = ndk.requests.subscription(filters: [filter]);
 
@@ -208,11 +220,14 @@ void main() async {
       // because they would get stuck in the verification buffer
       await Future.delayed(Duration(milliseconds: 300));
 
-      expect(receivedEvents.length, equals(4), reason: 'Subscription should process all matching events immediately');
+      expect(receivedEvents.length, equals(4),
+          reason:
+              'Subscription should process all matching events immediately');
 
       // Verify we got events from different authors (showing parallel processing worked)
       final uniqueAuthors = receivedEvents.map((e) => e.pubKey).toSet();
-      expect(uniqueAuthors.length, greaterThan(1), reason: 'Should receive events from multiple authors');
+      expect(uniqueAuthors.length, greaterThan(1),
+          reason: 'Should receive events from multiple authors');
 
       // Clean up
       await streamSubscription.cancel();

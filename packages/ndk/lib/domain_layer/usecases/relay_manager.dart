@@ -397,15 +397,19 @@ class RelayManager<T> {
       if (eventJson.length >= 2 && eventJson[2] == false) {
         Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
       }
-      globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
-        RelayBroadcastResponse(
-          relayUrl: relayConnectivity.url,
-          okReceived: true,
-          broadcastSuccessful: eventJson[2],
-          msg: eventJson[3] ?? '',
-        ),
-      );
-
+      if (globalState.inFlightBroadcasts[eventJson[1]]!=null && !globalState.inFlightBroadcasts[eventJson[1]]!.networkController.isClosed) {
+        globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
+          RelayBroadcastResponse(
+            relayUrl: relayConnectivity.url,
+            okReceived: true,
+            broadcastSuccessful: eventJson[2],
+            msg: eventJson[3] ?? '',
+          ),
+        );
+      } else {
+        Logger.log.w(
+            "Received OK for broadcast ${eventJson[1]} but the network controller is already closed");
+      }
       return;
     }
     if (eventJson[0] == 'NOTICE') {
