@@ -380,7 +380,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.6.0-dev.8"
+    version: "0.6.0-dev.10"
   node_preamble:
     dependency: transitive
     description:

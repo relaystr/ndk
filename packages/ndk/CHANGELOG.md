@@ -1,3 +1,15 @@
+## 0.6.0-dev.10
+
+ - **FIX**: add id recalculation in Nip01Event.copyWith.
+ - **FIX**: make the test "validate event: greater POW" predictable.
+ - **FIX**: wrap json.decode with a try catch block.
+
+## 0.6.0-dev.9
+
+ - **FIX**: add id recalculation in Nip01Event.copyWith.
+ - **FIX**: make the test "validate event: greater POW" predictable.
+ - **FIX**: wrap json.decode with a try catch block.
+
 ## 0.6.0-dev.8
 
  - **FIX**: add test and call clean url during broadcast.

@@ -3,6 +3,86 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-11-12
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.0-dev.10`](#ndk---v060-dev10)
+ - [`ndk_amber` - `v0.3.3-dev.13`](#ndk_amber---v033-dev13)
+ - [`ndk_isar` - `v0.2.3-dev.13`](#ndk_isar---v023-dev13)
+ - [`ndk_objectbox` - `v0.2.7-dev.15`](#ndk_objectbox---v027-dev15)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.15`](#ndk_rust_verifier---v042-dev15)
+ - [`nip07_event_signer` - `v1.0.4-dev.13`](#nip07_event_signer---v104-dev13)
+ - [`sembast_cache_manager` - `v1.0.5-dev.13`](#sembast_cache_manager---v105-dev13)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.13`
+ - `ndk_isar` - `v0.2.3-dev.13`
+ - `ndk_objectbox` - `v0.2.7-dev.15`
+ - `ndk_rust_verifier` - `v0.4.2-dev.15`
+ - `nip07_event_signer` - `v1.0.4-dev.13`
+ - `sembast_cache_manager` - `v1.0.5-dev.13`
+
+---
+
+#### `ndk` - `v0.6.0-dev.10`
+
+ - **FIX**: add id recalculation in Nip01Event.copyWith.
+ - **FIX**: make the test "validate event: greater POW" predictable.
+ - **FIX**: wrap json.decode with a try catch block.
+
+
+## 2025-11-12
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.0-dev.9`](#ndk---v060-dev9)
+ - [`ndk_amber` - `v0.3.3-dev.12`](#ndk_amber---v033-dev12)
+ - [`ndk_isar` - `v0.2.3-dev.12`](#ndk_isar---v023-dev12)
+ - [`ndk_objectbox` - `v0.2.7-dev.14`](#ndk_objectbox---v027-dev14)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.14`](#ndk_rust_verifier---v042-dev14)
+ - [`nip07_event_signer` - `v1.0.4-dev.12`](#nip07_event_signer---v104-dev12)
+ - [`sembast_cache_manager` - `v1.0.5-dev.12`](#sembast_cache_manager---v105-dev12)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.12`
+ - `ndk_isar` - `v0.2.3-dev.12`
+ - `ndk_objectbox` - `v0.2.7-dev.14`
+ - `ndk_rust_verifier` - `v0.4.2-dev.14`
+ - `nip07_event_signer` - `v1.0.4-dev.12`
+ - `sembast_cache_manager` - `v1.0.5-dev.12`
+
+---
+
+#### `ndk` - `v0.6.0-dev.9`
+
+ - **FIX**: add id recalculation in Nip01Event.copyWith.
+ - **FIX**: make the test "validate event: greater POW" predictable.
+ - **FIX**: wrap json.decode with a try catch block.
+
+
 ## 2025-11-05
 
 ### Changes
