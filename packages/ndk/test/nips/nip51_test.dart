@@ -96,5 +96,33 @@ void main() {
 
       expect(relayList.privateRelays, from.privateRelays);
     });
+
+    test('toEvent, fromEvent set metadata', () async {
+      KeyPair key1 = Bip340.generatePrivateKey();
+      Bip340EventSigner signer = Bip340EventSigner(
+        privateKey: key1.privateKey,
+        publicKey: key1.publicKey,
+      );
+      final nip51Set = Nip51Set(
+        name: "metdataSet",
+        title: "My Set Title",
+        description: "This is a description",
+        image: "https://example.com/image.png",
+        pubKey: 'pubkeyUser1',
+        kind: Nip51List.kRelaySet,
+        createdAt: Helpers.now,
+        elements: [],
+      );
+      expect(nip51Set.title, "My Set Title");
+      expect(nip51Set.description, "This is a description");
+      expect(nip51Set.image, "https://example.com/image.png");
+
+      Nip01Event event = await nip51Set.toEvent(signer);
+      Nip51Set? from = await Nip51Set.fromEvent(event, signer);
+      expect(from!.name, "metdataSet");
+      expect(from.title, "My Set Title");
+      expect(from.description, "This is a description");
+      expect(from.image, "https://example.com/image.png");
+    });
   });
 }
