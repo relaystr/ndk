@@ -13,20 +13,20 @@ environment:
 
 dependencies:
   amberflutter: ^0.0.9
-  crypto: ^3.0.6
+  crypto: ">=3.0.0 <4.0.0"
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  flutter_secure_storage: ^9.2.4
-  http: ^1.5.0
+  flutter_secure_storage: ">=8.0.0 <11.0.0"
+  http: ">=1.0.0 <2.0.0"
   ndk: ^0.5.1
   ndk_amber: ^0.3.2
   nip07_event_signer: ^1.0.2
   nip19: ^0.2.0
-  pretty_qr_code: ^3.5.0
-  toastification: ^3.0.3
-  url_launcher: ^6.3.2
+  pretty_qr_code: ">=3.0.0 <4.0.0"
+  toastification: ">=3.0.0 <4.0.0"
+  url_launcher: ">=6.0.0 <7.0.0"
 
 dev_dependencies:
   flutter_test:
