@@ -1,3 +1,7 @@
+## 0.6.0-dev.12
+
+ - **FIX**: Use 0x100000000 instead of 1 << 32 for web compatibility.
+
 ## 0.6.0-dev.11
 
  - **FIX**: Use 0x100000000 instead of 1 << 32 for web compatibility.
