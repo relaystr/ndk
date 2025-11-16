@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:test/test.dart';
+import 'package:bech32/bech32.dart';
+import 'package:hex/hex.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart';
 
 void main() {
@@ -169,6 +172,292 @@ void main() {
       final decoded = Nip19.decodeNprofile(nprofile);
       expect(decoded.pubkey, pubkey);
       expect(decoded.relays, relays);
+    });
+
+    test('Nip19.encodeNoteId should encode note ID correctly', () {
+      const noteId =
+          'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43';
+
+      final encoded = Nip19.encodeNoteId(noteId);
+
+      expect(encoded.startsWith('note1'), true);
+
+      // Verify we can decode it back
+      final decoded = Nip19.decode(encoded);
+      expect(decoded, noteId);
+    });
+
+    group('toString methods', () {
+      test('Naddr.toString should return formatted string', () {
+        final naddr = Naddr(
+          identifier: 'test-id',
+          pubkey:
+              '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+          kind: 30023,
+          relays: ['wss://relay.example.com'],
+        );
+
+        final str = naddr.toString();
+        expect(str.contains('test-id'), true);
+        expect(
+            str.contains(
+                '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c'),
+            true);
+        expect(str.contains('30023'), true);
+        expect(str.contains('wss://relay.example.com'), true);
+      });
+
+      test('Nevent.toString should return formatted string', () {
+        final nevent = Nevent(
+          eventId:
+              'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
+          author:
+              '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa',
+          kind: 1,
+          relays: ['wss://nos.lol/'],
+        );
+
+        final str = nevent.toString();
+        expect(
+            str.contains(
+                'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43'),
+            true);
+        expect(
+            str.contains(
+                '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa'),
+            true);
+        expect(str.contains('1'), true);
+        expect(str.contains('wss://nos.lol/'), true);
+      });
+
+      test('Nprofile.toString should return formatted string', () {
+        final nprofile = Nprofile(
+          pubkey:
+              '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+          relays: ['wss://relay.example.com'],
+        );
+
+        final str = nprofile.toString();
+        expect(
+            str.contains(
+                '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177'),
+            true);
+        expect(str.contains('wss://relay.example.com'), true);
+      });
+    });
+
+    group('validation errors', () {
+      test('encodeNevent should throw on invalid event ID length', () {
+        // Use valid hex but wrong length (30 bytes instead of 32)
+        expect(
+          () => Nip19.encodeNevent(
+              eventId:
+                  'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d516'),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('encodeNevent should throw on relay URL too long', () {
+        final longRelay = 'wss://${'a' * 300}.com';
+        expect(
+          () => Nip19.encodeNevent(
+            eventId:
+                'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
+            relays: [longRelay],
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('encodeNevent should throw on invalid author length', () {
+        // Use valid hex but wrong length (30 bytes instead of 32)
+        expect(
+          () => Nip19.encodeNevent(
+            eventId:
+                'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43',
+            author:
+                '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29',
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('encodeNaddr should throw on invalid pubkey length', () {
+        // Use valid hex but wrong length (30 bytes instead of 32)
+        expect(
+          () => Nip19.encodeNaddr(
+            identifier: 'test',
+            pubkey:
+                '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85',
+            kind: 30023,
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('encodeNaddr should throw on relay URL too long', () {
+        final longRelay = 'wss://${'a' * 300}.com';
+        expect(
+          () => Nip19.encodeNaddr(
+            identifier: 'test',
+            pubkey:
+                '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
+            kind: 30023,
+            relays: [longRelay],
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('encodeNprofile should throw on invalid pubkey length', () {
+        // Use valid hex but wrong length (30 bytes instead of 32)
+        expect(
+          () => Nip19.encodeNprofile(
+              pubkey:
+                  '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f'),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('encodeNprofile should throw on relay URL too long', () {
+        final longRelay = 'wss://${'a' * 300}.com';
+        expect(
+          () => Nip19.encodeNprofile(
+            pubkey:
+                '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177',
+            relays: [longRelay],
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('decodeNaddr should throw on missing identifier', () {
+        // Create a malformed naddr without identifier (type 0)
+        // This would require crafting invalid TLV data, so we test the error path
+        expect(
+          () => Nip19.decodeNaddr(
+              'naddr1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq'),
+          throwsException,
+        );
+      });
+
+      test('decodeNprofile should throw on invalid HRP', () {
+        // Try to decode an nevent as nprofile
+        const neventBech32 =
+            "nevent1qqs9z324hvhh98z9q5yrdlekh4cx446jeazxwd2d2hkehs48v72prts3w73r6";
+        expect(
+          () => Nip19.decodeNprofile(neventBech32),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('decodeNevent should throw on invalid HRP', () {
+        // Try to decode an nprofile as nevent
+        const nprofileBech32 =
+            "nprofile1qqsrq7p2sv3m0jvtzuk952hhyp4ms2puv4d7dhwwzyfnvydq8403zacdqda04";
+        expect(
+          () => Nip19.decodeNevent(nprofileBech32),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('decodeNaddr should throw on invalid HRP', () {
+        // Try to decode an nevent as naddr
+        const neventBech32 =
+            "nevent1qqs9z324hvhh98z9q5yrdlekh4cx446jeazxwd2d2hkehs48v72prts3w73r6";
+        expect(
+          () => Nip19.decodeNaddr(neventBech32),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+    });
+
+    group('decode validation - missing required fields', () {
+      test('decodeNprofile should throw on missing pubkey field', () {
+        // Create a valid nprofile with only a relay (type 1), no pubkey (type 0)
+        final relayUrl = 'wss://relay.com';
+        final tlvData = <int>[
+          1, relayUrl.length, // type 1, length
+          ...utf8.encode(relayUrl), // relay URL
+        ];
+        final bech32Data = Nip19.convertBits(tlvData, 8, 5, true);
+        final encoder = Bech32Encoder();
+        final nprofile = encoder.convert(
+          Bech32('nprofile', bech32Data),
+          'nprofile'.length + bech32Data.length + 10,
+        );
+
+        expect(
+          () => Nip19.decodeNprofile(nprofile),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('decodeNevent should throw on missing event ID field', () {
+        // Create a valid nevent with only a relay (type 1), no event ID (type 0)
+        final relayUrl = 'wss://relay.com';
+        final tlvData = <int>[
+          1, relayUrl.length, // type 1, length
+          ...utf8.encode(relayUrl), // relay URL
+        ];
+        final bech32Data = Nip19.convertBits(tlvData, 8, 5, true);
+        final encoder = Bech32Encoder();
+        final nevent = encoder.convert(
+          Bech32('nevent', bech32Data),
+          'nevent'.length + bech32Data.length + 10,
+        );
+
+        expect(
+          () => Nip19.decodeNevent(nevent),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('decodeNaddr should throw on missing pubkey field', () {
+        // Create naddr with identifier (type 0) and kind (type 3) but no pubkey (type 2)
+        final identifier = 'test';
+        final tlvData = <int>[
+          0, identifier.length, // type 0 (identifier), length
+          ...utf8.encode(identifier), // identifier value
+          3, 4, // type 3 (kind), length 4
+          0, 0, 0x75, 0x17, // kind 30023 in big-endian
+        ];
+        final bech32Data = Nip19.convertBits(tlvData, 8, 5, true);
+        final encoder = Bech32Encoder();
+        final naddr = encoder.convert(
+          Bech32('naddr', bech32Data),
+          'naddr'.length + bech32Data.length + 10,
+        );
+
+        expect(
+          () => Nip19.decodeNaddr(naddr),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('decodeNaddr should throw on missing kind field', () {
+        // Create naddr with identifier and pubkey but no kind
+        final pubkeyBytes = HEX.decode(
+            '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c');
+        final identifier = 'test';
+        final tlvData = <int>[
+          0, identifier.length, // type 0 (identifier), length
+          ...utf8.encode(identifier), // identifier value
+          2, 32, // type 2 (pubkey), length 32
+          ...pubkeyBytes, // pubkey value
+        ];
+        final bech32Data = Nip19.convertBits(tlvData, 8, 5, true);
+        final encoder = Bech32Encoder();
+        final naddr = encoder.convert(
+          Bech32('naddr', bech32Data),
+          'naddr'.length + bech32Data.length + 10,
+        );
+
+        expect(
+          () => Nip19.decodeNaddr(naddr),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
     });
   });
 }
