@@ -332,12 +332,25 @@ void main() {
       });
 
       test('decodeNaddr should throw on missing identifier', () {
-        // Create a malformed naddr without identifier (type 0)
-        // This would require crafting invalid TLV data, so we test the error path
+        // Create naddr with pubkey (type 2) and kind (type 3) but NO identifier (type 0)
+        final pubkeyBytes = HEX.decode(
+            '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c');
+        final tlvData = <int>[
+          2, 32, // type 2 (pubkey), length 32
+          ...pubkeyBytes, // pubkey value
+          3, 4, // type 3 (kind), length 4
+          0, 0, 0x75, 0x17, // kind 30023 in big-endian
+        ];
+        final bech32Data = Nip19.convertBits(tlvData, 8, 5, true);
+        final encoder = Bech32Encoder();
+        final naddr = encoder.convert(
+          Bech32('naddr', bech32Data),
+          'naddr'.length + bech32Data.length + 10,
+        );
+
         expect(
-          () => Nip19.decodeNaddr(
-              'naddr1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq'),
-          throwsException,
+          () => Nip19.decodeNaddr(naddr),
+          throwsA(isA<ArgumentError>()),
         );
       });
 
