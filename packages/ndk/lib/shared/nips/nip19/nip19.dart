@@ -138,7 +138,7 @@ class Nip19 {
 
     // Type 1: relays (optional, can be multiple)
     if (relays != null) {
-      for (var relay in relays) {
+      for (final relay in relays) {
         final relayBytes = utf8.encode(relay);
         if (relayBytes.length > 255) {
           throw ArgumentError(
@@ -176,7 +176,7 @@ class Nip19 {
     }
 
     // Convert to bech32
-    var data = convertBits(tlvData, 8, 5, true);
+    final data = convertBits(tlvData, 8, 5, true);
     var encoder = Bech32Encoder();
     Bech32 input = Bech32(Hrps.kNevent, data);
     var encoded = encoder.convert(input, input.hrp.length + data.length + 10);
@@ -204,7 +204,7 @@ class Nip19 {
 
     // Type 1: relays (optional, can be multiple)
     if (relays != null) {
-      for (var relay in relays) {
+      for (final relay in relays) {
         final relayBytes = utf8.encode(relay);
         if (relayBytes.length > 255) {
           throw ArgumentError(
@@ -237,7 +237,7 @@ class Nip19 {
     tlvData.addAll(kindBytes); // value
 
     // Convert to bech32
-    var data = convertBits(tlvData, 8, 5, true);
+    final data = convertBits(tlvData, 8, 5, true);
     var encoder = Bech32Encoder();
     Bech32 input = Bech32(Hrps.kNaddr, data);
     var encoded = encoder.convert(input, input.hrp.length + data.length + 10);
@@ -264,7 +264,7 @@ class Nip19 {
 
     // Type 1: relays (optional, can be multiple)
     if (relays != null) {
-      for (var relay in relays) {
+      for (final relay in relays) {
         final relayBytes = utf8.encode(relay);
         if (relayBytes.length > 255) {
           throw ArgumentError(
@@ -277,7 +277,7 @@ class Nip19 {
     }
 
     // Convert to bech32
-    var data = convertBits(tlvData, 8, 5, true);
+    final data = convertBits(tlvData, 8, 5, true);
     var encoder = Bech32Encoder();
     Bech32 input = Bech32(Hrps.kNprofile, data);
     var encoded = encoder.convert(input, input.hrp.length + data.length + 10);
