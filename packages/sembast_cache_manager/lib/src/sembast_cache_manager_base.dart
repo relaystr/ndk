@@ -403,6 +403,12 @@ class SembastCacheManager extends CacheManager {
           final tagName = tagEntry.key;
           final tagValues = tagEntry.value;
           final eventTags = event.getTags(tagName);
+
+          if (tagValues.isEmpty &&
+              event.tags.where((e) => e[0] == tagName).isNotEmpty) {
+            return true;
+          }
+
           return tagValues.any(
             (value) => eventTags.contains(value.toLowerCase()),
           );
