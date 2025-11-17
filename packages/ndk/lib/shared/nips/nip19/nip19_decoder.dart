@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:bech32/bech32.dart';
 import 'package:collection/collection.dart';
-import 'package:hex/hex.dart';
+import 'package:convert/convert.dart';
 
 import '../../logger/logger.dart';
 import '../../../domain_layer/entities/naddr.dart';
@@ -27,12 +27,12 @@ class Nip19Decoder {
         final tlv = Nip19TLV.parseTLV(data);
         final special = tlv.firstWhereOrNull((t) => t.type == 0)?.value;
         if (special != null) {
-          return HEX.encode(special);
+          return hex.encode(special);
         } else {
           throw "Missing 'special' kind in TLV entity, cant decode to hex";
         }
       } else {
-        return HEX.encode(data);
+        return hex.encode(data);
       }
     } catch (e) {
       Logger.log.e("Nip19 decode error ${e.toString()}");
@@ -60,7 +60,7 @@ class Nip19Decoder {
       switch (t.type) {
         case 0: // pubkey (special)
           if (t.value.length == 32) {
-            pubkey = HEX.encode(t.value);
+            pubkey = hex.encode(t.value);
           }
           break;
         case 1: // relay
@@ -109,7 +109,7 @@ class Nip19Decoder {
       switch (t.type) {
         case 0: // event id (special)
           if (t.value.length == 32) {
-            eventId = HEX.encode(t.value);
+            eventId = hex.encode(t.value);
           }
           break;
         case 1: // relay
@@ -121,7 +121,7 @@ class Nip19Decoder {
           break;
         case 2: // author pubkey
           if (t.value.length == 32) {
-            author = HEX.encode(t.value);
+            author = hex.encode(t.value);
           }
           break;
         case 3: // kind
@@ -187,7 +187,7 @@ class Nip19Decoder {
           break;
         case 2: // author pubkey
           if (t.value.length == 32) {
-            pubkey = HEX.encode(t.value);
+            pubkey = hex.encode(t.value);
           }
           break;
         case 3: // kind

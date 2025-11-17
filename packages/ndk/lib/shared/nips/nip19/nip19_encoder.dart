@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:bech32/bech32.dart';
-import 'package:hex/hex.dart';
+import 'package:convert/convert.dart';
 
 import 'hrps.dart';
 import 'nip19_utils.dart';
@@ -37,7 +37,7 @@ class Nip19Encoder {
     final tlvData = <int>[];
 
     // Type 0: event ID (special) - 32 bytes
-    final eventIdBytes = HEX.decode(eventId);
+    final eventIdBytes = hex.decode(eventId);
     if (eventIdBytes.length != 32) {
       throw ArgumentError('Event ID must be 32 bytes (64 hex characters)');
     }
@@ -61,7 +61,7 @@ class Nip19Encoder {
 
     // Type 2: author pubkey (optional, 32 bytes)
     if (author != null) {
-      final authorBytes = HEX.decode(author);
+      final authorBytes = hex.decode(author);
       if (authorBytes.length != 32) {
         throw ArgumentError(
             'Author pubkey must be 32 bytes (64 hex characters)');
@@ -126,7 +126,7 @@ class Nip19Encoder {
     }
 
     // Type 2: author pubkey (required, 32 bytes)
-    final pubkeyBytes = HEX.decode(pubkey);
+    final pubkeyBytes = hex.decode(pubkey);
     if (pubkeyBytes.length != 32) {
       throw ArgumentError('Public key must be 32 bytes (64 hex characters)');
     }
@@ -163,7 +163,7 @@ class Nip19Encoder {
     final tlvData = <int>[];
 
     // Type 0: pubkey (special) - 32 bytes
-    final pubkeyBytes = HEX.decode(pubkey);
+    final pubkeyBytes = hex.decode(pubkey);
     if (pubkeyBytes.length != 32) {
       throw ArgumentError('Public key must be 32 bytes (64 hex characters)');
     }
@@ -195,7 +195,7 @@ class Nip19Encoder {
 
   /// Internal helper to encode a simple key (pubkey, privkey, or note ID)
   static String _encodeKey(String hrp, String key) {
-    var data = HEX.decode(key);
+    var data = hex.decode(key);
     data = Nip19Utils.convertBits(data, 8, 5, true);
 
     var encoder = Bech32Encoder();

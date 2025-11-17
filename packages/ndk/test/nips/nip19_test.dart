@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:bech32/bech32.dart';
-import 'package:hex/hex.dart';
+import 'package:convert/convert.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart';
 import 'package:ndk/domain_layer/entities/naddr.dart';
 import 'package:ndk/domain_layer/entities/nevent.dart';
@@ -336,7 +336,7 @@ void main() {
 
       test('decodeNaddr should throw on missing identifier', () {
         // Create naddr with pubkey (type 2) and kind (type 3) but NO identifier (type 0)
-        final pubkeyBytes = HEX.decode(
+        final pubkeyBytes = hex.decode(
             '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c');
         final tlvData = <int>[
           2, 32, // type 2 (pubkey), length 32
@@ -453,7 +453,7 @@ void main() {
 
       test('decodeNaddr should throw on missing kind field', () {
         // Create naddr with identifier and pubkey but no kind
-        final pubkeyBytes = HEX.decode(
+        final pubkeyBytes = hex.decode(
             '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c');
         final identifier = 'test';
         final tlvData = <int>[
