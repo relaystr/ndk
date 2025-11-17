@@ -475,5 +475,233 @@ void main() {
         );
       });
     });
+
+    group('round trip tests', () {
+      test('nevent full round trip: encode => decode => verify equality', () {
+        // Original data
+        const eventId =
+            'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43';
+        const author =
+            '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa';
+        const kind = 1;
+        const relays = ['wss://nos.lol/', 'wss://relay.damus.io/'];
+
+        // Encode
+        final encoded = Nip19.encodeNevent(
+          eventId: eventId,
+          author: author,
+          kind: kind,
+          relays: relays,
+        );
+
+        // Decode
+        final decoded = Nip19.decodeNevent(encoded);
+
+        // Verify round trip
+        expect(decoded.eventId, eventId);
+        expect(decoded.author, author);
+        expect(decoded.kind, kind);
+        expect(decoded.relays, relays);
+      });
+
+      test('nevent minimal round trip: eventId only', () {
+        const eventId =
+            'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43';
+
+        // Encode with just event ID
+        final encoded = Nip19.encodeNevent(eventId: eventId);
+
+        // Decode
+        final decoded = Nip19.decodeNevent(encoded);
+
+        // Verify round trip
+        expect(decoded.eventId, eventId);
+        expect(decoded.author, null);
+        expect(decoded.kind, null);
+        expect(decoded.relays, null);
+      });
+
+      test('nprofile round trip: encode => decode => verify equality', () {
+        const pubkey =
+            '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177';
+        const relays = [
+          'wss://relay.example.com',
+          'wss://relay2.example.com',
+          'wss://nos.lol/'
+        ];
+
+        // Encode
+        final encoded = Nip19.encodeNprofile(
+          pubkey: pubkey,
+          relays: relays,
+        );
+
+        // Decode
+        final decoded = Nip19.decodeNprofile(encoded);
+
+        // Verify round trip
+        expect(decoded.pubkey, pubkey);
+        expect(decoded.relays, relays);
+      });
+
+      test('nprofile minimal round trip: pubkey only', () {
+        const pubkey =
+            '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177';
+
+        // Encode with just pubkey
+        final encoded = Nip19.encodeNprofile(pubkey: pubkey);
+
+        // Decode
+        final decoded = Nip19.decodeNprofile(encoded);
+
+        // Verify round trip
+        expect(decoded.pubkey, pubkey);
+        expect(decoded.relays, null);
+      });
+
+      test('naddr round trip: encode => decode => verify equality', () {
+        const identifier = '1685802317447';
+        const pubkey =
+            '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c';
+        const kind = 31990;
+        const relays = ['wss://relay.example.com', 'wss://nos.lol/'];
+
+        // Encode
+        final encoded = Nip19.encodeNaddr(
+          identifier: identifier,
+          pubkey: pubkey,
+          kind: kind,
+          relays: relays,
+        );
+
+        // Decode
+        final decoded = Nip19.decodeNaddr(encoded);
+
+        // Verify round trip
+        expect(decoded.identifier, identifier);
+        expect(decoded.pubkey, pubkey);
+        expect(decoded.kind, kind);
+        expect(decoded.relays, relays);
+      });
+
+      test('naddr minimal round trip: required fields only', () {
+        const identifier = 'test-identifier';
+        const pubkey =
+            '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c';
+        const kind = 30023;
+
+        // Encode without relays
+        final encoded = Nip19.encodeNaddr(
+          identifier: identifier,
+          pubkey: pubkey,
+          kind: kind,
+        );
+
+        // Decode
+        final decoded = Nip19.decodeNaddr(encoded);
+
+        // Verify round trip
+        expect(decoded.identifier, identifier);
+        expect(decoded.pubkey, pubkey);
+        expect(decoded.kind, kind);
+        expect(decoded.relays, null);
+      });
+
+      test('naddr with empty identifier round trip', () {
+        const identifier = '';
+        const pubkey =
+            '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c';
+        const kind = 10000;
+
+        // Encode
+        final encoded = Nip19.encodeNaddr(
+          identifier: identifier,
+          pubkey: pubkey,
+          kind: kind,
+        );
+
+        // Decode
+        final decoded = Nip19.decodeNaddr(encoded);
+
+        // Verify round trip
+        expect(decoded.identifier, identifier);
+        expect(decoded.pubkey, pubkey);
+        expect(decoded.kind, kind);
+      });
+
+      test('note round trip: encode => decode => verify equality', () {
+        const noteId =
+            'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43';
+
+        // Encode
+        final encoded = Nip19.encodeNoteId(noteId);
+
+        // Decode
+        final decoded = Nip19.decode(encoded);
+
+        // Verify round trip
+        expect(decoded, noteId);
+      });
+
+      test('npub round trip: encode => decode => verify equality', () {
+        const pubkey =
+            '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177';
+
+        // Encode
+        final encoded = Nip19.encodePubKey(pubkey);
+
+        // Decode
+        final decoded = Nip19.decode(encoded);
+
+        // Verify round trip
+        expect(decoded, pubkey);
+      });
+
+      test('multiple entities round trip with same data', () {
+        const eventId =
+            'a12ff3d33a94fa408d71e2435e6382700647f0cd3c0c09d56ec2cc64d5164b43';
+        const pubkey =
+            '76c71aae3a491f1d9eec47cba17e229cda4113a0bbb6e6ae1776d7643e29cafa';
+        const kind = 1;
+        const relays = ['wss://nos.lol/'];
+
+        // Encode as nevent
+        final nevent = Nip19.encodeNevent(
+          eventId: eventId,
+          author: pubkey,
+          kind: kind,
+          relays: relays,
+        );
+
+        // Encode as nprofile (using author pubkey)
+        final nprofile = Nip19.encodeNprofile(
+          pubkey: pubkey,
+          relays: relays,
+        );
+
+        // Encode as note (just event ID)
+        final note = Nip19.encodeNoteId(eventId);
+
+        // Encode as npub (just pubkey)
+        final npub = Nip19.encodePubKey(pubkey);
+
+        // Decode all and verify
+        final decodedNevent = Nip19.decodeNevent(nevent);
+        expect(decodedNevent.eventId, eventId);
+        expect(decodedNevent.author, pubkey);
+        expect(decodedNevent.kind, kind);
+        expect(decodedNevent.relays, relays);
+
+        final decodedNprofile = Nip19.decodeNprofile(nprofile);
+        expect(decodedNprofile.pubkey, pubkey);
+        expect(decodedNprofile.relays, relays);
+
+        final decodedNote = Nip19.decode(note);
+        expect(decodedNote, eventId);
+
+        final decodedNpub = Nip19.decode(npub);
+        expect(decodedNpub, pubkey);
+      });
+    });
   });
 }
