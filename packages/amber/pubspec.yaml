@@ -14,7 +14,6 @@ dependencies:
   flutter:
     sdk: flutter
   amberflutter: ^0.0.9
-  hex: ^0.2.0
   plugin_platform_interface: ^2.1.8
   ndk: ^0.6.0-dev.12
 

@@ -4,9 +4,9 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:convert/convert.dart';
 import 'package:ed25519_edwards/ed25519_edwards.dart';
 import 'package:github/github.dart';
-import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 
 import 'android_environment.dart';
@@ -90,8 +90,8 @@ class GenKeyCommand extends Command {
   @override
   void run() {
     final kp = generateKey();
-    final private = HEX.encode(kp.privateKey.bytes);
-    final public = HEX.encode(kp.publicKey.bytes);
+    final private = hex.encode(kp.privateKey.bytes);
+    final public = hex.encode(kp.publicKey.bytes);
     print("Private Key: $private");
     print("Public Key: $public");
   }
@@ -162,7 +162,7 @@ class PrecompileBinariesCommand extends Command {
     if (githubToken == null) {
       throw ArgumentError('Missing GITHUB_TOKEN environment variable');
     }
-    final privateKey = HEX.decode(privateKeyString);
+    final privateKey = hex.decode(privateKeyString);
     if (privateKey.length != 64) {
       throw ArgumentError('Private key must be 64 bytes long');
     }

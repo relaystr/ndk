@@ -1,6 +1,6 @@
 import 'package:bech32/bech32.dart';
 import 'package:collection/collection.dart';
-import 'package:hex/hex.dart';
+import 'package:convert/convert.dart';
 
 import '../../logger/logger.dart';
 import 'hrps.dart';
@@ -35,7 +35,7 @@ class Nip19 {
   }
 
   static String encodePubKey(String pubkey) {
-    // var data = HEX.decode(pubKey);
+    // var data = hex.decode(pubKey);
     // data = _convertBits(data, 8, 5, true);
 
     // var encoder = Bech32Encoder();
@@ -70,12 +70,12 @@ class Nip19 {
         final tlv = Nip19TLV.parseTLV(data);
         final special = tlv.firstWhereOrNull((t) => t.type == 0)?.value;
         if (special != null) {
-          return HEX.encode(special);
+          return hex.encode(special);
         } else {
           throw "Missing 'special' kind in TLV entity, cant decode to hex";
         }
       } else {
-        return HEX.encode(data);
+        return hex.encode(data);
       }
     } catch (e) {
       Logger.log.e("Nip19 decode error ${e.toString()}");
@@ -84,7 +84,7 @@ class Nip19 {
   }
 
   static String _encodeKey(String hrp, String key) {
-    var data = HEX.decode(key);
+    var data = hex.decode(key);
     data = convertBits(data, 8, 5, true);
 
     var encoder = Bech32Encoder();
