@@ -3,11 +3,91 @@ import 'package:test/test.dart';
 import 'package:bech32/bech32.dart';
 import 'package:convert/convert.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart';
+import 'package:ndk/shared/nips/nip19/nip19_utils.dart' as nip19_utils;
 import 'package:ndk/domain_layer/entities/naddr.dart';
 import 'package:ndk/domain_layer/entities/nevent.dart';
 import 'package:ndk/domain_layer/entities/nprofile.dart';
 
 void main() {
+  group('Nip19Utils', () {
+    test('convertBits should convert from 8 to 5 bits with padding', () {
+      final data = [72, 101, 108, 108, 111]; // "Hello" in ASCII
+      final result = nip19_utils.Nip19Utils.convertBits(data, 8, 5, true);
+
+      expect(result, isNotEmpty);
+      expect(result.every((v) => v >= 0 && v < 32),
+          true); // All values should be 5-bit
+    });
+
+    test('convertBits should convert from 5 to 8 bits with padding', () {
+      final data = [9, 2, 10, 3, 3, 12, 15, 0]; // 5-bit values, padded correctly
+      final result = nip19_utils.Nip19Utils.convertBits(data, 5, 8, true);
+
+      expect(result, isNotEmpty);
+      expect(result.every((v) => v >= 0 && v < 256),
+          true); // All values should be 8-bit
+    });
+
+    test('convertBits should throw InvalidPadding for illegal zero padding',
+        () {
+      // Create data that will have bits >= from when pad is false
+      final data = [1, 2, 3, 4, 5];
+
+      expect(
+        () => nip19_utils.Nip19Utils.convertBits(data, 5, 8, false),
+        throwsA(isA<nip19_utils.InvalidPadding>()),
+      );
+    });
+
+    test('convertBits should throw InvalidPadding for non-zero padding', () {
+      // Create data with non-zero remaining bits that violate padding rules
+      final data = [255, 255, 255]; // Will create non-zero remainder
+
+      expect(
+        () => nip19_utils.Nip19Utils.convertBits(data, 8, 5, false),
+        throwsA(isA<nip19_utils.InvalidPadding>()),
+      );
+    });
+
+    test('convertBits should throw Exception for invalid input value', () {
+      // Value that is too large for the 'from' bit size
+      final data = [256]; // Too large for 8-bit
+
+      expect(
+        () => nip19_utils.Nip19Utils.convertBits(data, 8, 5, true),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test('convertBits should throw Exception for negative value', () {
+      final data = [-1]; // Negative value
+
+      expect(
+        () => nip19_utils.Nip19Utils.convertBits(data, 8, 5, true),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test('InvalidPadding toString should return formatted message', () {
+      final exception = nip19_utils.InvalidPadding('test error');
+      expect(exception.toString(), 'InvalidPadding: test error');
+    });
+
+    test('convertBits round trip should work correctly', () {
+      final original = [72, 101, 108, 108, 111]; // "Hello"
+
+      // Convert 8 to 5 bits
+      final converted5bit =
+          nip19_utils.Nip19Utils.convertBits(original, 8, 5, true);
+
+      // Convert back 5 to 8 bits
+      final converted8bit =
+          nip19_utils.Nip19Utils.convertBits(converted5bit, 5, 8, false);
+
+      expect(converted8bit, original);
+    });
+  });
+
   group('Nip19TLV', () {
     test('parseTLV should correctly parse valid TLV data', () {
       // Let's construct a simple TLV byte array for testing
@@ -476,6 +556,82 @@ void main() {
       });
     });
 
+    group('validation methods', () {
+      test('isPubkey should correctly identify npub strings', () {
+        const validNpub =
+            'npub1xp5rjcgx6ctlvkhe5r3wyejxz6y75sjqm6ynhux4qvvkg6jz5uks77vqd5';
+        const notNpub = 'note1abcd';
+
+        expect(Nip19.isPubkey(validNpub), true);
+        expect(Nip19.isPubkey(notNpub), false);
+      });
+
+      test('isPrivateKey should correctly identify nsec strings', () {
+        const validNsec =
+            'nsec1vl029mgpspedva04g90vltkh6fvh240zqtv9k0t9af8935ke9laqsnlfe5';
+        const notNsec = 'npub1abcd';
+
+        expect(Nip19.isPrivateKey(validNsec), true);
+        expect(Nip19.isPrivateKey(notNsec), false);
+      });
+
+      test('isNoteId should correctly identify note1 strings', () {
+        const validNote =
+            'note15ylfqkhfduchm9pxfq8dsgrq7qppe7cxdvzxr3t2enq3vjd23dpqhva0cr';
+        const notNote = 'npub1abcd';
+
+        expect(Nip19.isNoteId(validNote), true);
+        expect(Nip19.isNoteId(notNote), false);
+      });
+
+      test('isNip19 should correctly identify NIP-19 strings', () {
+        const validNpub =
+            'npub1xp5rjcgx6ctlvkhe5r3wyejxz6y75sjqm6ynhux4qvvkg6jz5uks77vqd5';
+        const validNote =
+            'note15ylfqkhfduchm9pxfq8dsgrq7qppe7cxdvzxr3t2enq3vjd23dpqhva0cr';
+        const validNevent =
+            'nevent1qqs2ztln6vaff7jq34c7ys67vwp8qpj87rxncrqf64hv9nry65tykscppemhxue69uhkummn9ekx7mp0qgs8d3c64cayj8canmky0jap0c3fekjpzwsthdhx4cthd4my8c5u47srqsqqqqqpkmyhxk';
+        const notNip19 = 'random-string';
+
+        expect(Nip19.isNip19(validNpub), true);
+        expect(Nip19.isNip19(validNote), true);
+        expect(Nip19.isNip19(validNevent), true);
+        expect(Nip19.isNip19(notNip19), false);
+      });
+    });
+
+    group('error handling', () {
+      test('decode should return empty string for invalid bech32', () {
+        const invalidBech32 = 'invalid_not_bech32';
+        final result = Nip19.decode(invalidBech32);
+        expect(result, '');
+      });
+
+      test('decode should return empty string for malformed npub', () {
+        const malformed = 'npub1invalid';
+        final result = Nip19.decode(malformed);
+        expect(result, '');
+      });
+
+      test('decode should return empty string for corrupted data', () {
+        const corrupted = 'npub1qqqqqqq';
+        final result = Nip19.decode(corrupted);
+        expect(result, '');
+      });
+
+      test('decode should return empty string for random string', () {
+        const random = 'this-is-not-a-valid-nip19-string';
+        final result = Nip19.decode(random);
+        expect(result, '');
+      });
+
+      test('decode should return empty string for empty string', () {
+        const empty = '';
+        final result = Nip19.decode(empty);
+        expect(result, '');
+      });
+    });
+
     group('round trip tests', () {
       test('nevent full round trip: encode => decode => verify equality', () {
         // Original data
@@ -655,6 +811,46 @@ void main() {
 
         // Verify round trip
         expect(decoded, pubkey);
+      });
+
+      test('nsec round trip: encode => decode => verify equality', () {
+        const privateKey =
+            '67dea2ed018072d675f5415ecfaed7d2597555e202d85b3d65ea4e58d2d92ffa';
+
+        // Encode
+        final encoded = Nip19.encodePrivateKey(privateKey);
+
+        // Decode
+        final decoded = Nip19.decode(encoded);
+
+        // Verify round trip
+        expect(decoded, privateKey);
+        expect(encoded.startsWith('nsec1'), true);
+      });
+
+      test('encodeSimplePubKey should format as first10:last10', () {
+        const pubkey =
+            '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177';
+
+        final simple = Nip19.encodeSimplePubKey(pubkey);
+
+        // Should be in format "npub1xpuz9...:...77vqd5"
+        expect(simple.contains(':'), true);
+
+        final parts = simple.split(':');
+        expect(parts.length, 2);
+        expect(parts[0].length, 10);
+        expect(parts[1].length, 10);
+        expect(parts[0].startsWith('npub1'), true);
+      });
+
+      test('encodeSimplePubKey should return original on error', () {
+        const invalidPubkey = 'invalid-pubkey-not-hex';
+
+        final result = Nip19.encodeSimplePubKey(invalidPubkey);
+
+        // Should return the original string on error
+        expect(result, invalidPubkey);
       });
 
       test('multiple entities round trip with same data', () {
