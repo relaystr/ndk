@@ -1,3 +1,7 @@
+## 0.6.0-dev.14
+
+ - **FIX**: waiting for connection broadcast jit.
+
 ## 0.6.0-dev.13
 
  - **FIX**: waiting for connection broadcast jit.
