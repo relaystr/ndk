@@ -5,59 +5,10 @@ import 'package:collection/collection.dart';
 import 'package:hex/hex.dart';
 
 import '../../logger/logger.dart';
+import '../../../domain_layer/entities/naddr.dart';
+import '../../../domain_layer/entities/nevent.dart';
+import '../../../domain_layer/entities/nprofile.dart';
 import 'hrps.dart';
-
-/// Represents a decoded naddr (addressable event coordinate)
-class Naddr {
-  final String identifier;
-  final String pubkey;
-  final int kind;
-  final List<String>? relays;
-
-  Naddr({
-    required this.identifier,
-    required this.pubkey,
-    required this.kind,
-    this.relays,
-  });
-
-  @override
-  String toString() =>
-      'Naddr(identifier: $identifier, pubkey: $pubkey, kind: $kind, relays: $relays)';
-}
-
-/// Represents a decoded nevent (event reference)
-class Nevent {
-  final String eventId;
-  final String? author;
-  final int? kind;
-  final List<String>? relays;
-
-  Nevent({
-    required this.eventId,
-    this.author,
-    this.kind,
-    this.relays,
-  });
-
-  @override
-  String toString() =>
-      'Nevent(eventId: $eventId, author: $author, kind: $kind, relays: $relays)';
-}
-
-/// Represents a decoded nprofile (profile reference)
-class Nprofile {
-  final String pubkey;
-  final List<String>? relays;
-
-  Nprofile({
-    required this.pubkey,
-    this.relays,
-  });
-
-  @override
-  String toString() => 'Nprofile(pubkey: $pubkey, relays: $relays)';
-}
 
 class Nip19 {
   // static String encodePubKey(String pubKey) {
