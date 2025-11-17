@@ -3,6 +3,82 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-11-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.0-dev.12`](#ndk---v060-dev12)
+ - [`ndk_amber` - `v0.3.3-dev.15`](#ndk_amber---v033-dev15)
+ - [`ndk_isar` - `v0.2.3-dev.15`](#ndk_isar---v023-dev15)
+ - [`ndk_objectbox` - `v0.2.7-dev.17`](#ndk_objectbox---v027-dev17)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.17`](#ndk_rust_verifier---v042-dev17)
+ - [`nip07_event_signer` - `v1.0.4-dev.15`](#nip07_event_signer---v104-dev15)
+ - [`sembast_cache_manager` - `v1.0.5-dev.15`](#sembast_cache_manager---v105-dev15)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.15`
+ - `ndk_isar` - `v0.2.3-dev.15`
+ - `ndk_objectbox` - `v0.2.7-dev.17`
+ - `ndk_rust_verifier` - `v0.4.2-dev.17`
+ - `nip07_event_signer` - `v1.0.4-dev.15`
+ - `sembast_cache_manager` - `v1.0.5-dev.15`
+
+---
+
+#### `ndk` - `v0.6.0-dev.12`
+
+ - **FIX**: Use 0x100000000 instead of 1 << 32 for web compatibility.
+
+
+## 2025-11-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.0-dev.11`](#ndk---v060-dev11)
+ - [`ndk_amber` - `v0.3.3-dev.14`](#ndk_amber---v033-dev14)
+ - [`ndk_isar` - `v0.2.3-dev.14`](#ndk_isar---v023-dev14)
+ - [`ndk_objectbox` - `v0.2.7-dev.16`](#ndk_objectbox---v027-dev16)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.16`](#ndk_rust_verifier---v042-dev16)
+ - [`nip07_event_signer` - `v1.0.4-dev.14`](#nip07_event_signer---v104-dev14)
+ - [`sembast_cache_manager` - `v1.0.5-dev.14`](#sembast_cache_manager---v105-dev14)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.14`
+ - `ndk_isar` - `v0.2.3-dev.14`
+ - `ndk_objectbox` - `v0.2.7-dev.16`
+ - `ndk_rust_verifier` - `v0.4.2-dev.16`
+ - `nip07_event_signer` - `v1.0.4-dev.14`
+ - `sembast_cache_manager` - `v1.0.5-dev.14`
+
+---
+
+#### `ndk` - `v0.6.0-dev.11`
+
+ - **FIX**: Use 0x100000000 instead of 1 << 32 for web compatibility.
+
+
 ## 2025-11-12
 
 ### Changes
