@@ -34,21 +34,28 @@ class RelayJitBroadcastSpecificRelaysStrategy {
 
       final isConnected = relayManager.isRelayConnected(relayUrl);
       if (isConnected) {
-        sendToRelay(
-          relay: connectedRelays.firstWhere(
+        try {
+          final relay = connectedRelays.firstWhere(
             (element) => element.url == relayUrl,
-          ),
-        );
+          );
+          sendToRelay(relay: relay);
+        } catch (e) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "relay not found in connected list",
+          );
+        }
         continue;
       }
 
       relayManager
-          .connectRelay(
-        dirtyUrl: relayUrl,
+          .reconnectRelay(
+        relayUrl,
         connectionSource: ConnectionSource.broadcastSpecific,
       )
           .then((success) {
-        if (!success.first) {
+        if (!success) {
           relayManager.failBroadcast(
             eventToPublish.id,
             relayUrl,
@@ -56,10 +63,17 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           );
           return;
         }
-        final relay = relayManager.connectedRelays
-            .firstWhere((element) => element.url == relayUrl);
-
-        sendToRelay(relay: relay);
+        try {
+          final relay = relayManager.connectedRelays
+              .firstWhere((element) => element.url == relayUrl);
+          sendToRelay(relay: relay);
+        } catch (e) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "relay not found after connection",
+          );
+        }
       });
     }
   }
