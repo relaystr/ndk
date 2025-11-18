@@ -158,7 +158,10 @@ class Nip51List {
         signer != null &&
         signer.canSign()) {
       try {
-        var json = await signer.decrypt(event.content, signer.getPublicKey());
+        var json = await signer.decryptNip44(
+          ciphertext: event.content,
+          senderPubKey: signer.getPublicKey(),
+        );
         List<dynamic> tags = jsonDecode(json ?? '');
         list.parseTags(tags, private: true);
       } catch (e) {
@@ -190,7 +193,9 @@ class Nip51List {
       String json = jsonEncode(privateElements
           .map((element) => [element.tag, element.value])
           .toList());
-      content = await signer.encrypt(json, signer.getPublicKey()) ?? '';
+      content = await signer.encryptNip44(
+              plaintext: json, recipientPubKey: signer.getPublicKey()) ??
+          '';
     }
     Nip01Event event = Nip01Event(
       pubKey: pubKey,
@@ -278,7 +283,10 @@ class Nip51Set extends Nip51List {
         signer != null &&
         signer.canSign()) {
       try {
-        var json = await signer.decrypt(event.content, signer.getPublicKey());
+        var json = await signer.decryptNip44(
+          ciphertext: event.content,
+          senderPubKey: signer.getPublicKey(),
+        );
         List<dynamic> tags = jsonDecode(json ?? '');
         set.parseTags(tags, private: true);
         set.parseSetTags(tags);
