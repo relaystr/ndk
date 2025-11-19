@@ -68,8 +68,9 @@ void main() async {
     });
 
     test('lists get bookmarks', () async {
+      ndk.accounts.loginExternalSigner(signer: signer0);
       Nip51List? bookmarks =
-          await ndk.lists.getSingleNip51List(Nip51List.kBookmarks, signer0);
+          await ndk.lists.getSingleNip51List(Nip51List.kBookmarks);
       expect(bookmarkListKey0.kind, bookmarks!.kind);
       expect(bookmarkListKey0.elements.length, bookmarks.elements.length);
       expect(bookmarkListKey0.elements.first.value,
@@ -77,8 +78,9 @@ void main() async {
     });
 
     test('lists get favorite relays', () async {
-      Nip51Set? relays = await ndk.lists
-          .getSingleNip51RelaySet(favoriteRelaysKey1.name, signer1);
+      ndk.accounts.loginExternalSigner(signer: signer1);
+      Nip51Set? relays =
+          await ndk.lists.getSingleNip51RelaySet(favoriteRelaysKey1.name);
       expect(favoriteRelaysKey1.kind, relays!.kind);
       expect(favoriteRelaysKey1.elements.length, relays.elements.length);
       expect(
@@ -86,18 +88,19 @@ void main() async {
     });
 
     test('lists get bookmarks with forceRefresh', () async {
-      Nip51List? bookmarks = await ndk.lists.getSingleNip51List(
-          Nip51List.kBookmarks, signer0,
-          forceRefresh: true);
+      ndk.accounts.loginExternalSigner(signer: signer0);
+      Nip51List? bookmarks = await ndk.lists
+          .getSingleNip51List(Nip51List.kBookmarks, forceRefresh: true);
       expect(bookmarks, isNotNull);
       expect(bookmarkListKey0.kind, bookmarks!.kind);
     });
 
     test('lists get set by name', () async {
+      ndk.accounts.loginExternalSigner(signer: signer1);
       Nip51Set? set = await ndk.lists.getSetByName(
-          name: favoriteRelaysKey1.name,
-          kind: Nip51List.kRelaySet,
-          customSigner: signer1);
+        name: favoriteRelaysKey1.name,
+        kind: Nip51List.kRelaySet,
+      );
       expect(set, isNotNull);
       expect(set!.name, favoriteRelaysKey1.name);
     });

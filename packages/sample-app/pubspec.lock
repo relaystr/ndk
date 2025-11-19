@@ -25,14 +25,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.7.0"
-  ascii_qr:
-    dependency: transitive
-    description:
-      name: ascii_qr
-      sha256: "2046e400a0fa4ea0de5df44c87b992cdd1f76403bb15e64513b89263598750ae"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   async:
     dependency: transitive
     description:
@@ -141,10 +133,10 @@ packages:
     dependency: transitive
     description:
       name: elliptic
-      sha256: "0c303d810603953a65dc39c4c542fb7538defd9e212403c54c266140819523b6"
+      sha256: "67931d408faa353bdebac9f7a1df0c3f6f828f4e8439cdf084573cd1601a2f4b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.11"
+    version: "0.3.12"
   equatable:
     dependency: transitive
     description:
@@ -312,14 +304,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
-  logger:
-    dependency: transitive
-    description:
-      name: logger
-      sha256: a7967e31b703831a893bbc3c3dd11db08126fe5f369b5c648a36f821979f5be3
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.6.2"
   logging:
     dependency: transitive
     description:
@@ -420,31 +404,31 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: e3641ec5d63ebf0d9b41bd43201a66e3fc79a65db5f61fc181f04cd27aab950c
+      sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
       url: "https://pub.dev"
     source: hosted
-    version: "1.16.0"
+    version: "1.17.0"
   ndk:
     dependency: "direct main"
     description:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.5.2-dev.0+1"
+    version: "0.6.0-dev.12"
   ndk_amber:
     dependency: "direct main"
     description:
       path: "../amber"
       relative: true
     source: path
-    version: "0.3.3-dev.0+1"
+    version: "0.3.3-dev.15"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
       path: "../rust_verifier"
       relative: true
     source: path
-    version: "0.4.2-dev.0+1"
+    version: "0.4.2-dev.17"
   nested:
     dependency: transitive
     description:
@@ -790,10 +774,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: "522f00f556e73044315fa4585ec3270f1808a4b186c936e612cab0b565ff1e00"
+      sha256: ab2726c1a94d3176a45960b6234466ec367179b87dd74f1611adb1f3b5fb9d55
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.6"
+    version: "0.7.7"
   typed_data:
     dependency: transitive
     description:

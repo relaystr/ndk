@@ -52,21 +52,23 @@ class Lists {
 
   /// Returns a NIP-51 list by the given kind.
   ///
-  /// Retrieves the most recent list event for the specified kind and signer.
+  /// Retrieves the most recent list event for the specified kind.
   /// First checks cache unless [forceRefresh] is true, then queries relays.
   ///
   /// [kind] the kind of NIP-51 list to retrieve \
-  /// [signer] the event signer containing the public key \
   /// [forceRefresh] if true, bypass cache and query relays directly \
   /// [timeout] maximum duration to wait for relay responses
   ///
   /// Returns the list if found, null otherwise.
   Future<Nip51List?> getSingleNip51List(
-    int kind,
-    EventSigner signer, {
+    int kind, {
     bool forceRefresh = false,
     Duration timeout = const Duration(seconds: 5),
   }) async {
+    if (_eventSigner == null) {
+      throw Exception("cannot get nip51 list without a signer");
+    }
+    final signer = _eventSigner!;
     Nip51List? list =
         !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
     if (list == null) {
@@ -118,7 +120,6 @@ class Lists {
     }
     Nip51List? list = await getSingleNip51List(
       kind,
-      _eventSigner!,
       forceRefresh: true,
     );
     list ??= Nip51List(
@@ -170,7 +171,6 @@ class Lists {
     }
     Nip51List? list = await getSingleNip51List(
       kind,
-      _eventSigner!,
       forceRefresh: true,
     );
     if (list == null || list.elements.isEmpty) {
@@ -280,19 +280,14 @@ class Lists {
   Future<Nip51Set?> getSetByName({
     required String name,
     required int kind,
-    EventSigner? customSigner,
     bool forceRefresh = false,
   }) async {
     final EventSigner signer;
 
-    if (customSigner != null) {
-      signer = customSigner;
-    } else {
-      if (_accounts.isNotLoggedIn) {
-        throw Exception("getSetByName() no account");
-      }
-      signer = _accounts.getLoggedAccount()!.signer;
+    if (_eventSigner == null) {
+      throw Exception("getSetByName() no account");
     }
+    signer = _eventSigner!;
 
     Nip51Set? relaySet = await _getCachedSetByName(name, signer, kind);
     if (relaySet == null || forceRefresh) {
@@ -325,22 +320,31 @@ class Lists {
     return relaySet;
   }
 
-  /// Returns a stream of public sets for a given public key.
+  /// Returns a stream of public sets for a given public key, default is pubkey of logged in user.
   ///
   /// Queries relays for all sets of the specified kind belonging to the
   /// given public key. Only public (non-encrypted) sets are returned.
   ///
   /// [kind] the kind of sets to retrieve \
-  /// [publicKey] the public key of the user whose sets to retrieve \
+  /// [publicKey] the public key of the user whose sets to retrieve, default logged in pubkey \
   /// [forceRefresh] if true, skip cache and query relays directly
   ///
   /// Returns a stream that emits collections of sets as they are discovered.
   Stream<Iterable<Nip51Set>?> getPublicSets({
     required int kind,
-    required String publicKey,
+    String? publicKey,
     bool forceRefresh = false,
   }) {
-    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    final EventSigner mySigner;
+    if (publicKey == null) {
+      if (_eventSigner == null) {
+        throw Exception("getPublicSets() no account");
+      }
+      mySigner = _eventSigner!;
+    } else {
+      mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    }
+
     return _getSets(kind, mySigner, forceRefresh: forceRefresh);
   }
 
@@ -485,8 +489,6 @@ class Lists {
   }) async {
     Nip01Event event = await set.toEvent(_eventSigner);
 
-    print(event);
-
     final broadcastResponse = _broadcast.broadcast(
       nostrEvent: event,
       specificRelays: specificRelays,
@@ -560,14 +562,12 @@ class Lists {
   /// Use [getSetByName] instead.
   @Deprecated("use getSetByName instead")
   Future<Nip51Set?> getSingleNip51RelaySet(
-    String name,
-    EventSigner signer, {
+    String name, {
     bool forceRefresh = false,
   }) async {
     return getSetByName(
       name: name,
       kind: Nip51List.kRelaySet,
-      customSigner: signer,
     );
   }
 
@@ -627,8 +627,7 @@ class Lists {
     Iterable<String>? broadcastRelays, {
     bool private = false,
   }) async {
-    Nip51Set? list =
-        await getSingleNip51RelaySet(name, _eventSigner!, forceRefresh: true);
+    Nip51Set? list = await getSingleNip51RelaySet(name, forceRefresh: true);
     list ??= Nip51Set(
         name: name,
         pubKey: _eventSigner!.getPublicKey(),
@@ -678,7 +677,6 @@ class Lists {
     }
     Nip51Set? relaySet = await getSingleNip51RelaySet(
       name,
-      _eventSigner!,
       forceRefresh: true,
     );
     if ((relaySet == null || relaySet.allRelays.isEmpty) &&
@@ -733,8 +731,7 @@ class Lists {
       throw Exception(
           "cannot broadcast private nip51 list without a signer that can sign");
     }
-    Nip51List? list =
-        await getSingleNip51List(kind, _eventSigner!, forceRefresh: true);
+    Nip51List? list = await getSingleNip51List(kind, forceRefresh: true);
     list ??= Nip51List(
         kind: kind,
         pubKey: _eventSigner!.getPublicKey(),
@@ -775,7 +772,6 @@ class Lists {
     }
     Nip51List? list = await getSingleNip51List(
       kind,
-      _eventSigner!,
       forceRefresh: true,
     );
     if ((list == null || list.allRelays.isEmpty) &&
@@ -844,6 +840,6 @@ class Lists {
   }) async {
     //? not perfect to use bip340 signer here
     final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
-    return getSingleNip51RelaySet(name, mySigner, forceRefresh: forceRefresh);
+    return getSingleNip51RelaySet(name, forceRefresh: forceRefresh);
   }
 }
