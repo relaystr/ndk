@@ -1,3 +1,13 @@
+## 0.6.0-dev.18
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+## 0.6.0-dev.17
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
 ## 0.6.0-dev.16
 
  - **FIX**: tests coverage.

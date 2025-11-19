@@ -1,3 +1,13 @@
+## 0.3.3-dev.21
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+## 0.3.3-dev.20
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
 ## 0.3.3-dev.19
 
  - Update a dependency to the latest release.
