@@ -1,3 +1,7 @@
+## 0.4.2-dev.20
+
+ - Update a dependency to the latest release.
+
 ## 0.4.2-dev.19
 
  - Update a dependency to the latest release.
