@@ -1,3 +1,19 @@
+## 1.0.4-dev.19
+
+ - Update a dependency to the latest release.
+
+## 1.0.4-dev.18
+
+ - Update a dependency to the latest release.
+
+## 1.0.4-dev.17
+
+ - Update a dependency to the latest release.
+
+## 1.0.4-dev.16
+
+ - Update a dependency to the latest release.
+
 ## 1.0.4-dev.15
 
  - Update a dependency to the latest release.

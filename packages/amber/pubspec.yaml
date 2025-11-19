@@ -1,6 +1,6 @@
 name: ndk_amber
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.3.3-dev.15
+version: 0.3.3-dev.19
 homepage: https://github.com/relaystr/ndk
 
 environment:
@@ -15,7 +15,7 @@ dependencies:
     sdk: flutter
   amberflutter: ^0.0.9
   plugin_platform_interface: ^2.1.8
-  ndk: ^0.6.0-dev.12
+  ndk: ^0.6.0-dev.16
 
 dev_dependencies:
   flutter_test:
