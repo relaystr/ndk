@@ -15,6 +15,53 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.6.0-dev.16`](#ndk---v060-dev16)
+ - [`ndk_amber` - `v0.3.3-dev.19`](#ndk_amber---v033-dev19)
+ - [`ndk_isar` - `v0.2.3-dev.19`](#ndk_isar---v023-dev19)
+ - [`ndk_objectbox` - `v0.2.7-dev.21`](#ndk_objectbox---v027-dev21)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.21`](#ndk_rust_verifier---v042-dev21)
+ - [`nip07_event_signer` - `v1.0.4-dev.19`](#nip07_event_signer---v104-dev19)
+ - [`sembast_cache_manager` - `v1.0.5-dev.19`](#sembast_cache_manager---v105-dev19)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.19`
+ - `ndk_isar` - `v0.2.3-dev.19`
+ - `ndk_objectbox` - `v0.2.7-dev.21`
+ - `ndk_rust_verifier` - `v0.4.2-dev.21`
+ - `nip07_event_signer` - `v1.0.4-dev.19`
+ - `sembast_cache_manager` - `v1.0.5-dev.19`
+
+---
+
+#### `ndk` - `v0.6.0-dev.16`
+
+ - **FIX**: tests coverage.
+ - **FIX**: remove hex package usage.
+ - **FIX**: split long file.
+ - **FIX**: round trip tests.
+ - **FIX**: var to final.
+ - **FIX**: move class to entities.
+ - **FIX**: missing test coverage.
+ - **FIX**: missing test coverage.
+ - **FEAT**: nip19 getters on events.
+ - **FEAT**: nprofile, naddr and nevent support.
+
+
+## 2025-11-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.6.0-dev.15`](#ndk---v060-dev15)
  - [`ndk_amber` - `v0.3.3-dev.18`](#ndk_amber---v033-dev18)
  - [`ndk_isar` - `v0.2.3-dev.18`](#ndk_isar---v023-dev18)
