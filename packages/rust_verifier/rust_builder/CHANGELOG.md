@@ -1,3 +1,7 @@
+## 0.1.7-dev.2
+
+ - **FIX**: remove hex package depandance.
+
 ## 0.1.7-dev.1
 
  - **FIX**: remove hex package depandance.
