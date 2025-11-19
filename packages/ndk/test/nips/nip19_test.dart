@@ -20,7 +20,16 @@ void main() {
     });
 
     test('convertBits should convert from 5 to 8 bits with padding', () {
-      final data = [9, 2, 10, 3, 3, 12, 15, 0]; // 5-bit values, padded correctly
+      final data = [
+        9,
+        2,
+        10,
+        3,
+        3,
+        12,
+        15,
+        0
+      ]; // 5-bit values, padded correctly
       final result = nip19_utils.Nip19Utils.convertBits(data, 5, 8, true);
 
       expect(result, isNotEmpty);
