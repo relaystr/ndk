@@ -1,3 +1,29 @@
+## 0.6.0-dev.16
+
+ - **FIX**: tests coverage.
+ - **FIX**: remove hex package usage.
+ - **FIX**: split long file.
+ - **FIX**: round trip tests.
+ - **FIX**: var to final.
+ - **FIX**: move class to entities.
+ - **FIX**: missing test coverage.
+ - **FIX**: missing test coverage.
+ - **FEAT**: nip19 getters on events.
+ - **FEAT**: nprofile, naddr and nevent support.
+
+## 0.6.0-dev.15
+
+ - **FIX**: tests coverage.
+ - **FIX**: remove hex package usage.
+ - **FIX**: split long file.
+ - **FIX**: round trip tests.
+ - **FIX**: var to final.
+ - **FIX**: move class to entities.
+ - **FIX**: missing test coverage.
+ - **FIX**: missing test coverage.
+ - **FEAT**: nip19 getters on events.
+ - **FEAT**: nprofile, naddr and nevent support.
+
 ## 0.6.0-dev.14
 
  - **FIX**: waiting for connection broadcast jit.
