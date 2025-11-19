@@ -99,3 +99,10 @@ export 'shared/logger/console_output.dart';
  */
 
 export 'shared/event_filters/tag_count_event_filter.dart';
+
+/**
+ * Nip 19
+ * 
+ */
+
+export 'shared/nips/nip19/nip19.dart';
