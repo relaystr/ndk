@@ -158,21 +158,28 @@ class Nip51List {
         signer != null &&
         signer.canSign()) {
       try {
-        var json = await signer.decryptNip44(
-          ciphertext: event.content,
-          senderPubKey: signer.getPublicKey(),
-        );
+        // backward compatibility: Check if content uses NIP-04 format (contains ?iv=)
+        final isNip04 = event.content.contains('?iv=');
+        final json = isNip04
+            ? await signer.decrypt(
+                event.content,
+                signer.getPublicKey(),
+              )
+            : await signer.decryptNip44(
+                ciphertext: event.content,
+                senderPubKey: signer.getPublicKey(),
+              );
         List<dynamic> tags = jsonDecode(json ?? '');
         list.parseTags(tags, private: true);
       } catch (e) {
-        Logger.log.d(e);
+        Logger.log.w(e);
       }
     }
     return list;
   }
 
   void parseTags(List tags, {required bool private}) {
-    for (var tag in tags) {
+    for (final tag in tags) {
       if (tag is! List<dynamic>) continue;
       final length = tag.length;
       if (length <= 1) continue;
@@ -283,10 +290,17 @@ class Nip51Set extends Nip51List {
         signer != null &&
         signer.canSign()) {
       try {
-        var json = await signer.decryptNip44(
-          ciphertext: event.content,
-          senderPubKey: signer.getPublicKey(),
-        );
+        // backward compatibility: Check if content uses NIP-04 format (contains ?iv=)
+        final isNip04 = event.content.contains('?iv=');
+        final json = isNip04
+            ? await signer.decrypt(
+                event.content,
+                signer.getPublicKey(),
+              )
+            : await signer.decryptNip44(
+                ciphertext: event.content,
+                senderPubKey: signer.getPublicKey(),
+              );
         List<dynamic> tags = jsonDecode(json ?? '');
         set.parseTags(tags, private: true);
         set.parseSetTags(tags);
@@ -331,7 +345,7 @@ class Nip51Set extends Nip51List {
   }
 
   void parseSetTags(List tags) {
-    for (var tag in tags) {
+    for (final tag in tags) {
       if (tag is! List<dynamic>) continue;
       final length = tag.length;
       if (length <= 1) continue;

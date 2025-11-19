@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:test/test.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -366,6 +368,73 @@ void main() async {
       expect(fetchedSet!.name, setName);
       expect(fetchedSet.createdAt, newSet.createdAt);
       expect(fetchedSet.elements.first.value, "wss://new.com");
+    });
+
+    test('backwards compatibility with NIP-04 encrypted sets', () async {
+      // Create a set with encrypted content
+      final nip04Set = Nip51Set(
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: "nip04-test-set",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        elements: [
+          Nip51ListElement(
+            tag: Nip51List.kRelay,
+            value: "wss://encrypted-relay.com",
+            private: true,
+          )
+        ],
+      );
+
+      String content = "";
+      List<Nip51ListElement> privateElements =
+          nip04Set.elements.where((element) => element.private).toList();
+      if (privateElements.isNotEmpty) {
+        String json = jsonEncode(privateElements
+            .map((element) => [element.tag, element.value])
+            .toList());
+        content = json;
+      }
+
+      final tags = nip04Set.elements
+          .where((element) => !element.private)
+          .map((element) => [element.tag, element.value])
+          .toList();
+
+      tags.addAll([
+        ['name', nip04Set.name],
+        ['d', nip04Set.name],
+      ]);
+
+      Nip01Event eventPlaintext = Nip01Event(
+        pubKey: signer1.getPublicKey(),
+        kind: Nip51List.kRelaySet,
+        tags: tags,
+        content: content,
+        createdAt: nip04Set.createdAt,
+      );
+
+      // Manually create NIP-04 encrypted content (with ?iv= separator)
+      final nip04Content = await signer1.encrypt(
+        eventPlaintext.content,
+        key1.publicKey,
+      );
+
+      // Create a new event with NIP-04 encrypted content
+      final nip04Event = eventPlaintext.copyWith(
+        content: nip04Content,
+      );
+
+      await signer1.sign(nip04Event);
+
+      // Parse the event back to set - should handle NIP-04 format
+      final parsedSet = await Nip51Set.fromEvent(nip04Event, signer1);
+
+      expect(parsedSet, isNotNull);
+      expect(parsedSet!.name, "nip04-test-set");
+      expect(parsedSet.elements.length, 1);
+      expect(parsedSet.elements.first.value, "wss://encrypted-relay.com");
+      expect(parsedSet.elements.first.private, true);
     });
   });
 }
