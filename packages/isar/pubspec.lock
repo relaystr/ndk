@@ -367,7 +367,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.6.0-dev.12"
+    version: "0.6.0-dev.16"
   node_preamble:
     dependency: transitive
     description:
