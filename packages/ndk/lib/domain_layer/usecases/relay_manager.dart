@@ -394,7 +394,8 @@ class RelayManager<T> {
     try {
       eventJson = json.decode(message);
     } on FormatException catch (e) {
-      Logger.log.e("FormatException in _handleIncomingMessage for relay ${relayConnectivity.url}: $e, message: $message");
+      Logger.log.e(
+          "FormatException in _handleIncomingMessage for relay ${relayConnectivity.url}: $e, message: $message");
       return;
     }
 
@@ -403,7 +404,9 @@ class RelayManager<T> {
       if (eventJson.length >= 2 && eventJson[2] == false) {
         Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
       }
-      if (globalState.inFlightBroadcasts[eventJson[1]]!=null && !globalState.inFlightBroadcasts[eventJson[1]]!.networkController.isClosed) {
+      if (globalState.inFlightBroadcasts[eventJson[1]] != null &&
+          !globalState
+              .inFlightBroadcasts[eventJson[1]]!.networkController.isClosed) {
         globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
           RelayBroadcastResponse(
             relayUrl: relayConnectivity.url,
