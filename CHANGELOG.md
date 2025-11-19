@@ -15,6 +15,57 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.6.0-dev.17`](#ndk---v060-dev17)
+ - [`ndk_amber` - `v0.3.3-dev.20`](#ndk_amber---v033-dev20)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.22`](#ndk_rust_verifier---v042-dev22)
+ - [`rust_lib_ndk` - `v0.1.7-dev.1`](#rust_lib_ndk---v017-dev1)
+ - [`ndk_isar` - `v0.2.3-dev.20`](#ndk_isar---v023-dev20)
+ - [`ndk_objectbox` - `v0.2.7-dev.22`](#ndk_objectbox---v027-dev22)
+ - [`nip07_event_signer` - `v1.0.4-dev.20`](#nip07_event_signer---v104-dev20)
+ - [`sembast_cache_manager` - `v1.0.5-dev.20`](#sembast_cache_manager---v105-dev20)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_isar` - `v0.2.3-dev.20`
+ - `ndk_objectbox` - `v0.2.7-dev.22`
+ - `nip07_event_signer` - `v1.0.4-dev.20`
+ - `sembast_cache_manager` - `v1.0.5-dev.20`
+
+---
+
+#### `ndk` - `v0.6.0-dev.17`
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_amber` - `v0.3.3-dev.20`
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.22`
+
+ - **FIX**: remove hex package depandance.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.1`
+
+ - **FIX**: remove hex package depandance.
+
+
+## 2025-11-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.6.0-dev.16`](#ndk---v060-dev16)
  - [`ndk_amber` - `v0.3.3-dev.19`](#ndk_amber---v033-dev19)
  - [`ndk_isar` - `v0.2.3-dev.19`](#ndk_isar---v023-dev19)
