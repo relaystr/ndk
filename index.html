@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.816957948841">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.816958598129">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.11.0">
@@ -32,11 +32,11 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="resources/css/retype.css?v=3.11.0.816957948841" rel="stylesheet">
+    <link href="resources/css/retype.css?v=3.11.0.816958598129" rel="stylesheet">
 
-    <script data-cfasync="false" src="resources/js/config.js?v=3.11.0.816957948841" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="resources/js/config.js?v=3.11.0.816958598129" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="resources/js/retype.js?v=3.11.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="resources/js/lunr.js?v=3.11.0.816957948841" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="resources/js/lunr.js?v=3.11.0.816958598129" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -177,7 +177,31 @@
         <span>Dart Nostr Development Kit (NDK)</span>
     </h1>
 </doc-anchor-target>
-<p><a href="https://github.com/relaystr/ndk/actions?query=workflow%3A%22tests%22+branch%3Amaster"><img src="https://github.com/relaystr/ndk/actions/workflows/tests.yaml/badge.svg?branch=master" alt="Build Status" /></a> <a href="https://codecov.io/github/relaystr/ndk"><img src="https://img.shields.io/codecov/c/github/relaystr/ndk?color=green" alt="Coverage" /></a> <a href="https://pub.dev/packages/ndk"><img src="https://img.shields.io/pub/v/ndk.svg" alt="Pub" /></a> <a href="license.txt"><img src="https://img.shields.io/github/license/relaystr/ndk.svg" alt="License" /></a></p>
+<p><figure class="content-center">
+    <a href="https://github.com/relaystr/ndk/actions?query=workflow%3A%22tests%22+branch%3Amaster">
+        <img src="https://github.com/relaystr/ndk/actions/workflows/tests.yaml/badge.svg?branch=master" alt="Build Status" class="rounded-image-rounded border-image-border border-image-border-width" />
+    </a>
+    <figcaption class="caption">Build Status</figcaption>
+</figure>
+<figure class="content-center">
+    <a href="https://codecov.io/github/relaystr/ndk">
+        <img src="https://img.shields.io/codecov/c/github/relaystr/ndk?color=green" alt="Coverage" class="rounded-image-rounded border-image-border border-image-border-width" />
+    </a>
+    <figcaption class="caption">Coverage</figcaption>
+</figure>
+<figure class="content-center">
+    <a href="https://pub.dev/packages/ndk">
+        <img src="https://img.shields.io/pub/v/ndk.svg" alt="Pub" class="rounded-image-rounded border-image-border border-image-border-width" />
+    </a>
+    <figcaption class="caption">Pub</figcaption>
+</figure>
+<figure class="content-center">
+    <a href="license.txt">
+        <img src="https://img.shields.io/github/license/relaystr/ndk.svg" alt="License" class="rounded-image-rounded border-image-border border-image-border-width" />
+    </a>
+    <figcaption class="caption">License</figcaption>
+</figure>
+</p>
 <p>NDK (Nostr Development Kit) is a Dart library that enhances the Nostr development experience.<br />
 NDK supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.<br />
 Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.</p>
@@ -199,44 +223,79 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 <li><a href="https://github.com/nogringo/donow">donow</a></li>
 <li><a href="https://github.com/nogringo/submarine">submarine</a></li>
 </ul>
-<p>
-<div class="mb-6 px-5 py-4 flex justify-between relative border border-base-border hover:border-base-border-hover rounded transition-colors duration-150">
-    <div class="flex items-center text-base-500">
-        <span class="inline-block mb-px">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="presentation" fill="currentColor"><path fill="none" d="M0 0h24v24H0z"/><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z"/></svg>
-        </span>
-        <span class="inline-block font-medium ml-2">Getting started</span>
-    </div>
-    <div class="flex items-center text-xs text-gray-400 dark:text-dark-400">
-        <span>guides/getting-started/</span>
-    </div>
-    <a href="guides/getting-started/" class="absolute block inset-0"></a>
-</div>
-</p>
-<doc-anchor-target id="features--what-does-ndk-do">
+<doc-anchor-target id="-getting-started-">
     <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#features--what-does-ndk-do">#</doc-anchor-trigger>
-        <span>Features / what does NDK do?</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#-getting-started-">#</doc-anchor-trigger>
+        <span><span class="docs-emoji">&#x27A1;&#xFE0F;</span> <a href="https://dart-nostr.com/guides/getting-started/">Getting Started <span class="docs-emoji">&#x1F517;</span></a></span>
     </h1>
 </doc-anchor-target>
+<doc-anchor-target id="changelog-">
+    <h1>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#changelog-">#</doc-anchor-trigger>
+        <span><a href="./changelog.md">Changelog <span class="docs-emoji">&#x1F517;</span></a></span>
+    </h1>
+</doc-anchor-target>
+<hr>
+<doc-anchor-target id="core-features">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#core-features">#</doc-anchor-trigger>
+        <span>Core Features</span>
+    </h2>
+</doc-anchor-target>
+<doc-anchor-target id="network--data-management">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#network--data-management">#</doc-anchor-trigger>
+        <span>Network &amp; Data Management</span>
+    </h3>
+</doc-anchor-target>
 <ul>
-<li>return nostr data based on filters (any kind).</li>
-<li>automatically discover the best relays to satisfy the provided request (using gossip)</li>
-<li>specify desired coverage on each request (e.g. x relays per pubkey)</li>
-<li>publish nostr events to optimal relays or explicit relays</li>
-<li>cache responses to save network bandwidth</li>
-<li>stream directly from cache and network (if needed)</li>
-<li>query and subscription, e.g., get data once; subscribe to data.</li>
-<li>plugin cache interface, bring your own db or use included ones: <code v-pre>inMemory, isar, objectbox, sembast</code></li>
-<li>plug in verifier interface, bring your own event verifier, or use included ones: <code v-pre>bip340, rust</code></li>
-<li>plug in event signer interface, bring your own event signer, or use included ones: <code v-pre>bip340, amber, nip07, nip46</code></li>
-<li>contact list support, you can convert nostr_event to contact_list</li>
-<li>nip51 list support, you can convert nostr_event to nip51_list</li>
-<li>nip05 caching</li>
-<li>nip-47 <a href="https://github.com/relaystr/ndk/blob/master/packages/ndk/lib/domain_layer/usecases/nwc/README.md">Nostr wallet connect</a></li>
-<li>nip-42 Authentication of clients to relays</li>
-<li>nip-57 Zaps</li>
-<li>blossom file support</li>
+<li><strong>Automatic relay discovery</strong> using inbox/outbox (gossip) model for optimal relay selection</li>
+<li><strong>Flexible data fetching</strong> with query (one-time) and subscription (real-time) modes</li>
+<li><strong>Smart caching</strong> to reduce network bandwidth and improve performance</li>
+<li><strong>Concurrent event streaming</strong> from both cache and network</li>
+<li><strong>Request coverage control</strong> to specify desired relay coverage per request</li>
+</ul>
+<doc-anchor-target id="account--authentication">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#account--authentication">#</doc-anchor-trigger>
+        <span>Account &amp; Authentication</span>
+    </h3>
+</doc-anchor-target>
+<ul>
+<li><strong>Multiple signer support</strong>: Built-in (BIP-340), Amber, NIP-07 (web), and NIP-46 (remote signing/bunkers)</li>
+<li><strong>Account management</strong> with state tracking and multiple account support</li>
+<li><strong>Relay authentication</strong> (NIP-42) for private relay access</li>
+</ul>
+<doc-anchor-target id="high-level-use-cases">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#high-level-use-cases">#</doc-anchor-trigger>
+        <span>High-Level Use Cases</span>
+    </h3>
+</doc-anchor-target>
+<ul>
+<li><strong>Metadata management</strong>: Query and update user profiles with automatic caching</li>
+<li><strong>Contact lists</strong>: Follow/unfollow users and manage contact lists</li>
+<li><strong>NIP-51 lists</strong>: Public and private relay sets, mute lists, and custom lists</li>
+<li><strong>Gift wrap</strong> (NIP-59): Encrypted, metadata-obscured messaging</li>
+<li><strong>Zaps</strong> (NIP-57): Lightning payments on Nostr</li>
+<li><strong>Nostr Wallet Connect</strong> (NIP-47): Integrate Lightning wallets</li>
+<li><strong>Domain verification</strong> (NIP-05): Verify and cache Nostr addresses</li>
+<li><strong>File management</strong>: Upload, download, and delete files using Blossom servers</li>
+<li><strong>Connectivity</strong>: Get notified about connection issues</li>
+<li><strong>Proof of Work</strong> (NIP-13): Create and verify PoW events</li>
+</ul>
+<doc-anchor-target id="developer-experience">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#developer-experience">#</doc-anchor-trigger>
+        <span>Developer Experience</span>
+    </h3>
+</doc-anchor-target>
+<ul>
+<li><strong>Pluggable architecture</strong>: Bring your own cache, verifier, or signer, replace any component</li>
+<li><strong>Multiple database options</strong>: In-memory, Isar, ObjectBox, Sembast</li>
+<li><strong>Event verification</strong>: BIP-340 or Rust-based (recommended for performance)</li>
+<li><strong>Comprehensive logging</strong> with configurable log levels and outputs</li>
+<li><strong>Clean architecture</strong> for maintainability and extensibility</li>
 </ul>
 <doc-anchor-target id="not-included">
     <h2>
@@ -248,45 +307,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 <li>ready to use feeds, you have to build them on your own (<span class="docs-emoji">&#x1F6AB;</span> not planned)</li>
 <li>create &amp;&amp; manage keypairs. You have to provide them (<span class="docs-emoji">&#x1F6AB;</span> not planned)</li>
 <li>threading, you can do this on your own if you move ndk or only the event_verifier into its own thread (<span class="docs-emoji">&#x1F51C;</span> planned)</li>
-<li>support for request overrides (you have to close and reopen requests) (<span class="docs-emoji">&#x1F914;</span> unsure)</li>
-</ul>
-<p>
-<div class="mb-6 px-5 py-4 flex justify-between relative border border-base-border hover:border-base-border-hover rounded transition-colors duration-150">
-    <div class="flex items-center text-base-500">
-        <span class="inline-block mb-px">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="presentation" fill="currentColor"><path fill="none" d="M0 0h24v24H0z"/><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z"/></svg>
-        </span>
-        <span class="inline-block font-medium ml-2">Contributing</span>
-    </div>
-    <div class="flex items-center text-xs text-gray-400 dark:text-dark-400">
-        <span>library-development/contributing/</span>
-    </div>
-    <a href="library-development/contributing/" class="absolute block inset-0"></a>
-</div>
-</p>
-<hr>
-<doc-anchor-target id="nips">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#nips">#</doc-anchor-trigger>
-        <span>NIPs</span>
-    </h2>
-</doc-anchor-target>
-<ul class="contains-task-list">
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Event Builders / WebSocket Subscriptions (<a href="https://github.com/nostr-protocol/nips/blob/master/01.md">NIP-01</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> User Profiles (edit/follow/unfollow - <a href="https://github.com/nostr-protocol/nips/blob/master/02.md">NIP-02</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Private Messages (<a href="https://github.com/nostr-protocol/nips/blob/master/04.md">NIP-04</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Nostr Address (<a href="https://github.com/nostr-protocol/nips/blob/master/05.md">NIP-05</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Event Deletion (<a href="https://github.com/nostr-protocol/nips/blob/master/09.md">NIP-09</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Relay Info (<a href="https://github.com/nostr-protocol/nips/blob/master/11.md">NIP-11</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Reactions (<a href="https://github.com/nostr-protocol/nips/blob/master/25.md">NIP-25</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Lists (<a href="https://github.com/nostr-protocol/nips/blob/master/51.md">NIP-51</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Relay List Metadata (<a href="https://github.com/nostr-protocol/nips/blob/master/65.md">NIP-65</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Wallet Connect API (<a href="https://github.com/nostr-protocol/nips/blob/master/47.md">NIP-47</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Zaps (<a href="https://github.com/nostr-protocol/nips/blob/master/57.md">NIP-57</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Authentication of clients to relays (<a href="https://github.com/nostr-protocol/nips/blob/master/42.md">NIP-42</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> Encrypted Payloads (Versioned) (<a href="https://github.com/nostr-protocol/nips/blob/master/44.md">NIP-44</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> Bech Encoding support (<a href="https://github.com/nostr-protocol/nips/blob/master/19.md">NIP-19</a>)</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> Badges (<a href="https://github.com/nostr-protocol/nips/blob/master/58.md">NIP-58</a>)</li>
+<li>support for request overrides (you have to close and reopen requests) (<span class="docs-emoji">&#x1F6AB;</span> not planned)</li>
 </ul>
 
                                 
