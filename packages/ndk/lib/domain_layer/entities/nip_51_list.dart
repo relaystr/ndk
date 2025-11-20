@@ -161,6 +161,7 @@ class Nip51List {
         // backward compatibility: Check if content uses NIP-04 format (contains ?iv=)
         final isNip04 = event.content.contains('?iv=');
         final json = isNip04
+            // ignore: deprecated_member_use_from_same_package
             ? await signer.decrypt(
                 event.content,
                 signer.getPublicKey(),
@@ -293,6 +294,7 @@ class Nip51Set extends Nip51List {
         // backward compatibility: Check if content uses NIP-04 format (contains ?iv=)
         final isNip04 = event.content.contains('?iv=');
         final json = isNip04
+            // ignore: deprecated_member_use_from_same_package
             ? await signer.decrypt(
                 event.content,
                 signer.getPublicKey(),
