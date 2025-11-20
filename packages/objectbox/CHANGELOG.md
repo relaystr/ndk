@@ -1,3 +1,7 @@
+## 0.2.7-dev.24
+
+ - Update a dependency to the latest release.
+
 ## 0.2.7-dev.23
 
  - Update a dependency to the latest release.

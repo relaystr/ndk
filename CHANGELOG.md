@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-11-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.0-dev.19`](#ndk---v060-dev19)
+ - [`ndk_amber` - `v0.3.3-dev.22`](#ndk_amber---v033-dev22)
+ - [`ndk_isar` - `v0.2.3-dev.22`](#ndk_isar---v023-dev22)
+ - [`ndk_objectbox` - `v0.2.7-dev.24`](#ndk_objectbox---v027-dev24)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.24`](#ndk_rust_verifier---v042-dev24)
+ - [`nip07_event_signer` - `v1.0.4-dev.22`](#nip07_event_signer---v104-dev22)
+ - [`sembast_cache_manager` - `v1.0.5-dev.22`](#sembast_cache_manager---v105-dev22)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.22`
+ - `ndk_isar` - `v0.2.3-dev.22`
+ - `ndk_objectbox` - `v0.2.7-dev.24`
+ - `ndk_rust_verifier` - `v0.4.2-dev.24`
+ - `nip07_event_signer` - `v1.0.4-dev.22`
+ - `sembast_cache_manager` - `v1.0.5-dev.22`
+
+---
+
+#### `ndk` - `v0.6.0-dev.19`
+
+ - **REFACTOR**: remove param signer from lists api.
+ - **REFACTOR**: use immutable event in toEvent().
+ - **REFACTOR**: reoder, naming, description.
+ - **FIX**: upgrade to nip44.
+ - **FIX**: mock relay delete from memory.
+ - **FIX**: calculate id in nip51set.
+ - **FEAT**: lists nip04 backwards compatibility with nip04.
+ - **FEAT**: delete set.
+
+
 ## 2025-11-19
 
 ### Changes

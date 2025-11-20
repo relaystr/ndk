@@ -1,3 +1,7 @@
+## 0.4.2-dev.24
+
+ - Update a dependency to the latest release.
+
 ## 0.4.2-dev.23
 
  - **FIX**: remove hex package depandance.
