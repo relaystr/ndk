@@ -443,32 +443,31 @@ class Lists {
           createdAt: Helpers.now,
           elements: []);
     }
-    if (mySet != null) {
-      mySet.removeElement(tag, value);
-      mySet.createdAt = Helpers.now;
-      Nip01Event event = await mySet.toEvent(_eventSigner);
 
-      final broadcastResponse = _broadcast.broadcast(
-        nostrEvent: event,
-        specificRelays: specificRelays,
-        customSigner: _eventSigner,
-      );
-      await broadcastResponse.broadcastDoneFuture;
+    mySet.removeElement(tag, value);
+    mySet.createdAt = Helpers.now;
+    Nip01Event event = await mySet.toEvent(_eventSigner);
 
-      List<Nip01Event>? events = await _cacheManager.loadEvents(
-          pubKeys: [_eventSigner!.getPublicKey()],
-          kinds: [Nip51List.kRelaySet]);
-      events = events.where((event) {
-        if (event.getDtag() != null && event.getDtag() == name) {
-          return true;
-        }
-        return false;
-      }).toList();
-      for (var event in events) {
-        _cacheManager.removeEvent(event.id);
+    final broadcastResponse = _broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: specificRelays,
+      customSigner: _eventSigner,
+    );
+    await broadcastResponse.broadcastDoneFuture;
+
+    List<Nip01Event>? events = await _cacheManager.loadEvents(
+        pubKeys: [_eventSigner!.getPublicKey()], kinds: [Nip51List.kRelaySet]);
+    events = events.where((event) {
+      if (event.getDtag() != null && event.getDtag() == name) {
+        return true;
       }
-      await _cacheManager.saveEvent(event);
+      return false;
+    }).toList();
+    for (var event in events) {
+      _cacheManager.removeEvent(event.id);
     }
+    await _cacheManager.saveEvent(event);
+
     return mySet;
   }
 
@@ -838,8 +837,6 @@ class Lists {
     required String publicKey,
     bool forceRefresh = false,
   }) async {
-    //? not perfect to use bip340 signer here
-    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
     return getSingleNip51RelaySet(name, forceRefresh: forceRefresh);
   }
 }
