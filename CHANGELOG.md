@@ -11,6 +11,35 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`rust_lib_ndk` - `v0.1.7-dev.0+1`](#rust_lib_ndk---v017-dev01)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.0+1`](#ndk_rust_verifier---v042-dev01)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_rust_verifier` - `v0.4.2-dev.0+1`
+
+---
+
+#### `rust_lib_ndk` - `v0.1.7-dev.0+1`
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FIX**: remove hex package depandance.
+
+
+## 2025-11-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`ndk_amber` - `v0.3.3`](#ndk_amber---v033)
  - [`ndk_objectbox` - `v0.2.7`](#ndk_objectbox---v027)
  - [`ndk_rust_verifier` - `v0.4.2`](#ndk_rust_verifier---v042)
