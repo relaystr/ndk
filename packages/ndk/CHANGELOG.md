@@ -1,3 +1,25 @@
+## 0.6.0-dev.20
+
+ - **REFACTOR**: remove param signer from lists api.
+ - **REFACTOR**: use immutable event in toEvent().
+ - **REFACTOR**: reoder, naming, description.
+ - **FIX**: upgrade to nip44.
+ - **FIX**: mock relay delete from memory.
+ - **FIX**: calculate id in nip51set.
+ - **FEAT**: lists nip04 backwards compatibility with nip04.
+ - **FEAT**: delete set.
+
+## 0.6.0-dev.19
+
+ - **REFACTOR**: remove param signer from lists api.
+ - **REFACTOR**: use immutable event in toEvent().
+ - **REFACTOR**: reoder, naming, description.
+ - **FIX**: upgrade to nip44.
+ - **FIX**: mock relay delete from memory.
+ - **FIX**: calculate id in nip51set.
+ - **FEAT**: lists nip04 backwards compatibility with nip04.
+ - **FEAT**: delete set.
+
 ## 0.6.0-dev.18
 
  - **FIX**: missing convert  dependency.
