@@ -495,7 +495,7 @@ packages:
       path: rust_builder
       relative: true
     source: path
-    version: "0.1.7"
+    version: "0.1.7-dev.0+1"
   rxdart:
     dependency: transitive
     description:
