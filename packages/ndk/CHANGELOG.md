@@ -1,3 +1,7 @@
+## 0.6.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.6.0-dev.20
 
  - **REFACTOR**: remove param signer from lists api.
