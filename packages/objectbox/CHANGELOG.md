@@ -1,3 +1,7 @@
+## 0.2.7
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.2.7-dev.25
 
  - Update a dependency to the latest release.
