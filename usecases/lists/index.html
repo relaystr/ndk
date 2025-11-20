@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.806142188872">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.816957871253">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.11.0">
@@ -11,7 +11,7 @@
     <!-- Primary Meta Tags -->
     <title>Lists</title>
     <meta name="title" content="Lists">
-    <meta name="description" content="We distinguish between public and private lists/sets. The methods are prefixed with public or private. ">
+    <meta name="description" content="We distinguish between lists and sets:">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/usecases/lists/">
@@ -20,22 +20,22 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dart-nostr.com/usecases/lists/">
     <meta property="og:title" content="Lists">
-    <meta property="og:description" content="We distinguish between public and private lists/sets. The methods are prefixed with public or private. ">
+    <meta property="og:description" content="We distinguish between lists and sets:">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://dart-nostr.com/usecases/lists/">
     <meta property="twitter:title" content="Lists">
-    <meta property="twitter:description" content="We distinguish between public and private lists/sets. The methods are prefixed with public or private. ">
+    <meta property="twitter:description" content="We distinguish between lists and sets:">
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=3.11.0.806142188872" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=3.11.0.816957871253" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=3.11.0.806142188872" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=3.11.0.816957871253" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=3.11.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.11.0.806142188872" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.11.0.806142188872" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.11.0.816957871253" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.11.0.816957871253" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -52,7 +52,7 @@
                     <div class="flex items-center px-2 md:px-6">
                         <a id="retype-branding-logo" href="../../" class="flex items-center leading-snug text-2xl">
                             <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
-                        </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.5.0</span>
+                        </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.6.0</span>
                     </div>
         
                     <span class="hidden h-8 border-r md:inline-block border-base-border"></span>
@@ -186,19 +186,17 @@
     </h2>
 </doc-anchor-target>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">
-    final myset = await ndk.lists.getSinglePublicNip51RelaySet(
-      name: &quot;myset&quot;,
-      publicKey:
-          &quot;3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d&quot;,
-    );
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final myset = await ndk.lists.getSetByName(
+  name: &quot;myset&quot;,
+  kind: Nip51List.kRelaySet,
+  customSigner: mySigner,
+);
 
-    if (myset == null) {
-      print(&quot;set not found&quot;);
-      return;
-    }
-    print(&quot;recived a set with ${myset.elements.length} elements&quot;);
-</code></pre>
+if (myset == null) {
+  print(&quot;set not found&quot;);
+  return;
+}
+print(&quot;received a set with ${myset.elements.length} elements&quot;);</code></pre>
 </doc-codeblock></div>
 <doc-anchor-target id="how-to-use">
     <h2>
@@ -206,9 +204,336 @@
         <span>How to use</span>
     </h2>
 </doc-anchor-target>
-<p>We distinguish between public and private lists/sets. <br />
-The methods are prefixed with public or private. <br />
-Editing lists should be done via the provided broadcast methods.</p>
+<p>We distinguish between <strong>lists</strong> and <strong>sets</strong>:</p>
+<ul>
+<li><strong>Lists</strong>: Single lists identified by kind (e.g., bookmarks, mute list)</li>
+<li><strong>Sets</strong>: Named collections identified by kind + name/d-tag (e.g., relay sets, follow sets)</li>
+</ul>
+<p>Both can have public and private (encrypted) elements.</p>
+<doc-anchor-target id="lists-methods">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#lists-methods">#</doc-anchor-trigger>
+        <span>Lists Methods</span>
+    </h3>
+</doc-anchor-target>
+<doc-anchor-target id="getsinglenip51list">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#getsinglenip51list">#</doc-anchor-trigger>
+        <span>getSingleNip51List</span>
+    </h4>
+</doc-anchor-target>
+<p>Retrieves a NIP-51 list by kind.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Returns a NIP-51 list by the given kind.
+///
+/// Retrieves the most recent list event for the specified kind.
+/// First checks cache unless [forceRefresh] is true, then queries relays.
+///
+/// [kind] the kind of NIP-51 list to retrieve \
+/// [forceRefresh] if true, bypass cache and query relays directly \
+/// [timeout] maximum duration to wait for relay responses
+///
+/// Returns the list if found, null otherwise.
+Future&lt;Nip51List?&gt; getSingleNip51List(
+  int kind, {
+  bool forceRefresh = false,
+  Duration timeout = const Duration(seconds: 5),
+}) async {
+  if (_eventSigner == null) {
+    throw Exception(&quot;cannot get nip51 list without a signer&quot;);</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="addelementtolist">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#addelementtolist">#</doc-anchor-trigger>
+        <span>addElementToList</span>
+    </h4>
+</doc-anchor-target>
+<p>Adds an element to a list. Creates the list if it doesn&#x27;t exist.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">}
+
+/// Adds an element to a NIP-51 list.
+///
+/// If the list doesn't exist, it will be created. The updated list is
+/// then broadcast to relays and cached locally.
+///
+/// [kind] the kind of NIP-51 list \
+/// [tag] the tag type for the element (e.g., 'p' for pubkey, 'e' for event) \
+/// [value] the value to add to the list \
+/// [broadcastRelays] optional specific relays to broadcast to \
+/// [private] if true, encrypt the element in the list content
+///
+/// Returns the updated list.\
+/// Throws an exception if no event signer is available.
+Future&lt;Nip51List&gt; addElementToList({
+  required int kind,
+  required String tag,
+  required String value,
+  Iterable&lt;String&gt;? broadcastRelays,</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="removeelementfromlist">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#removeelementfromlist">#</doc-anchor-trigger>
+        <span>removeElementFromList</span>
+    </h4>
+</doc-anchor-target>
+<p>Removes an element from a list.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">
+/// Removes an element from a NIP-51 list.
+///
+/// Updates the list by removing the specified element, then broadcasts
+/// the updated list to relays and updates the cache.
+///
+/// [kind] the kind of NIP-51 list \
+/// [tag] the tag type of the element to remove \
+/// [value] the value to remove from the list \
+/// [broadcastRelays] optional specific relays to broadcast to
+///
+/// Returns the updated list, or null if the list doesn't exist.\
+/// Throws an exception if no event signer is available.
+Future&lt;Nip51List?&gt; removeElementFromList({
+  required int kind,
+  required String tag,
+  required String value,
+  Iterable&lt;String&gt;? broadcastRelays,</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="sets-methods">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#sets-methods">#</doc-anchor-trigger>
+        <span>Sets Methods</span>
+    </h3>
+</doc-anchor-target>
+<doc-anchor-target id="getsetbyname">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#getsetbyname">#</doc-anchor-trigger>
+        <span>getSetByName</span>
+    </h4>
+</doc-anchor-target>
+<p>Gets a specific set by name (d-tag) and kind.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Gets a NIP-51 set by name identifier (d tag).
+///
+/// Retrieves a specific set for the logged-in user or a custom signer.
+/// The set is identified by its name (d tag) and kind.
+///
+/// [name] name of the set (d tag identifier) \
+/// [kind] kind of the set, see Nip51List class for constants \
+/// [customSigner] optional signer, defaults to logged-in account \
+/// [forceRefresh] if true, skip cache and query relays directly
+///
+/// Returns the set if found, null otherwise. \
+/// Throws an exception if no account is logged in and no custom signer is provided.
+Future&lt;Nip51Set?&gt; getSetByName({
+  required String name,
+  required int kind,
+  bool forceRefresh = false,
+}) async {
+  final EventSigner signer;</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="getpublicsets">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#getpublicsets">#</doc-anchor-trigger>
+        <span>getPublicSets</span>
+    </h4>
+</doc-anchor-target>
+<p>Returns a stream of all public sets for a given public key and kind.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// [kind] the kind of sets to retrieve \
+/// [publicKey] the public key of the user whose sets to retrieve, default logged in pubkey \
+/// [forceRefresh] if true, skip cache and query relays directly
+///
+/// Returns a stream that emits collections of sets as they are discovered.
+Stream&lt;Iterable&lt;Nip51Set&gt;?&gt; getPublicSets({
+  required int kind,
+  String? publicKey,
+  bool forceRefresh = false,
+}) {
+  final EventSigner mySigner;
+  if (publicKey == null) {
+    if (_eventSigner == null) {
+      throw Exception(&quot;getPublicSets() no account&quot;);
+    }</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="addelementtoset">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#addelementtoset">#</doc-anchor-trigger>
+        <span>addElementToSet</span>
+    </h4>
+</doc-anchor-target>
+<p>Adds an element to a named set. Creates the set if it doesn&#x27;t exist.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">
+  return _getSets(kind, mySigner, forceRefresh: forceRefresh);
+}
+
+/// Adds an element to a NIP-51 set.
+///
+/// If the set doesn't exist, it will be created. The updated set is
+/// then broadcast to relays and cached locally.
+///
+/// [name] name of the set (d tag identifier) \
+/// [tag] the tag type for the element (e.g., 'relay', 'p', 'e') \
+/// [value] the value to add to the set \
+/// [kind] kind of the set \
+/// [private] if true, encrypt the element in the set content \
+/// [specificRelays] optional specific relays to broadcast to
+///
+/// Returns the updated set.
+Future&lt;Nip51Set?&gt; addElementToSet({
+  required String name,
+  required String tag,
+  required String value,</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="removeelementfromset">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#removeelementfromset">#</doc-anchor-trigger>
+        <span>removeElementFromSet</span>
+    </h4>
+</doc-anchor-target>
+<p>Removes an element from a named set.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  await _cacheManager.saveEvent(event);
+  return set;
+}
+
+/// Removes an element from a NIP-51 set.
+///
+/// Updates the set by removing the specified element, then broadcasts
+/// the updated set to relays and updates the cache.
+///
+/// [name] name of the set (d tag identifier) \
+/// [value] the value to remove from the set \
+/// [tag] the tag type of the element to remove \
+/// [kind] kind of the set \
+/// [private] if true, the element was encrypted \
+/// [specificRelays] optional specific relays to broadcast to
+///
+/// Returns the updated set.
+/// Throws an exception if no event signer is available.
+Future&lt;Nip51Set?&gt; removeElementFromSet({
+  required String name,
+  required String value,
+  required String tag,</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="setcompleteset">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#setcompleteset">#</doc-anchor-trigger>
+        <span>setCompleteSet</span>
+    </h4>
+</doc-anchor-target>
+<p>Overwrites or creates a complete set. <strong>Warning:</strong> This replaces the entire set.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  return mySet;
+}
+
+/// Overwrites or creates a complete NIP-51 set.
+///
+/// **Warning:** This replaces the entire set. Consider using
+/// [addElementToSet] or [removeElementFromSet] for incremental updates.
+///
+/// [set] the complete set to broadcast \
+/// [kind] kind of the set \
+/// [specificRelays] optional specific relays to broadcast to
+///
+/// Returns the set after broadcasting.
+Future&lt;Nip51Set&gt; setCompleteSet({
+  required Nip51Set set,</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="deleteset">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#deleteset">#</doc-anchor-trigger>
+        <span>deleteSet</span>
+    </h4>
+</doc-anchor-target>
+<p>Deletes a set by name and broadcasts a deletion event.</p>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">
+/// Deletes a NIP-51 set by name.
+///
+/// Broadcasts a deletion event for the set and removes it from the cache.
+/// Uses the logged-in account's signer.
+///
+/// [name] name of the set (d tag identifier) \
+/// [kind] kind of the set \
+/// [specificRelays] optional specific relays to broadcast the deletion to
+///
+/// Throws an exception if no event signer is available.
+Future deleteSet({
+  required String name,
+  required int kind,
+  Iterable&lt;String&gt;? specificRelays,</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="common-use-cases">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#common-use-cases">#</doc-anchor-trigger>
+        <span>Common Use Cases</span>
+    </h2>
+</doc-anchor-target>
+<doc-anchor-target id="relay-sets">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#relay-sets">#</doc-anchor-trigger>
+        <span>Relay Sets</span>
+    </h3>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">// Add relay to a set
+await ndk.lists.addElementToSet(
+  name: &quot;my-relays&quot;,
+  tag: &quot;relay&quot;,
+  value: &quot;wss://relay.example.com&quot;,
+  kind: Nip51List.kRelaySet,
+);
+
+// Get a relay set
+final relaySet = await ndk.lists.getSetByName(
+  name: &quot;my-relays&quot;,
+  kind: Nip51List.kRelaySet,
+);</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="bookmarks">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#bookmarks">#</doc-anchor-trigger>
+        <span>Bookmarks</span>
+    </h3>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">// Add bookmark
+await ndk.lists.addElementToList(
+  kind: Nip51List.kBookmarks,
+  tag: &quot;e&quot;,
+  value: eventId,
+);
+
+// Get bookmarks
+final bookmarks = await ndk.lists.getSingleNip51List(
+  Nip51List.kBookmarks,
+  mySigner,
+);</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="follow-sets">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#follow-sets">#</doc-anchor-trigger>
+        <span>Follow Sets</span>
+    </h3>
+</doc-anchor-target>
+<div class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">// Add to follow set
+await ndk.lists.addElementToSet(
+  name: &quot;close-friends&quot;,
+  tag: &quot;p&quot;,
+  value: pubkey,
+  kind: Nip51List.kFollowSet,
+);
+
+// Stream all public follow sets
+ndk.lists.getPublicSets(
+  kind: Nip51List.kFollowSet,
+  publicKey: somePubkey,
+).listen((sets) {
+  print(&quot;Found ${sets?.length ?? 0} follow sets&quot;);
+});</code></pre>
+</doc-codeblock></div>
 
                                 
                                 <!-- Required only on API pages -->
