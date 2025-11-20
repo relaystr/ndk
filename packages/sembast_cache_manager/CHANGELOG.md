@@ -1,3 +1,7 @@
+## 1.0.5-dev.23
+
+ - Update a dependency to the latest release.
+
 ## 1.0.5-dev.22
 
  - Update a dependency to the latest release.
