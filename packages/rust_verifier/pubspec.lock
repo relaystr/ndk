@@ -416,7 +416,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.6.0-dev.20"
+    version: "0.6.0"
   package_config:
     dependency: transitive
     description:
@@ -495,7 +495,7 @@ packages:
       path: rust_builder
       relative: true
     source: path
-    version: "0.1.7-dev.2"
+    version: "0.1.7"
   rxdart:
     dependency: transitive
     description:
