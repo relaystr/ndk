@@ -49,7 +49,7 @@ jobs:
       - name: Run Melos
         uses: bluefireteam/melos-action@v3
         with:
-          run-versioning: true
+          run-versioning: false
           run-versioning-prerelease: true
           publish-dry-run: true
           create-pr: true
