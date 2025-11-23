@@ -34,7 +34,7 @@ import '../../user_relay_lists/user_relay_lists.dart';
 ///
 
 class RelayJitPubkeyStrategy with Logger {
-  static void handleRequest({
+  static Future<void> handleRequest({
     required RequestState requestState,
     required GlobalState globalState,
 
@@ -51,7 +51,7 @@ class RelayJitPubkeyStrategy with Logger {
     required ReadWriteMarker direction,
     required List<String> ignoreRelays,
     required RelayManager relayManager,
-  }) {
+  }) async {
     List<String> combindedPubkeys = [
       ...?filter.authors,
       ...?filter.pTags
@@ -60,16 +60,16 @@ class RelayJitPubkeyStrategy with Logger {
     // init coveragePubkeys
     List<CoveragePubkey> coveragePubkeys = [];
 
-    for (var pubkey in combindedPubkeys) {
+    for (final pubkey in combindedPubkeys) {
       coveragePubkeys
           .add(CoveragePubkey(pubkey, desiredCoverage, desiredCoverage));
     }
 
     // look for connected relays that cover the pubkey
-    for (var connectedRelay in connectedRelays) {
-      var coveredPubkeysForRelay = <String>[];
+    for (final connectedRelay in connectedRelays) {
+      final coveredPubkeysForRelay = <String>[];
 
-      for (var coveragePubkey in coveragePubkeys) {
+      for (final coveragePubkey in coveragePubkeys) {
         if (JitEngine.doesRelayCoverPubkey(
             connectedRelay, coveragePubkey.pubkey, direction)) {
           coveredPubkeysForRelay.add(coveragePubkey.pubkey);
@@ -93,10 +93,10 @@ class RelayJitPubkeyStrategy with Logger {
         globalState,
         relayManager,
       );
-
-      // clear out fully covered pubkeys
-      _removeFullyCoveredPubkeys(coveragePubkeys);
     }
+
+    // clear out fully covered pubkeys after processing all connected relays
+    _removeFullyCoveredPubkeys(coveragePubkeys);
 
     if (coveragePubkeys.isEmpty) {
       // we are done
@@ -104,7 +104,7 @@ class RelayJitPubkeyStrategy with Logger {
       return;
     }
 
-    _findRelaysForUnresolvedPubkeys(
+    await _findRelaysForUnresolvedPubkeys(
       requestState: requestState,
       globalState: globalState,
       relayManger: relayManager,
@@ -141,7 +141,7 @@ class RelayJitPubkeyStrategy with Logger {
   // looks in nip65 data for not covered pubkeys
   // the result is relay candidates
   // connects to these candidates and sends out the request
-  static void _findRelaysForUnresolvedPubkeys({
+  static Future<void> _findRelaysForUnresolvedPubkeys({
     required RelayManager relayManger,
     required RequestState requestState,
     required GlobalState globalState,
