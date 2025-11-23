@@ -8,6 +8,7 @@ import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
+import '../../shared/logger/log_level.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../entities/broadcast_state.dart';
 import '../entities/connection_source.dart';
@@ -55,6 +56,9 @@ class RelayManager<T> {
   Stream<Map<String, RelayConnectivity>> get relayConnectivityChanges =>
       _relayUpdatesStreamController.stream;
 
+  Timer? _updateRelayConnectivityTimer;
+  bool _pendingRelayUpdate = false;
+
   /// Creates a new relay manager.
   RelayManager({
     required this.globalState,
@@ -69,6 +73,19 @@ class RelayManager<T> {
   }
 
   void updateRelayConnectivity() {
+    if (_pendingRelayUpdate) return;
+
+    _pendingRelayUpdate = true;
+    _updateRelayConnectivityTimer?.cancel();
+    _updateRelayConnectivityTimer = Timer(Duration(milliseconds: 100), () {
+      _pendingRelayUpdate = false;
+      _relayUpdatesStreamController.add(globalState.relays);
+    });
+  }
+
+  void updateRelayConnectivityImmediate() {
+    _updateRelayConnectivityTimer?.cancel();
+    _pendingRelayUpdate = false;
     _relayUpdatesStreamController.add(globalState.relays);
   }
 
@@ -264,18 +281,18 @@ class RelayManager<T> {
   }
 
   void reSubscribeInFlightSubscriptions(RelayConnectivity relayConnectivity) {
+    final relayUrl = relayConnectivity.url;
     globalState.inFlightRequests.forEach((key, state) {
-      state.requests.values
-          .where((req) => req.url == relayConnectivity.url)
-          .forEach((req) {
-        if (!state.request.closeOnEOSE) {
-          List<dynamic> list = ["REQ", state.id];
-          list.addAll(req.filters.map((filter) => filter.toMap()));
+      if (state.request.closeOnEOSE) return; // Skip early
 
-          relayConnectivity.stats.activeRequests++;
-          _sendRaw(relayConnectivity, jsonEncode(list));
-        }
-      });
+      final req = state.requests[relayUrl];
+      if (req != null) {
+        List<dynamic> list = ["REQ", state.id];
+        list.addAll(req.filters.map((filter) => filter.toMap()));
+
+        relayConnectivity.stats.activeRequests++;
+        _sendRaw(relayConnectivity, jsonEncode(list));
+      }
     });
   }
 
@@ -546,15 +563,13 @@ class RelayManager<T> {
 
     /// check if relays for this request are still connected
     /// if not ignore it and wait for the ones still alive to receive EOSE
-    final listOfRelaysForThisRequest = state.requests.keys.toList();
-    final myNotConnectedRelays = globalState.relays.keys
-        .where((url) => listOfRelaysForThisRequest.contains(url))
-        .where((url) => !isRelayConnected(url))
-        .toList();
+    final requestRelayUrls = state.requests.keys.toSet();
+    final notConnectedRelays =
+        requestRelayUrls.where((url) => !isRelayConnected(url)).toSet();
 
     final bool didAllRelaysFinish = state.requests.values.every(
       (element) =>
-          element.receivedEOSE || myNotConnectedRelays.contains(element.url),
+          element.receivedEOSE || notConnectedRelays.contains(element.url),
     );
 
     if (didAllRelaysFinish) {
@@ -581,22 +596,14 @@ class RelayManager<T> {
   }
 
   void _logActiveRequests() {
-    // Map<int?, int> kindsMap = {};
+    // Skip expensive iteration if debug logging is not enabled
+    if (!LogLevel.debug.shouldLog(Logger.log.level)) return;
+
     Map<String?, int> namesMap = {};
     globalState.inFlightRequests.forEach((key, state) {
-      // int? kind;
-      // if (state.requests.isNotEmpty &&
-      //     state.requests.values.first.filters.first.kinds != null &&
-      //     state.requests.values.first.filters.first.kinds!.isNotEmpty) {
-      //   kind = state.requests.values.first.filters.first.kinds!.first;
-      // }
-      // int? kindCount = kindsMap[kind];
       int? nameCount = namesMap[state.request.name];
-      // kindCount ??= 0;
-      // kindCount++;
       nameCount ??= 0;
       nameCount++;
-      // kindsMap[kind] = kindCount;
       namesMap[state.request.name] = nameCount;
     });
     Logger.log.d(
