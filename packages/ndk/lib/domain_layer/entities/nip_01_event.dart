@@ -30,7 +30,7 @@ class Nip01Event {
     this.createdAt = (createdAt == 0)
         ? DateTime.now().millisecondsSinceEpoch ~/ 1000
         : createdAt;
-    id = _calculateId(pubKey, this.createdAt, kind, tags, content);
+    //id = _calculateId(pubKey, this.createdAt, kind, tags, content);
   }
 
   Nip01Event._(
@@ -135,6 +135,7 @@ class Nip01Event {
 
   static String _calculateId(String publicKey, int createdAt, int kind,
       List<dynamic> tags, String content) {
+    print("Calculating id with: $publicKey, $createdAt, $kind, $tags");
     final jsonData =
         json.encode([0, publicKey, createdAt, kind, tags, content]);
     final bytes = utf8.encode(jsonData);

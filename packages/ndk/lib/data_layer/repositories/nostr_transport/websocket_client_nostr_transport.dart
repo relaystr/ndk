@@ -24,26 +24,25 @@ class WebSocketClientNostrTransport implements NostrTransport {
     Completer completer = Completer();
     ready = completer.future;
 
-    ///! this code is causing the performance issue, or upstream by onReconnect()
-    // _stateStreamSubscription = _websocketDS.ws.connection.listen((state) {
-    //   Logger.log.t("${_websocketDS.url} connection state changed to $state");
-    //   if (state is Connected || state is Reconnected) {
-    //     if (!completer.isCompleted) {
-    //       completer.complete();
-    //     }
-    //     if (state is Reconnected && onReconnect != null) {
-    //       onReconnect.call();
-    //     }
-    //   } else if (state is Disconnected) {
-    //     completer = Completer();
-    //     ready = completer.future;
-    //   } else if (state is Connecting || state is Reconnecting) {
-    //     // Do nothing, just waiting for (re)connection to be established
-    //   } else {
-    //     Logger.log.w(
-    //         "${_websocketDS.url} connection state changed to unknown state: $state");
-    //   }
-    // });
+    _stateStreamSubscription = _websocketDS.ws.connection.listen((state) {
+      Logger.log.t("${_websocketDS.url} connection state changed to $state");
+      if (state is Connected || state is Reconnected) {
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+        if (state is Reconnected && onReconnect != null) {
+          onReconnect.call();
+        }
+      } else if (state is Disconnected) {
+        completer = Completer();
+        ready = completer.future;
+      } else if (state is Connecting || state is Reconnecting) {
+        // Do nothing, just waiting for (re)connection to be established
+      } else {
+        Logger.log.w(
+            "${_websocketDS.url} connection state changed to unknown state: $state");
+      }
+    });
   }
 
   /// A Future that completes when the WebSocket connection is ready.

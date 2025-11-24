@@ -6,6 +6,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
+import '../../data_layer/repositories/nostr_transport/websocket_isolate_nostr_transport.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/logger/log_level.dart';
@@ -310,6 +311,8 @@ class RelayManager<T> {
     /// wait until rdy
     await relayConnectivity.relayTransport!.ready;
 
+    //await Future.delayed(Duration(seconds: 10));
+
     final String encodedMsg = jsonEncode(msg.toJson());
     _sendRaw(relayConnectivity, encodedMsg);
   }
@@ -407,16 +410,16 @@ class RelayManager<T> {
 
   void _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) {
-    List<dynamic> eventJson;
-    try {
-      eventJson = json.decode(message);
-    } on FormatException catch (e) {
-      Logger.log.e(
-          "FormatException in _handleIncomingMessage for relay ${relayConnectivity.url}: $e, message: $message");
+    if (message is! NostrMessageRaw) {
+      Logger.log.w(
+          "Received non NostrMessageRaw message from ${relayConnectivity.url}: $message");
       return;
     }
 
-    if (eventJson[0] == 'OK') {
+    final myMsg = message;
+    final eventJson = myMsg.otherData;
+
+    if (myMsg.type == NostrMessageRawType.ok) {
       //nip 20 used to notify clients if an EVENT was successful
       if (eventJson.length >= 2 && eventJson[2] == false) {
         Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
@@ -438,22 +441,22 @@ class RelayManager<T> {
       }
       return;
     }
-    if (eventJson[0] == 'NOTICE') {
+    if (myMsg.type == NostrMessageRawType.notice) {
       Logger.log.w("NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
       _logActiveRequests();
-    } else if (eventJson[0] == 'EVENT') {
+    } else if (myMsg.type == NostrMessageRawType.event) {
       _handleIncomingEvent(
-          eventJson, relayConnectivity, message.toString().codeUnits.length);
+          myMsg, relayConnectivity, message.toString().codeUnits.length);
       Logger.log.t("EVENT from ${relayConnectivity.url}: $eventJson");
-    } else if (eventJson[0] == 'EOSE') {
+    } else if (myMsg.type == NostrMessageRawType.eose) {
       Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
       _handleEOSE(eventJson, relayConnectivity);
-    } else if (eventJson[0] == 'CLOSED') {
+    } else if (myMsg.type == NostrMessageRawType.closed) {
       Logger.log.w(
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
       _handleClosed(eventJson, relayConnectivity);
     }
-    if (eventJson[0] == ClientMsgType.kAuth) {
+    if (myMsg.type == NostrMessageRawType.auth) {
       // nip 42 used to send authentication challenges
       final challenge = eventJson[1];
       Logger.log.d("AUTH: $challenge");
@@ -480,23 +483,35 @@ class RelayManager<T> {
     // }
   }
 
-  void _handleIncomingEvent(List<dynamic> eventJson,
-      RelayConnectivity connectivity, int messageSize) {
-    var id = eventJson[1];
-    if (globalState.inFlightRequests[id] == null) {
+  void _handleIncomingEvent(
+    NostrMessageRaw nostrMsgRaw,
+    RelayConnectivity connectivity,
+    int messageSize,
+  ) {
+    final requestId = nostrMsgRaw.requestId!;
+    final eventRaw = nostrMsgRaw.nip01Event!;
+    if (globalState.inFlightRequests[requestId] == null) {
       Logger.log.w(
-          "RECEIVED EVENT from ${connectivity.url} for id $id, not in globalState inFlightRequests. Likely data after EOSE on a query");
+          "RECEIVED EVENT from ${connectivity.url} for id $requestId, not in globalState inFlightRequests. Likely data after EOSE on a query");
       return;
     }
 
-    Nip01Event event = Nip01Event.fromJson(eventJson[2]);
+    Nip01Event event = Nip01Event(
+      pubKey: eventRaw.pubKey,
+      createdAt: eventRaw.createdAt,
+      kind: eventRaw.kind,
+      tags: eventRaw.tags,
+      content: eventRaw.content,
+    );
+    event.sig = eventRaw.sig;
+    event.id = eventRaw.id;
     connectivity.stats.incStatsByNewEvent(event, messageSize);
 
-    RequestState? state = globalState.inFlightRequests[id];
+    RequestState? state = globalState.inFlightRequests[requestId];
     if (state != null) {
       RelayRequestState? request = state.requests[connectivity.url];
       if (request == null) {
-        Logger.log.w("No RelayRequestState found for id $id");
+        Logger.log.w("No RelayRequestState found for id $requestId");
         return;
       }
       event.sources.add(connectivity.url);
