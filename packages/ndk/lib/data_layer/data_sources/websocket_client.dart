@@ -26,20 +26,18 @@ class WebsocketDSClient {
   }
 
   bool isOpen() {
-    return ws.connection.state == Connected() ||
-        ws.connection.state == Reconnected();
+    final state = ws.connection.state;
+    return state is Connected || state is Reconnected;
   }
 
   int? closeCode() {
-    return ws.connection.state == Disconnected()
-        ? (ws.connection.state as Disconnected).code
-        : null;
+    final state = ws.connection.state;
+    return state is Disconnected ? state.code : null;
   }
 
   String? closeReason() {
-    return ws.connection.state == Disconnected()
-        ? (ws.connection.state as Disconnected).reason
-        : null;
+    final state = ws.connection.state;
+    return state is Disconnected ? state.reason : null;
   }
 }
 // coverage:ignore-end

@@ -4,6 +4,7 @@ import 'package:web_socket_client/web_socket_client.dart';
 
 import '../../../domain_layer/repositories/nostr_transport.dart';
 import '../../../shared/logger/logger.dart';
+import '../../data_sources/websocket_channel.dart';
 import '../../data_sources/websocket_client.dart';
 
 /// A WebSocket-based implementation of the NostrTransport interface.
@@ -22,28 +23,24 @@ class WebSocketClientNostrTransport implements NostrTransport {
   WebSocketClientNostrTransport(this._websocketDS, [Function? onReconnect]) {
     Completer completer = Completer();
     ready = completer.future;
+
     _stateStreamSubscription = _websocketDS.ws.connection.listen((state) {
       Logger.log.t("${_websocketDS.url} connection state changed to $state");
-      switch (state) {
-        case Connected() || Reconnected():
+      if (state is Connected || state is Reconnected) {
+        if (!completer.isCompleted) {
           completer.complete();
-          if (state == Reconnected() && onReconnect != null) {
-            onReconnect.call();
-          }
-          break;
-        case Disconnected():
-          completer = Completer();
-          ready = completer.future;
-          break;
-        case Connecting():
-          // Do nothing, just waiting for connection to be established
-          break;
-        case Reconnecting():
-          // Do nothing, just waiting for reconnection to be established
-          break;
-        default:
-          Logger.log.w(
-              "${_websocketDS.url} connection state changed to unknown state: $state");
+        }
+        if (state is Reconnected && onReconnect != null) {
+          onReconnect.call();
+        }
+      } else if (state is Disconnected) {
+        completer = Completer();
+        ready = completer.future;
+      } else if (state is Connecting || state is Reconnecting) {
+        // Do nothing, just waiting for (re)connection to be established
+      } else {
+        Logger.log.w(
+            "${_websocketDS.url} connection state changed to unknown state: $state");
       }
     });
   }
