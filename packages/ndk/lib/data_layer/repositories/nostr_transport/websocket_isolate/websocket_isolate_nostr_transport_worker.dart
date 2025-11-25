@@ -4,6 +4,7 @@ class _WebSocketIsolateWorker {
   final SendPort _mainSendPort;
   final ReceivePort _receivePort = ReceivePort();
   final Map<int, WebSocket> _connections = {};
+  final Map<int, List<StreamSubscription>> _subscriptions = {};
 
   _WebSocketIsolateWorker(this._mainSendPort) {
     _mainSendPort.send(_receivePort.sendPort);
@@ -16,8 +17,20 @@ class _WebSocketIsolateWorker {
     } else if (message is _SendCommand) {
       _connections[message.connectionId]?.send(message.data);
     } else if (message is _CloseCommand) {
-      _connections[message.connectionId]?.close();
-      _connections.remove(message.connectionId);
+      _closeConnection(message.connectionId);
+    }
+  }
+
+  Future<void> _closeConnection(int connectionId) async {
+    _connections[connectionId]?.close();
+    _connections.remove(connectionId);
+
+    // Cancel all subscriptions for this connection
+    final subs = _subscriptions.remove(connectionId);
+    if (subs != null) {
+      for (final sub in subs) {
+        await sub.cancel();
+      }
     }
   }
 
@@ -30,7 +43,9 @@ class _WebSocketIsolateWorker {
     final webSocket = WebSocket(Uri.parse(url), backoff: backoff);
     _connections[connectionId] = webSocket;
 
-    webSocket.connection.listen(
+    final subscriptions = <StreamSubscription>[];
+
+    final connectionSub = webSocket.connection.listen(
       (state) {
         if (state is Connected) {
           _mainSendPort.send(
@@ -67,9 +82,11 @@ class _WebSocketIsolateWorker {
         );
       },
     );
+    subscriptions.add(connectionSub);
 
-    webSocket.messages.listen(
+    final messagesSub = webSocket.messages.listen(
       (message) {
+        //? this is an expensive operation
         final eventJson = json.decode(message);
         final NostrMessageRaw data;
 
@@ -165,8 +182,11 @@ class _WebSocketIsolateWorker {
             closeReason: "Done",
           ),
         );
-        _connections.remove(connectionId);
+        _closeConnection(connectionId);
       },
     );
+    subscriptions.add(messagesSub);
+
+    _subscriptions[connectionId] = subscriptions;
   }
 }

@@ -11,6 +11,7 @@ class _WebSocketIsolateManager {
   Isolate? _isolate;
   SendPort? _isolateSendPort;
   final ReceivePort _receivePort = ReceivePort();
+  StreamSubscription? _receivePortSubscription;
   final Completer<void> _readyCompleter = Completer<void>();
   final Map<int, StreamController<NostrMessageRaw>> _connectionControllers = {};
   final Map<int, void Function(_IsolateMessageType)> _stateCallbacks = {};
@@ -27,7 +28,7 @@ class _WebSocketIsolateManager {
         _receivePort.sendPort,
       );
 
-      _receivePort.listen((message) {
+      _receivePortSubscription = _receivePort.listen((message) {
         _handleIsolateMessage(message);
       });
     } catch (e) {
@@ -111,6 +112,9 @@ class _WebSocketIsolateManager {
       }
     }
     _connectionControllers.clear();
+    _stateCallbacks.clear();
+
+    await _receivePortSubscription?.cancel();
     _receivePort.close();
     _isolate?.kill(priority: Isolate.immediate);
     _isolate = null;
