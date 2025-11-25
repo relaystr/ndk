@@ -16,6 +16,7 @@ enum NostrMessageRawType {
   unknown,
 }
 
+// needed until Nip01Event is refactored to be immutable
 class Nip01EventRaw {
   final String id;
 
@@ -56,6 +57,57 @@ class NostrMessageRaw {
   });
 }
 
+/// Message types for isolate communication
+enum _IsolateMessageType {
+  ready,
+  reconnecting,
+  message,
+  error,
+  done,
+}
+
+/// Internal message class for communication between main isolate and worker isolate
+class _IsolateMessage {
+  final int connectionId;
+  final _IsolateMessageType type;
+  final NostrMessageRaw? data;
+  final String? error;
+  final int? closeCode;
+  final String? closeReason;
+
+  _IsolateMessage({
+    required this.connectionId,
+    required this.type,
+    this.data,
+    this.error,
+    this.closeCode,
+    this.closeReason,
+  });
+}
+
+/// Base class for commands sent from main isolate to worker isolate
+abstract class _IsolateCommand {
+  final int connectionId;
+
+  _IsolateCommand({required this.connectionId});
+}
+
+class _ConnectCommand extends _IsolateCommand {
+  final String url;
+
+  _ConnectCommand({required super.connectionId, required this.url});
+}
+
+class _SendCommand extends _IsolateCommand {
+  final dynamic data;
+
+  _SendCommand({required super.connectionId, required this.data});
+}
+
+class _CloseCommand extends _IsolateCommand {
+  _CloseCommand({required super.connectionId});
+}
+
 /// Singleton manager for the shared WebSocket isolate
 class _WebSocketIsolateManager {
   static _WebSocketIsolateManager? _instance;
@@ -68,8 +120,8 @@ class _WebSocketIsolateManager {
   SendPort? _isolateSendPort;
   final ReceivePort _receivePort = ReceivePort();
   final Completer<void> _readyCompleter = Completer<void>();
-  final Map<String, StreamController<NostrMessageRaw>> _connectionControllers =
-      {};
+  final Map<int, StreamController<NostrMessageRaw>> _connectionControllers = {};
+  final Map<int, void Function(_IsolateMessageType)> _stateCallbacks = {};
   int _nextConnectionId = 0;
 
   _WebSocketIsolateManager._() {
@@ -95,6 +147,39 @@ class _WebSocketIsolateManager {
   }
 
   void _handleIsolateMessage(dynamic message) {
+    if (message is _IsolateMessage) {
+      final isolateMsg = message;
+      final controller = _connectionControllers[isolateMsg.connectionId];
+      if (controller == null) return;
+
+      switch (isolateMsg.type) {
+        case _IsolateMessageType.message:
+          if (isolateMsg.data != null) {
+            controller.add(isolateMsg.data!);
+          }
+          break;
+        case _IsolateMessageType.error:
+          if (isolateMsg.error != null) {
+            controller.addError(isolateMsg.error!);
+          }
+          break;
+        case _IsolateMessageType.done:
+          if (!controller.isClosed) {
+            controller.close();
+          }
+          break;
+        case _IsolateMessageType.ready:
+        case _IsolateMessageType.reconnecting:
+          // Notify state change via callback
+          final stateCallback = _stateCallbacks[isolateMsg.connectionId];
+          if (stateCallback != null) {
+            stateCallback(isolateMsg.type);
+          }
+          break;
+      }
+      return;
+    }
+
     if (message is SendPort) {
       _isolateSendPort = message;
       if (!_readyCompleter.isCompleted) {
@@ -102,48 +187,28 @@ class _WebSocketIsolateManager {
       }
       return;
     }
-
-    if (message is Map<String, dynamic>) {
-      final connectionId = message['connectionId'] as String?;
-      if (connectionId == null) return;
-
-      final controller = _connectionControllers[connectionId];
-      if (controller == null) return;
-
-      switch (message['type']) {
-        case 'message':
-          controller.add(message['data']);
-          break;
-        case 'error':
-          controller.addError(message['error']);
-          break;
-        case 'done':
-          if (!controller.isClosed) {
-            controller.close();
-          }
-          break;
-      }
-    }
   }
 
-  String _registerConnection(StreamController<NostrMessageRaw> controller) {
-    final id = 'conn_${_nextConnectionId++}';
+  int _registerConnection(
+    StreamController<NostrMessageRaw> controller,
+    void Function(_IsolateMessageType) onStateChange,
+  ) {
+    final id = _nextConnectionId++;
     _connectionControllers[id] = controller;
+    _stateCallbacks[id] = onStateChange;
     return id;
   }
 
-  void _unregisterConnection(String connectionId) {
+  void _unregisterConnection(int connectionId) {
     _connectionControllers.remove(connectionId);
+    _stateCallbacks.remove(connectionId);
   }
 
   Future<void> get ready => _readyCompleter.future;
 
-  void sendCommand(String connectionId, Map<String, dynamic> command) {
+  void sendCommand(_IsolateCommand command) {
     if (_isolateSendPort != null) {
-      _isolateSendPort!.send({
-        'connectionId': connectionId,
-        ...command,
-      });
+      _isolateSendPort!.send(command);
     }
   }
 
@@ -168,7 +233,7 @@ class WebSocketIsolateNostrTransport implements NostrTransport {
   final StreamController<NostrMessageRaw> _messageController =
       StreamController<NostrMessageRaw>.broadcast();
 
-  late final String _connectionId;
+  late final int _connectionId;
   final _WebSocketIsolateManager _manager = _WebSocketIsolateManager.instance;
 
   int? _closeCode;
@@ -187,37 +252,39 @@ class WebSocketIsolateNostrTransport implements NostrTransport {
     try {
       await _manager.ready;
 
-      _connectionId = _manager._registerConnection(_messageController);
-
-      // Listen to messages for connection state changes
-      _messageController.stream.listen(
-        (message) {
-          // Check for ready/reconnecting messages
-          if (message.type == NostrMessageRawType.unknown &&
-              message.otherData is Map<String, dynamic>) {
-            final data = message.otherData as Map<String, dynamic>;
-            if (data['_state'] == 'ready') {
+      _connectionId = _manager._registerConnection(
+        _messageController,
+        (state) {
+          // Handle state changes from isolate
+          switch (state) {
+            case _IsolateMessageType.ready:
               _isOpen = true;
               if (!_readyCompleter.isCompleted) {
                 _readyCompleter.complete();
               }
-            } else if (data['_state'] == 'reconnecting') {
+              break;
+            case _IsolateMessageType.reconnecting:
               Logger.log.i("WebSocket reconnecting: $url");
               if (onReconnect != null) {
                 onReconnect!();
               }
-            }
+              break;
+            case _IsolateMessageType.done:
+              _isOpen = false;
+              break;
+            case _IsolateMessageType.message:
+            case _IsolateMessageType.error:
+              break;
           }
-        },
-        onDone: () {
-          _isOpen = false;
         },
       );
 
-      _manager.sendCommand(_connectionId, {
-        'command': 'connect',
-        'url': url,
-      });
+      _manager.sendCommand(
+        _ConnectCommand(
+          connectionId: _connectionId,
+          url: url,
+        ),
+      );
     } catch (e) {
       Logger.log.e("Failed to initialize WebSocket for $url: $e");
       if (!_readyCompleter.isCompleted) {
@@ -241,10 +308,12 @@ class WebSocketIsolateNostrTransport implements NostrTransport {
   @override
   void send(dynamic data) {
     if (_isOpen) {
-      _manager.sendCommand(_connectionId, {
-        'command': 'send',
-        'data': data,
-      });
+      _manager.sendCommand(
+        _SendCommand(
+          connectionId: _connectionId,
+          data: data,
+        ),
+      );
     } else {
       Logger.log.w("Attempted to send on closed/unready WebSocket: $url");
     }
@@ -252,9 +321,11 @@ class WebSocketIsolateNostrTransport implements NostrTransport {
 
   @override
   Future<void> close() async {
-    _manager.sendCommand(_connectionId, {
-      'command': 'close',
-    });
+    _manager.sendCommand(
+      _CloseCommand(
+        connectionId: _connectionId,
+      ),
+    );
 
     await Future.delayed(Duration(milliseconds: 100));
 
@@ -288,7 +359,7 @@ void _isolateEntry(SendPort mainSendPort) {
 class _WebSocketIsolateWorker {
   final SendPort _mainSendPort;
   final ReceivePort _receivePort = ReceivePort();
-  final Map<String, WebSocket> _connections = {};
+  final Map<int, WebSocket> _connections = {};
 
   _WebSocketIsolateWorker(this._mainSendPort) {
     _mainSendPort.send(_receivePort.sendPort);
@@ -296,32 +367,17 @@ class _WebSocketIsolateWorker {
   }
 
   void _handleCommand(dynamic message) {
-    if (message is! Map<String, dynamic>) return;
-
-    final connectionId = message['connectionId'] as String?;
-    if (connectionId == null) return;
-
-    final command = message['command'] as String?;
-
-    switch (command) {
-      case 'connect':
-        final url = message['url'] as String?;
-        if (url != null) {
-          _connect(connectionId, url);
-        }
-        break;
-      case 'send':
-        final data = message['data'];
-        _connections[connectionId]?.send(data);
-        break;
-      case 'close':
-        _connections[connectionId]?.close();
-        _connections.remove(connectionId);
-        break;
+    if (message is _ConnectCommand) {
+      _connect(message.connectionId, message.url);
+    } else if (message is _SendCommand) {
+      _connections[message.connectionId]?.send(message.data);
+    } else if (message is _CloseCommand) {
+      _connections[message.connectionId]?.close();
+      _connections.remove(message.connectionId);
     }
   }
 
-  void _connect(String connectionId, String url) async {
+  void _connect(int connectionId, String url) async {
     final backoff = BinaryExponentialBackoff(
       initial: Duration(seconds: 1),
       maximumStep: 10,
@@ -333,38 +389,38 @@ class _WebSocketIsolateWorker {
     webSocket.connection.listen(
       (state) {
         if (state is Connected) {
-          _mainSendPort.send({
-            'connectionId': connectionId,
-            'type': 'message',
-            'data': NostrMessageRaw(
-              type: NostrMessageRawType.unknown,
-              otherData: {'_state': 'ready'},
+          _mainSendPort.send(
+            _IsolateMessage(
+              connectionId: connectionId,
+              type: _IsolateMessageType.ready,
             ),
-          });
+          );
         } else if (state is Reconnecting) {
-          _mainSendPort.send({
-            'connectionId': connectionId,
-            'type': 'message',
-            'data': NostrMessageRaw(
-              type: NostrMessageRawType.unknown,
-              otherData: {'_state': 'reconnecting'},
+          _mainSendPort.send(
+            _IsolateMessage(
+              connectionId: connectionId,
+              type: _IsolateMessageType.reconnecting,
             ),
-          });
+          );
         } else if (state is Disconnected) {
-          _mainSendPort.send({
-            'connectionId': connectionId,
-            'type': 'done',
-            'closeCode': null,
-            'closeReason': 'Disconnected',
-          });
+          _mainSendPort.send(
+            _IsolateMessage(
+              connectionId: connectionId,
+              type: _IsolateMessageType.done,
+              closeCode: null,
+              closeReason: 'Disconnected',
+            ),
+          );
         }
       },
       onError: (error) {
-        _mainSendPort.send({
-          'connectionId': connectionId,
-          'type': 'error',
-          'error': error.toString(),
-        });
+        _mainSendPort.send(
+          _IsolateMessage(
+            connectionId: connectionId,
+            type: _IsolateMessageType.error,
+            error: error.toString(),
+          ),
+        );
       },
     );
 
@@ -439,26 +495,32 @@ class _WebSocketIsolateWorker {
             break;
         }
 
-        _mainSendPort.send({
-          'connectionId': connectionId,
-          'type': 'message',
-          'data': data,
-        });
+        _mainSendPort.send(
+          _IsolateMessage(
+            connectionId: connectionId,
+            type: _IsolateMessageType.message,
+            data: data,
+          ),
+        );
       },
       onError: (error) {
-        _mainSendPort.send({
-          'connectionId': connectionId,
-          'type': 'error',
-          'error': error.toString(),
-        });
+        _mainSendPort.send(
+          _IsolateMessage(
+            connectionId: connectionId,
+            type: _IsolateMessageType.error,
+            error: error.toString(),
+          ),
+        );
       },
       onDone: () {
-        _mainSendPort.send({
-          'connectionId': connectionId,
-          'type': 'done',
-          'closeCode': null,
-          'closeReason': "Done",
-        });
+        _mainSendPort.send(
+          _IsolateMessage(
+            connectionId: connectionId,
+            type: _IsolateMessageType.done,
+            closeCode: null,
+            closeReason: "Done",
+          ),
+        );
         _connections.remove(connectionId);
       },
     );

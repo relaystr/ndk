@@ -1,5 +1,5 @@
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport.dart';
-import 'package:ndk/data_layer/repositories/nostr_transport/websocket_isolate_nostr_transport.dart';
+import 'package:ndk/data_layer/repositories/nostr_transport/websocket_isolate/websocket_isolate_nostr_transport.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_client/web_socket_client.dart';
 

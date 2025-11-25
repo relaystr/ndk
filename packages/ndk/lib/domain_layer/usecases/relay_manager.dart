@@ -6,7 +6,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
-import '../../data_layer/repositories/nostr_transport/websocket_isolate_nostr_transport.dart';
+import '../../data_layer/repositories/nostr_transport/websocket_isolate/websocket_isolate_nostr_transport.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/logger/log_level.dart';
