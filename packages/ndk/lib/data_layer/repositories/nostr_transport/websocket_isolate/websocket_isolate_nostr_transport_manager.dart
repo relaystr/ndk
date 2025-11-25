@@ -40,36 +40,16 @@ class _WebSocketIsolateManager {
   }
 
   void _handleIsolateMessage(dynamic message) {
-    if (message is _IsolateMessage) {
-      final isolateMsg = message;
-      final controller = _connectionControllers[isolateMsg.connectionId];
-      if (controller == null) return;
-
-      switch (isolateMsg.type) {
-        case _IsolateMessageType.message:
-          if (isolateMsg.data != null) {
-            controller.add(isolateMsg.data!);
-          }
-          break;
-        case _IsolateMessageType.error:
-          if (isolateMsg.error != null) {
-            controller.addError(isolateMsg.error!);
-          }
-          break;
-        case _IsolateMessageType.done:
-          if (!controller.isClosed) {
-            controller.close();
-          }
-          break;
-        case _IsolateMessageType.ready:
-        case _IsolateMessageType.reconnecting:
-          // Notify state change via callback
-          final stateCallback = _stateCallbacks[isolateMsg.connectionId];
-          if (stateCallback != null) {
-            stateCallback(isolateMsg.type);
-          }
-          break;
+    // Handle batched messages
+    if (message is List<_IsolateMessage>) {
+      for (final msg in message) {
+        _processIsolateMessage(msg);
       }
+      return;
+    }
+
+    if (message is _IsolateMessage) {
+      _processIsolateMessage(message);
       return;
     }
 
@@ -79,6 +59,37 @@ class _WebSocketIsolateManager {
         _readyCompleter.complete();
       }
       return;
+    }
+  }
+
+  void _processIsolateMessage(_IsolateMessage isolateMsg) {
+    final controller = _connectionControllers[isolateMsg.connectionId];
+    if (controller == null) return;
+
+    switch (isolateMsg.type) {
+      case _IsolateMessageType.message:
+        if (isolateMsg.data != null) {
+          controller.add(isolateMsg.data!);
+        }
+        break;
+      case _IsolateMessageType.error:
+        if (isolateMsg.error != null) {
+          controller.addError(isolateMsg.error!);
+        }
+        break;
+      case _IsolateMessageType.done:
+        if (!controller.isClosed) {
+          controller.close();
+        }
+        break;
+      case _IsolateMessageType.ready:
+      case _IsolateMessageType.reconnecting:
+        // Notify state change via callback
+        final stateCallback = _stateCallbacks[isolateMsg.connectionId];
+        if (stateCallback != null) {
+          stateCallback(isolateMsg.type);
+        }
+        break;
     }
   }
 

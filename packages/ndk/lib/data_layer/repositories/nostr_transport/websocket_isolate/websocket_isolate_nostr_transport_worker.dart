@@ -6,9 +6,40 @@ class _WebSocketIsolateWorker {
   final Map<int, WebSocket> _connections = {};
   final Map<int, List<StreamSubscription>> _subscriptions = {};
 
+  // Message batching
+  final List<_IsolateMessage> _messageQueue = [];
+  Timer? _batchTimer;
+  static const Duration _batchInterval = Duration(milliseconds: 10);
+  static const int _maxBatchSize = 100;
+
   _WebSocketIsolateWorker(this._mainSendPort) {
     _mainSendPort.send(_receivePort.sendPort);
     _receivePort.listen(_handleCommand);
+    _startBatchTimer();
+  }
+
+  void _startBatchTimer() {
+    _batchTimer = Timer.periodic(_batchInterval, (_) {
+      _flushMessageQueue();
+    });
+  }
+
+  void _queueMessage(_IsolateMessage message) {
+    _messageQueue.add(message);
+
+    // Flush if batch is full
+    if (_messageQueue.length >= _maxBatchSize) {
+      _flushMessageQueue();
+    }
+  }
+
+  void _flushMessageQueue() {
+    if (_messageQueue.isEmpty) return;
+
+    // Send all messages in one batch
+    final batch = List<_IsolateMessage>.from(_messageQueue);
+    _messageQueue.clear();
+    _mainSendPort.send(batch);
   }
 
   void _handleCommand(dynamic message) {
@@ -32,6 +63,12 @@ class _WebSocketIsolateWorker {
         await sub.cancel();
       }
     }
+
+    // Clean up batch timer if no connections remain
+    if (_connections.isEmpty) {
+      _batchTimer?.cancel();
+      _flushMessageQueue(); // Flush remaining messages
+    }
   }
 
   void _connect(int connectionId, String url) async {
@@ -48,21 +85,21 @@ class _WebSocketIsolateWorker {
     final connectionSub = webSocket.connection.listen(
       (state) {
         if (state is Connected) {
-          _mainSendPort.send(
+          _queueMessage(
             _IsolateMessage(
               connectionId: connectionId,
               type: _IsolateMessageType.ready,
             ),
           );
         } else if (state is Reconnecting) {
-          _mainSendPort.send(
+          _queueMessage(
             _IsolateMessage(
               connectionId: connectionId,
               type: _IsolateMessageType.reconnecting,
             ),
           );
         } else if (state is Disconnected) {
-          _mainSendPort.send(
+          _queueMessage(
             _IsolateMessage(
               connectionId: connectionId,
               type: _IsolateMessageType.done,
@@ -73,7 +110,7 @@ class _WebSocketIsolateWorker {
         }
       },
       onError: (error) {
-        _mainSendPort.send(
+        _queueMessage(
           _IsolateMessage(
             connectionId: connectionId,
             type: _IsolateMessageType.error,
@@ -156,7 +193,7 @@ class _WebSocketIsolateWorker {
             break;
         }
 
-        _mainSendPort.send(
+        _queueMessage(
           _IsolateMessage(
             connectionId: connectionId,
             type: _IsolateMessageType.message,
@@ -165,7 +202,7 @@ class _WebSocketIsolateWorker {
         );
       },
       onError: (error) {
-        _mainSendPort.send(
+        _queueMessage(
           _IsolateMessage(
             connectionId: connectionId,
             type: _IsolateMessageType.error,
@@ -174,7 +211,7 @@ class _WebSocketIsolateWorker {
         );
       },
       onDone: () {
-        _mainSendPort.send(
+        _queueMessage(
           _IsolateMessage(
             connectionId: connectionId,
             type: _IsolateMessageType.done,
