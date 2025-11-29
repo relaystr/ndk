@@ -131,5 +131,20 @@ void main() async {
       }
       await relay1.stopServer();
     });
+
+    test('emptyBootstrapRelaysConfig and explicit relays', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [0]),
+        ],
+        explicitRelays: ["wss://mailbox.mw.leastauthority.com/v1"],
+      );
+
+      await query.future;
+
+      ndk.destroy();
+    });
   });
 }
