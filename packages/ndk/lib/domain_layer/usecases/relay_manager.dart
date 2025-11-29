@@ -392,7 +392,12 @@ class RelayManager<T> {
       dynamic message, RelayConnectivity relayConnectivity) {
     List<dynamic> eventJson;
     try {
-      eventJson = json.decode(message);
+      final decodedMessage = json.decode(message);
+      if (decodedMessage is! List<dynamic>) {
+        Logger.log.w("Received non-list JSON message from ${relayConnectivity.url}: $message");
+        return;
+      }
+      eventJson = decodedMessage;
     } on FormatException catch (e) {
       Logger.log.e(
           "FormatException in _handleIncomingMessage for relay ${relayConnectivity.url}: $e, message: $message");

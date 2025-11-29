@@ -28,6 +28,7 @@ class MockRelay {
   bool signEvents;
   bool requireAuthForRequests;
   bool allwaysSendBadJson;
+  String? customWelcomeMessage;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -48,6 +49,7 @@ class MockRelay {
     this.signEvents = true,
     this.requireAuthForRequests = false,
     this.allwaysSendBadJson = false,
+    this.customWelcomeMessage,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -90,6 +92,9 @@ class MockRelay {
 
     stream.listen((webSocket) {
       _webSocket = webSocket;
+      if (customWelcomeMessage != null) {
+        webSocket.add(customWelcomeMessage!);
+      }
       if (requireAuthForRequests && !signedChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
