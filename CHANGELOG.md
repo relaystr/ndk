@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-11-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.0`](#ndk---v061-dev0)
+ - [`rust_lib_ndk` - `v0.1.7-dev.0+1`](#rust_lib_ndk---v017-dev01)
+ - [`ndk_amber` - `v0.3.3-dev.0+1`](#ndk_amber---v033-dev01)
+ - [`ndk_isar` - `v0.2.3-dev.0+1`](#ndk_isar---v023-dev01)
+ - [`ndk_objectbox` - `v0.2.7-dev.0+1`](#ndk_objectbox---v027-dev01)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.0+1`](#ndk_rust_verifier---v042-dev01)
+ - [`nip07_event_signer` - `v1.0.5-dev.0`](#nip07_event_signer---v105-dev0)
+ - [`sembast_cache_manager` - `v1.0.6-dev.0`](#sembast_cache_manager---v106-dev0)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.0+1`
+ - `ndk_isar` - `v0.2.3-dev.0+1`
+ - `ndk_objectbox` - `v0.2.7-dev.0+1`
+ - `ndk_rust_verifier` - `v0.4.2-dev.0+1`
+ - `nip07_event_signer` - `v1.0.5-dev.0`
+ - `sembast_cache_manager` - `v1.0.6-dev.0`
+
+---
+
+#### `ndk` - `v0.6.1-dev.0`
+
+ - **FIX**: use mock relay.
+ - **FIX**: new test pass.
+ - **FEAT**: test.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.0+1`
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FIX**: remove hex package depandance.
+
+
 ## 2025-11-20
 
 ### Changes
