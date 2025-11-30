@@ -1,3 +1,9 @@
+## 0.4.2-dev.1
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: rust verifier web assets.
+
 ## 0.4.2-dev.0+1
 
  - Update a dependency to the latest release.

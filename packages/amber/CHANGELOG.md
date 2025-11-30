@@ -1,3 +1,8 @@
+## 0.3.3-dev.1
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
 ## 0.3.3
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
