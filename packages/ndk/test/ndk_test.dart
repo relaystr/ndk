@@ -158,5 +158,29 @@ void main() async {
       ndk.destroy();
       await explicitRelay.stopServer();
     });
+
+    test('should handle null values in events from relays gracefully',
+        () async {
+      MockRelay explicitRelay = MockRelay(
+        name: "malformedRelay",
+        explicitPort: 3966,
+        sendMalformedEvents: true,
+      );
+      await explicitRelay.startServer(textNotes: key1TextNotes);
+
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [0]),
+        ],
+        explicitRelays: [explicitRelay.url],
+      );
+
+      await query.future;
+
+      ndk.destroy();
+      await explicitRelay.stopServer();
+    });
   });
 }

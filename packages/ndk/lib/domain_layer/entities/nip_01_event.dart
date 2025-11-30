@@ -44,12 +44,12 @@ class Nip01Event {
   );
 
   factory Nip01Event.fromJson(Map<dynamic, dynamic> data) {
-    final id = data['id'] as String;
-    final pubKey = data['pubkey'] as String;
+    final id = data['id'] as String? ?? '';
+    final pubKey = data['pubkey'] as String? ?? '';
     final createdAt = data['created_at'] as int;
     final kind = data['kind'] as int;
     final tags = castToListOfListOfString(data['tags']);
-    final content = data['content'] as String;
+    final content = data['content'] as String? ?? '';
 
     /// '' to support rumor events
     final sig = (data['sig'] as String?) ?? '';
