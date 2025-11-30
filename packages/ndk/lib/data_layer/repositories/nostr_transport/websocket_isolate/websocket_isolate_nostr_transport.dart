@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'package:web_socket_client/web_socket_client.dart';
 
 import '../../../../domain_layer/repositories/nostr_transport.dart';
+import '../../../../shared/helpers/relay_helper.dart';
 import '../../../../shared/logger/logger.dart';
 
 part 'websocket_isolate_entities.dart';
@@ -18,7 +19,7 @@ class WebSocketIsolateNostrTransport implements NostrTransport {
   final StreamController<NostrMessageRaw> _messageController =
       StreamController<NostrMessageRaw>.broadcast();
 
-  late final int _connectionId;
+  late final String _connectionId;
   final _WebSocketIsolateManager _manager = _WebSocketIsolateManager.instance;
 
   int? _closeCode;
@@ -38,8 +39,9 @@ class WebSocketIsolateNostrTransport implements NostrTransport {
       await _manager.ready;
 
       _connectionId = _manager._registerConnection(
-        _messageController,
-        (state) {
+        controller: _messageController,
+        connectionId: url,
+        onStateChange: (state) {
           // Handle state changes from isolate
           switch (state) {
             case _IsolateMessageType.ready:

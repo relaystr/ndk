@@ -13,9 +13,9 @@ class _WebSocketIsolateManager {
   final ReceivePort _receivePort = ReceivePort();
   StreamSubscription? _receivePortSubscription;
   final Completer<void> _readyCompleter = Completer<void>();
-  final Map<int, StreamController<NostrMessageRaw>> _connectionControllers = {};
-  final Map<int, void Function(_IsolateMessageType)> _stateCallbacks = {};
-  int _nextConnectionId = 0;
+  final Map<String, StreamController<NostrMessageRaw>> _connectionControllers =
+      {};
+  final Map<String, void Function(_IsolateMessageType)> _stateCallbacks = {};
 
   _WebSocketIsolateManager._() {
     _initialize();
@@ -26,6 +26,7 @@ class _WebSocketIsolateManager {
       _isolate = await Isolate.spawn(
         _isolateEntry,
         _receivePort.sendPort,
+        debugName: "WebSocketIsolateNostrTransportWorker",
       );
 
       _receivePortSubscription = _receivePort.listen((message) {
@@ -93,17 +94,18 @@ class _WebSocketIsolateManager {
     }
   }
 
-  int _registerConnection(
-    StreamController<NostrMessageRaw> controller,
-    void Function(_IsolateMessageType) onStateChange,
-  ) {
-    final id = _nextConnectionId++;
+  String _registerConnection({
+    required StreamController<NostrMessageRaw> controller,
+    required void Function(_IsolateMessageType) onStateChange,
+    required String connectionId,
+  }) {
+    final id = connectionId;
     _connectionControllers[id] = controller;
     _stateCallbacks[id] = onStateChange;
     return id;
   }
 
-  void _unregisterConnection(int connectionId) {
+  void _unregisterConnection(String connectionId) {
     _connectionControllers.remove(connectionId);
     _stateCallbacks.remove(connectionId);
   }

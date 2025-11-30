@@ -11,7 +11,8 @@ enum _IsolateMessageType {
 
 /// Internal message class for communication between main isolate and worker isolate
 class _IsolateMessage {
-  final int connectionId;
+  /// connection id is the cleaned relay url, (needed so reconnect, restore state works)
+  final String connectionId;
   final _IsolateMessageType type;
   final NostrMessageRaw? data;
   final String? error;
@@ -30,7 +31,7 @@ class _IsolateMessage {
 
 /// Base class for commands sent from main isolate to worker isolate
 abstract class _IsolateCommand {
-  final int connectionId;
+  final String connectionId;
 
   _IsolateCommand({required this.connectionId});
 }

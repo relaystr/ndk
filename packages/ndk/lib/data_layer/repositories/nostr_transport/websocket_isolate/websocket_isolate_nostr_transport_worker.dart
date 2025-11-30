@@ -3,8 +3,8 @@ part of 'websocket_isolate_nostr_transport.dart';
 class _WebSocketIsolateWorker {
   final SendPort _mainSendPort;
   final ReceivePort _receivePort = ReceivePort();
-  final Map<int, WebSocket> _connections = {};
-  final Map<int, List<StreamSubscription>> _subscriptions = {};
+  final Map<String, WebSocket> _connections = {};
+  final Map<String, List<StreamSubscription>> _subscriptions = {};
 
   // Message batching
   final List<_IsolateMessage> _messageQueue = [];
@@ -52,7 +52,7 @@ class _WebSocketIsolateWorker {
     }
   }
 
-  Future<void> _closeConnection(int connectionId) async {
+  Future<void> _closeConnection(String connectionId) async {
     _connections[connectionId]?.close();
     _connections.remove(connectionId);
 
@@ -71,7 +71,13 @@ class _WebSocketIsolateWorker {
     }
   }
 
-  void _connect(int connectionId, String url) async {
+  void _connect(String connectionId, String url) async {
+    if (_connections.containsKey(connectionId)) {
+      // Already connected
+      print("connection with id $connectionId already exists");
+      throw Exception("Connection with id $connectionId already exists");
+      return;
+    }
     final backoff = BinaryExponentialBackoff(
       initial: Duration(seconds: 1),
       maximumStep: 10,
