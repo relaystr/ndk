@@ -28,6 +28,7 @@ class MockRelay {
   bool signEvents;
   bool requireAuthForRequests;
   bool allwaysSendBadJson;
+  bool sendMalformedEvents;
   String? customWelcomeMessage;
 
   // NIP-46 Remote Signer Support
@@ -49,6 +50,7 @@ class MockRelay {
     this.signEvents = true,
     this.requireAuthForRequests = false,
     this.allwaysSendBadJson = false,
+    this.sendMalformedEvents = false,
     this.customWelcomeMessage,
     int? explicitPort,
   }) : _nip65s = nip65s {
@@ -225,6 +227,13 @@ class MockRelay {
   }
 
   void _respondToRequest(List<Filter> filters, String requestId) {
+    if (sendMalformedEvents) {
+      final malformedEventJson = '["EVENT", "$requestId", {"id":null,"pubkey":null,"created_at":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"kind":0,"tags":[],"content":null,"sig":null}]';
+      _webSocket!.add(malformedEventJson);
+      _webSocket!.add(jsonEncode(["EOSE", requestId]));
+      return;
+    }
+    
     Set<Nip01Event> allMatchingEvents = {};
 
     for (Filter filter in filters) {
