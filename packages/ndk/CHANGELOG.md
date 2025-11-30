@@ -1,3 +1,9 @@
+## 0.6.1-dev.1
+
+ - **FIX**: update the mock relay + test.
+ - **FIX**: test pass.
+ - **FEAT**: add a test.
+
 ## 0.6.1-dev.0
 
  - **FIX**: use mock relay.

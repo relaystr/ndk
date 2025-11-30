@@ -1,3 +1,7 @@
+## 0.2.3-dev.1
+
+ - **FEAT**: log color, params.
+
 ## 0.2.3-dev.23
 
  - Update a dependency to the latest release.
