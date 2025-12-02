@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:rxdart/rxdart.dart';
+
 import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/entities/wallet/wallet_balance.dart';
 import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
@@ -47,18 +51,28 @@ class WalletsRepoImpl implements WalletsRepo {
   }
 
   @override
-  Future<void> removeWallet(String id) {
+  Future<void> removeWallet(String id) async {
+    Wallet wallet = await getWallet(id);
+    if (wallet is NwcWallet) {
+      NwcWallet nwcWallet = wallet;
+      // close connection if exists
+      if (wallet.connection != null) {
+        await _nwcUseCase.disconnect(nwcWallet.connection!);
+        if (nwcWallet.balanceSubject != null) {
+          await nwcWallet.balanceSubject!.close();
+        }
+      }
+    }
     return _cacheManger.removeWallet(id);
   }
 
   @override
-  Stream<List<WalletBalance>> getBalancesStream(String accountId) async* {
+  Stream<List<WalletBalance>> getBalancesStream(String id) async* {
     // delegate to appropriate use case based on account type
-    final useCase = await _getWalletUseCase(accountId);
+    final useCase = await _getWalletUseCase(id);
     if (useCase is Cashu) {
       // transform to WalletBalance
-      yield* useCase.balances.map((balances) =>
-          balances.where((b) => b.mintUrl == accountId).expand((b) {
+      yield* useCase.balances.map((balances) => balances.where((b) => b.mintUrl == id).expand((b) {
             return b.balances.entries.map((entry) => WalletBalance(
                   unit: entry.key,
                   amount: entry.value,
@@ -66,18 +80,55 @@ class WalletsRepoImpl implements WalletsRepo {
                 ));
           }).toList());
     } else if (useCase is Nwc) {
-      Wallet wallet = await getWallet(accountId);
-      final connection = await useCase.connect(wallet.metadata["nwcUrl"]);
-      final balanceResponse = await useCase.getBalance(connection);
-      yield [
-        WalletBalance(
-            walletId: accountId,
-            unit: "sat",
-            amount: balanceResponse.balanceSats)
-      ];
+      NwcWallet wallet = (await getWallet(id)) as NwcWallet;
+      if (!wallet.isConnected()) {
+        await _initNwcWalletConnection(wallet);
+      }
+      wallet.balanceSubject ??= BehaviorSubject<List<WalletBalance>>();
+
+      final balanceResponse = await useCase.getBalance(wallet.connection!);
+      wallet.balanceSubject!.add([WalletBalance(walletId: id, unit: "sat", amount: balanceResponse.balanceSats)]);
+      yield* wallet.balanceSubject!.stream;
     } else {
       throw UnimplementedError('Unknown account type for balances stream');
     }
+  }
+
+  Future<void> _initNwcWalletConnection(NwcWallet wallet) async {
+    wallet.connection ??= await _nwcUseCase.connect(wallet.metadata["nwcUrl"],
+        doGetInfoMethod: true // TODO getInfo or not should be ndk config somehow
+        );
+
+    wallet.connection!.notificationStream.stream.listen((notification) async {
+      if (!notification.isPaymentReceived && !notification.isPaymentSent) {
+        return; // only incoming and outgoing payments are handled here
+      }
+      if (wallet.balanceSubject != null && notification.state == "settled") {
+        final balanceResponse = await _nwcUseCase.getBalance(wallet.connection!);
+        wallet.balanceSubject!
+            .add([WalletBalance(walletId: wallet.id, unit: "sat", amount: balanceResponse.balanceSats)]);
+      }
+      if (wallet.transactionsSubject != null || wallet.pendingTransactionsSubject != null) {
+        final transaction = NwcWalletTransaction(
+          id: notification.paymentHash,
+          walletId: wallet.id,
+          changeAmount: (notification.isIncoming ? notification.amount /1000 : -notification.amount /1000) as int,
+          unit: "sats",
+          walletType: WalletType.NWC,
+          state: notification.isSettled
+              ? WalletTransactionState.completed
+              : (notification.isPending?WalletTransactionState.pending: WalletTransactionState.failed),
+          metadata: notification.metadata ?? {},
+          transactionDate: notification.settledAt ?? notification.createdAt,
+          initiatedDate: notification.createdAt,
+        );
+        if (notification.isSettled) {
+          wallet.transactionsSubject!.add([transaction]);
+        } else if (notification.isPending) {
+          wallet.pendingTransactionsSubject!.add([transaction]);
+        }
+      }
+    });
   }
 
   /// get notified about possible new wallets \
@@ -101,46 +152,65 @@ class WalletsRepoImpl implements WalletsRepo {
 
   @override
   Stream<List<WalletTransaction>> getPendingTransactionsStream(
-    String accountId,
+    String id,
   ) async* {
-    final useCase = await _getWalletUseCase(accountId);
+    final useCase = await _getWalletUseCase(id);
     if (useCase is Cashu) {
       /// filter transaction stream by id
       yield* useCase.pendingTransactions.map(
-        (transactions) => transactions
-            .where((transaction) => transaction.walletId == accountId)
-            .toList(),
+        (transactions) => transactions.where((transaction) => transaction.walletId == id).toList(),
       );
     } else if (useCase is Nwc) {
-      // throw UnimplementedError(
-      //     'NWC pending transactions stream not implemented yet');
+      NwcWallet wallet = (await getWallet(id)) as NwcWallet;
+      if (!wallet.isConnected()) {
+        await _initNwcWalletConnection(wallet);
+      }
+      wallet.pendingTransactionsSubject ??= BehaviorSubject<List<WalletTransaction>>();
+      final transactions = await _nwcUseCase.listTransactions(wallet.connection!, unpaid: true);
+      wallet.pendingTransactionsSubject!.add(transactions.transactions.reversed
+          .where((e) => e.state != null && e.state == "pending")
+          .map((e) => NwcWalletTransaction(
+        id: e.paymentHash,
+        walletId: wallet.id,
+        changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
+        unit: "sats",
+        walletType: WalletType.NWC,
+        state: e.state != null && e.state == "settled"
+            ? WalletTransactionState.completed
+            : WalletTransactionState.pending,
+        metadata: e.metadata ?? {},
+        transactionDate: e.settledAt ?? e.createdAt,
+        initiatedDate: e.createdAt,
+      ))
+          .toList());
+      yield* wallet.pendingTransactionsSubject!.stream;
     } else {
-      throw UnimplementedError(
-          'Unknown account type for pending transactions stream');
+      throw UnimplementedError('Unknown account type for pending transactions stream');
     }
   }
 
   @override
   Stream<List<WalletTransaction>> getRecentTransactionsStream(
-    String accountId,
+    String id,
   ) async* {
-    final useCase = await _getWalletUseCase(accountId);
+    final useCase = await _getWalletUseCase(id);
     if (useCase is Cashu) {
       /// filter transaction stream by id
       yield* useCase.latestTransactions.map(
-        (transactions) => transactions
-            .where((transaction) => transaction.walletId == accountId)
-            .toList(),
+        (transactions) => transactions.where((transaction) => transaction.walletId == id).toList(),
       );
     } else if (useCase is Nwc) {
-      Wallet wallet = await getWallet(accountId);
-      final connection = await useCase.connect(wallet.metadata["nwcUrl"]);
-      final transactions =
-          await useCase.listTransactions(connection, unpaid: false);
-      yield transactions.transactions
+      NwcWallet wallet = (await getWallet(id)) as NwcWallet;
+      if (!wallet.isConnected()) {
+        await _initNwcWalletConnection(wallet);
+      }
+      wallet.transactionsSubject ??= BehaviorSubject<List<WalletTransaction>>();
+      final transactions = await _nwcUseCase.listTransactions(wallet.connection!, unpaid: false);
+      wallet.transactionsSubject!.add(transactions.transactions.reversed
+          .where((e) => e.state != null && e.state == "settled")
           .map((e) => NwcWalletTransaction(
                 id: e.paymentHash,
-                walletId: accountId,
+                walletId: wallet.id,
                 changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
                 unit: "sats",
                 walletType: WalletType.NWC,
@@ -151,10 +221,10 @@ class WalletsRepoImpl implements WalletsRepo {
                 transactionDate: e.settledAt ?? e.createdAt,
                 initiatedDate: e.createdAt,
               ))
-          .toList();
+          .toList());
+      yield* wallet.transactionsSubject!.stream;
     } else {
-      throw UnimplementedError(
-          'Unknown account type for recent transactions stream');
+      throw UnimplementedError('Unknown account type for recent transactions stream');
     }
   }
 
@@ -175,8 +245,8 @@ class WalletsRepoImpl implements WalletsRepo {
     );
   }
 
-  Future<dynamic> _getWalletUseCase(String accountId) async {
-    final account = await getWallet(accountId);
+  Future<dynamic> _getWalletUseCase(String id) async {
+    final account = await getWallet(id);
     switch (account.type) {
       case WalletType.CASHU:
         return _cashuUseCase;

@@ -1,3 +1,8 @@
+import 'package:ndk/domain_layer/entities/wallet/wallet_balance.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
+import 'package:rxdart/rxdart.dart';
+
+import '../../usecases/nwc/nwc_connection.dart';
 import '../cashu/cashu_mint_info.dart';
 import 'wallet_type.dart';
 
@@ -94,6 +99,12 @@ class CashuWallet extends Wallet {
 
 class NwcWallet extends Wallet {
   final String nwcUrl;
+  NwcConnection? connection;
+  BehaviorSubject<List<WalletBalance>>? balanceSubject;
+  BehaviorSubject<List<WalletTransaction>>? transactionsSubject;
+  BehaviorSubject<List<WalletTransaction>>? pendingTransactionsSubject;
+
+  bool isConnected() => connection != null;
 
   NwcWallet({
     required super.id,
