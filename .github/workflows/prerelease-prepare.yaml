@@ -14,8 +14,14 @@ jobs:
     name: Create pre-release
     runs-on: ubuntu-latest
     # Only run if the push wasn't made by the GitHub Action
-        # Only run if the push wasn't made by the GitHub Action AND doesn't contain release message
-    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release)')
+    # Only run if the push wasn't made by the GitHub Action AND doesn't contain release message
+    if:
+      github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release)')
+
+    # Add concurrency to prevent parallel runs
+    concurrency:
+      group: prerelease-${{ github.ref }}
+      cancel-in-progress: true
 
     permissions:
       contents: write
@@ -43,7 +49,7 @@ jobs:
       - name: Run Melos
         uses: bluefireteam/melos-action@v3
         with:
-          run-versioning: true
+          run-versioning: false
           run-versioning-prerelease: true
           publish-dry-run: true
           create-pr: true

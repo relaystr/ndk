@@ -158,18 +158,29 @@ class Nip51List {
         signer != null &&
         signer.canSign()) {
       try {
-        var json = await signer.decrypt(event.content, signer.getPublicKey());
+        // backward compatibility: Check if content uses NIP-04 format (contains ?iv=)
+        final isNip04 = event.content.contains('?iv=');
+        final json = isNip04
+            // ignore: deprecated_member_use_from_same_package
+            ? await signer.decrypt(
+                event.content,
+                signer.getPublicKey(),
+              )
+            : await signer.decryptNip44(
+                ciphertext: event.content,
+                senderPubKey: signer.getPublicKey(),
+              );
         List<dynamic> tags = jsonDecode(json ?? '');
         list.parseTags(tags, private: true);
       } catch (e) {
-        Logger.log.d(e);
+        Logger.log.w(e);
       }
     }
     return list;
   }
 
   void parseTags(List tags, {required bool private}) {
-    for (var tag in tags) {
+    for (final tag in tags) {
       if (tag is! List<dynamic>) continue;
       final length = tag.length;
       if (length <= 1) continue;
@@ -190,7 +201,9 @@ class Nip51List {
       String json = jsonEncode(privateElements
           .map((element) => [element.tag, element.value])
           .toList());
-      content = await signer.encrypt(json, signer.getPublicKey()) ?? '';
+      content = await signer.encryptNip44(
+              plaintext: json, recipientPubKey: signer.getPublicKey()) ??
+          '';
     }
     Nip01Event event = Nip01Event(
       pubKey: pubKey,
@@ -254,6 +267,8 @@ class Nip51Set extends Nip51List {
     required super.elements,
     required super.kind,
     this.title,
+    this.description,
+    this.image,
   }) : super();
 
   static Future<Nip51Set?> fromEvent(
@@ -276,7 +291,18 @@ class Nip51Set extends Nip51List {
         signer != null &&
         signer.canSign()) {
       try {
-        var json = await signer.decrypt(event.content, signer.getPublicKey());
+        // backward compatibility: Check if content uses NIP-04 format (contains ?iv=)
+        final isNip04 = event.content.contains('?iv=');
+        final json = isNip04
+            // ignore: deprecated_member_use_from_same_package
+            ? await signer.decrypt(
+                event.content,
+                signer.getPublicKey(),
+              )
+            : await signer.decryptNip44(
+                ciphertext: event.content,
+                senderPubKey: signer.getPublicKey(),
+              );
         List<dynamic> tags = jsonDecode(json ?? '');
         set.parseTags(tags, private: true);
         set.parseSetTags(tags);
@@ -297,19 +323,31 @@ class Nip51Set extends Nip51List {
     List<dynamic> tags = [
       ["d", name]
     ];
-    if (Helpers.isNotBlank(image)) {
+    if (Helpers.isNotBlank(description)) {
       tags.add(["description", description]);
     }
     if (Helpers.isNotBlank(image)) {
       tags.add(["image", image]);
     }
+    if (Helpers.isNotBlank(title)) {
+      tags.add(["title", title]);
+    }
+
     tags.addAll(event.tags);
-    event.tags = castToListOfListOfString(tags);
-    return event;
+
+    final copy = event.copyWith(
+      pubKey: event.pubKey,
+      kind: event.kind,
+      tags: castToListOfListOfString(tags),
+      content: event.content,
+      createdAt: event.createdAt,
+    );
+
+    return copy;
   }
 
   void parseSetTags(List tags) {
-    for (var tag in tags) {
+    for (final tag in tags) {
       if (tag is! List<dynamic>) continue;
       final length = tag.length;
       if (length <= 1) continue;

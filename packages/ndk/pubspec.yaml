@@ -1,6 +1,6 @@
 name: ndk
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.6.0-dev.0
+version: 0.6.1-dev.1
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
@@ -22,13 +22,11 @@ dependencies:
   http: ^1.5.0
   bip340: ">=0.3.0 <0.4.0"
   bech32: ^0.2.2
-  hex: ^0.2.0
   web_socket_channel: ^3.0.3
   crypto: ^3.0.6
   collection: ^1.19.1
   convert: ^3.1.2
   pointycastle: ">=3.0.0 <5.0.0"
-  logger: ^2.6.2
   rxdart: ^0.28.0
   equatable: ^2.0.7
   web_socket_client: ^0.2.1

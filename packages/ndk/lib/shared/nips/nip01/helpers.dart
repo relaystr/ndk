@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:bech32/bech32.dart';
-import 'package:hex/hex.dart';
+import 'package:convert/convert.dart' as convert;
 
 import '../../logger/logger.dart';
 
@@ -30,12 +30,12 @@ class Helpers {
   static String getSecureRandomHex(int length) {
     final random = Random.secure();
     final values = List<int>.generate(length, (i) => random.nextInt(256));
-    return HEX.encode(values);
+    return convert.hex.encode(values);
   }
 
   /// Encode a hex string + human readable part as a bech32 string
   static String encodeBech32(String hex, String hrp) {
-    final bytes = HEX.decode(hex);
+    final bytes = convert.hex.decode(hex);
     final fiveBitWords = _convertBits(bytes, 8, 5, true);
     return bech32.encode(Bech32(hrp, fiveBitWords), hex.length + hrp.length);
   }
@@ -46,7 +46,7 @@ class Helpers {
       const Bech32Codec codec = Bech32Codec();
       final Bech32 bech32 = codec.decode(bech32String, bech32String.length);
       final eightBitWords = _convertBits(bech32.data, 5, 8, false);
-      return [HEX.encode(eightBitWords), bech32.hrp];
+      return [convert.hex.encode(eightBitWords), bech32.hrp];
     } catch (e) {
       Logger.log.w(
         'decodeBech32 error: $e, \n \n String is: $bech32String \n \n',

@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import '../../shared/helpers/list_casting.dart';
 import '../../shared/nips/nip01/bip340.dart';
 import '../../shared/nips/nip13/nip13.dart';
+import '../../shared/nips/nip19/nip19.dart';
 
 /// basic nostr nip01 event data structure
 class Nip01Event {
@@ -43,12 +44,12 @@ class Nip01Event {
   );
 
   factory Nip01Event.fromJson(Map<dynamic, dynamic> data) {
-    final id = data['id'] as String;
-    final pubKey = data['pubkey'] as String;
+    final id = data['id'] as String? ?? '';
+    final pubKey = data['pubkey'] as String? ?? '';
     final createdAt = data['created_at'] as int;
     final kind = data['kind'] as int;
     final tags = castToListOfListOfString(data['tags']);
-    final content = data['content'] as String;
+    final content = data['content'] as String? ?? '';
 
     /// '' to support rumor events
     final sig = (data['sig'] as String?) ?? '';
@@ -223,15 +224,16 @@ class Nip01Event {
     String? sig,
     List<String>? sources,
   }) {
-    return Nip01Event._(
-      id,
-      pubKey ?? this.pubKey,
-      createdAt ?? this.createdAt,
-      kind ?? this.kind,
-      tags ?? this.tags,
-      content ?? this.content,
-      sig ?? this.sig,
-    )..sources = sources ?? this.sources;
+    final event = Nip01Event(
+      pubKey: pubKey ?? this.pubKey,
+      createdAt: createdAt ?? this.createdAt,
+      kind: kind ?? this.kind,
+      tags: tags ?? this.tags,
+      content: content ?? this.content,
+    );
+    event.sig = sig ?? this.sig;
+    event.sources = sources ?? this.sources;
+    return event;
   }
 
   /// Mine this event with proof of work
@@ -253,4 +255,71 @@ class Nip01Event {
 
   /// Calculate the commitment (work done) for this event
   int get powCommitment => Nip13.calculateCommitment(id);
+
+  /// Encode this event as a nevent (NIP-19 event reference)
+  ///
+  /// Returns a bech32-encoded nevent string that includes:
+  /// - Event ID (required)
+  /// - Author pubkey (included)
+  /// - Kind (included)
+  /// - Relay hints from event.sources (if available)
+  ///
+  /// Usage: `final nevent = event.nevent;`
+  String get nevent {
+    return Nip19.encodeNevent(
+      eventId: id,
+      author: pubKey,
+      kind: kind,
+      relays: sources.isEmpty ? null : sources,
+    );
+  }
+
+  /// Encode this event as an naddr (NIP-19 addressable event coordinate)
+  ///
+  /// Only works for addressable/replaceable events (kind >= 10000 or kind 0, 3, 41)
+  /// Requires a "d" tag to identify the event.
+  ///
+  /// Returns a bech32-encoded naddr string or null if:
+  /// - Event is not addressable/replaceable
+  /// - Event doesn't have a "d" tag
+  ///
+  /// Usage: `final naddr = event.naddr;`
+  String? get naddr {
+    // Check if this is an addressable event
+    if (!_isAddressableKind(kind)) {
+      return null;
+    }
+
+    // Get the "d" tag identifier
+    final identifier = getDtag();
+    if (identifier == null) {
+      return null;
+    }
+
+    return Nip19.encodeNaddr(
+      identifier: identifier,
+      pubkey: pubKey,
+      kind: kind,
+      relays: sources.isEmpty ? null : sources,
+    );
+  }
+
+  /// Check if an event kind is addressable/replaceable
+  ///
+  /// According to NIP-01:
+  /// - Replaceable events: 0, 3, 41
+  /// - Parameterized replaceable events: 10000-19999, 30000-39999
+  bool _isAddressableKind(int kind) {
+    // Replaceable events
+    if (kind == 0 || kind == 3 || kind == 41) {
+      return true;
+    }
+
+    // Parameterized replaceable events
+    if ((kind >= 10000 && kind <= 19999) || (kind >= 30000 && kind <= 39999)) {
+      return true;
+    }
+
+    return false;
+  }
 }

@@ -8,6 +8,7 @@ import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../../shared/nips/nip01/helpers.dart';
+import '../../shared/helpers/relay_helper.dart';
 import '../entities/broadcast_response.dart';
 import '../entities/broadcast_state.dart';
 import '../entities/connection_source.dart';
@@ -173,7 +174,8 @@ class RelaySetsEngine implements NetworkEngine {
     } else {
       relaysForRequest = _bootstrapRelays;
     }
-    for (final url in relaysForRequest!) {
+    relaysForRequest = cleanRelayUrls(relaysForRequest!.toList());
+    for (final url in relaysForRequest) {
       if (state.request.filters.isEmpty) {
         throw Exception("cannot do request with empty filters");
       }

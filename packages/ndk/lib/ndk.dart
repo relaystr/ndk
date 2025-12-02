@@ -91,6 +91,10 @@ export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
  */
 
 export 'shared/logger/logger.dart';
+export 'shared/logger/log_level.dart';
+export 'shared/logger/log_output.dart';
+export 'shared/logger/ndk_logger.dart';
+export 'shared/logger/console_output.dart';
 
 /**
  * event filters
@@ -98,3 +102,10 @@ export 'shared/logger/logger.dart';
  */
 
 export 'shared/event_filters/tag_count_event_filter.dart';
+
+/**
+ * Nip 19
+ * 
+ */
+
+export 'shared/nips/nip19/nip19.dart';

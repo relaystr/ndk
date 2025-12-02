@@ -41,7 +41,9 @@ class Nip13 {
     tags.removeWhere((tag) => tag.isNotEmpty && tag[0] == 'nonce');
 
     while (iterations < maxIter) {
-      nonce = random.nextInt(1 << 32);
+      // Use 0x100000000 instead of 1 << 32 for web compatibility
+      // On web, 1 << 32 evaluates to 0 due to JS bitwise operation limits
+      nonce = random.nextInt(0x100000000);
 
       final updatedTags = List<List<String>>.from(tags);
       updatedTags.add(['nonce', nonce.toString(), targetDifficulty.toString()]);

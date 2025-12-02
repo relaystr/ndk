@@ -68,7 +68,7 @@ class RelayManager<T> {
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
   }
 
-  updateRelayConnectivity() {
+  void updateRelayConnectivity() {
     _relayUpdatesStreamController.add(globalState.relays);
   }
 
@@ -390,22 +390,40 @@ class RelayManager<T> {
 
   void _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) {
-    List<dynamic> eventJson = json.decode(message);
+    List<dynamic> eventJson;
+    try {
+      final decodedMessage = json.decode(message);
+      if (decodedMessage is! List<dynamic>) {
+        Logger.log.w("Received non-list JSON message from ${relayConnectivity.url}: $message");
+        return;
+      }
+      eventJson = decodedMessage;
+    } on FormatException catch (e) {
+      Logger.log.e(
+          "FormatException in _handleIncomingMessage for relay ${relayConnectivity.url}: $e, message: $message");
+      return;
+    }
 
     if (eventJson[0] == 'OK') {
       //nip 20 used to notify clients if an EVENT was successful
       if (eventJson.length >= 2 && eventJson[2] == false) {
         Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
       }
-      globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
-        RelayBroadcastResponse(
-          relayUrl: relayConnectivity.url,
-          okReceived: true,
-          broadcastSuccessful: eventJson[2],
-          msg: eventJson[3] ?? '',
-        ),
-      );
-
+      if (globalState.inFlightBroadcasts[eventJson[1]] != null &&
+          !globalState
+              .inFlightBroadcasts[eventJson[1]]!.networkController.isClosed) {
+        globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
+          RelayBroadcastResponse(
+            relayUrl: relayConnectivity.url,
+            okReceived: true,
+            broadcastSuccessful: eventJson[2],
+            msg: eventJson[3] ?? '',
+          ),
+        );
+      } else {
+        Logger.log.w(
+            "Received OK for broadcast ${eventJson[1]} but the network controller is already closed");
+      }
       return;
     }
     if (eventJson[0] == 'NOTICE') {
@@ -591,7 +609,7 @@ class RelayManager<T> {
   }
 
   /// Closes this url transport and removes
-  Future<void> closeTransport(url) async {
+  Future<void> closeTransport(String url) async {
     RelayConnectivity? connectivity = globalState.relays[url];
     if (connectivity != null && connectivity.relayTransport != null) {
       Logger.log.d("Disconnecting $url...");

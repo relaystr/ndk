@@ -6,7 +6,7 @@ import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_verifier.dart';
-import 'package:logger/logger.dart' as lib_logger;
+import '../shared/logger/log_level.dart';
 
 /// Configuration class for the Nostr Development Kit (NDK)
 ///
@@ -53,7 +53,7 @@ class NdkConfig {
   final CashuUserSeedphrase? cashuUserSeedphrase;
 
   /// log level
-  lib_logger.Level logLevel;
+  LogLevel logLevel;
 
   /// User agent string for Http requests and websockets.
   String userAgent;

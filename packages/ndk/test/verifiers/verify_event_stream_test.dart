@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/repositories/event_verifier.dart';
 import 'package:ndk/domain_layer/usecases/requests/verify_event_stream.dart';
 import 'package:test/test.dart';
 
@@ -203,5 +206,226 @@ void main() {
 
       expect(results.length, equals(100));
     });
+
+    test('should process events immediately from non-closing stream', () async {
+      final controller = StreamController<Nip01Event>();
+      final resultList = <Nip01Event>[];
+
+      final verifyStream = VerifyEventStream(
+        unverifiedStreamInput: controller.stream,
+        eventVerifier: mockVerifier,
+        maxConcurrent: 5,
+      );
+
+      final subscription = verifyStream().listen((event) {
+        resultList.add(event);
+      });
+
+      controller.add(createMockEvent('1'));
+
+      await Future.delayed(Duration(milliseconds: 50));
+
+      expect(resultList.length, equals(1),
+          reason: 'First event should be processed immediately');
+      expect(resultList[0].content, equals('content1'));
+
+      controller.add(createMockEvent('2'));
+
+      await Future.delayed(Duration(milliseconds: 50));
+
+      expect(resultList.length, equals(2),
+          reason: 'Second event should be processed immediately');
+      expect(resultList[1].content, equals('content2'));
+
+      await subscription.cancel();
+      await controller.close();
+    });
+
+    test(
+        'should process events from non-closing stream with fewer events than maxConcurrent',
+        () async {
+      final controller = StreamController<Nip01Event>();
+      final resultList = <Nip01Event>[];
+
+      final verifyStream = VerifyEventStream(
+        unverifiedStreamInput: controller.stream,
+        eventVerifier: mockVerifier,
+        maxConcurrent: 10,
+      );
+
+      final subscription = verifyStream().listen((event) {
+        resultList.add(event);
+      });
+
+      controller.add(createMockEvent('1'));
+      controller.add(createMockEvent('2'));
+      controller.add(createMockEvent('3'));
+
+      await Future.delayed(Duration(milliseconds: 100));
+
+      expect(resultList.length, equals(3),
+          reason:
+              'All events should be processed even when count < maxConcurrent');
+
+      await subscription.cancel();
+      await controller.close();
+    });
+
+    test('should process events as they complete, not in order', () async {
+      final controller = StreamController<Nip01Event>();
+      final resultList = <Nip01Event>[];
+
+      final delayedVerifier = DelayedMockEventVerifier();
+
+      final verifyStream = VerifyEventStream(
+        unverifiedStreamInput: controller.stream,
+        eventVerifier: delayedVerifier,
+        maxConcurrent: 5,
+      );
+
+      final subscription = verifyStream().listen((event) {
+        resultList.add(event);
+      });
+
+      controller.add(createMockEvent('slow'));
+      controller.add(createMockEvent('fast'));
+
+      await Future.delayed(Duration(milliseconds: 50));
+
+      expect(resultList.length, equals(1),
+          reason: 'Fast event should complete first');
+      expect(resultList[0].content, equals('contentfast'),
+          reason: 'Fast event should be yielded before slow event');
+
+      await Future.delayed(Duration(milliseconds: 80));
+
+      expect(resultList.length, equals(2));
+      expect(resultList[1].content, equals('contentslow'));
+
+      await subscription.cancel();
+      await controller.close();
+    });
+
+    test('should handle continuous stream of events without blocking',
+        () async {
+      final controller = StreamController<Nip01Event>();
+      final resultList = <Nip01Event>[];
+
+      final verifyStream = VerifyEventStream(
+        unverifiedStreamInput: controller.stream,
+        eventVerifier: mockVerifier,
+        maxConcurrent: 3,
+      );
+
+      final subscription = verifyStream().listen((event) {
+        resultList.add(event);
+      });
+
+      for (int i = 0; i < 10; i++) {
+        controller.add(createMockEvent('$i'));
+
+        await Future.delayed(Duration(milliseconds: 10));
+
+        if (i >= 2) {
+          expect(resultList.length, greaterThan(0),
+              reason:
+                  'Events should be processed continuously, not waiting for stream end');
+        }
+      }
+
+      await Future.delayed(Duration(milliseconds: 100));
+
+      expect(resultList.length, equals(10),
+          reason: 'All events should be processed from continuous stream');
+
+      await subscription.cancel();
+      await controller.close();
+    });
+
+    test(
+        'should not deadlock when maxConcurrent is reached with non-closing stream',
+        () async {
+      final controller = StreamController<Nip01Event>();
+      final resultList = <Nip01Event>[];
+
+      final verifyStream = VerifyEventStream(
+        unverifiedStreamInput: controller.stream,
+        eventVerifier: mockVerifier,
+        maxConcurrent: 2,
+      );
+
+      final subscription = verifyStream().listen((event) {
+        resultList.add(event);
+      });
+
+      controller.add(createMockEvent('1'));
+      controller.add(createMockEvent('2'));
+      controller.add(createMockEvent('3'));
+      controller.add(createMockEvent('4'));
+
+      await Future.delayed(Duration(milliseconds: 200));
+
+      expect(resultList.length, equals(4),
+          reason: 'Should process all events without deadlocking');
+
+      await subscription.cancel();
+      await controller.close();
+    });
+
+    test('should yield events immediately upon verification completion',
+        () async {
+      final controller = StreamController<Nip01Event>();
+      final resultTimes = <DateTime>[];
+
+      final verifyStream = VerifyEventStream(
+        unverifiedStreamInput: controller.stream,
+        eventVerifier: mockVerifier,
+        maxConcurrent: 5,
+      );
+
+      final subscription = verifyStream().listen((event) {
+        resultTimes.add(DateTime.now());
+      });
+
+      final startTime = DateTime.now();
+
+      controller.add(createMockEvent('1'));
+      await Future.delayed(Duration(milliseconds: 20));
+      controller.add(createMockEvent('2'));
+      await Future.delayed(Duration(milliseconds: 20));
+      controller.add(createMockEvent('3'));
+
+      await Future.delayed(Duration(milliseconds: 100));
+
+      expect(resultTimes.length, equals(3));
+
+      for (int i = 0; i < resultTimes.length; i++) {
+        final timeDiff = resultTimes[i].difference(startTime).inMilliseconds;
+        expect(timeDiff, lessThan(200),
+            reason:
+                'Event $i should be processed within 200ms, was ${timeDiff}ms');
+      }
+
+      await subscription.cancel();
+      await controller.close();
+    });
   });
+}
+
+/// A mock event verifier that introduces variable delays based on event content
+/// Used to test completion-order processing rather than input-order processing
+class DelayedMockEventVerifier extends EventVerifier {
+  @override
+  Future<bool> verify(Nip01Event event) async {
+    // Introduce different delays based on event content to test completion order
+    if (event.content.contains('slow')) {
+      await Future.delayed(Duration(milliseconds: 100));
+    } else if (event.content.contains('fast')) {
+      await Future.delayed(Duration(milliseconds: 10));
+    } else {
+      // Default small delay
+      await Future.delayed(Duration(milliseconds: 1));
+    }
+    return true;
+  }
 }

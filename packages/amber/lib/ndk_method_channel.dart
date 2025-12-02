@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:hex/hex.dart';
+import 'package:convert/convert.dart';
 
 import 'ndk_platform_interface.dart';
 
@@ -18,9 +18,9 @@ class MethodChannelDartNdk extends NdkPlatform {
   Future<bool?> verifySignature(
       String signature, String hash, String pubKey) async {
     final arguments = {
-      "signature": HEX.decode(signature),
-      "hash": HEX.decode(hash),
-      "pubKey": HEX.decode(pubKey)
+      "signature": hex.decode(signature),
+      "hash": hex.decode(hash),
+      "pubKey": hex.decode(pubKey)
     };
     return await methodChannel.invokeMethod<bool>(
       'verifySignature',

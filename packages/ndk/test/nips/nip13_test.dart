@@ -151,15 +151,18 @@ void main() {
   });
 
   test('validate event: greater POW', () {
-    final keypair = Bip340.generatePrivateKey();
-
-    final minedEvent = Nip01Event(
-      pubKey: keypair.publicKey,
-      kind: 1,
-      tags: [],
-      content: 'Hello, Nostr!',
-      createdAt: 1234567890,
-    ).minePoW(10);
+    final minedEvent = Nip01Event.fromJson({
+      "id": "00302f635d4e2059c5cdddca2c00b5f455ec6706cfd960a410acc3e9abe36100",
+      "pubkey":
+          "6d46059232af4d121456d1fff7fa8dadc32b02510e46e85b912b0585cf038574",
+      "created_at": 1234567890,
+      "kind": 1,
+      "tags": [
+        ["nonce", "3613431634", "10"]
+      ],
+      "content": "Hello, Nostr!",
+      "sig": ""
+    });
 
     final value = Nip13.validateEvent(minedEvent);
 

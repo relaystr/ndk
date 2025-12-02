@@ -4,8 +4,8 @@
 import 'dart:io';
 
 import 'package:collection/collection.dart';
+import 'package:convert/convert.dart';
 import 'package:ed25519_edwards/ed25519_edwards.dart';
-import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:source_span/source_span.dart';
@@ -124,7 +124,7 @@ class PrecompiledBinaries {
   });
 
   static PublicKey _publicKeyFromHex(String key, SourceSpan? span) {
-    final bytes = HEX.decode(key);
+    final bytes = hex.decode(key);
     if (bytes.length != 32) {
       throw SourceSpanException(
           'Invalid public key. Must be 32 bytes long.', span);

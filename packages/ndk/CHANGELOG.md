@@ -1,3 +1,141 @@
+## 0.6.1-dev.1
+
+ - **FIX**: update the mock relay + test.
+ - **FIX**: test pass.
+ - **FEAT**: add a test.
+
+## 0.6.1-dev.0
+
+ - **FIX**: use mock relay.
+ - **FIX**: new test pass.
+ - **FEAT**: test.
+
+## 0.6.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.6.0-dev.20
+
+ - **REFACTOR**: remove param signer from lists api.
+ - **REFACTOR**: use immutable event in toEvent().
+ - **REFACTOR**: reoder, naming, description.
+ - **FIX**: upgrade to nip44.
+ - **FIX**: mock relay delete from memory.
+ - **FIX**: calculate id in nip51set.
+ - **FEAT**: lists nip04 backwards compatibility with nip04.
+ - **FEAT**: delete set.
+
+## 0.6.0-dev.19
+
+ - **REFACTOR**: remove param signer from lists api.
+ - **REFACTOR**: use immutable event in toEvent().
+ - **REFACTOR**: reoder, naming, description.
+ - **FIX**: upgrade to nip44.
+ - **FIX**: mock relay delete from memory.
+ - **FIX**: calculate id in nip51set.
+ - **FEAT**: lists nip04 backwards compatibility with nip04.
+ - **FEAT**: delete set.
+
+## 0.6.0-dev.18
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+## 0.6.0-dev.17
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+## 0.6.0-dev.16
+
+ - **FIX**: tests coverage.
+ - **FIX**: remove hex package usage.
+ - **FIX**: split long file.
+ - **FIX**: round trip tests.
+ - **FIX**: var to final.
+ - **FIX**: move class to entities.
+ - **FIX**: missing test coverage.
+ - **FIX**: missing test coverage.
+ - **FEAT**: nip19 getters on events.
+ - **FEAT**: nprofile, naddr and nevent support.
+
+## 0.6.0-dev.15
+
+ - **FIX**: tests coverage.
+ - **FIX**: remove hex package usage.
+ - **FIX**: split long file.
+ - **FIX**: round trip tests.
+ - **FIX**: var to final.
+ - **FIX**: move class to entities.
+ - **FIX**: missing test coverage.
+ - **FIX**: missing test coverage.
+ - **FEAT**: nip19 getters on events.
+ - **FEAT**: nprofile, naddr and nevent support.
+
+## 0.6.0-dev.14
+
+ - **FIX**: waiting for connection broadcast jit.
+
+## 0.6.0-dev.13
+
+ - **FIX**: waiting for connection broadcast jit.
+
+## 0.6.0-dev.12
+
+ - **FIX**: Use 0x100000000 instead of 1 << 32 for web compatibility.
+
+## 0.6.0-dev.11
+
+ - **FIX**: Use 0x100000000 instead of 1 << 32 for web compatibility.
+
+## 0.6.0-dev.10
+
+ - **FIX**: add id recalculation in Nip01Event.copyWith.
+ - **FIX**: make the test "validate event: greater POW" predictable.
+ - **FIX**: wrap json.decode with a try catch block.
+
+## 0.6.0-dev.9
+
+ - **FIX**: add id recalculation in Nip01Event.copyWith.
+ - **FIX**: make the test "validate event: greater POW" predictable.
+ - **FIX**: wrap json.decode with a try catch block.
+
+## 0.6.0-dev.8
+
+ - **FIX**: add test and call clean url during broadcast.
+
+## 0.6.0-dev.7
+
+ - **FIX**: add test and call clean url during broadcast.
+
+## 0.6.0-dev.6
+
+ - **FIX**: static analysis issues.
+
+## 0.6.0-dev.5
+
+ - **FIX**: static analysis issues.
+
+## 0.6.0-dev.4
+
+ - **FEAT**: log color, params.
+
+## 0.6.0-dev.3
+
+ - **FEAT**: log color, params.
+
+## 0.6.0-dev.2
+
+ - **REFACTOR**: concurrent streams with rxdart.
+ - **FIX**: improved null filter.
+ - **FIX**: drop invalid events.
+
+## 0.6.0-dev.1
+
+ - **REFACTOR**: concurrent streams with rxdart.
+ - **FIX**: improved null filter.
+ - **FIX**: drop invalid events.
+
 ## 0.6.0-dev.0
 
 - Bump "ndk" to `0.6.0-dev.0`.

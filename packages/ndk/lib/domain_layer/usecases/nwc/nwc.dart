@@ -25,6 +25,22 @@ import 'requests/pay_invoice.dart';
 import 'responses/nwc_response.dart';
 
 /// Main entry point for the NWC (Nostr Wallet Connect - NIP47 ) usecase
+///
+/// ## Multiple Relay Support
+///
+/// NWC now supports multiple relays for improved reliability and redundancy.
+///
+/// ### URI Formats:
+/// - Single relay: `nostr+walletconnect://pubkey?relay=wss://relay.com&secret=secret`
+/// - Multiple relays: `nostr+walletconnect://pubkey?relays=wss://relay1.com,wss://relay2.com&secret=secret`
+/// - Mixed format: `nostr+walletconnect://pubkey?relay=wss://relay1.com&relays=wss://relay2.com,wss://relay3.com&secret=secret`
+///
+/// When connecting to an NWC wallet with multiple relays, the client will:
+/// - Query all relays for the wallet info (kind 13194)
+/// - Subscribe to notifications and responses on all relays
+/// - Broadcast requests to all relays for redundancy
+///
+/// This provides better reliability in case some relays are offline or unreachable.
 class Nwc {
   static const kNWCProtocolPrefix = "nostr+walletconnect://";
 
@@ -54,7 +70,7 @@ class Nwc {
       Function(String?)? onError,
       Duration? timeout}) async {
     var parsedUri = NostrWalletConnectUri.parseConnectionUri(uri);
-    var relay = Uri.decodeFull(parsedUri.relay);
+    var relays = parsedUri.relays.map((r) => Uri.decodeFull(r)).toList();
     var filter =
         Filter(kinds: [NwcKind.INFO.value], authors: [parsedUri.walletPubkey]);
 
@@ -63,7 +79,7 @@ class Nwc {
     List<Nip01Event> infoEvent = await _requests
         .query(
             name: "nwc-info",
-            explicitRelays: [relay],
+            explicitRelays: relays,
             filters: [filter],
             timeout: timeout ?? Duration(seconds: 5),
             timeoutCallback: () {
@@ -93,8 +109,9 @@ class Nwc {
 
         await _subscribeToNotificationsAndResponses(connection);
 
-        if (doGetInfoMethod && ignoreCapabilitiesCheck ||
-            connection.permissions.contains(NwcMethod.GET_INFO.name)) {
+        if (doGetInfoMethod &&
+            (ignoreCapabilitiesCheck ||
+                connection.permissions.contains(NwcMethod.GET_INFO.name))) {
           try {
             await getInfo(connection, timeout: timeout).then((info) {
               connection.info = info;
@@ -129,7 +146,8 @@ class Nwc {
     connection.subscription = _requests.subscription(
         name:
             "nwc-sub-${connection.useETagForEachRequest ? "notifs-only" : ""}",
-        explicitRelays: [connection.uri.relay],
+        explicitRelays:
+            connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
         filters: [
           Filter(
             kinds: kindsToSubscribe,
@@ -282,7 +300,8 @@ class Nwc {
       );
       dedicatedResponse = _requests.subscription(
           name: "nwc-response-",
-          explicitRelays: [connection.uri.relay],
+          explicitRelays:
+              connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
           filters: [responseFilter],
           cacheRead: false,
           cacheWrite: false);
@@ -307,7 +326,8 @@ class Nwc {
 
     final bResponse = _broadcast.broadcast(
       nostrEvent: event,
-      specificRelays: [connection.uri.relay],
+      specificRelays:
+          connection.uri.relays.map((r) => Uri.decodeFull(r)).toList(),
       customSigner: connection.signer,
     );
     await bResponse.broadcastDoneFuture;
@@ -316,7 +336,7 @@ class Nwc {
         Timer(timeout ?? Duration(seconds: 5), () async {
       if (!completer.isCompleted) {
         final error =
-            "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relay} and eventId ${event.id}"; // Added event.id to log
+            "Timed out while executing NWC request ${request.method.name} with relay ${connection.uri.relays.map((r) => Uri.decodeFull(r)).toList()} and eventId ${event.id}"; // Added event.id to log
         completer.completeError(error);
         _inflighRequests.remove(event.id);
         _inflighRequestTimers.remove(event.id);
@@ -359,8 +379,10 @@ class Nwc {
   }
 
   /// Does a `get_balance` request
-  Future<GetBalanceResponse> getBalance(NwcConnection connection) async {
-    return _executeRequest<GetBalanceResponse>(connection, GetBalanceRequest());
+  Future<GetBalanceResponse> getBalance(NwcConnection connection,
+      {Duration? timeout}) async {
+    return _executeRequest<GetBalanceResponse>(connection, GetBalanceRequest(),
+        timeout: timeout);
   }
 
   /// Does a `get_balance` request

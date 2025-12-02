@@ -418,9 +418,15 @@ class BlossomRepositoryImpl implements BlossomRepository {
           if (until != null) 'until': '${until.millisecondsSinceEpoch ~/ 1000}',
         };
 
+        final headers = <String, String>{};
+        if (authorization != null) {
+          headers['Authorization'] = "Nostr ${authorization.toBase64()}";
+        }
+
         final response = await client.get(
           url: Uri.parse('$url/list/$pubkey')
               .replace(queryParameters: queryParams),
+          headers: headers,
         );
 
         if (response.statusCode == 200) {

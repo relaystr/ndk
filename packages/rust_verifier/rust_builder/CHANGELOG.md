@@ -1,3 +1,20 @@
+## 0.1.7-dev.0+1
+
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FIX**: remove hex package depandance.
+
+## 0.1.7
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.1.7-dev.2
+
+ - **FIX**: remove hex package depandance.
+
+## 0.1.7-dev.1
+
+ - **FIX**: remove hex package depandance.
+
 ## 0.1.7-dev.0+2
 
  - **REFACTOR**: secp256k1 to rust native dep.

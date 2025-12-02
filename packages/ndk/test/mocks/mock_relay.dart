@@ -27,6 +27,9 @@ class MockRelay {
       {}; // Track active subscriptions
   bool signEvents;
   bool requireAuthForRequests;
+  bool allwaysSendBadJson;
+  bool sendMalformedEvents;
+  String? customWelcomeMessage;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -46,6 +49,9 @@ class MockRelay {
     Map<KeyPair, Nip65>? nip65s,
     this.signEvents = true,
     this.requireAuthForRequests = false,
+    this.allwaysSendBadJson = false,
+    this.sendMalformedEvents = false,
+    this.customWelcomeMessage,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -88,11 +94,18 @@ class MockRelay {
 
     stream.listen((webSocket) {
       _webSocket = webSocket;
+      if (customWelcomeMessage != null) {
+        webSocket.add(customWelcomeMessage!);
+      }
       if (requireAuthForRequests && !signedChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
       webSocket.listen((message) async {
+        if (allwaysSendBadJson) {
+          webSocket.add('{"bad_json":,}');
+          return;
+        }
         if (delayResponse != null) {
           await Future.delayed(delayResponse);
         }
@@ -137,7 +150,18 @@ class MockRelay {
             } else if (newEvent.kind == Metadata.kKind) {
               _metadatas[newEvent.pubKey] = newEvent;
             } else if (newEvent.kind == Deletion.kKind) {
-              _storedEvents.removeWhere((e) => newEvent.getEId() == e.id);
+              final eventIdsToDelete = newEvent.getTags("e");
+              for (final idToDelete in eventIdsToDelete) {
+                _storedEvents.removeWhere((e) => idToDelete == e.id);
+                // remove from textNotes map
+                if (textNotes != null) {
+                  textNotes.removeWhere((key, event) => event.id == idToDelete);
+                }
+                //remove from contact lists and metadata
+                _contactLists
+                    .removeWhere((key, event) => event.id == idToDelete);
+                _metadatas.removeWhere((key, event) => event.id == idToDelete);
+              }
             } else if (newEvent.kind == kNip46Kind) {
               // Handle NIP-46 remote signer request
               _handleNip46Request(newEvent, webSocket);
@@ -203,6 +227,13 @@ class MockRelay {
   }
 
   void _respondToRequest(List<Filter> filters, String requestId) {
+    if (sendMalformedEvents) {
+      final malformedEventJson = '["EVENT", "$requestId", {"id":null,"pubkey":null,"created_at":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"kind":0,"tags":[],"content":null,"sig":null}]';
+      _webSocket!.add(malformedEventJson);
+      _webSocket!.add(jsonEncode(["EOSE", requestId]));
+      return;
+    }
+    
     Set<Nip01Event> allMatchingEvents = {};
 
     for (Filter filter in filters) {

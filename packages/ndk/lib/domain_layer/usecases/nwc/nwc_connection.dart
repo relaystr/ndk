@@ -69,6 +69,13 @@ class NwcConnection {
     return _signer!;
   }
 
+  /// Get all relays for this connection
+  List<String> get relays => uri.relays;
+
+  /// Get the primary relay (first in the list, for backward compatibility)
+  @Deprecated('Use relays list instead')
+  String get relay => uri.relays.isNotEmpty ? uri.relays.first : '';
+
   /// does this connection only support legacy notifications
   bool isLegacyNotifications() {
     return supportedVersions.length == 1 && supportedVersions.first == "0.0" ||
