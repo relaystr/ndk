@@ -183,7 +183,7 @@ void main() async {
       await explicitRelay.stopServer();
     });
 
-    test('query triple slash relays: wss:///', () async {
+    test('query triple slashes relays: wss:///', () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final query = ndk.requests.query(
