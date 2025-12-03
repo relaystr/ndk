@@ -182,20 +182,5 @@ void main() async {
       ndk.destroy();
       await explicitRelay.stopServer();
     });
-
-    test('query triple slashes relays: wss:///', () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
-
-      final query = ndk.requests.query(
-        filters: [
-          Filter(kinds: [0]),
-        ],
-        explicitRelays: ["wss:///example.com"],
-      );
-
-      await query.future;
-
-      ndk.destroy();
-    });
   });
 }

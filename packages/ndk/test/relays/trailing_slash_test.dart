@@ -313,4 +313,21 @@ void main() {
       ndk.destroy();
     });
   });
+
+  group('Triple slash', () {
+    test('query triple slashes relays: wss:///', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [0]),
+        ],
+        explicitRelays: ["wss:///example.com"],
+      );
+
+      await query.future;
+
+      ndk.destroy();
+    });
+  });
 }
