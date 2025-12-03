@@ -167,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage>
     // The main change is how _tabPages is constructed in build() to pass the callback.
 
     _tabController = TabController(
-        length: 7,
+        length: _tabs.length,
         vsync:
             this); // Fixed length to 5 (Accounts, Metadata, Relays, NWC, Blossom)
     _tabController.addListener(() {

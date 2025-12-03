@@ -209,6 +209,9 @@ class _WalletsPageState extends State<WalletsPage> {
                     nwcUrl: _nwcUriController.text,
                   );
                   await widget.ndk.wallets.addWallet(nwcWallet);
+                  widget.ndk.wallets.getBalance(walletId, "sat");
+                  widget.ndk.wallets.getRecentTransactionsStream(walletId);
+                  widget.ndk.wallets.getPendingTransactionsStream(walletId);
                   Navigator.of(context).pop();
                 } catch (e) {
                   displayError(e.toString());

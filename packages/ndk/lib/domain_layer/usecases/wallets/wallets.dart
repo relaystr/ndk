@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../entities/wallet/wallet_balance.dart';
@@ -46,10 +47,10 @@ class Wallets {
       _walletBalanceStreams = {};
 
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-      _walletPendingStreams = {};
+      _walletPendingTransactionStreams = {};
 
   final Map<String, BehaviorSubject<List<WalletTransaction>>>
-      _walletRecentStreams = {};
+      _walletRecentTransactionStreams = {};
 
   /// stream subscriptions for cleanup
   final Map<String, List<StreamSubscription>> _subscriptions = {};
@@ -99,7 +100,7 @@ class Wallets {
     if (defaultWalletId == null) {
       return null;
     }
-    return _wallets.firstWhere((wallet) => wallet.id == defaultWalletId);
+    return _wallets.firstWhereOrNull((wallet) => wallet.id == defaultWalletId);
   }
 
   Future<void> _initializeWallet() async {
@@ -121,14 +122,6 @@ class Wallets {
     });
 
     _updateCombinedStreams();
-  }
-
-  void _ensureWalletStreamExists(String walletId) {
-    _walletBalanceStreams[walletId] ??= BehaviorSubject<List<WalletBalance>>();
-    _walletPendingStreams[walletId] ??=
-        BehaviorSubject<List<WalletTransaction>>();
-    _walletRecentStreams[walletId] ??=
-        BehaviorSubject<List<WalletTransaction>>();
   }
 
   void _updateCombinedStreams() {
@@ -160,39 +153,9 @@ class Wallets {
     _walletsPendingTransactions[wallet.id] = [];
     _walletsRecentTransactions[wallet.id] = [];
 
-    // create individual streams if they don't exist
-    _ensureWalletStreamExists(wallet.id);
-
-    // subscribe to repository streams and update in memory data
-    final subscriptions = <StreamSubscription>[];
-
-    // balance stream
-    subscriptions
-        .add(_walletsRepository.getBalancesStream(wallet.id).listen((balances) {
-      _walletsBalances[wallet.id] = balances;
-      _walletBalanceStreams[wallet.id]?.add(balances);
-      _updateCombinedStreams();
-    }));
-
-    // pending transactions stream
-    subscriptions.add(_walletsRepository
-        .getPendingTransactionsStream(wallet.id)
-        .listen((transactions) {
-      _walletsPendingTransactions[wallet.id] = transactions;
-      _walletPendingStreams[wallet.id]?.add(transactions);
-      _updateCombinedStreams();
-    }));
-
-    // recent transactions stream
-    subscriptions.add(_walletsRepository
-        .getRecentTransactionsStream(wallet.id)
-        .listen((transactions) {
-      _walletsRecentTransactions[wallet.id] = transactions;
-      _walletRecentStreams[wallet.id]?.add(transactions);
-      _updateCombinedStreams();
-    }));
-
-    _subscriptions[wallet.id] = subscriptions;
+    if (defaultWallet == null) {
+      setDefaultWallet(wallet.id);
+    }
   }
 
   /// add a new wallet to the system
@@ -214,12 +177,12 @@ class Wallets {
 
     // clean up streams
     _walletBalanceStreams[walletId]?.close();
-    _walletPendingStreams[walletId]?.close();
-    _walletRecentStreams[walletId]?.close();
+    _walletPendingTransactionStreams[walletId]?.close();
+    _walletRecentTransactionStreams[walletId]?.close();
 
     _walletBalanceStreams.remove(walletId);
-    _walletPendingStreams.remove(walletId);
-    _walletRecentStreams.remove(walletId);
+    _walletPendingTransactionStreams.remove(walletId);
+    _walletRecentTransactionStreams.remove(walletId);
 
     // clean up subscriptions
     _subscriptions[walletId]?.forEach((sub) => sub.cancel());
@@ -229,6 +192,10 @@ class Wallets {
     _walletsSubject.add(_wallets.toList());
 
     _updateCombinedStreams();
+
+    if (walletId == defaultWalletId) {
+      defaultWalletId = _wallets.isNotEmpty ? _wallets.first.id : null;
+    }
   }
 
   /// set the default wallet to use by common operations \
@@ -239,6 +206,86 @@ class Wallets {
     } else {
       throw ArgumentError('Wallet with id $walletId does not exist.');
     }
+  }
+
+  void _initBalanceStream(String id) {
+    if (_walletBalanceStreams[id] == null) {
+      _walletBalanceStreams[id] ??= BehaviorSubject<List<WalletBalance>>();
+      final subscriptions = <StreamSubscription>[];
+      subscriptions.add(_walletsRepository.getBalancesStream(id).listen((balances) {
+        _walletsBalances[id] = balances;
+        _walletBalanceStreams[id]?.add(balances);
+        _updateCombinedStreams();
+      }));
+      if (_subscriptions[id] == null) {
+        _subscriptions[id] = subscriptions;
+      } else {
+        _subscriptions[id]?.addAll(subscriptions);
+      }
+    }
+  }
+
+  void _initRecentTransactionStream(String id) {
+    if (_walletRecentTransactionStreams[id] == null) {
+      _walletRecentTransactionStreams[id] ??=
+          BehaviorSubject<List<WalletTransaction>>();
+      final subscriptions = <StreamSubscription>[];
+      subscriptions.add(_walletsRepository.getRecentTransactionsStream(id).listen((transactions) {
+        transactions = transactions.where((tx) => tx.state.isDone).toList();
+        _walletsRecentTransactions[id] = transactions;
+        _walletRecentTransactionStreams[id]?.add(transactions);
+        _updateCombinedStreams();
+      }));
+      if (_subscriptions[id] == null) {
+        _subscriptions[id] = subscriptions;
+      } else {
+        _subscriptions[id]?.addAll(subscriptions);
+    }
+    }
+  }
+
+  void _initPendingTransactionStream(String id) {
+    if (_walletPendingTransactionStreams[id] == null) {
+      _walletPendingTransactionStreams[id] ??=
+          BehaviorSubject<List<WalletTransaction>>();
+      final subscriptions = <StreamSubscription>[];
+      subscriptions.add(_walletsRepository.getPendingTransactionsStream(id).listen((transactions) {
+        transactions = transactions.where((tx) => tx.state.isPending).toList();
+        _walletsPendingTransactions[id] = transactions;
+        _walletPendingTransactionStreams[id]?.add(transactions);
+        _updateCombinedStreams();
+      }));
+      if (_subscriptions[id] == null) {
+        _subscriptions[id] = subscriptions;
+      } else {
+        _subscriptions[id]?.addAll(subscriptions);
+      }
+    }
+  }
+
+  Stream<List<WalletBalance>> getBalancesStream(String walletId) {
+    _initBalanceStream(walletId);
+    return _walletBalanceStreams[walletId]!.stream;
+  }
+
+  Stream<List<WalletTransaction>> getRecentTransactionsStream(String walletId) {
+    _initRecentTransactionStream(walletId);
+    return _walletRecentTransactionStreams[walletId]!.stream;
+  }
+
+  Stream<List<WalletTransaction>> getPendingTransactionsStream(String walletId) {
+    _initPendingTransactionStream(walletId);
+    return _walletPendingTransactionStreams[walletId]!.stream;
+  }
+
+  int getBalance(String walletId, String unit) {
+    _initBalanceStream(walletId);
+    final balances = _walletsBalances[walletId];
+    if (balances == null) {
+      return 0;
+    }
+    final balance = balances.firstWhereOrNull((balance) => balance.unit == unit);
+    return balance?.amount ?? 0;
   }
 
   /// calculate combined balance for a specific currency
@@ -277,10 +324,10 @@ class Wallets {
     for (final stream in _walletBalanceStreams.values) {
       futures.add(stream.close());
     }
-    for (final stream in _walletPendingStreams.values) {
+    for (final stream in _walletPendingTransactionStreams.values) {
       futures.add(stream.close());
     }
-    for (final stream in _walletRecentStreams.values) {
+    for (final stream in _walletRecentTransactionStreams.values) {
       futures.add(stream.close());
     }
 
@@ -291,8 +338,8 @@ class Wallets {
     _walletsPendingTransactions.clear();
     _walletsRecentTransactions.clear();
     _walletBalanceStreams.clear();
-    _walletPendingStreams.clear();
-    _walletRecentStreams.clear();
+    _walletPendingTransactionStreams.clear();
+    _walletRecentTransactionStreams.clear();
     _subscriptions.clear();
     defaultWalletId = null;
   }
