@@ -106,6 +106,10 @@ class Nwc {
         if (versionTags.isNotEmpty) {
           connection.supportedVersions = versionTags.first.split(" ");
         }
+        List<String> encryptions = event.getTags('encryption');
+        if (encryptions.isNotEmpty) {
+          connection.supportedEncryptions = encryptions.first.split(" ");
+        }
 
         await _subscribeToNotificationsAndResponses(connection);
 
