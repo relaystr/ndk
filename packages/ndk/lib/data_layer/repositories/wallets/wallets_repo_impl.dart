@@ -61,6 +61,12 @@ class WalletsRepoImpl implements WalletsRepo {
         if (nwcWallet.balanceSubject != null) {
           await nwcWallet.balanceSubject!.close();
         }
+        if (nwcWallet.transactionsSubject != null) {
+          await nwcWallet.transactionsSubject!.close();
+        }
+        if (nwcWallet.pendingTransactionsSubject != null) {
+          await nwcWallet.pendingTransactionsSubject!.close();
+        }
       }
     }
     return _cacheManger.removeWallet(id);
