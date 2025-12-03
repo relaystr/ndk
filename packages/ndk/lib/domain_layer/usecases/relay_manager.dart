@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart';
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
 import '../../shared/helpers/relay_helper.dart';
+import '../../shared/isolates/isolate_manager.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../entities/broadcast_state.dart';
@@ -388,13 +389,25 @@ class RelayManager<T> {
     });
   }
 
-  void _handleIncomingMessage(
-      dynamic message, RelayConnectivity relayConnectivity) {
+  Future<void> _handleIncomingMessage(
+      dynamic message, RelayConnectivity relayConnectivity) async {
     List<dynamic> eventJson;
     try {
-      final decodedMessage = json.decode(message);
+      final decodedMessage =
+          await IsolateManager.instance.runInEncodingIsolate<String, dynamic>(
+        (m) {
+          try {
+            return json.decode(m);
+          } catch (e) {
+            return null;
+          }
+        },
+        message,
+      );
+
       if (decodedMessage is! List<dynamic>) {
-        Logger.log.w("Received non-list JSON message from ${relayConnectivity.url}: $message");
+        Logger.log.w(
+            "Received non-list JSON message from ${relayConnectivity.url}: $message");
         return;
       }
       eventJson = decodedMessage;
@@ -649,4 +662,8 @@ class RelayManager<T> {
   RelayConnectivity? getRelayConnectivity(String url) {
     return globalState.relays[url];
   }
+}
+
+dynamic decodeJson(String jsonString) {
+  return json.decode(jsonString);
 }
