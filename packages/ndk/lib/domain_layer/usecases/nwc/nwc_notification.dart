@@ -11,6 +11,7 @@ class NwcNotification {
   String? description;
   String? descriptionHash;
   String? preimage;
+  String? state;
   String paymentHash;
   int amount;
   int? feesPaid;
@@ -24,6 +25,8 @@ class NwcNotification {
   bool get isPaymentReceived => notificationType == kPaymentReceived;
   bool get isPaymentSent => notificationType == kPaymentSent;
   bool get isHoldInvoiceAccepted => notificationType == kHoldInvoiceAccepted;
+  bool get isSettled => state == "settled";
+  bool get isPending => state == "pending";
 
   NwcNotification({
     required this.notificationType,
@@ -32,6 +35,7 @@ class NwcNotification {
     this.description,
     this.descriptionHash,
     this.preimage,
+    this.state,
     required this.paymentHash,
     required this.amount,
     this.feesPaid,
@@ -51,6 +55,7 @@ class NwcNotification {
       description: map['description'] as String?,
       descriptionHash: map['description_hash'] as String?,
       preimage: map['preimage'] as String,
+      state: map['state'] as String?,
       paymentHash: map['payment_hash'] as String,
       amount: map['amount'] as int,
       feesPaid: map['fees_paid'] as int,
@@ -66,6 +71,6 @@ class NwcNotification {
 
   @override
   toString() {
-    return 'NwcNotification{type: $type, invoice: $invoice, description: $description, descriptionHash: $descriptionHash, preimage: $preimage, paymentHash: $paymentHash, amount: $amount, feesPaid: $feesPaid, createdAt: $createdAt, expiresAt: $expiresAt, settledAt: $settledAt, metadata: $metadata}';
+    return 'NwcNotification{type: $type, invoice: $invoice, state; $state description: $description, descriptionHash: $descriptionHash, preimage: $preimage, paymentHash: $paymentHash, amount: $amount, feesPaid: $feesPaid, createdAt: $createdAt, expiresAt: $expiresAt, settledAt: $settledAt, metadata: $metadata}';
   }
 }
