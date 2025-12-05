@@ -24,10 +24,10 @@ class Nip01Event {
   final String? sig;
 
   /// has signature been validated?
-  bool? validSig;
+  final bool? validSig;
 
   /// Relay that an event was received from
-  List<String> sources = [];
+  final List<String> sources;
 
   /// Creates a new Nostr event.
   ///
@@ -45,6 +45,8 @@ class Nip01Event {
     required this.tags,
     required this.content,
     required this.sig,
+    required this.validSig,
+    this.sources = const [],
     int createdAt = 0,
   }) {
     this.createdAt = (createdAt == 0)
@@ -60,16 +62,19 @@ class Nip01Event {
     List<List<String>>? tags,
     String? content,
     String? sig,
+    bool? validSig,
+    List<String>? sources,
   }) {
     return Nip01Event(
-      id: id ?? this.id,
-      pubKey: pubKey ?? this.pubKey,
-      createdAt: createdAt ?? this.createdAt,
-      kind: kind ?? this.kind,
-      tags: tags ?? this.tags,
-      content: content ?? this.content,
-      sig: sig ?? this.sig,
-    );
+        id: id ?? this.id,
+        pubKey: pubKey ?? this.pubKey,
+        createdAt: createdAt ?? this.createdAt,
+        kind: kind ?? this.kind,
+        tags: tags ?? this.tags,
+        content: content ?? this.content,
+        sig: sig ?? this.sig,
+        validSig: validSig ?? this.validSig,
+        sources: sources ?? this.sources);
   }
 
   // Individual events with the same "id" are equivalent

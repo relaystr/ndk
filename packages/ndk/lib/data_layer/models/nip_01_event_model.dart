@@ -14,6 +14,8 @@ class Nip01EventModel extends Nip01Event {
     required super.tags,
     required super.content,
     required super.sig,
+    super.validSig,
+    super.sources = const [],
   });
 
   factory Nip01EventModel.fromEntity(Nip01Event event) {
