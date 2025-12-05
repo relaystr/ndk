@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/helpers.dart';
+import '../usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'nip_01_event.dart';
 import 'read_write_marker.dart';
 
@@ -139,7 +140,7 @@ class ContactList {
   }
 
   Nip01Event toEvent() {
-    return Nip01Event(
+    return Nip01EventService.createEventCalculateId(
       pubKey: pubKey,
       kind: ContactList.kKind,
       tags: contactsToJson()

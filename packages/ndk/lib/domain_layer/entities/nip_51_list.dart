@@ -4,6 +4,7 @@ import '../../shared/helpers/list_casting.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/helpers.dart';
 import '../repositories/event_signer.dart';
+import '../usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'nip_01_event.dart';
 
 class Nip51List {
@@ -205,7 +206,7 @@ class Nip51List {
               plaintext: json, recipientPubKey: signer.getPublicKey()) ??
           '';
     }
-    Nip01Event event = Nip01Event(
+    Nip01Event event = Nip01EventService.createEventCalculateId(
       pubKey: pubKey,
       kind: kind,
       tags: elements

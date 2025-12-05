@@ -18,7 +18,7 @@ class Nip01EventService {
     int createdAt = 0,
   }) {
     final id = calculateEventIdSync(
-      publicKey: pubKey,
+      pubKey: pubKey,
       createdAt: createdAt,
       kind: kind,
       tags: tags,
@@ -43,7 +43,7 @@ class Nip01EventService {
     // Validate event data
     if (event.id !=
         calculateEventIdSync(
-          publicKey: event.pubKey,
+          pubKey: event.pubKey,
           createdAt: event.createdAt,
           kind: event.kind,
           tags: event.tags,
@@ -60,7 +60,7 @@ class Nip01EventService {
 
   /// Calculate event id synchronously
   static String calculateEventIdSync({
-    required String publicKey,
+    required String pubKey,
     required int createdAt,
     required int kind,
     required List<dynamic> tags,
@@ -69,7 +69,7 @@ class Nip01EventService {
     return _calculateId(
       Nip01Event(
         id: '',
-        pubKey: publicKey,
+        pubKey: pubKey,
         createdAt: createdAt,
         kind: kind,
         tags:
