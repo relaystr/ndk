@@ -10,5 +10,11 @@ class AuthEvent extends Nip01Event {
   AuthEvent({
     required super.pubKey,
     required super.tags,
-  }) : super(kind: KIND, content: '', sig: null, id: '');
+  }) : super(
+          kind: KIND,
+          content: '',
+          sig: null,
+          id: '',
+          validSig: null,
+        );
 }

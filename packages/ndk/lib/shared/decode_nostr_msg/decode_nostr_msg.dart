@@ -32,6 +32,7 @@ NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
               .toList(),
           content: eventData['content'],
           sig: eventData['sig'],
+          validSig: null,
         );
         return NostrMessageRaw(
           type: NostrMessageRawType.event,

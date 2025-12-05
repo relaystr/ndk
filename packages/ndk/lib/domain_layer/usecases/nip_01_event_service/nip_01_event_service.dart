@@ -33,6 +33,8 @@ class Nip01EventService {
       content: content,
       sig: null,
       createdAt: createdAt,
+      validSig: null,
+      sources: [],
     );
 
     return event;
@@ -76,6 +78,8 @@ class Nip01EventService {
             List<List<String>>.from(tags.map((tag) => List<String>.from(tag))),
         content: content,
         sig: null,
+        validSig: null,
+        sources: [],
       ),
     );
   }
@@ -100,6 +104,7 @@ class Nip01EventService {
             List<List<String>>.from(tags.map((tag) => List<String>.from(tag))),
         content: content,
         sig: null,
+        validSig: null,
       ),
     );
     return id;

@@ -7,5 +7,10 @@ class ZapRequest extends Nip01Event {
   /// Zap Request
   ZapRequest(
       {required super.pubKey, required super.tags, required super.content})
-      : super(kind: kZapRequestKind, sig: null, id: '');
+      : super(
+          kind: kZapRequestKind,
+          sig: null,
+          id: '',
+          validSig: null,
+        );
 }
