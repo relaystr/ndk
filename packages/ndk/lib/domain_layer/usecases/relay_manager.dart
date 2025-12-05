@@ -360,16 +360,23 @@ class RelayManager<T> {
         relayConnectivity,
       );
     }, onError: (error) async {
-      await relayConnectivity.close();
-      relayConnectivity.stats.connectionErrors++;
       Logger.log.e("onError ${relayConnectivity.url} on listen $error");
+      relayConnectivity.stats.connectionErrors++;
+      try {
+        await relayConnectivity.close();
+      } catch (e) {
+        Logger.log.w("Error closing relay ${relayConnectivity.url}: $e");
+      }
       updateRelayConnectivity();
-      throw Exception("Error in socket");
     }, onDone: () async {
       Logger.log.t(
-          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
+          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport?.closeCode()} ${relayConnectivity.relayTransport?.closeReason()})");
 
-      await relayConnectivity.close();
+      try {
+        await relayConnectivity.close();
+      } catch (e) {
+        Logger.log.w("Error closing relay ${relayConnectivity.url}: $e");
+      }
       updateRelayConnectivity();
       // reconnect on close
       if (allowReconnectRelays &&
