@@ -54,7 +54,7 @@ void main() {
     });
 
     test('sign should request remote signing and update event', () async {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: MockRelay
             .remoteSignerPublicKey, // Use the mock relay's signer public key
         kind: 1,
@@ -114,7 +114,7 @@ void main() {
         broadcast: ndk.broadcast,
       );
 
-      final testEvent = Nip01Event(
+      final testEvent = Nip01EventService.createEventCalculateId(
         pubKey: MockRelay.remoteSignerPublicKey,
         kind: 1,
         tags: [],
@@ -162,7 +162,7 @@ void main() {
       expect(accounts.getPublicKey(), equals(MockRelay.remoteSignerPublicKey));
 
       // Test signing an event through the accounts system
-      final testEvent = Nip01Event(
+      final testEvent = Nip01EventService.createEventCalculateId(
         pubKey: accounts.getPublicKey()!,
         kind: 1,
         tags: [],
@@ -210,7 +210,7 @@ void main() {
       expect(accounts.getPublicKey(), equals(MockRelay.remoteSignerPublicKey));
 
       // Test signing an event through the accounts system
-      final testEvent = Nip01Event(
+      final testEvent = Nip01EventService.createEventCalculateId(
         pubKey: accounts.getPublicKey()!,
         kind: 1,
         tags: [],

@@ -20,7 +20,7 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
@@ -122,7 +122,7 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
@@ -148,7 +148,7 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
@@ -266,7 +266,7 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
@@ -296,7 +296,7 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],

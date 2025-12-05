@@ -18,14 +18,16 @@ void main() async {
     };
 
     Nip01Event textNote(KeyPair key) {
-      Nip01Event event = Nip01Event(
+      Nip01Event event = Nip01EventService.createEventCalculateId(
           kind: Nip01Event.kTextNodeKind,
           pubKey: key.publicKey,
           content: "some note from key ${keyNames[key1]}",
           tags: [],
           createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
-      event.sign(key.privateKey!);
-      return event;
+      final signedEvent = Nip01EventService.signWithPrivateKey(
+          event: event, privateKey: key.privateKey!);
+
+      return signedEvent;
     }
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};

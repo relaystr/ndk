@@ -1,3 +1,4 @@
+import 'package:ndk/domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
@@ -9,7 +10,7 @@ import 'package:test/test.dart';
 void main() {
   group('Nip51 Relay Sets', () {
     test('fromEvent public', () async {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: Nip51List.kRelaySet,
@@ -55,7 +56,7 @@ void main() {
   });
   group('Nip51 Relay Lists', () {
     test('fromEvent public', () async {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: Nip51List.kSearchRelays,

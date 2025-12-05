@@ -4,6 +4,7 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'package:ndk/shared/nips/nip65/relay_ranking.dart';
 import 'package:ndk/domain_layer/usecases/jit_engine/relay_jit_request_strategies/relay_jit_pubkey_strategy.dart';
 import 'package:test/test.dart';
@@ -21,7 +22,7 @@ void main() {
     }
 
     for (var i = 0; i < 10; i++) {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser$i',
         kind: Nip65.kKind,
@@ -40,7 +41,7 @@ void main() {
 
     // add random nip65 events
     for (var i = 20; i < 30; i++) {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser$i',
         kind: Nip65.kKind,

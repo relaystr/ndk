@@ -1,3 +1,4 @@
+import 'package:ndk/domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'package:test/test.dart';
 import 'package:ndk/entities.dart';
 import 'dart:convert';
@@ -70,7 +71,7 @@ void main() {
     });
 
     test('fromEvent', () {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: 'testPubKey',
         content: '{"name":"John","display_name":"John Doe"}',
         kind: Metadata.kKind,

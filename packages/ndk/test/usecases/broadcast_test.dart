@@ -50,7 +50,7 @@ void main() async {
     test('broadcast 2 events', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01Event(
+      Nip01Event event = Nip01EventService.createEventCalculateId(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
@@ -64,7 +64,7 @@ void main() async {
       ).future;
       expect(result.length, 1);
 
-      event = Nip01Event(
+      event = Nip01EventService.createEventCalculateId(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
@@ -82,7 +82,7 @@ void main() async {
     test('broadcast deletion', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01Event(
+      Nip01Event event = Nip01EventService.createEventCalculateId(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
@@ -108,12 +108,12 @@ void main() async {
     test('broadcast deletion 2', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event1 = Nip01Event(
+      Nip01Event event1 = Nip01EventService.createEventCalculateId(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "1");
-      Nip01Event event2 = Nip01Event(
+      Nip01Event event2 = Nip01EventService.createEventCalculateId(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
@@ -142,7 +142,7 @@ void main() async {
     test('broadcast reaction', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01Event(
+      Nip01Event event = Nip01EventService.createEventCalculateId(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
@@ -196,7 +196,7 @@ void main() async {
 
       try {
         // Create and broadcast an event with a short timeout
-        Nip01Event event = Nip01Event(
+        Nip01Event event = Nip01EventService.createEventCalculateId(
             pubKey: key0.publicKey,
             kind: Nip01Event.kTextNodeKind,
             tags: [],
@@ -263,7 +263,7 @@ void main() async {
       try {
         // Create and broadcast an event with considerDonePercent set to 66%
         // This means it should complete after 2 of the 3 relays receive the event
-        Nip01Event event = Nip01Event(
+        Nip01Event event = Nip01EventService.createEventCalculateId(
             pubKey: key0.publicKey,
             kind: Nip01Event.kTextNodeKind,
             tags: [],

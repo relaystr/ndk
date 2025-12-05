@@ -6,31 +6,47 @@ import 'package:ndk/ndk.dart';
 
 void main() async {
   final List<Nip01Event> myEvents = [
-    Nip01Event(
+    Nip01EventService.createEventCalculateId(
       pubKey: "pubKey1",
       kind: 1,
       tags: [],
       content: "content1_a",
     ),
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
   ];
 
   final List<Nip01Event> myEventsNoDublicate = [
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_a"),
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey1", kind: 1, tags: [], content: "content1_a"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
+    Nip01EventService.createEventCalculateId(
+        pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
   ];
 
   group('stream response cleaner', () {

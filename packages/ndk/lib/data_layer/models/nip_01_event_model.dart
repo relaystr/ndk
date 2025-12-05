@@ -27,6 +27,8 @@ class Nip01EventModel extends Nip01Event {
       tags: event.tags,
       content: event.content,
       sig: event.sig,
+      sources: event.sources,
+      validSig: event.validSig,
     );
   }
 

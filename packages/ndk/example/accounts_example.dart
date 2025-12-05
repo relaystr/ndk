@@ -27,7 +27,7 @@ void main() async {
 
   // broadcast a new event using the logged in account with it's signer to sign
   NdkBroadcastResponse response = ndk.broadcast.broadcast(
-      nostrEvent: Nip01Event(
+      nostrEvent: Nip01EventService.createEventCalculateId(
           pubKey: key1.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],

@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 
 import '../../../data_layer/models/nip_01_event_model.dart';
 import '../../../shared/isolates/isolate_manager.dart';
+import '../../../shared/nips/nip01/bip340.dart';
 import '../../../shared/nips/nip13/nip13.dart';
 import '../../entities/nip_01_event.dart';
 
@@ -123,5 +124,18 @@ class Nip01EventService {
     final bytes = utf8.encode(jsonData);
     final digest = sha256.convert(bytes);
     return digest.toString();
+  }
+
+  /// this method signs the event with the provided private key
+  /// mainly used for testing purposes, please use the account usecase to sign events!
+  static Nip01Event signWithPrivateKey({
+    required Nip01Event event,
+    required String privateKey,
+  }) {
+    final signature = Bip340.sign(
+      event.id,
+      privateKey,
+    );
+    return event.copyWith(sig: signature, validSig: true);
   }
 }
