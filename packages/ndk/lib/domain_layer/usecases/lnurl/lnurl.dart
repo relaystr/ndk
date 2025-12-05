@@ -74,7 +74,8 @@ class Lnurl {
     // ZAP ?
     if (lnurlResponse.doesAllowsNostr &&
         zapRequest != null &&
-        zapRequest.sig.isNotEmpty) {
+        zapRequest.sig != null &&
+        zapRequest.sig!.isNotEmpty) {
       Logger.log.d(jsonEncode(zapRequest));
       var eventStr = Uri.encodeQueryComponent(jsonEncode(zapRequest));
       callback += "&nostr=$eventStr";

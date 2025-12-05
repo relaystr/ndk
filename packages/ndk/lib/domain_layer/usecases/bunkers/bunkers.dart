@@ -5,6 +5,7 @@ import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
+import '../nip_01_event_service/nip_01_event_service.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
 import '../../../shared/nips/nip01/bip340.dart';
@@ -65,7 +66,7 @@ class Bunkers {
       recipientPubKey: remotePubkey,
     );
 
-    final requestEvent = Nip01Event(
+    final requestEvent = Nip01EventService.createEventCalculateId(
       pubKey: localEventSigner.publicKey,
       kind: BunkerRequest.kKind,
       tags: [

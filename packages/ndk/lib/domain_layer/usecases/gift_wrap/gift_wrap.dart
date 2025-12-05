@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import '../../../data_layer/models/nip_01_event_model.dart';
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/nip_01_event.dart';
 import '../accounts/accounts.dart';
 import '../../../shared/nips/nip01/bip340.dart';
+import '../nip_01_event_service/nip_01_event_service.dart';
 
 class GiftWrap {
   static const int kSealEventKind = 13;
@@ -62,7 +64,7 @@ class GiftWrap {
       throw Exception("cannot create crumor: no pubkey provided");
     }
 
-    final Nip01Event rumor = Nip01Event(
+    final Nip01Event rumor = Nip01EventService.createEventCalculateId(
       pubKey: usedPubkey,
       kind: kind,
       tags: tags,
@@ -92,7 +94,7 @@ class GiftWrap {
       throw Exception("encrypted content is null");
     }
 
-    final sealEvent = Nip01Event(
+    final sealEvent = Nip01EventService.createEventCalculateId(
       pubKey: account.pubkey,
       kind: kSealEventKind,
       tags: [],
@@ -121,7 +123,7 @@ class GiftWrap {
 
     // Parse the rumor event
     final Map<String, dynamic> rumorJson = jsonDecode(decryptedRumorJson);
-    final rumor = Nip01Event.fromJson(rumorJson);
+    final rumor = Nip01EventModel.fromJson(rumorJson);
 
     return rumor;
   }
@@ -163,7 +165,7 @@ class GiftWrap {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     // Create the gift wrap event with ephemeral keys
-    final giftWrapEvent = Nip01Event(
+    final giftWrapEvent = Nip01EventService.createEventCalculateId(
       kind: kGiftWrapEventkind,
       content: encryptedSeal,
       tags: tags,
@@ -174,9 +176,9 @@ class GiftWrap {
     // Sign with ephemeral key
     final signature = Bip340.sign(giftWrapEvent.id, ephemeralKeys.privateKey!);
 
-    giftWrapEvent.sig = signature;
+    final gWEventSigned = giftWrapEvent.copyWith(sig: signature);
 
-    return giftWrapEvent;
+    return gWEventSigned;
   }
 
   Future<Nip01Event> unwrapEvent({
@@ -198,7 +200,7 @@ class GiftWrap {
 
     // Parse the seal event
     final Map<String, dynamic> sealJson = jsonDecode(decryptedEventJson);
-    final event = Nip01Event.fromJson(sealJson);
+    final event = Nip01EventModel.fromJson(sealJson);
     return event;
   }
 }

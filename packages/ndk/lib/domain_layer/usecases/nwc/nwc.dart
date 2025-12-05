@@ -278,7 +278,7 @@ class Nwc {
     var encrypted = Nip04.encrypt(
         connection.uri.secret, connection.uri.walletPubkey, content);
 
-    Nip01Event event = Nip01Event(
+    Nip01Event event = Nip01EventService.createEventCalculateId(
         pubKey: connection.signer.getPublicKey(),
         kind: NwcKind.REQUEST.value,
         tags: [

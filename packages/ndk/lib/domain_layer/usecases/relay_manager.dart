@@ -478,7 +478,7 @@ class RelayManager<T> {
   void _handleIncomingEvent(NostrMessageRaw nostrMsgRaw,
       RelayConnectivity connectivity, int messageSize) {
     final requestId = nostrMsgRaw.requestId!;
-    final eventRaw = nostrMsgRaw.nip01Event!;
+    final event = nostrMsgRaw.nip01Event!;
 
     if (globalState.inFlightRequests[requestId] == null) {
       Logger.log.w(
@@ -486,15 +486,6 @@ class RelayManager<T> {
       return;
     }
 
-    Nip01Event event = Nip01Event(
-      pubKey: eventRaw.pubKey,
-      createdAt: eventRaw.createdAt,
-      kind: eventRaw.kind,
-      tags: eventRaw.tags,
-      content: eventRaw.content,
-    );
-    event.sig = eventRaw.sig;
-    event.id = eventRaw.id;
     connectivity.stats.incStatsByNewEvent(event, messageSize);
 
     RequestState? state = globalState.inFlightRequests[requestId];

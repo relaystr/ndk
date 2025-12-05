@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../domain_layer/entities/nip_01_event.dart';
 import '../../domain_layer/entities/nip_01_event_raw.dart';
 
 NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
@@ -21,7 +22,7 @@ NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
         }
         final requestId = decoded[1];
         final eventData = decoded[2];
-        final nip01Event = Nip01EventRaw(
+        final nip01Event = Nip01Event(
           id: eventData['id'],
           pubKey: eventData['pubkey'],
           createdAt: eventData['created_at'],
