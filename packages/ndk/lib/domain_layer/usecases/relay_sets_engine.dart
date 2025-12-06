@@ -241,17 +241,21 @@ class RelaySetsEngine implements NetworkEngine {
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
+      final Nip01Event workingEvent;
+
       // =====================================================================================
       // specific relays
       // =====================================================================================
       if (signer != null) {
-        await signer.sign(nostrEvent);
+        workingEvent = await signer.sign(nostrEvent);
+      } else {
+        workingEvent = nostrEvent;
       }
 
       if (specificRelays != null) {
         for (final relayUrl in specificRelays) {
           // broadcast async
-          doRelayBroadcast(relayUrl, nostrEvent);
+          doRelayBroadcast(relayUrl, workingEvent);
         }
         return;
       }
@@ -260,7 +264,7 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       // TODO should not only depend on cached, but go fetch it if not present in cache
       final nip65List = (await UserRelayLists.getUserRelayListCacheLatest(
-        pubkeys: [nostrEvent.pubKey],
+        pubkeys: [workingEvent.pubKey],
         cacheManager: _cacheManager,
       ));
       var writeRelaysUrls = _relayManager.globalState.relays.keys;
@@ -295,7 +299,7 @@ class RelaySetsEngine implements NetworkEngine {
         }
 
         _relayManager.registerRelayBroadcast(
-          eventToPublish: nostrEvent,
+          eventToPublish: workingEvent,
           relayUrl: relayUrl,
         );
 
@@ -303,16 +307,16 @@ class RelaySetsEngine implements NetworkEngine {
             relay,
             ClientMsg(
               ClientMsgType.kEvent,
-              event: nostrEvent,
+              event: workingEvent,
             ));
       }
 
       // =====================================================================================
       // other inbox
       // =====================================================================================
-      if (nostrEvent.pTags.isNotEmpty) {
+      if (workingEvent.pTags.isNotEmpty) {
         final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
-          pubkeys: nostrEvent.pTags,
+          pubkeys: workingEvent.pTags,
           cacheManager: _cacheManager,
         );
 
@@ -353,7 +357,7 @@ class RelaySetsEngine implements NetworkEngine {
           }
 
           _relayManager.registerRelayBroadcast(
-            eventToPublish: nostrEvent,
+            eventToPublish: workingEvent,
             relayUrl: relayUrl,
           );
 
@@ -361,7 +365,7 @@ class RelaySetsEngine implements NetworkEngine {
               relay,
               ClientMsg(
                 ClientMsgType.kEvent,
-                event: nostrEvent,
+                event: workingEvent,
               ));
         }
       }
