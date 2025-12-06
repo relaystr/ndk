@@ -367,7 +367,11 @@ class MockRelay {
           event: event, privateKey: keyPair.privateKey!);
     }
 
-    _webSocket!.add(jsonEncode(["EVENT", subId, signedEvent ?? event]));
+    final eventToSend = signedEvent ?? event;
+
+    final eventToSendModel = Nip01EventModel.fromEntity(eventToSend);
+
+    _webSocket!.add(jsonEncode(["EVENT", subId, eventToSendModel]));
   }
 
   /// sends a CLOSED message for a given subscription ID
