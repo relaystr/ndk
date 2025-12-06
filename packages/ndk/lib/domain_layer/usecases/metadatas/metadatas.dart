@@ -11,6 +11,7 @@ import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
+import '../nip_01_event_service/nip_01_event_service.dart';
 import '../requests/requests.dart';
 
 /// nostr metadata usecase
@@ -155,7 +156,7 @@ class Metadatas {
     if (event != null) {
       Map<String, dynamic> map = json.decode(event.content);
       map.addAll(metadata.toJson());
-      event = Nip01Event(
+      event = Nip01EventService.createEventCalculateId(
           pubKey: event.pubKey,
           kind: event.kind,
           tags: event.tags,

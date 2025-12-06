@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../shared/nips/nip01/helpers.dart';
+import '../usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'nip_01_event.dart';
 
 /// basic nostr metadata
@@ -125,7 +126,7 @@ class Metadata {
 
   /// convert to nip01 event
   Nip01Event toEvent() {
-    return Nip01Event(
+    return Nip01EventService.createEventCalculateId(
         pubKey: pubKey,
         content: jsonEncode(toJson()),
         kind: kKind,

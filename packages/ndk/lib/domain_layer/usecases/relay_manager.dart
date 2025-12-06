@@ -458,8 +458,9 @@ class RelayManager<T> {
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);
-        _accounts.sign(auth).then((e) {
-          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
+        _accounts.sign(auth).then((signedEvent) {
+          send(relayConnectivity,
+              ClientMsg(ClientMsgType.kAuth, event: signedEvent));
         });
       } else {
         Logger.log
@@ -478,7 +479,7 @@ class RelayManager<T> {
   void _handleIncomingEvent(NostrMessageRaw nostrMsgRaw,
       RelayConnectivity connectivity, int messageSize) {
     final requestId = nostrMsgRaw.requestId!;
-    final eventRaw = nostrMsgRaw.nip01Event!;
+    final event = nostrMsgRaw.nip01Event!;
 
     if (globalState.inFlightRequests[requestId] == null) {
       Logger.log.w(
@@ -486,15 +487,6 @@ class RelayManager<T> {
       return;
     }
 
-    Nip01Event event = Nip01Event(
-      pubKey: eventRaw.pubKey,
-      createdAt: eventRaw.createdAt,
-      kind: eventRaw.kind,
-      tags: eventRaw.tags,
-      content: eventRaw.content,
-    );
-    event.sig = eventRaw.sig;
-    event.id = eventRaw.id;
     connectivity.stats.incStatsByNewEvent(event, messageSize);
 
     RequestState? state = globalState.inFlightRequests[requestId];
@@ -504,14 +496,16 @@ class RelayManager<T> {
         Logger.log.w("No RelayRequestState found for id $requestId");
         return;
       }
-      event.sources.add(connectivity.url);
+
+      final eventWithSources =
+          event.copyWith(sources: [...event.sources, connectivity.url]);
 
       if (state.networkController.isClosed) {
         // this might happen because relays even after we send a CLOSE subscription.id, they'll still send more events
         Logger.log.t(
             "tried to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
       } else {
-        state.networkController.add(event);
+        state.networkController.add(eventWithSources);
       }
     }
   }

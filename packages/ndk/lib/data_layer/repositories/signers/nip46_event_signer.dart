@@ -95,7 +95,8 @@ class Nip46EventSigner implements EventSigner {
       recipientPubKey: connection.remotePubkey,
     );
 
-    final requestEvent = Nip01Event(
+    final requestEvent = Nip01EventService.createEventCalculateId(
+      createdAt: 0,
       pubKey: localEventSigner.publicKey,
       kind: BunkerRequest.kKind,
       tags: [
@@ -186,7 +187,7 @@ class Nip46EventSigner implements EventSigner {
   }
 
   @override
-  Future<void> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event) async {
     final eventMap = {
       "kind": event.kind,
       "content": event.content,
@@ -202,8 +203,7 @@ class Nip46EventSigner implements EventSigner {
     final signedEventJson = await remoteRequest(request: request);
     final signedEvent = jsonDecode(signedEventJson);
 
-    event.id = signedEvent["id"];
-    event.sig = signedEvent["sig"];
+    return event.copyWith(id: signedEvent["id"], sig: signedEvent["sig"]);
   }
 
   Future<String> ping() async {

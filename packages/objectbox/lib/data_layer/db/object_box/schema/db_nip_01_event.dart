@@ -133,11 +133,12 @@ class DbNip01Event {
       createdAt: createdAt,
       kind: kind,
       tags: _tagsToList(tags),
+      id: nostrId,
+      sig: sig,
+      validSig: validSig,
+      sources: sources,
     );
-    ndkE.id = nostrId;
-    ndkE.sig = sig;
-    ndkE.validSig = validSig;
-    ndkE.sources = sources;
+
     return ndkE;
   }
 
@@ -150,7 +151,7 @@ class DbNip01Event {
       dbTags: _listToTags(ndkE.tags).map((tag) => tag.toString()).toList(),
     );
     dbE.nostrId = ndkE.id;
-    dbE.sig = ndkE.sig;
+    dbE.sig = ndkE.sig!;
     dbE.validSig = ndkE.validSig;
     dbE.sources = ndkE.sources;
     return dbE;

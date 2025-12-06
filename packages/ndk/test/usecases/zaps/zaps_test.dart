@@ -115,7 +115,7 @@ void main() {
             ['relays', ...relays]
           ]));
       expect(zapRequest.content, comment);
-      expect(zapRequest.sig, isNotEmpty);
+      expect(zapRequest.sig, isNotNull);
     });
 
     test('zapRequest throws error for negative amount', () async {

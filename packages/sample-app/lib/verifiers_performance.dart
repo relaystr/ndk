@@ -34,7 +34,7 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
     }
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final list = List<Nip01Event>.generate(count, (index) {
-      return Nip01Event(
+      return Nip01EventService.createEventCalculateId(
         pubKey: pubkey,
         createdAt: now,
         kind: 1,

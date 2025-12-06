@@ -31,3 +31,6 @@ export 'domain_layer/entities/user_relay_list.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/ndk_file.dart';
 export 'domain_layer/entities/account.dart';
+
+/// models
+export 'data_layer/models/nip_01_event_model.dart';

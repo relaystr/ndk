@@ -1,4 +1,5 @@
 import '../../shared/helpers/relay_helper.dart';
+import '../usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'nip_01_event.dart';
 import 'read_write_marker.dart';
 
@@ -59,7 +60,7 @@ class Nip65 {
   }
 
   Nip01Event toEvent() {
-    return Nip01Event(
+    return Nip01EventService.createEventCalculateId(
       pubKey: pubKey,
       kind: Nip65.kKind,
       tags: relays.entries.map((entry) {

@@ -123,7 +123,7 @@ Future<bool> testReceiveEncryptedNip44(
 
 Future<bool> testSign(Nip07EventSigner nip07Signer) async {
   final pubKey = await nip07Signer.getPublicKeyAsync();
-  final event = Nip01Event(
+  final event = Nip01EventService.createEventCalculateId(
     pubKey: pubKey,
     kind: 1,
     tags: [
@@ -133,11 +133,7 @@ Future<bool> testSign(Nip07EventSigner nip07Signer) async {
     content: "GM",
   );
 
-  print(jsonEncode(event.toJson()));
-
   await nip07Signer.sign(event);
-
-  print(jsonEncode(event.toJson()));
 
   return await Bip340EventVerifier().verify(event) &&
       event.kind == 1 &&
