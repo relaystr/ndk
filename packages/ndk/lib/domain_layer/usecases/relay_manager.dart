@@ -495,14 +495,16 @@ class RelayManager<T> {
         Logger.log.w("No RelayRequestState found for id $requestId");
         return;
       }
-      event.sources.add(connectivity.url);
+
+      final eventWithSources =
+          event.copyWith(sources: [...event.sources, connectivity.url]);
 
       if (state.networkController.isClosed) {
         // this might happen because relays even after we send a CLOSE subscription.id, they'll still send more events
         Logger.log.t(
             "tried to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
       } else {
-        state.networkController.add(event);
+        state.networkController.add(eventWithSources);
       }
     }
   }
