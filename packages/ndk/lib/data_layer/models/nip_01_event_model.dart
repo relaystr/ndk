@@ -4,6 +4,8 @@ import '../../domain_layer/entities/nip_01_event.dart';
 import '../../shared/helpers/list_casting.dart';
 import '../../shared/nips/nip19/nip19.dart';
 
+/// Data model for NIP-01 Event
+/// Extends [Nip01Event] entity with serialization methods to/from JSON and other formats
 class Nip01EventModel extends Nip01Event {
   /// creates a new [Nip01EventModel] instance
   Nip01EventModel({
@@ -18,6 +20,37 @@ class Nip01EventModel extends Nip01Event {
     super.sources = const [],
   });
 
+  /// creates a copy of this event with the given fields replaced by the new values \
+  /// needed so other packages depending on the extened nip01_event.dart can use copyWith
+  @override
+  Nip01EventModel copyWith({
+    String? id,
+    String? pubKey,
+    int? createdAt,
+    int? kind,
+    List<List<String>>? tags,
+    String? content,
+    String? sig,
+    bool? validSig,
+    List<String>? sources,
+  }) {
+    return Nip01EventModel(
+        id: id ?? this.id,
+        pubKey: pubKey ?? this.pubKey,
+        createdAt: createdAt ?? this.createdAt,
+        kind: kind ?? this.kind,
+        tags: tags ?? this.tags,
+        content: content ?? this.content,
+        sig: sig ?? this.sig,
+        validSig: validSig ?? this.validSig,
+        sources: sources ?? this.sources);
+  }
+
+  /**
+   * encoding/decoding methods
+   */
+
+  /// creates a new [Nip01EventModel] instance from a [Nip01Event] entity
   factory Nip01EventModel.fromEntity(Nip01Event event) {
     return Nip01EventModel(
       id: event.id,
@@ -32,6 +65,7 @@ class Nip01EventModel extends Nip01Event {
     );
   }
 
+  /// creates a new [Nip01EventModel] instance from a JSON object
   factory Nip01EventModel.fromJson(Map<dynamic, dynamic> data) {
     final id = data['id'] as String? ?? '';
     final pubKey = data['pubkey'] as String? ?? '';
@@ -67,6 +101,7 @@ class Nip01EventModel extends Nip01Event {
     };
   }
 
+  /// Returns the Event object as a JSON string
   String toJsonString() {
     final jsonMap = toJson();
     return json.encode(jsonMap);
