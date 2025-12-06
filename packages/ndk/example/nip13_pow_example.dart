@@ -13,12 +13,18 @@ void main() async {
     content: 'message',
   );
 
+  /// your global NDK instance
+  final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+  /// pass your event to the proof of work usecase
   final minedEvent =
-      await ProofOfWork.minePoW(event: event, targetDifficulty: 10);
+      await ndk.proofOfWork.minePoW(event: event, targetDifficulty: 10);
 
-  log(minedEvent.id); // the id will start with "000"
+  /// the id will start with "000"
+  log(minedEvent.id);
 
-  if (ProofOfWork.checkPoWDifficulty(event: event, targetDifficulty: 10)) {
+  /// check the difficulty
+  if (ndk.proofOfWork.checkPoWDifficulty(event: event, targetDifficulty: 10)) {
     log('Event has difficulty >= 10');
   }
 }

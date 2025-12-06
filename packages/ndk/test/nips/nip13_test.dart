@@ -1,11 +1,12 @@
-import 'package:ndk/domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
-import 'package:ndk/domain_layer/usecases/proof_of_work/proof_of_work.dart';
-import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
 import 'package:ndk/shared/nips/nip13/nip13.dart';
 
 void main() {
+  final ndk = Ndk.emptyBootstrapRelaysConfig();
+  final pow = ndk.proofOfWork;
+
   group('NIP-13 Proof of Work', () {
     group('countLeadingZeroBits', () {
       test('should count single hex digits correctly', () {
@@ -96,12 +97,10 @@ void main() {
         createdAt: 1234567890,
       );
 
-      final minedEvent = await ProofOfWork.minePoW(
+      final minedEvent = await pow.minePoW(
           event: event, targetDifficulty: 4, maxIterations: 100000);
 
-      expect(
-          ProofOfWork.checkPoWDifficulty(
-              event: minedEvent, targetDifficulty: 2),
+      expect(pow.checkPoWDifficulty(event: minedEvent, targetDifficulty: 2),
           isTrue);
     });
 
@@ -150,10 +149,9 @@ void main() {
         createdAt: 1234567890,
       );
 
-      final minedEvent =
-          await ProofOfWork.minePoW(event: event, targetDifficulty: 4);
+      final minedEvent = await pow.minePoW(event: event, targetDifficulty: 4);
 
-      final value = ProofOfWork.getTargetDifficultyFromEvent(minedEvent);
+      final value = pow.getTargetDifficultyFromEvent(minedEvent);
 
       expect(value, equals(4));
     });
@@ -196,8 +194,7 @@ void main() {
       createdAt: 1234567890,
     );
 
-    final minedEvent =
-        await ProofOfWork.minePoW(event: event, targetDifficulty: 10);
+    final minedEvent = await pow.minePoW(event: event, targetDifficulty: 10);
 
     final value = Nip13.validateEvent(minedEvent);
 
@@ -222,8 +219,7 @@ void main() {
       createdAt: 1234567890,
     );
 
-    final minedEvent =
-        await ProofOfWork.minePoW(event: event, targetDifficulty: 4);
+    final minedEvent = await pow.minePoW(event: event, targetDifficulty: 4);
 
     final commitment = Nip13.calculateCommitment(minedEvent.id);
     expect(commitment, greaterThan(0));
