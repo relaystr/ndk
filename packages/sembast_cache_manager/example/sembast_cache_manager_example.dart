@@ -26,7 +26,7 @@ Future<void> main() async {
     print('📝 Creating sample data...');
 
     // Create a sample event
-    final event = Nip01Event(
+    final event = Nip01EventService.createEventCalculateId(
       pubKey: 'npub1abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567890',
       kind: 1, // Text note
       tags: [
@@ -126,7 +126,7 @@ Future<void> main() async {
     print('📦 Demonstrating batch operations...');
 
     final moreEvents = [
-      Nip01Event(
+      Nip01EventService.createEventCalculateId(
         pubKey: 'npub1user222333444',
         kind: 1,
         tags: [
@@ -134,7 +134,7 @@ Future<void> main() async {
         ],
         content: 'Another event for batch demo',
       ),
-      Nip01Event(
+      Nip01EventService.createEventCalculateId(
         pubKey: 'npub1user555666777',
         kind: 1,
         tags: [

@@ -27,7 +27,7 @@ void main() {
 
     group('Event Operations', () {
       test('saveEvent and loadEvent', () async {
-        final event = Nip01Event(
+        final event = Nip01EventService.createEventCalculateId(
           pubKey: 'test_pubkey',
           kind: 1,
           tags: [
@@ -51,14 +51,14 @@ void main() {
 
       test('saveEvents batch operation', () async {
         final events = [
-          Nip01Event(
+          Nip01EventService.createEventCalculateId(
             pubKey: 'pubkey1',
             kind: 1,
             tags: [],
             content: 'Event 1',
             createdAt: 1234567890,
           ),
-          Nip01Event(
+          Nip01EventService.createEventCalculateId(
             pubKey: 'pubkey2',
             kind: 1,
             tags: [],
@@ -78,7 +78,7 @@ void main() {
 
       test('loadEvents with filters', () async {
         final events = [
-          Nip01Event(
+          Nip01EventService.createEventCalculateId(
             pubKey: 'pubkey1',
             kind: 1,
             tags: [
@@ -87,14 +87,14 @@ void main() {
             content: 'Event 1',
             createdAt: 1234567890,
           ),
-          Nip01Event(
+          Nip01EventService.createEventCalculateId(
             pubKey: 'pubkey2',
             kind: 2,
             tags: [],
             content: 'Event 2',
             createdAt: 1234567895,
           ),
-          Nip01Event(
+          Nip01EventService.createEventCalculateId(
             pubKey: 'pubkey1',
             kind: 1,
             tags: [],
@@ -134,7 +134,7 @@ void main() {
 
       test('searchEvents with complex filters', () async {
         final events = [
-          Nip01Event(
+          Nip01EventService.createEventCalculateId(
             pubKey: 'author1',
             kind: 1,
             tags: [
@@ -144,7 +144,7 @@ void main() {
             content: 'Bitcoin is great!',
             createdAt: 1234567890,
           ),
-          Nip01Event(
+          Nip01EventService.createEventCalculateId(
             pubKey: 'author2',
             kind: 2,
             tags: [
@@ -153,7 +153,7 @@ void main() {
             content: 'Nostr protocol discussion',
             createdAt: 1234567895,
           ),
-          Nip01Event(
+          Nip01EventService.createEventCalculateId(
             pubKey: 'author1',
             kind: 1,
             tags: [
@@ -203,7 +203,7 @@ void main() {
       });
 
       test('removeEvent and removeAllEvents', () async {
-        final event = Nip01Event(
+        final event = Nip01EventService.createEventCalculateId(
           pubKey: 'test_pubkey',
           kind: 1,
           tags: [],
@@ -219,7 +219,7 @@ void main() {
         // Test removeAllEvents
         final events = List.generate(
           3,
-          (i) => Nip01Event(
+          (i) => Nip01EventService.createEventCalculateId(
             pubKey: 'pubkey$i',
             kind: 1,
             tags: [],
@@ -237,9 +237,12 @@ void main() {
 
       test('removeAllEventsByPubKey', () async {
         final events = [
-          Nip01Event(pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 1'),
-          Nip01Event(pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 2'),
-          Nip01Event(pubKey: 'pubkey2', kind: 1, tags: [], content: 'Event 3'),
+          Nip01EventService.createEventCalculateId(
+              pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 1'),
+          Nip01EventService.createEventCalculateId(
+              pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 2'),
+          Nip01EventService.createEventCalculateId(
+              pubKey: 'pubkey2', kind: 1, tags: [], content: 'Event 3'),
         ];
 
         await cacheManager.saveEvents(events);
@@ -517,7 +520,7 @@ void main() {
     group('Cleanup Operations', () {
       test('remove operations work correctly', () async {
         // Setup test data
-        final event = Nip01Event(
+        final event = Nip01EventService.createEventCalculateId(
           pubKey: 'test_pubkey',
           kind: 1,
           tags: [],
