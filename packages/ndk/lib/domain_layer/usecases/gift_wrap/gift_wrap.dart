@@ -86,7 +86,7 @@ class GiftWrap {
     }
 
     final encryptedContent = await account.signer.encryptNip44(
-      plaintext: jsonEncode(rumor),
+      plaintext: Nip01EventModel.fromEntity(rumor).toJsonString(),
       recipientPubKey: recipientPubkey,
     );
 
@@ -145,7 +145,7 @@ class GiftWrap {
     );
 
     final encryptedSeal = await ephemeralSigner.encryptNip44(
-      plaintext: jsonEncode(sealEvent),
+      plaintext: Nip01EventModel.fromEntity(sealEvent).toJsonString(),
       recipientPubKey: recipientPublicKey,
     );
 
