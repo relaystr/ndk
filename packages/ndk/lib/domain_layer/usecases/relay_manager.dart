@@ -458,8 +458,9 @@ class RelayManager<T> {
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);
-        _accounts.sign(auth).then((e) {
-          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
+        _accounts.sign(auth).then((signedEvent) {
+          send(relayConnectivity,
+              ClientMsg(ClientMsgType.kAuth, event: signedEvent));
         });
       } else {
         Logger.log
