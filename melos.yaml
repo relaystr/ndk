@@ -61,8 +61,8 @@ scripts:
       flutter: true
       dir-exists: test
 
-command:
-  version:
-    hooks:
-      preCommit: |
-        melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"
+#command:
+#  version:
+#    hooks:
+#      preCommit: |
+#        melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"
