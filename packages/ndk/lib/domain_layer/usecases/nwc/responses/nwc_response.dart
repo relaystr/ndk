@@ -16,7 +16,7 @@ class NwcResponse {
   });
 
   void deserializeError(Map<String, dynamic> input) {
-    if (input.containsKey('error')) {
+    if (input.containsKey('error') && input['error'] != null) {
       Map<String, dynamic> error = input['error'] as Map<String, dynamic>;
       errorCode = error["code"];
       errorMessage = error["message"];
