@@ -15,6 +15,51 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.6.1-dev.3`](#ndk---v061-dev3)
+ - [`ndk_amber` - `v0.3.3-dev.4`](#ndk_amber---v033-dev4)
+ - [`ndk_isar` - `v0.2.3-dev.4`](#ndk_isar---v023-dev4)
+ - [`ndk_objectbox` - `v0.2.7-dev.3`](#ndk_objectbox---v027-dev3)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.4`](#ndk_rust_verifier---v042-dev4)
+ - [`nip07_event_signer` - `v1.0.5-dev.3`](#nip07_event_signer---v105-dev3)
+ - [`sembast_cache_manager` - `v1.0.6-dev.4`](#sembast_cache_manager---v106-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.7-dev.3`
+ - `ndk_rust_verifier` - `v0.4.2-dev.4`
+ - `nip07_event_signer` - `v1.0.5-dev.3`
+ - `sembast_cache_manager` - `v1.0.6-dev.4`
+
+---
+
+#### `ndk` - `v0.6.1-dev.3`
+
+ - **FIX**: close relay.
+
+#### `ndk_amber` - `v0.3.3-dev.4`
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_isar` - `v0.2.3-dev.4`
+
+ - **FEAT**: log color, params.
+
+
+## 2025-12-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk_amber` - `v0.3.3-dev.3`](#ndk_amber---v033-dev3)
  - [`ndk_isar` - `v0.2.3-dev.3`](#ndk_isar---v023-dev3)
  - [`ndk_rust_verifier` - `v0.4.2-dev.3`](#ndk_rust_verifier---v042-dev3)

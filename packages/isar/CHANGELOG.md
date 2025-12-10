@@ -1,3 +1,7 @@
+## 0.2.3-dev.4
+
+ - **FEAT**: log color, params.
+
 ## 0.2.3-dev.3
 
  - **FEAT**: log color, params.
