@@ -1,3 +1,8 @@
+## 0.3.3-dev.3
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
 ## 0.3.3-dev.1
 
  - **FIX**: missing convert  dependency.
