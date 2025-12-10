@@ -1,3 +1,7 @@
+## 0.6.1-dev.3
+
+ - **FIX**: close relay.
+
 ## 0.6.1-dev.2
 
  - **FIX**: Handle null error value in NWC response deserialization.
