@@ -1,3 +1,7 @@
+## 1.0.6-dev.3
+
+ - **FEAT**: wildcard tag search.
+
 ## 1.0.6-dev.2
 
  - Update a dependency to the latest release.
