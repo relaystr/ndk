@@ -20,15 +20,19 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
+      final signedEvent = Nip01EventService.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
 
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: [relay.url],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
@@ -122,15 +126,19 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
+      final signedEvent = Nip01EventService.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
 
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: [relay.url],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
@@ -148,15 +156,19 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
+      final signedEvent = Nip01EventService.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
 
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: ["${relay.url}/"],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
@@ -266,15 +278,19 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
+      final signedEvent = Nip01EventService.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
 
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: [relay.url],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
@@ -296,15 +312,20 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
 
+      final signedEvent = Nip01EventService.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
+
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: ["${relay.url}/"],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;

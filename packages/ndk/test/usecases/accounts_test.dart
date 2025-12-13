@@ -39,7 +39,7 @@ void main() async {
       expect(ndk.accounts.getLoggedAccount()!.pubkey, key0.publicKey);
       expect(ndk.accounts.hasAccount(key0.publicKey), true);
       expect(
-          () => ndk.accounts.sign(Nip01Event(
+          () => ndk.accounts.sign(Nip01EventService.createEventCalculateId(
               pubKey: key0.publicKey,
               kind: Nip01Event.kTextNodeKind,
               tags: [],

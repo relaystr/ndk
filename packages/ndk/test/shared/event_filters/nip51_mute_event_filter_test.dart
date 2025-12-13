@@ -1,3 +1,4 @@
+import 'package:ndk/domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'package:test/test.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/nip_51_list.dart';
@@ -27,7 +28,7 @@ void main() {
       List<List<String>> tags = const [],
       int? createdAt,
     }) {
-      return Nip01Event(
+      return Nip01EventService.createEventCalculateId(
         pubKey: pubKey,
         createdAt: createdAt ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
         kind: kind,

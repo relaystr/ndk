@@ -15,16 +15,16 @@ Future<void> main() async {
     log('Logged in as: ${ndk.accounts.getPublicKey()}');
 
     // Test signing an event
-    final event = Nip01Event(
+    final event = Nip01EventService.createEventCalculateId(
       pubKey: ndk.accounts.getPublicKey()!,
       kind: 1,
       content: 'Hello from NIP-46 with new simplified API!',
       tags: [],
     );
 
-    await ndk.accounts.sign(event);
+    final signedEvent = await ndk.accounts.sign(event);
     log('Event signed successfully!');
-    log('Event ID: ${event.id}');
+    log('Event ID: ${signedEvent.id}');
   } catch (e) {
     log('Error: $e');
   }

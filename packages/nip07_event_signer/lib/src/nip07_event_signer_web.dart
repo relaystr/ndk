@@ -89,7 +89,7 @@ class Nip07EventSigner implements EventSigner {
   }
 
   @override
-  Future<void> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event) async {
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');
     }
@@ -107,8 +107,6 @@ class Nip07EventSigner implements EventSigner {
     // Sign the event using NIP-07
     final signedEvent = await js.nostr!.signEvent(jsEvent).toDart;
 
-    // Update the original event with the signature and id
-    event.id = signedEvent.id!;
-    event.sig = signedEvent.sig!;
+    return event.copyWith(id: signedEvent.id!, sig: signedEvent.sig!);
   }
 }

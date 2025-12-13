@@ -34,7 +34,7 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
     }
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final list = List<Nip01Event>.generate(count, (index) {
-      return Nip01Event(
+      return Nip01EventService.createEventCalculateId(
         pubKey: pubkey,
         createdAt: now,
         kind: 1,
@@ -43,10 +43,11 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
       );
     });
 
+    final List<Nip01Event> signedList = [];
     for (final event in list) {
-      await widget.ndk.accounts.sign(event);
+      signedList.add(await widget.ndk.accounts.sign(event));
     }
-    return list;
+    return signedList;
   }
 
   _verifyEventsWaiting({required EventVerifier verifier}) async {

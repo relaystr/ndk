@@ -48,6 +48,9 @@ class RustEventVerifier implements EventVerifier {
   @override
   Future<bool> verify(Nip01Event event) async {
     await _isInitialized.future;
+    if (event.sig == null) {
+      return false;
+    }
 
     return verifyNostrEvent(
       eventIdHex: event.id,
@@ -56,7 +59,7 @@ class RustEventVerifier implements EventVerifier {
       kind: event.kind,
       tags: event.tags,
       content: event.content,
-      signatureHex: event.sig,
+      signatureHex: event.sig!,
     );
   }
 }

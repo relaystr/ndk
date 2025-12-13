@@ -7,6 +7,7 @@ import '../../entities/nip_01_event.dart';
 import '../../repositories/blossom.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
+import '../nip_01_event_service/nip_01_event_service.dart';
 import 'blossom_user_server_list.dart';
 
 /// direct access usecase to blossom \
@@ -63,7 +64,7 @@ class Blossom {
 
     _checkSigner();
 
-    final Nip01Event myAuthorization = Nip01Event(
+    final Nip01Event myAuthorization = Nip01EventService.createEventCalculateId(
       content: "upload",
       pubKey: _signer.getPublicKey(),
       kind: kBlossom,
@@ -75,7 +76,7 @@ class Blossom {
       ],
     );
 
-    await _signer.sign(myAuthorization);
+    final signedAuthorization = await _signer.sign(myAuthorization);
 
     serverUrls ??= await _userServerList
         .getUserServerList(pubkeys: [_signer.getPublicKey()]);
@@ -87,7 +88,7 @@ class Blossom {
     return _blossomImpl.uploadBlob(
       data: data,
       serverUrls: serverUrls,
-      authorization: myAuthorization,
+      authorization: signedAuthorization,
       contentType: contentType,
       strategy: strategy,
       mediaOptimisation: serverMediaOptimisation,
@@ -104,12 +105,13 @@ class Blossom {
     String? pubkeyToFetchUserServerList,
   }) async {
     Nip01Event? myAuthorization;
+    Nip01Event? signedAuthorization;
 
     if (useAuth) {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01Event(
+      myAuthorization = Nip01EventService.createEventCalculateId(
         content: "get",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
@@ -121,7 +123,7 @@ class Blossom {
         ],
       );
 
-      await _signer.sign(myAuthorization);
+      signedAuthorization = await _signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -140,7 +142,7 @@ class Blossom {
 
     return _blossomImpl.getBlob(
       sha256: sha256,
-      authorization: myAuthorization,
+      authorization: signedAuthorization,
       serverUrls: serverUrls,
     );
   }
@@ -158,12 +160,13 @@ class Blossom {
     String? pubkeyToFetchUserServerList,
   }) async {
     Nip01Event? myAuthorization;
+    Nip01Event? signedAuthorization;
 
     if (useAuth) {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01Event(
+      myAuthorization = Nip01EventService.createEventCalculateId(
         content: "get",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
@@ -175,7 +178,7 @@ class Blossom {
         ],
       );
 
-      await _signer.sign(myAuthorization);
+      signedAuthorization = await _signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -194,7 +197,7 @@ class Blossom {
 
     return _blossomImpl.checkBlob(
       sha256: sha256,
-      authorization: myAuthorization,
+      authorization: signedAuthorization,
       serverUrls: serverUrls,
     );
   }
@@ -210,12 +213,13 @@ class Blossom {
     int chunkSize = 1024 * 1024, // 1MB chunks,
   }) async {
     Nip01Event? myAuthorization;
+    Nip01Event? signedAuthorization;
 
     if (useAuth) {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01Event(
+      myAuthorization = Nip01EventService.createEventCalculateId(
         content: "get",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
@@ -227,7 +231,7 @@ class Blossom {
         ],
       );
 
-      await _signer.sign(myAuthorization);
+      signedAuthorization = await _signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -245,7 +249,7 @@ class Blossom {
 
     return _blossomImpl.getBlobStream(
       sha256: sha256,
-      authorization: myAuthorization,
+      authorization: signedAuthorization,
       serverUrls: serverUrls,
       chunkSize: chunkSize,
     );
@@ -263,12 +267,13 @@ class Blossom {
     DateTime? until,
   }) async {
     Nip01Event? myAuthorization;
+    Nip01Event? signedAuthorization;
 
     if (useAuth) {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01Event(
+      myAuthorization = Nip01EventService.createEventCalculateId(
         content: "List Blobs",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
@@ -279,7 +284,7 @@ class Blossom {
         ],
       );
 
-      await _signer.sign(myAuthorization);
+      signedAuthorization = await _signer.sign(myAuthorization);
     }
 
     /// fetch user server list from nostr
@@ -294,7 +299,7 @@ class Blossom {
       since: since,
       until: until,
       serverUrls: serverUrls,
-      authorization: myAuthorization,
+      authorization: signedAuthorization,
     );
   }
 
@@ -310,7 +315,7 @@ class Blossom {
 
     _checkSigner();
 
-    final Nip01Event myAuthorization = Nip01Event(
+    final Nip01Event myAuthorization = Nip01EventService.createEventCalculateId(
       content: "delete",
       pubKey: _signer.getPublicKey(),
       kind: kBlossom,
@@ -322,7 +327,7 @@ class Blossom {
       ],
     );
 
-    await _signer.sign(myAuthorization);
+    final signedAuthorization = await _signer.sign(myAuthorization);
 
     /// fetch user server list from nostr
     serverUrls ??= await _userServerList
@@ -333,7 +338,7 @@ class Blossom {
     }
     return _blossomImpl.deleteBlob(
       sha256: sha256,
-      authorization: myAuthorization,
+      authorization: signedAuthorization,
       serverUrls: serverUrls,
     );
   }
@@ -364,7 +369,7 @@ class Blossom {
 
     _checkSigner();
 
-    final Nip01Event reportEvent = Nip01Event(
+    final Nip01Event reportEvent = Nip01EventService.createEventCalculateId(
       content: reportMsg,
       pubKey: _signer.getPublicKey(),
       kind: kReport,
@@ -376,11 +381,11 @@ class Blossom {
       ],
     );
 
-    await _signer.sign(reportEvent);
+    final signedReport = await _signer.sign(reportEvent);
 
     return _blossomImpl.report(
       sha256: sha256,
-      reportEvent: reportEvent,
+      reportEvent: signedReport,
       serverUrl: serverUrl,
     );
   }

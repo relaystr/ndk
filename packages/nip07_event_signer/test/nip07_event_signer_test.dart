@@ -327,7 +327,7 @@ void main() {
     test('sign adds id and signature to event', () async {
       setupNostrExtension();
 
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: bip340EventSigner.publicKey,
         kind: 1,
         tags: [],
@@ -335,13 +335,19 @@ void main() {
         createdAt: 1234567890,
       );
 
-      await nip07Signer.sign(event);
+      final signedEvent = await nip07Signer.sign(event);
 
-      expect(event.id, isNotNull);
-      expect(event.id.length, equals(64)); // SHA-256 hash is 64 hex characters
-      expect(RegExp(r'^[a-f0-9]{64}$').hasMatch(event.id), isTrue);
-      expect(event.sig, isNotNull);
-      expect(event.sig.length, equals(64)); // Signature is 64 hex characters
+      expect(signedEvent.id, isNotNull);
+      expect(
+        signedEvent.id.length,
+        equals(64),
+      ); // SHA-256 hash is 64 hex characters
+      expect(RegExp(r'^[a-f0-9]{64}$').hasMatch(signedEvent.id), isTrue);
+      expect(signedEvent.sig, isNotNull);
+      expect(
+        signedEvent.sig!.length,
+        equals(64),
+      ); // Signature is 64 hex characters
     });
 
     test('encrypt using NIP-04', () async {
@@ -489,7 +495,7 @@ void main() {
     });
 
     test('throws exception when nostr is null for sign', () async {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         pubKey: bip340EventSigner.publicKey,
         kind: 1,
         tags: [],
@@ -592,7 +598,7 @@ void main() {
         setupNostrExtension();
 
         final pubKey = await nip07Signer.getPublicKeyAsync();
-        final event = Nip01Event(
+        final event = Nip01EventService.createEventCalculateId(
           pubKey: pubKey,
           kind: 1,
           tags: [
@@ -602,14 +608,14 @@ void main() {
           content: 'GM',
         );
 
-        await nip07Signer.sign(event);
+        final signedEvent = await nip07Signer.sign(event);
 
         // Verify event was signed
-        expect(event.id, isNotNull);
-        expect(event.sig, isNotNull);
-        expect(event.id.length, equals(64));
-        expect(RegExp(r'^[a-f0-9]{64}$').hasMatch(event.id), isTrue);
-        expect(event.sig.length, equals(64));
+        expect(signedEvent.id, isNotNull);
+        expect(signedEvent.sig, isNotNull);
+        expect(signedEvent.id.length, equals(64));
+        expect(RegExp(r'^[a-f0-9]{64}$').hasMatch(signedEvent.id), isTrue);
+        expect(signedEvent.sig!.length, equals(64));
       });
     });
   });

@@ -1,13 +1,13 @@
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('Nip65', () {
     test('fromEvent', () {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: Nip65.kKind,
@@ -28,7 +28,7 @@ void main() {
     });
 
     test('fromEvent - identity (trailing /)', () {
-      final event = Nip01Event(
+      final event = Nip01EventService.createEventCalculateId(
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         pubKey: 'pubkeyUser1',
         kind: Nip65.kKind,

@@ -27,13 +27,14 @@ class VerifyEventStream {
 
   Future<Nip01Event?> _verifyEvent(Nip01Event data) async {
     final valid = await eventVerifier.verify(data);
-    data.validSig = valid;
 
     if (!valid) {
       Logger.log.w('WARNING: Event with id ${data.id} has invalid signature');
       return null;
     }
 
-    return data;
+    final checkedEvent = data.copyWith(validSig: valid);
+
+    return checkedEvent;
   }
 }

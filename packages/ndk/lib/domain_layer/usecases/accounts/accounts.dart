@@ -155,7 +155,7 @@ class Accounts {
   }
 
   /// low-level method, should not be used directly in most cases, use broadcast instead which calls signing on the signer
-  Future<void> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event) async {
     Account? account = getLoggedAccount();
     if (account != null && account.signer.canSign()) {
       return account.signer.sign(event);

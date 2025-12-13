@@ -65,8 +65,9 @@ class Broadcast {
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
 
-    final signer =
-        nostrEvent.sig == '' ? _checkSinger(customSigner: customSigner) : null;
+    final signer = nostrEvent.sig == null
+        ? _checkSinger(customSigner: customSigner)
+        : null;
 
     final cleanedSpecificRelays =
         specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
@@ -94,7 +95,7 @@ class Broadcast {
     String reaction = "+",
   }) {
     final signer = _checkSinger();
-    Nip01Event event = Nip01Event(
+    Nip01Event event = Nip01EventService.createEventCalculateId(
         pubKey: signer.getPublicKey(),
         kind: Reaction.kKind,
         tags: [
@@ -132,7 +133,7 @@ class Broadcast {
           "At least one eventId must be provided for deletion.");
     }
 
-    Nip01Event event = Nip01Event(
+    Nip01Event event = Nip01EventService.createEventCalculateId(
         pubKey: mySigner.getPublicKey(),
         kind: Deletion.kKind,
         tags: idsToDelete.map((e) => ["e", e]).toList(),
