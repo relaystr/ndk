@@ -105,9 +105,9 @@ class Nip46EventSigner implements EventSigner {
       content: encryptedRequest!,
     );
 
-    await localEventSigner.sign(requestEvent);
+    final signedEvent = await localEventSigner.sign(requestEvent);
     final broadcastRes = broadcast.broadcast(
-      nostrEvent: requestEvent,
+      nostrEvent: signedEvent,
       specificRelays: connection.relays,
     );
     await broadcastRes.broadcastDoneFuture;

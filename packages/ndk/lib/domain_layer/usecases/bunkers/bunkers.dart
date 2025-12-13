@@ -75,9 +75,9 @@ class Bunkers {
       content: encryptedRequest!,
     );
 
-    await localEventSigner.sign(requestEvent);
+    final signedEvent = await localEventSigner.sign(requestEvent);
     final broadcastRes =
-        _broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
+        _broadcast.broadcast(nostrEvent: signedEvent, specificRelays: relays);
     await broadcastRes.broadcastDoneFuture;
 
     final subscription = _requests.subscription(

@@ -62,10 +62,10 @@ void main() {
         content: 'Hello, world!',
       );
 
-      await signer.sign(event);
+      final signedEvent = await signer.sign(event);
 
-      expect(event.id, isNotNull);
-      expect(event.sig, isNotNull);
+      expect(signedEvent.id, isNotNull);
+      expect(signedEvent.sig, isNotNull);
     });
 
     test('getPublicKey should throw when not cached', () {
