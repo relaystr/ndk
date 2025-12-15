@@ -1,3 +1,8 @@
+## 0.6.1-dev.4
+
+ - **FIX**: clean imports.
+ - **FIX**: improve relay reconnection.
+
 ## 0.6.1-dev.3
 
  - **FIX**: close relay.

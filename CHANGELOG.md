@@ -3,6 +3,58 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-12-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.4`](#ndk---v061-dev4)
+ - [`ndk_amber` - `v0.3.3-dev.5`](#ndk_amber---v033-dev5)
+ - [`ndk_isar` - `v0.2.3-dev.5`](#ndk_isar---v023-dev5)
+ - [`ndk_objectbox` - `v0.2.7-dev.4`](#ndk_objectbox---v027-dev4)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.5`](#ndk_rust_verifier---v042-dev5)
+ - [`nip07_event_signer` - `v1.0.5-dev.4`](#nip07_event_signer---v105-dev4)
+ - [`sembast_cache_manager` - `v1.0.6-dev.5`](#sembast_cache_manager---v106-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.5-dev.4`
+ - `sembast_cache_manager` - `v1.0.6-dev.5`
+
+---
+
+#### `ndk` - `v0.6.1-dev.4`
+
+ - **FIX**: clean imports.
+ - **FIX**: improve relay reconnection.
+
+#### `ndk_amber` - `v0.3.3-dev.5`
+
+ - **FIX**: clean imports.
+
+#### `ndk_isar` - `v0.2.3-dev.5`
+
+ - **FIX**: clean imports.
+
+#### `ndk_objectbox` - `v0.2.7-dev.4`
+
+ - **FIX**: clean imports.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.5`
+
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+
+
 ## 2025-12-10
 
 ### Changes
