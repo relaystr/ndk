@@ -60,6 +60,11 @@ class WebSocketNostrTransport implements NostrTransport {
     return _websocketDS.isOpen();
   }
 
+  @override
+  bool isConnecting() {
+    return _websocketDS.isOpen();
+  }
+
   /// Gets the close code of the WebSocket connection.
   ///
   /// Returns the close code if the connection has been closed, null otherwise.

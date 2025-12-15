@@ -30,6 +30,11 @@ class WebsocketDSClient {
         ws.connection.state == Reconnected();
   }
 
+  bool isConnecting() {
+    return ws.connection.state == Connecting() ||
+        ws.connection.state == Reconnecting();
+  }
+
   int? closeCode() {
     return ws.connection.state == Disconnected()
         ? (ws.connection.state as Disconnected).code
