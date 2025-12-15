@@ -19,11 +19,11 @@ class WebSocketClientNostrTransport implements NostrTransport {
   /// Creates a new WebSocketNostrTransport instance.
   ///
   /// [_websocketDS] is the WebSocket data source to be used for communication.
-  WebSocketClientNostrTransport(this._websocketDS, [Function? onReconnect]) {
+  WebSocketClientNostrTransport(this._websocketDS, {Function? onReconnect, Function(int?,Object?,String?)? onDisconnect}) {
     Completer completer = Completer();
     ready = completer.future;
     _stateStreamSubscription = _websocketDS.ws.connection.listen((state) {
-      Logger.log.t("${_websocketDS.url} connection state changed to $state");
+      Logger.log.d("${_websocketDS.url} connection state changed to $state");
       switch (state) {
         case Connected() || Reconnected():
           completer.complete();
@@ -34,6 +34,9 @@ class WebSocketClientNostrTransport implements NostrTransport {
         case Disconnected():
           completer = Completer();
           ready = completer.future;
+          if (onDisconnect != null) {
+            onDisconnect.call(state.code, state.code, state.reason);
+          }
           break;
         case Connecting():
           // Do nothing, just waiting for connection to be established
@@ -88,6 +91,14 @@ class WebSocketClientNostrTransport implements NostrTransport {
   @override
   bool isOpen() {
     return _websocketDS.isOpen();
+  }
+
+  /// Checks if the WebSocket connection is currently open.
+  ///
+  /// Returns true if the connection is open, false otherwise.
+  @override
+  bool isConnecting() {
+    return _websocketDS.isConnecting();
   }
 
   /// Gets the close code of the WebSocket connection.

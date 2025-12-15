@@ -173,8 +173,12 @@ class RelayManager<T> {
 
       Logger.log.i("connecting to relay $dirtyUrl");
 
-      relayConnectivity.relayTransport = nostrTransportFactory(url, () {
+      relayConnectivity.relayTransport = nostrTransportFactory(url, onReconnect: () {
         reSubscribeInFlightSubscriptions(relayConnectivity!);
+        updateRelayConnectivity();
+      }, onDisconnect: (code, error, reason) {
+        relayConnectivity!.stats.connectionErrors++;
+        updateRelayConnectivity();
       });
       await relayConnectivity.relayTransport!.ready.timeout(
         Duration(seconds: connectTimeout),
@@ -185,7 +189,7 @@ class RelayManager<T> {
 
       _startListeningToSocket(relayConnectivity);
 
-      developer.log("connected to relay: $url");
+      Logger.log.i("connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
       relayConnectivity.stats.connections++;
       getRelayInfo(url).then((info) {

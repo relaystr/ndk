@@ -1,8 +1,6 @@
-import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
-import 'package:ndk/shared/nips/nip19/nip19.dart';
+import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport.dart';
+import 'package:ndk/entities.dart';
 
 import 'main.dart';
 
@@ -19,6 +17,16 @@ class _RelaysPageState extends State<RelaysPage> {
   String _text = '';
   UserRelayList? relays;
 
+
+  @override
+  void initState() {
+    ndk.connectivity.relayConnectivityChanges.listen((data) {
+      setState(() {
+        print("Relay connectivity changed for ${data}");
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> widgets = [];
@@ -34,6 +42,10 @@ class _RelaysPageState extends State<RelaysPage> {
                 onPressed: () async {
                   UserRelayList? list = await ndk.userRelayLists
                       .getSingleUserRelayList(ndk.accounts.getPublicKey()!);
+
+                  for (var url in list!.relays.keys) {
+                    await ndk.relays.connectRelay(dirtyUrl: url, connectionSource: ConnectionSource.unknown);
+                  }
                   setState(() {
                     relays = list;
                   });
@@ -42,10 +54,31 @@ class _RelaysPageState extends State<RelaysPage> {
           ],
         )));
     if (relays!=null) {
-      relays!.relays.keys.forEach((url) {
+      for (var url in relays!.relays.keys) {
         ReadWriteMarker? marker = relays!.relays[url];
-        widgets.add(Row(children: [Text(url), const Text(" "), Text((marker!.isRead?"Read ":" ")+(marker.isWrite?"Write":""))],));
-      });
+        WebSocketClientNostrTransport? t = ndk.relays.getRelayConnectivity(url)?.relayTransport as WebSocketClientNostrTransport?;
+        final stateColor = t!=null ?
+          t.isConnecting()? Colors.orange :
+          t.isOpen()? Colors.green : Colors.red
+          : Colors.grey;
+
+        widgets.add(Row(children: [
+          const Text(" "),
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: stateColor,
+            ),
+          ),
+          const Text(" "),
+          Text(url),
+          const Text(" "),
+          Text((marker!.isRead?"Read ":" ")+(marker.isWrite?"Write":"")),
+          const Text(" "),
+        ],));
+      }
     }
     return Column(
         mainAxisAlignment: MainAxisAlignment.start, children: widgets);
