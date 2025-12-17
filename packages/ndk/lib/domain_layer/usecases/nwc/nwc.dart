@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:ndk/domain_layer/usecases/nwc/requests/get_budget.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/get_budget_response.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
@@ -134,6 +135,41 @@ class Nwc {
     }
     return completer.future;
   }
+
+  Future<NwcConnection> connectByClientPubKeyAndRelay(String relayUrl, KeyPair clientKey,
+      {bool doGetInfoMethod = false,
+        bool useETagForEachRequest = false,
+        bool ignoreCapabilitiesCheck = false}) async {
+    var relay = Uri.decodeFull(relayUrl);
+
+    Completer<NwcConnection> completer = Completer();
+
+    NdkResponse sub = _requests
+        .subscription(
+        name: "nwc-info-by-client-pubkey",
+        explicitRelays: [relay],
+        filters: [Filter(kinds: [NwcKind.INFO.value], pTags: [clientKey.publicKey])],
+        cacheRead: false,
+        cacheWrite: false);
+    sub.stream.listen((event) async {
+      if (event.kind == NwcKind.INFO.value && event.content != "") {
+        NostrWalletConnectUri parsedUri = NostrWalletConnectUri(
+            walletPubkey: event.pubKey,
+            relays: [relay],
+            secret: clientKey.privateKey!);
+
+        await connect(
+          parsedUri.toUri(),
+          doGetInfoMethod: doGetInfoMethod,
+          useETagForEachRequest: useETagForEachRequest,
+          ignoreCapabilitiesCheck: ignoreCapabilitiesCheck).then((connection) {
+            completer.complete(connection);
+          });
+      }
+    });
+    return completer.future;
+  }
+
 
   Future<void> _subscribeToNotificationsAndResponses(
       NwcConnection connection) async {
