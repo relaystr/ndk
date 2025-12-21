@@ -39,7 +39,7 @@ storage:
   backend: local
 
   # Imminently removes a blob when there are no owners
-  removeWhenNoOwners: false
+  removeWhenNoOwners: true
 
   # local storage
   local:
