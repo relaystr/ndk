@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../../../config/blossom_config.dart';
+import '../../../data_layer/repositories/blossom/blossom_impl.dart';
 import '../../entities/blossom_blobs.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/blossom.dart';
@@ -85,8 +86,65 @@ class Blossom {
       throw Exception("User has no server list");
     }
 
-    return _blossomImpl.uploadBlob(
-      data: data,
+    final stream = _blossomImpl.uploadBlob(
+      dataStream: Stream.value(data),
+      contentLength: data.length,
+      serverUrls: serverUrls,
+      authorization: signedAuthorization,
+      contentType: contentType,
+      strategy: strategy,
+      mediaOptimisation: serverMediaOptimisation,
+    );
+
+    final done = await stream.last;
+
+    return done.completedUploads;
+  }
+
+  /// Upload a blob from a file path
+  /// For native platforms (Windows, macOS, Linux, Android, iOS): uses actual file system paths
+  /// For web: prompts user to select a file using File System Access API (modern browsers)
+  ///
+  /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// if the pubkey has no UserServerList (kind: 10063), throws an error \
+  /// the current signer is used to sign the request \
+  /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
+  /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different
+  Stream<BlobUploadProgress> uploadBlobFromFile({
+    required String filePath,
+    List<String>? serverUrls,
+    String? contentType,
+    UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+    bool serverMediaOptimisation = false,
+  }) async* {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    _checkSigner();
+
+    // Create authorization event (we'll need to read file to compute hash)
+    // For now, we create a generic upload authorization
+    final Nip01Event myAuthorization = Nip01EventService.createEventCalculateId(
+      content: "upload",
+      pubKey: _signer.getPublicKey(),
+      kind: kBlossom,
+      createdAt: now,
+      tags: [
+        ["t", "upload"],
+        ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
+      ],
+    );
+
+    final signedAuthorization = await _signer.sign(myAuthorization);
+
+    serverUrls ??= await _userServerList
+        .getUserServerList(pubkeys: [_signer.getPublicKey()]);
+
+    if (serverUrls == null) {
+      throw Exception("User has no server list");
+    }
+
+    yield* _blossomImpl.uploadBlobFromFile(
+      filePath: filePath,
       serverUrls: serverUrls,
       authorization: signedAuthorization,
       contentType: contentType,
@@ -142,6 +200,63 @@ class Blossom {
 
     return _blossomImpl.getBlob(
       sha256: sha256,
+      authorization: signedAuthorization,
+      serverUrls: serverUrls,
+    );
+  }
+
+  /// Downloads a blob directly to a file path (without loading into memory)
+  /// For native platforms (Windows, macOS, Linux, Android, iOS): uses actual file system paths
+  /// For web: triggers browser download dialog to save the file
+  ///
+  /// if [serverUrls] is null, the userServerList is fetched from nostr. \
+  /// if the pubkey has no UserServerList (kind: 10063), throws an error
+  Future<void> downloadBlobToFile({
+    required String sha256,
+    required String outputPath,
+    bool useAuth = false,
+    List<String>? serverUrls,
+    String? pubkeyToFetchUserServerList,
+  }) async {
+    Nip01Event? myAuthorization;
+    Nip01Event? signedAuthorization;
+
+    if (useAuth) {
+      _checkSigner();
+
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      myAuthorization = Nip01EventService.createEventCalculateId(
+        content: "get",
+        pubKey: _signer.getPublicKey(),
+        kind: kBlossom,
+        createdAt: now,
+        tags: [
+          ["t", "get"],
+          ["x", sha256],
+          ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
+        ],
+      );
+
+      signedAuthorization = await _signer.sign(myAuthorization);
+    }
+
+    if (serverUrls == null) {
+      if (pubkeyToFetchUserServerList == null) {
+        throw Exception(
+            "pubkeyToFetchUserServerList is null and serverUrls is null");
+      }
+
+      serverUrls ??= await _userServerList
+          .getUserServerList(pubkeys: [pubkeyToFetchUserServerList]);
+    }
+
+    if (serverUrls == null) {
+      throw Exception("User has no server list");
+    }
+
+    return _blossomImpl.downloadBlobToFile(
+      sha256: sha256,
+      outputPath: outputPath,
       authorization: signedAuthorization,
       serverUrls: serverUrls,
     );

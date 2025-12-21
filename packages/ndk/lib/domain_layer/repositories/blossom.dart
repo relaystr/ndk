@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../data_layer/repositories/blossom/blossom_impl.dart';
 import '../entities/blossom_blobs.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/tuple.dart';
@@ -17,8 +18,24 @@ enum UploadStrategy {
 
 abstract class BlossomRepository {
   /// Uploads a blob using the specified strategy
-  Future<List<BlobUploadResult>> uploadBlob({
-    required Uint8List data,
+  /// Returns a stream of progress updates
+  Stream<BlobUploadProgress> uploadBlob({
+    required Stream<List<int>> dataStream,
+    required int contentLength,
+    required Nip01Event authorization,
+    String? contentType,
+    required List<String> serverUrls,
+    UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+    bool mediaOptimisation = false,
+  });
+
+  /// Uploads a blob from a file path using the specified strategy
+  /// Reads the file in chunks to minimize memory usage
+  /// For web: prompts user to select a file via File System Access API
+  /// For native: filePath is the actual file system path
+  /// Returns a stream of progress updates
+  Stream<BlobUploadProgress> uploadBlobFromFile({
+    required String filePath,
     required Nip01Event authorization,
     String? contentType,
     required List<String> serverUrls,
@@ -36,6 +53,16 @@ abstract class BlossomRepository {
     Nip01Event? authorization,
     int? start,
     int? end,
+  });
+
+  /// Downloads a blob directly to a file path
+  /// For web: triggers browser download dialog with the file
+  /// For native: saves to the file system at the given path
+  Future<void> downloadBlobToFile({
+    required String sha256,
+    required String outputPath,
+    required List<String> serverUrls,
+    Nip01Event? authorization,
   });
 
   /// Checks if the blob exists on the server

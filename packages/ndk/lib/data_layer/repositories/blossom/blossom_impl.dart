@@ -2,33 +2,61 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:rxdart/rxdart.dart';
+
 import '../../../domain_layer/entities/blossom_blobs.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/tuple.dart';
 import '../../../domain_layer/repositories/blossom.dart';
 import '../../data_sources/http_request.dart';
+import '../../io/file_io.dart';
+import '../../io/file_io_platform.dart';
 import '../../models/nip_01_event_model.dart';
+
+/// Progress information for blob uploads
+class BlobUploadProgress {
+  final String currentServer;
+  final int sentBytes;
+  final int totalBytes;
+  final List<BlobUploadResult> completedUploads;
+  final bool isComplete;
+
+  BlobUploadProgress({
+    required this.currentServer,
+    required this.sentBytes,
+    required this.totalBytes,
+    required this.completedUploads,
+    this.isComplete = false,
+  });
+
+  double get progress => totalBytes > 0 ? sentBytes / totalBytes : 0;
+  double get percentage => progress * 100;
+}
 
 class BlossomRepositoryImpl implements BlossomRepository {
   final HttpRequestDS client;
+  final FileIO fileIO;
 
   BlossomRepositoryImpl({
     required this.client,
-  });
+    FileIO? fileIO,
+  }) : fileIO = fileIO ?? FileIONative();
 
   @override
-  Future<List<BlobUploadResult>> uploadBlob({
-    required Uint8List data,
+  Stream<BlobUploadProgress> uploadBlob({
+    required Stream<List<int>> dataStream,
+    required int contentLength,
     required Nip01Event authorization,
     String? contentType,
     required List<String> serverUrls,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool mediaOptimisation = false,
-  }) async {
+  }) {
     switch (strategy) {
       case UploadStrategy.mirrorAfterSuccess:
         return _uploadWithMirroring(
-          data: data,
+          data: dataStream,
+          contentLength: contentLength,
           serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
@@ -36,7 +64,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
         );
       case UploadStrategy.allSimultaneous:
         return _uploadToAllServers(
-          data: data,
+          data: dataStream,
+          contentLength: contentLength,
           serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
@@ -44,7 +73,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
         );
       case UploadStrategy.firstSuccess:
         return _uploadToFirstSuccess(
-          data: data,
+          data: dataStream,
+          contentLength: contentLength,
           serverUrls: serverUrls,
           contentType: contentType,
           authorization: authorization,
@@ -53,40 +83,95 @@ class BlossomRepositoryImpl implements BlossomRepository {
     }
   }
 
-  Future<List<BlobUploadResult>> _uploadWithMirroring({
-    required Uint8List data,
+  @override
+  Stream<BlobUploadProgress> uploadBlobFromFile({
+    required String filePath,
+    required Nip01Event authorization,
+    String? contentType,
+    required List<String> serverUrls,
+    UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
+    bool mediaOptimisation = false,
+  }) async* {
+    // Stream the file to compute hash and collect data
+    final fileStream =
+        fileIO.readFileAsStream(filePath, chunkSize: 1024 * 1024);
+    final chunks = <Uint8List>[];
+
+    await for (final chunk in fileStream) {
+      chunks.add(chunk);
+    }
+
+    // Combine chunks into single Uint8List
+    final totalSize = chunks.fold<int>(0, (sum, chunk) => sum + chunk.length);
+
+    // Forward the upload stream
+    yield* uploadBlob(
+      dataStream: Stream.fromIterable(chunks),
+      contentLength: totalSize,
+      authorization: authorization,
+      contentType: contentType,
+      serverUrls: serverUrls,
+      strategy: strategy,
+      mediaOptimisation: mediaOptimisation,
+    );
+  }
+
+  Stream<BlobUploadProgress> _uploadWithMirroring({
+    required Stream<List<int>> data,
+    required int contentLength,
     required Nip01Event authorization,
     required List<String> serverUrls,
     String? contentType,
     bool mediaOptimisation = false,
-  }) async {
+  }) async* {
     final results = <BlobUploadResult>[];
     BlobUploadResult? successfulUpload;
 
     // Try servers until we get a successful upload
     for (final serverUrl in serverUrls) {
-      final result = await _uploadToServer(
+      await for (final progress in _uploadToServer(
         serverUrl: serverUrl,
-        data: data,
+        dataStream: data,
+        contentLength: contentLength,
         contentType: contentType,
         authorization: authorization,
         mediaOptimisation: mediaOptimisation,
-      );
-      results.add(result);
+      )) {
+        yield BlobUploadProgress(
+          currentServer: serverUrl,
+          sentBytes: progress.sentBytes,
+          totalBytes: progress.totalBytes,
+          completedUploads: results,
+        );
 
-      if (result.success) {
-        successfulUpload = result;
-        break;
+        if (progress.isComplete && progress.response != null) {
+          final result = BlobUploadResult(
+            serverUrl: serverUrl,
+            success: true,
+            descriptor:
+                BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+          );
+          results.add(result);
+          successfulUpload = result;
+          break;
+        } else if (progress.isComplete && progress.error != null) {
+          final result = BlobUploadResult(
+            serverUrl: serverUrl,
+            success: false,
+            error: progress.error.toString(),
+          );
+          results.add(result);
+        }
       }
+
+      if (successfulUpload != null) break;
     }
 
     // If we found a working server, mirror to all other servers that haven't been tried yet
     if (successfulUpload != null) {
-      // Get the index where we succeeded
       final successIndex = serverUrls.indexOf(successfulUpload.serverUrl);
-
-      // Mirror to remaining servers (ones we haven't tried yet)
       final remainingServers = serverUrls.sublist(successIndex + 1);
+
       if (remainingServers.isNotEmpty) {
         final mirrorResults = await Future.wait(
           remainingServers.map((url) => _mirrorToServer(
@@ -100,102 +185,183 @@ class BlossomRepositoryImpl implements BlossomRepository {
       }
     }
 
-    return results;
+    // Emit final progress
+    yield BlobUploadProgress(
+      currentServer: '',
+      sentBytes: contentLength,
+      totalBytes: contentLength,
+      completedUploads: results,
+      isComplete: true,
+    );
   }
 
-  Future<List<BlobUploadResult>> _uploadToAllServers({
-    required Uint8List data,
+  Stream<BlobUploadProgress> _uploadToAllServers({
+    required Stream<List<int>> data,
+    required int contentLength,
     required List<String> serverUrls,
     required Nip01Event authorization,
     String? contentType,
     bool mediaOptimisation = false,
-  }) async {
-    final results = await Future.wait(serverUrls.map((url) => _uploadToServer(
-          serverUrl: url,
-          data: data,
-          contentType: contentType,
-          authorization: authorization,
-          mediaOptimisation: mediaOptimisation,
-        )));
-    return results;
-  }
+  }) async* {
+    final results = <BlobUploadResult>[];
+    final progressSubject = BehaviorSubject<BlobUploadProgress>.seeded(
+      BlobUploadProgress(
+        currentServer: '',
+        sentBytes: 0,
+        totalBytes: contentLength,
+        completedUploads: [],
+      ),
+    );
 
-  Future<List<BlobUploadResult>> _uploadToFirstSuccess({
-    required Uint8List data,
-    required List<String> serverUrls,
-    required Nip01Event authorization,
-    String? contentType,
-    bool mediaOptimisation = false,
-  }) async {
-    for (final url in serverUrls) {
-      final result = await _uploadToServer(
-        serverUrl: url,
-        data: data,
+    // Start all uploads simultaneously
+    final uploadFutures = serverUrls.map((serverUrl) async {
+      await for (final progress in _uploadToServer(
+        serverUrl: serverUrl,
+        dataStream: data,
+        contentLength: contentLength,
         contentType: contentType,
         authorization: authorization,
         mediaOptimisation: mediaOptimisation,
-      );
-      if (result.success) {
-        return [result];
+      )) {
+        if (progress.isComplete && progress.response != null) {
+          final result = BlobUploadResult(
+            serverUrl: serverUrl,
+            success: true,
+            descriptor:
+                BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+          );
+          results.add(result);
+          progressSubject.add(BlobUploadProgress(
+            currentServer: serverUrl,
+            sentBytes: progress.sentBytes,
+            totalBytes: contentLength,
+            completedUploads: List.from(results),
+          ));
+        } else if (progress.isComplete && progress.error != null) {
+          final result = BlobUploadResult(
+            serverUrl: serverUrl,
+            success: false,
+            error: progress.error.toString(),
+          );
+          results.add(result);
+          progressSubject.add(BlobUploadProgress(
+            currentServer: serverUrl,
+            sentBytes: progress.sentBytes,
+            totalBytes: contentLength,
+            completedUploads: List.from(results),
+          ));
+        }
+      }
+    }).toList();
+
+    // Emit progress updates
+    final subscription = progressSubject.stream.listen((progress) {});
+    yield* progressSubject.stream;
+
+    // Wait for all uploads to complete
+    await Future.wait(uploadFutures);
+    await subscription.cancel();
+
+    // Emit final result
+    yield BlobUploadProgress(
+      currentServer: '',
+      sentBytes: contentLength,
+      totalBytes: contentLength,
+      completedUploads: results,
+      isComplete: true,
+    );
+
+    await progressSubject.close();
+  }
+
+  Stream<BlobUploadProgress> _uploadToFirstSuccess({
+    required Stream<List<int>> data,
+    required int contentLength,
+    required List<String> serverUrls,
+    required Nip01Event authorization,
+    String? contentType,
+    bool mediaOptimisation = false,
+  }) async* {
+    final results = <BlobUploadResult>[];
+
+    for (final url in serverUrls) {
+      await for (final progress in _uploadToServer(
+        serverUrl: url,
+        dataStream: data,
+        contentLength: contentLength,
+        contentType: contentType,
+        authorization: authorization,
+        mediaOptimisation: mediaOptimisation,
+      )) {
+        yield BlobUploadProgress(
+          currentServer: url,
+          sentBytes: progress.sentBytes,
+          totalBytes: progress.totalBytes,
+          completedUploads: results,
+        );
+
+        if (progress.isComplete && progress.response != null) {
+          final result = BlobUploadResult(
+            serverUrl: url,
+            success: true,
+            descriptor:
+                BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+          );
+          results.add(result);
+
+          yield BlobUploadProgress(
+            currentServer: url,
+            sentBytes: progress.sentBytes,
+            totalBytes: contentLength,
+            completedUploads: results,
+            isComplete: true,
+          );
+          return;
+        } else if (progress.isComplete && progress.error != null) {
+          results.add(BlobUploadResult(
+            serverUrl: url,
+            success: false,
+            error: progress.error.toString(),
+          ));
+        }
       }
     }
 
-    // If all servers failed, return all errors
-    final results = await _uploadToAllServers(
-      data: data,
-      serverUrls: serverUrls,
-      contentType: contentType,
-      authorization: authorization,
-      mediaOptimisation: mediaOptimisation,
+    // All servers failed
+    yield BlobUploadProgress(
+      currentServer: '',
+      sentBytes: 0,
+      totalBytes: contentLength,
+      completedUploads: results,
+      isComplete: true,
     );
-    return results;
   }
 
   /// Upload a file to a server \
   /// If [mediaOptimisation] is true, the server will optimise the file for media streaming using the /media endpoint [BUD-05]
-  Future<BlobUploadResult> _uploadToServer({
+  Stream<UploadProgress> _uploadToServer({
     required String serverUrl,
-    required Uint8List data,
+    required Stream<List<int>> dataStream,
+    required int contentLength,
     Nip01Event? authorization,
     String? contentType,
     bool mediaOptimisation = false,
-  }) async {
+  }) {
     final endpointUrl =
         mediaOptimisation ? '$serverUrl/media' : '$serverUrl/upload';
 
-    try {
-      final response = await client.put(
-        url: Uri.parse(endpointUrl),
-        body: data,
-        headers: {
-          if (contentType != null) 'Content-Type': contentType,
-          if (authorization != null)
-            'Authorization':
-                "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
-          'Content-Length': '${data.length}',
-        },
-      );
-
-      if (response.statusCode != 200) {
-        return BlobUploadResult(
-          serverUrl: serverUrl,
-          success: false,
-          error: 'HTTP ${response.statusCode}',
-        );
-      }
-
-      return BlobUploadResult(
-        serverUrl: serverUrl,
-        success: true,
-        descriptor: BlobDescriptor.fromJson(jsonDecode(response.body)),
-      );
-    } catch (e) {
-      return BlobUploadResult(
-        serverUrl: serverUrl,
-        success: false,
-        error: e.toString(),
-      );
-    }
+    return client.putStream(
+      url: Uri.parse(endpointUrl),
+      body: dataStream,
+      headers: {
+        if (contentType != null) 'Content-Type': contentType,
+        if (authorization != null)
+          'Authorization':
+              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
+        'Content-Length': '$contentLength',
+      },
+      contentLength: contentLength,
+    );
   }
 
   /// Mirror a file from one server to another, based on the file URL
@@ -503,6 +669,24 @@ class BlossomRepositoryImpl implements BlossomRepository {
       contentLength: int.tryParse(response.headers['content-length'] ?? ''),
       contentRange: response.headers['content-range'] ?? '',
     );
+  }
+
+  @override
+  Future<void> downloadBlobToFile({
+    required String sha256,
+    required String outputPath,
+    required List<String> serverUrls,
+    Nip01Event? authorization,
+  }) async {
+    // Use the streaming method to download and write to file
+    final stream = await getBlobStream(
+      sha256: sha256,
+      serverUrls: serverUrls,
+      authorization: authorization,
+    );
+
+    await fileIO.writeFileStream(
+        outputPath, stream.map((response) => response.data));
   }
 
   @override
