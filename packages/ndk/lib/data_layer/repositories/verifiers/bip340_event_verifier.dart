@@ -8,10 +8,14 @@ import '../../../domain_layer/repositories/event_verifier.dart';
 /// Pure dart event verifier using https://pub.dev/packages/bip340
 /// can be slow on mobile devices
 class Bip340EventVerifier implements EventVerifier {
+  bool useIsolate = true;
+
+  Bip340EventVerifier({this.useIsolate = true});
+
   @override
   Future<bool> verify(Nip01Event event) async {
-    return await Isolate.run(() {
+    return useIsolate? await Isolate.run(() {
       return bip340.verify(event.pubKey, event.id, event.sig);
-    });
+    }) : bip340.verify(event.pubKey, event.id, event.sig);
   }
 }
