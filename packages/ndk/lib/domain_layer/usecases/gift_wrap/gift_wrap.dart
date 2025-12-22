@@ -5,7 +5,7 @@ import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/nip_01_event.dart';
 import '../accounts/accounts.dart';
 import '../../../shared/nips/nip01/bip340.dart';
-import '../nip_01_event_service/nip_01_event_service.dart';
+import '../../entities/nip_01_utils.dart';
 
 class GiftWrap {
   static const int kSealEventKind = 13;
@@ -64,7 +64,7 @@ class GiftWrap {
       throw Exception("cannot create crumor: no pubkey provided");
     }
 
-    final Nip01Event rumor = Nip01EventService.createEventCalculateId(
+    final Nip01Event rumor = Nip01Event(
       pubKey: usedPubkey,
       kind: kind,
       tags: tags,
@@ -94,7 +94,7 @@ class GiftWrap {
       throw Exception("encrypted content is null");
     }
 
-    final sealEvent = Nip01EventService.createEventCalculateId(
+    final sealEvent = Nip01Event(
       pubKey: account.pubkey,
       kind: kSealEventKind,
       tags: [],
@@ -165,7 +165,7 @@ class GiftWrap {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     // Create the gift wrap event with ephemeral keys
-    final giftWrapEvent = Nip01EventService.createEventCalculateId(
+    final giftWrapEvent = Nip01Event(
       kind: kGiftWrapEventkind,
       content: encryptedSeal,
       tags: tags,

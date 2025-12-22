@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import '../../domain_layer/entities/nip_01_event.dart';
-import '../../domain_layer/entities/nip_01_event_raw.dart';
+import '../../domain_layer/entities/nostr_message_raw.dart';
 
 NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
   try {

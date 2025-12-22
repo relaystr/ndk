@@ -79,7 +79,7 @@ void main() async {
 
       test('multiple filters JIT sub', () async {
         Nip01Event textNote(KeyPair mykey, int kind) {
-          return Nip01EventService.createEventCalculateId(
+          return Nip01Event(
               kind: kind,
               pubKey: mykey.publicKey,
               content: "some note from key $mykey",
@@ -154,7 +154,7 @@ void main() async {
           subId: "mySubId",
         );
         relay0.sendEvent(
-          event: Nip01EventService.createEventCalculateId(
+          event: Nip01Event(
               pubKey: key1.publicKey,
               kind: 1,
               tags: [],
@@ -164,7 +164,7 @@ void main() async {
         );
 
         relay0.sendEvent(
-          event: Nip01EventService.createEventCalculateId(
+          event: Nip01Event(
               pubKey: key1.publicKey,
               kind: 2,
               tags: [],
@@ -173,7 +173,7 @@ void main() async {
           subId: "mySubId",
         );
         relay0.sendEvent(
-          event: Nip01EventService.createEventCalculateId(
+          event: Nip01Event(
               pubKey: key1.publicKey,
               kind: 3,
               tags: [],

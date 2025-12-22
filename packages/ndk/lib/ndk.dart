@@ -83,7 +83,7 @@ export 'domain_layer/usecases/bunkers/bunkers.dart';
 export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
 export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 export 'domain_layer/usecases/proof_of_work/proof_of_work.dart';
-export 'domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
+export 'domain_layer/entities/nip_01_utils.dart';
 
 /**
  * other stuff

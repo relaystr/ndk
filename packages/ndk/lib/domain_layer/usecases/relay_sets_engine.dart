@@ -243,15 +243,15 @@ class RelaySetsEngine implements NetworkEngine {
     Future<void> asyncStuff() async {
       final Nip01Event workingEvent;
 
-      // =====================================================================================
-      // specific relays
-      // =====================================================================================
       if (signer != null) {
         workingEvent = await signer.sign(nostrEvent);
       } else {
         workingEvent = nostrEvent;
       }
 
+      // =====================================================================================
+      // specific relays
+      // =====================================================================================
       if (specificRelays != null) {
         for (final relayUrl in specificRelays) {
           // broadcast async

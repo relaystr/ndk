@@ -1,6 +1,6 @@
 import 'dart:math';
 import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
+import '../../../domain_layer/entities/nip_01_utils.dart';
 import '../../isolates/isolate_manager.dart';
 
 class _MiningParams {
@@ -71,7 +71,7 @@ class Nip13 {
       updatedTags
           .add(['nonce', nonce.toString(), params.targetDifficulty.toString()]);
 
-      final minedEvent = Nip01EventService.createEventCalculateId(
+      final minedEvent = Nip01Event(
         pubKey: params.event.pubKey,
         kind: params.event.kind,
         tags: updatedTags,

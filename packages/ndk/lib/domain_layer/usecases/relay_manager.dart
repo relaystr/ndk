@@ -16,7 +16,7 @@ import '../entities/connection_source.dart';
 import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
-import '../entities/nip_01_event_raw.dart';
+import '../entities/nostr_message_raw.dart';
 import '../entities/relay.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
@@ -394,11 +394,17 @@ class RelayManager<T> {
   Future<void> _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) async {
     /// decode in isolate
-    final nostrMsg = await IsolateManager.instance
-        .runInEncodingIsolate<String, NostrMessageRaw>(
-      decodeNostrMsg,
-      message,
-    );
+    NostrMessageRaw nostrMsg;
+    try {
+      nostrMsg = await IsolateManager.instance
+          .runInEncodingIsolate<String, NostrMessageRaw>(
+        decodeNostrMsg,
+        message,
+      );
+    } catch (e) {
+      // Isolates not available on web
+      nostrMsg = decodeNostrMsg(message);
+    }
 
     if (nostrMsg.type == NostrMessageRawType.unknown) {
       Logger.log.w(

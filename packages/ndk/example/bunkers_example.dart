@@ -15,7 +15,7 @@ Future<void> main() async {
     log('Logged in as: ${ndk.accounts.getPublicKey()}');
 
     // Test signing an event
-    final event = Nip01EventService.createEventCalculateId(
+    final event = Nip01Event(
       pubKey: ndk.accounts.getPublicKey()!,
       kind: 1,
       content: 'Hello from NIP-46 with new simplified API!',

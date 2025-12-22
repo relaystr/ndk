@@ -95,7 +95,7 @@ class Nip46EventSigner implements EventSigner {
       recipientPubKey: connection.remotePubkey,
     );
 
-    final requestEvent = Nip01EventService.createEventCalculateId(
+    final requestEvent = Nip01Event(
       createdAt: 0,
       pubKey: localEventSigner.publicKey,
       kind: BunkerRequest.kKind,

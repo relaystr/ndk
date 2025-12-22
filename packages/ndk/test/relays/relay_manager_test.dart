@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/ndk_request.dart';
-import 'package:ndk/domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
+import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
@@ -155,7 +155,7 @@ void main() async {
           isNotNull);
 
       // Create a test event that relay2 will send
-      final testEvent = Nip01EventService.createEventCalculateId(
+      final testEvent = Nip01Event(
         kind: 1,
         pubKey: "test_pubkey",
         content: "Test content from relay2",

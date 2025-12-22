@@ -298,7 +298,7 @@ class MockRelay {
             if (signEvents && entry.key.privateKey != null) {
               // Sign the new instance, not the one in _nip65s
 
-              eventToAddSigned = Nip01EventService.signWithPrivateKey(
+              eventToAddSigned = Nip01Utils.signWithPrivateKey(
                   event: eventToAdd, privateKey: entry.key.privateKey!);
             } else {
               eventToAddSigned = null;
@@ -330,7 +330,7 @@ class MockRelay {
             Nip01Event eventToAdd = entry.value.copyWith();
             Nip01Event? eventToAddSigned;
             if (signEvents && entry.key.privateKey != null) {
-              eventToAddSigned = Nip01EventService.signWithPrivateKey(
+              eventToAddSigned = Nip01Utils.signWithPrivateKey(
                   event: eventToAdd, privateKey: entry.key.privateKey!);
             } else {
               eventToAddSigned = null;
@@ -363,7 +363,7 @@ class MockRelay {
 
     Nip01Event? signedEvent;
     if (keyPair != null) {
-      signedEvent = Nip01EventService.signWithPrivateKey(
+      signedEvent = Nip01Utils.signWithPrivateKey(
           event: event, privateKey: keyPair.privateKey!);
     }
 
@@ -438,7 +438,7 @@ class MockRelay {
 
       // Create NIP-46 response event
       Nip01Event responseEventUnsinged =
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
         pubKey: remoteSignerPublicKey,
         kind: kNip46Kind,
         tags: [
@@ -447,7 +447,7 @@ class MockRelay {
         content: encryptedResponse,
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
-      Nip01Event responseEvent = Nip01EventService.signWithPrivateKey(
+      Nip01Event responseEvent = Nip01Utils.signWithPrivateKey(
           event: responseEventUnsinged, privateKey: _remoteSignerPrivateKey);
 
       // NIP-46 events are ephemeral (kind 24133), don't store them
@@ -559,7 +559,7 @@ class MockRelay {
 
           // Use the Nip01Event constructor directly
           final Nip01Event eventToSign =
-              Nip01EventService.createEventCalculateId(
+              Nip01Event(
             pubKey: remoteSignerPublicKey,
             kind: eventData["kind"] ?? 1,
             tags: List<List<String>>.from(eventData["tags"] ?? []),
@@ -567,7 +567,7 @@ class MockRelay {
             createdAt: eventData["created_at"] ?? eventData["createdAt"] ?? 0,
           );
 
-          final Nip01Event signedEvent = Nip01EventService.signWithPrivateKey(
+          final Nip01Event signedEvent = Nip01Utils.signWithPrivateKey(
               event: eventToSign, privateKey: _remoteSignerPrivateKey);
 
           return {

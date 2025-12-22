@@ -1,5 +1,5 @@
 import '../../entities/nip_01_event.dart';
-import '../nip_01_event_service/nip_01_event_service.dart';
+import '../../entities/nip_01_utils.dart';
 
 /// Zap Request
 class ZapRequest extends Nip01Event {
@@ -45,7 +45,7 @@ class ZapRequest extends Nip01Event {
     required String content,
     String? sig,
   }) {
-    final calculatedId = Nip01EventService.calculateEventIdSync(
+    final calculatedId = Nip01Utils.calculateEventIdSync(
       pubKey: pubKey,
       createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       kind: kZapRequestKind,

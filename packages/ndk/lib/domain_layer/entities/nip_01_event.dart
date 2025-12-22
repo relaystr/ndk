@@ -1,9 +1,11 @@
+import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
+
 /// basic nostr nip01 event data structure
 class Nip01Event {
   static const int kTextNodeKind = 1;
 
   /// The event ID is a 32-byte SHA256 hash of the serialised event data.
-  final String id;
+  late final String id;
 
   /// The event author's public key.
   final String pubKey;
@@ -39,19 +41,26 @@ class Nip01Event {
   /// Nostr event `id` and `created_at` fields are calculated automatically.
   ///
   Nip01Event({
-    required this.id,
+    String? id,
     required this.pubKey,
     required this.kind,
     required this.tags,
     required this.content,
-    required this.sig,
-    required this.validSig,
+    this.sig,
+    this.validSig,
     this.sources = const [],
     int createdAt = 0,
   }) {
     this.createdAt = (createdAt == 0)
         ? DateTime.now().millisecondsSinceEpoch ~/ 1000
         : createdAt;
+    this.id = id ?? Nip01Utils.calculateEventIdSync(
+        pubKey: pubKey,
+        createdAt: createdAt,
+        kind: kind,
+        tags: tags,
+        content: content
+    );
   }
 
   Nip01Event copyWith({

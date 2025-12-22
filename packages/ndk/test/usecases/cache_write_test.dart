@@ -9,42 +9,42 @@ void main() async {
     final CacheManager myCacheManager = MemCacheManager();
 
     final List<Nip01Event> myEvens = [
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey1", kind: 1, tags: [], content: "content1_a"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
     ];
 
     final List<Nip01Event> expectedEvents = [
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey1", kind: 1, tags: [], content: "content1_a"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
-      Nip01EventService.createEventCalculateId(
+      Nip01Event(
           pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
     ];
 
