@@ -48,13 +48,13 @@ void main() async {
     test('broadcast 2 events', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
 
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
           event: event, privateKey: key0.privateKey!);
       await ndk.broadcast
           .broadcast(nostrEvent: signedEvent)
@@ -67,13 +67,13 @@ void main() async {
       ).future;
       expect(result.length, 1);
 
-      final event2 = Nip01EventService.createEventCalculateId(
+      final event2 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "my content");
 
-      final signedEvent2 = Nip01EventService.signWithPrivateKey(
+      final signedEvent2 = Nip01Utils.signWithPrivateKey(
           event: event2, privateKey: key0.privateKey!);
       await ndk.broadcast
           .broadcast(nostrEvent: signedEvent2)
@@ -90,13 +90,13 @@ void main() async {
     test('broadcast deletion', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
 
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
           event: event, privateKey: key0.privateKey!);
       NdkBroadcastResponse response =
           ndk.broadcast.broadcast(nostrEvent: signedEvent);
@@ -119,12 +119,12 @@ void main() async {
     test('broadcast deletion', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event1 = Nip01EventService.createEventCalculateId(
+      Nip01Event event1 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "1");
-      Nip01Event event2 = Nip01EventService.createEventCalculateId(
+      Nip01Event event2 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
@@ -163,7 +163,7 @@ void main() async {
     test('broadcast reaction', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
@@ -263,7 +263,7 @@ void main() async {
     test('broadcast JIT - specific', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key1.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
@@ -285,7 +285,7 @@ void main() async {
       ndk.accounts
           .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key1.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [
@@ -316,7 +316,7 @@ void main() async {
       // verify relay3 is not initially connected
       expect(ndk.relays.isRelayConnected(relay3.url), false);
 
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key1.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],

@@ -18,13 +18,13 @@ void main() async {
     };
 
     Nip01Event textNote(KeyPair key) {
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           kind: Nip01Event.kTextNodeKind,
           pubKey: key.publicKey,
           content: "some note from key ${keyNames[key1]}",
           tags: [],
           createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
           event: event, privateKey: key.privateKey!);
 
       return signedEvent;

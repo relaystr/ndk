@@ -20,13 +20,13 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
         event: event,
         privateKey: keyPair.privateKey!,
       );
@@ -126,13 +126,13 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
         event: event,
         privateKey: keyPair.privateKey!,
       );
@@ -156,13 +156,13 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
         event: event,
         privateKey: keyPair.privateKey!,
       );
@@ -278,13 +278,13 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
         event: event,
         privateKey: keyPair.privateKey!,
       );
@@ -312,14 +312,14 @@ void main() {
         privkey: keyPair.privateKey!,
       );
 
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: keyPair.publicKey,
         kind: 1,
         tags: [],
         content: "Test",
       );
 
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
         event: event,
         privateKey: keyPair.privateKey!,
       );

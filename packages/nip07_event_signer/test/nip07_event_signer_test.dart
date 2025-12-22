@@ -327,7 +327,7 @@ void main() {
     test('sign adds id and signature to event', () async {
       setupNostrExtension();
 
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: bip340EventSigner.publicKey,
         kind: 1,
         tags: [],
@@ -495,7 +495,7 @@ void main() {
     });
 
     test('throws exception when nostr is null for sign', () async {
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: bip340EventSigner.publicKey,
         kind: 1,
         tags: [],
@@ -598,7 +598,7 @@ void main() {
         setupNostrExtension();
 
         final pubKey = await nip07Signer.getPublicKeyAsync();
-        final event = Nip01EventService.createEventCalculateId(
+        final event = Nip01Event(
           pubKey: pubKey,
           kind: 1,
           tags: [

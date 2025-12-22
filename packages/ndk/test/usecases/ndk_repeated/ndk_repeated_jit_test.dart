@@ -24,7 +24,7 @@ void main() async {
     };
 
     Nip01Event textNote(KeyPair key2) {
-      return Nip01EventService.createEventCalculateId(
+      return Nip01Event(
           kind: Nip01Event.kTextNodeKind,
           pubKey: key2.publicKey,
           content: "some note from key ${keyNames[key2]}",

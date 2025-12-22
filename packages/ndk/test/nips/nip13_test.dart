@@ -89,7 +89,7 @@ void main() {
     test('mineEvent should meet difficulty', () async {
       final keypair = Bip340.generatePrivateKey();
 
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: keypair.publicKey,
         kind: 1,
         tags: [],
@@ -106,7 +106,7 @@ void main() {
 
     test('should return null when no nonce tag present', () {
       final keypair = Bip340.generatePrivateKey();
-      final eventWithoutNonce = Nip01EventService.createEventCalculateId(
+      final eventWithoutNonce = Nip01Event(
         pubKey: keypair.publicKey,
         kind: 1,
         tags: [],
@@ -122,7 +122,7 @@ void main() {
 
     test('should handle malformed nonce tags gracefully', () {
       final keypair = Bip340.generatePrivateKey();
-      final eventWithBadNonce = Nip01EventService.createEventCalculateId(
+      final eventWithBadNonce = Nip01Event(
         pubKey: keypair.publicKey,
         kind: 1,
         tags: [
@@ -141,7 +141,7 @@ void main() {
     test('check target difficulty', () async {
       final keypair = Bip340.generatePrivateKey();
 
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: keypair.publicKey,
         kind: 1,
         tags: [],
@@ -186,7 +186,7 @@ void main() {
   test('validate event: id check', () async {
     final keypair = Bip340.generatePrivateKey();
 
-    final event = Nip01EventService.createEventCalculateId(
+    final event = Nip01Event(
       pubKey: keypair.publicKey,
       kind: 1,
       tags: [],
@@ -204,14 +204,14 @@ void main() {
       ['nonce', '123', '4']
     ]);
 
-    final invalidValue = Nip01EventService.isIdValid(invalidEvent);
+    final invalidValue = Nip01Utils.isIdValid(invalidEvent);
     expect(invalidValue, isFalse);
   });
 
   test('check commitment', () async {
     final keypair = Bip340.generatePrivateKey();
 
-    final event = Nip01EventService.createEventCalculateId(
+    final event = Nip01Event(
       pubKey: keypair.publicKey,
       kind: 1,
       tags: [],

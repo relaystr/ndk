@@ -123,7 +123,7 @@ Future<bool> testReceiveEncryptedNip44(
 
 Future<bool> testSign(Nip07EventSigner nip07Signer) async {
   final pubKey = await nip07Signer.getPublicKeyAsync();
-  final event = Nip01EventService.createEventCalculateId(
+  final event = Nip01Event(
     pubKey: pubKey,
     kind: 1,
     tags: [

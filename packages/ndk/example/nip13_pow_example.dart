@@ -6,7 +6,7 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 void main() async {
   final keyPair = Bip340.generatePrivateKey();
 
-  final event = Nip01EventService.createEventCalculateId(
+  final event = Nip01Event(
     pubKey: keyPair.publicKey,
     kind: 1,
     tags: [],
