@@ -8,6 +8,7 @@ import '../../../domain_layer/repositories/event_verifier.dart';
 class Bip340EventVerifier implements EventVerifier {
   @override
   Future<bool> verify(Nip01Event event) async {
+    if (!event.isIdValid) return false;
     return bip340.verify(event.pubKey, event.id, event.sig);
   }
 }
