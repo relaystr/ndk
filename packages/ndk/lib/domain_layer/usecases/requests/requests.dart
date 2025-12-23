@@ -58,7 +58,8 @@ class Requests {
 
   /// Performs a low-level Nostr query
   ///
-  /// [filters] A list of filters to apply to the query \
+  /// [filter] The filter to apply to the query \
+  /// [filters] @deprecated A list of filters to apply to the query. Use [filter] instead \
   /// [name] An optional name used as an ID prefix \
   /// [relaySet] An optional set of relays to query \
   /// [cacheRead] Whether to read from cache \
@@ -71,7 +72,9 @@ class Requests {
   ///
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
-    required List<Filter> filters,
+    Filter? filter,
+    @Deprecated('Use filter instead. Multiple filters support will be removed in a future version.')
+    List<Filter>? filters,
     String name = '',
     RelaySet? relaySet,
     bool cacheRead = true,
@@ -82,12 +85,16 @@ class Requests {
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
+    if (filter == null && (filters == null || filters.isEmpty)) {
+      throw ArgumentError('Either filter or filters must be provided');
+    }
+    final effectiveFilters = filter != null ? [filter] : filters!;
     timeout ??= _defaultQueryTimeout;
 
     return requestNostrEvent(NdkRequest.query(
       '$name-${Helpers.getRandomString(10)}',
       name: name,
-      filters: filters.map((e) => e.clone()).toList(),
+      filters: effectiveFilters.map((e) => e.clone()).toList(),
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
@@ -102,7 +109,8 @@ class Requests {
 
   /// Creates a low-level Nostr subscription
   ///
-  /// [filters] A list of filters to apply to the subscription \
+  /// [filter] The filter to apply to the subscription \
+  /// [filters] @deprecated A list of filters to apply to the subscription. Use [filter] instead \
   /// [name] An optional name for the subscription \
   /// [id] An optional ID for the subscription, overriding name \
   /// [relaySet] An optional set of relays to subscribe to \
@@ -113,7 +121,9 @@ class Requests {
   ///
   /// Returns an [NdkResponse] containing the subscription results as stream
   NdkResponse subscription({
-    required List<Filter> filters,
+    Filter? filter,
+    @Deprecated('Use filter instead. Multiple filters support will be removed in a future version.')
+    List<Filter>? filters,
     String name = '',
     String? id,
     RelaySet? relaySet,
@@ -122,10 +132,14 @@ class Requests {
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
   }) {
+    if (filter == null && (filters == null || filters.isEmpty)) {
+      throw ArgumentError('Either filter or filters must be provided');
+    }
+    final effectiveFilters = filter != null ? [filter] : filters!;
     return requestNostrEvent(NdkRequest.subscription(
       id ?? "$name-${Helpers.getRandomString(10)}",
       name: name,
-      filters: filters.map((e) => e.clone()).toList(),
+      filters: effectiveFilters.map((e) => e.clone()).toList(),
       relaySet: relaySet,
       cacheRead: cacheRead,
       cacheWrite: cacheWrite,
