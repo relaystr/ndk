@@ -11,20 +11,22 @@ import '../../mocks/mock_event_verifier.dart';
 
 void main() {
   late Blossom client;
+  late Ndk ndk;
 
   setUp(() async {
     KeyPair key1 = Bip340.generatePrivateKey();
 
-    final ndk = Ndk(
+    final ndkCreate = Ndk(
       NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
         engine: NdkEngine.JIT,
       ),
     );
-    ndk.accounts
+    ndkCreate.accounts
         .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
+    ndk = ndkCreate;
     client = ndk.blossom;
   });
 
@@ -133,7 +135,7 @@ void main() {
       );
 
       final listResponse = await client.listBlobs(
-        pubkey: 'test_pubkey',
+        pubkey: ndk.accounts.getLoggedAccount()!.pubkey,
         serverUrls: ['http://localhost:3000'],
       );
 
