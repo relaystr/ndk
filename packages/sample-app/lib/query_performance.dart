@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk_rust_verifier/data_layer/repositories/verifiers/rust_event_verifier.dart';
 
 class MyVerifiers {
   static final bip340Verifier = Bip340EventVerifier();

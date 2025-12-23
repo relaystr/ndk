@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
 import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart' as bip340_utils;
+import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart' as nip19_decoder;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -74,6 +75,133 @@ class _AccountsPageState extends State<AccountsPage> {
         print('Failed to fetch metadata for $pubkeyHex: $e');
       }
     }
+  }
+
+  Future<void> _loginWithRandomKey() async {
+    try {
+      final KeyPair keyPair = bip340_utils.Bip340.generatePrivateKey();
+
+      ndk.accounts.loginPrivateKey(
+        pubkey: keyPair.publicKey,
+        privkey: keyPair.privateKey!,
+      );
+      _loadCurrentUser();
+      _loadAccounts();
+      widget.onAccountChanged?.call();
+
+      // Show dialog with the generated keys so user can save them
+      if (mounted) {
+        _showGeneratedKeysDialog(keyPair);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate random key: $e')),
+      );
+    }
+  }
+
+  void _showGeneratedKeysDialog(KeyPair keyPair) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('New Account Created'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '⚠️ IMPORTANT: Save your private key (nsec) securely! '
+                  'You will need it to recover your account.',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange[800],
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text('Private Key (nsec):',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(4),
+                    color: Colors.red[50],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SelectableText(
+                          keyPair.privateKeyBech32 ?? '',
+                          style:
+                              TextStyle(fontFamily: 'monospace', fontSize: 12),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.copy),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(
+                              text: keyPair.privateKeyBech32 ?? ''));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                    Text('Private key copied to clipboard!')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text('Public Key (npub):',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SelectableText(
+                          keyPair.publicKeyBech32 ?? '',
+                          style:
+                              TextStyle(fontFamily: 'monospace', fontSize: 12),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.copy),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(
+                              text: keyPair.publicKeyBech32 ?? ''));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                    Text('Public key copied to clipboard!')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('I have saved my keys'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _loginWithPrivateKey() async {
@@ -609,6 +737,25 @@ class _AccountsPageState extends State<AccountsPage> {
                         backgroundColor: Colors.orange),
                   ),
                 ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await _loginWithRandomKey();
+                  if (mounted && _currentAccount != null) {
+                    setState(() {
+                      _isAddingAccount = false;
+                    });
+                  }
+                },
+                icon: const Icon(Icons.casino),
+                label: const Text('Generate Random Key'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 10),
               TextField(
                 controller: _privateKeyController,
                 decoration:
