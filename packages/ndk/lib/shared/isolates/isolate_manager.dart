@@ -1,10 +1,41 @@
 import 'dart:async';
 import 'dart:isolate';
 
+const int encodingIsolatePoolSize = 10;
+const int computeIsolatePoolSize = 10;
+
 class IsolateConfig {
   Isolate isolate;
   SendPort sendPort;
   IsolateConfig(this.isolate, this.sendPort);
+}
+
+class IsolatePool {
+  final List<IsolateConfig> _isolates = [];
+  int _currentIndex = 0;
+
+  List<IsolateConfig> get isolates => _isolates;
+
+  void add(IsolateConfig config) {
+    _isolates.add(config);
+  }
+
+  SendPort getNextSendPort() {
+    if (_isolates.isEmpty) {
+      throw StateError('Isolate pool is empty');
+    }
+    final sendPort = _isolates[_currentIndex].sendPort;
+    _currentIndex = (_currentIndex + 1) % _isolates.length;
+    return sendPort;
+  }
+
+  void killAll() {
+    for (final config in _isolates) {
+      config.isolate.kill(priority: Isolate.immediate);
+    }
+    _isolates.clear();
+    _currentIndex = 0;
+  }
 }
 
 class IsolateManager {
@@ -14,11 +45,8 @@ class IsolateManager {
     return _instance!;
   }
 
-  Isolate? _encodeIsolate;
-  Isolate? _computeIsolate;
-
-  SendPort? _encodeSendPort;
-  SendPort? _computeSendPort;
+  final IsolatePool _encodePool = IsolatePool();
+  final IsolatePool _computePool = IsolatePool();
   final Completer<void> _readyCompleter = Completer<void>();
 
   IsolateManager._() {
@@ -27,14 +55,17 @@ class IsolateManager {
 
   Future<void> _initialize() async {
     try {
-      _encodeSendPort = await _createIsolate((sendPort) {
-        _encodeIsolate = sendPort.isolate;
-        return sendPort.sendPort;
-      });
-      _computeSendPort = await _createIsolate((sendPort) {
-        _computeIsolate = sendPort.isolate;
-        return sendPort.sendPort;
-      });
+      // Initialize encoding isolate pool
+      for (int i = 0; i < encodingIsolatePoolSize; i++) {
+        final config = await _createIsolate();
+        _encodePool.add(config);
+      }
+
+      // Initialize compute isolate pool
+      for (int i = 0; i < computeIsolatePoolSize; i++) {
+        final config = await _createIsolate();
+        _computePool.add(config);
+      }
 
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.complete();
@@ -46,22 +77,19 @@ class IsolateManager {
     }
   }
 
-  Future<SendPort> _createIsolate(Function(IsolateConfig) isolateConfig) async {
+  Future<IsolateConfig> _createIsolate() async {
     final receivePort = ReceivePort();
     final isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);
     final sendPort = await receivePort.first as SendPort;
-    isolateConfig(IsolateConfig(isolate, sendPort));
-    return sendPort;
+    return IsolateConfig(isolate, sendPort);
   }
 
   Future<R> _runTask<Q, R>(
     R Function(Q) task,
     Q argument,
-    SendPort? sendPort,
+    IsolatePool pool,
   ) async {
-    if (sendPort == null) {
-      throw StateError('Isolate not initialized');
-    }
+    final sendPort = pool.getNextSendPort();
 
     final completer = Completer<R>();
     final port = ReceivePort();
@@ -85,7 +113,7 @@ class IsolateManager {
     Q argument,
   ) async {
     await ready;
-    return _runTask(task, argument, _encodeSendPort);
+    return _runTask(task, argument, _encodePool);
   }
 
   /// dedicated for compute operations (like crypto, hashing, etc)
@@ -94,18 +122,12 @@ class IsolateManager {
     Q argument,
   ) async {
     await ready;
-    return _runTask(task, argument, _computeSendPort);
+    return _runTask(task, argument, _computePool);
   }
 
   Future<void> dispose() async {
-    _encodeIsolate?.kill(priority: Isolate.immediate);
-    _computeIsolate?.kill(priority: Isolate.immediate);
-
-    _encodeIsolate = null;
-    _computeIsolate = null;
-
-    _encodeSendPort = null;
-    _computeSendPort = null;
+    _encodePool.killAll();
+    _computePool.killAll();
     _instance = null;
   }
 }
