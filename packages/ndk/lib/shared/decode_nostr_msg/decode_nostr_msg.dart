@@ -42,6 +42,7 @@ NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
       case 'EOSE':
         return NostrMessageRaw(
           type: NostrMessageRawType.eose,
+          requestId: decoded.length > 1 ? decoded[1] : null,
           otherData: decoded,
         );
       case 'OK':
