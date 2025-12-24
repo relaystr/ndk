@@ -48,10 +48,11 @@ void main() async {
       Nip01Event event0 = await bookmarkListKey0.toEvent(signer0);
       Nip01Event event1 = await favoriteRelaysKey1.toEvent(signer1);
 
-      await signer0.sign(event0);
-      await signer1.sign(event1);
+      final signedEvent0 = await signer0.sign(event0);
+      final signedEvent1 = await signer1.sign(event1);
 
-      await relay0.startServer(textNotes: {key0: event0, key1: event1});
+      await relay0
+          .startServer(textNotes: {key0: signedEvent0, key1: signedEvent1});
 
       final cache = MemCacheManager();
       final NdkConfig config = NdkConfig(
@@ -354,12 +355,12 @@ void main() async {
       final oldEvent = await oldSet.toEvent(signer1);
       final newEvent = await newSet.toEvent(signer1);
 
-      await signer1.sign(oldEvent);
-      await signer1.sign(newEvent);
+      final singedOldEvent = await signer1.sign(oldEvent);
+      final signedNewEvent = await signer1.sign(newEvent);
 
       // Save both to cache
-      await ndk.config.cache.saveEvent(oldEvent);
-      await ndk.config.cache.saveEvent(newEvent);
+      await ndk.config.cache.saveEvent(singedOldEvent);
+      await ndk.config.cache.saveEvent(signedNewEvent);
 
       // Fetch the set - should return the newer one
       final fetchedSet = await ndk.lists.getSetByName(
@@ -428,10 +429,10 @@ void main() async {
         content: nip04Content,
       );
 
-      await signer1.sign(nip04Event);
+      final signedNip04Event = await signer1.sign(nip04Event);
 
       // Parse the event back to set - should handle NIP-04 format
-      final parsedSet = await Nip51Set.fromEvent(nip04Event, signer1);
+      final parsedSet = await Nip51Set.fromEvent(signedNip04Event, signer1);
 
       expect(parsedSet, isNotNull);
       expect(parsedSet!.name, "nip04-test-set");

@@ -96,6 +96,7 @@ class Nip46EventSigner implements EventSigner {
     );
 
     final requestEvent = Nip01Event(
+      createdAt: 0,
       pubKey: localEventSigner.publicKey,
       kind: BunkerRequest.kKind,
       tags: [
@@ -104,9 +105,9 @@ class Nip46EventSigner implements EventSigner {
       content: encryptedRequest!,
     );
 
-    await localEventSigner.sign(requestEvent);
+    final signedEvent = await localEventSigner.sign(requestEvent);
     final broadcastRes = broadcast.broadcast(
-      nostrEvent: requestEvent,
+      nostrEvent: signedEvent,
       specificRelays: connection.relays,
     );
     await broadcastRes.broadcastDoneFuture;
@@ -186,7 +187,7 @@ class Nip46EventSigner implements EventSigner {
   }
 
   @override
-  Future<void> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event) async {
     final eventMap = {
       "kind": event.kind,
       "content": event.content,
@@ -202,8 +203,7 @@ class Nip46EventSigner implements EventSigner {
     final signedEventJson = await remoteRequest(request: request);
     final signedEvent = jsonDecode(signedEventJson);
 
-    event.id = signedEvent["id"];
-    event.sig = signedEvent["sig"];
+    return event.copyWith(id: signedEvent["id"], sig: signedEvent["sig"]);
   }
 
   Future<String> ping() async {

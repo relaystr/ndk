@@ -133,14 +133,10 @@ Future<bool> testSign(Nip07EventSigner nip07Signer) async {
     content: "GM",
   );
 
-  print(jsonEncode(event.toJson()));
+  final signedEvent = await nip07Signer.sign(event);
 
-  await nip07Signer.sign(event);
-
-  print(jsonEncode(event.toJson()));
-
-  return await Bip340EventVerifier().verify(event) &&
-      event.kind == 1 &&
-      event.pubKey == pubKey &&
-      event.content == "GM";
+  return await Bip340EventVerifier().verify(signedEvent) &&
+      signedEvent.kind == 1 &&
+      signedEvent.pubKey == pubKey &&
+      signedEvent.content == "GM";
 }

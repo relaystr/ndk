@@ -1,9 +1,12 @@
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip13/nip13.dart';
 
 void main() {
+  final ndk = Ndk.emptyBootstrapRelaysConfig();
+  final pow = ndk.proofOfWork;
+
   group('NIP-13 Proof of Work', () {
     group('countLeadingZeroBits', () {
       test('should count single hex digits correctly', () {
@@ -83,7 +86,7 @@ void main() {
       });
     });
 
-    test('mineEvent should meet difficulty', () {
+    test('mineEvent should meet difficulty', () async {
       final keypair = Bip340.generatePrivateKey();
 
       final event = Nip01Event(
@@ -92,11 +95,13 @@ void main() {
         tags: [],
         content: 'Hello, Nostr!',
         createdAt: 1234567890,
-      ).minePoW(4);
+      );
 
-      final minedEvent = Nip13.mineEvent(event, 4, maxIterations: 100000);
+      final minedEvent = await pow.minePoW(
+          event: event, targetDifficulty: 4, maxIterations: 100000);
 
-      expect(minedEvent.checkPoWDifficulty(2), isTrue);
+      expect(pow.checkPoWDifficulty(event: minedEvent, targetDifficulty: 2),
+          isTrue);
     });
 
     test('should return null when no nonce tag present', () {
@@ -133,25 +138,27 @@ void main() {
           reason: 'Should return null for malformed nonce tag');
     });
 
-    test('check target difficulty', () {
+    test('check target difficulty', () async {
       final keypair = Bip340.generatePrivateKey();
 
-      final minedEvent = Nip01Event(
+      final event = Nip01Event(
         pubKey: keypair.publicKey,
         kind: 1,
         tags: [],
         content: 'Hello, Nostr!',
         createdAt: 1234567890,
-      ).minePoW(4);
+      );
 
-      final value = Nip13.getTargetDifficultyFromEvent(minedEvent);
+      final minedEvent = await pow.minePoW(event: event, targetDifficulty: 4);
+
+      final value = pow.getTargetDifficultyFromEvent(minedEvent);
 
       expect(value, equals(4));
     });
   });
 
   test('validate event: greater POW', () {
-    final minedEvent = Nip01Event.fromJson({
+    final minedEvent = Nip01EventModel.fromJson({
       "id": "00302f635d4e2059c5cdddca2c00b5f455ec6706cfd960a410acc3e9abe36100",
       "pubkey":
           "6d46059232af4d121456d1fff7fa8dadc32b02510e46e85b912b0585cf038574",
@@ -176,16 +183,18 @@ void main() {
     expect(invalidValue, isFalse);
   });
 
-  test('validate event: id check', () {
+  test('validate event: id check', () async {
     final keypair = Bip340.generatePrivateKey();
 
-    final minedEvent = Nip01Event(
+    final event = Nip01Event(
       pubKey: keypair.publicKey,
       kind: 1,
       tags: [],
       content: 'Hello, Nostr!',
       createdAt: 1234567890,
-    ).minePoW(10);
+    );
+
+    final minedEvent = await pow.minePoW(event: event, targetDifficulty: 10);
 
     final value = Nip13.validateEvent(minedEvent);
 
@@ -195,20 +204,22 @@ void main() {
       ['nonce', '123', '4']
     ]);
 
-    final invalidValue = invalidEvent.isIdValid;
+    final invalidValue = Nip01Utils.isIdValid(invalidEvent);
     expect(invalidValue, isFalse);
   });
 
-  test('check commitment', () {
+  test('check commitment', () async {
     final keypair = Bip340.generatePrivateKey();
 
-    final minedEvent = Nip01Event(
+    final event = Nip01Event(
       pubKey: keypair.publicKey,
       kind: 1,
       tags: [],
       content: 'Hello, Nostr!',
       createdAt: 1234567890,
-    ).minePoW(4);
+    );
+
+    final minedEvent = await pow.minePoW(event: event, targetDifficulty: 4);
 
     final commitment = Nip13.calculateCommitment(minedEvent.id);
     expect(commitment, greaterThan(0));

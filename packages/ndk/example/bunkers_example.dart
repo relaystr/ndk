@@ -22,9 +22,9 @@ Future<void> main() async {
       tags: [],
     );
 
-    await ndk.accounts.sign(event);
+    final signedEvent = await ndk.accounts.sign(event);
     log('Event signed successfully!');
-    log('Event ID: ${event.id}');
+    log('Event ID: ${signedEvent.id}');
   } catch (e) {
     log('Error: $e');
   }

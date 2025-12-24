@@ -5,6 +5,7 @@ import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
+import '../../entities/nip_01_utils.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
 import '../../../shared/nips/nip01/bip340.dart';
@@ -74,9 +75,9 @@ class Bunkers {
       content: encryptedRequest!,
     );
 
-    await localEventSigner.sign(requestEvent);
+    final signedEvent = await localEventSigner.sign(requestEvent);
     final broadcastRes =
-        _broadcast.broadcast(nostrEvent: requestEvent, specificRelays: relays);
+        _broadcast.broadcast(nostrEvent: signedEvent, specificRelays: relays);
     await broadcastRes.broadcastDoneFuture;
 
     final subscription = _requests.subscription(

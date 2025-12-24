@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/repositories/event_verifier.dart';
 import 'package:ndk/domain_layer/usecases/requests/verify_event_stream.dart';
+import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
 import '../mocks/mock_event_verifier.dart';

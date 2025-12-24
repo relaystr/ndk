@@ -43,10 +43,11 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
       );
     });
 
+    final List<Nip01Event> signedList = [];
     for (final event in list) {
-      await widget.ndk.accounts.sign(event);
+      signedList.add(await widget.ndk.accounts.sign(event));
     }
-    return list;
+    return signedList;
   }
 
   _verifyEventsWaiting({required EventVerifier verifier}) async {

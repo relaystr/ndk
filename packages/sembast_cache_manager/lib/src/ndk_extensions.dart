@@ -21,18 +21,16 @@ extension Nip01EventExtension on Nip01Event {
   }
 
   static Nip01Event fromJsonStorage(Map<String, Object?> json) {
-    final event = Nip01Event.fromJson(json);
-
     // Restore additional properties not handled by fromJson
-    if (json['validSig'] != null) {
-      event.validSig = json['validSig'] as bool?;
-    }
 
-    if (json['sources'] != null) {
-      event.sources = List<String>.from(json['sources'] as List);
-    }
+    final event = Nip01EventModel.fromJson(json);
 
-    return event;
+    return event.copyWith(
+      validSig: json['validSig'] as bool?,
+      sources: json['sources'] != null
+          ? List<String>.from(json['sources'] as List)
+          : const [],
+    );
   }
 }
 

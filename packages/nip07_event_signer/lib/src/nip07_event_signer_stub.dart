@@ -4,7 +4,7 @@ class Nip07EventSigner implements EventSigner {
   String? cachedPublicKey;
 
   Nip07EventSigner({this.cachedPublicKey});
-  
+
   @override
   bool canSign() {
     return false;
@@ -46,7 +46,7 @@ class Nip07EventSigner implements EventSigner {
   }
 
   @override
-  Future<void> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event) async {
     throw UnsupportedError('NIP-07 is not available on this platform');
   }
 }

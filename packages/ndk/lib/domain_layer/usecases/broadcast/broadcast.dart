@@ -65,8 +65,9 @@ class Broadcast {
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
 
-    final signer =
-        nostrEvent.sig == '' ? _checkSinger(customSigner: customSigner) : null;
+    final signer = nostrEvent.sig == null
+        ? _checkSinger(customSigner: customSigner)
+        : null;
 
     final cleanedSpecificRelays =
         specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;

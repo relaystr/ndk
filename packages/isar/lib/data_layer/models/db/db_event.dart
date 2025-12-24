@@ -42,7 +42,7 @@ class DbEvent extends Nip01Event {
   String get content => super.content;
 
   @override
-  String get sig => super.sig;
+  String? get sig => super.sig;
 
   @override
   bool? get validSig => super.validSig;
@@ -56,12 +56,9 @@ class DbEvent extends Nip01Event {
       required super.tags,
       required super.content,
       super.createdAt,
-      required String sig,
+      String? sig,
       bool? validSig,
       required List<String> sources}) {
-    super.sig = sig;
-    super.validSig = validSig;
-    super.sources = sources;
   }
 
   static DbEvent fromNip01Event(Nip01Event event) {

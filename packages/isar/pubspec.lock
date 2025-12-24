@@ -356,10 +356,9 @@ packages:
   ndk:
     dependency: "direct main"
     description:
-      name: ndk
-      sha256: "88c371ca73014fa41b8f711036fb64d01c99045e7ce7e9560fa49a0976c36e18"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../ndk"
+      relative: true
+    source: path
     version: "0.6.1-dev.1"
   node_preamble:
     dependency: transitive
