@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
 
-const int encodingIsolatePoolSize = 1;
-const int computeIsolatePoolSize = 1;
+const int encodingIsolatePoolSize = 20;
+const int computeIsolatePoolSize = 20;
 
 class IsolateConfig {
   Isolate isolate;

@@ -391,9 +391,16 @@ class RelayManager<T> {
     });
   }
 
+  // tracking to process in order
+  Completer<void>? _lastMessageCompleter;
+
   Future<void> _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) async {
-    /// decode in isolate
+    final previousMessage = _lastMessageCompleter;
+
+    final myCompleter = Completer<void>();
+    _lastMessageCompleter = myCompleter;
+
     NostrMessageRaw nostrMsg;
     try {
       nostrMsg = await IsolateManager.instance
@@ -406,6 +413,17 @@ class RelayManager<T> {
       nostrMsg = decodeNostrMsg(message);
     }
 
+    if (previousMessage != null) {
+      await previousMessage.future;
+    }
+
+    myCompleter.complete();
+
+    _processDecodedMessage(nostrMsg, relayConnectivity, message);
+  }
+
+  void _processDecodedMessage(NostrMessageRaw nostrMsg,
+      RelayConnectivity relayConnectivity, dynamic message) {
     if (nostrMsg.type == NostrMessageRawType.unknown) {
       Logger.log.w(
           "Received non NostrMessageRaw message from ${relayConnectivity.url}: $nostrMsg");
