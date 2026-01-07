@@ -14,6 +14,7 @@ import '../../entities/request_state.dart';
 import '../../repositories/event_verifier.dart';
 import '../cache_read/cache_read.dart';
 import '../cache_write/cache_write.dart';
+import '../coverage/coverage.dart';
 import '../engines/network_engine.dart';
 import '../relay_manager.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
@@ -30,6 +31,7 @@ class Requests {
   final EventVerifier _eventVerifier;
   final List<EventFilter> _eventOutFilters;
   final Duration _defaultQueryTimeout;
+  Coverage? _coverage;
 
   /// Creates a new [Requests] instance
   ///
@@ -55,6 +57,9 @@ class Requests {
         _eventVerifier = eventVerifier,
         _eventOutFilters = eventOutFilters,
         _defaultQueryTimeout = defaultQueryTimeout;
+
+  /// Set the coverage tracker for automatic range recording
+  set coverage(Coverage? coverage) => _coverage = coverage;
 
   /// Performs a low-level Nostr query
   ///
@@ -220,6 +225,11 @@ class Requests {
       eventOutFilters: _eventOutFilters,
     )();
 
+    // Record coverage when network requests complete (EOSE received)
+    state.networkController.done.then((_) {
+      _recordCoverage(state);
+    });
+
     // cleanup on close
     // use done future for replay subject
     state.controller.done.then((_) {
@@ -260,5 +270,32 @@ class Requests {
 
     // Return the response immediately
     return response;
+  }
+
+  /// Records coverage for each relay that received EOSE
+  void _recordCoverage(RequestState state) {
+    if (_coverage == null) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    for (final entry in state.requests.entries) {
+      final relayUrl = entry.key;
+      final relayState = entry.value;
+
+      if (!relayState.receivedEOSE) continue;
+
+      // Record coverage for each filter sent to this relay
+      for (final filter in relayState.filters) {
+        final since = filter.since ?? 0;
+        final until = filter.until ?? now;
+
+        _coverage!.addRange(
+          filter: filter,
+          relayUrl: relayUrl,
+          since: since,
+          until: until,
+        );
+      }
+    }
   }
 }
