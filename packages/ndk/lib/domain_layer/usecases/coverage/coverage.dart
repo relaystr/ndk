@@ -127,8 +127,9 @@ class Coverage {
         .where((r) => r.reachedOldest)
         .fold<FilterCoverageRecord?>(null, (prev, r) => r);
 
-    // Delete old records and save merged ones
-    await _cacheManager.removeFilterCoverageRecords(filterHash);
+    // Delete old records for this filter/relay and save merged ones
+    await _cacheManager.removeFilterCoverageRecordsByFilterAndRelay(
+        filterHash, relayUrl);
 
     final newRecords = mergedRanges.map((range) {
       return FilterCoverageRecord(

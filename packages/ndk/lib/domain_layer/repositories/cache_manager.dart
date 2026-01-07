@@ -106,6 +106,10 @@ abstract class CacheManager {
   /// Remove all coverage records for a filter hash
   Future<void> removeFilterCoverageRecords(String filterHash);
 
+  /// Remove coverage records for a specific filter hash and relay
+  Future<void> removeFilterCoverageRecordsByFilterAndRelay(
+      String filterHash, String relayUrl);
+
   /// Remove all coverage records for a relay
   Future<void> removeFilterCoverageRecordsByRelay(String relayUrl);
 

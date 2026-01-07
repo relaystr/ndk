@@ -351,6 +351,13 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<void> removeFilterCoverageRecordsByFilterAndRelay(
+      String filterHash, String relayUrl) async {
+    filterCoverageRecords.removeWhere((key, value) =>
+        value.filterHash == filterHash && value.relayUrl == relayUrl);
+  }
+
+  @override
   Future<void> removeFilterCoverageRecordsByRelay(String relayUrl) async {
     filterCoverageRecords
         .removeWhere((key, value) => value.relayUrl == relayUrl);
