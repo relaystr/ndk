@@ -42,6 +42,33 @@ void main() async {
   };
 
   group('Requests', () {
+    test('Request text note with single filter parameter', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      await relay1.startServer(textNotes: textNotes);
+
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [relay1.url],
+      ));
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      final filter =
+          Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
+
+      // Using the new single filter parameter
+      final query = ndk.requests.query(filter: filter);
+
+      await expectLater(
+          query.stream, emitsInAnyOrder([textNotes.values.first]));
+
+      await ndk.destroy();
+      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+      await relay1.stopServer();
+    });
+
     test('Request text note', () async {
       MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
       await relay1.startServer(textNotes: textNotes);
@@ -126,6 +153,42 @@ void main() async {
       //   print(event);
       // }
 
+      await ndk.destroy();
+      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+      await relay1.stopServer();
+    });
+
+    test('Subscription with single filter parameter', () async {
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      await relay1.startServer(textNotes: textNotes);
+
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [relay1.url],
+      ));
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      final filter =
+          Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
+
+      // Using the new single filter parameter
+      final subscription = ndk.requests.subscription(filter: filter);
+
+      final receivedEvents = <Nip01Event>[];
+      final streamSubscription = subscription.stream.listen((event) {
+        receivedEvents.add(event);
+      });
+
+      await Future.delayed(Duration(milliseconds: 200));
+
+      expect(receivedEvents.length, equals(1));
+      expect(receivedEvents[0].content, contains('key1'));
+
+      await streamSubscription.cancel();
+      await ndk.requests.closeSubscription(subscription.requestId);
       await ndk.destroy();
       expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
       await relay1.stopServer();
