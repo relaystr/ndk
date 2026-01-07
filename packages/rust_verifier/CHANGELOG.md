@@ -1,3 +1,8 @@
+## 0.4.2-dev.6
+
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+
 ## 0.4.2-dev.5
 
  - **FIX**: clean imports.

@@ -1,3 +1,8 @@
+## 0.2.3-dev.6
+
+ - **FIX**: clean imports.
+ - **FEAT**: log color, params.
+
 ## 0.2.3-dev.5
 
  - **FIX**: clean imports.
