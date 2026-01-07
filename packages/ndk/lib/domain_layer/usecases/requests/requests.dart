@@ -307,10 +307,11 @@ class Requests {
         int until;
 
         if (relayEvents != null && relayEvents.isNotEmpty) {
-          // Use actual event timestamps
+          // Use oldest event timestamp for since, filter.until or now for until
+          // EOSE means relay has no more events, so coverage extends to query end
           final timestamps = relayEvents.map((e) => e.createdAt).toList();
           since = timestamps.reduce((a, b) => a < b ? a : b);
-          until = timestamps.reduce((a, b) => a > b ? a : b);
+          until = filter.until ?? now;
         } else if (filter.since != null || filter.until != null) {
           // No events but filter has explicit bounds
           since = filter.since ?? 0;

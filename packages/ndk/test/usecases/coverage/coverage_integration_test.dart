@@ -74,11 +74,12 @@ void main() async {
       expect(relayCoverage.ranges.isNotEmpty, isTrue,
           reason: 'Should have at least one range');
 
-      // Coverage should be based on the event's createdAt (150)
+      // Coverage since should be based on the event's createdAt (150)
+      // Coverage until should extend to now (no filter.until specified)
       expect(relayCoverage.ranges.first.since, equals(150),
-          reason: 'Range since should match event timestamp');
-      expect(relayCoverage.ranges.first.until, equals(150),
-          reason: 'Range until should match event timestamp (single event)');
+          reason: 'Range since should match oldest event timestamp');
+      expect(relayCoverage.ranges.first.until, greaterThan(150),
+          reason: 'Range until should extend to now (EOSE means no newer events)');
 
       await relay1.stopServer();
       await ndk.destroy();
@@ -126,11 +127,12 @@ void main() async {
       expect(coverage.containsKey(relay1.url), isTrue);
 
       final relayCoverage = coverage[relay1.url]!;
-      // Coverage should be 500-500 (the actual event), NOT 100-1000
+      // Coverage since should be event timestamp (500), not filter.since (100)
+      // Coverage until should be filter.until (1000) since EOSE confirms no newer events
       expect(relayCoverage.ranges.first.since, equals(500),
-          reason: 'Coverage should reflect event timestamp, not filter since');
-      expect(relayCoverage.ranges.first.until, equals(500),
-          reason: 'Coverage should reflect event timestamp, not filter until');
+          reason: 'Coverage since should reflect oldest event timestamp');
+      expect(relayCoverage.ranges.first.until, equals(1000),
+          reason: 'Coverage until should be filter.until (EOSE confirms coverage)');
 
       await relay1.stopServer();
       await ndk.destroy();
@@ -224,9 +226,9 @@ void main() async {
       expect(coverage.containsKey(relay1.url), isTrue);
 
       final relayCoverage = coverage[relay1.url]!;
-      // With single event at timestamp 100
+      // since = oldest event timestamp, until = now (no filter.until)
       expect(relayCoverage.ranges.first.since, equals(100));
-      expect(relayCoverage.ranges.first.until, equals(100));
+      expect(relayCoverage.ranges.first.until, greaterThan(100));
 
       await relay1.stopServer();
       await ndk.destroy();
