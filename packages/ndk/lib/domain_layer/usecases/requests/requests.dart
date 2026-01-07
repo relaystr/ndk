@@ -274,13 +274,16 @@ class Requests {
   }
 
   /// Records coverage for each relay that received EOSE
-  /// Uses actual event timestamps to determine coverage range
+  /// - If events received: use min/max of event timestamps
+  /// - If no events + filter has since/until: use filter bounds
+  /// - If no events + no bounds: use 0 to now
   void _recordCoverage(RequestState state) {
     if (_coverage == null) return;
 
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
     // Get all events from the replay subject
     final events = state.controller.values.toList();
-    if (events.isEmpty) return;
 
     // Group events by source relay
     final eventsByRelay = <String, List<Nip01Event>>{};
@@ -297,15 +300,27 @@ class Requests {
       if (!relayState.receivedEOSE) continue;
 
       final relayEvents = eventsByRelay[relayUrl];
-      if (relayEvents == null || relayEvents.isEmpty) continue;
-
-      // Calculate min/max timestamps from actual events
-      final timestamps = relayEvents.map((e) => e.createdAt).toList();
-      final since = timestamps.reduce((a, b) => a < b ? a : b);
-      final until = timestamps.reduce((a, b) => a > b ? a : b);
 
       // Record coverage for each filter sent to this relay
       for (final filter in relayState.filters) {
+        int since;
+        int until;
+
+        if (relayEvents != null && relayEvents.isNotEmpty) {
+          // Use actual event timestamps
+          final timestamps = relayEvents.map((e) => e.createdAt).toList();
+          since = timestamps.reduce((a, b) => a < b ? a : b);
+          until = timestamps.reduce((a, b) => a > b ? a : b);
+        } else if (filter.since != null || filter.until != null) {
+          // No events but filter has explicit bounds
+          since = filter.since ?? 0;
+          until = filter.until ?? now;
+        } else {
+          // No events, no bounds - relay has nothing, record 0 to now
+          since = 0;
+          until = now;
+        }
+
         _coverage!.addRange(
           filter: filter,
           relayUrl: relayUrl,

@@ -101,7 +101,6 @@ class Coverage {
     required int until,
   }) async {
     final filterHash = FilterFingerprint.generate(filter);
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     // Load existing records for this filter/relay
     final existingRecords = await _cacheManager
@@ -112,20 +111,14 @@ class Coverage {
         .map((r) => TimeRange(
               since: r.rangeStart,
               until: r.rangeEnd,
-              fetchedAt: r.fetchedAt,
             ))
         .toList();
 
     // Add the new range
-    ranges.add(TimeRange(since: since, until: until, fetchedAt: now));
+    ranges.add(TimeRange(since: since, until: until));
 
     // Merge overlapping/adjacent ranges
     final mergedRanges = _mergeRanges(ranges);
-
-    // Check if any existing record had reachedOldest
-    final reachedOldestRecord = existingRecords
-        .where((r) => r.reachedOldest)
-        .fold<FilterCoverageRecord?>(null, (prev, r) => r);
 
     // Delete old records for this filter/relay and save merged ones
     await _cacheManager.removeFilterCoverageRecordsByFilterAndRelay(
@@ -137,46 +130,10 @@ class Coverage {
         relayUrl: relayUrl,
         rangeStart: range.since,
         rangeEnd: range.until,
-        fetchedAt: range.fetchedAt,
-        reachedOldest: reachedOldestRecord?.reachedOldest ?? false,
-        reachedOldestAt: reachedOldestRecord?.reachedOldestAt,
       );
     }).toList();
 
     await _cacheManager.saveFilterCoverageRecords(newRecords);
-  }
-
-  /// Mark that we've reached the oldest data for a filter/relay
-  Future<void> markReachedOldest({
-    required Filter filter,
-    required String relayUrl,
-  }) async {
-    final filterHash = FilterFingerprint.generate(filter);
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    final existingRecords = await _cacheManager
-        .loadFilterCoverageRecordsByRelay(filterHash, relayUrl);
-
-    if (existingRecords.isEmpty) return;
-
-    // Update all records for this filter/relay with reachedOldest
-    final updatedRecords = existingRecords.map((r) {
-      return FilterCoverageRecord(
-        filterHash: r.filterHash,
-        relayUrl: r.relayUrl,
-        rangeStart: r.rangeStart,
-        rangeEnd: r.rangeEnd,
-        fetchedAt: r.fetchedAt,
-        reachedOldest: true,
-        reachedOldestAt: now,
-      );
-    }).toList();
-
-    // Remove old and save updated
-    for (final record in existingRecords) {
-      await _cacheManager.removeFilterCoverageRecords(record.filterHash);
-    }
-    await _cacheManager.saveFilterCoverageRecords(updatedRecords);
   }
 
   /// Clear coverage for a specific filter
@@ -229,20 +186,14 @@ class Coverage {
         .map((r) => TimeRange(
               since: r.rangeStart,
               until: r.rangeEnd,
-              fetchedAt: r.fetchedAt,
             ))
         .toList()
       ..sort((a, b) => a.since.compareTo(b.since));
-
-    // Check if any record has reachedOldest
-    final reachedOldestRecord =
-        records.where((r) => r.reachedOldest).firstOrNull;
 
     return RelayCoverage(
       relayUrl: relayUrl,
       filter: filter,
       ranges: ranges,
-      reachedOldestAt: reachedOldestRecord?.reachedOldestAt,
     );
   }
 

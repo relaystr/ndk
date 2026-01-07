@@ -12,13 +12,9 @@ class TimeRange {
   /// End timestamp (inclusive)
   final int until;
 
-  /// When this range was fetched
-  final int fetchedAt;
-
   const TimeRange({
     required this.since,
     required this.until,
-    required this.fetchedAt,
   });
 
   /// Check if this range overlaps or is adjacent to another range
@@ -32,7 +28,6 @@ class TimeRange {
     return TimeRange(
       since: min(since, other.since),
       until: max(until, other.until),
-      fetchedAt: max(fetchedAt, other.fetchedAt),
     );
   }
 
@@ -47,29 +42,24 @@ class TimeRange {
   }
 
   @override
-  String toString() => 'TimeRange($since - $until, fetchedAt: $fetchedAt)';
+  String toString() => 'TimeRange($since - $until)';
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TimeRange &&
-          since == other.since &&
-          until == other.until &&
-          fetchedAt == other.fetchedAt;
+      other is TimeRange && since == other.since && until == other.until;
 
   @override
-  int get hashCode => since.hashCode ^ until.hashCode ^ fetchedAt.hashCode;
+  int get hashCode => since.hashCode ^ until.hashCode;
 
   Map<String, dynamic> toJson() => {
         'since': since,
         'until': until,
-        'fetchedAt': fetchedAt,
       };
 
   factory TimeRange.fromJson(Map<String, dynamic> json) => TimeRange(
         since: json['since'] as int,
         until: json['until'] as int,
-        fetchedAt: json['fetchedAt'] as int,
       );
 }
 
@@ -94,23 +84,21 @@ class RelayCoverage {
   final String relayUrl;
   final Filter filter;
   final List<TimeRange> ranges;
-  final int? reachedOldestAt;
 
   const RelayCoverage({
     required this.relayUrl,
     required this.filter,
     required this.ranges,
-    this.reachedOldestAt,
   });
-
-  /// Whether we've confirmed there's no older data on this relay
-  bool get reachedOldest => reachedOldestAt != null;
 
   /// Oldest timestamp we have data for (start of first range)
   int? get oldest {
     if (ranges.isEmpty) return null;
     return ranges.map((r) => r.since).reduce(min);
   }
+
+  /// Whether we've confirmed there's no older data on this relay
+  bool get reachedOldest => oldest == 0;
 
   /// Newest timestamp we have data for (end of last range)
   int? get newest {
@@ -121,7 +109,7 @@ class RelayCoverage {
   /// Calculate gaps between ranges for a given time period
   List<TimeRange> findGaps(int since, int until) {
     if (ranges.isEmpty) {
-      return [TimeRange(since: since, until: until, fetchedAt: 0)];
+      return [TimeRange(since: since, until: until)];
     }
 
     // Sort ranges by since
@@ -142,7 +130,6 @@ class RelayCoverage {
         gaps.add(TimeRange(
           since: currentPos,
           until: min(range.since - 1, until),
-          fetchedAt: 0,
         ));
       }
 
@@ -155,7 +142,6 @@ class RelayCoverage {
       gaps.add(TimeRange(
         since: currentPos,
         until: until,
-        fetchedAt: 0,
       ));
     }
 
@@ -192,23 +178,11 @@ class FilterCoverageRecord {
   /// End of the covered range
   final int rangeEnd;
 
-  /// When this range was fetched
-  final int fetchedAt;
-
-  /// Whether we've reached the oldest data on this relay for this filter
-  final bool reachedOldest;
-
-  /// When we determined reachedOldest (null if not reached)
-  final int? reachedOldestAt;
-
   const FilterCoverageRecord({
     required this.filterHash,
     required this.relayUrl,
     required this.rangeStart,
     required this.rangeEnd,
-    required this.fetchedAt,
-    this.reachedOldest = false,
-    this.reachedOldestAt,
   });
 
   /// Create a unique key for this record
@@ -223,9 +197,6 @@ class FilterCoverageRecord {
         'relayUrl': relayUrl,
         'rangeStart': rangeStart,
         'rangeEnd': rangeEnd,
-        'fetchedAt': fetchedAt,
-        'reachedOldest': reachedOldest,
-        'reachedOldestAt': reachedOldestAt,
       };
 
   factory FilterCoverageRecord.fromJson(Map<String, dynamic> json) =>
@@ -234,9 +205,6 @@ class FilterCoverageRecord {
         relayUrl: json['relayUrl'] as String,
         rangeStart: json['rangeStart'] as int,
         rangeEnd: json['rangeEnd'] as int,
-        fetchedAt: json['fetchedAt'] as int,
-        reachedOldest: json['reachedOldest'] as bool? ?? false,
-        reachedOldestAt: json['reachedOldestAt'] as int?,
       );
 }
 

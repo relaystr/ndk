@@ -136,7 +136,7 @@ void main() async {
       await ndk.destroy();
     });
 
-    test('no coverage recorded when no events received',
+    test('coverage recorded with filter bounds when no events received',
         timeout: const Timeout(Duration(seconds: 5)), () async {
       // Empty - no events
       Map<KeyPair, Nip01Event> textNotes = {};
@@ -160,6 +160,7 @@ void main() async {
 
       await ndk.relays.seedRelaysConnected;
 
+      // Filter with explicit bounds
       final filter = Filter(
         kinds: [Nip01Event.kTextNodeKind],
         authors: [key1.publicKey],
@@ -173,9 +174,13 @@ void main() async {
 
       final coverage = await ndk.coverage.getForFilter(filter);
 
-      // No events = no coverage recorded
-      expect(coverage.isEmpty, isTrue,
-          reason: 'No coverage should be recorded when no events received');
+      // No events but filter has bounds = coverage recorded with filter bounds
+      expect(coverage.containsKey(relay1.url), isTrue,
+          reason: 'Coverage should be recorded using filter bounds');
+
+      final relayCoverage = coverage[relay1.url]!;
+      expect(relayCoverage.ranges.first.since, equals(100));
+      expect(relayCoverage.ranges.first.until, equals(200));
 
       await relay1.stopServer();
       await ndk.destroy();

@@ -259,8 +259,23 @@ void main() {
     });
   });
 
-  group('Coverage.markReachedOldest', () {
-    test('marks filter/relay as reached oldest', () async {
+  group('Coverage.reachedOldest', () {
+    test('reachedOldest is true when oldest is 0', () async {
+      final filter = Filter(kinds: [1], authors: ['pubkey1']);
+
+      await coverage.addRange(
+        filter: filter,
+        relayUrl: 'wss://relay.example.com',
+        since: 0,
+        until: 200,
+      );
+
+      final result = await coverage.getForFilter(filter);
+
+      expect(result['wss://relay.example.com']!.reachedOldest, isTrue);
+    });
+
+    test('reachedOldest is false when oldest is not 0', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
       await coverage.addRange(
@@ -270,15 +285,9 @@ void main() {
         until: 200,
       );
 
-      await coverage.markReachedOldest(
-        filter: filter,
-        relayUrl: 'wss://relay.example.com',
-      );
-
       final result = await coverage.getForFilter(filter);
 
-      expect(result['wss://relay.example.com']!.reachedOldest, isTrue);
-      expect(result['wss://relay.example.com']!.reachedOldestAt, isNotNull);
+      expect(result['wss://relay.example.com']!.reachedOldest, isFalse);
     });
   });
 

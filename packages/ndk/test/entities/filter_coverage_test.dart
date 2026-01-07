@@ -7,51 +7,48 @@ void main() {
       final range = TimeRange(
         since: 1704067200,
         until: 1704153600,
-        fetchedAt: 1704160000,
       );
 
       expect(range.since, 1704067200);
       expect(range.until, 1704153600);
-      expect(range.fetchedAt, 1704160000);
     });
 
     test('canMergeWith detects overlapping ranges', () {
-      final range1 = TimeRange(since: 100, until: 200, fetchedAt: 1000);
-      final range2 = TimeRange(since: 150, until: 250, fetchedAt: 1000);
+      final range1 = TimeRange(since: 100, until: 200);
+      final range2 = TimeRange(since: 150, until: 250);
 
       expect(range1.canMergeWith(range2), isTrue);
       expect(range2.canMergeWith(range1), isTrue);
     });
 
     test('canMergeWith detects adjacent ranges', () {
-      final range1 = TimeRange(since: 100, until: 200, fetchedAt: 1000);
-      final range2 = TimeRange(since: 201, until: 300, fetchedAt: 1000);
+      final range1 = TimeRange(since: 100, until: 200);
+      final range2 = TimeRange(since: 201, until: 300);
 
       expect(range1.canMergeWith(range2), isTrue);
       expect(range2.canMergeWith(range1), isTrue);
     });
 
     test('canMergeWith returns false for non-adjacent ranges', () {
-      final range1 = TimeRange(since: 100, until: 200, fetchedAt: 1000);
-      final range2 = TimeRange(since: 300, until: 400, fetchedAt: 1000);
+      final range1 = TimeRange(since: 100, until: 200);
+      final range2 = TimeRange(since: 300, until: 400);
 
       expect(range1.canMergeWith(range2), isFalse);
       expect(range2.canMergeWith(range1), isFalse);
     });
 
     test('mergeWith combines ranges correctly', () {
-      final range1 = TimeRange(since: 100, until: 200, fetchedAt: 1000);
-      final range2 = TimeRange(since: 150, until: 300, fetchedAt: 2000);
+      final range1 = TimeRange(since: 100, until: 200);
+      final range2 = TimeRange(since: 150, until: 300);
 
       final merged = range1.mergeWith(range2);
 
       expect(merged.since, 100);
       expect(merged.until, 300);
-      expect(merged.fetchedAt, 2000); // Takes the most recent fetchedAt
     });
 
     test('contains checks if range fully contains a period', () {
-      final range = TimeRange(since: 100, until: 300, fetchedAt: 1000);
+      final range = TimeRange(since: 100, until: 300);
 
       expect(range.contains(150, 250), isTrue);
       expect(range.contains(100, 300), isTrue);
@@ -60,7 +57,7 @@ void main() {
     });
 
     test('overlaps checks if range overlaps with a period', () {
-      final range = TimeRange(since: 100, until: 300, fetchedAt: 1000);
+      final range = TimeRange(since: 100, until: 300);
 
       expect(range.overlaps(150, 250), isTrue);
       expect(range.overlaps(50, 150), isTrue);
@@ -73,7 +70,6 @@ void main() {
       final range = TimeRange(
         since: 1704067200,
         until: 1704153600,
-        fetchedAt: 1704160000,
       );
 
       final json = range.toJson();
@@ -81,13 +77,12 @@ void main() {
 
       expect(restored.since, range.since);
       expect(restored.until, range.until);
-      expect(restored.fetchedAt, range.fetchedAt);
     });
 
     test('equality works correctly', () {
-      final range1 = TimeRange(since: 100, until: 200, fetchedAt: 1000);
-      final range2 = TimeRange(since: 100, until: 200, fetchedAt: 1000);
-      final range3 = TimeRange(since: 100, until: 300, fetchedAt: 1000);
+      final range1 = TimeRange(since: 100, until: 200);
+      final range2 = TimeRange(since: 100, until: 200);
+      final range3 = TimeRange(since: 100, until: 300);
 
       expect(range1, equals(range2));
       expect(range1, isNot(equals(range3)));
@@ -100,9 +95,9 @@ void main() {
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
-          TimeRange(since: 200, until: 300, fetchedAt: 1000),
-          TimeRange(since: 100, until: 150, fetchedAt: 1000),
-          TimeRange(since: 500, until: 600, fetchedAt: 1000),
+          TimeRange(since: 200, until: 300),
+          TimeRange(since: 100, until: 150),
+          TimeRange(since: 500, until: 600),
         ],
       );
 
@@ -121,19 +116,21 @@ void main() {
       expect(coverage.newest, isNull);
     });
 
-    test('reachedOldest getter works correctly', () {
+    test('reachedOldest is true when oldest is 0', () {
       final coverageNotReached = RelayCoverage(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
-        ranges: [],
-        reachedOldestAt: null,
+        ranges: [
+          TimeRange(since: 100, until: 500),
+        ],
       );
 
       final coverageReached = RelayCoverage(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
-        ranges: [],
-        reachedOldestAt: 1704160000,
+        ranges: [
+          TimeRange(since: 0, until: 500),
+        ],
       );
 
       expect(coverageNotReached.reachedOldest, isFalse);
@@ -159,7 +156,7 @@ void main() {
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
-          TimeRange(since: 200, until: 300, fetchedAt: 1000),
+          TimeRange(since: 200, until: 300),
         ],
       );
 
@@ -180,8 +177,8 @@ void main() {
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
-          TimeRange(since: 100, until: 150, fetchedAt: 1000),
-          TimeRange(since: 300, until: 400, fetchedAt: 1000),
+          TimeRange(since: 100, until: 150),
+          TimeRange(since: 300, until: 400),
         ],
       );
 
@@ -201,7 +198,7 @@ void main() {
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
-          TimeRange(since: 100, until: 500, fetchedAt: 1000),
+          TimeRange(since: 100, until: 500),
         ],
       );
 
@@ -215,7 +212,7 @@ void main() {
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
-          TimeRange(since: 200, until: 300, fetchedAt: 1000),
+          TimeRange(since: 200, until: 300),
         ],
       );
 
@@ -235,18 +232,12 @@ void main() {
         relayUrl: 'wss://relay.example.com',
         rangeStart: 1704067200,
         rangeEnd: 1704153600,
-        fetchedAt: 1704160000,
-        reachedOldest: true,
-        reachedOldestAt: 1704160000,
       );
 
       expect(record.filterHash, 'abc123');
       expect(record.relayUrl, 'wss://relay.example.com');
       expect(record.rangeStart, 1704067200);
       expect(record.rangeEnd, 1704153600);
-      expect(record.fetchedAt, 1704160000);
-      expect(record.reachedOldest, isTrue);
-      expect(record.reachedOldestAt, 1704160000);
     });
 
     test('key is generated correctly', () {
@@ -255,7 +246,6 @@ void main() {
         relayUrl: 'wss://relay.example.com',
         rangeStart: 1704067200,
         rangeEnd: 1704153600,
-        fetchedAt: 1704160000,
       );
 
       expect(record.key, 'abc123:wss://relay.example.com:1704067200');
@@ -267,9 +257,6 @@ void main() {
         relayUrl: 'wss://relay.example.com',
         rangeStart: 1704067200,
         rangeEnd: 1704153600,
-        fetchedAt: 1704160000,
-        reachedOldest: true,
-        reachedOldestAt: 1704155000,
       );
 
       final json = record.toJson();
@@ -279,9 +266,6 @@ void main() {
       expect(restored.relayUrl, record.relayUrl);
       expect(restored.rangeStart, record.rangeStart);
       expect(restored.rangeEnd, record.rangeEnd);
-      expect(restored.fetchedAt, record.fetchedAt);
-      expect(restored.reachedOldest, record.reachedOldest);
-      expect(restored.reachedOldestAt, record.reachedOldestAt);
     });
   });
 
