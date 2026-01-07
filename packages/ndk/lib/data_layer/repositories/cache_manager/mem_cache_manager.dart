@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import '../../../domain_layer/entities/contact_list.dart';
+import '../../../domain_layer/entities/filter_coverage.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
@@ -29,6 +30,10 @@ class MemCacheManager implements CacheManager {
 
   /// In memory storage
   Map<String, Nip01Event> events = {};
+
+  /// In memory storage for filter coverage records
+  /// Key is filterHash:relayUrl:rangeStart
+  Map<String, FilterCoverageRecord> filterCoverageRecords = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -296,5 +301,63 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> close() async {
     return;
+  }
+
+  // =====================
+  // Filter Coverage
+  // =====================
+
+  @override
+  Future<void> saveFilterCoverageRecord(FilterCoverageRecord record) async {
+    filterCoverageRecords[record.key] = record;
+  }
+
+  @override
+  Future<void> saveFilterCoverageRecords(
+      List<FilterCoverageRecord> records) async {
+    for (final record in records) {
+      filterCoverageRecords[record.key] = record;
+    }
+  }
+
+  @override
+  Future<List<FilterCoverageRecord>> loadFilterCoverageRecords(
+      String filterHash) async {
+    return filterCoverageRecords.values
+        .where((r) => r.filterHash == filterHash)
+        .toList();
+  }
+
+  @override
+  Future<List<FilterCoverageRecord>> loadFilterCoverageRecordsByRelay(
+      String filterHash, String relayUrl) async {
+    return filterCoverageRecords.values
+        .where((r) => r.filterHash == filterHash && r.relayUrl == relayUrl)
+        .toList();
+  }
+
+  @override
+  Future<List<FilterCoverageRecord>> loadFilterCoverageRecordsByRelayUrl(
+      String relayUrl) async {
+    return filterCoverageRecords.values
+        .where((r) => r.relayUrl == relayUrl)
+        .toList();
+  }
+
+  @override
+  Future<void> removeFilterCoverageRecords(String filterHash) async {
+    filterCoverageRecords
+        .removeWhere((key, value) => value.filterHash == filterHash);
+  }
+
+  @override
+  Future<void> removeFilterCoverageRecordsByRelay(String relayUrl) async {
+    filterCoverageRecords
+        .removeWhere((key, value) => value.relayUrl == relayUrl);
+  }
+
+  @override
+  Future<void> removeAllFilterCoverageRecords() async {
+    filterCoverageRecords.clear();
   }
 }

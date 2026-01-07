@@ -15,6 +15,7 @@ import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
+import '../domain_layer/usecases/coverage/coverage.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
@@ -79,6 +80,7 @@ class Initialization {
   late Search search;
   late GiftWrap giftWrap;
   late Connectivy connectivity;
+  late Coverage coverage;
 
   late VerifyNip05 verifyNip05;
 
@@ -237,6 +239,10 @@ class Initialization {
     search = Search(
       cacheManager: _ndkConfig.cache,
       requests: requests,
+    );
+
+    coverage = Coverage(
+      cacheManager: _ndkConfig.cache,
     );
 
     giftWrap = GiftWrap(accounts: accounts);

@@ -1,4 +1,5 @@
 import '../entities/contact_list.dart';
+import '../entities/filter_coverage.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
@@ -79,4 +80,35 @@ abstract class CacheManager {
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
+
+  // =====================
+  // Filter Coverage
+  // =====================
+
+  /// Save a filter coverage record
+  Future<void> saveFilterCoverageRecord(FilterCoverageRecord record);
+
+  /// Save multiple filter coverage records
+  Future<void> saveFilterCoverageRecords(List<FilterCoverageRecord> records);
+
+  /// Load all coverage records for a filter hash
+  Future<List<FilterCoverageRecord>> loadFilterCoverageRecords(
+      String filterHash);
+
+  /// Load all coverage records for a filter hash and relay
+  Future<List<FilterCoverageRecord>> loadFilterCoverageRecordsByRelay(
+      String filterHash, String relayUrl);
+
+  /// Load all coverage records for a relay (all filters)
+  Future<List<FilterCoverageRecord>> loadFilterCoverageRecordsByRelayUrl(
+      String relayUrl);
+
+  /// Remove all coverage records for a filter hash
+  Future<void> removeFilterCoverageRecords(String filterHash);
+
+  /// Remove all coverage records for a relay
+  Future<void> removeFilterCoverageRecordsByRelay(String relayUrl);
+
+  /// Remove all filter coverage records
+  Future<void> removeAllFilterCoverageRecords();
 }

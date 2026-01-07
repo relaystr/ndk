@@ -7,6 +7,7 @@ import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
+import '../domain_layer/usecases/coverage/coverage.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
@@ -146,6 +147,10 @@ class Ndk {
   /// Search
   @experimental
   Search get search => _initialization.search;
+
+  /// Filter coverage tracking
+  /// Track which time ranges have been fetched from which relays for each filter
+  Coverage get coverage => _initialization.coverage;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
