@@ -7,6 +7,7 @@ import '../../entities/event_filter.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
+import '../../entities/nip_01_event.dart';
 import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/request_response.dart';
@@ -273,10 +274,21 @@ class Requests {
   }
 
   /// Records coverage for each relay that received EOSE
+  /// Uses actual event timestamps to determine coverage range
   void _recordCoverage(RequestState state) {
     if (_coverage == null) return;
 
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    // Get all events from the replay subject
+    final events = state.controller.values.toList();
+    if (events.isEmpty) return;
+
+    // Group events by source relay
+    final eventsByRelay = <String, List<Nip01Event>>{};
+    for (final event in events) {
+      for (final source in event.sources) {
+        eventsByRelay.putIfAbsent(source, () => []).add(event);
+      }
+    }
 
     for (final entry in state.requests.entries) {
       final relayUrl = entry.key;
@@ -284,11 +296,16 @@ class Requests {
 
       if (!relayState.receivedEOSE) continue;
 
+      final relayEvents = eventsByRelay[relayUrl];
+      if (relayEvents == null || relayEvents.isEmpty) continue;
+
+      // Calculate min/max timestamps from actual events
+      final timestamps = relayEvents.map((e) => e.createdAt).toList();
+      final since = timestamps.reduce((a, b) => a < b ? a : b);
+      final until = timestamps.reduce((a, b) => a > b ? a : b);
+
       // Record coverage for each filter sent to this relay
       for (final filter in relayState.filters) {
-        final since = filter.since ?? 0;
-        final until = filter.until ?? now;
-
         _coverage!.addRange(
           filter: filter,
           relayUrl: relayUrl,
