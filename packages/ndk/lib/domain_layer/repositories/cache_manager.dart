@@ -5,6 +5,57 @@ import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
 
+/// Abstract interface for cache manager implementations.
+///
+/// This class defines the contract that all cache manager implementations must
+/// follow. Implementations can use any storage backend (e.g., SQLite, Isar,
+/// Sembast, ObjectBox, in-memory) as long as they implement all required methods.
+///
+/// ## Implementing a CacheManager
+///
+/// To create a custom cache manager:
+///
+/// 1. Extend this abstract class
+/// 2. Implement all required methods
+/// 3. Test your implementation using the shared test suite
+///
+/// ## Testing Your Implementation
+///
+/// NDK provides a shared test suite to validate your implementation:
+///
+/// ```dart
+/// import 'package:ndk/cache_manager_test_suite.dart';
+///
+/// void main() {
+///   runCacheManagerTestSuite(
+///     name: 'MyCacheManager',
+///     createCacheManager: () async {
+///       final cacheManager = MyCacheManager();
+///       await cacheManager.init(); // if needed
+///       return cacheManager;
+///     },
+///     cleanUp: (cacheManager) async {
+///       await cacheManager.close();
+///     },
+///   );
+/// }
+/// ```
+///
+/// The test suite will verify that your implementation correctly handles:
+/// - Event CRUD operations and filtering
+/// - Metadata storage and search
+/// - Contact list management
+/// - NIP-05 verification data
+/// - User relay lists
+/// - Relay sets
+///
+/// ## Example Implementations
+///
+/// See the following packages for reference implementations:
+/// - `ndk` package: [MemCacheManager] (in-memory)
+/// - `ndk_isar` package: [IsarCacheManager]
+/// - `sembast_cache_manager` package: [SembastCacheManager]
+/// - `ndk_objectbox` package: [DbObjectBox]
 abstract class CacheManager {
   /// closes the cache manger \
   /// used to close the db
