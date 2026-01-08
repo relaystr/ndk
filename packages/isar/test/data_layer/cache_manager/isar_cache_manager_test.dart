@@ -296,17 +296,17 @@ void main() async {
     await cacheManager.saveEvents([event11, event12]);
 
     List<Nip01Event>? loadedEventsPubkey1 = await cacheManager.loadEvents(
-        kinds: [1, 2], pubKeys: [pubKey1, "dupaupa"], pTag: pubKey1);
+        kinds: [1, 2], pubKeys: [pubKey1, "dupaupa"], tags: {'p': [pubKey1]});
     expect(loadedEventsPubkey1.length, 1);
     expect(loadedEventsPubkey1.first.pTags, event11.pTags);
 
     List<Nip01Event>? loadedEventsPubkey2 =
-        await cacheManager.loadEvents(pTag: pubKey2);
+        await cacheManager.loadEvents(tags: {'p': [pubKey2]});
     expect(loadedEventsPubkey2.length, 1);
     expect(loadedEventsPubkey2.first.pTags, event12.pTags);
 
     List<Nip01Event>? loadedEventsPubkey2AndKind1 =
-        await cacheManager.loadEvents(kinds: [1, 2], pTag: pubKey1);
+        await cacheManager.loadEvents(kinds: [1, 2], tags: {'p': [pubKey1]});
     expect(loadedEventsPubkey2AndKind1.length, 1);
     expect(loadedEventsPubkey2AndKind1.first.pTags, event11.pTags);
     expect(loadedEventsPubkey2AndKind1.first.kind, 1);

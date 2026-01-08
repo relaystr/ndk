@@ -13,12 +13,24 @@ abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Future<Nip01Event?> loadEvent(String id);
+  /// Load events from cache with flexible filtering \
+  /// [ids] - list of event ids \
+  /// [pubKeys] - list of authors pubKeys \
+  /// [kinds] - list of kinds \
+  /// [tags] - map of tags (e.g. {'p': ['pubkey1'], 'e': ['eventid1']}) \
+  /// [since] - timestamp \
+  /// [until] - timestamp \
+  /// [search] - search string to match against content \
+  /// [limit] - limit of results \
+  /// returns list of events
   Future<List<Nip01Event>> loadEvents({
-    List<String> pubKeys,
-    List<int> kinds,
-    String? pTag,
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
     int? since,
     int? until,
+    String? search,
     int? limit,
   });
   Future<void> removeEvent(String id);
@@ -62,6 +74,7 @@ abstract class CacheManager {
   /// [search] - search string to match against content \
   /// [limit] - limit of results \
   /// returns list of events
+  @Deprecated('Use loadEvents() instead')
   Future<Iterable<Nip01Event>> searchEvents({
     List<String>? ids,
     List<String>? authors,

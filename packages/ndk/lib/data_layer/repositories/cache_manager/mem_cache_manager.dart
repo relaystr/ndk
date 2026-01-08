@@ -207,6 +207,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  @Deprecated('Use loadEvents() instead')
   Future<Iterable<Nip01Event>> searchEvents({
     List<String>? ids,
     List<String>? authors,
@@ -217,7 +218,16 @@ class MemCacheManager implements CacheManager {
     String? search,
     int limit = 100,
   }) async {
-    throw UnimplementedError();
+    return loadEvents(
+      ids: ids,
+      pubKeys: authors,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+    );
   }
 
   @override
@@ -227,31 +237,67 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<Nip01Event>> loadEvents({
+    List<String>? ids,
     List<String>? pubKeys,
     List<int>? kinds,
-    String? pTag,
+    Map<String, List<String>>? tags,
     int? since,
     int? until,
+    String? search,
     int? limit,
   }) async {
     List<Nip01Event> result = [];
     for (var event in events.values) {
-      if (pubKeys != null && !pubKeys.contains(event.pubKey)) {
+      // Filter by ids
+      if (ids != null && ids.isNotEmpty && !ids.contains(event.id)) {
         continue;
       }
-      if (kinds != null && !kinds.contains(event.kind)) {
+      // Filter by pubKeys
+      if (pubKeys != null && pubKeys.isNotEmpty && !pubKeys.contains(event.pubKey)) {
         continue;
       }
-      if (pTag != null && !event.pTags.contains(pTag)) {
+      // Filter by kinds
+      if (kinds != null && kinds.isNotEmpty && !kinds.contains(event.kind)) {
         continue;
       }
-
+      // Filter by time range
       if (since != null && event.createdAt < since) {
         continue;
       }
-
       if (until != null && event.createdAt > until) {
         continue;
+      }
+      // Filter by search in content
+      if (search != null && search.isNotEmpty) {
+        if (!event.content.toLowerCase().contains(search.toLowerCase())) {
+          continue;
+        }
+      }
+      // Filter by tags
+      if (tags != null && tags.isNotEmpty) {
+        bool matchesTags = tags.entries.every((tagEntry) {
+          String tagKey = tagEntry.key;
+          List<String> tagValues = tagEntry.value;
+
+          // Handle the special case where tag key starts with '#'
+          if (tagKey.startsWith('#') && tagKey.length > 1) {
+            tagKey = tagKey.substring(1);
+          }
+
+          final eventTagValues = event.getTags(tagKey);
+
+          if (tagValues.isEmpty &&
+              event.tags.where((e) => e[0] == tagKey).isNotEmpty) {
+            return true;
+          }
+
+          return tagValues.any((value) =>
+              eventTagValues.contains(value) ||
+              eventTagValues.contains(value.toLowerCase()));
+        });
+        if (!matchesTags) {
+          continue;
+        }
       }
 
       result.add(event);
