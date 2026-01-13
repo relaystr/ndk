@@ -29,3 +29,9 @@ dev_dependencies:
   mockito: ^5.4.6
   objectbox_generator: ^5.0.0
   test: any
+  flutter_test:
+    sdk: flutter
+
+dependency_overrides:
+  ndk:
+    path: ../ndk
