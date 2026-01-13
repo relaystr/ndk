@@ -10,6 +10,7 @@ import '../../shared/helpers/relay_helper.dart';
 import '../../shared/isolates/isolate_manager.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
+import '../entities/account.dart';
 import '../entities/broadcast_state.dart';
 import '../entities/connection_source.dart';
 import '../entities/filter.dart';
@@ -39,6 +40,9 @@ class RelayManager<T> {
 
   /// signer for nip-42 AUTH challenges from relays
   final Accounts? _accounts;
+
+  /// stores the last AUTH challenge per relay for late authentication
+  final Map<String, String> _lastChallengePerRelay = {};
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -484,22 +488,39 @@ class RelayManager<T> {
     if (nostrMsg.type == NostrMessageRawType.auth) {
       final eventJson = nostrMsg.otherData;
       // nip 42 used to send authentication challenges
+      // NIP-42 allows multiple AUTH events for different pubkeys on the same connection
       final challenge = eventJson[1];
-      Logger.log.d("AUTH: $challenge");
-      if (_accounts != null && _accounts.canSign) {
-        final auth =
-            AuthEvent(pubKey: _accounts.getLoggedAccount()!.pubkey, tags: [
-          ["relay", relayConnectivity.url],
-          ["challenge", challenge]
-        ]);
-        _accounts.sign(auth).then((signedEvent) {
-          send(relayConnectivity,
-              ClientMsg(ClientMsgType.kAuth, event: signedEvent));
-        });
-      } else {
-        Logger.log
-            .w("Received an AUTH challenge but don't have a signer configured");
+      Logger.log.d("AUTH challenge from ${relayConnectivity.url}: $challenge");
+
+      // Store challenge for late authentication
+      _lastChallengePerRelay[relayConnectivity.url] = challenge;
+
+      if (_accounts == null) {
+        Logger.log.w("Received an AUTH challenge but no accounts configured");
+        return;
       }
+
+      // Collect accounts from active requests on this relay
+      final accountsToAuth = <Account>{};
+      for (final state in globalState.inFlightRequests.values) {
+        final hasRequestOnThisRelay =
+            state.requests.keys.contains(relayConnectivity.url);
+        if (hasRequestOnThisRelay && state.request.authenticateAs != null) {
+          accountsToAuth.addAll(state.request.authenticateAs!);
+        }
+      }
+
+      // Fallback to logged account if no authenticateAs specified
+      if (accountsToAuth.isEmpty && _accounts.getLoggedAccount() != null) {
+        accountsToAuth.add(_accounts.getLoggedAccount()!);
+      }
+
+      if (accountsToAuth.isEmpty) {
+        Logger.log.w("Received an AUTH challenge but no accounts to authenticate");
+        return;
+      }
+
+      _authenticateAccounts(relayConnectivity, challenge, accountsToAuth);
       return;
     }
     //
@@ -508,6 +529,53 @@ class RelayManager<T> {
     //   // nip 45 used to send requested event counts to clients
     //   return;
     // }
+  }
+
+  /// Sends AUTH events for the given accounts using the stored challenge
+  void _authenticateAccounts(
+    RelayConnectivity relayConnectivity,
+    String challenge,
+    Set<Account> accounts,
+  ) {
+    int authCount = 0;
+    for (final account in accounts) {
+      if (account.signer.canSign()) {
+        final auth = AuthEvent(pubKey: account.pubkey, tags: [
+          ["relay", relayConnectivity.url],
+          ["challenge", challenge]
+        ]);
+        account.signer.sign(auth).then((e) {
+          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
+          Logger.log.d(
+              "AUTH sent for ${account.pubkey.substring(0, 8)} to ${relayConnectivity.url}");
+        });
+        authCount++;
+      }
+    }
+
+    if (authCount == 0) {
+      Logger.log.w("Received an AUTH challenge but no account can sign");
+    }
+  }
+
+  /// Authenticates accounts on a relay if we have a stored challenge.
+  /// Call this when creating a new subscription with authenticateAs.
+  void authenticateIfNeeded(String relayUrl, List<Account> accounts) {
+    final challenge = _lastChallengePerRelay[relayUrl];
+    if (challenge == null) {
+      Logger.log.t("No stored challenge for $relayUrl, skipping late auth");
+      return;
+    }
+
+    final relayConnectivity = globalState.relays[relayUrl];
+    if (relayConnectivity == null) {
+      Logger.log.w("Relay $relayUrl not found for late auth");
+      return;
+    }
+
+    Logger.log.d(
+        "Late AUTH for ${accounts.length} accounts on $relayUrl");
+    _authenticateAccounts(relayConnectivity, challenge, accounts.toSet());
   }
 
   void _handleIncomingEvent(NostrMessageRaw nostrMsgRaw,
@@ -659,6 +727,7 @@ class RelayManager<T> {
     if (connectivity != null && connectivity.relayTransport != null) {
       Logger.log.d("Disconnecting $url...");
       globalState.relays.remove(url);
+      _lastChallengePerRelay.remove(url);
       return connectivity.close();
     }
   }

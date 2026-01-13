@@ -42,6 +42,10 @@ class NdkRequest {
   /// use cache for write
   bool cacheWrite;
 
+  /// Pubkeys to authenticate with on the relays (NIP-42)
+  /// When set, AUTH events will be sent for each pubkey that has a signer
+  List<String>? authenticateAs;
+
   /// query
   NdkRequest.query(
     this.id, {
@@ -56,6 +60,7 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
+    this.authenticateAs,
   });
 
   /// subscription
@@ -69,6 +74,7 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
+    this.authenticateAs,
   });
 }
 // coverage:ignore-end
