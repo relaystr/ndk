@@ -14,6 +14,7 @@ class Bip340EventVerifier implements EventVerifier {
 
   @override
   Future<bool> verify(Nip01Event event) async {
+    if (!event.isIdValid) return false;
     return useIsolate? await Isolate.run(() {
       return bip340.verify(event.pubKey, event.id, event.sig);
     }) : bip340.verify(event.pubKey, event.id, event.sig);

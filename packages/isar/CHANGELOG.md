@@ -1,3 +1,12 @@
+## 0.2.3-dev.7
+
+ - Update a dependency to the latest release.
+
+## 0.2.3-dev.6
+
+ - **FIX**: clean imports.
+ - **FEAT**: log color, params.
+
 ## 0.2.3-dev.5
 
  - **FIX**: clean imports.

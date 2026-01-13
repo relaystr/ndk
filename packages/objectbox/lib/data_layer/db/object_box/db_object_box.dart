@@ -9,6 +9,7 @@ import 'schema/db_contact_list.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
 import 'schema/db_nip_05.dart';
+import 'schema/db_relay_set.dart';
 import 'schema/db_user_relay_list.dart';
 
 class DbObjectBox implements CacheManager {
@@ -18,16 +19,17 @@ class DbObjectBox implements CacheManager {
 
   /// crates objectbox db instace
   /// [attach] to attach to already open instance (e.g. for isolates)
-  DbObjectBox({bool attach = false}) {
-    _init(attach);
+  /// [directory] optional custom directory for the database (useful for testing)
+  DbObjectBox({bool attach = false, String? directory}) {
+    _init(attach, directory);
   }
 
-  Future _init(bool attach) async {
+  Future _init(bool attach, String? directory) async {
     final objectbox;
     if (attach) {
-      objectbox = await ObjectBoxInit.attach();
+      objectbox = await ObjectBoxInit.attach(directory: directory);
     } else {
-      objectbox = await ObjectBoxInit.create();
+      objectbox = await ObjectBoxInit.create(directory: directory);
     }
 
     _objectBox = objectbox;
@@ -78,16 +80,39 @@ class DbObjectBox implements CacheManager {
     final eventBox = _objectBox.store.box<DbNip01Event>();
     QueryBuilder<DbNip01Event> query;
 
+    // Build condition based on available filters
+    Condition<DbNip01Event>? condition;
+
     if (pubKeys != null && pubKeys.isNotEmpty) {
-      query = kinds != null && kinds.isNotEmpty
-          ? eventBox.query(DbNip01Event_.pubKey
-              .oneOf(pubKeys)
-              .and(DbNip01Event_.kind.oneOf(kinds)))
-          : eventBox.query(DbNip01Event_.pubKey.oneOf(pubKeys));
-    } else if (kinds != null && kinds.isNotEmpty) {
-      query = eventBox.query(DbNip01Event_.kind.oneOf(kinds));
+      condition = DbNip01Event_.pubKey.oneOf(pubKeys);
+    }
+
+    if (kinds != null && kinds.isNotEmpty) {
+      final kindsCondition = DbNip01Event_.kind.oneOf(kinds);
+      condition = condition != null
+          ? condition.and(kindsCondition)
+          : kindsCondition;
+    }
+
+    if (since != null) {
+      final sinceCondition = DbNip01Event_.createdAt.greaterOrEqual(since);
+      condition = condition != null
+          ? condition.and(sinceCondition)
+          : sinceCondition;
+    }
+
+    if (until != null) {
+      final untilCondition = DbNip01Event_.createdAt.lessOrEqual(until);
+      condition = condition != null
+          ? condition.and(untilCondition)
+          : untilCondition;
+    }
+
+    // Build query with or without conditions
+    if (condition != null) {
+      query = eventBox.query(condition);
     } else {
-      throw Exception("cannot query without either kinds or pubKeys");
+      query = eventBox.query();
     }
 
     query = query.order(DbNip01Event_.createdAt, flags: Order.descending);
@@ -101,22 +126,13 @@ class DbObjectBox implements CacheManager {
       dbQuery = query.build();
     }
 
-    // Otherwise, fetch more than needed and filter
     List<DbNip01Event> foundDb = dbQuery.find();
 
+    // Filter by pTag in memory (ObjectBox doesn't support array element queries)
     final foundValid = foundDb.where((event) {
       if (pTag != null && !event.pTags.contains(pTag)) {
         return false;
       }
-
-      if (since != null && event.createdAt < since) {
-        return false;
-      }
-
-      if (until != null && event.createdAt > until) {
-        return false;
-      }
-
       return true;
     }).toList();
 
@@ -152,7 +168,18 @@ class DbObjectBox implements CacheManager {
         .order(DbMetadata_.updatedAt, flags: Order.descending)
         .build()
         .find();
-    return existingMetadatas.map((dbMetadata) => dbMetadata.toNdk()).toList();
+
+    // Create a map for quick lookup
+    final metadataMap = <String, Metadata>{};
+    for (final dbMetadata in existingMetadatas) {
+      // Only keep the first (most recent) entry per pubKey
+      if (!metadataMap.containsKey(dbMetadata.pubKey)) {
+        metadataMap[dbMetadata.pubKey] = dbMetadata.toNdk();
+      }
+    }
+
+    // Return list in the same order as input, with null for not found
+    return pubKeys.map((pubKey) => metadataMap[pubKey]).toList();
   }
 
   @override
@@ -280,12 +307,30 @@ class DbObjectBox implements CacheManager {
         .order(DbNip05_.networkFetchTime, flags: Order.descending)
         .build()
         .find();
-    return existing.map((dbMetadata) => dbMetadata.toNdk()).toList();
+
+    // Create a map for quick lookup
+    final nip05Map = <String, Nip05>{};
+    for (final dbNip05 in existing) {
+      // Only keep the first (most recent) entry per pubKey
+      if (!nip05Map.containsKey(dbNip05.pubKey)) {
+        nip05Map[dbNip05.pubKey] = dbNip05.toNdk();
+      }
+    }
+
+    // Return list in the same order as input, with null for not found
+    return pubKeys.map((pubKey) => nip05Map[pubKey]).toList();
   }
 
   @override
   Future<RelaySet?> loadRelaySet(String name, String pubKey) async {
-    return null;
+    await dbRdy;
+    final box = _objectBox.store.box<DbRelaySet>();
+    final id = RelaySet.buildId(name, pubKey);
+    final existing = box.query(DbRelaySet_.id.equals(id)).build().findFirst();
+    if (existing == null) {
+      return null;
+    }
+    return existing.toNdk();
   }
 
   @override
@@ -312,8 +357,9 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> removeAllRelaySets() async {
-    throw UnimplementedError(
-        'removeAllRelaySets is not implemented in DbObjectBox');
+    await dbRdy;
+    final box = _objectBox.store.box<DbRelaySet>();
+    box.removeAll();
   }
 
   @override
@@ -372,8 +418,13 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> removeRelaySet(String name, String pubKey) async {
-    throw UnimplementedError(
-        'removeRelaySet is not implemented in DbObjectBox');
+    await dbRdy;
+    final box = _objectBox.store.box<DbRelaySet>();
+    final id = RelaySet.buildId(name, pubKey);
+    final existing = box.query(DbRelaySet_.id.equals(id)).build().findFirst();
+    if (existing != null) {
+      box.remove(existing.dbId);
+    }
   }
 
   @override
@@ -418,8 +469,14 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<void> saveRelaySet(RelaySet relaySet) async {
-    // No operation for unimplemented method
-    throw UnimplementedError('saveRelaySet is not implemented in DbObjectBox');
+    await dbRdy;
+    final box = _objectBox.store.box<DbRelaySet>();
+    final id = RelaySet.buildId(relaySet.name, relaySet.pubKey);
+    final existing = box.query(DbRelaySet_.id.equals(id)).build().findFirst();
+    if (existing != null) {
+      box.remove(existing.dbId);
+    }
+    box.put(DbRelaySet.fromNdk(relaySet));
   }
 
   @override

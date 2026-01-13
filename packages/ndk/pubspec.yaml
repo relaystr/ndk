@@ -1,6 +1,6 @@
 name: ndk
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.6.1-dev.4
+version: 0.6.1-dev.6
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 

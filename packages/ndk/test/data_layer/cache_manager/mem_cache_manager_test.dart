@@ -3,6 +3,7 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/cache_manager_test_suite.dart';
 
 // This will generate mock classes for our entities
 @GenerateMocks(
@@ -257,9 +258,18 @@ void main() {
       final results = await cacheManager
           .loadMetadatas(['testPubKey1', 'testPubKey2', 'nonExistentKey']);
 
-      expect(results.length, equals(2));
+      // Results should preserve position correspondence with input
+      expect(results.length, equals(3));
       expect(results[0], equals(mockMetadata1));
       expect(results[1], equals(mockMetadata2));
+      expect(results[2], isNull);
     });
   });
+
+  // Run shared test suite for comprehensive coverage
+  runCacheManagerTestSuite(
+    name: 'MemCacheManager (Shared Suite)',
+    createCacheManager: () async => MemCacheManager(),
+    cleanUp: (cacheManager) async => await cacheManager.close(),
+  );
 }

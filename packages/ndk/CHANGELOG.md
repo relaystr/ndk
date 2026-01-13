@@ -1,3 +1,13 @@
+## 0.6.1-dev.6
+
+ - **FEAT**: add tests.
+ - **FEAT**: deprecation message for filters.
+
+## 0.6.1-dev.5
+
+ - **FIX**: bip340 event verifier.
+ - **FEAT**: add test.
+
 ## 0.6.1-dev.4
 
  - **FIX**: clean imports.
