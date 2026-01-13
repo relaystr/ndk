@@ -212,7 +212,7 @@
     },
     {
       "id": "4:3637320921488077827",
-      "lastPropertyId": "4:1024563472021235903",
+      "lastPropertyId": "5:3179649802820230952",
       "name": "DbTag",
       "properties": [
         {
@@ -235,6 +235,11 @@
           "id": "4:1024563472021235903",
           "name": "marker",
           "type": 9
+        },
+        {
+          "id": "5:3179649802820230952",
+          "name": "elements",
+          "type": 30
         }
       ],
       "relations": []
@@ -311,10 +316,61 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "7:4509209106406578683",
+      "lastPropertyId": "8:5182878265676463435",
+      "name": "DbRelaySet",
+      "properties": [
+        {
+          "id": "1:3992132548215188818",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:8697843502175770683",
+          "name": "id",
+          "indexId": "1:3132180412806400476",
+          "type": 9,
+          "flags": 2080
+        },
+        {
+          "id": "3:847921017835631159",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "4:139189138337679953",
+          "name": "pubKey",
+          "type": 9
+        },
+        {
+          "id": "5:6817323610958374225",
+          "name": "relayMinCountPerPubkey",
+          "type": 6
+        },
+        {
+          "id": "6:1830474112617634546",
+          "name": "direction",
+          "type": 9
+        },
+        {
+          "id": "7:1825872609928641993",
+          "name": "relaysMapJson",
+          "type": 9
+        },
+        {
+          "id": "8:5182878265676463435",
+          "name": "fallbackToBootstrapRelays",
+          "type": 1
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "6:263734506821907740",
-  "lastIndexId": "0:0",
+  "lastEntityId": "7:4509209106406578683",
+  "lastIndexId": "1:3132180412806400476",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
