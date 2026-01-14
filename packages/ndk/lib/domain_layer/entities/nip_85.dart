@@ -178,3 +178,141 @@ class Nip85UserMetrics {
   /// Get zap count sent
   int? get zapCountSent => getMetric<int>(Nip85Metric.zapCountSent);
 }
+
+/// Event metrics result from a NIP-85 assertion (kind 30383)
+class Nip85EventMetrics {
+  /// Subject event ID
+  final String eventId;
+
+  /// Provider pubkey (who made the assertion)
+  final String providerPubkey;
+
+  /// Timestamp of the assertion
+  final int createdAt;
+
+  /// Map of metric values
+  final Map<Nip85Metric, dynamic> metrics;
+
+  Nip85EventMetrics({
+    required this.eventId,
+    required this.providerPubkey,
+    required this.createdAt,
+    required this.metrics,
+  });
+
+  /// Get a specific metric value
+  T? getMetric<T>(Nip85Metric metric) {
+    final value = metrics[metric];
+    if (value is T) return value;
+    return null;
+  }
+
+  /// Get rank (0-100)
+  int? get rank => getMetric<int>(Nip85Metric.rank);
+
+  /// Get comment count
+  int? get commentCount => getMetric<int>(Nip85Metric.commentCount);
+
+  /// Get quote count
+  int? get quoteCount => getMetric<int>(Nip85Metric.quoteCount);
+
+  /// Get repost count
+  int? get repostCount => getMetric<int>(Nip85Metric.repostCount);
+
+  /// Get reaction count
+  int? get reactionCount => getMetric<int>(Nip85Metric.reactionCount);
+
+  /// Get zap count
+  int? get zapCount => getMetric<int>(Nip85Metric.zapCount);
+
+  /// Get zap amount
+  int? get zapAmount => getMetric<int>(Nip85Metric.zapAmount);
+}
+
+/// Addressable event metrics result from a NIP-85 assertion (kind 30384)
+class Nip85AddressableMetrics {
+  /// Subject event address (kind:pubkey:d-tag)
+  final String eventAddress;
+
+  /// Provider pubkey (who made the assertion)
+  final String providerPubkey;
+
+  /// Timestamp of the assertion
+  final int createdAt;
+
+  /// Map of metric values
+  final Map<Nip85Metric, dynamic> metrics;
+
+  Nip85AddressableMetrics({
+    required this.eventAddress,
+    required this.providerPubkey,
+    required this.createdAt,
+    required this.metrics,
+  });
+
+  /// Get a specific metric value
+  T? getMetric<T>(Nip85Metric metric) {
+    final value = metrics[metric];
+    if (value is T) return value;
+    return null;
+  }
+
+  /// Get rank (0-100)
+  int? get rank => getMetric<int>(Nip85Metric.rank);
+
+  /// Get comment count
+  int? get commentCount => getMetric<int>(Nip85Metric.commentCount);
+
+  /// Get quote count
+  int? get quoteCount => getMetric<int>(Nip85Metric.quoteCount);
+
+  /// Get repost count
+  int? get repostCount => getMetric<int>(Nip85Metric.repostCount);
+
+  /// Get reaction count
+  int? get reactionCount => getMetric<int>(Nip85Metric.reactionCount);
+
+  /// Get zap count
+  int? get zapCount => getMetric<int>(Nip85Metric.zapCount);
+
+  /// Get zap amount
+  int? get zapAmount => getMetric<int>(Nip85Metric.zapAmount);
+}
+
+/// External identifier metrics result from a NIP-85 assertion (kind 30385)
+class Nip85ExternalIdMetrics {
+  /// Subject identifier (NIP-73 i-tag value)
+  final String identifier;
+
+  /// Provider pubkey (who made the assertion)
+  final String providerPubkey;
+
+  /// Timestamp of the assertion
+  final int createdAt;
+
+  /// Map of metric values
+  final Map<Nip85Metric, dynamic> metrics;
+
+  Nip85ExternalIdMetrics({
+    required this.identifier,
+    required this.providerPubkey,
+    required this.createdAt,
+    required this.metrics,
+  });
+
+  /// Get a specific metric value
+  T? getMetric<T>(Nip85Metric metric) {
+    final value = metrics[metric];
+    if (value is T) return value;
+    return null;
+  }
+
+  /// Get rank (0-100)
+  int? get rank => getMetric<int>(Nip85Metric.rank);
+
+  /// Get comment count
+  int? get commentCount => getMetric<int>(Nip85Metric.commentCount);
+
+  /// Get reaction count
+  int? get reactionCount => getMetric<int>(Nip85Metric.reactionCount);
+}
