@@ -1,4 +1,4 @@
-/// Shared test suite for CacheManager implementations.
+﻿/// Shared test suite for CacheManager implementations.
 ///
 /// This library provides a reusable test suite that can be run against any
 /// [CacheManager] implementation to verify it correctly implements the
@@ -24,16 +24,16 @@ library;
 
 import 'package:test/test.dart';
 
-import '../../domain_layer/entities/contact_list.dart';
-import '../../domain_layer/entities/metadata.dart';
-import '../../domain_layer/entities/nip_01_event.dart';
-import '../../domain_layer/entities/nip_05.dart';
-import '../../domain_layer/entities/pubkey_mapping.dart';
-import '../../domain_layer/entities/read_write.dart';
-import '../../domain_layer/entities/read_write_marker.dart';
-import '../../domain_layer/entities/relay_set.dart';
-import '../../domain_layer/entities/user_relay_list.dart';
-import '../../domain_layer/repositories/cache_manager.dart';
+import 'package:ndk/domain_layer/entities/contact_list.dart';
+import 'package:ndk/domain_layer/entities/metadata.dart';
+import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/nip_05.dart';
+import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
+import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk/domain_layer/entities/read_write_marker.dart';
+import 'package:ndk/domain_layer/entities/relay_set.dart';
+import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 
 /// A factory function that creates a new [CacheManager] instance for testing.
 typedef CacheManagerFactory = Future<CacheManager> Function();
@@ -775,9 +775,11 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
     expect(loaded!.pubKey, equals(userRelayList.pubKey));
     expect(loaded.createdAt, equals(userRelayList.createdAt));
     expect(loaded.relays.length, equals(3));
-    expect(loaded.relays['wss://relay1.com'], equals(ReadWriteMarker.readWrite));
+    expect(
+        loaded.relays['wss://relay1.com'], equals(ReadWriteMarker.readWrite));
     expect(loaded.relays['wss://relay2.com'], equals(ReadWriteMarker.readOnly));
-    expect(loaded.relays['wss://relay3.com'], equals(ReadWriteMarker.writeOnly));
+    expect(
+        loaded.relays['wss://relay3.com'], equals(ReadWriteMarker.writeOnly));
   });
 
   test('saveUserRelayLists batch operation', () async {
@@ -800,8 +802,7 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
     await cacheManager.saveUserRelayLists(userRelayLists);
 
     for (final userRelayList in userRelayLists) {
-      final loaded =
-          await cacheManager.loadUserRelayList(userRelayList.pubKey);
+      final loaded = await cacheManager.loadUserRelayList(userRelayList.pubKey);
       expect(loaded, isNotNull);
       expect(loaded!.relays.length, equals(1));
     }
@@ -957,20 +958,26 @@ void _runSearchTests(CacheManager Function() getCacheManager) {
     await cacheManager.removeAllMetadatas();
 
     final metadatas = [
-      Metadata(pubKey: 'search_meta_1', name: 'Alice Smith', displayName: 'Alice'),
-      Metadata(pubKey: 'search_meta_2', name: 'Bob Jones', displayName: 'Bobby'),
-      Metadata(pubKey: 'search_meta_3', name: 'Alice Wonder', nip05: 'alice@example.com'),
+      Metadata(
+          pubKey: 'search_meta_1', name: 'Alice Smith', displayName: 'Alice'),
+      Metadata(
+          pubKey: 'search_meta_2', name: 'Bob Jones', displayName: 'Bobby'),
+      Metadata(
+          pubKey: 'search_meta_3',
+          name: 'Alice Wonder',
+          nip05: 'alice@example.com'),
     ];
 
     await cacheManager.saveMetadatas(metadatas);
 
     final aliceResults = await cacheManager.searchMetadatas('Alice', 10);
     expect(aliceResults.length, greaterThanOrEqualTo(2));
-    expect(aliceResults.every((m) =>
-        m.name?.toLowerCase().contains('alice') == true ||
-        m.displayName?.toLowerCase().contains('alice') == true ||
-        m.nip05?.toLowerCase().contains('alice') == true
-    ), isTrue);
+    expect(
+        aliceResults.every((m) =>
+            m.name?.toLowerCase().contains('alice') == true ||
+            m.displayName?.toLowerCase().contains('alice') == true ||
+            m.nip05?.toLowerCase().contains('alice') == true),
+        isTrue);
   });
 
   test('searchMetadatas with limit', () async {

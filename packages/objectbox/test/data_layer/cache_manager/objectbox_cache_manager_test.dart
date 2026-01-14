@@ -2,7 +2,7 @@
 
 import 'dart:io';
 
-import 'package:ndk/cache_manager_test_suite.dart';
+import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 import 'package:ndk_objectbox/ndk_objectbox.dart';
 
 void main() async {
