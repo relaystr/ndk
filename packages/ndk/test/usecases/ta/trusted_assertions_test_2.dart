@@ -113,7 +113,7 @@ void main() {
     NdkConfig(
       eventVerifier: Bip340EventVerifier(),
       cache: MemCacheManager(),
-      defaultTrustedProviders: providers,
+      // defaultTrustedProviders: providers,
     ),
   );
 

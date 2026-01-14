@@ -1,6 +1,7 @@
 import 'package:ndk/config/broadcast_defaults.dart';
 
 import '../config/bootstrap_relays.dart';
+import '../config/nip85_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../domain_layer/entities/event_filter.dart';
@@ -80,7 +81,7 @@ class NdkConfig {
         BroadcastDefaults.CONSIDER_DONE_PERCENT,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
-    this.defaultTrustedProviders = const [],
+    this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,
   });
 }
 

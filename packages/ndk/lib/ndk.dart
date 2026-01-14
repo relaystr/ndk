@@ -83,6 +83,7 @@ export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
 export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 export 'domain_layer/usecases/ta/trusted_assertions.dart';
 export 'domain_layer/entities/nip_85.dart';
+export 'config/nip85_defaults.dart';
 
 /**
  * other stuff
