@@ -150,6 +150,7 @@ class Ndk {
 
   /// Filter coverage tracking
   /// Track which time ranges have been fetched from which relays for each filter
+  @experimental
   Coverage get coverage => _initialization.coverage;
 
   /// Close all transports on relay manager
