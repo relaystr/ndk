@@ -4,6 +4,7 @@ import '../config/bootstrap_relays.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../domain_layer/entities/event_filter.dart';
+import '../domain_layer/entities/nip_85.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../shared/logger/log_level.dart';
@@ -53,6 +54,9 @@ class NdkConfig {
   /// User agent string for Http requests and websockets.
   String userAgent;
 
+  /// Default trusted providers for NIP-85 trusted assertions.
+  List<Nip85TrustedProvider> defaultTrustedProviders;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -76,6 +80,7 @@ class NdkConfig {
         BroadcastDefaults.CONSIDER_DONE_PERCENT,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
+    this.defaultTrustedProviders = const [],
   });
 }
 

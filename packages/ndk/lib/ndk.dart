@@ -81,6 +81,8 @@ export 'domain_layer/usecases/gift_wrap/gift_wrap.dart';
 export 'domain_layer/usecases/bunkers/bunkers.dart';
 export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
 export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
+export 'domain_layer/usecases/ta/trusted_assertions.dart';
+export 'domain_layer/entities/nip_85.dart';
 
 /**
  * other stuff

@@ -34,6 +34,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
+import '../domain_layer/usecases/ta/trusted_assertions.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import '../shared/logger/logger.dart';
@@ -79,6 +80,7 @@ class Initialization {
   late Search search;
   late GiftWrap giftWrap;
   late Connectivy connectivity;
+  late TrustedAssertions trustedAssertions;
 
   late VerifyNip05 verifyNip05;
 
@@ -242,6 +244,11 @@ class Initialization {
     giftWrap = GiftWrap(accounts: accounts);
 
     connectivity = Connectivy(relayManager);
+
+    trustedAssertions = TrustedAssertions(
+      requests: requests,
+      defaultProviders: _ndkConfig.defaultTrustedProviders,
+    );
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
