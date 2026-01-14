@@ -4,6 +4,7 @@ import '../config/bootstrap_relays.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../domain_layer/entities/event_filter.dart';
+import '../domain_layer/entities/nip_85.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../shared/logger/log_level.dart';
@@ -70,6 +71,9 @@ class NdkConfig {
   /// Defaults to 30 seconds.
   Duration authCallbackTimeout;
 
+  /// Default trusted providers for NIP-85 trusted assertions.
+  List<Nip85TrustedProvider> defaultTrustedProviders;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -97,6 +101,7 @@ class NdkConfig {
     this.fetchedRangesEnabled = false,
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
+    this.defaultTrustedProviders = const [],
   });
 }
 
