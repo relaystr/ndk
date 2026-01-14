@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../data_layer/models/nip_01_event_model.dart';
 import '../../../shared/logger/logger.dart';
 import '../../entities/nip_01_event.dart';
 import '../lnurl/lnurl.dart';
@@ -56,7 +57,7 @@ class ZapReceipt {
       }
       paidAt = event.createdAt;
       if (zapRequestJson != null && zapRequestJson.isNotEmpty) {
-        Nip01Event event = Nip01Event.fromJson(jsonDecode(zapRequestJson));
+        Nip01Event event = Nip01EventModel.fromJson(jsonDecode(zapRequestJson));
         comment = event.content;
         sender = event.pubKey;
         lnurl = event.getFirstTag('lnurl');

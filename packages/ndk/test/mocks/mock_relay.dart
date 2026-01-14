@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:bip340/bip340.dart';
 import 'package:ndk/domain_layer/usecases/bunkers/models/bunker_request.dart';
 import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -116,8 +117,8 @@ class MockRelay {
         var eventJson = json.decode(message);
 
         if (eventJson[0] == "AUTH") {
-          Nip01Event event = Nip01Event.fromJson(eventJson[1]);
-          if (verify(event.pubKey, event.id, event.sig)) {
+          Nip01Event event = Nip01EventModel.fromJson(eventJson[1]);
+          if (verify(event.pubKey, event.id, event.sig!)) {
             String? relay = event.getFirstTag("relay");
             String? eventChallenge = event.getFirstTag("challenge");
             if (eventChallenge == challenge && relay == url) {
@@ -143,8 +144,8 @@ class MockRelay {
         }
 
         if (eventJson[0] == "EVENT") {
-          Nip01Event newEvent = Nip01Event.fromJson(eventJson[1]);
-          if (verify(newEvent.pubKey, newEvent.id, newEvent.sig)) {
+          Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
+          if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
             if (newEvent.kind == ContactList.kKind) {
               _contactLists[newEvent.pubKey] = newEvent;
             } else if (newEvent.kind == Metadata.kKind) {
@@ -228,12 +229,13 @@ class MockRelay {
 
   void _respondToRequest(List<Filter> filters, String requestId) {
     if (sendMalformedEvents) {
-      final malformedEventJson = '["EVENT", "$requestId", {"id":null,"pubkey":null,"created_at":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"kind":0,"tags":[],"content":null,"sig":null}]';
+      final malformedEventJson =
+          '["EVENT", "$requestId", {"id":null,"pubkey":null,"created_at":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"kind":0,"tags":[],"content":null,"sig":null}]';
       _webSocket!.add(malformedEventJson);
       _webSocket!.add(jsonEncode(["EOSE", requestId]));
       return;
     }
-    
+
     Set<Nip01Event> allMatchingEvents = {};
 
     for (Filter filter in filters) {
@@ -292,11 +294,17 @@ class MockRelay {
               (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
             Nip01Event eventToAdd =
                 entry.value.toEvent(); // Creates a new event instance
+            final Nip01Event? eventToAddSigned;
             if (signEvents && entry.key.privateKey != null) {
               // Sign the new instance, not the one in _nip65s
-              eventToAdd.sign(entry.key.privateKey!);
+
+              eventToAddSigned = Nip01Utils.signWithPrivateKey(
+                  event: eventToAdd, privateKey: entry.key.privateKey!);
+            } else {
+              eventToAddSigned = null;
             }
-            eventsForThisFilter.add(eventToAdd);
+
+            eventsForThisFilter.add(eventToAddSigned ?? eventToAdd);
           }
         }
       }
@@ -319,19 +327,24 @@ class MockRelay {
 
           if (authorsMatch && kindsMatch) {
             // Clone the event from the map before signing to avoid mutating the stored original
-            Nip01Event eventToAdd = Nip01Event.fromJson(entry.value.toJson());
+            Nip01Event eventToAdd = entry.value.copyWith();
+            Nip01Event? eventToAddSigned;
             if (signEvents && entry.key.privateKey != null) {
-              eventToAdd.sign(entry.key.privateKey!);
+              eventToAddSigned = Nip01Utils.signWithPrivateKey(
+                  event: eventToAdd, privateKey: entry.key.privateKey!);
+            } else {
+              eventToAddSigned = null;
             }
-            eventsForThisFilter.add(eventToAdd);
+            eventsForThisFilter.add(eventToAddSigned ?? eventToAdd);
           }
         }
       }
       allMatchingEvents.addAll(eventsForThisFilter);
     }
 
-    for (var event in allMatchingEvents) {
-      _webSocket!.add(jsonEncode(["EVENT", requestId, event.toJson()]));
+    for (final event in allMatchingEvents) {
+      _webSocket!.add(jsonEncode(
+          ["EVENT", requestId, Nip01EventModel.fromEntity(event).toJson()]));
     }
 
     _webSocket!.add(jsonEncode(["EOSE", requestId]));
@@ -348,11 +361,17 @@ class MockRelay {
       throw Exception("WebSocket is not connected");
     }
 
+    Nip01Event? signedEvent;
     if (keyPair != null) {
-      event.sign(keyPair.privateKey!);
+      signedEvent = Nip01Utils.signWithPrivateKey(
+          event: event, privateKey: keyPair.privateKey!);
     }
 
-    _webSocket!.add(jsonEncode(["EVENT", subId, event]));
+    final eventToSend = signedEvent ?? event;
+
+    final eventToSendModel = Nip01EventModel.fromEntity(eventToSend);
+
+    _webSocket!.add(jsonEncode(["EVENT", subId, eventToSendModel]));
   }
 
   /// sends a CLOSED message for a given subscription ID
@@ -418,7 +437,8 @@ class MockRelay {
       }
 
       // Create NIP-46 response event
-      Nip01Event responseEvent = Nip01Event(
+      Nip01Event responseEventUnsinged =
+          Nip01Event(
         pubKey: remoteSignerPublicKey,
         kind: kNip46Kind,
         tags: [
@@ -427,11 +447,8 @@ class MockRelay {
         content: encryptedResponse,
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
-
-      // Sign the response event
-      responseEvent.id = responseEvent.id;
-      responseEvent.sig =
-          Bip340.sign(responseEvent.id, _remoteSignerPrivateKey);
+      Nip01Event responseEvent = Nip01Utils.signWithPrivateKey(
+          event: responseEventUnsinged, privateKey: _remoteSignerPrivateKey);
 
       // NIP-46 events are ephemeral (kind 24133), don't store them
       // Instead, deliver directly to matching subscriptions
@@ -473,8 +490,11 @@ class MockRelay {
 
           // If this filter matches, send the event with the correct subscription ID
           if (matches) {
-            webSocket.add(
-                jsonEncode(["EVENT", subscriptionId, responseEvent.toJson()]));
+            webSocket.add(jsonEncode([
+              "EVENT",
+              subscriptionId,
+              Nip01EventModel.fromEntity(responseEvent).toJson()
+            ]));
             break; // Only send once per subscription
           }
         }
@@ -538,7 +558,8 @@ class MockRelay {
           }
 
           // Use the Nip01Event constructor directly
-          Nip01Event eventToSign = Nip01Event(
+          final Nip01Event eventToSign =
+              Nip01Event(
             pubKey: remoteSignerPublicKey,
             kind: eventData["kind"] ?? 1,
             tags: List<List<String>>.from(eventData["tags"] ?? []),
@@ -546,14 +567,11 @@ class MockRelay {
             createdAt: eventData["created_at"] ?? eventData["createdAt"] ?? 0,
           );
 
-          // Sign the event
-          eventToSign.sig = Bip340.sign(
-            eventToSign.id,
-            _remoteSignerPrivateKey,
-          );
+          final Nip01Event signedEvent = Nip01Utils.signWithPrivateKey(
+              event: eventToSign, privateKey: _remoteSignerPrivateKey);
 
           return {
-            'result': jsonEncode(eventToSign.toJson()),
+            'result': Nip01EventModel.fromEntity(signedEvent).toJsonString(),
           };
 
         case 'nip04_encrypt':

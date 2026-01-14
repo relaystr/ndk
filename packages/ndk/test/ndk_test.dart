@@ -23,13 +23,16 @@ void main() async {
 
   Nip01Event textNote(KeyPair key2) {
     Nip01Event event = Nip01Event(
-        kind: Nip01Event.kTextNodeKind,
-        pubKey: key2.publicKey,
-        content: "some note from key ${keyNames[key2]}",
-        tags: [],
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
-    event.sign(key2.privateKey!);
-    return event;
+      kind: Nip01Event.kTextNodeKind,
+      pubKey: key2.publicKey,
+      content: "some note from key ${keyNames[key2]}",
+      tags: [],
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+    final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event, privateKey: key2.privateKey!);
+
+    return signedEvent;
   }
 
   Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
@@ -89,7 +92,7 @@ void main() async {
       await ndk.relays.seedRelaysConnected;
 
       final response = ndk.requests.query(filters: [
-        Filter(ids: [key1TextNotes[key1]!.id])
+        Filter(ids: [key1TextNotes[key1]!.id!])
       ]);
 
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
@@ -97,7 +100,7 @@ void main() async {
       await cache.saveEvent(key1TextNotes[key1]!);
 
       final response2 = ndk.requests.query(filters: [
-        Filter(ids: [key1TextNotes[key1]!.id])
+        Filter(ids: [key1TextNotes[key1]!.id!])
       ]);
 
       await expectLater(
