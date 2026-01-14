@@ -1,6 +1,7 @@
 import 'package:ndk/config/broadcast_defaults.dart';
 
 import '../config/bootstrap_relays.dart';
+import '../config/nip85_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../domain_layer/entities/event_filter.dart';
@@ -101,7 +102,7 @@ class NdkConfig {
     this.fetchedRangesEnabled = false,
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
-    this.defaultTrustedProviders = const [],
+    this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,
   });
 }
 
