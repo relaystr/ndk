@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import '../../shared/nips/nip01/helpers.dart';
-import 'nip_01_utils.dart';
 import 'nip_01_event.dart';
 
 /// basic nostr metadata
