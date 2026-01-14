@@ -127,8 +127,8 @@ class Nip01Utils {
     required Nip01Event event,
     required String privateKey,
   }) {
-    String? id = event.id;
-    id ??= calculateId(event);
+    String id = calculateId(event);
+
     final signature = Bip340.sign(
       id,
       privateKey,
