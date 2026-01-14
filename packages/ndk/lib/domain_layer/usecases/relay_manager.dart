@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:rxdart/rxdart.dart';
 
@@ -176,8 +175,12 @@ class RelayManager<T> {
 
       Logger.log.i("connecting to relay $dirtyUrl");
 
-      relayConnectivity.relayTransport = nostrTransportFactory(url, () {
+      relayConnectivity.relayTransport = nostrTransportFactory(url, onReconnect: () {
         reSubscribeInFlightSubscriptions(relayConnectivity!);
+        updateRelayConnectivity();
+      }, onDisconnect: (code, error, reason) {
+        relayConnectivity!.stats.connectionErrors++;
+        updateRelayConnectivity();
       });
       await relayConnectivity.relayTransport!.ready.timeout(
         Duration(seconds: connectTimeout),
@@ -188,7 +191,7 @@ class RelayManager<T> {
 
       _startListeningToSocket(relayConnectivity);
 
-      developer.log("connected to relay: $url");
+      Logger.log.i("connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
       relayConnectivity.stats.connections++;
       getRelayInfo(url).then((info) {
@@ -363,16 +366,23 @@ class RelayManager<T> {
         relayConnectivity,
       );
     }, onError: (error) async {
-      await relayConnectivity.close();
-      relayConnectivity.stats.connectionErrors++;
       Logger.log.e("onError ${relayConnectivity.url} on listen $error");
+      relayConnectivity.stats.connectionErrors++;
+      try {
+        await relayConnectivity.close();
+      } catch (e) {
+        Logger.log.w("Error closing relay ${relayConnectivity.url}: $e");
+      }
       updateRelayConnectivity();
-      throw Exception("Error in socket");
     }, onDone: () async {
       Logger.log.t(
-          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport!.closeCode()} ${relayConnectivity.relayTransport!.closeReason()})");
+          "onDone ${relayConnectivity.url} on listen (close: ${relayConnectivity.relayTransport?.closeCode()} ${relayConnectivity.relayTransport?.closeReason()})");
 
-      await relayConnectivity.close();
+      try {
+        await relayConnectivity.close();
+      } catch (e) {
+        Logger.log.w("Error closing relay ${relayConnectivity.url}: $e");
+      }
       updateRelayConnectivity();
       // reconnect on close
       if (allowReconnectRelays &&

@@ -3,6 +3,7 @@ import 'dart:async';
 abstract class NostrTransport {
   late Future<void> ready;
   bool isOpen();
+  bool isConnecting();
   Future<void> close();
   void send(dynamic data);
   StreamSubscription listen(
@@ -16,5 +17,5 @@ abstract class NostrTransport {
 }
 
 abstract class NostrTransportFactory {
-  NostrTransport call(String url, Function? onReconnect);
+  NostrTransport call(String url, {Function? onReconnect, Function(int?, Object?, String?)? onDisconnect} );
 }

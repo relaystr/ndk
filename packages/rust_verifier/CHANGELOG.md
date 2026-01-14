@@ -1,3 +1,21 @@
+## 0.4.2-dev.6
+
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+
+## 0.4.2-dev.5
+
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+
+## 0.4.2-dev.3
+
+ - **FIX**: remove hex package depandance.
+
+## 0.4.2-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 0.4.2-dev.1
 
  - **REFACTOR**: secp256k1 to rust native dep.

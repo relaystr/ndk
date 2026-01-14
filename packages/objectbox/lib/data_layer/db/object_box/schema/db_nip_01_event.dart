@@ -180,17 +180,26 @@ class DbTag {
   @Property()
   String? marker;
 
-  DbTag({this.key = '', this.value = '', this.marker});
+  /// Store all elements of the tag to preserve full tag data
+  @Property()
+  List<String> elements;
+
+  DbTag({this.key = '', this.value = '', this.marker, this.elements = const []});
 
   List<String> toList() {
+    // Return the full elements if available, otherwise construct from key/value/marker
+    if (elements.isNotEmpty) {
+      return elements;
+    }
     return marker != null ? [key, value, '', marker!] : [key, value];
   }
 
   static DbTag fromList(List<String> list) {
     return DbTag(
-      key: list[0],
+      key: list.isNotEmpty ? list[0] : '',
       value: list.length >= 2 ? list[1] : '',
       marker: list.length >= 4 ? list[3] : null,
+      elements: list,
     );
   }
 
@@ -200,15 +209,19 @@ class DbTag {
       'key': key,
       'value': value,
       'marker': marker,
+      'elements': elements,
     });
   }
 
   factory DbTag.fromString(String jsonString) {
     final Map<String, dynamic> data = json.decode(jsonString);
     return DbTag(
-      key: data['key'],
-      value: data['value'],
+      key: data['key'] ?? '',
+      value: data['value'] ?? '',
       marker: data['marker'],
+      elements: data['elements'] != null
+          ? List<String>.from(data['elements'])
+          : <String>[],
     );
   }
 }

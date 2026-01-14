@@ -1,3 +1,23 @@
+## 0.3.3-dev.6
+
+ - **FIX**: clean imports.
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+## 0.3.3-dev.5
+
+ - **FIX**: clean imports.
+
+## 0.3.3-dev.4
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+## 0.3.3-dev.3
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
 ## 0.3.3-dev.1
 
  - **FIX**: missing convert  dependency.

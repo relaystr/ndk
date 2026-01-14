@@ -1,3 +1,30 @@
+## 0.6.1-dev.6
+
+ - **FEAT**: add tests.
+ - **FEAT**: deprecation message for filters.
+
+## 0.6.1-dev.5
+
+ - **FIX**: bip340 event verifier.
+ - **FEAT**: add test.
+
+## 0.6.1-dev.4
+
+ - **FIX**: clean imports.
+ - **FIX**: improve relay reconnection.
+
+## 0.6.1-dev.3
+
+ - **FIX**: close relay.
+
+## 0.6.1-dev.2
+
+ - **FIX**: Handle null error value in NWC response deserialization.
+ - **FIX**: forcing a pre-release.
+ - **FIX**: move test to an apropriate area.
+ - **FIX**: clean relay url function + add tests.
+ - **FEAT**: add test.
+
 ## 0.6.1-dev.1
 
  - **FIX**: update the mock relay + test.

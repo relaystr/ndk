@@ -11,20 +11,31 @@ class ObjectBoxInit {
   }
 
   /// Create an instance of ObjectBox to use throughout the app.
-  static Future<ObjectBoxInit> create() async {
-    final docsDir = await getApplicationDocumentsDirectory();
+  /// [directory] optional custom directory for the database (useful for testing)
+  static Future<ObjectBoxInit> create({String? directory}) async {
+    final String dbPath;
+    if (directory != null) {
+      dbPath = directory;
+    } else {
+      final docsDir = await getApplicationDocumentsDirectory();
+      dbPath = p.join(docsDir.path, "ndk-obx-default");
+    }
     // Future<Store> openStore() {...} is defined in the generated objectbox.g.dart
-    final store =
-        await openStore(directory: p.join(docsDir.path, "ndk-obx-default"));
+    final store = await openStore(directory: dbPath);
     return ObjectBoxInit._create(store);
   }
 
   /// attaches to a existing running db, usefull for isolates
-  static Future<ObjectBoxInit> attach() async {
-    final docsDir = await getApplicationDocumentsDirectory();
+  static Future<ObjectBoxInit> attach({String? directory}) async {
+    final String dbPath;
+    if (directory != null) {
+      dbPath = directory;
+    } else {
+      final docsDir = await getApplicationDocumentsDirectory();
+      dbPath = p.join(docsDir.path, "ndk-obx-default");
+    }
 
-    final store = Store.attach(
-        getObjectBoxModel(), p.join(docsDir.path, "ndk-obx-default"));
+    final store = Store.attach(getObjectBoxModel(), dbPath);
 
     return ObjectBoxInit._create(store);
   }
