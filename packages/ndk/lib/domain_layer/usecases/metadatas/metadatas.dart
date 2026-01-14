@@ -11,6 +11,7 @@ import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
+import '../../entities/nip_01_utils.dart';
 import '../requests/requests.dart';
 
 /// nostr metadata usecase

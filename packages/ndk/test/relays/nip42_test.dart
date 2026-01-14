@@ -24,8 +24,10 @@ void main() async {
           content: "some note from key ${keyNames[key1]}",
           tags: [],
           createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
-      event.sign(key.privateKey!);
-      return event;
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+          event: event, privateKey: key.privateKey!);
+
+      return signedEvent;
     }
 
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};

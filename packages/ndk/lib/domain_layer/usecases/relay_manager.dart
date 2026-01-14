@@ -5,7 +5,9 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
+import '../../shared/decode_nostr_msg/decode_nostr_msg.dart';
 import '../../shared/helpers/relay_helper.dart';
+import '../../shared/isolates/isolate_manager.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../entities/broadcast_state.dart';
@@ -13,6 +15,7 @@ import '../entities/connection_source.dart';
 import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
+import '../entities/nostr_message_raw.dart';
 import '../entities/relay.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
@@ -398,23 +401,47 @@ class RelayManager<T> {
     });
   }
 
-  void _handleIncomingMessage(
-      dynamic message, RelayConnectivity relayConnectivity) {
-    List<dynamic> eventJson;
+  // tracking to process in order
+  Completer<void>? _lastMessageCompleter;
+
+  Future<void> _handleIncomingMessage(
+      dynamic message, RelayConnectivity relayConnectivity) async {
+    final previousMessage = _lastMessageCompleter;
+
+    final myCompleter = Completer<void>();
+    _lastMessageCompleter = myCompleter;
+
+    NostrMessageRaw nostrMsg;
     try {
-      final decodedMessage = json.decode(message);
-      if (decodedMessage is! List<dynamic>) {
-        Logger.log.w("Received non-list JSON message from ${relayConnectivity.url}: $message");
-        return;
-      }
-      eventJson = decodedMessage;
-    } on FormatException catch (e) {
-      Logger.log.e(
-          "FormatException in _handleIncomingMessage for relay ${relayConnectivity.url}: $e, message: $message");
+      nostrMsg = await IsolateManager.instance
+          .runInEncodingIsolate<String, NostrMessageRaw>(
+        decodeNostrMsg,
+        message,
+      );
+    } catch (e) {
+      // Isolates not available on web
+      nostrMsg = decodeNostrMsg(message);
+    }
+
+    if (previousMessage != null) {
+      await previousMessage.future;
+    }
+
+    myCompleter.complete();
+
+    _processDecodedMessage(nostrMsg, relayConnectivity, message);
+  }
+
+  void _processDecodedMessage(NostrMessageRaw nostrMsg,
+      RelayConnectivity relayConnectivity, dynamic message) {
+    if (nostrMsg.type == NostrMessageRawType.unknown) {
+      Logger.log.w(
+          "Received non NostrMessageRaw message from ${relayConnectivity.url}: $nostrMsg");
       return;
     }
 
-    if (eventJson[0] == 'OK') {
+    if (nostrMsg.type == NostrMessageRawType.ok) {
+      final eventJson = nostrMsg.otherData;
       //nip 20 used to notify clients if an EVENT was successful
       if (eventJson.length >= 2 && eventJson[2] == false) {
         Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
@@ -436,22 +463,26 @@ class RelayManager<T> {
       }
       return;
     }
-    if (eventJson[0] == 'NOTICE') {
+    if (nostrMsg.type == NostrMessageRawType.notice) {
+      final eventJson = nostrMsg.otherData;
       Logger.log.w("NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
       _logActiveRequests();
-    } else if (eventJson[0] == 'EVENT') {
+    } else if (nostrMsg.type == NostrMessageRawType.event) {
       _handleIncomingEvent(
-          eventJson, relayConnectivity, message.toString().codeUnits.length);
-      Logger.log.t("EVENT from ${relayConnectivity.url}: $eventJson");
-    } else if (eventJson[0] == 'EOSE') {
+          nostrMsg, relayConnectivity, message.toString().codeUnits.length);
+      // Logger.log.t("EVENT from ${relayConnectivity.url}: $eventJson");
+    } else if (nostrMsg.type == NostrMessageRawType.eose) {
+      final eventJson = nostrMsg.otherData;
       Logger.log.d("EOSE from ${relayConnectivity.url}: ${eventJson[1]}");
       _handleEOSE(eventJson, relayConnectivity);
-    } else if (eventJson[0] == 'CLOSED') {
+    } else if (nostrMsg.type == NostrMessageRawType.closed) {
+      final eventJson = nostrMsg.otherData;
       Logger.log.w(
           " CLOSED subscription url: ${relayConnectivity.url} id: ${eventJson[1]} msg: ${eventJson.length > 2 ? eventJson[2] : ''}");
       _handleClosed(eventJson, relayConnectivity);
     }
-    if (eventJson[0] == ClientMsgType.kAuth) {
+    if (nostrMsg.type == NostrMessageRawType.auth) {
+      final eventJson = nostrMsg.otherData;
       // nip 42 used to send authentication challenges
       final challenge = eventJson[1];
       Logger.log.d("AUTH: $challenge");
@@ -461,8 +492,9 @@ class RelayManager<T> {
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);
-        _accounts.sign(auth).then((e) {
-          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
+        _accounts.sign(auth).then((signedEvent) {
+          send(relayConnectivity,
+              ClientMsg(ClientMsgType.kAuth, event: signedEvent));
         });
       } else {
         Logger.log
@@ -478,33 +510,36 @@ class RelayManager<T> {
     // }
   }
 
-  void _handleIncomingEvent(List<dynamic> eventJson,
+  void _handleIncomingEvent(NostrMessageRaw nostrMsgRaw,
       RelayConnectivity connectivity, int messageSize) {
-    var id = eventJson[1];
-    if (globalState.inFlightRequests[id] == null) {
+    final requestId = nostrMsgRaw.requestId!;
+    final event = nostrMsgRaw.nip01Event!;
+
+    if (globalState.inFlightRequests[requestId] == null) {
       Logger.log.w(
-          "RECEIVED EVENT from ${connectivity.url} for id $id, not in globalState inFlightRequests. Likely data after EOSE on a query");
+          "RECEIVED EVENT from ${connectivity.url} for id $requestId, not in globalState inFlightRequests. Likely data after EOSE on a query");
       return;
     }
 
-    Nip01Event event = Nip01Event.fromJson(eventJson[2]);
     connectivity.stats.incStatsByNewEvent(event, messageSize);
 
-    RequestState? state = globalState.inFlightRequests[id];
+    RequestState? state = globalState.inFlightRequests[requestId];
     if (state != null) {
       RelayRequestState? request = state.requests[connectivity.url];
       if (request == null) {
-        Logger.log.w("No RelayRequestState found for id $id");
+        Logger.log.w("No RelayRequestState found for id $requestId");
         return;
       }
-      event.sources.add(connectivity.url);
+
+      final eventWithSources =
+          event.copyWith(sources: [...event.sources, connectivity.url]);
 
       if (state.networkController.isClosed) {
         // this might happen because relays even after we send a CLOSE subscription.id, they'll still send more events
         Logger.log.t(
             "tried to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
       } else {
-        state.networkController.add(event);
+        state.networkController.add(eventWithSources);
       }
     }
   }
@@ -659,4 +694,8 @@ class RelayManager<T> {
   RelayConnectivity? getRelayConnectivity(String url) {
     return globalState.relays[url];
   }
+}
+
+dynamic decodeJson(String jsonString) {
+  return json.decode(jsonString);
 }

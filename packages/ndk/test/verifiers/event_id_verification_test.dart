@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('verify real event', () async {
-    final event = Nip01Event.fromJson({
+    final event = Nip01EventModel.fromJson({
       "id": "3c65c446bd71fa90e5c4177abf8526868dbc4b230b15ea8df3fa7ee33145993b",
       "pubkey":
           "52d4650e933525817021571f2e82859da3b5ad44e74ef6498a8af5ff8d7dcc83",
@@ -19,7 +19,7 @@ void main() {
   });
 
   test('verify event with tampered id', () async {
-    final event = Nip01Event.fromJson({
+    final event = Nip01EventModel.fromJson({
       "id": "3c65c446bd71fa90e5c4177abf8526868dbc4b230b15ea8df3fa7ee33145aaaa",
       "pubkey":
           "52d4650e933525817021571f2e82859da3b5ad44e74ef6498a8af5ff8d7dcc83",
@@ -35,7 +35,7 @@ void main() {
   });
 
   test('verify event with tampered created at', () async {
-    final event = Nip01Event.fromJson({
+    final event = Nip01EventModel.fromJson({
       "id": "3c65c446bd71fa90e5c4177abf8526868dbc4b230b15ea8df3fa7ee33145993b",
       "pubkey":
           "52d4650e933525817021571f2e82859da3b5ad44e74ef6498a8af5ff8d7dcc83",

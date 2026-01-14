@@ -81,10 +81,12 @@ class Zaps {
     if (pollOption != null) {
       tags.add(["poll_option", pollOption]);
     }
-    var event = ZapRequest(
+    final zapRequestEvent = ZapRequest(
         pubKey: signer.getPublicKey(), tags: tags, content: comment ?? '');
-    await signer.sign(event);
-    return event;
+    final signedEvent = await signer.sign(zapRequestEvent);
+
+    final sigendZapRequest = ZapRequest.nip01Event(event: signedEvent);
+    return sigendZapRequest;
   }
 
   /// zap or pay some lnurl, for zap to be created it is necessary:
