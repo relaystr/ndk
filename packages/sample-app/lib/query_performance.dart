@@ -5,7 +5,6 @@ import 'package:ndk_rust_verifier/data_layer/repositories/verifiers/rust_event_v
 
 class MyVerifiers {
   static final bip340Verifier = Bip340EventVerifier();
-  static final bip340VerifierNoIsolate = Bip340EventVerifier(useIsolate: false);
   static final rustVerifier = RustEventVerifier();
 }
 
@@ -20,23 +19,14 @@ class QueryPerformancePage extends StatefulWidget {
 class _QueryPerformancePageState extends State<QueryPerformancePage> {
   int _eventCount = 100;
   String _bip340Time = '';
-  String _bip340NoIsolateTime = '';
   String _rustTime = '';
   bool _isVerifyingBip340 = false;
-  bool _isVerifyingBip340NoIsolate = false;
   bool _isVerifyingRust = false;
 
-  static const relays = ["wss://relay.primal.net"];
+  static const relays = ["ws://localhost:10547"];
 
   final ndkBip340 = Ndk(NdkConfig(
     eventVerifier: MyVerifiers.bip340Verifier,
-    cache: MemCacheManager(),
-    bootstrapRelays: relays,
-    logLevel: LogLevel.warning
-  ));
-
-  final ndkBip340NoIsolate = Ndk(NdkConfig(
-    eventVerifier: MyVerifiers.bip340VerifierNoIsolate,
     cache: MemCacheManager(),
     bootstrapRelays: relays,
   ));
@@ -60,22 +50,6 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
     setState(() {
       _isVerifyingBip340 = false;
       _bip340Time = '${stopwatch.elapsedMilliseconds}ms';
-    });
-  }
-
-  Future<void> _runBip340NoIsolateQuery() async {
-    setState(() {
-      _isVerifyingBip340NoIsolate = true;
-      _bip340NoIsolateTime = '';
-    });
-
-    final stopwatch = Stopwatch()..start();
-    await _runQuery(ndkBip340NoIsolate);
-    stopwatch.stop();
-
-    setState(() {
-      _isVerifyingBip340NoIsolate = false;
-      _bip340NoIsolateTime = '${stopwatch.elapsedMilliseconds}ms';
     });
   }
 
@@ -148,10 +122,10 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
               onPressed: _isVerifyingBip340 ? null : _runBip340Query,
               child: _isVerifyingBip340
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
                   : const Text('Run with BIP340'),
             ),
             const SizedBox(height: 8),
@@ -162,30 +136,13 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _isVerifyingBip340NoIsolate ? null : _runBip340NoIsolateQuery,
-              child: _isVerifyingBip340NoIsolate
+              onPressed: _isVerifyingRust ? null : _runRustQuery,
+              child: _isVerifyingRust
                   ? const SizedBox(
                 height: 20,
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-                  : const Text('Run with BIP340 (no isolate)'),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _bip340NoIsolateTime.isEmpty ? 'Not run yet' : 'Time: $_bip340NoIsolateTime',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isVerifyingRust ? null : _runRustQuery,
-              child: _isVerifyingRust
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
                   : const Text('Run with Rust'),
             ),
             const SizedBox(height: 8),
