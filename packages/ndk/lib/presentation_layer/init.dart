@@ -245,8 +245,10 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
     );
 
-    // Connect coverage to requests for automatic range recording
-    requests.coverage = coverage;
+    // Connect coverage to requests for automatic range recording (if enabled)
+    if (_ndkConfig.coverageEnabled) {
+      requests.coverage = coverage;
+    }
 
     giftWrap = GiftWrap(accounts: accounts);
 

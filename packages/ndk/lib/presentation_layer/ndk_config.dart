@@ -53,6 +53,11 @@ class NdkConfig {
   /// User agent string for Http requests and websockets.
   String userAgent;
 
+  /// Enable filter coverage tracking.
+  /// When enabled, NDK tracks which time ranges have been fetched from which relays.
+  /// Disabled by default for performance.
+  bool coverageEnabled;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -76,6 +81,7 @@ class NdkConfig {
         BroadcastDefaults.CONSIDER_DONE_PERCENT,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
+    this.coverageEnabled = false,
   });
 }
 

@@ -43,6 +43,7 @@ void main() async {
           cache: cache,
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url],
+          coverageEnabled: true,
         ),
       );
 
@@ -105,6 +106,7 @@ void main() async {
           cache: cache,
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url],
+          coverageEnabled: true,
         ),
       );
 
@@ -157,6 +159,7 @@ void main() async {
           cache: cache,
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url],
+          coverageEnabled: true,
         ),
       );
 
@@ -207,6 +210,7 @@ void main() async {
           cache: cache,
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url],
+          coverageEnabled: true,
         ),
       );
 
