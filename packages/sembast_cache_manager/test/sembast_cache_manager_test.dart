@@ -237,9 +237,12 @@ void main() {
 
       test('removeAllEventsByPubKey', () async {
         final events = [
-          Nip01Event(pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 1'),
-          Nip01Event(pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 2'),
-          Nip01Event(pubKey: 'pubkey2', kind: 1, tags: [], content: 'Event 3'),
+          Nip01Event(
+              pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 1'),
+          Nip01Event(
+              pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 2'),
+          Nip01Event(
+              pubKey: 'pubkey2', kind: 1, tags: [], content: 'Event 3'),
         ];
 
         await cacheManager.saveEvents(events);

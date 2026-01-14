@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import '../../domain_layer/entities/nip_01_event_raw.dart';
+import '../../domain_layer/entities/nip_01_event.dart';
+import '../../domain_layer/entities/nostr_message_raw.dart';
 
 NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
   try {
@@ -21,7 +22,7 @@ NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
         }
         final requestId = decoded[1];
         final eventData = decoded[2];
-        final nip01Event = Nip01EventRaw(
+        final nip01Event = Nip01Event(
           id: eventData['id'],
           pubKey: eventData['pubkey'],
           createdAt: eventData['created_at'],
@@ -31,6 +32,7 @@ NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
               .toList(),
           content: eventData['content'],
           sig: eventData['sig'],
+          validSig: null,
         );
         return NostrMessageRaw(
           type: NostrMessageRawType.event,
@@ -40,6 +42,7 @@ NostrMessageRaw decodeNostrMsg(String msgJsonStr) {
       case 'EOSE':
         return NostrMessageRaw(
           type: NostrMessageRawType.eose,
+          requestId: decoded.length > 1 ? decoded[1] : null,
           otherData: decoded,
         );
       case 'OK':

@@ -16,7 +16,7 @@ import '../entities/connection_source.dart';
 import '../entities/filter.dart';
 import '../entities/global_state.dart';
 import '../entities/nip_01_event.dart';
-import '../entities/nip_01_event_raw.dart';
+import '../entities/nostr_message_raw.dart';
 import '../entities/relay.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
@@ -391,15 +391,39 @@ class RelayManager<T> {
     });
   }
 
+  // tracking to process in order
+  Completer<void>? _lastMessageCompleter;
+
   Future<void> _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) async {
-    /// decode in isolate
-    final nostrMsg = await IsolateManager.instance
-        .runInEncodingIsolate<String, NostrMessageRaw>(
-      decodeNostrMsg,
-      message,
-    );
+    final previousMessage = _lastMessageCompleter;
 
+    final myCompleter = Completer<void>();
+    _lastMessageCompleter = myCompleter;
+
+    NostrMessageRaw nostrMsg;
+    try {
+      nostrMsg = await IsolateManager.instance
+          .runInEncodingIsolate<String, NostrMessageRaw>(
+        decodeNostrMsg,
+        message,
+      );
+    } catch (e) {
+      // Isolates not available on web
+      nostrMsg = decodeNostrMsg(message);
+    }
+
+    if (previousMessage != null) {
+      await previousMessage.future;
+    }
+
+    myCompleter.complete();
+
+    _processDecodedMessage(nostrMsg, relayConnectivity, message);
+  }
+
+  void _processDecodedMessage(NostrMessageRaw nostrMsg,
+      RelayConnectivity relayConnectivity, dynamic message) {
     if (nostrMsg.type == NostrMessageRawType.unknown) {
       Logger.log.w(
           "Received non NostrMessageRaw message from ${relayConnectivity.url}: $nostrMsg");
@@ -458,8 +482,9 @@ class RelayManager<T> {
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);
-        _accounts.sign(auth).then((e) {
-          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
+        _accounts.sign(auth).then((signedEvent) {
+          send(relayConnectivity,
+              ClientMsg(ClientMsgType.kAuth, event: signedEvent));
         });
       } else {
         Logger.log
@@ -478,7 +503,7 @@ class RelayManager<T> {
   void _handleIncomingEvent(NostrMessageRaw nostrMsgRaw,
       RelayConnectivity connectivity, int messageSize) {
     final requestId = nostrMsgRaw.requestId!;
-    final eventRaw = nostrMsgRaw.nip01Event!;
+    final event = nostrMsgRaw.nip01Event!;
 
     if (globalState.inFlightRequests[requestId] == null) {
       Logger.log.w(
@@ -486,15 +511,6 @@ class RelayManager<T> {
       return;
     }
 
-    Nip01Event event = Nip01Event(
-      pubKey: eventRaw.pubKey,
-      createdAt: eventRaw.createdAt,
-      kind: eventRaw.kind,
-      tags: eventRaw.tags,
-      content: eventRaw.content,
-    );
-    event.sig = eventRaw.sig;
-    event.id = eventRaw.id;
     connectivity.stats.incStatsByNewEvent(event, messageSize);
 
     RequestState? state = globalState.inFlightRequests[requestId];
@@ -504,14 +520,16 @@ class RelayManager<T> {
         Logger.log.w("No RelayRequestState found for id $requestId");
         return;
       }
-      event.sources.add(connectivity.url);
+
+      final eventWithSources =
+          event.copyWith(sources: [...event.sources, connectivity.url]);
 
       if (state.networkController.isClosed) {
         // this might happen because relays even after we send a CLOSE subscription.id, they'll still send more events
         Logger.log.t(
             "tried to add event to an already closed STREAM ${state.request.id} ${state.request.filters}");
       } else {
-        state.networkController.add(event);
+        state.networkController.add(eventWithSources);
       }
     }
   }

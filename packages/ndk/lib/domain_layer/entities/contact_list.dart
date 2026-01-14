@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/helpers.dart';
+import 'nip_01_utils.dart';
 import 'nip_01_event.dart';
 import 'read_write_marker.dart';
 

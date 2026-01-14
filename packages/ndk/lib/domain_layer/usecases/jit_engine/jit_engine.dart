@@ -159,8 +159,11 @@ class JitEngine with Logger implements NetworkEngine {
     Future<void> asyncStuff() async {
       await relayManagerLight.seedRelaysConnected;
 
+      final Nip01Event workingNostrEvent;
       if (signer != null) {
-        await signer.sign(nostrEvent);
+        workingNostrEvent = await signer.sign(nostrEvent);
+      } else {
+        workingNostrEvent = nostrEvent;
       }
 
       if (specificRelays != null) {
@@ -168,7 +171,7 @@ class JitEngine with Logger implements NetworkEngine {
         return RelayJitBroadcastSpecificRelaysStrategy.broadcast(
           specificRelays: cleanedSpecificRelays,
           relayManager: relayManagerLight,
-          eventToPublish: nostrEvent,
+          eventToPublish: workingNostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
@@ -177,7 +180,7 @@ class JitEngine with Logger implements NetworkEngine {
 
       // default publish to own outbox
       RelayJitBroadcastOutboxStrategy.broadcast(
-        eventToPublish: nostrEvent,
+        eventToPublish: workingNostrEvent,
         connectedRelays: relayManagerLight.connectedRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
             .toList(),
@@ -187,15 +190,16 @@ class JitEngine with Logger implements NetworkEngine {
       );
 
       // check if we need to publish to others inboxes
-      if (nostrEvent.pTags.isNotEmpty && nostrEvent.kind != ContactList.kKind) {
+      if (workingNostrEvent.pTags.isNotEmpty &&
+          workingNostrEvent.kind != ContactList.kKind) {
         RelayJitBroadcastOtherReadStrategy.broadcast(
-          eventToPublish: nostrEvent,
+          eventToPublish: workingNostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
           cacheManager: cache,
           relayManager: relayManagerLight,
-          pubkeysOfInbox: nostrEvent.pTags,
+          pubkeysOfInbox: workingNostrEvent.pTags,
         );
       }
     }
