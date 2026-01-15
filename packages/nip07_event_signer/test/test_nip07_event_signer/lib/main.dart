@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:convert';
-
 import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:ndk/ndk.dart';
 

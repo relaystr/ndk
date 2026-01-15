@@ -7,7 +7,6 @@ import '../../entities/nip_01_event.dart';
 import '../../repositories/blossom.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
-import '../../entities/nip_01_utils.dart';
 import 'blossom_user_server_list.dart';
 
 /// direct access usecase to blossom \

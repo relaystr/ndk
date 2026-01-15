@@ -9,7 +9,6 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip09/deletion.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
@@ -437,8 +436,7 @@ class MockRelay {
       }
 
       // Create NIP-46 response event
-      Nip01Event responseEventUnsinged =
-          Nip01Event(
+      Nip01Event responseEventUnsinged = Nip01Event(
         pubKey: remoteSignerPublicKey,
         kind: kNip46Kind,
         tags: [
@@ -558,8 +556,7 @@ class MockRelay {
           }
 
           // Use the Nip01Event constructor directly
-          final Nip01Event eventToSign =
-              Nip01Event(
+          final Nip01Event eventToSign = Nip01Event(
             pubKey: remoteSignerPublicKey,
             kind: eventData["kind"] ?? 1,
             tags: List<List<String>>.from(eventData["tags"] ?? []),

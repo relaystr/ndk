@@ -5,7 +5,6 @@ import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/nip_01_event.dart';
 import '../accounts/accounts.dart';
 import '../../../shared/nips/nip01/bip340.dart';
-import '../../entities/nip_01_utils.dart';
 
 class GiftWrap {
   static const int kSealEventKind = 13;

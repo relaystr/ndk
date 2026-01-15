@@ -3,7 +3,6 @@ import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
-import '../../entities/nip_01_utils.dart';
 import '../requests/requests.dart';
 import 'blossom.dart';
 

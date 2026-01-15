@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:ndk/domain_layer/repositories/lnurl_transport.dart';
 import 'package:ndk/ndk.dart';
 
