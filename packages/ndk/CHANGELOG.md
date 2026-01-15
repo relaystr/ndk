@@ -1,3 +1,35 @@
+## 0.6.1-dev.7
+
+ - **REFACTOR**: proof of work as instance.
+ - **REFACTOR**(fix): encode zapRequest.
+ - **REFACTOR**(fix): encode gift wrap.
+ - **REFACTOR**(fix): use signed event in sets engine.
+ - **REFACTOR**(fix): brodcast detect need for signing.
+ - **REFACTOR**(fix): mock relay fix send encode.
+ - **REFACTOR**: zap request calc id.
+ - **REFACTOR**(fix): auth event id.
+ - **REFACTOR**(fix): sign event in test.
+ - **REFACTOR**: immutable event sources.
+ - **REFACTOR**: ndk tests.
+ - **REFACTOR**: valid sig.
+ - **REFACTOR**: other packages.
+ - **REFACTOR**: entities.
+ - **REFACTOR**: signer, amber.
+ - **REFACTOR**: event service.
+ - **REFACTOR**: nip01 immutable.
+ - **REFACTOR**: decode nip01 event in isolate.
+ - **FIX**: remove meaningless comments.
+ - **FIX**: mem cache methods (loadNip05s, loadMetadatas).
+ - **FIX**: blossom signing.
+ - **FIX**: add copy with to extended class.
+ - **FIX**: websocket state check optimization.
+ - **FEAT**: add test suite in actual cache tests.
+ - **FEAT**: global test suite.
+ - **FEAT**: preserve order decoding.
+ - **FEAT**: eose extract request id.
+ - **FEAT**: isolate pool.
+ - **FEAT**: deligate tasks to isolates.
+
 ## 0.6.1-dev.6
 
  - **FEAT**: add tests.

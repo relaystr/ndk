@@ -1,3 +1,8 @@
+## 0.2.7-dev.7
+
+ - **REFACTOR**: other packages.
+ - **FEAT**: objectbox test.
+
 ## 0.2.7-dev.6
 
  - **FIX**: clean imports.

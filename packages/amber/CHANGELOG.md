@@ -1,3 +1,10 @@
+## 0.3.3-dev.8
+
+ - **REFACTOR**: signer, amber.
+ - **FIX**: clean imports.
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
 ## 0.3.3-dev.6
 
  - **FIX**: clean imports.
