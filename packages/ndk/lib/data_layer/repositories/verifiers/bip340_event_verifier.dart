@@ -1,6 +1,7 @@
 import 'dart:isolate';
 
 import 'package:bip340/bip340.dart' as bip340;
+import 'package:ndk/shared/isolates/isolate_manager.dart';
 
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_01_utils.dart';
@@ -19,8 +20,10 @@ class Bip340EventVerifier implements EventVerifier {
       return false;
     }
     if (!Nip01Utils.isIdValid(event)) return false;
-    return useIsolate? await Isolate.run(() {
+    return useIsolate? await await IsolateManager.instance.runInComputeIsolate<Nip01Event, bool>((event) {
       return bip340.verify(event.pubKey, event.id, event.sig!);
-    }) : bip340.verify(event.pubKey, event.id, event.sig!);
+    },
+    event
+    ) : bip340.verify(event.pubKey, event.id, event.sig!);
   }
 }
