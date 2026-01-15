@@ -90,7 +90,7 @@ class _AmberPageState extends State<AmberPage> {
             );
             EventVerifier eventVerifier = RustEventVerifier();
             eventVerifier
-                .verify(Nip01Event.fromJson(json.decode(value['event'])))
+                .verify(Nip01EventModel.fromJson(json.decode(value['event'])))
                 .then((valid) {
               setState(() {
                 _text = valid ? "✅ Valid" : "❌ Invalid";

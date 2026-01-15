@@ -4,6 +4,7 @@ import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 import 'package:test/test.dart';
 import 'package:sembast_cache_manager/sembast_cache_manager.dart';
 
@@ -607,4 +608,21 @@ void main() {
       });
     });
   });
+
+  // Run shared test suite for comprehensive coverage
+  late Directory sharedTempDir;
+  runCacheManagerTestSuite(
+    name: 'SembastCacheManager (Shared Suite)',
+    createCacheManager: () async {
+      sharedTempDir =
+          await Directory.systemTemp.createTemp('sembast_shared_test');
+      return SembastCacheManager.create(databasePath: sharedTempDir.path);
+    },
+    cleanUp: (cacheManager) async {
+      await cacheManager.close();
+      try {
+        await sharedTempDir.delete(recursive: true);
+      } catch (_) {}
+    },
+  );
 }

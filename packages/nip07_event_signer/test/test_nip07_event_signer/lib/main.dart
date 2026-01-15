@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:convert';
-
 import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:ndk/ndk.dart';
 
@@ -133,14 +131,10 @@ Future<bool> testSign(Nip07EventSigner nip07Signer) async {
     content: "GM",
   );
 
-  print(jsonEncode(event.toJson()));
+  final signedEvent = await nip07Signer.sign(event);
 
-  await nip07Signer.sign(event);
-
-  print(jsonEncode(event.toJson()));
-
-  return await Bip340EventVerifier().verify(event) &&
-      event.kind == 1 &&
-      event.pubKey == pubKey &&
-      event.content == "GM";
+  return await Bip340EventVerifier().verify(signedEvent) &&
+      signedEvent.kind == 1 &&
+      signedEvent.pubKey == pubKey &&
+      signedEvent.content == "GM";
 }

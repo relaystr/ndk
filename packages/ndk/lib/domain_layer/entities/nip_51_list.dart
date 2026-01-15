@@ -76,7 +76,7 @@ class Nip51List {
     kA
   ];
 
-  late String id;
+  late String? id;
   late String pubKey;
   late int kind;
 

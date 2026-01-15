@@ -41,6 +41,20 @@ you can read more about it in the [flutter docs](https://docs.flutter.dev/platfo
 
 When enabled the verification is done in a background thread/worker.
 
+### Alternative: COI Service Worker
+
+If you don't have control over your server headers (e.g., GitHub Pages, static hosting), you can use [coi-serviceworker](https://github.com/gzuidhof/coi-serviceworker) to enable cross-origin isolation client-side.
+
+1. Download `coi-serviceworker.js` from the repository
+2. Place it in your `web/` folder
+3. Add this script tag to your `web/index.html` before other scripts:
+
+```html
+<script src="coi-serviceworker.js"></script>
+```
+
+This service worker will automatically add the required COOP/COEP headers to enable SharedArrayBuffer and multi-threading in the browser.
+
 ## How to build the rust_verifier from source [library development]
 
 ### normal build

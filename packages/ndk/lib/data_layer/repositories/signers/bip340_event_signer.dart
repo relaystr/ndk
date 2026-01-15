@@ -20,10 +20,11 @@ class Bip340EventSigner implements EventSigner {
   });
 
   @override
-  Future<void> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event) async {
     if (Helpers.isNotBlank(privateKey)) {
-      event.sig = Bip340.sign(event.id, privateKey!);
+      return event.copyWith(sig: Bip340.sign(event.id, privateKey!));
     }
+    throw Exception('Private key is required for signing');
   }
 
   @override

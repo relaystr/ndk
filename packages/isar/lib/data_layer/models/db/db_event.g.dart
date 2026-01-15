@@ -87,7 +87,7 @@ int serializeDbEvent(IsarWriter writer, DbEvent object) {
     IsarCore.endList(writer, listWriter);
   }
   IsarCore.writeString(writer, 7, object.content);
-  IsarCore.writeString(writer, 8, object.sig);
+  IsarCore.writeString(writer, 8, object.sig ?? '');
   {
     final value = object.validSig;
     if (value == null) {

@@ -12,6 +12,7 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/read_write.dart';
+import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 import 'package:test/test.dart';
 import 'package:isar/isar.dart' as isar;
 
@@ -311,4 +312,15 @@ void main() async {
     expect(loadedEventsPubkey2AndKind1.first.pTags, event11.pTags);
     expect(loadedEventsPubkey2AndKind1.first.kind, 1);
   });
+
+  // Run shared test suite for comprehensive coverage
+  runCacheManagerTestSuite(
+    name: 'IsarCacheManager (Shared Suite)',
+    createCacheManager: () async {
+      final cacheManager = IsarCacheManager();
+      await cacheManager.init(directory: Isar.sqliteInMemory);
+      return cacheManager;
+    },
+    cleanUp: (cacheManager) async => await cacheManager.close(),
+  );
 }
