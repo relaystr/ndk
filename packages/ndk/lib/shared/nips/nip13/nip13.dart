@@ -1,6 +1,5 @@
 import 'dart:math';
 import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/entities/nip_01_utils.dart';
 import '../../isolates/isolate_manager.dart';
 
 class _MiningParams {
