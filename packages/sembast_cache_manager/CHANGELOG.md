@@ -1,3 +1,9 @@
+## 1.0.6-dev.8
+
+ - **REFACTOR**: nip07, amber, sembast.
+ - **REFACTOR**: other packages.
+ - **FEAT**: add test suite in actual cache tests.
+
 ## 1.0.6-dev.7
 
  - Update a dependency to the latest release.

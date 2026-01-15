@@ -4,7 +4,7 @@ import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/cache_manager_test_suite.dart';
+import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 import 'package:test/test.dart';
 import 'package:sembast_cache_manager/sembast_cache_manager.dart';
 
@@ -238,12 +238,9 @@ void main() {
 
       test('removeAllEventsByPubKey', () async {
         final events = [
-          Nip01Event(
-              pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 1'),
-          Nip01Event(
-              pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 2'),
-          Nip01Event(
-              pubKey: 'pubkey2', kind: 1, tags: [], content: 'Event 3'),
+          Nip01Event(pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 1'),
+          Nip01Event(pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 2'),
+          Nip01Event(pubKey: 'pubkey2', kind: 1, tags: [], content: 'Event 3'),
         ];
 
         await cacheManager.saveEvents(events);

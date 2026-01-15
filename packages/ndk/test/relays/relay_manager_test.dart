@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import 'package:ndk/domain_layer/entities/ndk_request.dart';
-import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
 import 'package:ndk/domain_layer/usecases/relay_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:test/test.dart';

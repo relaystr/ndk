@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
-import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/bloom_filter/bloom_filter_prehash.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';

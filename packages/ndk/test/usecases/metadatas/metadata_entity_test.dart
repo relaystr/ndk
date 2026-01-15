@@ -1,4 +1,3 @@
-import 'package:ndk/domain_layer/entities/nip_01_utils.dart';
 import 'package:test/test.dart';
 import 'package:ndk/entities.dart';
 import 'dart:convert';

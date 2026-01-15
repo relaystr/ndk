@@ -12,7 +12,7 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/read_write.dart';
-import 'package:ndk/cache_manager_test_suite.dart';
+import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 import 'package:test/test.dart';
 import 'package:isar/isar.dart' as isar;
 
