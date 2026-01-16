@@ -125,9 +125,9 @@ void main() {
         final eventsBefore = await cacheManager.loadEvents(until: 1234567895);
         expect(eventsBefore.length, equals(2));
 
-        // Test pTag filter
+        // Test tags filter (p tag)
         final eventsByPTag = await cacheManager.loadEvents(
-          pTag: 'target_pubkey',
+          tags: {'p': ['target_pubkey']},
         );
         expect(eventsByPTag.length, equals(1));
         expect(eventsByPTag.first.pTags.contains('target_pubkey'), isTrue);

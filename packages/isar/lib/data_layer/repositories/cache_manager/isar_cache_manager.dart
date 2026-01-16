@@ -4,7 +4,6 @@ import 'package:isar/isar.dart';
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/logger/logger.dart';
-import 'package:ndk/shared/nips/nip01/helpers.dart';
 
 import '../../data_sources/isar_db.dart';
 import '../../models/db/db_contact_list.dart';
@@ -306,31 +305,75 @@ class IsarCacheManager extends CacheManager {
 
   @override
   Future<List<Nip01Event>> loadEvents({
+    List<String>? ids,
     List<String>? pubKeys,
     List<int>? kinds,
-    String? pTag,
+    Map<String, List<String>>? tags,
     int? since,
     int? until,
+    String? search,
     int? limit,
   }) async {
-    if (since != null || until != null) {
-      throw Exception("since | until not implemented");
-    }
     List<Nip01Event> events = isar_ds.isar.dbEvents
         .where()
+        .optional(ids != null && ids.isNotEmpty,
+            (q) => q.anyOf(ids!, (q, id) => q.idEqualTo(id)))
+        .and()
         .optional(kinds != null && kinds.isNotEmpty,
             (q) => q.anyOf(kinds!, (q, kind) => q.kindEqualTo(kind)))
         .and()
         .optional(pubKeys != null && pubKeys.isNotEmpty,
             (q) => q.anyOf(pubKeys!, (q, pubKey) => q.pubKeyEqualTo(pubKey)))
-        // .and()
-        // .optional(Helpers.isNotBlank(pTag), (q) => q.pTagsElementEqualTo(pTag!))
         .sortByCreatedAtDesc()
         .findAll(limit: limit);
 
-    events = Helpers.isNotBlank(pTag)
-        ? events.where((event) => event.pTags.contains(pTag)).toList()
-        : events;
+    // Apply time filters in memory
+    if (since != null) {
+      events = events.where((event) => event.createdAt >= since).toList();
+    }
+    if (until != null) {
+      events = events.where((event) => event.createdAt <= until).toList();
+    }
+
+    // Apply search filter in memory
+    if (search != null && search.isNotEmpty) {
+      final searchLower = search.toLowerCase();
+      events = events
+          .where((event) => event.content.toLowerCase().contains(searchLower))
+          .toList();
+    }
+
+    // Apply tag filters in memory
+    if (tags != null && tags.isNotEmpty) {
+      events = events.where((event) {
+        return tags.entries.every((tagEntry) {
+          String tagKey = tagEntry.key;
+          List<String> tagValues = tagEntry.value;
+
+          // Handle the special case where tag key starts with '#'
+          if (tagKey.startsWith('#') && tagKey.length > 1) {
+            tagKey = tagKey.substring(1);
+          }
+
+          final eventTagValues = event.getTags(tagKey);
+
+          if (tagValues.isEmpty &&
+              event.tags.where((e) => e[0] == tagKey).isNotEmpty) {
+            return true;
+          }
+
+          return tagValues.any((value) =>
+              eventTagValues.contains(value) ||
+              eventTagValues.contains(value.toLowerCase()));
+        });
+      }).toList();
+    }
+
+    // Apply limit after memory filtering
+    if (limit != null && limit > 0 && events.length > limit) {
+      events = events.take(limit).toList();
+    }
+
     return eventFilter != null
         ? events.where((event) => eventFilter!.filter(event)).toList()
         : events;
@@ -360,17 +403,27 @@ class IsarCacheManager extends CacheManager {
   }
 
   @override
-  Future<Iterable<Nip01Event>> searchEvents(
-      {List<String>? ids,
-      List<String>? authors,
-      List<int>? kinds,
-      Map<String, List<String>>? tags,
-      int? since,
-      int? until,
-      String? search,
-      int limit = 100}) {
-    // TODO: implement searchEvents
-    throw UnimplementedError();
+  @Deprecated('Use loadEvents() instead')
+  Future<Iterable<Nip01Event>> searchEvents({
+    List<String>? ids,
+    List<String>? authors,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int limit = 100,
+  }) async {
+    return loadEvents(
+      ids: ids,
+      pubKeys: authors,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+    );
   }
 
   @override

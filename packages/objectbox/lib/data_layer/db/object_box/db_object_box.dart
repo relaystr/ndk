@@ -69,77 +69,116 @@ class DbObjectBox implements CacheManager {
 
   @override
   Future<List<Nip01Event>> loadEvents({
+    List<String>? ids,
     List<String>? pubKeys,
     List<int>? kinds,
-    String? pTag,
+    Map<String, List<String>>? tags,
     int? since,
     int? until,
+    String? search,
     int? limit,
   }) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
-    QueryBuilder<DbNip01Event> query;
 
-    // Build condition based on available filters
+    // Build conditions
     Condition<DbNip01Event>? condition;
 
+    // Add search condition if provided (NIP-50)
+    if (search != null && search.isNotEmpty) {
+      condition = DbNip01Event_.content.contains(search, caseSensitive: false);
+    }
+
+    // Add ids filter
+    if (ids != null && ids.isNotEmpty) {
+      Condition<DbNip01Event> idsCondition = DbNip01Event_.nostrId.oneOf(ids);
+      condition =
+          (condition == null) ? idsCondition : condition.and(idsCondition);
+    }
+
+    // Add pubKeys filter
     if (pubKeys != null && pubKeys.isNotEmpty) {
-      condition = DbNip01Event_.pubKey.oneOf(pubKeys);
+      Condition<DbNip01Event> pubKeysCondition =
+          DbNip01Event_.pubKey.oneOf(pubKeys);
+      condition = (condition == null)
+          ? pubKeysCondition
+          : condition.and(pubKeysCondition);
     }
 
+    // Add kinds filter
     if (kinds != null && kinds.isNotEmpty) {
-      final kindsCondition = DbNip01Event_.kind.oneOf(kinds);
-      condition = condition != null
-          ? condition.and(kindsCondition)
-          : kindsCondition;
+      Condition<DbNip01Event> kindsCondition = DbNip01Event_.kind.oneOf(kinds);
+      condition =
+          (condition == null) ? kindsCondition : condition.and(kindsCondition);
     }
 
+    // Add since filter
     if (since != null) {
-      final sinceCondition = DbNip01Event_.createdAt.greaterOrEqual(since);
-      condition = condition != null
-          ? condition.and(sinceCondition)
-          : sinceCondition;
+      Condition<DbNip01Event> sinceCondition =
+          DbNip01Event_.createdAt.greaterOrEqual(since);
+      condition =
+          (condition == null) ? sinceCondition : condition.and(sinceCondition);
     }
 
+    // Add until filter
     if (until != null) {
-      final untilCondition = DbNip01Event_.createdAt.lessOrEqual(until);
-      condition = condition != null
-          ? condition.and(untilCondition)
-          : untilCondition;
+      Condition<DbNip01Event> untilCondition =
+          DbNip01Event_.createdAt.lessOrEqual(until);
+      condition =
+          (condition == null) ? untilCondition : condition.and(untilCondition);
     }
 
-    // Build query with or without conditions
+    // Create and build the query
+    QueryBuilder<DbNip01Event> queryBuilder;
     if (condition != null) {
-      query = eventBox.query(condition);
+      queryBuilder = eventBox.query(condition);
     } else {
-      query = eventBox.query();
+      queryBuilder = eventBox.query();
     }
 
-    query = query.order(DbNip01Event_.createdAt, flags: Order.descending);
+    // Apply sorting
+    queryBuilder.order(DbNip01Event_.createdAt, flags: Order.descending);
 
-    final Query<DbNip01Event> dbQuery;
-
-    // apply limit
+    // Build and execute the query
+    final query = queryBuilder.build();
     if (limit != null && limit > 0) {
-      dbQuery = query.build()..limit = limit;
-    } else {
-      dbQuery = query.build();
+      query.limit = limit;
+    }
+    final results = query.find();
+
+    // For tag filtering, we need to do it in memory since ObjectBox doesn't support
+    // complex JSON querying within arrays
+    List<DbNip01Event> filteredResults = results;
+
+    // Apply tag filters in memory if needed
+    if (tags != null && tags.isNotEmpty) {
+      filteredResults = results.where((event) {
+        // Check if the event matches all tag filters
+        return tags.entries.every((tagEntry) {
+          String tagKey = tagEntry.key;
+          List<String> tagValues = tagEntry.value;
+
+          // Handle the special case where tag key starts with '#'
+          if (tagKey.startsWith('#') && tagKey.length > 1) {
+            tagKey = tagKey.substring(1); // Remove the '#' prefix
+          }
+
+          // Get all tags with this key
+          List<DbTag> eventTags =
+              event.tags.where((t) => t.key == tagKey).toList();
+
+          // Check if any of the event's tags with this key have a value in the requested values
+          return eventTags.any((tag) =>
+              tagValues.contains(tag.value) ||
+              tagValues.contains(tag.value.toLowerCase()));
+        });
+      }).toList();
     }
 
-    List<DbNip01Event> foundDb = dbQuery.find();
-
-    // Filter by pTag in memory (ObjectBox doesn't support array element queries)
-    final foundValid = foundDb.where((event) {
-      if (pTag != null && !event.pTags.contains(pTag)) {
-        return false;
-      }
-      return true;
-    }).toList();
-
-    // Apply limit after filtering
-    final limitedResults = limit != null && limit > 0
-        ? foundValid.take(limit).toList()
-        : foundValid;
+    // Apply limit after filtering if tags were applied
+    final limitedResults = (limit != null && limit > 0 && tags != null)
+        ? filteredResults.take(limit).toList()
+        : filteredResults;
 
     return limitedResults.map((dbEvent) => dbEvent.toNdk()).toList();
   }
@@ -529,6 +568,8 @@ class DbObjectBox implements CacheManager {
     return results.map((dbMetadata) => dbMetadata.toNdk()).take(limit);
   }
 
+  @override
+  @Deprecated('Use loadEvents() instead')
   Future<Iterable<Nip01Event>> searchEvents({
     List<String>? ids,
     List<String>? authors,
@@ -539,101 +580,15 @@ class DbObjectBox implements CacheManager {
     String? search,
     int limit = 100,
   }) async {
-    await dbRdy;
-    final eventBox = _objectBox.store.box<DbNip01Event>();
-
-    // Build conditions
-    Condition<DbNip01Event>? condition;
-
-    // Add search condition if provided (NIP-50)
-    if (search != null && search.isNotEmpty) {
-      condition = DbNip01Event_.content.contains(search, caseSensitive: false);
-    }
-
-    // Add ids filter
-    if (ids != null && ids.isNotEmpty) {
-      Condition<DbNip01Event> idsCondition = DbNip01Event_.nostrId.oneOf(ids);
-      condition =
-          (condition == null) ? idsCondition : condition.and(idsCondition);
-    }
-
-    // Add authors filter
-    if (authors != null && authors.isNotEmpty) {
-      Condition<DbNip01Event> authorsCondition =
-          DbNip01Event_.pubKey.oneOf(authors);
-      condition = (condition == null)
-          ? authorsCondition
-          : condition.and(authorsCondition);
-    }
-
-    // Add kinds filter
-    if (kinds != null && kinds.isNotEmpty) {
-      Condition<DbNip01Event> kindsCondition = DbNip01Event_.kind.oneOf(kinds);
-      condition =
-          (condition == null) ? kindsCondition : condition.and(kindsCondition);
-    }
-
-    // Add since filter
-    if (since != null) {
-      Condition<DbNip01Event> sinceCondition =
-          DbNip01Event_.createdAt.greaterOrEqual(since);
-      condition =
-          (condition == null) ? sinceCondition : condition.and(sinceCondition);
-    }
-
-    // Add until filter
-    if (until != null) {
-      Condition<DbNip01Event> untilCondition =
-          DbNip01Event_.createdAt.lessOrEqual(until);
-      condition =
-          (condition == null) ? untilCondition : condition.and(untilCondition);
-    }
-
-    // Create and build the query
-    QueryBuilder<DbNip01Event> queryBuilder;
-    if (condition != null) {
-      queryBuilder = eventBox.query(condition);
-    } else {
-      queryBuilder = eventBox.query();
-    }
-
-    // Apply sorting
-    queryBuilder.order(DbNip01Event_.createdAt, flags: Order.descending);
-
-    // Build and execute the query
-    final query = queryBuilder.build();
-    query..limit = limit;
-    final results = query.find();
-
-    // For tag filtering, we need to do it in memory since ObjectBox doesn't support
-    // complex JSON querying within arrays
-    List<DbNip01Event> filteredResults = results;
-
-    // Apply tag filters in memory if needed
-    if (tags != null && tags.isNotEmpty) {
-      filteredResults = results.where((event) {
-        // Check if the event matches all tag filters
-        return tags.entries.every((tagEntry) {
-          String tagKey = tagEntry.key;
-          List<String> tagValues = tagEntry.value;
-
-          // Handle the special case where tag key starts with '#'
-          if (tagKey.startsWith('#') && tagKey.length > 1) {
-            tagKey = tagKey.substring(1); // Remove the '#' prefix
-          }
-
-          // Get all tags with this key
-          List<DbTag> eventTags =
-              event.tags.where((t) => t.key == tagKey).toList();
-
-          // Check if any of the event's tags with this key have a value in the requested values
-          return eventTags.any((tag) =>
-              tagValues.contains(tag.value) ||
-              tagValues.contains(tag.value.toLowerCase()));
-        });
-      }).toList();
-    }
-
-    return filteredResults.map((dbEvent) => dbEvent.toNdk()).take(limit);
+    return loadEvents(
+      ids: ids,
+      pubKeys: authors,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+    );
   }
 }
