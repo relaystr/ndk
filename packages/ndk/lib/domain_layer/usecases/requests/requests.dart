@@ -15,7 +15,7 @@ import '../../entities/request_state.dart';
 import '../../repositories/event_verifier.dart';
 import '../cache_read/cache_read.dart';
 import '../cache_write/cache_write.dart';
-import '../coverage/coverage.dart';
+import '../fetched_ranges/fetched_ranges.dart';
 import '../engines/network_engine.dart';
 import '../relay_manager.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
@@ -32,7 +32,7 @@ class Requests {
   final EventVerifier _eventVerifier;
   final List<EventFilter> _eventOutFilters;
   final Duration _defaultQueryTimeout;
-  Coverage? _coverage;
+  FetchedRanges? _fetchedRanges;
 
   /// Creates a new [Requests] instance
   ///
@@ -59,8 +59,9 @@ class Requests {
         _eventOutFilters = eventOutFilters,
         _defaultQueryTimeout = defaultQueryTimeout;
 
-  /// Set the coverage tracker for automatic range recording
-  set coverage(Coverage? coverage) => _coverage = coverage;
+  /// Set the fetched ranges tracker for automatic range recording
+  set fetchedRanges(FetchedRanges? fetchedRanges) =>
+      _fetchedRanges = fetchedRanges;
 
   /// Performs a low-level Nostr query
   ///
@@ -226,9 +227,9 @@ class Requests {
       eventOutFilters: _eventOutFilters,
     )();
 
-    // Record coverage when network requests complete (EOSE received)
+    // Record fetched ranges when network requests complete (EOSE received)
     state.networkController.done.then((_) {
-      _recordCoverage(state);
+      _recordFetchedRanges(state);
     });
 
     // cleanup on close
@@ -273,12 +274,12 @@ class Requests {
     return response;
   }
 
-  /// Records coverage for each relay that received EOSE
+  /// Records fetched ranges for each relay that received EOSE
   /// - If events received: use min/max of event timestamps
   /// - If no events + filter has since/until: use filter bounds
   /// - If no events + no bounds: use 0 to now
-  void _recordCoverage(RequestState state) {
-    if (_coverage == null) return;
+  void _recordFetchedRanges(RequestState state) {
+    if (_fetchedRanges == null) return;
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -301,14 +302,14 @@ class Requests {
 
       final relayEvents = eventsByRelay[relayUrl];
 
-      // Record coverage for each filter sent to this relay
+      // Record fetched range for each filter sent to this relay
       for (final filter in relayState.filters) {
         int since;
         int until;
 
         if (relayEvents != null && relayEvents.isNotEmpty) {
           // Use oldest event timestamp for since, filter.until or now for until
-          // EOSE means relay has no more events, so coverage extends to query end
+          // EOSE means relay has no more events, so fetched range extends to query end
           final timestamps = relayEvents.map((e) => e.createdAt).toList();
           since = timestamps.reduce((a, b) => a < b ? a : b);
           until = filter.until ?? now;
@@ -322,7 +323,7 @@ class Requests {
           until = now;
         }
 
-        _coverage!.addRange(
+        _fetchedRanges!.addRange(
           filter: filter,
           relayUrl: relayUrl,
           since: since,

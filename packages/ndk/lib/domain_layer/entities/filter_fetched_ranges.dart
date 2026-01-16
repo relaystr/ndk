@@ -63,29 +63,29 @@ class TimeRange {
       );
 }
 
-/// A gap in coverage (missing time range)
-class CoverageGap {
+/// A gap in fetched ranges (missing time range)
+class FetchedRangesGap {
   final String relayUrl;
   final int since;
   final int until;
 
-  const CoverageGap({
+  const FetchedRangesGap({
     required this.relayUrl,
     required this.since,
     required this.until,
   });
 
   @override
-  String toString() => 'CoverageGap($relayUrl: $since - $until)';
+  String toString() => 'FetchedRangesGap($relayUrl: $since - $until)';
 }
 
-/// Coverage information for a specific relay and filter combination
-class RelayCoverage {
+/// Fetched ranges information for a specific relay and filter combination
+class RelayFetchedRanges {
   final String relayUrl;
   final Filter filter;
   final List<TimeRange> ranges;
 
-  const RelayCoverage({
+  const RelayFetchedRanges({
     required this.relayUrl,
     required this.filter,
     required this.ranges,
@@ -148,10 +148,10 @@ class RelayCoverage {
     return gaps;
   }
 
-  /// Get gaps as CoverageGap objects
-  List<CoverageGap> getGaps(int since, int until) {
+  /// Get gaps as FetchedRangesGap objects
+  List<FetchedRangesGap> getGaps(int since, int until) {
     return findGaps(since, until)
-        .map((g) => CoverageGap(
+        .map((g) => FetchedRangesGap(
               relayUrl: relayUrl,
               since: g.since,
               until: g.until,
@@ -161,11 +161,11 @@ class RelayCoverage {
 
   @override
   String toString() =>
-      'RelayCoverage($relayUrl, ${ranges.length} ranges, oldest: $oldest, newest: $newest, reachedOldest: $reachedOldest)';
+      'RelayFetchedRanges($relayUrl, ${ranges.length} ranges, oldest: $oldest, newest: $newest, reachedOldest: $reachedOldest)';
 }
 
-/// Record stored in the database for filter coverage
-class FilterCoverageRecord {
+/// Record stored in the database for filter fetched ranges
+class FilterFetchedRangeRecord {
   /// Hash of the filter (without since/until)
   final String filterHash;
 
@@ -178,7 +178,7 @@ class FilterCoverageRecord {
   /// End of the covered range
   final int rangeEnd;
 
-  const FilterCoverageRecord({
+  const FilterFetchedRangeRecord({
     required this.filterHash,
     required this.relayUrl,
     required this.rangeStart,
@@ -190,7 +190,7 @@ class FilterCoverageRecord {
 
   @override
   String toString() =>
-      'FilterCoverageRecord($filterHash, $relayUrl, $rangeStart-$rangeEnd)';
+      'FilterFetchedRangeRecord($filterHash, $relayUrl, $rangeStart-$rangeEnd)';
 
   Map<String, dynamic> toJson() => {
         'filterHash': filterHash,
@@ -199,8 +199,8 @@ class FilterCoverageRecord {
         'rangeEnd': rangeEnd,
       };
 
-  factory FilterCoverageRecord.fromJson(Map<String, dynamic> json) =>
-      FilterCoverageRecord(
+  factory FilterFetchedRangeRecord.fromJson(Map<String, dynamic> json) =>
+      FilterFetchedRangeRecord(
         filterHash: json['filterHash'] as String,
         relayUrl: json['relayUrl'] as String,
         rangeStart: json['rangeStart'] as int,

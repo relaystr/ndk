@@ -20,8 +20,8 @@ void main() async {
     return event;
   }
 
-  group('Coverage integration', () {
-    test('query automatically records coverage based on event timestamps',
+  group('FetchedRanges integration', () {
+    test('query automatically records fetched ranges based on event timestamps',
         timeout: const Timeout(Duration(seconds: 5)), () async {
       // Create event with specific timestamp
       final event1 = textNoteWithTimestamp(key1, 150);
@@ -29,7 +29,7 @@ void main() async {
 
       // Setup mock relay
       MockRelay relay1 = MockRelay(
-        name: "relay coverage test",
+        name: "relay fetched ranges test",
         explicitPort: 4200,
         signEvents: false,
       );
@@ -43,7 +43,7 @@ void main() async {
           cache: cache,
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url],
-          coverageEnabled: true,
+          fetchedRangesEnabled: true,
         ),
       );
 
@@ -60,33 +60,34 @@ void main() async {
       // Wait for response to complete
       await response.future;
 
-      // Small delay to ensure coverage is recorded
+      // Small delay to ensure fetched ranges are recorded
       await Future.delayed(const Duration(milliseconds: 100));
 
-      // Check coverage was recorded
-      final coverage = await ndk.coverage.getForFilter(filter);
+      // Check fetched ranges were recorded
+      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
 
-      expect(coverage.isNotEmpty, isTrue,
-          reason: 'Coverage should be recorded after query');
-      expect(coverage.containsKey(relay1.url), isTrue,
-          reason: 'Coverage should contain the relay URL');
+      expect(fetchedRanges.isNotEmpty, isTrue,
+          reason: 'Fetched ranges should be recorded after query');
+      expect(fetchedRanges.containsKey(relay1.url), isTrue,
+          reason: 'Fetched ranges should contain the relay URL');
 
-      final relayCoverage = coverage[relay1.url]!;
-      expect(relayCoverage.ranges.isNotEmpty, isTrue,
+      final relayFetchedRanges = fetchedRanges[relay1.url]!;
+      expect(relayFetchedRanges.ranges.isNotEmpty, isTrue,
           reason: 'Should have at least one range');
 
-      // Coverage since should be based on the event's createdAt (150)
-      // Coverage until should extend to now (no filter.until specified)
-      expect(relayCoverage.ranges.first.since, equals(150),
+      // Fetched range since should be based on the event's createdAt (150)
+      // Fetched range until should extend to now (no filter.until specified)
+      expect(relayFetchedRanges.ranges.first.since, equals(150),
           reason: 'Range since should match oldest event timestamp');
-      expect(relayCoverage.ranges.first.until, greaterThan(150),
-          reason: 'Range until should extend to now (EOSE means no newer events)');
+      expect(relayFetchedRanges.ranges.first.until, greaterThan(150),
+          reason:
+              'Range until should extend to now (EOSE means no newer events)');
 
       await relay1.stopServer();
       await ndk.destroy();
     });
 
-    test('coverage reflects actual events received, not filter bounds',
+    test('fetched ranges reflect actual events received, not filter bounds',
         timeout: const Timeout(Duration(seconds: 5)), () async {
       // Create event with timestamp 500
       final event1 = textNoteWithTimestamp(key1, 500);
@@ -106,7 +107,7 @@ void main() async {
           cache: cache,
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url],
-          coverageEnabled: true,
+          fetchedRangesEnabled: true,
         ),
       );
 
@@ -124,23 +125,24 @@ void main() async {
       await response.future;
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final coverage = await ndk.coverage.getForFilter(filter);
+      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
 
-      expect(coverage.containsKey(relay1.url), isTrue);
+      expect(fetchedRanges.containsKey(relay1.url), isTrue);
 
-      final relayCoverage = coverage[relay1.url]!;
-      // Coverage since should be event timestamp (500), not filter.since (100)
-      // Coverage until should be filter.until (1000) since EOSE confirms no newer events
-      expect(relayCoverage.ranges.first.since, equals(500),
-          reason: 'Coverage since should reflect oldest event timestamp');
-      expect(relayCoverage.ranges.first.until, equals(1000),
-          reason: 'Coverage until should be filter.until (EOSE confirms coverage)');
+      final relayFetchedRanges = fetchedRanges[relay1.url]!;
+      // Fetched range since should be event timestamp (500), not filter.since (100)
+      // Fetched range until should be filter.until (1000) since EOSE confirms no newer events
+      expect(relayFetchedRanges.ranges.first.since, equals(500),
+          reason: 'Fetched range since should reflect oldest event timestamp');
+      expect(relayFetchedRanges.ranges.first.until, equals(1000),
+          reason:
+              'Fetched range until should be filter.until (EOSE confirms coverage)');
 
       await relay1.stopServer();
       await ndk.destroy();
     });
 
-    test('coverage recorded with filter bounds when no events received',
+    test('fetched ranges recorded with filter bounds when no events received',
         timeout: const Timeout(Duration(seconds: 5)), () async {
       // Empty - no events
       Map<KeyPair, Nip01Event> textNotes = {};
@@ -159,7 +161,7 @@ void main() async {
           cache: cache,
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url],
-          coverageEnabled: true,
+          fetchedRangesEnabled: true,
         ),
       );
 
@@ -177,21 +179,21 @@ void main() async {
       await response.future;
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final coverage = await ndk.coverage.getForFilter(filter);
+      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
 
-      // No events but filter has bounds = coverage recorded with filter bounds
-      expect(coverage.containsKey(relay1.url), isTrue,
-          reason: 'Coverage should be recorded using filter bounds');
+      // No events but filter has bounds = fetched ranges recorded with filter bounds
+      expect(fetchedRanges.containsKey(relay1.url), isTrue,
+          reason: 'Fetched ranges should be recorded using filter bounds');
 
-      final relayCoverage = coverage[relay1.url]!;
-      expect(relayCoverage.ranges.first.since, equals(100));
-      expect(relayCoverage.ranges.first.until, equals(200));
+      final relayFetchedRanges = fetchedRanges[relay1.url]!;
+      expect(relayFetchedRanges.ranges.first.since, equals(100));
+      expect(relayFetchedRanges.ranges.first.until, equals(200));
 
       await relay1.stopServer();
       await ndk.destroy();
     });
 
-    test('coverage uses event timestamp',
+    test('fetched ranges use event timestamp',
         timeout: const Timeout(Duration(seconds: 5)), () async {
       // Create event with specific timestamp
       final event1 = textNoteWithTimestamp(key1, 100);
@@ -210,7 +212,7 @@ void main() async {
           cache: cache,
           engine: NdkEngine.RELAY_SETS,
           bootstrapRelays: [relay1.url],
-          coverageEnabled: true,
+          fetchedRangesEnabled: true,
         ),
       );
 
@@ -225,14 +227,14 @@ void main() async {
       await response.future;
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final coverage = await ndk.coverage.getForFilter(filter);
+      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
 
-      expect(coverage.containsKey(relay1.url), isTrue);
+      expect(fetchedRanges.containsKey(relay1.url), isTrue);
 
-      final relayCoverage = coverage[relay1.url]!;
+      final relayFetchedRanges = fetchedRanges[relay1.url]!;
       // since = oldest event timestamp, until = now (no filter.until)
-      expect(relayCoverage.ranges.first.since, equals(100));
-      expect(relayCoverage.ranges.first.until, greaterThan(100));
+      expect(relayFetchedRanges.ranges.first.since, equals(100));
+      expect(relayFetchedRanges.ranges.first.until, greaterThan(100));
 
       await relay1.stopServer();
       await ndk.destroy();

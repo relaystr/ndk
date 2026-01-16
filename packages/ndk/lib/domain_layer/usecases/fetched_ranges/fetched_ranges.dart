@@ -1,43 +1,44 @@
 import '../../entities/filter.dart';
-import '../../entities/filter_coverage.dart';
+import '../../entities/filter_fetched_ranges.dart';
 import '../../repositories/cache_manager.dart';
 
-/// Usecase to track and query filter coverage per relay
-class Coverage {
+/// Usecase to track and query fetched ranges per relay
+class FetchedRanges {
   final CacheManager _cacheManager;
 
-  Coverage({
+  FetchedRanges({
     required CacheManager cacheManager,
   }) : _cacheManager = cacheManager;
 
-  /// Get coverage for a filter across all relays
-  Future<Map<String, RelayCoverage>> getForFilter(Filter filter) async {
+  /// Get fetched ranges for a filter across all relays
+  Future<Map<String, RelayFetchedRanges>> getForFilter(Filter filter) async {
     final filterHash = FilterFingerprint.generate(filter);
-    final records = await _cacheManager.loadFilterCoverageRecords(filterHash);
+    final records =
+        await _cacheManager.loadFilterFetchedRangeRecords(filterHash);
 
-    return _buildCoverageMap(filter, records);
+    return _buildFetchedRangesMap(filter, records);
   }
 
-  /// Get all coverages for a relay (all filters)
-  Future<List<RelayCoverage>> getForRelay(String relayUrl) async {
+  /// Get all fetched ranges for a relay (all filters)
+  Future<List<RelayFetchedRanges>> getForRelay(String relayUrl) async {
     final records =
-        await _cacheManager.loadFilterCoverageRecordsByRelayUrl(relayUrl);
+        await _cacheManager.loadFilterFetchedRangeRecordsByRelayUrl(relayUrl);
 
     // Group by filterHash
-    final grouped = <String, List<FilterCoverageRecord>>{};
+    final grouped = <String, List<FilterFetchedRangeRecord>>{};
     for (final record in records) {
       grouped.putIfAbsent(record.filterHash, () => []).add(record);
     }
 
-    // Build RelayCoverage for each filter
+    // Build RelayFetchedRanges for each filter
     // Note: We don't have the original filter, so we create an empty one
     // The filterHash is preserved but the filter details are not available
-    final result = <RelayCoverage>[];
+    final result = <RelayFetchedRanges>[];
     for (final entry in grouped.entries) {
       final relayRecords =
           entry.value.where((r) => r.relayUrl == relayUrl).toList();
       if (relayRecords.isNotEmpty) {
-        result.add(_buildRelayCoverage(
+        result.add(_buildRelayFetchedRanges(
           relayUrl,
           Filter(), // Empty filter - we only have the hash
           relayRecords,
@@ -48,16 +49,16 @@ class Coverage {
     return result;
   }
 
-  /// Find gaps in coverage for a filter within a time range
-  Future<List<CoverageGap>> findGaps({
+  /// Find gaps in fetched ranges for a filter within a time range
+  Future<List<FetchedRangesGap>> findGaps({
     required Filter filter,
     required int since,
     required int until,
   }) async {
-    final coverageMap = await getForFilter(filter);
-    final gaps = <CoverageGap>[];
+    final fetchedRangesMap = await getForFilter(filter);
+    final gaps = <FetchedRangesGap>[];
 
-    for (final entry in coverageMap.entries) {
+    for (final entry in fetchedRangesMap.entries) {
       gaps.addAll(entry.value.getGaps(since, until));
     }
 
@@ -71,14 +72,14 @@ class Coverage {
     required int since,
     required int until,
   }) async {
-    final coverageMap = await getForFilter(filter);
+    final fetchedRangesMap = await getForFilter(filter);
     final result = <String, List<Filter>>{};
 
-    for (final entry in coverageMap.entries) {
+    for (final entry in fetchedRangesMap.entries) {
       final relayUrl = entry.key;
-      final coverage = entry.value;
+      final fetchedRanges = entry.value;
 
-      final gaps = coverage.findGaps(since, until);
+      final gaps = fetchedRanges.findGaps(since, until);
       if (gaps.isNotEmpty) {
         result[relayUrl] = gaps.map((gap) {
           final gapFilter = filter.clone();
@@ -92,7 +93,7 @@ class Coverage {
     return result;
   }
 
-  /// Add a coverage range for a filter/relay combination
+  /// Add a fetched range for a filter/relay combination
   /// Automatically merges with existing adjacent/overlapping ranges
   Future<void> addRange({
     required Filter filter,
@@ -104,7 +105,7 @@ class Coverage {
 
     // Load existing records for this filter/relay
     final existingRecords = await _cacheManager
-        .loadFilterCoverageRecordsByRelay(filterHash, relayUrl);
+        .loadFilterFetchedRangeRecordsByRelay(filterHash, relayUrl);
 
     // Convert to TimeRanges for merging
     final ranges = existingRecords
@@ -121,11 +122,11 @@ class Coverage {
     final mergedRanges = _mergeRanges(ranges);
 
     // Delete old records for this filter/relay and save merged ones
-    await _cacheManager.removeFilterCoverageRecordsByFilterAndRelay(
+    await _cacheManager.removeFilterFetchedRangeRecordsByFilterAndRelay(
         filterHash, relayUrl);
 
     final newRecords = mergedRanges.map((range) {
-      return FilterCoverageRecord(
+      return FilterFetchedRangeRecord(
         filterHash: filterHash,
         relayUrl: relayUrl,
         rangeStart: range.since,
@@ -133,54 +134,55 @@ class Coverage {
       );
     }).toList();
 
-    await _cacheManager.saveFilterCoverageRecords(newRecords);
+    await _cacheManager.saveFilterFetchedRangeRecords(newRecords);
   }
 
-  /// Clear coverage for a specific filter
+  /// Clear fetched ranges for a specific filter
   Future<void> clearForFilter(Filter filter) async {
     final filterHash = FilterFingerprint.generate(filter);
-    await _cacheManager.removeFilterCoverageRecords(filterHash);
+    await _cacheManager.removeFilterFetchedRangeRecords(filterHash);
   }
 
-  /// Clear all coverage records for a relay
+  /// Clear all fetched range records for a relay
   Future<void> clearForRelay(String relayUrl) async {
-    await _cacheManager.removeFilterCoverageRecordsByRelay(relayUrl);
+    await _cacheManager.removeFilterFetchedRangeRecordsByRelay(relayUrl);
   }
 
-  /// Clear all coverage records
+  /// Clear all fetched range records
   Future<void> clearAll() async {
-    await _cacheManager.removeAllFilterCoverageRecords();
+    await _cacheManager.removeAllFilterFetchedRangeRecords();
   }
 
   // =====================
   // Private helpers
   // =====================
 
-  /// Build a map of relay URL to RelayCoverage from records
-  Map<String, RelayCoverage> _buildCoverageMap(
+  /// Build a map of relay URL to RelayFetchedRanges from records
+  Map<String, RelayFetchedRanges> _buildFetchedRangesMap(
     Filter filter,
-    List<FilterCoverageRecord> records,
+    List<FilterFetchedRangeRecord> records,
   ) {
     // Group by relay
-    final grouped = <String, List<FilterCoverageRecord>>{};
+    final grouped = <String, List<FilterFetchedRangeRecord>>{};
     for (final record in records) {
       grouped.putIfAbsent(record.relayUrl, () => []).add(record);
     }
 
-    // Build RelayCoverage for each relay
-    final result = <String, RelayCoverage>{};
+    // Build RelayFetchedRanges for each relay
+    final result = <String, RelayFetchedRanges>{};
     for (final entry in grouped.entries) {
-      result[entry.key] = _buildRelayCoverage(entry.key, filter, entry.value);
+      result[entry.key] =
+          _buildRelayFetchedRanges(entry.key, filter, entry.value);
     }
 
     return result;
   }
 
-  /// Build a RelayCoverage from records for a single relay
-  RelayCoverage _buildRelayCoverage(
+  /// Build a RelayFetchedRanges from records for a single relay
+  RelayFetchedRanges _buildRelayFetchedRanges(
     String relayUrl,
     Filter filter,
-    List<FilterCoverageRecord> records,
+    List<FilterFetchedRangeRecord> records,
   ) {
     final ranges = records
         .map((r) => TimeRange(
@@ -190,7 +192,7 @@ class Coverage {
         .toList()
       ..sort((a, b) => a.since.compareTo(b.since));
 
-    return RelayCoverage(
+    return RelayFetchedRanges(
       relayUrl: relayUrl,
       filter: filter,
       ranges: ranges,

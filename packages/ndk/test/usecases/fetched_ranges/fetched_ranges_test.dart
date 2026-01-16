@@ -3,25 +3,25 @@ import 'package:ndk/ndk.dart';
 
 void main() {
   late MemCacheManager cacheManager;
-  late Coverage coverage;
+  late FetchedRanges fetchedRanges;
 
   setUp(() {
     cacheManager = MemCacheManager();
-    coverage = Coverage(cacheManager: cacheManager);
+    fetchedRanges = FetchedRanges(cacheManager: cacheManager);
   });
 
-  group('Coverage.addRange', () {
+  group('FetchedRanges.addRange', () {
     test('adds a new range for a filter/relay', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      final result = await coverage.getForFilter(filter);
+      final result = await fetchedRanges.getForFilter(filter);
 
       expect(result.containsKey('wss://relay.example.com'), isTrue);
       expect(result['wss://relay.example.com']!.ranges.length, 1);
@@ -32,21 +32,21 @@ void main() {
     test('merges adjacent ranges', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 201,
         until: 300,
       );
 
-      final result = await coverage.getForFilter(filter);
+      final result = await fetchedRanges.getForFilter(filter);
 
       expect(result['wss://relay.example.com']!.ranges.length, 1);
       expect(result['wss://relay.example.com']!.ranges[0].since, 100);
@@ -56,21 +56,21 @@ void main() {
     test('merges overlapping ranges', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 250,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 200,
         until: 400,
       );
 
-      final result = await coverage.getForFilter(filter);
+      final result = await fetchedRanges.getForFilter(filter);
 
       expect(result['wss://relay.example.com']!.ranges.length, 1);
       expect(result['wss://relay.example.com']!.ranges[0].since, 100);
@@ -80,21 +80,21 @@ void main() {
     test('keeps separate ranges when not adjacent', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 400,
         until: 500,
       );
 
-      final result = await coverage.getForFilter(filter);
+      final result = await fetchedRanges.getForFilter(filter);
 
       expect(result['wss://relay.example.com']!.ranges.length, 2);
     });
@@ -102,21 +102,21 @@ void main() {
     test('tracks different relays separately', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay1.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay2.example.com',
         since: 150,
         until: 300,
       );
 
-      final result = await coverage.getForFilter(filter);
+      final result = await fetchedRanges.getForFilter(filter);
 
       expect(result.length, 2);
       expect(result['wss://relay1.example.com']!.ranges[0].since, 100);
@@ -129,33 +129,33 @@ void main() {
       final filter1 = Filter(kinds: [1], authors: ['pubkey1']);
       final filter2 = Filter(kinds: [0], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter1,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter2,
         relayUrl: 'wss://relay.example.com',
         since: 300,
         until: 400,
       );
 
-      final result1 = await coverage.getForFilter(filter1);
-      final result2 = await coverage.getForFilter(filter2);
+      final result1 = await fetchedRanges.getForFilter(filter1);
+      final result2 = await fetchedRanges.getForFilter(filter2);
 
       expect(result1['wss://relay.example.com']!.ranges[0].since, 100);
       expect(result2['wss://relay.example.com']!.ranges[0].since, 300);
     });
   });
 
-  group('Coverage.findGaps', () {
-    test('returns full range as gap when no coverage', () async {
+  group('FetchedRanges.findGaps', () {
+    test('returns full range as gap when no fetched ranges', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      final gaps = await coverage.findGaps(
+      final gaps = await fetchedRanges.findGaps(
         filter: filter,
         since: 100,
         until: 500,
@@ -167,14 +167,14 @@ void main() {
     test('returns gaps for partial coverage', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 200,
         until: 300,
       );
 
-      final gaps = await coverage.findGaps(
+      final gaps = await fetchedRanges.findGaps(
         filter: filter,
         since: 100,
         until: 500,
@@ -190,14 +190,14 @@ void main() {
     test('returns empty when fully covered', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 0,
         until: 1000,
       );
 
-      final gaps = await coverage.findGaps(
+      final gaps = await fetchedRanges.findGaps(
         filter: filter,
         since: 100,
         until: 500,
@@ -207,18 +207,18 @@ void main() {
     });
   });
 
-  group('Coverage.getOptimizedFilters', () {
+  group('FetchedRanges.getOptimizedFilters', () {
     test('returns filters for gaps only', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 200,
         until: 300,
       );
 
-      final optimized = await coverage.getOptimizedFilters(
+      final optimized = await fetchedRanges.getOptimizedFilters(
         filter: filter,
         since: 100,
         until: 500,
@@ -242,14 +242,14 @@ void main() {
     test('returns empty for fully covered relay', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 0,
         until: 1000,
       );
 
-      final optimized = await coverage.getOptimizedFilters(
+      final optimized = await fetchedRanges.getOptimizedFilters(
         filter: filter,
         since: 100,
         until: 500,
@@ -259,18 +259,18 @@ void main() {
     });
   });
 
-  group('Coverage.reachedOldest', () {
+  group('FetchedRanges.reachedOldest', () {
     test('reachedOldest is true when oldest is 0', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 0,
         until: 200,
       );
 
-      final result = await coverage.getForFilter(filter);
+      final result = await fetchedRanges.getForFilter(filter);
 
       expect(result['wss://relay.example.com']!.reachedOldest, isTrue);
     });
@@ -278,157 +278,157 @@ void main() {
     test('reachedOldest is false when oldest is not 0', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      final result = await coverage.getForFilter(filter);
+      final result = await fetchedRanges.getForFilter(filter);
 
       expect(result['wss://relay.example.com']!.reachedOldest, isFalse);
     });
   });
 
-  group('Coverage.getForRelay', () {
-    test('returns all coverages for a relay', () async {
+  group('FetchedRanges.getForRelay', () {
+    test('returns all fetched ranges for a relay', () async {
       final filter1 = Filter(kinds: [1], authors: ['pubkey1']);
       final filter2 = Filter(kinds: [0], authors: ['pubkey2']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter1,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter2,
         relayUrl: 'wss://relay.example.com',
         since: 300,
         until: 400,
       );
 
-      final result = await coverage.getForRelay('wss://relay.example.com');
+      final result = await fetchedRanges.getForRelay('wss://relay.example.com');
 
       expect(result.length, 2);
     });
   });
 
-  group('Coverage.clearForFilter', () {
-    test('clears coverage for a specific filter', () async {
+  group('FetchedRanges.clearForFilter', () {
+    test('clears fetched ranges for a specific filter', () async {
       final filter1 = Filter(kinds: [1], authors: ['pubkey1']);
       final filter2 = Filter(kinds: [0], authors: ['pubkey2']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter1,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter2,
         relayUrl: 'wss://relay.example.com',
         since: 300,
         until: 400,
       );
 
-      await coverage.clearForFilter(filter1);
+      await fetchedRanges.clearForFilter(filter1);
 
-      final result1 = await coverage.getForFilter(filter1);
-      final result2 = await coverage.getForFilter(filter2);
+      final result1 = await fetchedRanges.getForFilter(filter1);
+      final result2 = await fetchedRanges.getForFilter(filter2);
 
       expect(result1, isEmpty);
       expect(result2.isNotEmpty, isTrue);
     });
   });
 
-  group('Coverage.clearForRelay', () {
-    test('clears all coverage for a relay', () async {
+  group('FetchedRanges.clearForRelay', () {
+    test('clears all fetched ranges for a relay', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay1.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay2.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.clearForRelay('wss://relay1.example.com');
+      await fetchedRanges.clearForRelay('wss://relay1.example.com');
 
-      final result = await coverage.getForFilter(filter);
+      final result = await fetchedRanges.getForFilter(filter);
 
       expect(result.containsKey('wss://relay1.example.com'), isFalse);
       expect(result.containsKey('wss://relay2.example.com'), isTrue);
     });
   });
 
-  group('Coverage.clearAll', () {
-    test('clears all coverage', () async {
+  group('FetchedRanges.clearAll', () {
+    test('clears all fetched ranges', () async {
       final filter1 = Filter(kinds: [1], authors: ['pubkey1']);
       final filter2 = Filter(kinds: [0], authors: ['pubkey2']);
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter1,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter2,
         relayUrl: 'wss://relay.example.com',
         since: 300,
         until: 400,
       );
 
-      await coverage.clearAll();
+      await fetchedRanges.clearAll();
 
-      final result1 = await coverage.getForFilter(filter1);
-      final result2 = await coverage.getForFilter(filter2);
+      final result1 = await fetchedRanges.getForFilter(filter1);
+      final result2 = await fetchedRanges.getForFilter(filter2);
 
       expect(result1, isEmpty);
       expect(result2, isEmpty);
     });
   });
 
-  group('Coverage realistic scenarios', () {
+  group('FetchedRanges realistic scenarios', () {
     test('handles Jan-Mar + Jun-Sep scenario with Apr-May gap', () async {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
-      // Add Jan-Mar coverage
-      await coverage.addRange(
+      // Add Jan-Mar fetched range
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.damus.io',
         since: 1704067200, // Jan 1
         until: 1711929599, // Mar 31
       );
 
-      // Add Jun-Sep coverage
-      await coverage.addRange(
+      // Add Jun-Sep fetched range
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.damus.io',
         since: 1717200000, // Jun 1
         until: 1727740799, // Sep 30
       );
 
-      final result = await coverage.getForFilter(filter);
-      final damusCoverage = result['wss://relay.damus.io']!;
+      final result = await fetchedRanges.getForFilter(filter);
+      final damusFetchedRanges = result['wss://relay.damus.io']!;
 
       // Should have 2 separate ranges
-      expect(damusCoverage.ranges.length, 2);
+      expect(damusFetchedRanges.ranges.length, 2);
 
       // Check gaps for Jan-Oct query
-      final gaps = await coverage.findGaps(
+      final gaps = await fetchedRanges.findGaps(
         filter: filter,
         since: 1704067200, // Jan 1
         until: 1730419199, // Oct 31
@@ -442,14 +442,14 @@ void main() {
       final filter = Filter(kinds: [1], authors: ['pubkey1']);
 
       // Initial: two separate ranges
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
       );
 
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 400,
@@ -457,11 +457,11 @@ void main() {
       );
 
       // Verify 2 ranges and a gap
-      var result = await coverage.getForFilter(filter);
+      var result = await fetchedRanges.getForFilter(filter);
       expect(result['wss://relay.example.com']!.ranges.length, 2);
 
       // Fill the gap
-      await coverage.addRange(
+      await fetchedRanges.addRange(
         filter: filter,
         relayUrl: 'wss://relay.example.com',
         since: 201,
@@ -469,7 +469,7 @@ void main() {
       );
 
       // Should now be 1 merged range
-      result = await coverage.getForFilter(filter);
+      result = await fetchedRanges.getForFilter(filter);
       expect(result['wss://relay.example.com']!.ranges.length, 1);
       expect(result['wss://relay.example.com']!.ranges[0].since, 100);
       expect(result['wss://relay.example.com']!.ranges[0].until, 500);

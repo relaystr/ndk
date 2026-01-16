@@ -1,5 +1,5 @@
 import '../entities/contact_list.dart';
-import '../entities/filter_coverage.dart';
+import '../entities/filter_fetched_ranges.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
@@ -82,37 +82,38 @@ abstract class CacheManager {
   Future<void> removeAllNip05s();
 
   // =====================
-  // Filter Coverage
+  // Filter Fetched Ranges
   // =====================
 
-  /// Save a filter coverage record
-  Future<void> saveFilterCoverageRecord(FilterCoverageRecord record);
+  /// Save a filter fetched range record
+  Future<void> saveFilterFetchedRangeRecord(FilterFetchedRangeRecord record);
 
-  /// Save multiple filter coverage records
-  Future<void> saveFilterCoverageRecords(List<FilterCoverageRecord> records);
+  /// Save multiple filter fetched range records
+  Future<void> saveFilterFetchedRangeRecords(
+      List<FilterFetchedRangeRecord> records);
 
-  /// Load all coverage records for a filter hash
-  Future<List<FilterCoverageRecord>> loadFilterCoverageRecords(
+  /// Load all fetched range records for a filter hash
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
       String filterHash);
 
-  /// Load all coverage records for a filter hash and relay
-  Future<List<FilterCoverageRecord>> loadFilterCoverageRecordsByRelay(
+  /// Load all fetched range records for a filter hash and relay
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
       String filterHash, String relayUrl);
 
-  /// Load all coverage records for a relay (all filters)
-  Future<List<FilterCoverageRecord>> loadFilterCoverageRecordsByRelayUrl(
+  /// Load all fetched range records for a relay (all filters)
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelayUrl(
       String relayUrl);
 
-  /// Remove all coverage records for a filter hash
-  Future<void> removeFilterCoverageRecords(String filterHash);
+  /// Remove all fetched range records for a filter hash
+  Future<void> removeFilterFetchedRangeRecords(String filterHash);
 
-  /// Remove coverage records for a specific filter hash and relay
-  Future<void> removeFilterCoverageRecordsByFilterAndRelay(
+  /// Remove fetched range records for a specific filter hash and relay
+  Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
       String filterHash, String relayUrl);
 
-  /// Remove all coverage records for a relay
-  Future<void> removeFilterCoverageRecordsByRelay(String relayUrl);
+  /// Remove all fetched range records for a relay
+  Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl);
 
-  /// Remove all filter coverage records
-  Future<void> removeAllFilterCoverageRecords();
+  /// Remove all filter fetched range records
+  Future<void> removeAllFilterFetchedRangeRecords();
 }

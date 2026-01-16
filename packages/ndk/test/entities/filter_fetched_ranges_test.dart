@@ -89,9 +89,9 @@ void main() {
     });
   });
 
-  group('RelayCoverage', () {
+  group('RelayFetchedRanges', () {
     test('oldest and newest return correct values', () {
-      final coverage = RelayCoverage(
+      final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
@@ -101,23 +101,23 @@ void main() {
         ],
       );
 
-      expect(coverage.oldest, 100);
-      expect(coverage.newest, 600);
+      expect(fetchedRanges.oldest, 100);
+      expect(fetchedRanges.newest, 600);
     });
 
     test('oldest and newest return null for empty ranges', () {
-      final coverage = RelayCoverage(
+      final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [],
       );
 
-      expect(coverage.oldest, isNull);
-      expect(coverage.newest, isNull);
+      expect(fetchedRanges.oldest, isNull);
+      expect(fetchedRanges.newest, isNull);
     });
 
     test('reachedOldest is true when oldest is 0', () {
-      final coverageNotReached = RelayCoverage(
+      final fetchedRangesNotReached = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
@@ -125,7 +125,7 @@ void main() {
         ],
       );
 
-      final coverageReached = RelayCoverage(
+      final fetchedRangesReached = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
@@ -133,18 +133,18 @@ void main() {
         ],
       );
 
-      expect(coverageNotReached.reachedOldest, isFalse);
-      expect(coverageReached.reachedOldest, isTrue);
+      expect(fetchedRangesNotReached.reachedOldest, isFalse);
+      expect(fetchedRangesReached.reachedOldest, isTrue);
     });
 
     test('findGaps returns correct gaps for empty ranges', () {
-      final coverage = RelayCoverage(
+      final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [],
       );
 
-      final gaps = coverage.findGaps(100, 500);
+      final gaps = fetchedRanges.findGaps(100, 500);
 
       expect(gaps.length, 1);
       expect(gaps[0].since, 100);
@@ -152,7 +152,7 @@ void main() {
     });
 
     test('findGaps returns correct gaps for single range', () {
-      final coverage = RelayCoverage(
+      final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
@@ -160,7 +160,7 @@ void main() {
         ],
       );
 
-      final gaps = coverage.findGaps(100, 500);
+      final gaps = fetchedRanges.findGaps(100, 500);
 
       expect(gaps.length, 2);
       expect(gaps[0].since, 100);
@@ -173,7 +173,7 @@ void main() {
       // Ranges: [100-150], [300-400]
       // Query: 0 to 600
       // Expected gaps: [0-99], [151-299], [401-600]
-      final coverage = RelayCoverage(
+      final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
@@ -182,7 +182,7 @@ void main() {
         ],
       );
 
-      final gaps = coverage.findGaps(0, 600);
+      final gaps = fetchedRanges.findGaps(0, 600);
 
       expect(gaps.length, 3);
       expect(gaps[0].since, 0);
@@ -194,7 +194,7 @@ void main() {
     });
 
     test('findGaps returns empty list when fully covered', () {
-      final coverage = RelayCoverage(
+      final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
@@ -202,13 +202,13 @@ void main() {
         ],
       );
 
-      final gaps = coverage.findGaps(200, 400);
+      final gaps = fetchedRanges.findGaps(200, 400);
 
       expect(gaps, isEmpty);
     });
 
-    test('getGaps returns CoverageGap objects', () {
-      final coverage = RelayCoverage(
+    test('getGaps returns FetchedRangesGap objects', () {
+      final fetchedRanges = RelayFetchedRanges(
         relayUrl: 'wss://relay.example.com',
         filter: Filter(kinds: [1]),
         ranges: [
@@ -216,7 +216,7 @@ void main() {
         ],
       );
 
-      final gaps = coverage.getGaps(100, 500);
+      final gaps = fetchedRanges.getGaps(100, 500);
 
       expect(gaps.length, 2);
       expect(gaps[0].relayUrl, 'wss://relay.example.com');
@@ -225,9 +225,9 @@ void main() {
     });
   });
 
-  group('FilterCoverageRecord', () {
+  group('FilterFetchedRangeRecord', () {
     test('constructor initializes correctly', () {
-      final record = FilterCoverageRecord(
+      final record = FilterFetchedRangeRecord(
         filterHash: 'abc123',
         relayUrl: 'wss://relay.example.com',
         rangeStart: 1704067200,
@@ -241,7 +241,7 @@ void main() {
     });
 
     test('key is generated correctly', () {
-      final record = FilterCoverageRecord(
+      final record = FilterFetchedRangeRecord(
         filterHash: 'abc123',
         relayUrl: 'wss://relay.example.com',
         rangeStart: 1704067200,
@@ -252,7 +252,7 @@ void main() {
     });
 
     test('toJson and fromJson work correctly', () {
-      final record = FilterCoverageRecord(
+      final record = FilterFetchedRangeRecord(
         filterHash: 'abc123',
         relayUrl: 'wss://relay.example.com',
         rangeStart: 1704067200,
@@ -260,7 +260,7 @@ void main() {
       );
 
       final json = record.toJson();
-      final restored = FilterCoverageRecord.fromJson(json);
+      final restored = FilterFetchedRangeRecord.fromJson(json);
 
       expect(restored.filterHash, record.filterHash);
       expect(restored.relayUrl, record.relayUrl);
@@ -320,9 +320,9 @@ void main() {
     });
   });
 
-  group('CoverageGap', () {
+  group('FetchedRangesGap', () {
     test('constructor initializes correctly', () {
-      final gap = CoverageGap(
+      final gap = FetchedRangesGap(
         relayUrl: 'wss://relay.example.com',
         since: 100,
         until: 200,
