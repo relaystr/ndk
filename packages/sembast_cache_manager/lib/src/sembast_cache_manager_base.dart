@@ -30,6 +30,8 @@ class SembastCacheManager extends CacheManager {
   late final sembast.StoreRef<String, Map<String, Object?>> _relayListStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _nip05Store;
   late final sembast.StoreRef<String, Map<String, Object?>> _relaySetStore;
+  late final sembast.StoreRef<String, Map<String, Object?>>
+      _filterFetchedRangeStore;
 
   SembastCacheManager(this._database) {
     _eventsStore = sembast.stringMapStoreFactory.store('events');
@@ -38,6 +40,8 @@ class SembastCacheManager extends CacheManager {
     _relayListStore = sembast.stringMapStoreFactory.store('relay_lists');
     _nip05Store = sembast.stringMapStoreFactory.store('nip05');
     _relaySetStore = sembast.stringMapStoreFactory.store('relay_sets');
+    _filterFetchedRangeStore =
+        sembast.stringMapStoreFactory.store('filter_fetched_ranges');
   }
 
   @override
@@ -401,5 +405,104 @@ class SembastCacheManager extends CacheManager {
     }
 
     return metadatas;
+  }
+
+  // =====================
+  // Filter Fetched Ranges
+  // =====================
+
+  @override
+  Future<void> saveFilterFetchedRangeRecord(
+      FilterFetchedRangeRecord record) async {
+    await _filterFetchedRangeStore
+        .record(record.key)
+        .put(_database, record.toJson());
+  }
+
+  @override
+  Future<void> saveFilterFetchedRangeRecords(
+      List<FilterFetchedRangeRecord> records) async {
+    await _database.transaction((txn) async {
+      for (final record in records) {
+        await _filterFetchedRangeStore
+            .record(record.key)
+            .put(txn, record.toJson());
+      }
+    });
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
+      String filterHash) async {
+    final finder = sembast.Finder(
+      filter: sembast.Filter.equals('filterHash', filterHash),
+    );
+    final records =
+        await _filterFetchedRangeStore.find(_database, finder: finder);
+    return records
+        .map((r) => FilterFetchedRangeRecord.fromJson(r.value))
+        .toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
+      String filterHash, String relayUrl) async {
+    final finder = sembast.Finder(
+      filter: sembast.Filter.and([
+        sembast.Filter.equals('filterHash', filterHash),
+        sembast.Filter.equals('relayUrl', relayUrl),
+      ]),
+    );
+    final records =
+        await _filterFetchedRangeStore.find(_database, finder: finder);
+    return records
+        .map((r) => FilterFetchedRangeRecord.fromJson(r.value))
+        .toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>>
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+    final finder = sembast.Finder(
+      filter: sembast.Filter.equals('relayUrl', relayUrl),
+    );
+    final records =
+        await _filterFetchedRangeStore.find(_database, finder: finder);
+    return records
+        .map((r) => FilterFetchedRangeRecord.fromJson(r.value))
+        .toList();
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecords(String filterHash) async {
+    final finder = sembast.Finder(
+      filter: sembast.Filter.equals('filterHash', filterHash),
+    );
+    await _filterFetchedRangeStore.delete(_database, finder: finder);
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
+      String filterHash, String relayUrl) async {
+    final finder = sembast.Finder(
+      filter: sembast.Filter.and([
+        sembast.Filter.equals('filterHash', filterHash),
+        sembast.Filter.equals('relayUrl', relayUrl),
+      ]),
+    );
+    await _filterFetchedRangeStore.delete(_database, finder: finder);
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl) async {
+    final finder = sembast.Finder(
+      filter: sembast.Filter.equals('relayUrl', relayUrl),
+    );
+    await _filterFetchedRangeStore.delete(_database, finder: finder);
+  }
+
+  @override
+  Future<void> removeAllFilterFetchedRangeRecords() async {
+    await _filterFetchedRangeStore.delete(_database);
   }
 }

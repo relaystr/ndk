@@ -6,6 +6,7 @@ import 'package:ndk/ndk.dart';
 import '../../../objectbox.g.dart';
 import 'db_init_object_box.dart';
 import 'schema/db_contact_list.dart';
+import 'schema/db_filter_fetched_range_record.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
 import 'schema/db_nip_05.dart';
@@ -590,5 +591,112 @@ class DbObjectBox implements CacheManager {
       search: search,
       limit: limit,
     );
+  }
+
+  // =====================
+  // Filter Fetched Ranges
+  // =====================
+
+  @override
+  Future<void> saveFilterFetchedRangeRecord(
+      FilterFetchedRangeRecord record) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    box.put(DbFilterFetchedRangeRecord.fromNdk(record));
+  }
+
+  @override
+  Future<void> saveFilterFetchedRangeRecords(
+      List<FilterFetchedRangeRecord> records) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    box.putMany(records.map((r) => DbFilterFetchedRangeRecord.fromNdk(r)).toList());
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
+      String filterHash) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    final results = box
+        .query(DbFilterFetchedRangeRecord_.filterHash.equals(filterHash))
+        .build()
+        .find();
+    return results.map((r) => r.toNdk()).toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
+      String filterHash, String relayUrl) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    final results = box
+        .query(DbFilterFetchedRangeRecord_.filterHash
+            .equals(filterHash)
+            .and(DbFilterFetchedRangeRecord_.relayUrl.equals(relayUrl)))
+        .build()
+        .find();
+    return results.map((r) => r.toNdk()).toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>>
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    final results = box
+        .query(DbFilterFetchedRangeRecord_.relayUrl.equals(relayUrl))
+        .build()
+        .find();
+    return results.map((r) => r.toNdk()).toList();
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecords(String filterHash) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    final existing = box
+        .query(DbFilterFetchedRangeRecord_.filterHash.equals(filterHash))
+        .build()
+        .find();
+    if (existing.isNotEmpty) {
+      box.removeMany(existing.map((e) => e.dbId).toList());
+    }
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
+      String filterHash, String relayUrl) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    final existing = box
+        .query(DbFilterFetchedRangeRecord_.filterHash
+            .equals(filterHash)
+            .and(DbFilterFetchedRangeRecord_.relayUrl.equals(relayUrl)))
+        .build()
+        .find();
+    if (existing.isNotEmpty) {
+      box.removeMany(existing.map((e) => e.dbId).toList());
+    }
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl) async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    final existing = box
+        .query(DbFilterFetchedRangeRecord_.relayUrl.equals(relayUrl))
+        .build()
+        .find();
+    if (existing.isNotEmpty) {
+      box.removeMany(existing.map((e) => e.dbId).toList());
+    }
+  }
+
+  @override
+  Future<void> removeAllFilterFetchedRangeRecords() async {
+    await dbRdy;
+    final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
+    box.removeAll();
   }
 }

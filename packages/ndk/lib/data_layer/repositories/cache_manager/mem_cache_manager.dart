@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import '../../../domain_layer/entities/contact_list.dart';
+import '../../../domain_layer/entities/filter_fetched_ranges.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
@@ -29,6 +30,10 @@ class MemCacheManager implements CacheManager {
 
   /// In memory storage
   Map<String, Nip01Event> events = {};
+
+  /// In memory storage for filter fetched range records
+  /// Key is filterHash:relayUrl:rangeStart
+  Map<String, FilterFetchedRangeRecord> filterFetchedRangeRecords = {};
 
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
@@ -336,5 +341,71 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> close() async {
     return;
+  }
+
+  // =====================
+  // Filter Fetched Ranges
+  // =====================
+
+  @override
+  Future<void> saveFilterFetchedRangeRecord(
+      FilterFetchedRangeRecord record) async {
+    filterFetchedRangeRecords[record.key] = record;
+  }
+
+  @override
+  Future<void> saveFilterFetchedRangeRecords(
+      List<FilterFetchedRangeRecord> records) async {
+    for (final record in records) {
+      filterFetchedRangeRecords[record.key] = record;
+    }
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
+      String filterHash) async {
+    return filterFetchedRangeRecords.values
+        .where((r) => r.filterHash == filterHash)
+        .toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
+      String filterHash, String relayUrl) async {
+    return filterFetchedRangeRecords.values
+        .where((r) => r.filterHash == filterHash && r.relayUrl == relayUrl)
+        .toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>>
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+    return filterFetchedRangeRecords.values
+        .where((r) => r.relayUrl == relayUrl)
+        .toList();
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecords(String filterHash) async {
+    filterFetchedRangeRecords
+        .removeWhere((key, value) => value.filterHash == filterHash);
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
+      String filterHash, String relayUrl) async {
+    filterFetchedRangeRecords.removeWhere((key, value) =>
+        value.filterHash == filterHash && value.relayUrl == relayUrl);
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl) async {
+    filterFetchedRangeRecords
+        .removeWhere((key, value) => value.relayUrl == relayUrl);
+  }
+
+  @override
+  Future<void> removeAllFilterFetchedRangeRecords() async {
+    filterFetchedRangeRecords.clear();
   }
 }
