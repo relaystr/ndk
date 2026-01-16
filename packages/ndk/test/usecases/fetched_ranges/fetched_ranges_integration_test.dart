@@ -8,25 +8,23 @@ import '../../mocks/mock_relay.dart';
 void main() async {
   KeyPair key1 = Bip340.generatePrivateKey();
 
-  Nip01Event textNoteWithTimestamp(KeyPair key, int timestamp) {
+  Nip01Event textNote(KeyPair key) {
     Nip01Event event = Nip01Event(
       kind: Nip01Event.kTextNodeKind,
       pubKey: key.publicKey,
-      content: "test note at $timestamp",
+      content: "test note",
       tags: [],
-      createdAt: timestamp,
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
     return Nip01Utils.signWithPrivateKey(
         event: event, privateKey: key.privateKey!);
   }
 
-  group('FetchedRanges integration', () {
-    test('query automatically records fetched ranges based on event timestamps',
-        timeout: const Timeout(Duration(seconds: 5)), () async {
-      // Create event with specific timestamp
-      final event1 = textNoteWithTimestamp(key1, 150);
-      Map<KeyPair, Nip01Event> textNotes = {key1: event1};
+  Map<KeyPair, Nip01Event> textNotes = {key1: textNote(key1)};
 
+  group('FetchedRanges integration', () {
+    test('query automatically records fetched ranges after EOSE',
+        timeout: const Timeout(Duration(seconds: 5)), () async {
       // Setup mock relay
       MockRelay relay1 = MockRelay(
         name: "relay fetched ranges test",
@@ -49,9 +47,18 @@ void main() async {
 
       await ndk.relays.seedRelaysConnected;
 
+      // Define filter with time bounds
+      final since = DateTime.now()
+              .subtract(const Duration(days: 1))
+              .millisecondsSinceEpoch ~/
+          1000;
+      final until = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
       final filter = Filter(
         kinds: [Nip01Event.kTextNodeKind],
         authors: [key1.publicKey],
+        since: since,
+        until: until,
       );
 
       // Make query
@@ -67,34 +74,26 @@ void main() async {
       final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
 
       expect(fetchedRanges.isNotEmpty, isTrue,
-          reason: 'Fetched ranges should be recorded after query');
+          reason: 'FetchedRanges should be recorded after query');
       expect(fetchedRanges.containsKey(relay1.url), isTrue,
-          reason: 'Fetched ranges should contain the relay URL');
+          reason: 'FetchedRanges should contain the relay URL');
 
       final relayFetchedRanges = fetchedRanges[relay1.url]!;
       expect(relayFetchedRanges.ranges.isNotEmpty, isTrue,
           reason: 'Should have at least one range');
-
-      // Fetched range since should be based on the event's createdAt (150)
-      // Fetched range until should extend to now (no filter.until specified)
-      expect(relayFetchedRanges.ranges.first.since, equals(150),
-          reason: 'Range since should match oldest event timestamp');
-      expect(relayFetchedRanges.ranges.first.until, greaterThan(150),
-          reason:
-              'Range until should extend to now (EOSE means no newer events)');
+      expect(relayFetchedRanges.ranges.first.since, equals(since),
+          reason: 'Range since should match filter since');
+      expect(relayFetchedRanges.ranges.first.until, equals(until),
+          reason: 'Range until should match filter until');
 
       await relay1.stopServer();
       await ndk.destroy();
     });
 
-    test('fetched ranges reflect actual events received, not filter bounds',
+    test('multiple queries merge fetched ranges',
         timeout: const Timeout(Duration(seconds: 5)), () async {
-      // Create event with timestamp 500
-      final event1 = textNoteWithTimestamp(key1, 500);
-      Map<KeyPair, Nip01Event> textNotes = {key1: event1};
-
       MockRelay relay1 = MockRelay(
-        name: "relay bounds test",
+        name: "relay merge test",
         explicitPort: 4201,
         signEvents: false,
       );
@@ -113,42 +112,50 @@ void main() async {
 
       await ndk.relays.seedRelaysConnected;
 
-      // Query with wide bounds (100-1000), but event is at 500
-      final filter = Filter(
+      // First query: 100-200
+      final filter1 = Filter(
         kinds: [Nip01Event.kTextNodeKind],
         authors: [key1.publicKey],
         since: 100,
-        until: 1000,
+        until: 200,
       );
 
-      final response = ndk.requests.query(filter: filter);
-      await response.future;
+      final response1 = ndk.requests.query(filter: filter1);
+      await response1.future;
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
+      // Second query: 201-300 (adjacent)
+      final filter2 = Filter(
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key1.publicKey],
+        since: 201,
+        until: 300,
+      );
+
+      final response2 = ndk.requests.query(filter: filter2);
+      await response2.future;
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Check fetched ranges were merged
+      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter1);
 
       expect(fetchedRanges.containsKey(relay1.url), isTrue);
 
       final relayFetchedRanges = fetchedRanges[relay1.url]!;
-      // Fetched range since should be event timestamp (500), not filter.since (100)
-      // Fetched range until should be filter.until (1000) since EOSE confirms no newer events
-      expect(relayFetchedRanges.ranges.first.since, equals(500),
-          reason: 'Fetched range since should reflect oldest event timestamp');
-      expect(relayFetchedRanges.ranges.first.until, equals(1000),
-          reason:
-              'Fetched range until should be filter.until (EOSE confirms coverage)');
+      // Should have merged into 1 range (100-300)
+      expect(relayFetchedRanges.ranges.length, equals(1),
+          reason: 'Adjacent ranges should be merged');
+      expect(relayFetchedRanges.ranges.first.since, equals(100));
+      expect(relayFetchedRanges.ranges.first.until, equals(300));
 
       await relay1.stopServer();
       await ndk.destroy();
     });
 
-    test('fetched ranges recorded with filter bounds when no events received',
+    test('findGaps returns correct gaps after query',
         timeout: const Timeout(Duration(seconds: 5)), () async {
-      // Empty - no events
-      Map<KeyPair, Nip01Event> textNotes = {};
-
       MockRelay relay1 = MockRelay(
-        name: "relay empty test",
+        name: "relay gaps test",
         explicitPort: 4202,
         signEvents: false,
       );
@@ -167,43 +174,44 @@ void main() async {
 
       await ndk.relays.seedRelaysConnected;
 
-      // Filter with explicit bounds
+      // Query for 200-300
       final filter = Filter(
         kinds: [Nip01Event.kTextNodeKind],
         authors: [key1.publicKey],
-        since: 100,
-        until: 200,
+        since: 200,
+        until: 300,
       );
 
       final response = ndk.requests.query(filter: filter);
       await response.future;
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
+      // Find gaps for 100-500
+      final gaps = await ndk.fetchedRanges.findGaps(
+        filter: filter,
+        since: 100,
+        until: 500,
+      );
 
-      // No events but filter has bounds = fetched ranges recorded with filter bounds
-      expect(fetchedRanges.containsKey(relay1.url), isTrue,
-          reason: 'Fetched ranges should be recorded using filter bounds');
-
-      final relayFetchedRanges = fetchedRanges[relay1.url]!;
-      expect(relayFetchedRanges.ranges.first.since, equals(100));
-      expect(relayFetchedRanges.ranges.first.until, equals(200));
+      // Should have 2 gaps: 100-199 and 301-500
+      expect(gaps.length, equals(2), reason: 'Should have 2 gaps');
+      expect(gaps[0].since, equals(100));
+      expect(gaps[0].until, equals(199));
+      expect(gaps[1].since, equals(301));
+      expect(gaps[1].until, equals(500));
 
       await relay1.stopServer();
       await ndk.destroy();
     });
 
-    test('fetched ranges use event timestamp',
+    test('getOptimizedFilters returns filters for gaps only',
         timeout: const Timeout(Duration(seconds: 5)), () async {
-      // Create event with specific timestamp
-      final event1 = textNoteWithTimestamp(key1, 100);
-
       MockRelay relay1 = MockRelay(
-        name: "relay event timestamp test",
+        name: "relay optimized test",
         explicitPort: 4203,
         signEvents: false,
       );
-      await relay1.startServer(textNotes: {key1: event1});
+      await relay1.startServer(textNotes: textNotes);
 
       final cache = MemCacheManager();
       final ndk = Ndk(
@@ -218,23 +226,39 @@ void main() async {
 
       await ndk.relays.seedRelaysConnected;
 
+      // Query for 200-300
       final filter = Filter(
         kinds: [Nip01Event.kTextNodeKind],
         authors: [key1.publicKey],
+        since: 200,
+        until: 300,
       );
 
       final response = ndk.requests.query(filter: filter);
       await response.future;
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
+      // Get optimized filters for 100-500
+      final optimized = await ndk.fetchedRanges.getOptimizedFilters(
+        filter: filter,
+        since: 100,
+        until: 500,
+      );
 
-      expect(fetchedRanges.containsKey(relay1.url), isTrue);
+      expect(optimized.containsKey(relay1.url), isTrue);
 
-      final relayFetchedRanges = fetchedRanges[relay1.url]!;
-      // since = oldest event timestamp, until = now (no filter.until)
-      expect(relayFetchedRanges.ranges.first.since, equals(100));
-      expect(relayFetchedRanges.ranges.first.until, greaterThan(100));
+      final filters = optimized[relay1.url]!;
+      expect(filters.length, equals(2), reason: 'Should have 2 gap filters');
+
+      // First gap filter: 100-199
+      expect(filters[0].since, equals(100));
+      expect(filters[0].until, equals(199));
+      expect(filters[0].kinds, equals([Nip01Event.kTextNodeKind]));
+      expect(filters[0].authors, equals([key1.publicKey]));
+
+      // Second gap filter: 301-500
+      expect(filters[1].since, equals(301));
+      expect(filters[1].until, equals(500));
 
       await relay1.stopServer();
       await ndk.destroy();
