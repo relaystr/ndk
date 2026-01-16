@@ -544,8 +544,8 @@ class RelayManager<T> {
           ["relay", relayConnectivity.url],
           ["challenge", challenge]
         ]);
-        account.signer.sign(auth).then((e) {
-          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: auth));
+        account.signer.sign(auth).then((signedAuth) {
+          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
           Logger.log.d(
               "AUTH sent for ${account.pubkey.substring(0, 8)} to ${relayConnectivity.url}");
         });

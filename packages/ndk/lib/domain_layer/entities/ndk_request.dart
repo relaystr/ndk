@@ -1,3 +1,4 @@
+import 'account.dart';
 import 'filter.dart';
 import 'relay_set.dart';
 
@@ -42,9 +43,9 @@ class NdkRequest {
   /// use cache for write
   bool cacheWrite;
 
-  /// Pubkeys to authenticate with on the relays (NIP-42)
-  /// When set, AUTH events will be sent for each pubkey that has a signer
-  List<String>? authenticateAs;
+  /// Accounts to authenticate with on the relays (NIP-42)
+  /// When set, AUTH events will be sent for each account that can sign
+  List<Account>? authenticateAs;
 
   /// query
   NdkRequest.query(
