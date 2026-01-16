@@ -16,8 +16,8 @@ void main() async {
       tags: [],
       createdAt: timestamp,
     );
-    event.sign(key.privateKey!);
-    return event;
+    return Nip01Utils.signWithPrivateKey(
+        event: event, privateKey: key.privateKey!);
   }
 
   group('FetchedRanges integration', () {
@@ -55,7 +55,7 @@ void main() async {
       );
 
       // Make query
-      final response = ndk.requests.query(filters: [filter]);
+      final response = ndk.requests.query(filter: filter);
 
       // Wait for response to complete
       await response.future;
@@ -121,7 +121,7 @@ void main() async {
         until: 1000,
       );
 
-      final response = ndk.requests.query(filters: [filter]);
+      final response = ndk.requests.query(filter: filter);
       await response.future;
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -175,7 +175,7 @@ void main() async {
         until: 200,
       );
 
-      final response = ndk.requests.query(filters: [filter]);
+      final response = ndk.requests.query(filter: filter);
       await response.future;
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -223,7 +223,7 @@ void main() async {
         authors: [key1.publicKey],
       );
 
-      final response = ndk.requests.query(filters: [filter]);
+      final response = ndk.requests.query(filter: filter);
       await response.future;
       await Future.delayed(const Duration(milliseconds: 100));
 

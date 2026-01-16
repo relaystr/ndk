@@ -367,10 +367,48 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "8:2356961977798202534",
+      "lastPropertyId": "5:849430668794703479",
+      "name": "DbFilterFetchedRangeRecord",
+      "properties": [
+        {
+          "id": "1:3939782810311199282",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3545576993042908087",
+          "name": "filterHash",
+          "indexId": "2:758461294333956924",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:1898730736240140766",
+          "name": "relayUrl",
+          "indexId": "3:735436971837042211",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "4:6718626507552401445",
+          "name": "rangeStart",
+          "type": 6
+        },
+        {
+          "id": "5:849430668794703479",
+          "name": "rangeEnd",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "7:4509209106406578683",
-  "lastIndexId": "1:3132180412806400476",
+  "lastEntityId": "8:2356961977798202534",
+  "lastIndexId": "3:735436971837042211",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

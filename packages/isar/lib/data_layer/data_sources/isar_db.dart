@@ -4,6 +4,7 @@ import 'package:isar/isar.dart';
 
 import '../models/db/db_contact_list.dart';
 import '../models/db/db_event.dart';
+import '../models/db/db_filter_fetched_range_record.dart';
 import '../models/db/db_metadata.dart';
 import '../models/db/db_nip05.dart';
 import '../models/db/db_relay_set.dart';
@@ -46,7 +47,8 @@ class IsarDbDs {
         DbRelaySetSchema,
         DbContactListSchema,
         DbMetadataSchema,
-        DbNip05Schema
+        DbNip05Schema,
+        DbFilterFetchedRangeRecordSchema,
       ],
     );
     // isar.write((isar) {
