@@ -241,7 +241,7 @@ void _runEventTests(CacheManager Function() getCacheManager) {
     expect(loadedEvents.every((e) => e.kind == 1), isTrue);
   });
 
-  test('loadEvents with pTag filter', () async {
+  test('loadEvents with tags filter', () async {
     final cacheManager = getCacheManager();
     await cacheManager.removeAllEvents();
 
@@ -269,7 +269,7 @@ void _runEventTests(CacheManager Function() getCacheManager) {
     await cacheManager.saveEvents(events);
 
     final loadedEvents = await cacheManager.loadEvents(
-      pTag: 'target_pubkey_ptag',
+      tags: {'#p': ['target_pubkey_ptag']},
     );
 
     expect(loadedEvents.length, equals(1));
