@@ -12,7 +12,7 @@ class FetchedRanges {
 
   /// Get fetched ranges for a filter across all relays
   Future<Map<String, RelayFetchedRanges>> getForFilter(Filter filter) async {
-    final filterHash = FilterFingerprint.generate(filter);
+    final filterHash = await FilterFingerprint.generateAsync(filter);
     final records =
         await _cacheManager.loadFilterFetchedRangeRecords(filterHash);
 
@@ -101,7 +101,7 @@ class FetchedRanges {
     required int since,
     required int until,
   }) async {
-    final filterHash = FilterFingerprint.generate(filter);
+    final filterHash = await FilterFingerprint.generateAsync(filter);
 
     // Load existing records for this filter/relay
     final existingRecords = await _cacheManager
@@ -139,7 +139,7 @@ class FetchedRanges {
 
   /// Clear fetched ranges for a specific filter
   Future<void> clearForFilter(Filter filter) async {
-    final filterHash = FilterFingerprint.generate(filter);
+    final filterHash = await FilterFingerprint.generateAsync(filter);
     await _cacheManager.removeFilterFetchedRangeRecords(filterHash);
   }
 

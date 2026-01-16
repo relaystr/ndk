@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 
 import 'filter.dart';
+import '../../shared/isolates/isolate_manager.dart';
 
 /// A time range that has been fetched from a relay
 class TimeRange {
@@ -211,7 +212,22 @@ class FilterFetchedRangeRecord {
 /// Utility to generate a hash for a filter (excluding temporal fields)
 class FilterFingerprint {
   /// Generate a stable hash for a filter, excluding since/until/limit
+  /// Synchronous version - use [generateAsync] for heavy workloads
   static String generate(Filter filter) {
+    return _computeFingerprintFromMap(_filterToMap(filter));
+  }
+
+  /// Async version using isolate for expensive SHA256 computation
+  static Future<String> generateAsync(Filter filter) async {
+    final map = _filterToMap(filter);
+    return IsolateManager.instance.runInComputeIsolate(
+      _computeFingerprintFromMap,
+      map,
+    );
+  }
+
+  /// Convert filter to a serializable map (for isolate transfer)
+  static Map<String, dynamic> _filterToMap(Filter filter) {
     final map = <String, dynamic>{};
 
     if (filter.ids != null && filter.ids!.isNotEmpty) {
@@ -235,9 +251,14 @@ class FilterFingerprint {
       map['tags'] = sortedTags;
     }
 
-    final jsonStr = jsonEncode(map);
-    final bytes = utf8.encode(jsonStr);
-    final digest = sha256.convert(bytes);
-    return digest.toString().substring(0, 16); // First 16 chars for brevity
+    return map;
   }
+}
+
+/// Top-level function for isolate - computes SHA256 hash from map
+String _computeFingerprintFromMap(Map<String, dynamic> map) {
+  final jsonStr = jsonEncode(map);
+  final bytes = utf8.encode(jsonStr);
+  final digest = sha256.convert(bytes);
+  return digest.toString().substring(0, 16);
 }

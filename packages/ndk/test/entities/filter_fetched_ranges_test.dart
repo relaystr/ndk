@@ -318,6 +318,15 @@ void main() {
       expect(hash1, isNot(equals(hash2)));
       expect(hash1, isNot(equals(hash3)));
     });
+
+    test('generateAsync produces same result as generate', () async {
+      final filter = Filter(kinds: [1, 2], authors: ['pubkey1', 'pubkey2']);
+
+      final syncHash = FilterFingerprint.generate(filter);
+      final asyncHash = await FilterFingerprint.generateAsync(filter);
+
+      expect(asyncHash, equals(syncHash));
+    });
   });
 
   group('FetchedRangesGap', () {
