@@ -3,6 +3,7 @@ import 'dart:async';
 import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
+import '../../entities/account.dart';
 import '../../entities/event_filter.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
@@ -69,6 +70,7 @@ class Requests {
   /// [desiredCoverage] The number of relays per pubkey to query, default: 2 \
   /// [timeoutCallbackUserFacing] A user facing timeout callback, this callback should be given to the lib user \
   /// [timeoutCallback] An internal timeout callback, this callback should be used for internal error handling \
+  /// [authenticateAs] List of accounts to authenticate with on relays (NIP-42) \
   ///
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
@@ -84,6 +86,7 @@ class Requests {
     Function()? timeoutCallback,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
+    List<Account>? authenticateAs,
   }) {
     if (filter == null && (filters == null || filters.isEmpty)) {
       throw ArgumentError('Either filter or filters must be provided');
@@ -104,6 +107,7 @@ class Requests {
       explicitRelays: explicitRelays,
       desiredCoverage:
           desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
+      authenticateAs: authenticateAs,
     ));
   }
 
@@ -118,6 +122,7 @@ class Requests {
   /// [cacheWrite] Whether to write results to cache \
   /// [explicitRelays] A list of specific relays to use, bypassing inbox/outbox \
   /// [desiredCoverage] The number of relays per pubkey to subscribe to, default: 2 \
+  /// [authenticateAs] List of accounts to authenticate with on relays (NIP-42) \
   ///
   /// Returns an [NdkResponse] containing the subscription results as stream
   NdkResponse subscription({
@@ -131,6 +136,7 @@ class Requests {
     bool cacheWrite = false,
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
+    List<Account>? authenticateAs,
   }) {
     if (filter == null && (filters == null || filters.isEmpty)) {
       throw ArgumentError('Either filter or filters must be provided');
@@ -146,6 +152,7 @@ class Requests {
       explicitRelays: explicitRelays,
       desiredCoverage:
           desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
+      authenticateAs: authenticateAs,
     ));
   }
 

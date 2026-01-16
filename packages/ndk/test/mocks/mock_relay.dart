@@ -90,14 +90,14 @@ class MockRelay {
     var stream = server.transform(WebSocketTransformer());
 
     String challenge = '';
-    bool signedChallenge = false;
+    Set<String> authenticatedPubkeys = {};
 
     stream.listen((webSocket) {
       _webSocket = webSocket;
       if (customWelcomeMessage != null) {
         webSocket.add(customWelcomeMessage!);
       }
-      if (requireAuthForRequests && !signedChallenge) {
+      if (requireAuthForRequests) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
@@ -117,31 +117,24 @@ class MockRelay {
 
         if (eventJson[0] == "AUTH") {
           Nip01Event event = Nip01EventModel.fromJson(eventJson[1]);
+          bool authSuccess = false;
           if (verify(event.pubKey, event.id, event.sig!)) {
             String? relay = event.getFirstTag("relay");
             String? eventChallenge = event.getFirstTag("challenge");
             if (eventChallenge == challenge && relay == url) {
-              signedChallenge = true;
+              authenticatedPubkeys.add(event.pubKey);
+              authSuccess = true;
             }
           }
 
           webSocket.add(jsonEncode([
             "OK",
             event.id,
-            signedChallenge,
-            signedChallenge ? "" : "auth-required"
+            authSuccess,
+            authSuccess ? "" : "auth-required"
           ]));
           return;
         }
-        if (requireAuthForRequests && !signedChallenge) {
-          webSocket.add(jsonEncode([
-            "CLOSED",
-            "sub_1",
-            "auth-required: we can't serve requests to unauthenticated users"
-          ]));
-          return;
-        }
-
         if (eventJson[0] == "EVENT") {
           Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
@@ -192,6 +185,31 @@ class MockRelay {
               }
             }
           }
+
+          // Check auth for requested pubkeys
+          if (requireAuthForRequests && filters.isNotEmpty) {
+            Set<String> requestedPubkeys = {};
+            for (final filter in filters) {
+              if (filter.authors != null) {
+                requestedPubkeys.addAll(filter.authors!);
+              }
+              if (filter.pTags != null) {
+                requestedPubkeys.addAll(filter.pTags!);
+              }
+            }
+            // Check if any requested pubkey is authenticated
+            bool hasAuthenticatedPubkey = requestedPubkeys
+                .any((pubkey) => authenticatedPubkeys.contains(pubkey));
+            if (!hasAuthenticatedPubkey) {
+              webSocket.add(jsonEncode([
+                "CLOSED",
+                requestId,
+                "auth-required: we can't serve requests to unauthenticated users"
+              ]));
+              return;
+            }
+          }
+
           if (filters.isNotEmpty) {
             // Store the active subscription
             _activeSubscriptions[requestId] = filters;

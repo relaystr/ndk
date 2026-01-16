@@ -143,6 +143,15 @@ class JitEngine with Logger implements NetworkEngine {
         closeOnEOSE: ndkRequest.closeOnEOSE,
       );
     }
+
+    // Late auth for subscriptions with authenticateAs
+    if (ndkRequest.authenticateAs != null &&
+        ndkRequest.authenticateAs!.isNotEmpty) {
+      for (final relayUrl in requestState.requests.keys) {
+        relayManagerLight.authenticateIfNeeded(
+            relayUrl, ndkRequest.authenticateAs!);
+      }
+    }
   }
 
   /// broadcasts given event using inbox/outbox (gossip) if explicit relays are given they are used instead
