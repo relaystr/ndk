@@ -61,26 +61,34 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<Nip01Event>> loadEvents({
+    List<String>? ids,
     List<String>? pubKeys,
     List<int>? kinds,
-    String? pTag,
+    Map<String, List<String>>? tags,
     int? since,
     int? until,
+    String? search,
     int? limit,
   }) async {
-    var finder = sembast.Finder();
-
     // Build filter conditions
     final filters = <sembast.Filter>[];
 
+    // Filter by event IDs
+    if (ids != null && ids.isNotEmpty) {
+      filters.add(sembast.Filter.inList('id', ids));
+    }
+
+    // Filter by authors (pubkeys)
     if (pubKeys != null && pubKeys.isNotEmpty) {
       filters.add(sembast.Filter.inList('pubkey', pubKeys));
     }
 
+    // Filter by kinds
     if (kinds != null && kinds.isNotEmpty) {
       filters.add(sembast.Filter.inList('kind', kinds));
     }
 
+    // Filter by time range
     if (since != null) {
       filters.add(sembast.Filter.greaterThanOrEquals('created_at', since));
     }
@@ -89,31 +97,43 @@ class SembastCacheManager extends CacheManager {
       filters.add(sembast.Filter.lessThanOrEquals('created_at', until));
     }
 
-    if (pTag != null) {
-      filters.add(
-        sembast.Filter.custom((record) {
-          final tags = record['tags'] as List<dynamic>?;
-          if (tags == null) return false;
-          return tags.any((tag) {
-            if (tag is List && tag.length > 1 && tag[0] == 'p') {
-              return tag[1] == pTag;
-            }
-            return false;
-          });
-        }),
-      );
+    // Filter by content search
+    if (search != null && search.isNotEmpty) {
+      filters.add(sembast.Filter.matches('content', search));
     }
 
-    finder = sembast.Finder(
+    final finder = sembast.Finder(
       filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
       limit: limit,
       sortOrders: [sembast.SortOrder('created_at', false)],
     );
 
     final records = await _eventsStore.find(_database, finder: finder);
-    return records
+    final events = records
         .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
         .toList();
+
+    // Filter by tags if specified (done in memory since Sembast doesn't support complex tag filtering)
+    if (tags != null && tags.isNotEmpty) {
+      return events.where((event) {
+        return tags.entries.every((tagEntry) {
+          final tagName = tagEntry.key;
+          final tagValues = tagEntry.value;
+          final eventTags = event.getTags(tagName);
+
+          if (tagValues.isEmpty &&
+              event.tags.where((e) => e[0] == tagName).isNotEmpty) {
+            return true;
+          }
+
+          return tagValues.any(
+            (value) => eventTags.contains(value.toLowerCase()),
+          );
+        });
+      }).toList();
+    }
+
+    return events;
   }
 
   @override
@@ -331,6 +351,7 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  @Deprecated('Use loadEvents() instead')
   Future<Iterable<Nip01Event>> searchEvents({
     List<String>? ids,
     List<String>? authors,
@@ -341,82 +362,16 @@ class SembastCacheManager extends CacheManager {
     String? search,
     int limit = 100,
   }) async {
-    var finder = sembast.Finder(limit: limit);
-
-    // Build filter conditions
-    final filters = <sembast.Filter>[];
-
-    // Filter by event IDs
-    if (ids != null && ids.isNotEmpty) {
-      filters.add(sembast.Filter.inList('id', ids));
-    }
-
-    // Filter by authors (pubkeys)
-    if (authors != null && authors.isNotEmpty) {
-      filters.add(sembast.Filter.inList('pubkey', authors));
-    }
-
-    // Filter by kinds
-    if (kinds != null && kinds.isNotEmpty) {
-      filters.add(sembast.Filter.inList('kind', kinds));
-    }
-
-    // Filter by time range
-    if (since != null) {
-      filters.add(sembast.Filter.greaterThanOrEquals('created_at', since));
-    }
-
-    if (until != null) {
-      filters.add(sembast.Filter.lessThanOrEquals('created_at', until));
-    }
-
-    // Filter by content search
-    if (search != null && search.isNotEmpty) {
-      filters.add(sembast.Filter.matches('content', search));
-    }
-
-    // Apply filters
-    if (filters.isNotEmpty) {
-      finder = sembast.Finder(
-        filter: sembast.Filter.and(filters),
-        limit: limit,
-        sortOrders: [
-          sembast.SortOrder('created_at', false),
-        ], // Sort by newest first
-      );
-    } else {
-      finder = sembast.Finder(
-        limit: limit,
-        sortOrders: [sembast.SortOrder('created_at', false)],
-      );
-    }
-
-    final records = await _eventsStore.find(_database, finder: finder);
-    final events = records
-        .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
-        .toList();
-
-    // Filter by tags if specified (done in memory since Sembast doesn't support complex tag filtering)
-    if (tags != null && tags.isNotEmpty) {
-      return events.where((event) {
-        return tags.entries.every((tagEntry) {
-          final tagName = tagEntry.key;
-          final tagValues = tagEntry.value;
-          final eventTags = event.getTags(tagName);
-
-          if (tagValues.isEmpty &&
-              event.tags.where((e) => e[0] == tagName).isNotEmpty) {
-            return true;
-          }
-
-          return tagValues.any(
-            (value) => eventTags.contains(value.toLowerCase()),
-          );
-        });
-      });
-    }
-
-    return events;
+    return loadEvents(
+      ids: ids,
+      pubKeys: authors,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+    );
   }
 
   @override

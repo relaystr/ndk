@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip19/nip19.dart';
 
 import '../../data_sources/amber_flutter.dart';
 
@@ -18,13 +15,15 @@ class AmberEventSigner implements EventSigner {
   });
 
   @override
-  Future<void> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event) async {
     final npub = publicKey.startsWith('npub')
         ? publicKey
         : Nip19.encodePubKey(publicKey);
     Map<dynamic, dynamic> map = await amberFlutterDS.amber.signEvent(
-        currentUser: npub, eventJson: jsonEncode(event.toJson()), id: event.id);
-    event.sig = map['signature'];
+        currentUser: npub,
+        eventJson: Nip01EventModel.fromEntity(event).toJsonString(),
+        id: event.id);
+    return event.copyWith(sig: map['signature']);
   }
 
   @override

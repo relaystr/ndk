@@ -53,7 +53,12 @@ void main() async {
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
-      await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
+
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+          event: event, privateKey: key0.privateKey!);
+      await ndk.broadcast
+          .broadcast(nostrEvent: signedEvent)
+          .broadcastDoneFuture;
 
       List<Nip01Event> result = await ndk.requests.query(
         filters: [
@@ -62,12 +67,17 @@ void main() async {
       ).future;
       expect(result.length, 1);
 
-      event = Nip01Event(
+      final event2 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "my content");
-      await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
+
+      final signedEvent2 = Nip01Utils.signWithPrivateKey(
+          event: event2, privateKey: key0.privateKey!);
+      await ndk.broadcast
+          .broadcast(nostrEvent: signedEvent2)
+          .broadcastDoneFuture;
 
       result = await ndk.requests.query(
         filters: [
@@ -85,20 +95,23 @@ void main() async {
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
+
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+          event: event, privateKey: key0.privateKey!);
       NdkBroadcastResponse response =
-          ndk.broadcast.broadcast(nostrEvent: event);
+          ndk.broadcast.broadcast(nostrEvent: signedEvent);
       await response.broadcastDoneFuture;
 
       List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [event.pubKey], kinds: [Nip01Event.kTextNodeKind])
+        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
       ]).future;
-      expect(list.first, event);
+      expect(list.first, signedEvent);
 
-      response = ndk.broadcast.broadcastDeletion(eventId: event.id);
+      response = ndk.broadcast.broadcastDeletion(eventId: signedEvent.id);
       await response.broadcastDoneFuture;
 
       list = await ndk.requests.query(filters: [
-        Filter(authors: [event.pubKey], kinds: [Nip01Event.kTextNodeKind])
+        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
       ]).future;
       expect(list, isEmpty);
     });

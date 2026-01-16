@@ -7,6 +7,7 @@ import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/tuple.dart';
 import '../../../domain_layer/repositories/blossom.dart';
 import '../../data_sources/http_request.dart';
+import '../../models/nip_01_event_model.dart';
 
 class BlossomRepositoryImpl implements BlossomRepository {
   final HttpRequestDS client;
@@ -169,7 +170,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
         headers: {
           if (contentType != null) 'Content-Type': contentType,
           if (authorization != null)
-            'Authorization': "Nostr ${authorization.toBase64()}",
+            'Authorization':
+                "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
           'Content-Length': '${data.length}',
         },
       );
@@ -212,7 +214,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
         url: Uri.parse('$serverUrl/mirror'),
         body: myBody,
         headers: {
-          'Authorization': "Nostr ${authorization.toBase64()}",
+          'Authorization':
+              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
           'Content-Type': 'application/json',
         },
       );
@@ -259,7 +262,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
         }
 
         if (authorization != null) {
-          headers['Authorization'] = "Nostr ${authorization.toBase64()}";
+          headers['Authorization'] =
+              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}";
         }
 
         final response = await client.get(
@@ -298,7 +302,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
     final headers = <String, String>{};
 
     if (authorization != null) {
-      headers['Authorization'] = "Nostr ${authorization.toBase64()}";
+      headers['Authorization'] =
+          "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}";
     }
 
     for (final url in serverUrls) {
@@ -420,7 +425,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
         final headers = <String, String>{};
         if (authorization != null) {
-          headers['Authorization'] = "Nostr ${authorization.toBase64()}";
+          headers['Authorization'] =
+              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}";
         }
 
         final response = await client.get(
@@ -466,7 +472,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
       final response = await client.delete(
         url: Uri.parse('$serverUrl/$sha256'),
         headers: {
-          'Authorization': "Nostr ${authorization.toBase64()}",
+          'Authorization':
+              "Nostr ${Nip01EventModel.fromEntity(authorization).toBase64()}",
         },
       );
 
@@ -504,7 +511,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
     required String sha256,
     required Nip01Event reportEvent,
   }) async {
-    final String myBody = jsonEncode(reportEvent.toJson());
+    final String myBody =
+        jsonEncode(Nip01EventModel.fromEntity(reportEvent).toJson());
 
     final response = await client.put(
       url: Uri.parse('$serverUrl/report'),

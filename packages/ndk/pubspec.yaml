@@ -1,6 +1,6 @@
 name: ndk
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.6.1-dev.4
+version: 0.6.1-dev.7
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
@@ -44,3 +44,6 @@ dev_dependencies:
   # shelf used for blossom mock server
   shelf: ^1.4.2
   shelf_router: ^1.1.4
+  ndk_cache_manager_test_suite:
+    path: ../ndk_cache_manager_test_suite
+

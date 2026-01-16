@@ -19,6 +19,7 @@ export 'domain_layer/entities/broadcast_response.dart';
  * 
  */
 export 'domain_layer/entities/nip_01_event.dart';
+export 'data_layer/models/nip_01_event_model.dart';
 export 'domain_layer/entities/filter.dart';
 export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/contact_list.dart';
@@ -83,6 +84,8 @@ export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
 export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';
 export 'domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 export 'domain_layer/entities/filter_fetched_ranges.dart';
+export 'domain_layer/usecases/proof_of_work/proof_of_work.dart';
+export 'domain_layer/entities/nip_01_utils.dart';
 
 /**
  * other stuff

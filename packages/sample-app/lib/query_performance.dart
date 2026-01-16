@@ -122,10 +122,10 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
               onPressed: _isVerifyingBip340 ? null : _runBip340Query,
               child: _isVerifyingBip340
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
                   : const Text('Run with BIP340'),
             ),
             const SizedBox(height: 8),
@@ -139,10 +139,10 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
               onPressed: _isVerifyingRust ? null : _runRustQuery,
               child: _isVerifyingRust
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
                   : const Text('Run with Rust'),
             ),
             const SizedBox(height: 8),

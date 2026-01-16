@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
-import '../shared/net/user_agent.dart';
 
+import '../shared/net/user_agent.dart';
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
@@ -14,6 +14,7 @@ import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
+import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
@@ -81,6 +82,7 @@ class Initialization {
   late GiftWrap giftWrap;
   late Connectivy connectivity;
   late FetchedRanges fetchedRanges;
+  late ProofOfWork proofOfWork;
 
   late VerifyNip05 verifyNip05;
 
@@ -253,6 +255,8 @@ class Initialization {
     giftWrap = GiftWrap(accounts: accounts);
 
     connectivity = Connectivy(relayManager);
+
+    proofOfWork = ProofOfWork();
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);

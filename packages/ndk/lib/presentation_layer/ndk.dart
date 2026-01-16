@@ -17,6 +17,7 @@ import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
+import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
@@ -135,6 +136,8 @@ class Ndk {
   /// and update NDK about your application connectivity \
   /// for faster reconnects
   Connectivy get connectivity => _initialization.connectivity;
+
+  ProofOfWork get proofOfWork => _initialization.proofOfWork;
 
   /// Nostr Wallet connect
   @experimental // needs more docs & tests

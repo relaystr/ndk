@@ -10,12 +10,18 @@ void main() async {
     final CacheManager myCacheManager = MemCacheManager();
 
     final List<Nip01Event> myEvens = [
-      Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_a"),
-      Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
-      Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
-      Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
-      Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
-      Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
+      Nip01Event(
+          pubKey: "pubKey1", kind: 1, tags: [], content: "content1_a"),
+      Nip01Event(
+          pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
+      Nip01Event(
+          pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
+      Nip01Event(
+          pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
+      Nip01Event(
+          pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
+      Nip01Event(
+          pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
     ];
 
     setUp(() async {
@@ -165,15 +171,32 @@ void main() async {
       final CacheManager myCacheManager = MemCacheManager();
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
-      final eventId0 =
-          Nip01Event(pubKey: "pubKey0", kind: 1, tags: [], content: "content0");
-      eventId0.id = "id0";
-      final eventId1 =
-          Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1");
-      eventId1.id = "id1";
-      final eventId2 =
-          Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2");
-      eventId2.id = "id2";
+      final eventId0 = Nip01Event(
+          pubKey: "pubKey0",
+          kind: 1,
+          tags: [],
+          content: "content0",
+          id: "id0",
+          sig: null,
+          validSig: null);
+
+      final eventId1 = Nip01Event(
+          pubKey: "pubKey1",
+          kind: 1,
+          tags: [],
+          content: "content1",
+          id: "id1",
+          sig: null,
+          validSig: null);
+
+      final eventId2 = Nip01Event(
+          pubKey: "pubKey2",
+          kind: 1,
+          tags: [],
+          content: "content2",
+          id: "id2",
+          sig: null,
+          validSig: null);
 
       final List<Nip01Event> idEvents = [
         eventId0,
@@ -217,15 +240,32 @@ void main() async {
       final CacheManager myCacheManager = MemCacheManager();
       final CacheRead myUsecase = CacheRead(myCacheManager);
 
-      final eventId0 =
-          Nip01Event(pubKey: "pubKey0", kind: 1, tags: [], content: "content0");
-      eventId0.id = "id0";
-      final eventId1 =
-          Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1");
-      eventId1.id = "id1";
-      final eventId2 =
-          Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2");
-      eventId2.id = "id2";
+      final eventId0 = Nip01Event(
+          pubKey: "pubKey0",
+          kind: 1,
+          tags: [],
+          content: "content0",
+          id: "id0",
+          sig: null,
+          validSig: null);
+
+      final eventId1 = Nip01Event(
+          pubKey: "pubKey1",
+          kind: 1,
+          tags: [],
+          content: "content1",
+          id: "id1",
+          sig: null,
+          validSig: null);
+
+      final eventId2 = Nip01Event(
+          pubKey: "pubKey2",
+          kind: 1,
+          tags: [],
+          content: "content2",
+          id: "id2",
+          sig: null,
+          validSig: null);
 
       final List<Nip01Event> idEvents = [
         eventId0,
