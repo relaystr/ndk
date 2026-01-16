@@ -359,7 +359,14 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.6.1-dev.6"
+    version: "0.6.1-dev.7"
+  ndk_cache_manager_test_suite:
+    dependency: "direct dev"
+    description:
+      path: "../ndk_cache_manager_test_suite"
+      relative: true
+    source: path
+    version: "1.0.0-dev.2"
   node_preamble:
     dependency: transitive
     description:

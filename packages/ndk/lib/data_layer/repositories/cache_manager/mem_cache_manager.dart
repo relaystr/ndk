@@ -71,12 +71,9 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
-    List<Nip05> result = [];
+    List<Nip05?> result = [];
     for (String pubKey in pubKeys) {
-      Nip05? nip05 = nip05s[pubKey];
-      if (nip05 != null) {
-        result.add(nip05);
-      }
+      result.add(nip05s[pubKey]);
     }
     return result;
   }
@@ -176,12 +173,9 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
-    List<Metadata> result = [];
+    List<Metadata?> result = [];
     for (String pubKey in pubKeys) {
-      Metadata? metadata = metadatas[pubKey];
-      if (metadata != null) {
-        result.add(metadata);
-      }
+      result.add(metadatas[pubKey]);
     }
     return result;
   }

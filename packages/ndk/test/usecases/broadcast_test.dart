@@ -55,7 +55,14 @@ void main() async {
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
-      await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
+
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: key0.privateKey!,
+      );
+      await ndk.broadcast
+          .broadcast(nostrEvent: signedEvent)
+          .broadcastDoneFuture;
 
       List<Nip01Event> result = await ndk.requests.query(
         filters: [
@@ -64,12 +71,19 @@ void main() async {
       ).future;
       expect(result.length, 1);
 
-      event = Nip01Event(
+      final event2 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "my content");
-      await ndk.broadcast.broadcast(nostrEvent: event).broadcastDoneFuture;
+
+      final signedEvent2 = Nip01Utils.signWithPrivateKey(
+        event: event2,
+        privateKey: key0.privateKey!,
+      );
+      await ndk.broadcast
+          .broadcast(nostrEvent: signedEvent2)
+          .broadcastDoneFuture;
 
       result = await ndk.requests.query(
         filters: [
@@ -87,20 +101,25 @@ void main() async {
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
+
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: key0.privateKey!,
+      );
       NdkBroadcastResponse response =
-          ndk.broadcast.broadcast(nostrEvent: event);
+          ndk.broadcast.broadcast(nostrEvent: signedEvent);
       await response.broadcastDoneFuture;
 
       List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [event.pubKey], kinds: [Nip01Event.kTextNodeKind])
+        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
       ]).future;
-      expect(list.first, event);
+      expect(list.first, signedEvent);
 
-      response = ndk.broadcast.broadcastDeletion(eventId: event.id);
+      response = ndk.broadcast.broadcastDeletion(eventId: signedEvent.id);
       await response.broadcastDoneFuture;
 
       list = await ndk.requests.query(filters: [
-        Filter(authors: [event.pubKey], kinds: [Nip01Event.kTextNodeKind])
+        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
       ]).future;
       expect(list, isEmpty);
     });
@@ -113,28 +132,40 @@ void main() async {
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "1");
+
+      final signedEvent1 = Nip01Utils.signWithPrivateKey(
+        event: event1,
+        privateKey: key0.privateKey!,
+      );
       Nip01Event event2 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "2");
+
+      final signedEvent2 = Nip01Utils.signWithPrivateKey(
+        event: event2,
+        privateKey: key0.privateKey!,
+      );
       NdkBroadcastResponse response1 =
-          ndk.broadcast.broadcast(nostrEvent: event1);
+          ndk.broadcast.broadcast(nostrEvent: signedEvent1);
       await response1.broadcastDoneFuture;
       NdkBroadcastResponse response2 =
-          ndk.broadcast.broadcast(nostrEvent: event2);
+          ndk.broadcast.broadcast(nostrEvent: signedEvent2);
       await response2.broadcastDoneFuture;
 
       List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
+        Filter(
+            authors: [signedEvent1.pubKey], kinds: [Nip01Event.kTextNodeKind])
       ]).future;
 
-      response1 =
-          ndk.broadcast.broadcastDeletion(eventIds: [event1.id, event2.id]);
+      response1 = ndk.broadcast
+          .broadcastDeletion(eventIds: [signedEvent1.id, signedEvent2.id]);
       await response1.broadcastDoneFuture;
 
       list = await ndk.requests.query(filters: [
-        Filter(authors: [event1.pubKey], kinds: [Nip01Event.kTextNodeKind])
+        Filter(
+            authors: [signedEvent1.pubKey], kinds: [Nip01Event.kTextNodeKind])
       ]).future;
       expect(list, isEmpty);
     });
@@ -147,22 +178,28 @@ void main() async {
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
+
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: key0.privateKey!,
+      );
+
       NdkBroadcastResponse response =
-          ndk.broadcast.broadcast(nostrEvent: event);
+          ndk.broadcast.broadcast(nostrEvent: signedEvent);
       await response.broadcastDoneFuture;
 
       List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [event.pubKey], kinds: [Nip01Event.kTextNodeKind])
+        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
       ]).future;
-      expect(list.first, event);
+      expect(list.first, signedEvent);
 
       final reaction = "♡";
       response = ndk.broadcast
-          .broadcastReaction(eventId: event.id, reaction: reaction);
+          .broadcastReaction(eventId: signedEvent.id, reaction: reaction);
       await response.broadcastDoneFuture;
 
       list = await ndk.requests.query(filters: [
-        Filter(authors: [event.pubKey], kinds: [Reaction.kKind])
+        Filter(authors: [signedEvent.pubKey], kinds: [Reaction.kKind])
       ]).future;
       expect(list.first.content, reaction);
     });
@@ -202,11 +239,16 @@ void main() async {
             tags: [],
             content: "testing timeout");
 
+        final signedEvent = Nip01Utils.signWithPrivateKey(
+          event: event,
+          privateKey: key0.privateKey!,
+        );
+
         final startTime = DateTime.now();
         final customTimeout = const Duration(milliseconds: 500);
 
         NdkBroadcastResponse response = ndk.broadcast.broadcast(
-            nostrEvent: event,
+            nostrEvent: signedEvent,
             timeout: customTimeout,
             specificRelays: [slowRelay.url, relay0.url],
             considerDonePercent: 1);
@@ -269,10 +311,15 @@ void main() async {
             tags: [],
             content: "testing considerDonePercent");
 
+        final signedEvent = Nip01Utils.signWithPrivateKey(
+          event: event,
+          privateKey: key0.privateKey!,
+        );
+
         final startTime = DateTime.now();
 
         NdkBroadcastResponse response = ndk.broadcast.broadcast(
-            nostrEvent: event,
+            nostrEvent: signedEvent,
             considerDonePercent: 0.66, // 66% = 2 out of 3 relays
             timeout: const Duration(
                 seconds: 5), // Long timeout to ensure it's not timing out

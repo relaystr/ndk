@@ -1,5 +1,7 @@
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 
+import '../../entities/nip_01_utils.dart';
+
 /// auth event to send to relays
 class AuthEvent extends Nip01Event {
   /// auth kind
@@ -7,8 +9,33 @@ class AuthEvent extends Nip01Event {
   static const int KIND = 22242;
 
   /// Zap Request
-  AuthEvent({
+  AuthEvent._({
     required super.pubKey,
     required super.tags,
-  }) : super(kind: KIND, content: '');
+    required super.id,
+  }) : super(
+          kind: KIND,
+          content: '',
+          sig: null,
+          validSig: null,
+        );
+
+  factory AuthEvent({
+    required String pubKey,
+    required List<List<String>> tags,
+  }) {
+    final calculatedId = Nip01Utils.calculateEventIdSync(
+      pubKey: pubKey,
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      kind: KIND,
+      tags: tags,
+      content: '',
+    );
+
+    return AuthEvent._(
+      pubKey: pubKey,
+      tags: tags,
+      id: calculatedId,
+    );
+  }
 }

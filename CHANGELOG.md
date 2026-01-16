@@ -3,6 +3,105 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-01-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.7`](#ndk---v061-dev7)
+ - [`ndk_amber` - `v0.3.3-dev.8`](#ndk_amber---v033-dev8)
+ - [`ndk_isar` - `v0.2.3-dev.8`](#ndk_isar---v023-dev8)
+ - [`ndk_objectbox` - `v0.2.7-dev.7`](#ndk_objectbox---v027-dev7)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.8`](#ndk_rust_verifier---v042-dev8)
+ - [`nip07_event_signer` - `v1.0.5-dev.7`](#nip07_event_signer---v105-dev7)
+ - [`sembast_cache_manager` - `v1.0.6-dev.8`](#sembast_cache_manager---v106-dev8)
+ - [`ndk_cache_manager_test_suite` - `v1.0.0-dev.2`](#ndk_cache_manager_test_suite---v100-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_cache_manager_test_suite` - `v1.0.0-dev.2`
+
+---
+
+#### `ndk` - `v0.6.1-dev.7`
+
+ - **REFACTOR**: proof of work as instance.
+ - **REFACTOR**(fix): encode zapRequest.
+ - **REFACTOR**(fix): encode gift wrap.
+ - **REFACTOR**(fix): use signed event in sets engine.
+ - **REFACTOR**(fix): brodcast detect need for signing.
+ - **REFACTOR**(fix): mock relay fix send encode.
+ - **REFACTOR**: zap request calc id.
+ - **REFACTOR**(fix): auth event id.
+ - **REFACTOR**(fix): sign event in test.
+ - **REFACTOR**: immutable event sources.
+ - **REFACTOR**: ndk tests.
+ - **REFACTOR**: valid sig.
+ - **REFACTOR**: other packages.
+ - **REFACTOR**: entities.
+ - **REFACTOR**: signer, amber.
+ - **REFACTOR**: event service.
+ - **REFACTOR**: nip01 immutable.
+ - **REFACTOR**: decode nip01 event in isolate.
+ - **FIX**: remove meaningless comments.
+ - **FIX**: mem cache methods (loadNip05s, loadMetadatas).
+ - **FIX**: blossom signing.
+ - **FIX**: add copy with to extended class.
+ - **FIX**: websocket state check optimization.
+ - **FEAT**: add test suite in actual cache tests.
+ - **FEAT**: global test suite.
+ - **FEAT**: preserve order decoding.
+ - **FEAT**: eose extract request id.
+ - **FEAT**: isolate pool.
+ - **FEAT**: deligate tasks to isolates.
+
+#### `ndk_amber` - `v0.3.3-dev.8`
+
+ - **REFACTOR**: signer, amber.
+ - **FIX**: clean imports.
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_isar` - `v0.2.3-dev.8`
+
+ - **FIX**: clean imports.
+ - **FIX**: blossom signing.
+ - **FIX**: websocket state check optimization.
+ - **FEAT**: add test suite in actual cache tests.
+
+#### `ndk_objectbox` - `v0.2.7-dev.7`
+
+ - **REFACTOR**: other packages.
+ - **FEAT**: objectbox test.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.8`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: add doc.
+
+#### `nip07_event_signer` - `v1.0.5-dev.7`
+
+ - **REFACTOR**: nip07, amber, sembast.
+ - **REFACTOR**: other packages.
+
+#### `sembast_cache_manager` - `v1.0.6-dev.8`
+
+ - **REFACTOR**: nip07, amber, sembast.
+ - **REFACTOR**: other packages.
+ - **FEAT**: add test suite in actual cache tests.
+
+
 ## 2026-01-07
 
 ### Changes

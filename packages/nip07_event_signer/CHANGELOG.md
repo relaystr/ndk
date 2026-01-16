@@ -1,3 +1,8 @@
+## 1.0.5-dev.7
+
+ - **REFACTOR**: nip07, amber, sembast.
+ - **REFACTOR**: other packages.
+
 ## 1.0.5-dev.6
 
  - Update a dependency to the latest release.

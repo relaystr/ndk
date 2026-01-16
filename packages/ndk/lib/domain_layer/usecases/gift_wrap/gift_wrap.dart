@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../data_layer/models/nip_01_event_model.dart';
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/nip_01_event.dart';
 import '../accounts/accounts.dart';
@@ -84,7 +85,7 @@ class GiftWrap {
     }
 
     final encryptedContent = await account.signer.encryptNip44(
-      plaintext: jsonEncode(rumor),
+      plaintext: Nip01EventModel.fromEntity(rumor).toJsonString(),
       recipientPubKey: recipientPubkey,
     );
 
@@ -121,7 +122,7 @@ class GiftWrap {
 
     // Parse the rumor event
     final Map<String, dynamic> rumorJson = jsonDecode(decryptedRumorJson);
-    final rumor = Nip01Event.fromJson(rumorJson);
+    final rumor = Nip01EventModel.fromJson(rumorJson);
 
     return rumor;
   }
@@ -143,7 +144,7 @@ class GiftWrap {
     );
 
     final encryptedSeal = await ephemeralSigner.encryptNip44(
-      plaintext: jsonEncode(sealEvent),
+      plaintext: Nip01EventModel.fromEntity(sealEvent).toJsonString(),
       recipientPubKey: recipientPublicKey,
     );
 
@@ -174,9 +175,9 @@ class GiftWrap {
     // Sign with ephemeral key
     final signature = Bip340.sign(giftWrapEvent.id, ephemeralKeys.privateKey!);
 
-    giftWrapEvent.sig = signature;
+    final gWEventSigned = giftWrapEvent.copyWith(sig: signature);
 
-    return giftWrapEvent;
+    return gWEventSigned;
   }
 
   Future<Nip01Event> unwrapEvent({
@@ -198,7 +199,7 @@ class GiftWrap {
 
     // Parse the seal event
     final Map<String, dynamic> sealJson = jsonDecode(decryptedEventJson);
-    final event = Nip01Event.fromJson(sealJson);
+    final event = Nip01EventModel.fromJson(sealJson);
     return event;
   }
 }
