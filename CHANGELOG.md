@@ -3,6 +3,71 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-01-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.8`](#ndk---v061-dev8)
+ - [`ndk_cache_manager_test_suite` - `v1.0.0-dev.3`](#ndk_cache_manager_test_suite---v100-dev3)
+ - [`ndk_objectbox` - `v0.2.7-dev.8`](#ndk_objectbox---v027-dev8)
+ - [`sembast_cache_manager` - `v1.0.6-dev.9`](#sembast_cache_manager---v106-dev9)
+ - [`ndk_amber` - `v0.3.3-dev.9`](#ndk_amber---v033-dev9)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.9`](#ndk_rust_verifier---v042-dev9)
+ - [`nip07_event_signer` - `v1.0.5-dev.8`](#nip07_event_signer---v105-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.9`
+ - `ndk_rust_verifier` - `v0.4.2-dev.9`
+ - `nip07_event_signer` - `v1.0.5-dev.8`
+
+---
+
+#### `ndk` - `v0.6.1-dev.8`
+
+ - **FIX**: remove unused import.
+ - **FIX**: sha256 convert in isolate.
+ - **FIX**: fetched ranges integration test.
+ - **FIX**: rename coverage usecase to fetchedRanges.
+ - **FIX**: timerange until.
+ - **FIX**: added ranges.
+ - **FEAT**: cache managers support.
+ - **FEAT**: mark as experimental.
+ - **FEAT**: coverage disabled by default.
+ - **FEAT**: unify cache events api.
+ - **FEAT**: integration tests.
+ - **FEAT**: unit tests.
+ - **FEAT**: automatic coverage.
+ - **FEAT**: coverage usecase.
+
+#### `ndk_cache_manager_test_suite` - `v1.0.0-dev.3`
+
+ - **FIX**: mem cache test.
+
+#### `ndk_objectbox` - `v0.2.7-dev.8`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+#### `sembast_cache_manager` - `v1.0.6-dev.9`
+
+ - **FEAT**: cache managers support.
+ - **FEAT**: unify cache events api.
+
+
 ## 2026-01-15
 
 ### Changes
