@@ -1,5 +1,3 @@
-import 'dart:isolate';
-
 import 'package:bip340/bip340.dart' as bip340;
 import 'package:ndk/shared/isolates/isolate_manager.dart';
 
