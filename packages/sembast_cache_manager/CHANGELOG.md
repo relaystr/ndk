@@ -1,3 +1,8 @@
+## 1.0.6-dev.9
+
+ - **FEAT**: cache managers support.
+ - **FEAT**: unify cache events api.
+
 ## 1.0.6-dev.8
 
  - **REFACTOR**: nip07, amber, sembast.

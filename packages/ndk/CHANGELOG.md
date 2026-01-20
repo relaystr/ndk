@@ -1,3 +1,20 @@
+## 0.6.1-dev.8
+
+ - **FIX**: remove unused import.
+ - **FIX**: sha256 convert in isolate.
+ - **FIX**: fetched ranges integration test.
+ - **FIX**: rename coverage usecase to fetchedRanges.
+ - **FIX**: timerange until.
+ - **FIX**: added ranges.
+ - **FEAT**: cache managers support.
+ - **FEAT**: mark as experimental.
+ - **FEAT**: coverage disabled by default.
+ - **FEAT**: unify cache events api.
+ - **FEAT**: integration tests.
+ - **FEAT**: unit tests.
+ - **FEAT**: automatic coverage.
+ - **FEAT**: coverage usecase.
+
 ## 0.6.1-dev.7
 
  - **REFACTOR**: proof of work as instance.
