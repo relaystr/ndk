@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import 'package:isar/isar.dart';
+import 'package:ndk/domain_layer/entities/filter_fetched_ranges.dart';
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/logger/logger.dart';
@@ -8,6 +9,7 @@ import 'package:ndk/shared/logger/logger.dart';
 import '../../data_sources/isar_db.dart';
 import '../../models/db/db_contact_list.dart';
 import '../../models/db/db_event.dart';
+import '../../models/db/db_filter_fetched_range_record.dart';
 import '../../models/db/db_metadata.dart';
 import '../../models/db/db_nip05.dart';
 import '../../models/db/db_relay_set.dart';
@@ -429,5 +431,113 @@ class IsarCacheManager extends CacheManager {
   @override
   Future<void> close() async {
     isar_ds.isar.close();
+  }
+
+  // =====================
+  // Filter Fetched Ranges
+  // =====================
+
+  @override
+  Future<void> saveFilterFetchedRangeRecord(
+      FilterFetchedRangeRecord record) async {
+    final startTime = DateTime.now();
+    isar_ds.isar.write((isar) {
+      isar.dbFilterFetchedRangeRecords
+          .put(DbFilterFetchedRangeRecord.fromFilterFetchedRangeRecord(record));
+    });
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    Logger.log.t(
+        "SAVED FilterFetchedRangeRecord took ${duration.inMilliseconds} ms");
+  }
+
+  @override
+  Future<void> saveFilterFetchedRangeRecords(
+      List<FilterFetchedRangeRecord> records) async {
+    final startTime = DateTime.now();
+    isar_ds.isar.write((isar) {
+      isar.dbFilterFetchedRangeRecords.putAll(records
+          .map((r) => DbFilterFetchedRangeRecord.fromFilterFetchedRangeRecord(r))
+          .toList());
+    });
+    final endTime = DateTime.now();
+    final duration = endTime.difference(startTime);
+    Logger.log.t(
+        "SAVED ${records.length} FilterFetchedRangeRecords took ${duration.inMilliseconds} ms");
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
+      String filterHash) async {
+    return isar_ds.isar.dbFilterFetchedRangeRecords
+        .where()
+        .filterHashEqualTo(filterHash)
+        .findAll()
+        .map((r) => r.toFilterFetchedRangeRecord())
+        .toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
+      String filterHash, String relayUrl) async {
+    return isar_ds.isar.dbFilterFetchedRangeRecords
+        .where()
+        .filterHashEqualTo(filterHash)
+        .and()
+        .relayUrlEqualTo(relayUrl)
+        .findAll()
+        .map((r) => r.toFilterFetchedRangeRecord())
+        .toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>>
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+    return isar_ds.isar.dbFilterFetchedRangeRecords
+        .where()
+        .relayUrlEqualTo(relayUrl)
+        .findAll()
+        .map((r) => r.toFilterFetchedRangeRecord())
+        .toList();
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecords(String filterHash) async {
+    isar_ds.isar.write((isar) {
+      isar.dbFilterFetchedRangeRecords
+          .where()
+          .filterHashEqualTo(filterHash)
+          .deleteAll();
+    });
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
+      String filterHash, String relayUrl) async {
+    isar_ds.isar.write((isar) {
+      isar.dbFilterFetchedRangeRecords
+          .where()
+          .filterHashEqualTo(filterHash)
+          .and()
+          .relayUrlEqualTo(relayUrl)
+          .deleteAll();
+    });
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl) async {
+    isar_ds.isar.write((isar) {
+      isar.dbFilterFetchedRangeRecords
+          .where()
+          .relayUrlEqualTo(relayUrl)
+          .deleteAll();
+    });
+  }
+
+  @override
+  Future<void> removeAllFilterFetchedRangeRecords() async {
+    isar_ds.isar.write((isar) {
+      isar.dbFilterFetchedRangeRecords.clear();
+    });
   }
 }

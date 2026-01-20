@@ -16,6 +16,7 @@ import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
+import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
@@ -80,6 +81,7 @@ class Initialization {
   late Search search;
   late GiftWrap giftWrap;
   late Connectivy connectivity;
+  late FetchedRanges fetchedRanges;
   late ProofOfWork proofOfWork;
 
   late VerifyNip05 verifyNip05;
@@ -240,6 +242,15 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       requests: requests,
     );
+
+    fetchedRanges = FetchedRanges(
+      cacheManager: _ndkConfig.cache,
+    );
+
+    // Connect fetchedRanges to requests for automatic range recording (if enabled)
+    if (_ndkConfig.fetchedRangesEnabled) {
+      requests.fetchedRanges = fetchedRanges;
+    }
 
     giftWrap = GiftWrap(accounts: accounts);
 

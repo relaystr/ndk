@@ -7,6 +7,7 @@ import '../../entities/event_filter.dart';
 import '../../entities/filter.dart';
 import '../../entities/global_state.dart';
 import '../../entities/ndk_request.dart';
+import '../../entities/nip_01_event.dart';
 import '../../entities/relay_connectivity.dart';
 import '../../entities/relay_set.dart';
 import '../../entities/request_response.dart';
@@ -14,6 +15,7 @@ import '../../entities/request_state.dart';
 import '../../repositories/event_verifier.dart';
 import '../cache_read/cache_read.dart';
 import '../cache_write/cache_write.dart';
+import '../fetched_ranges/fetched_ranges.dart';
 import '../engines/network_engine.dart';
 import '../relay_manager.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
@@ -30,6 +32,7 @@ class Requests {
   final EventVerifier _eventVerifier;
   final List<EventFilter> _eventOutFilters;
   final Duration _defaultQueryTimeout;
+  FetchedRanges? _fetchedRanges;
 
   /// Creates a new [Requests] instance
   ///
@@ -55,6 +58,10 @@ class Requests {
         _eventVerifier = eventVerifier,
         _eventOutFilters = eventOutFilters,
         _defaultQueryTimeout = defaultQueryTimeout;
+
+  /// Set the fetched ranges tracker for automatic range recording
+  set fetchedRanges(FetchedRanges? fetchedRanges) =>
+      _fetchedRanges = fetchedRanges;
 
   /// Performs a low-level Nostr query
   ///
@@ -234,6 +241,11 @@ class Requests {
       eventOutFilters: _eventOutFilters,
     )();
 
+    // Record fetched ranges when network requests complete (EOSE received)
+    state.networkController.done.then((_) {
+      _recordFetchedRanges(state);
+    });
+
     // cleanup on close
     // use done future for replay subject
     state.controller.done.then((_) {
@@ -274,5 +286,64 @@ class Requests {
 
     // Return the response immediately
     return response;
+  }
+
+  /// Records fetched ranges for each relay that received EOSE
+  /// - If events received: use min/max of event timestamps
+  /// - If no events + filter has since/until: use filter bounds
+  /// - If no events + no bounds: use 0 to now
+  void _recordFetchedRanges(RequestState state) {
+    if (_fetchedRanges == null) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    // Get all events from the replay subject
+    final events = state.controller.values.toList();
+
+    // Group events by source relay
+    final eventsByRelay = <String, List<Nip01Event>>{};
+    for (final event in events) {
+      for (final source in event.sources) {
+        eventsByRelay.putIfAbsent(source, () => []).add(event);
+      }
+    }
+
+    for (final entry in state.requests.entries) {
+      final relayUrl = entry.key;
+      final relayState = entry.value;
+
+      if (!relayState.receivedEOSE) continue;
+
+      final relayEvents = eventsByRelay[relayUrl];
+
+      // Record fetched range for each filter sent to this relay
+      for (final filter in relayState.filters) {
+        int since;
+        int until;
+
+        if (relayEvents != null && relayEvents.isNotEmpty) {
+          // Use oldest event timestamp for since, filter.until or now for until
+          // EOSE means relay has no more events, so fetched range extends to query end
+          final timestamps = relayEvents.map((e) => e.createdAt).toList();
+          since = timestamps.reduce((a, b) => a < b ? a : b);
+          until = filter.until ?? now;
+        } else if (filter.since != null || filter.until != null) {
+          // No events but filter has explicit bounds
+          since = filter.since ?? 0;
+          until = filter.until ?? now;
+        } else {
+          // No events, no bounds - relay has nothing, record 0 to now
+          since = 0;
+          until = now;
+        }
+
+        _fetchedRanges!.addRange(
+          filter: filter,
+          relayUrl: relayUrl,
+          since: since,
+          until: until,
+        );
+      }
+    }
   }
 }

@@ -15,6 +15,7 @@ import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'data_layer/db/object_box/schema/db_contact_list.dart';
+import 'data_layer/db/object_box/schema/db_filter_fetched_range_record.dart';
 import 'data_layer/db/object_box/schema/db_metadata.dart';
 import 'data_layer/db/object_box/schema/db_nip_01_event.dart';
 import 'data_layer/db/object_box/schema/db_nip_05.dart';
@@ -455,6 +456,48 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(8, 2356961977798202534),
+    name: 'DbFilterFetchedRangeRecord',
+    lastPropertyId: const obx_int.IdUid(5, 849430668794703479),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 3939782810311199282),
+        name: 'dbId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 3545576993042908087),
+        name: 'filterHash',
+        type: 9,
+        flags: 2048,
+        indexId: const obx_int.IdUid(2, 758461294333956924),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 1898730736240140766),
+        name: 'relayUrl',
+        type: 9,
+        flags: 2048,
+        indexId: const obx_int.IdUid(3, 735436971837042211),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 6718626507552401445),
+        name: 'rangeStart',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 849430668794703479),
+        name: 'rangeEnd',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -495,8 +538,8 @@ Future<obx.Store> openStore({
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(7, 4509209106406578683),
-    lastIndexId: const obx_int.IdUid(1, 3132180412806400476),
+    lastEntityId: const obx_int.IdUid(8, 2356961977798202534),
+    lastIndexId: const obx_int.IdUid(3, 735436971837042211),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [],
@@ -1074,6 +1117,65 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    DbFilterFetchedRangeRecord:
+        obx_int.EntityDefinition<DbFilterFetchedRangeRecord>(
+          model: _entities[7],
+          toOneRelations: (DbFilterFetchedRangeRecord object) => [],
+          toManyRelations: (DbFilterFetchedRangeRecord object) => {},
+          getId: (DbFilterFetchedRangeRecord object) => object.dbId,
+          setId: (DbFilterFetchedRangeRecord object, int id) {
+            object.dbId = id;
+          },
+          objectToFB: (DbFilterFetchedRangeRecord object, fb.Builder fbb) {
+            final filterHashOffset = fbb.writeString(object.filterHash);
+            final relayUrlOffset = fbb.writeString(object.relayUrl);
+            fbb.startTable(6);
+            fbb.addInt64(0, object.dbId);
+            fbb.addOffset(1, filterHashOffset);
+            fbb.addOffset(2, relayUrlOffset);
+            fbb.addInt64(3, object.rangeStart);
+            fbb.addInt64(4, object.rangeEnd);
+            fbb.finish(fbb.endTable());
+            return object.dbId;
+          },
+          objectFromFB: (obx.Store store, ByteData fbData) {
+            final buffer = fb.BufferContext(fbData);
+            final rootOffset = buffer.derefObject(0);
+            final filterHashParam = const fb.StringReader(
+              asciiOptimization: true,
+            ).vTableGet(buffer, rootOffset, 6, '');
+            final relayUrlParam = const fb.StringReader(
+              asciiOptimization: true,
+            ).vTableGet(buffer, rootOffset, 8, '');
+            final rangeStartParam = const fb.Int64Reader().vTableGet(
+              buffer,
+              rootOffset,
+              10,
+              0,
+            );
+            final rangeEndParam = const fb.Int64Reader().vTableGet(
+              buffer,
+              rootOffset,
+              12,
+              0,
+            );
+            final object =
+                DbFilterFetchedRangeRecord(
+                    filterHash: filterHashParam,
+                    relayUrl: relayUrlParam,
+                    rangeStart: rangeStartParam,
+                    rangeEnd: rangeEndParam,
+                  )
+                  ..dbId = const fb.Int64Reader().vTableGet(
+                    buffer,
+                    rootOffset,
+                    4,
+                    0,
+                  );
+
+            return object;
+          },
+        ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -1391,5 +1493,34 @@ class DbRelaySet_ {
   /// See [DbRelaySet.fallbackToBootstrapRelays].
   static final fallbackToBootstrapRelays = obx.QueryBooleanProperty<DbRelaySet>(
     _entities[6].properties[7],
+  );
+}
+
+/// [DbFilterFetchedRangeRecord] entity fields to define ObjectBox queries.
+class DbFilterFetchedRangeRecord_ {
+  /// See [DbFilterFetchedRangeRecord.dbId].
+  static final dbId = obx.QueryIntegerProperty<DbFilterFetchedRangeRecord>(
+    _entities[7].properties[0],
+  );
+
+  /// See [DbFilterFetchedRangeRecord.filterHash].
+  static final filterHash = obx.QueryStringProperty<DbFilterFetchedRangeRecord>(
+    _entities[7].properties[1],
+  );
+
+  /// See [DbFilterFetchedRangeRecord.relayUrl].
+  static final relayUrl = obx.QueryStringProperty<DbFilterFetchedRangeRecord>(
+    _entities[7].properties[2],
+  );
+
+  /// See [DbFilterFetchedRangeRecord.rangeStart].
+  static final rangeStart =
+      obx.QueryIntegerProperty<DbFilterFetchedRangeRecord>(
+        _entities[7].properties[3],
+      );
+
+  /// See [DbFilterFetchedRangeRecord.rangeEnd].
+  static final rangeEnd = obx.QueryIntegerProperty<DbFilterFetchedRangeRecord>(
+    _entities[7].properties[4],
   );
 }
