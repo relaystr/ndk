@@ -2,7 +2,6 @@
 
 import 'package:isar/isar.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/helpers/list_casting.dart';
 
 part 'db_event.g.dart';
 
