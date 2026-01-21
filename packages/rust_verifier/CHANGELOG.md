@@ -1,3 +1,10 @@
+## 0.4.2-dev.10
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: add doc.
+
 ## 0.4.2-dev.8
 
  - **REFACTOR**: other packages.

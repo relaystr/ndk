@@ -1,3 +1,7 @@
+## 0.6.1-dev.9
+
+ - **FEAT**: isolate manager stub.
+
 ## 0.6.1-dev.8
 
  - **FIX**: remove unused import.
