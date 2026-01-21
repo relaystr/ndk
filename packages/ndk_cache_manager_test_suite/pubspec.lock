@@ -231,7 +231,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.6.1-dev.9"
+    version: "0.6.1"
   node_preamble:
     dependency: transitive
     description:

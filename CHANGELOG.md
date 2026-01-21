@@ -11,6 +11,56 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - [`ndk` - `v0.6.1`](#ndk---v061)
+ - [`ndk_amber` - `v0.3.3`](#ndk_amber---v033)
+ - [`ndk_cache_manager_test_suite` - `v1.0.0`](#ndk_cache_manager_test_suite---v100)
+ - [`ndk_objectbox` - `v0.2.7`](#ndk_objectbox---v027)
+ - [`ndk_rust_verifier` - `v0.4.2`](#ndk_rust_verifier---v042)
+ - [`rust_lib_ndk` - `v0.1.7+1`](#rust_lib_ndk---v0171)
+
+Packages with other changes:
+
+ - [`nip07_event_signer` - `v1.0.5`](#nip07_event_signer---v105)
+ - [`sembast_cache_manager` - `v1.0.6`](#sembast_cache_manager---v106)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.6.1`
+ - `ndk_amber` - `v0.3.3`
+ - `ndk_cache_manager_test_suite` - `v1.0.0`
+ - `ndk_objectbox` - `v0.2.7`
+ - `ndk_rust_verifier` - `v0.4.2`
+ - `nip07_event_signer` - `v1.0.5`
+ - `rust_lib_ndk` - `v0.1.7+1`
+ - `sembast_cache_manager` - `v1.0.6`
+
+---
+
+#### `ndk` - `v0.6.1`
+
+#### `ndk_amber` - `v0.3.3`
+
+#### `ndk_cache_manager_test_suite` - `v1.0.0`
+
+#### `ndk_objectbox` - `v0.2.7`
+
+#### `ndk_rust_verifier` - `v0.4.2`
+
+#### `rust_lib_ndk` - `v0.1.7+1`
+
+#### `nip07_event_signer` - `v1.0.5`
+
+#### `sembast_cache_manager` - `v1.0.6`
+
+
+## 2026-01-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - There are no breaking changes in this release.
 
 Packages with other changes:
