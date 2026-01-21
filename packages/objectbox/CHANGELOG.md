@@ -1,3 +1,11 @@
+## 0.2.7-dev.10
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
 ## 0.2.7-dev.8
 
  - **REFACTOR**: other packages.
