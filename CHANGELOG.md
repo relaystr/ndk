@@ -11,6 +11,31 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_objectbox` - `v0.2.8-dev.0`](#ndk_objectbox---v028-dev0)
+
+---
+
+#### `ndk_objectbox` - `v0.2.8-dev.0`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+
+## 2026-01-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`ndk` - `v0.6.1`](#ndk---v061)
  - [`ndk_amber` - `v0.3.3`](#ndk_amber---v033)
  - [`ndk_cache_manager_test_suite` - `v1.0.0`](#ndk_cache_manager_test_suite---v100)
