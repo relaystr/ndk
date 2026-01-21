@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.816958948145">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="3.11.0.822317501715">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 3.11.0">
@@ -30,12 +30,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=3.11.0.816958948145" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=3.11.0.822317501715" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=3.11.0.816958948145" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=3.11.0.822317501715" data-turbo-eval="false" defer></script>
     <script data-cfasync="false" src="../../resources/js/retype.js?v=3.11.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.11.0.816958948145" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.11.0.816958948145" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=3.11.0.822317501715" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=3.11.0.822317501715" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -292,7 +292,8 @@ Future&lt;BlobResponse&gt; getBlob({
     </div>
 </div>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// checks if the blob exists on the server without downloading, useful to check before streaming a video via url \
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">
+/// checks if the blob exists on the server without downloading, useful to check before streaming a video via url \
 /// if [serverUrls] is null, the userServerList is fetched from nostr. \
 /// if the pukey has no UserServerList (kind: 10063), throws an error
 ///
@@ -302,8 +303,7 @@ Future&lt;String&gt; checkBlob({
   required String sha256,
   bool useAuth = false,
   List&lt;String&gt;? serverUrls,
-  String? pubkeyToFetchUserServerList,
-}) async {</code></pre>
+  String? pubkeyToFetchUserServerList,</code></pre>
 </doc-codeblock></div>
 <doc-anchor-target id="getblobstream">
     <h4>
@@ -313,16 +313,16 @@ Future&lt;String&gt; checkBlob({
 </doc-anchor-target>
 <p>Similar to <code v-pre>getBlob</code>, it streams the data, which is helpful for video files.</p>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// downloads a blob as a stream, useful for large files like videos \
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">}
+
+/// downloads a blob as a stream, useful for large files like videos \
 /// if [serverUrls] is null, the userServerList is fetched from nostr. \
 /// if the pukey has no UserServerList (kind: 10063), throws an error
 Future&lt;Stream&lt;BlobResponse&gt;&gt; getBlobStream({
   required String sha256,
   bool useAuth = false,
   List&lt;String&gt;? serverUrls,
-  String? pubkeyToFetchUserServerList,
-  int chunkSize = 1024 * 1024, // 1MB chunks,
-}) async {</code></pre>
+  String? pubkeyToFetchUserServerList,</code></pre>
 </doc-codeblock></div>
 <doc-anchor-target id="listblobs">
     <h4>
@@ -331,17 +331,17 @@ Future&lt;Stream&lt;BlobResponse&gt;&gt; getBlobStream({
     </h4>
 </doc-anchor-target>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// list the [pubkey] blobs \
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">  );
+}
+
+/// list the [pubkey] blobs \
 /// if [serverUrls] is null, the userServerList is fetched from nostr. \
 /// if the pukey has no UserServerList (kind: 10063), throws an error
 ///
 Future&lt;List&lt;BlobDescriptor&gt;&gt; listBlobs({
   required String pubkey,
   List&lt;String&gt;? serverUrls,
-  bool useAuth = true,
-  DateTime? since,
-  DateTime? until,
-}) async {</code></pre>
+  bool useAuth = true,</code></pre>
 </doc-codeblock></div>
 <doc-anchor-target id="deleteblob">
     <h4>
@@ -350,14 +350,14 @@ Future&lt;List&lt;BlobDescriptor&gt;&gt; listBlobs({
     </h4>
 </doc-anchor-target>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// delete a blob
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">    authorization: signedAuthorization,
+  );
+}
+
+/// delete a blob
 /// if [serverUrls] is null, the userServerList is fetched from nostr. \
 /// if the pukey has no UserServerList (kind: 10063), throws an error \
-/// the current signer is used to sign the request
-Future&lt;List&lt;BlobDeleteResult&gt;&gt; deleteBlob({
-  required String sha256,
-  List&lt;String&gt;? serverUrls,
-}) async {</code></pre>
+/// the current signer is used to sign the request</code></pre>
 </doc-codeblock></div>
 <doc-anchor-target id="directdownload">
     <h4>
@@ -366,10 +366,10 @@ Future&lt;List&lt;BlobDeleteResult&gt;&gt; deleteBlob({
     </h4>
 </doc-anchor-target>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Directly downloads a blob from the url, without blossom
-Future&lt;BlobResponse&gt; directDownload({
-  required Uri url,
-}) {</code></pre>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">    serverUrls: serverUrls,
+  );
+}
+</code></pre>
 </doc-codeblock></div>
 <doc-anchor-target id="report">
     <h4>
@@ -378,7 +378,11 @@ Future&lt;BlobResponse&gt; directDownload({
     </h4>
 </doc-anchor-target>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">/// Reports a blob to the server
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">}) {
+  return _blossomImpl.directDownload(url: url);
+}
+
+/// Reports a blob to the server
 /// [sha256] is the hash of the blob
 /// [eventId] is the event id where the blob was mentioned
 /// [reportType] is the type of report, e.g. malware @see nip56
@@ -388,11 +392,7 @@ Future&lt;BlobResponse&gt; directDownload({
 /// returns the http status code of the rcv server
 Future&lt;int&gt; report({
   required String sha256,
-  required String eventId,
-  required String reportType,
-  required String reportMsg,
-  required String serverUrl,
-}) async {</code></pre>
+  required String eventId,</code></pre>
 </doc-codeblock></div>
 <doc-anchor-target id="methods---blossomuserserverlist">
     <h3>
@@ -465,7 +465,7 @@ Future&lt;List&lt;RelayBroadcastResponse&gt;&gt; publishUserServerList({
                                     <ul class="flex flex-wrap items-center text-sm">
                                     </ul>
                                 </div>
-                                <div id="retype-copyright" class="print:justify-center py-2 text-footer-text font-footer-link-weight text-sm leading-relaxed"><p>© Copyright 2025. All rights reserved.</p></div>
+                                <div id="retype-copyright" class="print:justify-center py-2 text-footer-text font-footer-link-weight text-sm leading-relaxed"><p>© Copyright 2026. All rights reserved.</p></div>
                             </footer>
                         </div>
                     </div>
