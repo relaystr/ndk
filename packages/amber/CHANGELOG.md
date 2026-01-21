@@ -1,3 +1,15 @@
+## 0.4.0
+
+ - **REFACTOR**: signer, amber.
+ - **FIX**: clean imports.
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+ - **REFACTOR**: signer, amber.
+
+
+
+
+
 ## 0.3.3-dev.10
 
  - **REFACTOR**: signer, amber.

@@ -9,7 +9,7 @@ environment:
   sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
-  ndk: ^0.6.1
+  ndk: ^0.7.0
   test: ^1.24.0
 
 dev_dependencies:

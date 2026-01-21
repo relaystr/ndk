@@ -1,3 +1,11 @@
+## 0.5.0
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: add doc.
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: rust verifier web assets.
+
 ## 0.4.2-dev.10
 
  - **REFACTOR**: other packages.

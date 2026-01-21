@@ -17,7 +17,7 @@ platforms:
 dependencies:
   objectbox: ^5.0.0
   objectbox_flutter_libs: ^5.0.0
-  ndk: ^0.6.1
+  ndk: ^0.7.0
   flat_buffers: ^23.5.26
   path_provider: ^2.1.5
   path: ^1.9.1
