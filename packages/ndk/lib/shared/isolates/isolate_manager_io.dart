@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import '../logger/logger.dart';
+import '../simple_profiler.dart';
 
 final int encodingIsolatePoolSize = Platform.numberOfProcessors ~/ 2;
 final int computeIsolatePoolSize = Platform.numberOfProcessors ~/ 2;
@@ -57,25 +58,35 @@ class IsolateManager {
   }
 
   Future<void> _initialize() async {
+    final profiler = SimpleProfiler('IsolateManager Initialization');
+
     try {
-      Logger.log.d("Initializing encoding isolate pool size = $encodingIsolatePoolSize");
+      Logger.log.d(
+          "Initializing encoding isolate pool size = $encodingIsolatePoolSize");
       // Initialize encoding isolate pool
       for (int i = 0; i < encodingIsolatePoolSize; i++) {
         final config = await _createIsolate();
         _encodePool.add(config);
       }
+      profiler.checkpoint(
+          'Encoding isolate pool initialized ($encodingIsolatePoolSize isolates)');
 
-      Logger.log.d("Initializing compute isolate pool size = $encodingIsolatePoolSize");
+      Logger.log.d(
+          "Initializing compute isolate pool size = $encodingIsolatePoolSize");
       // Initialize compute isolate pool
       for (int i = 0; i < computeIsolatePoolSize; i++) {
         final config = await _createIsolate();
         _computePool.add(config);
       }
+      profiler.checkpoint(
+          'Compute isolate pool initialized ($computeIsolatePoolSize isolates)');
 
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.complete();
       }
       Logger.log.d("Finished initializing isolate pools");
+
+      profiler.end();
     } catch (e) {
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.completeError(e);
