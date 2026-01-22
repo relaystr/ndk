@@ -58,7 +58,6 @@ class IsolateManager {
   }
 
   Future<void> _initialize() async {
-    final profiler = SimpleProfiler('IsolateManager Initialization');
 
     try {
       Logger.log.d(
@@ -68,8 +67,6 @@ class IsolateManager {
         final config = await _createIsolate();
         _encodePool.add(config);
       }
-      profiler.checkpoint(
-          'Encoding isolate pool initialized ($encodingIsolatePoolSize isolates)');
 
       Logger.log.d(
           "Initializing compute isolate pool size = $encodingIsolatePoolSize");
@@ -78,15 +75,11 @@ class IsolateManager {
         final config = await _createIsolate();
         _computePool.add(config);
       }
-      profiler.checkpoint(
-          'Compute isolate pool initialized ($computeIsolatePoolSize isolates)');
 
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.complete();
       }
       Logger.log.d("Finished initializing isolate pools");
-
-      profiler.end();
     } catch (e) {
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.completeError(e);
