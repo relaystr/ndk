@@ -1,3 +1,4 @@
+import 'account.dart';
 import 'filter.dart';
 import 'relay_set.dart';
 
@@ -42,6 +43,10 @@ class NdkRequest {
   /// use cache for write
   bool cacheWrite;
 
+  /// Accounts to authenticate with on the relays (NIP-42)
+  /// When set, AUTH events will be sent for each account that can sign
+  List<Account>? authenticateAs;
+
   /// query
   NdkRequest.query(
     this.id, {
@@ -56,6 +61,7 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
+    this.authenticateAs,
   });
 
   /// subscription
@@ -69,6 +75,7 @@ class NdkRequest {
     this.explicitRelays,
     this.cacheRead = true,
     this.cacheWrite = true,
+    this.authenticateAs,
   });
 }
 // coverage:ignore-end

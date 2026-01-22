@@ -154,6 +154,16 @@ class RelaySetsEngine implements NetworkEngine {
       }
     }
     _globalState.inFlightRequests[state.id] = state;
+
+    // Late auth for subscriptions with authenticateAs
+    if (state.request.authenticateAs != null &&
+        state.request.authenticateAs!.isNotEmpty) {
+      for (final relayUrl in state.requests.keys) {
+        _relayManager.authenticateIfNeeded(
+            relayUrl, state.request.authenticateAs!);
+      }
+    }
+
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
     }
@@ -186,6 +196,15 @@ class RelaySetsEngine implements NetworkEngine {
       state.addRequest(url, filters);
     }
     _globalState.inFlightRequests[state.id] = state;
+
+    // Late auth for subscriptions with authenticateAs
+    if (state.request.authenticateAs != null &&
+        state.request.authenticateAs!.isNotEmpty) {
+      for (final relayUrl in state.requests.keys) {
+        _relayManager.authenticateIfNeeded(
+            relayUrl, state.request.authenticateAs!);
+      }
+    }
 
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
