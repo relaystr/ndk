@@ -1,3 +1,8 @@
+## 0.7.1-dev.0
+
+ - **FIX**: use Accounts instead of pubkeys to authenticate.
+ - **FEAT**: nip42 multi auth.
+
 ## 0.7.0
 
  - **FEAT**: isolate manager stub.

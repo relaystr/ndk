@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-01-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.0`](#ndk---v071-dev0)
+ - [`ndk_objectbox` - `v0.2.8-dev.0`](#ndk_objectbox---v028-dev0)
+ - [`ndk_amber` - `v0.4.0-dev.0+1`](#ndk_amber---v040-dev01)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.0+1`](#ndk_rust_verifier---v050-dev01)
+ - [`nip07_event_signer` - `v1.0.6-dev.0`](#nip07_event_signer---v106-dev0)
+ - [`sembast_cache_manager` - `v1.0.7-dev.0`](#sembast_cache_manager---v107-dev0)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.0`](#ndk_cache_manager_test_suite---v101-dev0)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.0+1`
+ - `ndk_rust_verifier` - `v0.5.0-dev.0+1`
+ - `nip07_event_signer` - `v1.0.6-dev.0`
+ - `sembast_cache_manager` - `v1.0.7-dev.0`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.0`
+
+---
+
+#### `ndk` - `v0.7.1-dev.0`
+
+ - **FIX**: use Accounts instead of pubkeys to authenticate.
+ - **FEAT**: nip42 multi auth.
+
+#### `ndk_objectbox` - `v0.2.8-dev.0`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+
 ## 2026-01-21
 
 ### Changes
