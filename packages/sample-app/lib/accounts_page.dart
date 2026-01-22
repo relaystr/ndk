@@ -609,10 +609,36 @@ class _AccountsPageState extends State<AccountsPage> {
                         backgroundColor: Colors.orange),
                   ),
                 ),
-              TextField(
-                controller: _privateKeyController,
-                decoration:
-                    const InputDecoration(hintText: 'Enter your nsec...'),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _privateKeyController,
+                      decoration:
+                          const InputDecoration(hintText: 'Enter your nsec...'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      final keyPair = bip340_utils.Bip340.generatePrivateKey();
+                      final nsec = keyPair.privateKeyBech32 ??
+                                   nip19_decoder.Nip19.encodePrivateKey(keyPair.privateKey!);
+                      setState(() {
+                        _privateKeyController.text = nsec;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('New key pair generated!')),
+                      );
+                    },
+                    icon: const Icon(Icons.vpn_key),
+                    label: const Text('Generate'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                  ),
+                ],
               ),
               ElevatedButton(
                 onPressed: () async {
