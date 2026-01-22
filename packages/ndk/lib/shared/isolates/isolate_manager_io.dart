@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math' as math;
 
 import '../logger/logger.dart';
-import '../simple_profiler.dart';
 
-final int encodingIsolatePoolSize = Platform.numberOfProcessors ~/ 2;
-final int computeIsolatePoolSize = Platform.numberOfProcessors ~/ 2;
+const int kMaxIsolatePoolSize = 32;
+const int kNumberOfProcessorsFactor = 4;
+
+final int encodingIsolatePoolSize = math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor, kMaxIsolatePoolSize);
+final int computeIsolatePoolSize = math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor, kMaxIsolatePoolSize);
 
 class IsolateConfig {
   Isolate isolate;
@@ -58,7 +61,6 @@ class IsolateManager {
   }
 
   Future<void> _initialize() async {
-
     try {
       Logger.log.d(
           "Initializing encoding isolate pool size = $encodingIsolatePoolSize");
