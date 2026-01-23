@@ -87,7 +87,7 @@ class Blossom {
     }
 
     final stream = _blossomImpl.uploadBlob(
-      dataStream: Stream.value(data),
+      dataStreamFactory: () => Stream.value(data),
       contentLength: data.length,
       serverUrls: serverUrls,
       authorization: signedAuthorization,

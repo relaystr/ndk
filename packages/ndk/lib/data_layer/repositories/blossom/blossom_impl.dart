@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:rxdart/rxdart.dart';
 
@@ -44,18 +43,18 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
   @override
   Stream<BlobUploadProgress> uploadBlob({
-    required Stream<List<int>> dataStream,
+    required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
     required Nip01Event authorization,
     String? contentType,
     required List<String> serverUrls,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool mediaOptimisation = false,
-  }) {
+  }) async* {
     switch (strategy) {
       case UploadStrategy.mirrorAfterSuccess:
-        return _uploadWithMirroring(
-          data: dataStream,
+        yield* _uploadWithMirroring(
+          dataStreamFactory: dataStreamFactory,
           contentLength: contentLength,
           serverUrls: serverUrls,
           contentType: contentType,
@@ -63,8 +62,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
           mediaOptimisation: mediaOptimisation,
         );
       case UploadStrategy.allSimultaneous:
-        return _uploadToAllServers(
-          data: dataStream,
+        yield* _uploadToAllServers(
+          dataStreamFactory: dataStreamFactory,
           contentLength: contentLength,
           serverUrls: serverUrls,
           contentType: contentType,
@@ -72,8 +71,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
           mediaOptimisation: mediaOptimisation,
         );
       case UploadStrategy.firstSuccess:
-        return _uploadToFirstSuccess(
-          data: dataStream,
+        yield* _uploadToFirstSuccess(
+          dataStreamFactory: dataStreamFactory,
           contentLength: contentLength,
           serverUrls: serverUrls,
           contentType: contentType,
@@ -92,32 +91,46 @@ class BlossomRepositoryImpl implements BlossomRepository {
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool mediaOptimisation = false,
   }) async* {
-    // Stream the file to compute hash and collect data
-    final fileStream =
+    // Get file size without reading the file content
+    final totalSize = await fileIO.getFileSize(filePath);
+
+    // Create factory that reads file each time from disk
+    Stream<List<int>> streamFactory() =>
         fileIO.readFileAsStream(filePath, chunkSize: 1024 * 1024);
-    final chunks = <Uint8List>[];
 
-    await for (final chunk in fileStream) {
-      chunks.add(chunk);
+    switch (strategy) {
+      case UploadStrategy.mirrorAfterSuccess:
+        yield* _uploadWithMirroring(
+          dataStreamFactory: streamFactory,
+          contentLength: totalSize,
+          serverUrls: serverUrls,
+          contentType: contentType,
+          authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
+        );
+      case UploadStrategy.allSimultaneous:
+        yield* _uploadToAllServers(
+          dataStreamFactory: streamFactory,
+          contentLength: totalSize,
+          serverUrls: serverUrls,
+          contentType: contentType,
+          authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
+        );
+      case UploadStrategy.firstSuccess:
+        yield* _uploadToFirstSuccess(
+          dataStreamFactory: streamFactory,
+          contentLength: totalSize,
+          serverUrls: serverUrls,
+          contentType: contentType,
+          authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
+        );
     }
-
-    // Combine chunks into single Uint8List
-    final totalSize = chunks.fold<int>(0, (sum, chunk) => sum + chunk.length);
-
-    // Forward the upload stream
-    yield* uploadBlob(
-      dataStream: Stream.fromIterable(chunks),
-      contentLength: totalSize,
-      authorization: authorization,
-      contentType: contentType,
-      serverUrls: serverUrls,
-      strategy: strategy,
-      mediaOptimisation: mediaOptimisation,
-    );
   }
 
   Stream<BlobUploadProgress> _uploadWithMirroring({
-    required Stream<List<int>> data,
+    required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
     required Nip01Event authorization,
     required List<String> serverUrls,
@@ -129,39 +142,49 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     // Try servers until we get a successful upload
     for (final serverUrl in serverUrls) {
-      await for (final progress in _uploadToServer(
-        serverUrl: serverUrl,
-        dataStream: data,
-        contentLength: contentLength,
-        contentType: contentType,
-        authorization: authorization,
-        mediaOptimisation: mediaOptimisation,
-      )) {
-        yield BlobUploadProgress(
-          currentServer: serverUrl,
-          sentBytes: progress.sentBytes,
-          totalBytes: progress.totalBytes,
-          completedUploads: results,
-        );
+      try {
+        await for (final progress in _uploadToServer(
+          serverUrl: serverUrl,
+          dataStream: dataStreamFactory(), // Create new stream for each attempt
+          contentLength: contentLength,
+          contentType: contentType,
+          authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
+        )) {
+          yield BlobUploadProgress(
+            currentServer: serverUrl,
+            sentBytes: progress.sentBytes,
+            totalBytes: progress.totalBytes,
+            completedUploads: results,
+          );
 
-        if (progress.isComplete && progress.response != null) {
-          final result = BlobUploadResult(
-            serverUrl: serverUrl,
-            success: true,
-            descriptor:
-                BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
-          );
-          results.add(result);
-          successfulUpload = result;
-          break;
-        } else if (progress.isComplete && progress.error != null) {
-          final result = BlobUploadResult(
-            serverUrl: serverUrl,
-            success: false,
-            error: progress.error.toString(),
-          );
-          results.add(result);
+          if (progress.isComplete && progress.response != null) {
+            final result = BlobUploadResult(
+              serverUrl: serverUrl,
+              success: true,
+              descriptor:
+                  BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+            );
+            results.add(result);
+            successfulUpload = result;
+            break;
+          } else if (progress.isComplete && progress.error != null) {
+            final result = BlobUploadResult(
+              serverUrl: serverUrl,
+              success: false,
+              error: progress.error.toString(),
+            );
+            results.add(result);
+          }
         }
+      } catch (e) {
+        // Handle network exceptions (e.g., host lookup failures)
+        final result = BlobUploadResult(
+          serverUrl: serverUrl,
+          success: false,
+          error: e.toString(),
+        );
+        results.add(result);
       }
 
       if (successfulUpload != null) break;
@@ -196,7 +219,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   Stream<BlobUploadProgress> _uploadToAllServers({
-    required Stream<List<int>> data,
+    required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
     required List<String> serverUrls,
     required Nip01Event authorization,
@@ -215,67 +238,82 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
     // Start all uploads simultaneously
     final uploadFutures = serverUrls.map((serverUrl) async {
-      await for (final progress in _uploadToServer(
-        serverUrl: serverUrl,
-        dataStream: data,
-        contentLength: contentLength,
-        contentType: contentType,
-        authorization: authorization,
-        mediaOptimisation: mediaOptimisation,
-      )) {
-        if (progress.isComplete && progress.response != null) {
-          final result = BlobUploadResult(
-            serverUrl: serverUrl,
-            success: true,
-            descriptor:
-                BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
-          );
-          results.add(result);
-          progressSubject.add(BlobUploadProgress(
-            currentServer: serverUrl,
-            sentBytes: progress.sentBytes,
-            totalBytes: contentLength,
-            completedUploads: List.from(results),
-          ));
-        } else if (progress.isComplete && progress.error != null) {
-          final result = BlobUploadResult(
-            serverUrl: serverUrl,
-            success: false,
-            error: progress.error.toString(),
-          );
-          results.add(result);
-          progressSubject.add(BlobUploadProgress(
-            currentServer: serverUrl,
-            sentBytes: progress.sentBytes,
-            totalBytes: contentLength,
-            completedUploads: List.from(results),
-          ));
+      try {
+        await for (final progress in _uploadToServer(
+          serverUrl: serverUrl,
+          dataStream: dataStreamFactory(),
+          contentLength: contentLength,
+          contentType: contentType,
+          authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
+        )) {
+          // Emit intermediate per-server progress updates
+          if (!progress.isComplete) {
+            progressSubject.add(BlobUploadProgress(
+              currentServer: serverUrl,
+              sentBytes: progress.sentBytes,
+              totalBytes: progress.totalBytes,
+              completedUploads: List.from(results),
+            ));
+            continue;
+          }
+          if (progress.isComplete && progress.response != null) {
+            final result = BlobUploadResult(
+              serverUrl: serverUrl,
+              success: true,
+              descriptor:
+                  BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+            );
+            results.add(result);
+            progressSubject.add(BlobUploadProgress(
+              currentServer: serverUrl,
+              sentBytes: progress.sentBytes,
+              totalBytes: contentLength,
+              completedUploads: List.from(results),
+            ));
+          } else if (progress.isComplete && progress.error != null) {
+            final result = BlobUploadResult(
+              serverUrl: serverUrl,
+              success: false,
+              error: progress.error.toString(),
+            );
+            results.add(result);
+            progressSubject.add(BlobUploadProgress(
+              currentServer: serverUrl,
+              sentBytes: progress.sentBytes,
+              totalBytes: contentLength,
+              completedUploads: List.from(results),
+            ));
+          }
         }
+      } catch (e) {
+        // Handle network exceptions (e.g., host lookup failures)
+        final result = BlobUploadResult(
+          serverUrl: serverUrl,
+          success: false,
+          error: e.toString(),
+        );
+        results.add(result);
+        progressSubject.add(BlobUploadProgress(
+          currentServer: serverUrl,
+          sentBytes: 0,
+          totalBytes: contentLength,
+          completedUploads: List.from(results),
+        ));
       }
     }).toList();
 
-    // Emit progress updates
-    final subscription = progressSubject.stream.listen((progress) {});
+    // When all uploads complete, close the stream
+    Future.wait(uploadFutures).then((_) async {
+      await progressSubject.close();
+    });
+
+    // Forward progress updates until the subject closes
     yield* progressSubject.stream;
-
-    // Wait for all uploads to complete
-    await Future.wait(uploadFutures);
-    await subscription.cancel();
-
-    // Emit final result
-    yield BlobUploadProgress(
-      currentServer: '',
-      sentBytes: contentLength,
-      totalBytes: contentLength,
-      completedUploads: results,
-      isComplete: true,
-    );
-
-    await progressSubject.close();
   }
 
   Stream<BlobUploadProgress> _uploadToFirstSuccess({
-    required Stream<List<int>> data,
+    required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
     required List<String> serverUrls,
     required Nip01Event authorization,
@@ -285,45 +323,54 @@ class BlossomRepositoryImpl implements BlossomRepository {
     final results = <BlobUploadResult>[];
 
     for (final url in serverUrls) {
-      await for (final progress in _uploadToServer(
-        serverUrl: url,
-        dataStream: data,
-        contentLength: contentLength,
-        contentType: contentType,
-        authorization: authorization,
-        mediaOptimisation: mediaOptimisation,
-      )) {
-        yield BlobUploadProgress(
-          currentServer: url,
-          sentBytes: progress.sentBytes,
-          totalBytes: progress.totalBytes,
-          completedUploads: results,
-        );
-
-        if (progress.isComplete && progress.response != null) {
-          final result = BlobUploadResult(
-            serverUrl: url,
-            success: true,
-            descriptor:
-                BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
-          );
-          results.add(result);
-
+      try {
+        await for (final progress in _uploadToServer(
+          serverUrl: url,
+          dataStream: dataStreamFactory(),
+          contentLength: contentLength,
+          contentType: contentType,
+          authorization: authorization,
+          mediaOptimisation: mediaOptimisation,
+        )) {
           yield BlobUploadProgress(
             currentServer: url,
             sentBytes: progress.sentBytes,
-            totalBytes: contentLength,
+            totalBytes: progress.totalBytes,
             completedUploads: results,
-            isComplete: true,
           );
-          return;
-        } else if (progress.isComplete && progress.error != null) {
-          results.add(BlobUploadResult(
-            serverUrl: url,
-            success: false,
-            error: progress.error.toString(),
-          ));
+
+          if (progress.isComplete && progress.response != null) {
+            final result = BlobUploadResult(
+              serverUrl: url,
+              success: true,
+              descriptor:
+                  BlobDescriptor.fromJson(jsonDecode(progress.response!.body)),
+            );
+            results.add(result);
+
+            yield BlobUploadProgress(
+              currentServer: url,
+              sentBytes: progress.sentBytes,
+              totalBytes: contentLength,
+              completedUploads: results,
+              isComplete: true,
+            );
+            return;
+          } else if (progress.isComplete && progress.error != null) {
+            results.add(BlobUploadResult(
+              serverUrl: url,
+              success: false,
+              error: progress.error.toString(),
+            ));
+          }
         }
+      } catch (e) {
+        // Handle network exceptions (e.g., host lookup failures)
+        results.add(BlobUploadResult(
+          serverUrl: url,
+          success: false,
+          error: e.toString(),
+        ));
       }
     }
 

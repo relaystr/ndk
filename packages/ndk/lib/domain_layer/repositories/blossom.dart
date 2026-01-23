@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import '../../data_layer/repositories/blossom/blossom_impl.dart';
 import '../entities/blossom_blobs.dart';
 import '../entities/nip_01_event.dart';
@@ -20,7 +18,7 @@ abstract class BlossomRepository {
   /// Uploads a blob using the specified strategy
   /// Returns a stream of progress updates
   Stream<BlobUploadProgress> uploadBlob({
-    required Stream<List<int>> dataStream,
+    required Stream<List<int>> Function() dataStreamFactory,
     required int contentLength,
     required Nip01Event authorization,
     String? contentType,
