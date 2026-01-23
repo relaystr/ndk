@@ -8,7 +8,6 @@ import '../../entities/nip_01_event.dart';
 import '../../repositories/blossom.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
-import '../nip_01_event_service/nip_01_event_service.dart';
 import 'blossom_user_server_list.dart';
 
 /// direct access usecase to blossom \
@@ -65,7 +64,7 @@ class Blossom {
 
     _checkSigner();
 
-    final Nip01Event myAuthorization = Nip01EventService.createEventCalculateId(
+    final Nip01Event myAuthorization = Nip01Event(
       content: "upload",
       pubKey: _signer.getPublicKey(),
       kind: kBlossom,
@@ -169,7 +168,7 @@ class Blossom {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01EventService.createEventCalculateId(
+      myAuthorization = Nip01Event(
         content: "get",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
@@ -281,7 +280,7 @@ class Blossom {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01EventService.createEventCalculateId(
+      myAuthorization = Nip01Event(
         content: "get",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
@@ -334,7 +333,7 @@ class Blossom {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01EventService.createEventCalculateId(
+      myAuthorization = Nip01Event(
         content: "get",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
@@ -388,7 +387,7 @@ class Blossom {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01EventService.createEventCalculateId(
+      myAuthorization = Nip01Event(
         content: "List Blobs",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
@@ -430,7 +429,7 @@ class Blossom {
 
     _checkSigner();
 
-    final Nip01Event myAuthorization = Nip01EventService.createEventCalculateId(
+    final Nip01Event myAuthorization = Nip01Event(
       content: "delete",
       pubKey: _signer.getPublicKey(),
       kind: kBlossom,
@@ -484,7 +483,7 @@ class Blossom {
 
     _checkSigner();
 
-    final Nip01Event reportEvent = Nip01EventService.createEventCalculateId(
+    final Nip01Event reportEvent = Nip01Event(
       content: reportMsg,
       pubKey: _signer.getPublicKey(),
       kind: kReport,

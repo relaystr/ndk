@@ -10,7 +10,7 @@ import '../mocks/mock_relay.dart';
 /// test to check if the network is faster then the timeout (this should always be the case)
 void main() {
   Nip01Event textNote(KeyPair myKey) {
-    return Nip01EventService.createEventCalculateId(
+    return Nip01Event(
       kind: Nip01Event.kTextNodeKind,
       pubKey: myKey.publicKey,
       content: "some note from key $myKey}",

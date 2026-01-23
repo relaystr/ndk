@@ -1,4 +1,5 @@
 import '../entities/contact_list.dart';
+import '../entities/filter_fetched_ranges.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
@@ -13,12 +14,24 @@ abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Future<Nip01Event?> loadEvent(String id);
+  /// Load events from cache with flexible filtering \
+  /// [ids] - list of event ids \
+  /// [pubKeys] - list of authors pubKeys \
+  /// [kinds] - list of kinds \
+  /// [tags] - map of tags (e.g. {'p': ['pubkey1'], 'e': ['eventid1']}) \
+  /// [since] - timestamp \
+  /// [until] - timestamp \
+  /// [search] - search string to match against content \
+  /// [limit] - limit of results \
+  /// returns list of events
   Future<List<Nip01Event>> loadEvents({
-    List<String> pubKeys,
-    List<int> kinds,
-    String? pTag,
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
     int? since,
     int? until,
+    String? search,
     int? limit,
   });
   Future<void> removeEvent(String id);
@@ -62,6 +75,7 @@ abstract class CacheManager {
   /// [search] - search string to match against content \
   /// [limit] - limit of results \
   /// returns list of events
+  @Deprecated('Use loadEvents() instead')
   Future<Iterable<Nip01Event>> searchEvents({
     List<String>? ids,
     List<String>? authors,
@@ -79,4 +93,40 @@ abstract class CacheManager {
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
+
+  // =====================
+  // Filter Fetched Ranges
+  // =====================
+
+  /// Save a filter fetched range record
+  Future<void> saveFilterFetchedRangeRecord(FilterFetchedRangeRecord record);
+
+  /// Save multiple filter fetched range records
+  Future<void> saveFilterFetchedRangeRecords(
+      List<FilterFetchedRangeRecord> records);
+
+  /// Load all fetched range records for a filter hash
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
+      String filterHash);
+
+  /// Load all fetched range records for a filter hash and relay
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
+      String filterHash, String relayUrl);
+
+  /// Load all fetched range records for a relay (all filters)
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelayUrl(
+      String relayUrl);
+
+  /// Remove all fetched range records for a filter hash
+  Future<void> removeFilterFetchedRangeRecords(String filterHash);
+
+  /// Remove fetched range records for a specific filter hash and relay
+  Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
+      String filterHash, String relayUrl);
+
+  /// Remove all fetched range records for a relay
+  Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl);
+
+  /// Remove all filter fetched range records
+  Future<void> removeAllFilterFetchedRangeRecords();
 }

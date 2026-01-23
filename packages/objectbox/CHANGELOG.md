@@ -1,3 +1,48 @@
+## 0.2.8-dev.0
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+## 0.2.7-dev.10
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+## 0.2.7-dev.8
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+## 0.2.7-dev.7
+
+ - **REFACTOR**: other packages.
+ - **FEAT**: objectbox test.
+
+## 0.2.7-dev.6
+
+ - **FIX**: clean imports.
+
+## 0.2.7-dev.5
+
+ - **FIX**: clean imports.
+
+## 0.2.7-dev.4
+
+ - **FIX**: clean imports.
+
+## 0.2.7-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 0.2.7
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.

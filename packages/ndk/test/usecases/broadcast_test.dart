@@ -50,13 +50,13 @@ void main() async {
     test('broadcast 2 events', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
 
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
         event: event,
         privateKey: key0.privateKey!,
       );
@@ -71,13 +71,13 @@ void main() async {
       ).future;
       expect(result.length, 1);
 
-      final event2 = Nip01EventService.createEventCalculateId(
+      final event2 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "my content");
 
-      final signedEvent2 = Nip01EventService.signWithPrivateKey(
+      final signedEvent2 = Nip01Utils.signWithPrivateKey(
         event: event2,
         privateKey: key0.privateKey!,
       );
@@ -96,13 +96,13 @@ void main() async {
     test('broadcast deletion', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
 
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
         event: event,
         privateKey: key0.privateKey!,
       );
@@ -127,23 +127,23 @@ void main() async {
     test('broadcast deletion 2', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event1 = Nip01EventService.createEventCalculateId(
+      Nip01Event event1 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "1");
 
-      final signedEvent1 = Nip01EventService.signWithPrivateKey(
+      final signedEvent1 = Nip01Utils.signWithPrivateKey(
         event: event1,
         privateKey: key0.privateKey!,
       );
-      Nip01Event event2 = Nip01EventService.createEventCalculateId(
+      Nip01Event event2 = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "2");
 
-      final signedEvent2 = Nip01EventService.signWithPrivateKey(
+      final signedEvent2 = Nip01Utils.signWithPrivateKey(
         event: event2,
         privateKey: key0.privateKey!,
       );
@@ -173,13 +173,13 @@ void main() async {
     test('broadcast reaction', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
-      Nip01Event event = Nip01EventService.createEventCalculateId(
+      Nip01Event event = Nip01Event(
           pubKey: key0.publicKey,
           kind: Nip01Event.kTextNodeKind,
           tags: [],
           content: "");
 
-      final signedEvent = Nip01EventService.signWithPrivateKey(
+      final signedEvent = Nip01Utils.signWithPrivateKey(
         event: event,
         privateKey: key0.privateKey!,
       );
@@ -233,13 +233,13 @@ void main() async {
 
       try {
         // Create and broadcast an event with a short timeout
-        Nip01Event event = Nip01EventService.createEventCalculateId(
+        Nip01Event event = Nip01Event(
             pubKey: key0.publicKey,
             kind: Nip01Event.kTextNodeKind,
             tags: [],
             content: "testing timeout");
 
-        final signedEvent = Nip01EventService.signWithPrivateKey(
+        final signedEvent = Nip01Utils.signWithPrivateKey(
           event: event,
           privateKey: key0.privateKey!,
         );
@@ -305,13 +305,13 @@ void main() async {
       try {
         // Create and broadcast an event with considerDonePercent set to 66%
         // This means it should complete after 2 of the 3 relays receive the event
-        Nip01Event event = Nip01EventService.createEventCalculateId(
+        Nip01Event event = Nip01Event(
             pubKey: key0.publicKey,
             kind: Nip01Event.kTextNodeKind,
             tags: [],
             content: "testing considerDonePercent");
 
-        final signedEvent = Nip01EventService.signWithPrivateKey(
+        final signedEvent = Nip01Utils.signWithPrivateKey(
           event: event,
           privateKey: key0.privateKey!,
         );

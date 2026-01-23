@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
-import 'package:ndk/domain_layer/usecases/nip_01_event_service/nip_01_event_service.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/shared/bloom_filter/bloom_filter_prehash.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -129,7 +128,7 @@ void main() {
       // Add numItems different items
       for (int i = 0; i < numItems; i++) {
         final keypair = Bip340.generatePrivateKey();
-        final ndkEvent = Nip01EventService.createEventCalculateId(
+        final ndkEvent = Nip01Event(
           createdAt: 0,
           pubKey: keypair.publicKey,
           content: "hi$i",
@@ -146,7 +145,7 @@ void main() {
 
       for (int i = 0; i < testSize; i++) {
         final keypair = Bip340.generatePrivateKey();
-        final testItem = Nip01EventService.createEventCalculateId(
+        final testItem = Nip01Event(
           createdAt: 0,
           pubKey: keypair.publicKey,
           content: "hi$i",

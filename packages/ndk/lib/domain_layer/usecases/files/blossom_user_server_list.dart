@@ -3,7 +3,6 @@ import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
-import '../nip_01_event_service/nip_01_event_service.dart';
 import '../requests/requests.dart';
 import 'blossom.dart';
 
@@ -70,7 +69,7 @@ class BlossomUserServerList {
 
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    final Nip01Event myServerList = Nip01EventService.createEventCalculateId(
+    final Nip01Event myServerList = Nip01Event(
       content: "",
       pubKey: _accounts.getLoggedAccount()!.pubkey,
       kind: Blossom.kBlossomUserServerList,

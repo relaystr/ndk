@@ -1,6 +1,6 @@
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 
-import '../nip_01_event_service/nip_01_event_service.dart';
+import '../../entities/nip_01_utils.dart';
 
 /// auth event to send to relays
 class AuthEvent extends Nip01Event {
@@ -24,7 +24,7 @@ class AuthEvent extends Nip01Event {
     required String pubKey,
     required List<List<String>> tags,
   }) {
-    final calculatedId = Nip01EventService.calculateEventIdSync(
+    final calculatedId = Nip01Utils.calculateEventIdSync(
       pubKey: pubKey,
       createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       kind: KIND,

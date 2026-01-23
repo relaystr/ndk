@@ -5,12 +5,12 @@ repository: https://github.com/relaystr/ndk
 packages:
   - packages/amber
   - packages/ndk
-  - packages/isar
   - packages/objectbox
   - packages/rust_verifier
   - packages/rust_verifier/rust_builder
   - packages/nip07_event_signer
   - packages/sembast_cache_manager
+  - packages/ndk_cache_manager_test_suite
 
 scripts:
   analyze:
@@ -60,3 +60,9 @@ scripts:
     select-package:
       flutter: true
       dir-exists: test
+
+#command:
+#  version:
+#    hooks:
+#      preCommit: |
+#        melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"

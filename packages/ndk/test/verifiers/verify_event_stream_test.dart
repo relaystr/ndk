@@ -15,7 +15,7 @@ void main() {
     });
 
     Nip01Event createMockEvent(String id) {
-      final event = Nip01EventService.createEventCalculateId(
+      final event = Nip01Event(
         pubKey: 'pubkey$id',
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         kind: 1,

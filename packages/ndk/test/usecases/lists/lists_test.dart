@@ -410,7 +410,7 @@ void main() async {
         ['d', nip04Set.name],
       ]);
 
-      Nip01Event eventPlaintext = Nip01EventService.createEventCalculateId(
+      Nip01Event eventPlaintext = Nip01Event(
         pubKey: signer1.getPublicKey(),
         kind: Nip51List.kRelaySet,
         tags: tags,

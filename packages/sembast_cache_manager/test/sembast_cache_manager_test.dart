@@ -4,6 +4,7 @@ import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 import 'package:test/test.dart';
 import 'package:sembast_cache_manager/sembast_cache_manager.dart';
 
@@ -27,7 +28,7 @@ void main() {
 
     group('Event Operations', () {
       test('saveEvent and loadEvent', () async {
-        final event = Nip01EventService.createEventCalculateId(
+        final event = Nip01Event(
           pubKey: 'test_pubkey',
           kind: 1,
           tags: [
@@ -51,14 +52,14 @@ void main() {
 
       test('saveEvents batch operation', () async {
         final events = [
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
             pubKey: 'pubkey1',
             kind: 1,
             tags: [],
             content: 'Event 1',
             createdAt: 1234567890,
           ),
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
             pubKey: 'pubkey2',
             kind: 1,
             tags: [],
@@ -78,7 +79,7 @@ void main() {
 
       test('loadEvents with filters', () async {
         final events = [
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
             pubKey: 'pubkey1',
             kind: 1,
             tags: [
@@ -87,14 +88,14 @@ void main() {
             content: 'Event 1',
             createdAt: 1234567890,
           ),
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
             pubKey: 'pubkey2',
             kind: 2,
             tags: [],
             content: 'Event 2',
             createdAt: 1234567895,
           ),
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
             pubKey: 'pubkey1',
             kind: 1,
             tags: [],
@@ -124,9 +125,9 @@ void main() {
         final eventsBefore = await cacheManager.loadEvents(until: 1234567895);
         expect(eventsBefore.length, equals(2));
 
-        // Test pTag filter
+        // Test tags filter (p tag)
         final eventsByPTag = await cacheManager.loadEvents(
-          pTag: 'target_pubkey',
+          tags: {'p': ['target_pubkey']},
         );
         expect(eventsByPTag.length, equals(1));
         expect(eventsByPTag.first.pTags.contains('target_pubkey'), isTrue);
@@ -134,7 +135,7 @@ void main() {
 
       test('searchEvents with complex filters', () async {
         final events = [
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
             pubKey: 'author1',
             kind: 1,
             tags: [
@@ -144,7 +145,7 @@ void main() {
             content: 'Bitcoin is great!',
             createdAt: 1234567890,
           ),
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
             pubKey: 'author2',
             kind: 2,
             tags: [
@@ -153,7 +154,7 @@ void main() {
             content: 'Nostr protocol discussion',
             createdAt: 1234567895,
           ),
-          Nip01EventService.createEventCalculateId(
+          Nip01Event(
             pubKey: 'author1',
             kind: 1,
             tags: [
@@ -203,7 +204,7 @@ void main() {
       });
 
       test('removeEvent and removeAllEvents', () async {
-        final event = Nip01EventService.createEventCalculateId(
+        final event = Nip01Event(
           pubKey: 'test_pubkey',
           kind: 1,
           tags: [],
@@ -219,7 +220,7 @@ void main() {
         // Test removeAllEvents
         final events = List.generate(
           3,
-          (i) => Nip01EventService.createEventCalculateId(
+          (i) => Nip01Event(
             pubKey: 'pubkey$i',
             kind: 1,
             tags: [],
@@ -237,12 +238,9 @@ void main() {
 
       test('removeAllEventsByPubKey', () async {
         final events = [
-          Nip01EventService.createEventCalculateId(
-              pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 1'),
-          Nip01EventService.createEventCalculateId(
-              pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 2'),
-          Nip01EventService.createEventCalculateId(
-              pubKey: 'pubkey2', kind: 1, tags: [], content: 'Event 3'),
+          Nip01Event(pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 1'),
+          Nip01Event(pubKey: 'pubkey1', kind: 1, tags: [], content: 'Event 2'),
+          Nip01Event(pubKey: 'pubkey2', kind: 1, tags: [], content: 'Event 3'),
         ];
 
         await cacheManager.saveEvents(events);
@@ -520,7 +518,7 @@ void main() {
     group('Cleanup Operations', () {
       test('remove operations work correctly', () async {
         // Setup test data
-        final event = Nip01EventService.createEventCalculateId(
+        final event = Nip01Event(
           pubKey: 'test_pubkey',
           kind: 1,
           tags: [],
@@ -610,4 +608,21 @@ void main() {
       });
     });
   });
+
+  // Run shared test suite for comprehensive coverage
+  late Directory sharedTempDir;
+  runCacheManagerTestSuite(
+    name: 'SembastCacheManager (Shared Suite)',
+    createCacheManager: () async {
+      sharedTempDir =
+          await Directory.systemTemp.createTemp('sembast_shared_test');
+      return SembastCacheManager.create(databasePath: sharedTempDir.path);
+    },
+    cleanUp: (cacheManager) async {
+      await cacheManager.close();
+      try {
+        await sharedTempDir.delete(recursive: true);
+      } catch (_) {}
+    },
+  );
 }

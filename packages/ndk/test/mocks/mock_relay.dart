@@ -9,7 +9,6 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip09/deletion.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
@@ -91,14 +90,14 @@ class MockRelay {
     var stream = server.transform(WebSocketTransformer());
 
     String challenge = '';
-    bool signedChallenge = false;
+    Set<String> authenticatedPubkeys = {};
 
     stream.listen((webSocket) {
       _webSocket = webSocket;
       if (customWelcomeMessage != null) {
         webSocket.add(customWelcomeMessage!);
       }
-      if (requireAuthForRequests && !signedChallenge) {
+      if (requireAuthForRequests) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
@@ -118,31 +117,24 @@ class MockRelay {
 
         if (eventJson[0] == "AUTH") {
           Nip01Event event = Nip01EventModel.fromJson(eventJson[1]);
+          bool authSuccess = false;
           if (verify(event.pubKey, event.id, event.sig!)) {
             String? relay = event.getFirstTag("relay");
             String? eventChallenge = event.getFirstTag("challenge");
             if (eventChallenge == challenge && relay == url) {
-              signedChallenge = true;
+              authenticatedPubkeys.add(event.pubKey);
+              authSuccess = true;
             }
           }
 
           webSocket.add(jsonEncode([
             "OK",
             event.id,
-            signedChallenge,
-            signedChallenge ? "" : "auth-required"
+            authSuccess,
+            authSuccess ? "" : "auth-required"
           ]));
           return;
         }
-        if (requireAuthForRequests && !signedChallenge) {
-          webSocket.add(jsonEncode([
-            "CLOSED",
-            "sub_1",
-            "auth-required: we can't serve requests to unauthenticated users"
-          ]));
-          return;
-        }
-
         if (eventJson[0] == "EVENT") {
           Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
@@ -193,6 +185,31 @@ class MockRelay {
               }
             }
           }
+
+          // Check auth for requested pubkeys
+          if (requireAuthForRequests && filters.isNotEmpty) {
+            Set<String> requestedPubkeys = {};
+            for (final filter in filters) {
+              if (filter.authors != null) {
+                requestedPubkeys.addAll(filter.authors!);
+              }
+              if (filter.pTags != null) {
+                requestedPubkeys.addAll(filter.pTags!);
+              }
+            }
+            // Check if any requested pubkey is authenticated
+            bool hasAuthenticatedPubkey = requestedPubkeys
+                .any((pubkey) => authenticatedPubkeys.contains(pubkey));
+            if (!hasAuthenticatedPubkey) {
+              webSocket.add(jsonEncode([
+                "CLOSED",
+                requestId,
+                "auth-required: we can't serve requests to unauthenticated users"
+              ]));
+              return;
+            }
+          }
+
           if (filters.isNotEmpty) {
             // Store the active subscription
             _activeSubscriptions[requestId] = filters;
@@ -298,7 +315,7 @@ class MockRelay {
             if (signEvents && entry.key.privateKey != null) {
               // Sign the new instance, not the one in _nip65s
 
-              eventToAddSigned = Nip01EventService.signWithPrivateKey(
+              eventToAddSigned = Nip01Utils.signWithPrivateKey(
                   event: eventToAdd, privateKey: entry.key.privateKey!);
             } else {
               eventToAddSigned = null;
@@ -330,7 +347,7 @@ class MockRelay {
             Nip01Event eventToAdd = entry.value.copyWith();
             Nip01Event? eventToAddSigned;
             if (signEvents && entry.key.privateKey != null) {
-              eventToAddSigned = Nip01EventService.signWithPrivateKey(
+              eventToAddSigned = Nip01Utils.signWithPrivateKey(
                   event: eventToAdd, privateKey: entry.key.privateKey!);
             } else {
               eventToAddSigned = null;
@@ -363,7 +380,7 @@ class MockRelay {
 
     Nip01Event? signedEvent;
     if (keyPair != null) {
-      signedEvent = Nip01EventService.signWithPrivateKey(
+      signedEvent = Nip01Utils.signWithPrivateKey(
           event: event, privateKey: keyPair.privateKey!);
     }
 
@@ -437,8 +454,7 @@ class MockRelay {
       }
 
       // Create NIP-46 response event
-      Nip01Event responseEventUnsinged =
-          Nip01EventService.createEventCalculateId(
+      Nip01Event responseEventUnsinged = Nip01Event(
         pubKey: remoteSignerPublicKey,
         kind: kNip46Kind,
         tags: [
@@ -447,7 +463,7 @@ class MockRelay {
         content: encryptedResponse,
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
-      Nip01Event responseEvent = Nip01EventService.signWithPrivateKey(
+      Nip01Event responseEvent = Nip01Utils.signWithPrivateKey(
           event: responseEventUnsinged, privateKey: _remoteSignerPrivateKey);
 
       // NIP-46 events are ephemeral (kind 24133), don't store them
@@ -558,8 +574,7 @@ class MockRelay {
           }
 
           // Use the Nip01Event constructor directly
-          final Nip01Event eventToSign =
-              Nip01EventService.createEventCalculateId(
+          final Nip01Event eventToSign = Nip01Event(
             pubKey: remoteSignerPublicKey,
             kind: eventData["kind"] ?? 1,
             tags: List<List<String>>.from(eventData["tags"] ?? []),
@@ -567,7 +582,7 @@ class MockRelay {
             createdAt: eventData["created_at"] ?? eventData["createdAt"] ?? 0,
           );
 
-          final Nip01Event signedEvent = Nip01EventService.signWithPrivateKey(
+          final Nip01Event signedEvent = Nip01Utils.signWithPrivateKey(
               event: eventToSign, privateKey: _remoteSignerPrivateKey);
 
           return {

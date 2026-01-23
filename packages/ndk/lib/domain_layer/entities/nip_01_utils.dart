@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
-import '../../../data_layer/models/nip_01_event_model.dart';
-import '../../../shared/isolates/isolate_manager.dart';
-import '../../../shared/nips/nip01/bip340.dart';
-import '../../../shared/nips/nip13/nip13.dart';
-import '../../entities/nip_01_event.dart';
+import '../../data_layer/models/nip_01_event_model.dart';
+import '../../shared/isolates/isolate_manager.dart';
+import '../../shared/nips/nip01/bip340.dart';
+import '../../shared/nips/nip13/nip13.dart';
+import 'nip_01_event.dart';
 
-class Nip01EventService {
+class Nip01Utils {
   /// create event and calculate id \
   /// [returns] event with calculated id
   static Nip01Event createEventCalculateId({
@@ -32,9 +32,7 @@ class Nip01EventService {
       kind: kind,
       tags: tags,
       content: content,
-      sig: null,
       createdAt: createdAt,
-      validSig: null,
       sources: [],
     );
 
@@ -69,7 +67,7 @@ class Nip01EventService {
     required List<dynamic> tags,
     required String content,
   }) {
-    return _calculateId(
+    return calculateId(
       Nip01Event(
         id: '',
         pubKey: pubKey,
@@ -95,23 +93,20 @@ class Nip01EventService {
   }) async {
     final id =
         await IsolateManager.instance.runInComputeIsolate<Nip01Event, String>(
-      _calculateId,
+      calculateId,
       Nip01Event(
-        id: '',
         pubKey: publicKey,
         createdAt: createdAt,
         kind: kind,
         tags:
             List<List<String>>.from(tags.map((tag) => List<String>.from(tag))),
         content: content,
-        sig: null,
-        validSig: null,
       ),
     );
     return id;
   }
 
-  static String _calculateId(Nip01Event event) {
+  static String calculateId(Nip01Event event) {
     final model = Nip01EventModel.fromEntity(event);
     final jsonData = json.encode([
       0,
@@ -132,8 +127,10 @@ class Nip01EventService {
     required Nip01Event event,
     required String privateKey,
   }) {
+    String id = calculateId(event);
+
     final signature = Bip340.sign(
-      event.id,
+      id,
       privateKey,
     );
     return event.copyWith(sig: signature, validSig: true);

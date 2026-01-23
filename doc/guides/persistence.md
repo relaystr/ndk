@@ -9,7 +9,7 @@ Available databases:
 
 - `MemCacheManager`
 - [`DbObjectBox`](https://pub.dev/packages/ndk_objectbox)
-- [`IsarCacheManager`](https://pub.dev/packages/ndk_isar)
+- [`IsarCacheManager`](https://pub.dev/packages/ndk_isar) [discontinued! use ObjectBox or Sembast]
 - [`SembastCacheManager`](https://pub.dev/packages/sembast_cache_manager)
 
 If you want your own database, you need to implement the `CacheManager` interface. Contributions for more database implementations are welcome!

@@ -1,3 +1,44 @@
+## 1.0.6-dev.0
+
+ - Update a dependency to the latest release.
+
+## 1.0.5
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 1.0.5-dev.9
+
+ - Update a dependency to the latest release.
+
+## 1.0.5-dev.8
+
+ - Update a dependency to the latest release.
+
+## 1.0.5-dev.7
+
+ - **REFACTOR**: nip07, amber, sembast.
+ - **REFACTOR**: other packages.
+
+## 1.0.5-dev.6
+
+ - Update a dependency to the latest release.
+
+## 1.0.5-dev.5
+
+ - Update a dependency to the latest release.
+
+## 1.0.5-dev.4
+
+ - Update a dependency to the latest release.
+
+## 1.0.5-dev.3
+
+ - Update a dependency to the latest release.
+
+## 1.0.5-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 1.0.5-dev.1
 
  - Update a dependency to the latest release.

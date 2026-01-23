@@ -106,6 +106,10 @@ class Nwc {
         if (versionTags.isNotEmpty) {
           connection.supportedVersions = versionTags.first.split(" ");
         }
+        List<String> encryptions = event.getTags('encryption');
+        if (encryptions.isNotEmpty) {
+          connection.supportedEncryptions = encryptions.first.split(" ");
+        }
 
         await _subscribeToNotificationsAndResponses(connection);
 
@@ -278,7 +282,7 @@ class Nwc {
     var encrypted = Nip04.encrypt(
         connection.uri.secret, connection.uri.walletPubkey, content);
 
-    Nip01Event event = Nip01EventService.createEventCalculateId(
+    Nip01Event event = Nip01Event(
         pubKey: connection.signer.getPublicKey(),
         kind: NwcKind.REQUEST.value,
         tags: [

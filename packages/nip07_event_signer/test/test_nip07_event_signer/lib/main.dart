@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:convert';
-
 import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:ndk/ndk.dart';
 
@@ -123,7 +121,7 @@ Future<bool> testReceiveEncryptedNip44(
 
 Future<bool> testSign(Nip07EventSigner nip07Signer) async {
   final pubKey = await nip07Signer.getPublicKeyAsync();
-  final event = Nip01EventService.createEventCalculateId(
+  final event = Nip01Event(
     pubKey: pubKey,
     kind: 1,
     tags: [
