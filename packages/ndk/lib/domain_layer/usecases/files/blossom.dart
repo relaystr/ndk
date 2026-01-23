@@ -5,6 +5,7 @@ import '../../../config/blossom_config.dart';
 import '../../../data_layer/repositories/blossom/blossom_impl.dart';
 import '../../entities/blossom_blobs.dart';
 import '../../entities/nip_01_event.dart';
+import '../../entities/nip_01_utils.dart';
 import '../../repositories/blossom.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
@@ -122,7 +123,7 @@ class Blossom {
 
     // Create authorization event (we'll need to read file to compute hash)
     // For now, we create a generic upload authorization
-    final Nip01Event myAuthorization = Nip01EventService.createEventCalculateId(
+    final Nip01Event myAuthorization = Nip01Utils.createEventCalculateId(
       content: "upload",
       pubKey: _signer.getPublicKey(),
       kind: kBlossom,
@@ -224,7 +225,7 @@ class Blossom {
       _checkSigner();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      myAuthorization = Nip01EventService.createEventCalculateId(
+      myAuthorization = Nip01Utils.createEventCalculateId(
         content: "get",
         pubKey: _signer.getPublicKey(),
         kind: kBlossom,
