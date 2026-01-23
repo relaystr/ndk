@@ -199,9 +199,16 @@ void main() {
         ],
         strategy: UploadStrategy.firstSuccess,
       );
-      expect(uploadResponse.last.success, true);
+      // Assert results by server URL instead of relying on order
+      final dead = uploadResponse
+          .firstWhere((r) => r.serverUrl == 'http://dead.example.com');
+      final server1Result = uploadResponse
+          .firstWhere((r) => r.serverUrl == 'http://localhost:3001');
 
-      final sha256 = uploadResponse.last.descriptor!.sha256;
+      expect(dead.success, false);
+      expect(server1Result.success, true);
+
+      final sha256 = server1Result.descriptor!.sha256;
 
       final deadServer = client.getBlob(sha256: sha256, serverUrls: [
         'http://dead.example.com',
@@ -236,11 +243,19 @@ void main() {
         ],
         strategy: UploadStrategy.mirrorAfterSuccess,
       );
-      expect(uploadResponse[0].success, false);
-      expect(uploadResponse[1].success, true);
-      expect(uploadResponse[2].success, true);
+      // Assert results by server URL instead of relying on order
+      final dead = uploadResponse
+          .firstWhere((r) => r.serverUrl == 'http://dead.example.com');
+      final server1Result = uploadResponse
+          .firstWhere((r) => r.serverUrl == 'http://localhost:3001');
+      final server2Result = uploadResponse
+          .firstWhere((r) => r.serverUrl == 'http://localhost:3000');
 
-      final sha256 = uploadResponse[1].descriptor!.sha256;
+      expect(dead.success, false);
+      expect(server1Result.success, true);
+      expect(server2Result.success, true);
+
+      final sha256 = server1Result.descriptor!.sha256;
 
       final deadServer = client.getBlob(sha256: sha256, serverUrls: [
         'http://dead.example.com',
@@ -274,11 +289,19 @@ void main() {
         ],
         strategy: UploadStrategy.allSimultaneous,
       );
-      expect(uploadResponse[0].success, false);
-      expect(uploadResponse[1].success, true);
-      expect(uploadResponse[2].success, true);
+      // Assert results by server URL instead of relying on order
+      final dead = uploadResponse
+          .firstWhere((r) => r.serverUrl == 'http://dead.example.com');
+      final server1Result = uploadResponse
+          .firstWhere((r) => r.serverUrl == 'http://localhost:3001');
+      final server2Result = uploadResponse
+          .firstWhere((r) => r.serverUrl == 'http://localhost:3000');
 
-      final sha256 = uploadResponse[1].descriptor!.sha256;
+      expect(dead.success, false);
+      expect(server1Result.success, true);
+      expect(server2Result.success, true);
+
+      final sha256 = server1Result.descriptor!.sha256;
 
       final deadServer = client.getBlob(sha256: sha256, serverUrls: [
         'http://dead.example.com',
