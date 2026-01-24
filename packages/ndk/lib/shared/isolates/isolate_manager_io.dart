@@ -1,8 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:isolate';
+import 'dart:math' as math;
 
-const int encodingIsolatePoolSize = 20;
-const int computeIsolatePoolSize = 20;
+import '../logger/logger.dart';
+
+const int kMaxIsolatePoolSize = 32;
+const int kNumberOfProcessorsFactor = 4;
+
+final int encodingIsolatePoolSize = math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor, kMaxIsolatePoolSize);
+final int computeIsolatePoolSize = math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor, kMaxIsolatePoolSize);
 
 class IsolateConfig {
   Isolate isolate;
@@ -55,12 +62,16 @@ class IsolateManager {
 
   Future<void> _initialize() async {
     try {
+      Logger.log.d(
+          "Initializing encoding isolate pool size = $encodingIsolatePoolSize");
       // Initialize encoding isolate pool
       for (int i = 0; i < encodingIsolatePoolSize; i++) {
         final config = await _createIsolate();
         _encodePool.add(config);
       }
 
+      Logger.log.d(
+          "Initializing compute isolate pool size = $encodingIsolatePoolSize");
       // Initialize compute isolate pool
       for (int i = 0; i < computeIsolatePoolSize; i++) {
         final config = await _createIsolate();
@@ -70,9 +81,11 @@ class IsolateManager {
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.complete();
       }
+      Logger.log.d("Finished initializing isolate pools");
     } catch (e) {
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.completeError(e);
+        Logger.log.e("Error initializing isolate pools", error: e);
       }
     }
   }
