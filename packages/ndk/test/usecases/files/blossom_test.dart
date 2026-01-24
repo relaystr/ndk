@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
@@ -500,5 +501,209 @@ void main() {
       pubkey: ndk.accounts.getPublicKey()!,
       serverUrls: ["http://localhost:3000"],
     );
+  });
+
+  group('File upload and download tests', () {
+    late Directory tempDir;
+
+    setUp(() async {
+      // Create a temporary directory for test files
+      tempDir = await Directory.systemTemp.createTemp('blossom_test_');
+    });
+
+    tearDown(() async {
+      // Clean up temporary directory and all files in it
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test('uploadBlobFromFile should upload a file from disk', () async {
+      // Create a test file
+      final testFile = File('${tempDir.path}/test_upload.txt');
+      final testContent = 'Hello from file upload test!';
+      await testFile.writeAsString(testContent);
+
+      // Upload the file
+      final uploadResults = <BlobUploadResult>[];
+      await for (final progress in client.uploadBlobFromFile(
+        filePath: testFile.path,
+        serverUrls: ['http://localhost:3000'],
+      )) {
+        if (progress.completedUploads.isNotEmpty) {
+          uploadResults.addAll(progress.completedUploads);
+        }
+      }
+
+      expect(uploadResults.length, greaterThan(0));
+      expect(uploadResults.first.success, true);
+      expect(uploadResults.first.descriptor, isNotNull);
+
+      // Verify we can retrieve the uploaded content
+      final sha256 = uploadResults.first.descriptor!.sha256;
+      final getResponse = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      expect(utf8.decode(getResponse.data), equals(testContent));
+    });
+
+    test('downloadBlobToFile should download a blob to disk', () async {
+      // First, upload some test data
+      final testContent = 'Test content for download to file';
+      final testData = Uint8List.fromList(utf8.encode(testContent));
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Download to a file
+      final downloadFile = File('${tempDir.path}/test_download.txt');
+      await client.downloadBlobToFile(
+        sha256: sha256,
+        outputPath: downloadFile.path,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      // Verify the file was created and has correct content
+      expect(await downloadFile.exists(), true);
+      final downloadedContent = await downloadFile.readAsString();
+      expect(downloadedContent, equals(testContent));
+    });
+
+    test('uploadBlobFromFile and downloadBlobToFile round trip', () async {
+      // Create a test file with binary content
+      final uploadFile = File('${tempDir.path}/test_binary_upload.bin');
+      final testData = Uint8List.fromList(
+          List.generate(1024, (i) => i % 256)); // 1KB of test data
+      await uploadFile.writeAsBytes(testData);
+
+      // Upload the file
+      final uploadResults = <BlobUploadResult>[];
+      await for (final progress in client.uploadBlobFromFile(
+        filePath: uploadFile.path,
+        serverUrls: ['http://localhost:3000'],
+        contentType: 'application/octet-stream',
+      )) {
+        if (progress.completedUploads.isNotEmpty) {
+          uploadResults.addAll(progress.completedUploads);
+        }
+      }
+
+      expect(uploadResults.first.success, true);
+      final sha256 = uploadResults.first.descriptor!.sha256;
+
+      // Download to a different file
+      final downloadFile = File('${tempDir.path}/test_binary_download.bin');
+      await client.downloadBlobToFile(
+        sha256: sha256,
+        outputPath: downloadFile.path,
+        serverUrls: ['http://localhost:3000'],
+      );
+
+      // Verify the downloaded file matches the original
+      expect(await downloadFile.exists(), true);
+      final downloadedData = await downloadFile.readAsBytes();
+      expect(downloadedData, equals(testData));
+    });
+
+    test('downloadBlobToFile with authentication', () async {
+      // Upload test data
+      final testContent = 'Authenticated download test';
+      final testData = Uint8List.fromList(utf8.encode(testContent));
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Download with authentication
+      final downloadFile = File('${tempDir.path}/test_auth_download.txt');
+      await client.downloadBlobToFile(
+        sha256: sha256,
+        outputPath: downloadFile.path,
+        serverUrls: ['http://localhost:3000'],
+        useAuth: true,
+      );
+
+      expect(await downloadFile.exists(), true);
+      final downloadedContent = await downloadFile.readAsString();
+      expect(downloadedContent, equals(testContent));
+    });
+
+    test('uploadBlobFromFile with multiple servers - mirrorAfterSuccess',
+        () async {
+      final testFile = File('${tempDir.path}/test_mirror.txt');
+      final testContent = 'Mirror upload test';
+      await testFile.writeAsString(testContent);
+
+      // Upload with mirror strategy
+      final uploadResults = <BlobUploadResult>[];
+      await for (final progress in client.uploadBlobFromFile(
+        filePath: testFile.path,
+        serverUrls: [
+          'http://localhost:3000',
+          'http://localhost:3001',
+        ],
+        strategy: UploadStrategy.mirrorAfterSuccess,
+      )) {
+        if (progress.completedUploads.isNotEmpty) {
+          uploadResults.addAll(progress.completedUploads);
+        }
+      }
+
+      // Should have uploaded to both servers
+      expect(uploadResults.length, equals(2));
+      expect(uploadResults.every((r) => r.success), true);
+
+      final sha256 = uploadResults.first.descriptor!.sha256;
+
+      // Verify both servers have the file
+      final fromServer1 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+      );
+      final fromServer2 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3001'],
+      );
+
+      expect(utf8.decode(fromServer1.data), equals(testContent));
+      expect(utf8.decode(fromServer2.data), equals(testContent));
+    });
+
+    test('downloadBlobToFile should handle server fallback', () async {
+      // Upload to one server
+      final testContent = 'Fallback test';
+      final testData = Uint8List.fromList(utf8.encode(testContent));
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+
+      // Try to download with fallback servers
+      final downloadFile = File('${tempDir.path}/test_fallback_download.txt');
+      await client.downloadBlobToFile(
+        sha256: sha256,
+        outputPath: downloadFile.path,
+        serverUrls: [
+          'http://dead.example.com',
+          'http://localhost:3000',
+          'http://another-dead.example.com',
+        ],
+      );
+
+      expect(await downloadFile.exists(), true);
+      final downloadedContent = await downloadFile.readAsString();
+      expect(downloadedContent, equals(testContent));
+    });
   });
 }
