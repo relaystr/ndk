@@ -127,4 +127,16 @@ abstract class BlossomRepository {
     required Nip01Event reportEvent,
     required String serverUrl,
   });
+
+  /// Mirrors a blob from one server to another using the /mirror endpoint
+  /// [fileUrl] is the source URL where the blob exists
+  /// [serverUrl] is the target server to mirror to
+  /// [sha256] is the hash of the blob
+  /// [authorization] is the signed authorization event
+  Future<BlobUploadResult> mirrorToServer({
+    required String fileUrl,
+    required String serverUrl,
+    required String sha256,
+    required Nip01Event authorization,
+  });
 }

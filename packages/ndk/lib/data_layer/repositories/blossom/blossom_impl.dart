@@ -198,7 +198,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
       if (remainingServers.isNotEmpty) {
         final mirrorResults = await Future.wait(
-          remainingServers.map((url) => _mirrorToServer(
+          remainingServers.map((url) => mirrorToServer(
                 fileUrl: successfulUpload!.descriptor!.url,
                 serverUrl: url,
                 sha256: successfulUpload.descriptor!.sha256,
@@ -413,7 +413,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   /// Mirror a file from one server to another, based on the file URL
-  Future<BlobUploadResult> _mirrorToServer({
+  @override
+  Future<BlobUploadResult> mirrorToServer({
     required String fileUrl,
     required String serverUrl,
     required String sha256,

@@ -475,6 +475,133 @@ void main() {
     });
   });
 
+  group("mirror", () {
+    test('mirrorToServers should mirror blob from one server to others',
+        () async {
+      final myData = "mirror test data";
+      final testData = Uint8List.fromList(utf8.encode(myData));
+
+      // Upload blob to first server only
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+      final blossomUrl = Uri.parse('http://localhost:3000/$sha256');
+
+      // Mirror to the second server
+      final mirrorResponse = await client.mirrorToServers(
+        blossomUrl: blossomUrl,
+        targetServerUrls: ['http://localhost:3001'],
+      );
+
+      expect(mirrorResponse.length, equals(1));
+      expect(mirrorResponse.first.success, true);
+      expect(mirrorResponse.first.descriptor?.sha256, equals(sha256));
+
+      // Verify both servers now have the blob
+      final fromServer1 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3000'],
+      );
+      final fromServer2 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3001'],
+      );
+
+      expect(utf8.decode(fromServer1.data), equals(myData));
+      expect(utf8.decode(fromServer2.data), equals(myData));
+    });
+
+    test('mirrorToServers should mirror to multiple servers simultaneously',
+        () async {
+      final myData = "multi mirror test";
+      final testData = Uint8List.fromList(utf8.encode(myData));
+
+      // Upload to first server
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+      final blossomUrl = Uri.parse('http://localhost:3000/$sha256');
+
+      // Mirror to second server (we only have 2 servers in tests, but this demonstrates the capability)
+      final mirrorResponse = await client.mirrorToServers(
+        blossomUrl: blossomUrl,
+        targetServerUrls: ['http://localhost:3001'],
+      );
+
+      expect(mirrorResponse.every((r) => r.success), true);
+
+      // Verify all servers have the blob
+      final fromServer2 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3001'],
+      );
+
+      expect(utf8.decode(fromServer2.data), equals(myData));
+    });
+
+    test('mirrorToServers should throw error if URL has no SHA256', () async {
+      final invalidUrl = Uri.parse('http://localhost:3000/invalid-url');
+
+      expect(
+        () => client.mirrorToServers(
+          blossomUrl: invalidUrl,
+          targetServerUrls: ['http://localhost:3001'],
+        ),
+        throwsException,
+      );
+    });
+
+    test('mirrorToServers should handle server failures gracefully', () async {
+      final myData = "mirror failure test";
+      final testData = Uint8List.fromList(utf8.encode(myData));
+
+      // Upload blob to first server
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:3000'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+      final blossomUrl = Uri.parse('http://localhost:3000/$sha256');
+
+      // Try to mirror to both a working server and a dead one
+      final mirrorResponse = await client.mirrorToServers(
+        blossomUrl: blossomUrl,
+        targetServerUrls: [
+          'http://localhost:3001',
+          'http://dead.example.com',
+        ],
+      );
+
+      expect(mirrorResponse.length, equals(2));
+
+      // Find results by server URL
+      final workingServer = mirrorResponse
+          .firstWhere((r) => r.serverUrl == 'http://localhost:3001');
+      final deadServer = mirrorResponse
+          .firstWhere((r) => r.serverUrl == 'http://dead.example.com');
+
+      expect(workingServer.success, true);
+      expect(deadServer.success, false);
+
+      // Verify working server has the blob
+      final fromWorkingServer = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:3001'],
+      );
+      expect(utf8.decode(fromWorkingServer.data), equals(myData));
+    });
+  });
+
   group("report", () {
     test('report', () async {
       final reportRsp = await client.report(

@@ -23,6 +23,9 @@ class Blossom {
   /// kind for blossom user server list
   static const kBlossomUserServerList = 10063;
 
+  /// Regular expression to match SHA256 in URLs
+  static final sha256Regex = RegExp(r'/([a-fA-F0-9]{64})(?:/|$)');
+
   final BlossomUserServerList _userServerList;
   final BlossomRepository _blossomImpl;
   final Accounts _accounts;
@@ -151,6 +154,61 @@ class Blossom {
       strategy: strategy,
       mediaOptimisation: serverMediaOptimisation,
     );
+  }
+
+  /// Mirror a blob from a blossom URL to specified servers using the blossom /mirror endpoint
+  ///
+  /// [blossomUrl] is the source URL of the blob to mirror (e.g., https://cdn.example.com/sha265.jpg)
+  ///   The URL must contain a 64-character SHA256 hash
+  /// [targetServerUrls] is the list of servers to mirror the blob to
+  /// the current signer is used to sign the mirror request
+  ///
+  /// Throws an [Exception] if no SHA256 hash is detected in the URL
+  Future<List<BlobUploadResult>> mirrorToServers({
+    required Uri blossomUrl,
+    required List<String> targetServerUrls,
+  }) async {
+    _checkSigner();
+
+    // Extract sha256 from the URL
+    final sha256Match = sha256Regex.firstMatch(blossomUrl.toString());
+    if (sha256Match == null) {
+      throw Exception(
+        "No SHA256 hash detected in URL: ${blossomUrl.toString()}",
+      );
+    }
+
+    final sha256 = sha256Match.group(1)!;
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    // Create authorization event for mirroring
+    final Nip01Event myAuthorization = Nip01Utils.createEventCalculateId(
+      content: "upload",
+      pubKey: _signer.getPublicKey(),
+      kind: kBlossom,
+      createdAt: now,
+      tags: [
+        ["t", "upload"],
+        ["x", sha256],
+        ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
+      ],
+    );
+
+    final signedAuthorization = await _signer.sign(myAuthorization);
+
+    // Mirror to all target servers
+    final results = await Future.wait(
+      targetServerUrls.map(
+        (serverUrl) => _blossomImpl.mirrorToServer(
+          fileUrl: blossomUrl.toString(),
+          serverUrl: serverUrl,
+          sha256: sha256,
+          authorization: signedAuthorization,
+        ),
+      ),
+    );
+
+    return results;
   }
 
   /// Gets a blob by trying servers sequentially until success (fallback) \
