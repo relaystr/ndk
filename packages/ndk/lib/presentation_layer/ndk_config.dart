@@ -47,6 +47,9 @@ class NdkConfig {
   /// value between 0.0 and 1.0
   double defaultBroadcastConsiderDonePercent;
 
+  /// whether to save broadcasted events to cache by default
+  bool defaultBroadcastSaveToCache;
+
   /// log level
   LogLevel logLevel;
 
@@ -79,6 +82,7 @@ class NdkConfig {
     this.defaultBroadcastTimeout = BroadcastDefaults.TIMEOUT,
     this.defaultBroadcastConsiderDonePercent =
         BroadcastDefaults.CONSIDER_DONE_PERCENT,
+    this.defaultBroadcastSaveToCache = BroadcastDefaults.SAVE_TO_CACHE,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
     this.fetchedRangesEnabled = false,

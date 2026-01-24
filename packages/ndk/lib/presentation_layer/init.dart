@@ -165,6 +165,7 @@ class Initialization {
       accounts: accounts,
       considerDonePercent: _ndkConfig.defaultBroadcastConsiderDonePercent,
       timeout: _ndkConfig.defaultBroadcastTimeout,
+      saveToCache: _ndkConfig.defaultBroadcastSaveToCache,
     );
 
     bunkers = Bunkers(
