@@ -19,4 +19,7 @@ jobs:
           cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
           architecture: x64 # optional, x64 or arm64
       - run: flutter pub get
+      - name: Install ObjectBox C library (for objectbox package)
+        if: matrix.package == 'objectbox'
+        run: bash <(curl -s https://raw.githubusercontent.com/objectbox/objectbox-dart/main/install.sh)
       - run: flutter test
