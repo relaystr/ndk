@@ -465,6 +465,14 @@ class Blossom {
     return _blossomImpl.directDownload(url: url);
   }
 
+  /// Directly downloads a blob from the url to a file, without blossom
+  Future<void> directDownloadToFile({
+    required Uri url,
+    required String outputPath,
+  }) {
+    return _blossomImpl.directDownloadToFile(url: url, outputPath: outputPath);
+  }
+
   /// Reports a blob to the server
   /// [sha256] is the hash of the blob
   /// [eventId] is the event id where the blob was mentioned

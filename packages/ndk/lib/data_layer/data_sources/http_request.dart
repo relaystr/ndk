@@ -194,6 +194,27 @@ class HttpRequestDS {
     return response;
   }
 
+  /// Get data as a stream to avoid loading entire file into memory
+  /// Returns a stream of bytes that can be written directly to a file
+  Stream<List<int>> getStream({
+    required Uri url,
+    Map<String, String>? headers,
+  }) async* {
+    final request = http.Request('GET', url);
+    if (headers != null) {
+      request.headers.addAll(headers);
+    }
+
+    final streamedResponse = await _client.send(request);
+
+    if (streamedResponse.statusCode != 200) {
+      throw Exception(
+          "error fetching STATUS: ${streamedResponse.statusCode}, Link: $url");
+    }
+
+    yield* streamedResponse.stream;
+  }
+
   Future<http.Response> delete({
     required Uri url,
     required headers,

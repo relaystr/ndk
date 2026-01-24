@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:rxdart/rxdart.dart';
 
@@ -716,6 +717,16 @@ class BlossomRepositoryImpl implements BlossomRepository {
       contentLength: int.tryParse(response.headers['content-length'] ?? ''),
       contentRange: response.headers['content-range'] ?? '',
     );
+  }
+
+  @override
+  Future<void> directDownloadToFile({
+    required Uri url,
+    required String outputPath,
+  }) async {
+    final response = client.getStream(url: url);
+    await fileIO.writeFileStream(
+        outputPath, response.map((chunk) => Uint8List.fromList(chunk)));
   }
 
   @override

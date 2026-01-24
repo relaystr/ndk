@@ -78,6 +78,12 @@ abstract class BlossomRepository {
     required Uri url,
   });
 
+  /// Directly downloads a blob from the url to a file, without blossom
+  Future<void> directDownloadToFile({
+    required Uri url,
+    required String outputPath,
+  });
+
   /// checks if the server supports range requests, if no server supports range requests, the entire blob is returned
   /// otherwise, the blob is returned in chunks. @see MDN HTTP range requests
   Future<Stream<BlobResponse>> getBlobStream({
