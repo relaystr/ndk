@@ -1,0 +1,18 @@
+name: tests
+on: [push, workflow_dispatch]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [sembast_cache_manager, objectbox]
+    defaults:
+      run:
+        working-directory: ./packages/${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v1
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+      - run: dart format --output=none .
+      - run: dart analyze --no-fatal-warnings
+      - run: dart test
