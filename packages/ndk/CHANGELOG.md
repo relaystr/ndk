@@ -1,3 +1,7 @@
+## 0.7.1-dev.1
+
+ - **FEAT**: add saveToCache option for broadcast.
+
 ## 0.7.1-dev.0
 
  - **FIX**: use Accounts instead of pubkeys to authenticate.
