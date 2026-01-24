@@ -139,4 +139,8 @@ abstract class BlossomRepository {
     required String sha256,
     required Nip01Event authorization,
   });
+
+  /// Computes SHA256 hash of a file by reading it in chunks
+  /// Returns the hash as a hex string without loading the entire file into memory
+  Future<String> computeFileHash(String filePath);
 }

@@ -3,6 +3,8 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
+import 'package:crypto/crypto.dart';
 import 'package:web/web.dart';
 
 import 'file_io.dart';
@@ -232,5 +234,23 @@ class FileIOWeb implements FileIO {
   /// Clear the file cache
   void clearCache() {
     _fileCache.clear();
+  }
+
+  @override
+  Future<String> computeFileHash(String filePath) async {
+    final file = await _getFile(filePath);
+    if (file == null) {
+      throw Exception('No file selected or file not found');
+    }
+
+    final output = AccumulatorSink<Digest>();
+    final input = sha256.startChunkedConversion(output);
+
+    await for (var chunk in readFileAsStream(filePath)) {
+      input.add(chunk);
+    }
+    input.close();
+
+    return output.events.single.toString();
   }
 }

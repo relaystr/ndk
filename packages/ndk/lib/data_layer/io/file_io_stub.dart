@@ -38,6 +38,11 @@ class FileIONative implements FileIO {
   Future<Uint8List> readFile(String filePath) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<String> computeFileHash(String filePath) {
+    throw UnimplementedError();
+  }
 }
 
 /// Stub implementation for web that should never be used
@@ -73,6 +78,11 @@ class FileIOWeb implements FileIO {
 
   @override
   Future<Uint8List> readFile(String filePath) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String> computeFileHash(String filePath) {
     throw UnimplementedError();
   }
 }

@@ -766,4 +766,9 @@ class BlossomRepositoryImpl implements BlossomRepository {
     );
     return response.statusCode;
   }
+
+  @override
+  Future<String> computeFileHash(String filePath) {
+    return fileIO.computeFileHash(filePath);
+  }
 }

@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
+import 'package:crypto/crypto.dart';
+
 import 'file_io.dart';
 
 /// Native platform implementation using dart:io
@@ -50,5 +53,19 @@ class FileIONative implements FileIO {
   Future<Uint8List> readFile(String filePath) async {
     final file = File(filePath);
     return await file.readAsBytes();
+  }
+
+  @override
+  Future<String> computeFileHash(String filePath) async {
+    final file = File(filePath);
+    final output = AccumulatorSink<Digest>();
+    final input = sha256.startChunkedConversion(output);
+
+    await for (var chunk in file.openRead()) {
+      input.add(chunk);
+    }
+    input.close();
+
+    return output.events.single.toString();
   }
 }

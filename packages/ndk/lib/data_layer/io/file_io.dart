@@ -23,4 +23,8 @@ abstract class FileIO {
 
   /// Reads entire file into memory as Uint8List
   Future<Uint8List> readFile(String filePath);
+
+  /// Computes SHA256 hash of a file by reading it in chunks
+  /// Returns the hash as a hex string without loading the entire file into memory
+  Future<String> computeFileHash(String filePath);
 }

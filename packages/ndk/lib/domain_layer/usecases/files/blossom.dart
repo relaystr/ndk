@@ -124,8 +124,10 @@ class Blossom {
 
     _checkSigner();
 
-    // Create authorization event (we'll need to read file to compute hash)
-    // For now, we create a generic upload authorization
+    // Compute file hash without loading entire file into memory
+    final fileHash = await _blossomImpl.computeFileHash(filePath);
+
+    // Create authorization event with file hash
     final Nip01Event myAuthorization = Nip01Utils.createEventCalculateId(
       content: "upload",
       pubKey: _signer.getPublicKey(),
@@ -133,6 +135,7 @@ class Blossom {
       createdAt: now,
       tags: [
         ["t", "upload"],
+        ["x", fileHash],
         ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
       ],
     );
