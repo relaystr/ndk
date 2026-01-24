@@ -7,6 +7,7 @@ import '../../repositories/nip_05_repo.dart';
 class VerifyNip05 {
   // Static map to keep track of in-flight requests
   static final Map<String, Future<Nip05>> _inFlightRequests = {};
+  static final Map<String, Future<Nip05?>> _inFlightFetches = {};
 
   final CacheManager _database;
   final Nip05Repository _nip05Repository;
@@ -79,5 +80,43 @@ class VerifyNip05 {
 
     await _database.saveNip05(result);
     return result;
+  }
+
+  /// fetches NIP-05 data without requiring a pubkey for validation
+  /// returns the [Nip05] object with pubkey and relays
+  ///
+  /// [nip05] the nip05 identifier (e.g. "username@example.com")
+  /// returns the [Nip05] object or null if not found
+  Future<Nip05?> of(String nip05) async {
+    if (nip05.isEmpty) {
+      throw Exception("nip05 empty");
+    }
+
+    // Check if there's an in-flight fetch for this nip05
+    if (_inFlightFetches.containsKey(nip05)) {
+      return await _inFlightFetches[nip05]!;
+    }
+
+    // Create a new fetch and add it to the in-flight map
+    final fetch = _performFetch(nip05);
+    _inFlightFetches[nip05] = fetch;
+
+    try {
+      return await fetch;
+    } finally {
+      _inFlightFetches.remove(nip05);
+    }
+  }
+
+  Future<Nip05?> _performFetch(String nip05) async {
+    try {
+      final result = await _nip05Repository.fetchNip05(nip05);
+      if (result != null) {
+        await _database.saveNip05(result);
+      }
+      return result;
+    } catch (e) {
+      return null;
+    }
   }
 }

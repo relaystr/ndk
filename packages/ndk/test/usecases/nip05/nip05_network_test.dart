@@ -294,5 +294,72 @@ void main() {
 
       expect(result.relays, equals(['relay1', 'relay2']));
     });
+
+    test('of() returns pubkey without validation', () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await verifyNip05.of('username@example.com');
+
+      expect(result, isNotNull);
+      expect(result!.pubKey, equals('pubkey'));
+      expect(result.nip05, equals('username@example.com'));
+      expect(result.relays, equals(['relay1', 'relay2']));
+    });
+
+    test('of() returns null on error', () async {
+      final client = MockClient(requestHandlerErr);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await verifyNip05.of('username@example.com');
+
+      expect(result, isNull);
+    });
+
+    test('of() throws if nip05 is empty', () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      expect(verifyNip05.of(''), throwsException);
+    });
+
+    test('of() deduplicates in-flight requests', () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      VerifyNip05 verifyNip05 = VerifyNip05(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final fetch1 = verifyNip05.of('username@example.com');
+      final fetch2 = verifyNip05.of('username@example.com');
+      final fetch3 = verifyNip05.of('username@example.com');
+
+      final results = await Future.wait([fetch1, fetch2, fetch3]);
+
+      expect(results[0]!.pubKey, equals('pubkey'));
+      expect(results[0].hashCode, equals(results[1].hashCode));
+      expect(results[1].hashCode, equals(results[2].hashCode));
+    });
   });
 }
