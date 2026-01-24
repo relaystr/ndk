@@ -3,8 +3,8 @@ import '../../entities/nip_05.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/nip_05_repo.dart';
 
-/// usecase to verify the Nip05 object
-class VerifyNip05 {
+/// usecase to handle Nip05 operations (verify and fetch)
+class Nip05Usecase {
   // Static map to keep track of in-flight requests
   static final Map<String, Future<Nip05>> _inFlightRequests = {};
   static final Map<String, Future<Nip05?>> _inFlightFetches = {};
@@ -12,10 +12,10 @@ class VerifyNip05 {
   final CacheManager _database;
   final Nip05Repository _nip05Repository;
 
-  /// creates a new [VerifyNip05] instance
+  /// creates a new [Nip05Usecase] instance
   /// [_database] the cache manager
   /// [_nip05Repository] the nip05 repository
-  VerifyNip05({
+  Nip05Usecase({
     required CacheManager database,
     required Nip05Repository nip05Repository,
   })  : _database = database,
@@ -87,7 +87,7 @@ class VerifyNip05 {
   ///
   /// [nip05] the nip05 identifier (e.g. "username@example.com")
   /// returns the [Nip05] object or null if not found
-  Future<Nip05?> of(String nip05) async {
+  Future<Nip05?> fetch(String nip05) async {
     if (nip05.isEmpty) {
       throw Exception("nip05 empty");
     }
