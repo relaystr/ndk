@@ -161,7 +161,7 @@ class Blossom {
 
   /// Mirror a blob from a blossom URL to specified servers using the blossom /mirror endpoint
   ///
-  /// [blossomUrl] is the source URL of the blob to mirror (e.g., https://cdn.example.com/sha265.jpg)
+  /// [blossomUrl] is the source URL of the blob to mirror (e.g., https://cdn.example.com/[sha256].jpg)
   ///   The URL must contain a 64-character SHA256 hash
   /// [targetServerUrls] is the list of servers to mirror the blob to
   /// the current signer is used to sign the mirror request
