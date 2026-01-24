@@ -40,7 +40,7 @@ class DbNip01Event {
   String content;
 
   @Property()
-  String sig = '';
+  String? sig;
 
   @Property()
   bool? validSig;
@@ -151,7 +151,7 @@ class DbNip01Event {
       dbTags: _listToTags(ndkE.tags).map((tag) => tag.toString()).toList(),
     );
     dbE.nostrId = ndkE.id;
-    dbE.sig = ndkE.sig!;
+    dbE.sig = ndkE.sig;
     dbE.validSig = ndkE.validSig;
     dbE.sources = ndkE.sources;
     return dbE;
@@ -184,7 +184,8 @@ class DbTag {
   @Property()
   List<String> elements;
 
-  DbTag({this.key = '', this.value = '', this.marker, this.elements = const []});
+  DbTag(
+      {this.key = '', this.value = '', this.marker, this.elements = const []});
 
   List<String> toList() {
     // Return the full elements if available, otherwise construct from key/value/marker
