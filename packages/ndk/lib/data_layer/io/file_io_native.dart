@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
+import '../../shared/isolates/isolate_manager.dart';
 import 'file_io.dart';
 
 /// Native platform implementation using dart:io
@@ -57,15 +58,33 @@ class FileIONative implements FileIO {
 
   @override
   Future<String> computeFileHash(String filePath) async {
-    final file = File(filePath);
-    final output = AccumulatorSink<Digest>();
-    final input = sha256.startChunkedConversion(output);
+    return await IsolateManager.instance.runInComputeIsolate<String, String>(
+      _computeFileHashSync,
+      filePath,
+    );
+  }
+}
 
-    await for (var chunk in file.openRead()) {
-      input.add(chunk);
+/// Synchronous function to compute file hash (runs in isolate)
+/// Must be top-level function for isolate compatibility
+String _computeFileHashSync(String filePath) {
+  final file = File(filePath);
+  final output = AccumulatorSink<Digest>();
+  final input = sha256.startChunkedConversion(output);
+
+  // Read file synchronously in chunks
+  final fileSync = file.openSync();
+  try {
+    final buffer = List<int>.filled(64 * 1024, 0); // 64KB buffer
+    int bytesRead;
+
+    while ((bytesRead = fileSync.readIntoSync(buffer)) > 0) {
+      input.add(buffer.sublist(0, bytesRead));
     }
-    input.close();
 
+    input.close();
     return output.events.single.toString();
+  } finally {
+    fileSync.closeSync();
   }
 }
