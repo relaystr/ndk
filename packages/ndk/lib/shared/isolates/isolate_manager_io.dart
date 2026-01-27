@@ -6,10 +6,17 @@ import 'dart:math' as math;
 import '../logger/logger.dart';
 
 const int kMaxIsolatePoolSize = 32;
+const int kMinIsolatePoolSize = 1;
 const int kNumberOfProcessorsFactor = 4;
 
-final int encodingIsolatePoolSize = math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor, kMaxIsolatePoolSize);
-final int computeIsolatePoolSize = math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor, kMaxIsolatePoolSize);
+final int encodingIsolatePoolSize = math.max(
+    kMinIsolatePoolSize,
+    math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor,
+        kMaxIsolatePoolSize));
+final int computeIsolatePoolSize = math.max(
+    kMinIsolatePoolSize,
+    math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor,
+        kMaxIsolatePoolSize));
 
 class IsolateConfig {
   Isolate isolate;
