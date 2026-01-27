@@ -1,3 +1,7 @@
+## 0.7.1-dev.2
+
+ - **FIX**: minIsolatePoolSize.
+
 ## 0.7.1-dev.1
 
  - **FEAT**: add saveToCache option for broadcast.
