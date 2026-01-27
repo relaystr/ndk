@@ -26,7 +26,7 @@ class DbObjectBox implements CacheManager {
   }
 
   Future _init(bool attach, String? directory) async {
-    final objectbox;
+    final ObjectBoxInit objectbox;
     if (attach) {
       objectbox = await ObjectBoxInit.attach(directory: directory);
     } else {
@@ -610,7 +610,8 @@ class DbObjectBox implements CacheManager {
       List<FilterFetchedRangeRecord> records) async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
-    box.putMany(records.map((r) => DbFilterFetchedRangeRecord.fromNdk(r)).toList());
+    box.putMany(
+        records.map((r) => DbFilterFetchedRangeRecord.fromNdk(r)).toList());
   }
 
   @override
