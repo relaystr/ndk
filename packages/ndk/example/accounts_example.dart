@@ -10,7 +10,7 @@ void main() async {
   // It's recommended to keep this instance global as it holds critical application state
   final ndk = Ndk.defaultConfig();
 
-  ndk.accounts.stateChanges.listen((account) {
+  ndk.accounts.authStateChanges.listen((account) {
     if (account == null) {
       print('No active user');
     } else {
