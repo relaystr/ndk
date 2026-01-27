@@ -147,7 +147,7 @@ void main() async {
 
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
-      final stream = ndk.accounts.stateChanges;
+      final stream = ndk.accounts.authStateChanges;
 
       final expectation = expectLater(
         stream,
@@ -175,7 +175,7 @@ void main() async {
 
     test("dispose closes stream", () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
-      final stream = ndk.accounts.stateChanges;
+      final stream = ndk.accounts.authStateChanges;
       await ndk.destroy();
 
       await expectLater(
