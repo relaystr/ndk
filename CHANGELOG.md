@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-01-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.2`](#ndk---v071-dev2)
+ - [`ndk_amber` - `v0.4.0-dev.2`](#ndk_amber---v040-dev2)
+ - [`ndk_objectbox` - `v0.2.8-dev.2`](#ndk_objectbox---v028-dev2)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.2`](#ndk_rust_verifier---v050-dev2)
+ - [`nip07_event_signer` - `v1.0.6-dev.2`](#nip07_event_signer---v106-dev2)
+ - [`sembast_cache_manager` - `v1.0.7-dev.2`](#sembast_cache_manager---v107-dev2)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.2`](#ndk_cache_manager_test_suite---v101-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.2`
+ - `ndk_objectbox` - `v0.2.8-dev.2`
+ - `ndk_rust_verifier` - `v0.5.0-dev.2`
+ - `nip07_event_signer` - `v1.0.6-dev.2`
+ - `sembast_cache_manager` - `v1.0.7-dev.2`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.2`
+
+---
+
+#### `ndk` - `v0.7.1-dev.2`
+
+ - **FIX**: minIsolatePoolSize.
+
+
 ## 2026-01-24
 
 ### Changes
