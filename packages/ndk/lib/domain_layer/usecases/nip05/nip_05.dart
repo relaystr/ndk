@@ -82,12 +82,12 @@ class Nip05Usecase {
     return result;
   }
 
-  /// fetches NIP-05 data without requiring a pubkey for validation
+  /// resolves NIP-05 data without requiring a pubkey for validation
   /// returns the [Nip05] object with pubkey and relays
   ///
   /// [nip05] the nip05 identifier (e.g. "username@example.com")
   /// returns the [Nip05] object or null if not found
-  Future<Nip05?> fetch(String nip05) async {
+  Future<Nip05?> resolve(String nip05) async {
     if (nip05.isEmpty) {
       throw Exception("nip05 empty");
     }

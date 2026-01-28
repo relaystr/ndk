@@ -295,7 +295,7 @@ void main() {
       expect(result.relays, equals(['relay1', 'relay2']));
     });
 
-    test('fetch() returns pubkey without validation', () async {
+    test('resolve() returns pubkey without validation', () async {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
@@ -305,7 +305,7 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      final result = await nip05Usecase.fetch('username@example.com');
+      final result = await nip05Usecase.resolve('username@example.com');
 
       expect(result, isNotNull);
       expect(result!.pubKey, equals('pubkey'));
@@ -313,7 +313,7 @@ void main() {
       expect(result.relays, equals(['relay1', 'relay2']));
     });
 
-    test('fetch() returns null on error', () async {
+    test('resolve() returns null on error', () async {
       final client = MockClient(requestHandlerErr);
 
       final cache = MemCacheManager();
@@ -323,12 +323,12 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      final result = await nip05Usecase.fetch('username@example.com');
+      final result = await nip05Usecase.resolve('username@example.com');
 
       expect(result, isNull);
     });
 
-    test('fetch() throws if nip05 is empty', () async {
+    test('resolve() throws if nip05 is empty', () async {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
@@ -338,10 +338,10 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      expect(nip05Usecase.fetch(''), throwsException);
+      expect(nip05Usecase.resolve(''), throwsException);
     });
 
-    test('fetch() deduplicates in-flight requests', () async {
+    test('resolve() deduplicates in-flight requests', () async {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
@@ -351,11 +351,11 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      final fetch1 = nip05Usecase.fetch('username@example.com');
-      final fetch2 = nip05Usecase.fetch('username@example.com');
-      final fetch3 = nip05Usecase.fetch('username@example.com');
+      final resolve1 = nip05Usecase.resolve('username@example.com');
+      final resolve2 = nip05Usecase.resolve('username@example.com');
+      final resolve3 = nip05Usecase.resolve('username@example.com');
 
-      final results = await Future.wait([fetch1, fetch2, fetch3]);
+      final results = await Future.wait([resolve1, resolve2, resolve3]);
 
       expect(results[0]!.pubKey, equals('pubkey'));
       expect(results[0].hashCode, equals(results[1].hashCode));
