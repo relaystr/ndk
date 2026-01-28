@@ -121,10 +121,10 @@ void main() {
         content: 'Test event via bunker URL',
       );
 
-      await bunkerSigner.sign(testEvent);
+      final signedTestEvent = await bunkerSigner.sign(testEvent);
 
-      expect(testEvent.id, isNotNull);
-      expect(testEvent.sig, isNotNull);
+      expect(signedTestEvent.id, isNotNull);
+      expect(signedTestEvent.sig, isNotNull);
 
       bunkerSigner.dispose();
     });
@@ -169,10 +169,10 @@ void main() {
         content: 'Test event via loginWithBunkerUrl',
       );
 
-      await accounts.sign(testEvent);
+      final signedTestEvent = await accounts.sign(testEvent);
 
-      expect(testEvent.id, isNotNull);
-      expect(testEvent.sig, isNotNull);
+      expect(signedTestEvent.id, isNotNull);
+      expect(signedTestEvent.sig, isNotNull);
 
       // Cleanup
       accounts.logout();
@@ -217,10 +217,10 @@ void main() {
         content: 'Test event via loginWithBunkerConnection',
       );
 
-      await accounts.sign(testEvent);
+      final signedTestEvent = await accounts.sign(testEvent);
 
-      expect(testEvent.id, isNotNull);
-      expect(testEvent.sig, isNotNull);
+      expect(signedTestEvent.id, isNotNull);
+      expect(signedTestEvent.sig, isNotNull);
 
       // Cleanup
       accounts.logout();
@@ -353,5 +353,5 @@ void main() {
       final response = await signer.ping();
       expect(response, equals('pong'));
     });
-  }, skip: true);
+  });
 }
