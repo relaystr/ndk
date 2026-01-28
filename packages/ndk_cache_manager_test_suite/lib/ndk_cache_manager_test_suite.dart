@@ -672,7 +672,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveNip05(nip05);
-    final loaded = await cacheManager.loadNip05('nip05_pubkey_1');
+    final loaded = await cacheManager.loadNip05(pubKey: 'nip05_pubkey_1');
 
     expect(loaded, isNotNull);
     expect(loaded!.pubKey, equals(nip05.pubKey));
@@ -680,6 +680,25 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     expect(loaded.valid, equals(nip05.valid));
     expect(loaded.networkFetchTime, equals(nip05.networkFetchTime));
     expect(loaded.relays, equals(nip05.relays));
+  });
+
+  test('loadNip05 by identifier', () async {
+    final cacheManager = getCacheManager();
+    final nip05 = Nip05(
+      pubKey: 'nip05_id_pubkey',
+      nip05: 'testuser@example.com',
+      valid: true,
+      networkFetchTime: 1234567890,
+      relays: ['wss://relay1.com'],
+    );
+
+    await cacheManager.saveNip05(nip05);
+    final loaded = await cacheManager.loadNip05(identifier: 'testuser@example.com');
+
+    expect(loaded, isNotNull);
+    expect(loaded!.pubKey, equals(nip05.pubKey));
+    expect(loaded.nip05, equals(nip05.nip05));
+    expect(loaded.valid, equals(nip05.valid));
   });
 
   test('saveNip05s batch operation', () async {
@@ -692,7 +711,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     await cacheManager.saveNip05s(nip05s);
 
     for (final nip05 in nip05s) {
-      final loaded = await cacheManager.loadNip05(nip05.pubKey);
+      final loaded = await cacheManager.loadNip05(pubKey: nip05.pubKey);
       expect(loaded, isNotNull);
       expect(loaded!.nip05, equals(nip05.nip05));
       expect(loaded.valid, equals(nip05.valid));
@@ -728,10 +747,10 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveNip05(nip05);
-    expect(await cacheManager.loadNip05('nip05_remove'), isNotNull);
+    expect(await cacheManager.loadNip05(pubKey: 'nip05_remove'), isNotNull);
 
     await cacheManager.removeNip05('nip05_remove');
-    expect(await cacheManager.loadNip05('nip05_remove'), isNull);
+    expect(await cacheManager.loadNip05(pubKey: 'nip05_remove'), isNull);
   });
 
   test('removeAllNip05s', () async {
@@ -745,7 +764,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     await cacheManager.removeAllNip05s();
 
     for (final nip05 in nip05s) {
-      expect(await cacheManager.loadNip05(nip05.pubKey), isNull);
+      expect(await cacheManager.loadNip05(pubKey: nip05.pubKey), isNull);
     }
   });
 }

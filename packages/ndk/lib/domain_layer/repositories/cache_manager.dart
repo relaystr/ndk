@@ -89,7 +89,7 @@ abstract class CacheManager {
 
   Future<void> saveNip05(Nip05 nip05);
   Future<void> saveNip05s(List<Nip05> nip05s);
-  Future<Nip05?> loadNip05(String pubKey);
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier});
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();

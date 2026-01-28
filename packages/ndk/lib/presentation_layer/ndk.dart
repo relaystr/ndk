@@ -15,7 +15,7 @@ import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/gift_wrap/gift_wrap.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
-import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nip05/nip_05.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/relay_manager.dart';
@@ -105,8 +105,8 @@ class Ndk {
   /// calculate relay set
   RelaySets get relaySets => _initialization.relaySets;
 
-  /// Verifies NIP-05 events
-  VerifyNip05 get nip05 => _initialization.verifyNip05;
+  /// NIP-05 operations (verify and fetch)
+  Nip05Usecase get nip05 => _initialization.nip05;
 
   /// manage files on nostr \
   /// upload, download, delete files \
