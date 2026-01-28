@@ -1,12 +1,15 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/blossom_page.dart';
+import 'package:ndk_demo/demo_app_config.dart';
 import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/query_performance.dart';
 import 'package:ndk_demo/relays_page.dart';
+import 'package:ndk_demo/wallets.dart';
 import 'package:ndk_demo/verifiers_performance.dart';
 import 'package:ndk_demo/zaps_page.dart';
 import 'package:protocol_handler/protocol_handler.dart';
@@ -20,6 +23,9 @@ final ndk = Ndk(
     eventVerifier: Bip340EventVerifier(),
     cache: MemCacheManager(),
     logLevel: Logger.logLevels.trace,
+    cashuUserSeedphrase: CashuUserSeedphrase(
+      seedPhrase: DemoAppConfig.cashuSeedPhrase,
+    ),
   ),
 );
 
@@ -79,7 +85,7 @@ class MyApp extends StatelessWidget {
     // );
 
     return MaterialApp(
-      title: 'Nostr Developer Kit Demo',
+      title: DemoAppConfig.appName,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -136,6 +142,8 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
+      const Tab(text: 'Query Performance'),
+      const Tab(text: "Wallets"),
       //const Tab(text: 'Query Performance'),
       // Conditionally add Amber tab if it's part of the design
       // For a fixed length of 6, ensure this list matches.
@@ -160,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage>
     // The main change is how _tabPages is constructed in build() to pass the callback.
 
     _tabController = TabController(
-        length: 7,
+        length: _tabs.length,
         vsync:
             this); // Fixed length to 5 (Accounts, Metadata, Relays, NWC, Blossom)
     _tabController.addListener(() {
@@ -248,6 +256,8 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
+      const Tab(text: 'Query Performance'),
+      const Tab(text: "Wallets"),
       //const Tab(text: 'Query Performance'),
       // Amber tab removed
     ];
@@ -259,6 +269,10 @@ class _MyHomePageState extends State<MyHomePage>
       const NwcPage(),
       BlossomMediaPage(ndk: ndk),
       VerifiersPerformancePage(ndk: ndk),
+      QueryPerformancePage(ndk: ndk),
+      WalletsPage(
+        ndk: ndk,
+      ),
       //QueryPerformancePage(ndk: ndk),
       // AmberPage removed
     ];
