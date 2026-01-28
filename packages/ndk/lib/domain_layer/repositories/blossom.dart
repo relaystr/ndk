@@ -1,18 +1,9 @@
+import 'package:ndk/domain_layer/entities/blossom_strategies.dart';
+
 import '../../data_layer/repositories/blossom/blossom_impl.dart';
 import '../entities/blossom_blobs.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/tuple.dart';
-
-enum UploadStrategy {
-  /// Upload to first server, then mirror to others
-  mirrorAfterSuccess,
-
-  /// Upload to all servers simultaneously
-  allSimultaneous,
-
-  /// Upload to first successful server only
-  firstSuccess
-}
 
 abstract class BlossomRepository {
   /// Uploads a blob using the specified strategy

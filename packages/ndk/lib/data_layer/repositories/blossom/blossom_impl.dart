@@ -5,12 +5,12 @@ import 'dart:typed_data';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../domain_layer/entities/blossom_blobs.dart';
+import '../../../domain_layer/entities/blossom_strategies.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/tuple.dart';
 import '../../../domain_layer/repositories/blossom.dart';
 import '../../data_sources/http_request.dart';
 import '../../io/file_io.dart';
-import '../../io/file_io_platform.dart';
 import '../../models/nip_01_event_model.dart';
 
 /// Progress information for blob uploads
@@ -39,8 +39,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
   BlossomRepositoryImpl({
     required this.client,
-    FileIO? fileIO,
-  }) : fileIO = fileIO ?? FileIONative();
+    required this.fileIO,
+  });
 
   @override
   Stream<BlobUploadProgress> uploadBlob({

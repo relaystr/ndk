@@ -37,6 +37,7 @@ export 'domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
+export 'domain_layer/entities/blossom_strategies.dart';
 export 'domain_layer/entities/account.dart';
 
 /**
