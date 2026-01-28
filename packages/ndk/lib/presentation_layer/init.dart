@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 
 import '../shared/net/user_agent.dart';
 import '../data_layer/data_sources/http_request.dart';
+import '../data_layer/io/file_io_platform.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
@@ -141,6 +142,7 @@ class Initialization {
 
     final BlossomRepository blossomRepository = BlossomRepositoryImpl(
       client: _httpRequestDS,
+      fileIO: createFileIO(),
     );
 
     ///   use cases
