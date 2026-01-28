@@ -272,7 +272,7 @@ void main() {
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-      final cacheResult = await cache.loadNip05('test_pubkey_cache');
+      final cacheResult = await cache.loadNip05(pubKey: 'test_pubkey_cache');
 
       /// check that the timestamp is within 5 seconds of the current time
       expect(cacheResult!.networkFetchTime, greaterThanOrEqualTo(now - 5));
@@ -360,6 +360,41 @@ void main() {
       expect(results[0]!.pubKey, equals('pubkey'));
       expect(results[0].hashCode, equals(results[1].hashCode));
       expect(results[1].hashCode, equals(results[2].hashCode));
+    });
+
+    test('resolve() uses cache when valid, refetches when expired', () async {
+      final client = MockClient(requestHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      // Save an expired nip05 in cache
+      final expiredTimestamp = (DateTime.now()
+              .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100))
+              .millisecondsSinceEpoch ~/
+          1000);
+      final expiredNip05 = Nip05(
+        pubKey: 'old_pubkey',
+        nip05: 'username@example.com',
+        valid: true,
+        networkFetchTime: expiredTimestamp,
+      );
+      await cache.saveNip05(expiredNip05);
+
+      // resolve() should refetch because cache is expired
+      final result = await nip05Usecase.resolve('username@example.com');
+      expect(result, isNotNull);
+      expect(result!.pubKey, equals('pubkey')); // From network, not 'old_pubkey'
+
+      // Second call should return cached result (now valid)
+      final result2 = await nip05Usecase.resolve('username@example.com');
+      expect(result2, isNotNull);
+      expect(result2!.pubKey, equals('pubkey'));
+      expect(result.hashCode, equals(result2.hashCode)); // Same cached object
     });
   });
 }

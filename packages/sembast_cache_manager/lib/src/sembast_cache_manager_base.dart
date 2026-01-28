@@ -158,17 +158,28 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05(String pubKey) async {
-    final data = await _nip05Store.record(pubKey).get(_database);
-    if (data == null) return null;
-    return Nip05Extension.fromJsonStorage(data);
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
+    if (pubKey != null) {
+      final data = await _nip05Store.record(pubKey).get(_database);
+      if (data == null) return null;
+      return Nip05Extension.fromJsonStorage(data);
+    }
+    if (identifier != null) {
+      final finder = sembast.Finder(
+        filter: sembast.Filter.equals('nip05', identifier),
+      );
+      final record = await _nip05Store.findFirst(_database, finder: finder);
+      if (record == null) return null;
+      return Nip05Extension.fromJsonStorage(record.value);
+    }
+    return null;
   }
 
   @override
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
     final nip05s = <Nip05?>[];
     for (final pubKey in pubKeys) {
-      final nip05 = await loadNip05(pubKey);
+      final nip05 = await loadNip05(pubKey: pubKey);
       nip05s.add(nip05);
     }
     return nip05s;

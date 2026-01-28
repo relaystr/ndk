@@ -33,7 +33,7 @@ class Nip05Usecase {
       throw Exception("nip05 or pubkey empty");
     }
 
-    final databaseResult = await _database.loadNip05(pubkey);
+    final databaseResult = await _database.loadNip05(pubKey: pubkey);
 
     if (databaseResult != null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -90,6 +90,16 @@ class Nip05Usecase {
   Future<Nip05?> resolve(String nip05) async {
     if (nip05.isEmpty) {
       throw Exception("nip05 empty");
+    }
+
+    // Check cache first
+    final databaseResult = await _database.loadNip05(identifier: nip05);
+    if (databaseResult != null) {
+      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      int lastCheck = databaseResult.networkFetchTime ?? 0;
+      if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
+        return databaseResult;
+      }
     }
 
     // Check if there's an in-flight fetch for this nip05
