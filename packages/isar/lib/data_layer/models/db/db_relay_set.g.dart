@@ -96,7 +96,14 @@ DbRelaySet deserializeDbRelaySet(IsarReader reader) {
     }
   }
   final int _relayMinCountPerPubkey;
-  _relayMinCountPerPubkey = IsarCore.readLong(reader, 5);
+  {
+    final value = IsarCore.readLong(reader, 5);
+    if (value == -9223372036854775808) {
+      _relayMinCountPerPubkey = 0;
+    } else {
+      _relayMinCountPerPubkey = value;
+    }
+  }
   final List<DbRelaySetItem> _items;
   {
     final length = IsarCore.readList(reader, 6, IsarCore.readerPtrPtr);
@@ -161,7 +168,14 @@ dynamic deserializeDbRelaySetProp(IsarReader reader, int property) {
         }
       }
     case 5:
-      return IsarCore.readLong(reader, 5);
+      {
+        final value = IsarCore.readLong(reader, 5);
+        if (value == -9223372036854775808) {
+          return 0;
+        } else {
+          return value;
+        }
+      }
     case 6:
       {
         final length = IsarCore.readList(reader, 6, IsarCore.readerPtrPtr);

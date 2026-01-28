@@ -52,11 +52,19 @@ class NdkConfig {
   /// Store this securely! Seed phrase allow full access to cashu funds!
   final CashuUserSeedphrase? cashuUserSeedphrase;
 
+  /// whether to save broadcasted events to cache by default
+  bool defaultBroadcastSaveToCache;
+
   /// log level
   LogLevel logLevel;
 
   /// User agent string for Http requests and websockets.
   String userAgent;
+
+  /// Enable fetched ranges tracking.
+  /// When enabled, NDK tracks which time ranges have been fetched from which relays.
+  /// Disabled by default for performance.
+  bool fetchedRangesEnabled;
 
   /// Creates a new instance of [NdkConfig].
   ///
@@ -80,9 +88,11 @@ class NdkConfig {
     this.defaultBroadcastTimeout = BroadcastDefaults.TIMEOUT,
     this.defaultBroadcastConsiderDonePercent =
         BroadcastDefaults.CONSIDER_DONE_PERCENT,
+    this.defaultBroadcastSaveToCache = BroadcastDefaults.SAVE_TO_CACHE,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
     this.cashuUserSeedphrase,
+    this.fetchedRangesEnabled = false,
   });
 }
 

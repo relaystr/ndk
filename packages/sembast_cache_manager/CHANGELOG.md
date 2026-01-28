@@ -1,3 +1,58 @@
+## 1.0.7-dev.2
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.1
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.0
+
+ - Update a dependency to the latest release.
+
+## 1.0.6
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 1.0.6-dev.10
+
+ - Update a dependency to the latest release.
+
+## 1.0.6-dev.9
+
+ - **FEAT**: cache managers support.
+ - **FEAT**: unify cache events api.
+
+## 1.0.6-dev.8
+
+ - **REFACTOR**: nip07, amber, sembast.
+ - **REFACTOR**: other packages.
+ - **FEAT**: add test suite in actual cache tests.
+
+## 1.0.6-dev.7
+
+ - Update a dependency to the latest release.
+
+## 1.0.6-dev.6
+
+ - Update a dependency to the latest release.
+
+## 1.0.6-dev.5
+
+ - Update a dependency to the latest release.
+
+## 1.0.6-dev.4
+
+ - Update a dependency to the latest release.
+
+## 1.0.6-dev.3
+
+ - **FEAT**: wildcard tag search.
+
+## 1.0.6-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 1.0.6-dev.1
 
  - Update a dependency to the latest release.

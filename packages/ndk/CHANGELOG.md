@@ -1,3 +1,161 @@
+## 0.7.1-dev.2
+
+ - **FIX**: minIsolatePoolSize.
+
+## 0.7.1-dev.1
+
+ - **FEAT**: add saveToCache option for broadcast.
+
+## 0.7.1-dev.0
+
+ - **FIX**: use Accounts instead of pubkeys to authenticate.
+ - **FEAT**: nip42 multi auth.
+
+## 0.7.0
+
+ - **FEAT**: isolate manager stub.
+ - **FIX**: remove unused import.
+ - **FIX**: sha256 convert in isolate.
+ - **FIX**: fetched ranges integration test.
+ - **FIX**: rename coverage usecase to fetchedRanges.
+ - **FIX**: timerange until.
+ - **FIX**: added ranges.
+ - **FEAT**: cache managers support.
+ - **FEAT**: mark as experimental.
+ - **FEAT**: coverage disabled by default.
+ - **FEAT**: unify cache events api.
+ - **FEAT**: integration tests.
+ - **FEAT**: unit tests.
+ - **FEAT**: automatic coverage.
+ - **FEAT**: coverage usecase.
+ - **REFACTOR**: proof of work as instance.
+ - **REFACTOR**(fix): encode zapRequest.
+ - **REFACTOR**(fix): encode gift wrap.
+ - **REFACTOR**(fix): use signed event in sets engine.
+ - **REFACTOR**(fix): brodcast detect need for signing.
+ - **REFACTOR**(fix): mock relay fix send encode.
+ - **REFACTOR**: zap request calc id.
+ - **REFACTOR**(fix): auth event id.
+ - **REFACTOR**(fix): sign event in test.
+ - **REFACTOR**: immutable event sources.
+ - **REFACTOR**: ndk tests.
+ - **REFACTOR**: valid sig.
+ - **REFACTOR**: other packages.
+ - **REFACTOR**: entities.
+ - **REFACTOR**: signer, amber.
+ - **REFACTOR**: event service.
+ - **REFACTOR**: nip01 immutable.
+ - **REFACTOR**: decode nip01 event in isolate.
+ - **FIX**: remove meaningless comments.
+ - **FIX**: mem cache methods (loadNip05s, loadMetadatas).
+ - **FIX**: blossom signing.
+ - **FIX**: add copy with to extended class.
+ - **FIX**: websocket state check optimization.
+ - **FEAT**: add test suite in actual cache tests.
+ - **FEAT**: global test suite.
+ - **FEAT**: preserve order decoding.
+ - **FEAT**: eose extract request id.
+ - **FEAT**: isolate pool.
+ - **FEAT**: deligate tasks to isolates.
+ - **FEAT**: add tests.
+ - **FEAT**: deprecation message for filters.
+ - **FIX**: bip340 event verifier.
+ - **FEAT**: add test.
+ - **FIX**: clean imports.
+ - **FIX**: improve relay reconnection.
+ - **FIX**: close relay.
+ - **FIX**: Handle null error value in NWC response deserialization.
+ - **FIX**: forcing a pre-release.
+ - **FIX**: move test to an apropriate area.
+ - **FIX**: clean relay url function + add tests.
+ - **FEAT**: add test.
+ - **FIX**: update the mock relay + test.
+ - **FIX**: test pass.
+ - **FEAT**: add a test.
+ - **FIX**: use mock relay.
+ - **FIX**: new test pass.
+ - **FEAT**: test.
+
+## 0.6.1-dev.9
+
+ - **FEAT**: isolate manager stub.
+
+## 0.6.1-dev.8
+
+ - **FIX**: remove unused import.
+ - **FIX**: sha256 convert in isolate.
+ - **FIX**: fetched ranges integration test.
+ - **FIX**: rename coverage usecase to fetchedRanges.
+ - **FIX**: timerange until.
+ - **FIX**: added ranges.
+ - **FEAT**: cache managers support.
+ - **FEAT**: mark as experimental.
+ - **FEAT**: coverage disabled by default.
+ - **FEAT**: unify cache events api.
+ - **FEAT**: integration tests.
+ - **FEAT**: unit tests.
+ - **FEAT**: automatic coverage.
+ - **FEAT**: coverage usecase.
+
+## 0.6.1-dev.7
+
+ - **REFACTOR**: proof of work as instance.
+ - **REFACTOR**(fix): encode zapRequest.
+ - **REFACTOR**(fix): encode gift wrap.
+ - **REFACTOR**(fix): use signed event in sets engine.
+ - **REFACTOR**(fix): brodcast detect need for signing.
+ - **REFACTOR**(fix): mock relay fix send encode.
+ - **REFACTOR**: zap request calc id.
+ - **REFACTOR**(fix): auth event id.
+ - **REFACTOR**(fix): sign event in test.
+ - **REFACTOR**: immutable event sources.
+ - **REFACTOR**: ndk tests.
+ - **REFACTOR**: valid sig.
+ - **REFACTOR**: other packages.
+ - **REFACTOR**: entities.
+ - **REFACTOR**: signer, amber.
+ - **REFACTOR**: event service.
+ - **REFACTOR**: nip01 immutable.
+ - **REFACTOR**: decode nip01 event in isolate.
+ - **FIX**: remove meaningless comments.
+ - **FIX**: mem cache methods (loadNip05s, loadMetadatas).
+ - **FIX**: blossom signing.
+ - **FIX**: add copy with to extended class.
+ - **FIX**: websocket state check optimization.
+ - **FEAT**: add test suite in actual cache tests.
+ - **FEAT**: global test suite.
+ - **FEAT**: preserve order decoding.
+ - **FEAT**: eose extract request id.
+ - **FEAT**: isolate pool.
+ - **FEAT**: deligate tasks to isolates.
+
+## 0.6.1-dev.6
+
+ - **FEAT**: add tests.
+ - **FEAT**: deprecation message for filters.
+
+## 0.6.1-dev.5
+
+ - **FIX**: bip340 event verifier.
+ - **FEAT**: add test.
+
+## 0.6.1-dev.4
+
+ - **FIX**: clean imports.
+ - **FIX**: improve relay reconnection.
+
+## 0.6.1-dev.3
+
+ - **FIX**: close relay.
+
+## 0.6.1-dev.2
+
+ - **FIX**: Handle null error value in NWC response deserialization.
+ - **FIX**: forcing a pre-release.
+ - **FIX**: move test to an apropriate area.
+ - **FIX**: clean relay url function + add tests.
+ - **FEAT**: add test.
+
 ## 0.6.1-dev.1
 
  - **FIX**: update the mock relay + test.

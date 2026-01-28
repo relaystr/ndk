@@ -4,6 +4,7 @@ import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
 import '../../../domain_layer/entities/cashu/cashu_mint_info.dart';
 import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/contact_list.dart';
+import '../../../domain_layer/entities/filter_fetched_ranges.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
@@ -53,6 +54,10 @@ class MemCacheManager implements CacheManager {
   /// value is the counter
   final Map<String, int> _cashuSecretCounters = {};
 
+  /// In memory storage for filter fetched range records
+  /// Key is filterHash:relayUrl:rangeStart
+  Map<String, FilterFetchedRangeRecord> filterFetchedRangeRecords = {};
+
   @override
   Future<void> saveUserRelayList(UserRelayList userRelayList) async {
     userRelayLists[userRelayList.pubKey] = userRelayList;
@@ -94,12 +99,9 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
-    List<Nip05> result = [];
+    List<Nip05?> result = [];
     for (String pubKey in pubKeys) {
-      Nip05? nip05 = nip05s[pubKey];
-      if (nip05 != null) {
-        result.add(nip05);
-      }
+      result.add(nip05s[pubKey]);
     }
     return result;
   }
@@ -199,12 +201,9 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
-    List<Metadata> result = [];
+    List<Metadata?> result = [];
     for (String pubKey in pubKeys) {
-      Metadata? metadata = metadatas[pubKey];
-      if (metadata != null) {
-        result.add(metadata);
-      }
+      result.add(metadatas[pubKey]);
     }
     return result;
   }
@@ -230,6 +229,7 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  @Deprecated('Use loadEvents() instead')
   Future<Iterable<Nip01Event>> searchEvents({
     List<String>? ids,
     List<String>? authors,
@@ -240,7 +240,16 @@ class MemCacheManager implements CacheManager {
     String? search,
     int limit = 100,
   }) async {
-    throw UnimplementedError();
+    return loadEvents(
+      ids: ids,
+      pubKeys: authors,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+    );
   }
 
   @override
@@ -250,31 +259,69 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<List<Nip01Event>> loadEvents({
+    List<String>? ids,
     List<String>? pubKeys,
     List<int>? kinds,
-    String? pTag,
+    Map<String, List<String>>? tags,
     int? since,
     int? until,
+    String? search,
     int? limit,
   }) async {
     List<Nip01Event> result = [];
     for (var event in events.values) {
-      if (pubKeys != null && !pubKeys.contains(event.pubKey)) {
+      // Filter by ids
+      if (ids != null && ids.isNotEmpty && !ids.contains(event.id)) {
         continue;
       }
-      if (kinds != null && !kinds.contains(event.kind)) {
+      // Filter by pubKeys
+      if (pubKeys != null &&
+          pubKeys.isNotEmpty &&
+          !pubKeys.contains(event.pubKey)) {
         continue;
       }
-      if (pTag != null && !event.pTags.contains(pTag)) {
+      // Filter by kinds
+      if (kinds != null && kinds.isNotEmpty && !kinds.contains(event.kind)) {
         continue;
       }
-
+      // Filter by time range
       if (since != null && event.createdAt < since) {
         continue;
       }
-
       if (until != null && event.createdAt > until) {
         continue;
+      }
+      // Filter by search in content
+      if (search != null && search.isNotEmpty) {
+        if (!event.content.toLowerCase().contains(search.toLowerCase())) {
+          continue;
+        }
+      }
+      // Filter by tags
+      if (tags != null && tags.isNotEmpty) {
+        bool matchesTags = tags.entries.every((tagEntry) {
+          String tagKey = tagEntry.key;
+          List<String> tagValues = tagEntry.value;
+
+          // Handle the special case where tag key starts with '#'
+          if (tagKey.startsWith('#') && tagKey.length > 1) {
+            tagKey = tagKey.substring(1);
+          }
+
+          final eventTagValues = event.getTags(tagKey);
+
+          if (tagValues.isEmpty &&
+              event.tags.where((e) => e[0] == tagKey).isNotEmpty) {
+            return true;
+          }
+
+          return tagValues.any((value) =>
+              eventTagValues.contains(value) ||
+              eventTagValues.contains(value.toLowerCase()));
+        });
+        if (!matchesTags) {
+          continue;
+        }
       }
 
       result.add(event);
@@ -327,6 +374,24 @@ class MemCacheManager implements CacheManager {
       return Future.value(cashuKeysets[mintUrl]?.toList() ?? []);
     } else {
       return Future.value(cashuKeysets.values.expand((e) => e).toList());
+    }
+  }
+
+  // =====================
+  // Filter Fetched Ranges
+  // =====================
+
+  @override
+  Future<void> saveFilterFetchedRangeRecord(
+      FilterFetchedRangeRecord record) async {
+    filterFetchedRangeRecords[record.key] = record;
+  }
+
+  @override
+  Future<void> saveFilterFetchedRangeRecords(
+      List<FilterFetchedRangeRecord> records) async {
+    for (final record in records) {
+      filterFetchedRangeRecords[record.key] = record;
     }
   }
 
@@ -511,5 +576,53 @@ class MemCacheManager implements CacheManager {
     _cashuSecretCounters[key] = counter;
 
     return;
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
+      String filterHash) async {
+    return filterFetchedRangeRecords.values
+        .where((r) => r.filterHash == filterHash)
+        .toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
+      String filterHash, String relayUrl) async {
+    return filterFetchedRangeRecords.values
+        .where((r) => r.filterHash == filterHash && r.relayUrl == relayUrl)
+        .toList();
+  }
+
+  @override
+  Future<List<FilterFetchedRangeRecord>>
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl) async {
+    return filterFetchedRangeRecords.values
+        .where((r) => r.relayUrl == relayUrl)
+        .toList();
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecords(String filterHash) async {
+    filterFetchedRangeRecords
+        .removeWhere((key, value) => value.filterHash == filterHash);
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
+      String filterHash, String relayUrl) async {
+    filterFetchedRangeRecords.removeWhere((key, value) =>
+        value.filterHash == filterHash && value.relayUrl == relayUrl);
+  }
+
+  @override
+  Future<void> removeFilterFetchedRangeRecordsByRelay(String relayUrl) async {
+    filterFetchedRangeRecords
+        .removeWhere((key, value) => value.relayUrl == relayUrl);
+  }
+
+  @override
+  Future<void> removeAllFilterFetchedRangeRecords() async {
+    filterFetchedRangeRecords.clear();
   }
 }

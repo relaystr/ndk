@@ -144,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: 'Verifiers'),
       const Tab(text: 'Query Performance'),
       const Tab(text: "Wallets"),
+      //const Tab(text: 'Query Performance'),
       // Conditionally add Amber tab if it's part of the design
       // For a fixed length of 6, ensure this list matches.
       // Example: if Amber is the 6th tab:
@@ -257,6 +258,7 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: 'Verifiers'),
       const Tab(text: 'Query Performance'),
       const Tab(text: "Wallets"),
+      //const Tab(text: 'Query Performance'),
       // Amber tab removed
     ];
 
@@ -271,6 +273,7 @@ class _MyHomePageState extends State<MyHomePage>
       WalletsPage(
         ndk: ndk,
       ),
+      //QueryPerformancePage(ndk: ndk),
       // AmberPage removed
     ];
 

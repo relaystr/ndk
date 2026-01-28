@@ -58,6 +58,7 @@ class NwcConnection {
   }
 
   List<String> supportedVersions = ["0.0"];
+  List<String> supportedEncryptions = ["nip04"];
 
   Set<String> permissions = {};
 
@@ -78,8 +79,8 @@ class NwcConnection {
 
   /// does this connection only support legacy notifications
   bool isLegacyNotifications() {
-    return supportedVersions.length == 1 && supportedVersions.first == "0.0" ||
-        !supportedVersions.any((e) => e != "0.0");
+    return (supportedVersions.length == 1 && supportedVersions.first == "0.0" ||
+        !supportedVersions.any((e) => e != "0.0")) && !supportedEncryptions.any((e) => e != "nip04");
   }
 
   @override

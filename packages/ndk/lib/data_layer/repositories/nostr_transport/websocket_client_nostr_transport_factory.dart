@@ -7,7 +7,7 @@ import '../../data_sources/websocket_client.dart';
 
 class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
   @override
-  NostrTransport call(String url, Function? onReconnect) {
+  NostrTransport call(String url, {Function? onReconnect, Function(int?,Object?,String?)? onDisconnect}) {
     final myUrl = cleanRelayUrl(url);
 
     if (myUrl == null) {
@@ -15,10 +15,16 @@ class WebSocketClientNostrTransportFactory implements NostrTransportFactory {
     }
 
     final backoff = BinaryExponentialBackoff(
-        initial: Duration(seconds: 1), maximumStep: 10);
-    final client = WebSocket(Uri.parse(myUrl), backoff: backoff);
+        initial: Duration(milliseconds: 500), maximumStep: 4);
+    final client = WebSocket(
+        Uri.parse(myUrl),
+        backoff: backoff,
+        timeout: Duration(seconds: 3600),
+        pingInterval: Duration(seconds: 10),
+        binaryType: 'arraybuffer'
+    );
 
     final WebsocketDSClient myDataSource = WebsocketDSClient(client, myUrl);
-    return WebSocketClientNostrTransport(myDataSource, onReconnect);
+    return WebSocketClientNostrTransport(myDataSource, onReconnect: onReconnect, onDisconnect: onDisconnect);
   }
 }

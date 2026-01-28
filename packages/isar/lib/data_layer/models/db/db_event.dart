@@ -1,10 +1,24 @@
 // ignore_for_file: unnecessary_overrides
 
+import 'dart:convert';
+
 import 'package:isar/isar.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/helpers/list_casting.dart';
 
 part 'db_event.g.dart';
+
+/// Helper to decode tags from JSON string
+List<List<String>> _decodeTags(String? json) {
+  if (json == null || json.isEmpty) return [];
+  try {
+    final decoded = jsonDecode(json) as List;
+    return decoded
+        .map((e) => (e as List).map((item) => item.toString()).toList())
+        .toList();
+  } catch (_) {
+    return [];
+  }
+}
 
 @Collection(inheritance: false)
 class DbEvent extends Nip01Event {
@@ -20,29 +34,18 @@ class DbEvent extends Nip01Event {
   @override
   int get createdAt => super.createdAt;
 
+  @ignore
   @override
   List<List<String>> get tags => super.tags;
 
-  @override
-  List<String> get pTags {
-    List<String> pTags = super.tags.where((element) {
-      List<dynamic> a = element;
-      if (a.isNotEmpty && a.first.toString() == "p") {
-        return true;
-      }
-      return false;
-    }).map((e) {
-      List<dynamic> list = e as List;
-      return list.length == 2 ? list[1].toString() : "";
-    }).toList();
-    return pTags;
-  }
+  /// Tags stored as JSON string for Isar (Isar doesn't support List<List<String>>)
+  final String tagsJson;
 
   @override
   String get content => super.content;
 
   @override
-  String get sig => super.sig;
+  String? get sig => super.sig;
 
   @override
   bool? get validSig => super.validSig;
@@ -50,33 +53,41 @@ class DbEvent extends Nip01Event {
   @override
   List<String> get sources => super.sources;
 
-  DbEvent(
-      {required super.pubKey,
-      required super.kind,
-      required super.tags,
-      required super.content,
-      super.createdAt,
-      required String sig,
-      bool? validSig,
-      required List<String> sources}) {
-    super.sig = sig;
-    super.validSig = validSig;
-    super.sources = sources;
-  }
+  /// Constructor used by Isar - takes tagsJson and decodes it
+  DbEvent({
+    required String id,
+    required String pubKey,
+    required int kind,
+    required this.tagsJson,
+    required String content,
+    int createdAt = 0,
+    String? sig,
+    bool? validSig,
+    List<String> sources = const [],
+  }) : super(
+          id: id,
+          pubKey: pubKey,
+          kind: kind,
+          tags: _decodeTags(tagsJson),
+          content: content,
+          createdAt: createdAt,
+          sig: sig,
+          validSig: validSig,
+          sources: sources,
+        );
 
+  /// Factory to create DbEvent from Nip01Event
   static DbEvent fromNip01Event(Nip01Event event) {
-    DbEvent dbEvent = DbEvent(
-        pubKey: event.pubKey,
-        kind: event.kind,
-        tags: event.tags,
-        content: event.content,
-        createdAt: event.createdAt,
-        sig: event.sig,
-        validSig: event.validSig,
-        sources: event.sources);
-    // dbEvent.sig = event.sig;
-    // dbEvent.validSig = event.validSig;
-    // dbEvent.sources = event.sources;
-    return dbEvent;
+    return DbEvent(
+      id: event.id,
+      pubKey: event.pubKey,
+      kind: event.kind,
+      tagsJson: jsonEncode(event.tags),
+      content: event.content,
+      createdAt: event.createdAt,
+      sig: event.sig,
+      validSig: event.validSig,
+      sources: event.sources,
+    );
   }
 }

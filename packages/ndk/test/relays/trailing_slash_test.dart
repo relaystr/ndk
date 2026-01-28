@@ -26,9 +26,13 @@ void main() {
         tags: [],
         content: "Test",
       );
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
 
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: [relay.url],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
@@ -128,9 +132,13 @@ void main() {
         tags: [],
         content: "Test",
       );
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
 
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: [relay.url],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
@@ -154,9 +162,13 @@ void main() {
         tags: [],
         content: "Test",
       );
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
 
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: ["${relay.url}/"],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
@@ -272,9 +284,13 @@ void main() {
         tags: [],
         content: "Test",
       );
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
 
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: [relay.url],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
@@ -303,12 +319,34 @@ void main() {
         content: "Test",
       );
 
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
+
       final broadcast = ndk.broadcast.broadcast(
-        nostrEvent: event,
+        nostrEvent: signedEvent,
         specificRelays: ["${relay.url}/"],
       );
       final broadcastResponses = await broadcast.broadcastDoneFuture;
       expect(broadcastResponses.first.broadcastSuccessful, isTrue);
+
+      ndk.destroy();
+    });
+  });
+
+  group('Triple slash', () {
+    test('query triple slashes relays: wss:///', () async {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      final query = ndk.requests.query(
+        filters: [
+          Filter(kinds: [0]),
+        ],
+        explicitRelays: ["wss:///example.com"],
+      );
+
+      await query.future;
 
       ndk.destroy();
     });

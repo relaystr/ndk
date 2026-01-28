@@ -19,9 +19,11 @@ import 'data_layer/db/object_box/schema/db_cashu_mint_info.dart';
 import 'data_layer/db/object_box/schema/db_cashu_proof.dart';
 import 'data_layer/db/object_box/schema/db_cashu_secret_counter.dart';
 import 'data_layer/db/object_box/schema/db_contact_list.dart';
+import 'data_layer/db/object_box/schema/db_filter_fetched_range_record.dart';
 import 'data_layer/db/object_box/schema/db_metadata.dart';
 import 'data_layer/db/object_box/schema/db_nip_01_event.dart';
 import 'data_layer/db/object_box/schema/db_nip_05.dart';
+import 'data_layer/db/object_box/schema/db_relay_set.dart';
 import 'data_layer/db/object_box/schema/db_user_relay_list.dart';
 import 'data_layer/db/object_box/schema/db_wallet.dart';
 import 'data_layer/db/object_box/schema/db_wallet_transaction.dart';
@@ -908,33 +910,25 @@ obx_int.ModelDefinition getObjectBoxModel() {
       },
       objectToFB: (DbMetadata object, fb.Builder fbb) {
         final pubKeyOffset = fbb.writeString(object.pubKey);
-        final nameOffset = object.name == null
-            ? null
-            : fbb.writeString(object.name!);
+        final nameOffset =
+            object.name == null ? null : fbb.writeString(object.name!);
         final displayNameOffset = object.displayName == null
             ? null
             : fbb.writeString(object.displayName!);
-        final pictureOffset = object.picture == null
-            ? null
-            : fbb.writeString(object.picture!);
-        final bannerOffset = object.banner == null
-            ? null
-            : fbb.writeString(object.banner!);
-        final websiteOffset = object.website == null
-            ? null
-            : fbb.writeString(object.website!);
-        final aboutOffset = object.about == null
-            ? null
-            : fbb.writeString(object.about!);
-        final nip05Offset = object.nip05 == null
-            ? null
-            : fbb.writeString(object.nip05!);
-        final lud16Offset = object.lud16 == null
-            ? null
-            : fbb.writeString(object.lud16!);
-        final lud06Offset = object.lud06 == null
-            ? null
-            : fbb.writeString(object.lud06!);
+        final pictureOffset =
+            object.picture == null ? null : fbb.writeString(object.picture!);
+        final bannerOffset =
+            object.banner == null ? null : fbb.writeString(object.banner!);
+        final websiteOffset =
+            object.website == null ? null : fbb.writeString(object.website!);
+        final aboutOffset =
+            object.about == null ? null : fbb.writeString(object.about!);
+        final nip05Offset =
+            object.nip05 == null ? null : fbb.writeString(object.nip05!);
+        final lud16Offset =
+            object.lud16 == null ? null : fbb.writeString(object.lud16!);
+        final lud06Offset =
+            object.lud06 == null ? null : fbb.writeString(object.lud06!);
         final splitDisplayNameWordsOffset = object.splitDisplayNameWords == null
             ? null
             : fbb.writeList(
@@ -1014,8 +1008,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           rootOffset,
           26,
         );
-        final refreshedTimestampParam = const fb.Int64Reader()
-            .vTableGetNullable(buffer, rootOffset, 28);
+        final refreshedTimestampParam =
+            const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 28);
         final object = DbMetadata(
           pubKey: pubKeyParam,
           name: nameParam,
@@ -1094,35 +1088,34 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
-        final object =
-            DbNip01Event(
-                pubKey: pubKeyParam,
-                kind: kindParam,
-                dbTags: dbTagsParam,
-                content: contentParam,
-                createdAt: createdAtParam,
-              )
-              ..dbId = const fb.Int64Reader().vTableGet(
-                buffer,
-                rootOffset,
-                4,
-                0,
-              )
-              ..nostrId = const fb.StringReader(
-                asciiOptimization: true,
-              ).vTableGet(buffer, rootOffset, 6, '')
-              ..sig = const fb.StringReader(
-                asciiOptimization: true,
-              ).vTableGet(buffer, rootOffset, 16, '')
-              ..validSig = const fb.BoolReader().vTableGetNullable(
-                buffer,
-                rootOffset,
-                18,
-              )
-              ..sources = const fb.ListReader<String>(
-                fb.StringReader(asciiOptimization: true),
-                lazy: false,
-              ).vTableGet(buffer, rootOffset, 20, []);
+        final object = DbNip01Event(
+          pubKey: pubKeyParam,
+          kind: kindParam,
+          dbTags: dbTagsParam,
+          content: contentParam,
+          createdAt: createdAtParam,
+        )
+          ..dbId = const fb.Int64Reader().vTableGet(
+            buffer,
+            rootOffset,
+            4,
+            0,
+          )
+          ..nostrId = const fb.StringReader(
+            asciiOptimization: true,
+          ).vTableGet(buffer, rootOffset, 6, '')
+          ..sig = const fb.StringReader(
+            asciiOptimization: true,
+          ).vTableGet(buffer, rootOffset, 16, '')
+          ..validSig = const fb.BoolReader().vTableGetNullable(
+            buffer,
+            rootOffset,
+            18,
+          )
+          ..sources = const fb.ListReader<String>(
+            fb.StringReader(asciiOptimization: true),
+            lazy: false,
+          ).vTableGet(buffer, rootOffset, 20, []);
 
         return object;
       },
@@ -1138,9 +1131,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectToFB: (DbTag object, fb.Builder fbb) {
         final keyOffset = fbb.writeString(object.key);
         final valueOffset = fbb.writeString(object.value);
-        final markerOffset = object.marker == null
-            ? null
-            : fbb.writeString(object.marker!);
+        final markerOffset =
+            object.marker == null ? null : fbb.writeString(object.marker!);
         fbb.startTable(5);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, keyOffset);
@@ -1566,12 +1558,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.dbId = id;
       },
       objectToFB: (DbCashuMintInfo object, fb.Builder fbb) {
-        final nameOffset = object.name == null
-            ? null
-            : fbb.writeString(object.name!);
-        final versionOffset = object.version == null
-            ? null
-            : fbb.writeString(object.version!);
+        final nameOffset =
+            object.name == null ? null : fbb.writeString(object.name!);
+        final versionOffset =
+            object.version == null ? null : fbb.writeString(object.version!);
         final descriptionOffset = object.description == null
             ? null
             : fbb.writeString(object.description!);
@@ -1579,18 +1569,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ? null
             : fbb.writeString(object.descriptionLong!);
         final contactJsonOffset = fbb.writeString(object.contactJson);
-        final motdOffset = object.motd == null
-            ? null
-            : fbb.writeString(object.motd!);
-        final iconUrlOffset = object.iconUrl == null
-            ? null
-            : fbb.writeString(object.iconUrl!);
+        final motdOffset =
+            object.motd == null ? null : fbb.writeString(object.motd!);
+        final iconUrlOffset =
+            object.iconUrl == null ? null : fbb.writeString(object.iconUrl!);
         final urlsOffset = fbb.writeList(
           object.urls.map(fbb.writeString).toList(growable: false),
         );
-        final tosUrlOffset = object.tosUrl == null
-            ? null
-            : fbb.writeString(object.tosUrl!);
+        final tosUrlOffset =
+            object.tosUrl == null ? null : fbb.writeString(object.tosUrl!);
         final nutsJsonOffset = fbb.writeString(object.nutsJson);
         fbb.startTable(13);
         fbb.addInt64(0, object.dbId);
@@ -2014,8 +2001,8 @@ class DbWalletCahsuKeyset_ {
   /// See [DbWalletCahsuKeyset.mintKeyPairs].
   static final mintKeyPairs =
       obx.QueryStringVectorProperty<DbWalletCahsuKeyset>(
-        _entities[6].properties[6],
-      );
+    _entities[6].properties[6],
+  );
 
   /// See [DbWalletCahsuKeyset.fetchedAt].
   static final fetchedAt = obx.QueryIntegerProperty<DbWalletCahsuKeyset>(

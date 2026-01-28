@@ -1,7 +1,8 @@
 import '../entities/nip_01_event.dart';
 
 abstract class EventSigner {
-  Future<void> sign(Nip01Event event);
+  /// Signs the given event and returns the signed event
+  Future<Nip01Event> sign(Nip01Event event);
 
   String getPublicKey();
 

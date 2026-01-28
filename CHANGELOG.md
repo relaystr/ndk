@@ -3,6 +3,690 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-01-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.2`](#ndk---v071-dev2)
+ - [`ndk_amber` - `v0.4.0-dev.2`](#ndk_amber---v040-dev2)
+ - [`ndk_objectbox` - `v0.2.8-dev.2`](#ndk_objectbox---v028-dev2)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.2`](#ndk_rust_verifier---v050-dev2)
+ - [`nip07_event_signer` - `v1.0.6-dev.2`](#nip07_event_signer---v106-dev2)
+ - [`sembast_cache_manager` - `v1.0.7-dev.2`](#sembast_cache_manager---v107-dev2)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.2`](#ndk_cache_manager_test_suite---v101-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.2`
+ - `ndk_objectbox` - `v0.2.8-dev.2`
+ - `ndk_rust_verifier` - `v0.5.0-dev.2`
+ - `nip07_event_signer` - `v1.0.6-dev.2`
+ - `sembast_cache_manager` - `v1.0.7-dev.2`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.2`
+
+---
+
+#### `ndk` - `v0.7.1-dev.2`
+
+ - **FIX**: minIsolatePoolSize.
+
+
+## 2026-01-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.1`](#ndk---v071-dev1)
+ - [`ndk_amber` - `v0.4.0-dev.1`](#ndk_amber---v040-dev1)
+ - [`ndk_objectbox` - `v0.2.8-dev.1`](#ndk_objectbox---v028-dev1)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.1`](#ndk_rust_verifier---v050-dev1)
+ - [`nip07_event_signer` - `v1.0.6-dev.1`](#nip07_event_signer---v106-dev1)
+ - [`sembast_cache_manager` - `v1.0.7-dev.1`](#sembast_cache_manager---v107-dev1)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.1`](#ndk_cache_manager_test_suite---v101-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.1`
+ - `ndk_objectbox` - `v0.2.8-dev.1`
+ - `ndk_rust_verifier` - `v0.5.0-dev.1`
+ - `nip07_event_signer` - `v1.0.6-dev.1`
+ - `sembast_cache_manager` - `v1.0.7-dev.1`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.1`
+
+---
+
+#### `ndk` - `v0.7.1-dev.1`
+
+ - **FEAT**: add saveToCache option for broadcast.
+
+
+## 2026-01-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.0`](#ndk---v071-dev0)
+ - [`ndk_objectbox` - `v0.2.8-dev.0`](#ndk_objectbox---v028-dev0)
+ - [`ndk_amber` - `v0.4.0-dev.0+1`](#ndk_amber---v040-dev01)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.0+1`](#ndk_rust_verifier---v050-dev01)
+ - [`nip07_event_signer` - `v1.0.6-dev.0`](#nip07_event_signer---v106-dev0)
+ - [`sembast_cache_manager` - `v1.0.7-dev.0`](#sembast_cache_manager---v107-dev0)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.0`](#ndk_cache_manager_test_suite---v101-dev0)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.0+1`
+ - `ndk_rust_verifier` - `v0.5.0-dev.0+1`
+ - `nip07_event_signer` - `v1.0.6-dev.0`
+ - `sembast_cache_manager` - `v1.0.7-dev.0`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.0`
+
+---
+
+#### `ndk` - `v0.7.1-dev.0`
+
+ - **FIX**: use Accounts instead of pubkeys to authenticate.
+ - **FEAT**: nip42 multi auth.
+
+#### `ndk_objectbox` - `v0.2.8-dev.0`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+
+## 2026-01-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.6.1`](#ndk---v061)
+ - [`ndk_amber` - `v0.3.3`](#ndk_amber---v033)
+ - [`ndk_cache_manager_test_suite` - `v1.0.0`](#ndk_cache_manager_test_suite---v100)
+ - [`ndk_objectbox` - `v0.2.7`](#ndk_objectbox---v027)
+ - [`ndk_rust_verifier` - `v0.4.2`](#ndk_rust_verifier---v042)
+ - [`rust_lib_ndk` - `v0.1.7+1`](#rust_lib_ndk---v0171)
+
+Packages with other changes:
+
+ - [`nip07_event_signer` - `v1.0.5`](#nip07_event_signer---v105)
+ - [`sembast_cache_manager` - `v1.0.6`](#sembast_cache_manager---v106)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.6.1`
+ - `ndk_amber` - `v0.3.3`
+ - `ndk_cache_manager_test_suite` - `v1.0.0`
+ - `ndk_objectbox` - `v0.2.7`
+ - `ndk_rust_verifier` - `v0.4.2`
+ - `nip07_event_signer` - `v1.0.5`
+ - `rust_lib_ndk` - `v0.1.7+1`
+ - `sembast_cache_manager` - `v1.0.6`
+
+---
+
+#### `ndk` - `v0.6.1`
+
+#### `ndk_amber` - `v0.3.3`
+
+#### `ndk_cache_manager_test_suite` - `v1.0.0`
+
+#### `ndk_objectbox` - `v0.2.7`
+
+#### `ndk_rust_verifier` - `v0.4.2`
+
+#### `rust_lib_ndk` - `v0.1.7+1`
+
+#### `nip07_event_signer` - `v1.0.5`
+
+#### `sembast_cache_manager` - `v1.0.6`
+
+
+## 2026-01-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_objectbox` - `v0.2.7-dev.10`](#ndk_objectbox---v027-dev10)
+
+---
+
+#### `ndk_objectbox` - `v0.2.7-dev.10`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+
+## 2026-01-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.9`](#ndk---v061-dev9)
+ - [`ndk_amber` - `v0.3.3-dev.10`](#ndk_amber---v033-dev10)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.10`](#ndk_rust_verifier---v042-dev10)
+ - [`ndk_objectbox` - `v0.2.7-dev.9`](#ndk_objectbox---v027-dev9)
+ - [`nip07_event_signer` - `v1.0.5-dev.9`](#nip07_event_signer---v105-dev9)
+ - [`sembast_cache_manager` - `v1.0.6-dev.10`](#sembast_cache_manager---v106-dev10)
+ - [`ndk_cache_manager_test_suite` - `v1.0.0-dev.4`](#ndk_cache_manager_test_suite---v100-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.7-dev.9`
+ - `nip07_event_signer` - `v1.0.5-dev.9`
+ - `sembast_cache_manager` - `v1.0.6-dev.10`
+ - `ndk_cache_manager_test_suite` - `v1.0.0-dev.4`
+
+---
+
+#### `ndk` - `v0.6.1-dev.9`
+
+ - **FEAT**: isolate manager stub.
+
+#### `ndk_amber` - `v0.3.3-dev.10`
+
+ - **REFACTOR**: signer, amber.
+ - **FIX**: clean imports.
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.10`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: add doc.
+
+
+## 2026-01-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.8`](#ndk---v061-dev8)
+ - [`ndk_cache_manager_test_suite` - `v1.0.0-dev.3`](#ndk_cache_manager_test_suite---v100-dev3)
+ - [`ndk_objectbox` - `v0.2.7-dev.8`](#ndk_objectbox---v027-dev8)
+ - [`sembast_cache_manager` - `v1.0.6-dev.9`](#sembast_cache_manager---v106-dev9)
+ - [`ndk_amber` - `v0.3.3-dev.9`](#ndk_amber---v033-dev9)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.9`](#ndk_rust_verifier---v042-dev9)
+ - [`nip07_event_signer` - `v1.0.5-dev.8`](#nip07_event_signer---v105-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.9`
+ - `ndk_rust_verifier` - `v0.4.2-dev.9`
+ - `nip07_event_signer` - `v1.0.5-dev.8`
+
+---
+
+#### `ndk` - `v0.6.1-dev.8`
+
+ - **FIX**: remove unused import.
+ - **FIX**: sha256 convert in isolate.
+ - **FIX**: fetched ranges integration test.
+ - **FIX**: rename coverage usecase to fetchedRanges.
+ - **FIX**: timerange until.
+ - **FIX**: added ranges.
+ - **FEAT**: cache managers support.
+ - **FEAT**: mark as experimental.
+ - **FEAT**: coverage disabled by default.
+ - **FEAT**: unify cache events api.
+ - **FEAT**: integration tests.
+ - **FEAT**: unit tests.
+ - **FEAT**: automatic coverage.
+ - **FEAT**: coverage usecase.
+
+#### `ndk_cache_manager_test_suite` - `v1.0.0-dev.3`
+
+ - **FIX**: mem cache test.
+
+#### `ndk_objectbox` - `v0.2.7-dev.8`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FEAT**: cache managers support.
+ - **FEAT**: objectbox test.
+ - **FEAT**: unify cache events api.
+
+#### `sembast_cache_manager` - `v1.0.6-dev.9`
+
+ - **FEAT**: cache managers support.
+ - **FEAT**: unify cache events api.
+
+
+## 2026-01-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.7`](#ndk---v061-dev7)
+ - [`ndk_amber` - `v0.3.3-dev.8`](#ndk_amber---v033-dev8)
+ - [`ndk_isar` - `v0.2.3-dev.8`](#ndk_isar---v023-dev8)
+ - [`ndk_objectbox` - `v0.2.7-dev.7`](#ndk_objectbox---v027-dev7)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.8`](#ndk_rust_verifier---v042-dev8)
+ - [`nip07_event_signer` - `v1.0.5-dev.7`](#nip07_event_signer---v105-dev7)
+ - [`sembast_cache_manager` - `v1.0.6-dev.8`](#sembast_cache_manager---v106-dev8)
+ - [`ndk_cache_manager_test_suite` - `v1.0.0-dev.2`](#ndk_cache_manager_test_suite---v100-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_cache_manager_test_suite` - `v1.0.0-dev.2`
+
+---
+
+#### `ndk` - `v0.6.1-dev.7`
+
+ - **REFACTOR**: proof of work as instance.
+ - **REFACTOR**(fix): encode zapRequest.
+ - **REFACTOR**(fix): encode gift wrap.
+ - **REFACTOR**(fix): use signed event in sets engine.
+ - **REFACTOR**(fix): brodcast detect need for signing.
+ - **REFACTOR**(fix): mock relay fix send encode.
+ - **REFACTOR**: zap request calc id.
+ - **REFACTOR**(fix): auth event id.
+ - **REFACTOR**(fix): sign event in test.
+ - **REFACTOR**: immutable event sources.
+ - **REFACTOR**: ndk tests.
+ - **REFACTOR**: valid sig.
+ - **REFACTOR**: other packages.
+ - **REFACTOR**: entities.
+ - **REFACTOR**: signer, amber.
+ - **REFACTOR**: event service.
+ - **REFACTOR**: nip01 immutable.
+ - **REFACTOR**: decode nip01 event in isolate.
+ - **FIX**: remove meaningless comments.
+ - **FIX**: mem cache methods (loadNip05s, loadMetadatas).
+ - **FIX**: blossom signing.
+ - **FIX**: add copy with to extended class.
+ - **FIX**: websocket state check optimization.
+ - **FEAT**: add test suite in actual cache tests.
+ - **FEAT**: global test suite.
+ - **FEAT**: preserve order decoding.
+ - **FEAT**: eose extract request id.
+ - **FEAT**: isolate pool.
+ - **FEAT**: deligate tasks to isolates.
+
+#### `ndk_amber` - `v0.3.3-dev.8`
+
+ - **REFACTOR**: signer, amber.
+ - **FIX**: clean imports.
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_isar` - `v0.2.3-dev.8`
+
+ - **FIX**: clean imports.
+ - **FIX**: blossom signing.
+ - **FIX**: websocket state check optimization.
+ - **FEAT**: add test suite in actual cache tests.
+
+#### `ndk_objectbox` - `v0.2.7-dev.7`
+
+ - **REFACTOR**: other packages.
+ - **FEAT**: objectbox test.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.8`
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: add doc.
+
+#### `nip07_event_signer` - `v1.0.5-dev.7`
+
+ - **REFACTOR**: nip07, amber, sembast.
+ - **REFACTOR**: other packages.
+
+#### `sembast_cache_manager` - `v1.0.6-dev.8`
+
+ - **REFACTOR**: nip07, amber, sembast.
+ - **REFACTOR**: other packages.
+ - **FEAT**: add test suite in actual cache tests.
+
+
+## 2026-01-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.6`](#ndk---v061-dev6)
+ - [`ndk_objectbox` - `v0.2.7-dev.6`](#ndk_objectbox---v027-dev6)
+ - [`ndk_amber` - `v0.3.3-dev.7`](#ndk_amber---v033-dev7)
+ - [`ndk_isar` - `v0.2.3-dev.7`](#ndk_isar---v023-dev7)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.7`](#ndk_rust_verifier---v042-dev7)
+ - [`nip07_event_signer` - `v1.0.5-dev.6`](#nip07_event_signer---v105-dev6)
+ - [`sembast_cache_manager` - `v1.0.6-dev.7`](#sembast_cache_manager---v106-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.7`
+ - `ndk_isar` - `v0.2.3-dev.7`
+ - `ndk_rust_verifier` - `v0.4.2-dev.7`
+ - `nip07_event_signer` - `v1.0.5-dev.6`
+ - `sembast_cache_manager` - `v1.0.6-dev.7`
+
+---
+
+#### `ndk` - `v0.6.1-dev.6`
+
+ - **FEAT**: add tests.
+ - **FEAT**: deprecation message for filters.
+
+#### `ndk_objectbox` - `v0.2.7-dev.6`
+
+ - **FIX**: clean imports.
+
+
+## 2026-01-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.5`](#ndk---v061-dev5)
+ - [`ndk_amber` - `v0.3.3-dev.6`](#ndk_amber---v033-dev6)
+ - [`ndk_isar` - `v0.2.3-dev.6`](#ndk_isar---v023-dev6)
+ - [`ndk_objectbox` - `v0.2.7-dev.5`](#ndk_objectbox---v027-dev5)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.6`](#ndk_rust_verifier---v042-dev6)
+ - [`nip07_event_signer` - `v1.0.5-dev.5`](#nip07_event_signer---v105-dev5)
+ - [`sembast_cache_manager` - `v1.0.6-dev.6`](#sembast_cache_manager---v106-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.5-dev.5`
+ - `sembast_cache_manager` - `v1.0.6-dev.6`
+
+---
+
+#### `ndk` - `v0.6.1-dev.5`
+
+ - **FIX**: bip340 event verifier.
+ - **FEAT**: add test.
+
+#### `ndk_amber` - `v0.3.3-dev.6`
+
+ - **FIX**: clean imports.
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_isar` - `v0.2.3-dev.6`
+
+ - **FIX**: clean imports.
+ - **FEAT**: log color, params.
+
+#### `ndk_objectbox` - `v0.2.7-dev.5`
+
+ - **FIX**: clean imports.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.6`
+
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+
+
+## 2025-12-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.4`](#ndk---v061-dev4)
+ - [`ndk_amber` - `v0.3.3-dev.5`](#ndk_amber---v033-dev5)
+ - [`ndk_isar` - `v0.2.3-dev.5`](#ndk_isar---v023-dev5)
+ - [`ndk_objectbox` - `v0.2.7-dev.4`](#ndk_objectbox---v027-dev4)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.5`](#ndk_rust_verifier---v042-dev5)
+ - [`nip07_event_signer` - `v1.0.5-dev.4`](#nip07_event_signer---v105-dev4)
+ - [`sembast_cache_manager` - `v1.0.6-dev.5`](#sembast_cache_manager---v106-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.5-dev.4`
+ - `sembast_cache_manager` - `v1.0.6-dev.5`
+
+---
+
+#### `ndk` - `v0.6.1-dev.4`
+
+ - **FIX**: clean imports.
+ - **FIX**: improve relay reconnection.
+
+#### `ndk_amber` - `v0.3.3-dev.5`
+
+ - **FIX**: clean imports.
+
+#### `ndk_isar` - `v0.2.3-dev.5`
+
+ - **FIX**: clean imports.
+
+#### `ndk_objectbox` - `v0.2.7-dev.4`
+
+ - **FIX**: clean imports.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.5`
+
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+
+
+## 2025-12-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.3`](#ndk---v061-dev3)
+ - [`ndk_amber` - `v0.3.3-dev.4`](#ndk_amber---v033-dev4)
+ - [`ndk_isar` - `v0.2.3-dev.4`](#ndk_isar---v023-dev4)
+ - [`ndk_objectbox` - `v0.2.7-dev.3`](#ndk_objectbox---v027-dev3)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.4`](#ndk_rust_verifier---v042-dev4)
+ - [`nip07_event_signer` - `v1.0.5-dev.3`](#nip07_event_signer---v105-dev3)
+ - [`sembast_cache_manager` - `v1.0.6-dev.4`](#sembast_cache_manager---v106-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.7-dev.3`
+ - `ndk_rust_verifier` - `v0.4.2-dev.4`
+ - `nip07_event_signer` - `v1.0.5-dev.3`
+ - `sembast_cache_manager` - `v1.0.6-dev.4`
+
+---
+
+#### `ndk` - `v0.6.1-dev.3`
+
+ - **FIX**: close relay.
+
+#### `ndk_amber` - `v0.3.3-dev.4`
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_isar` - `v0.2.3-dev.4`
+
+ - **FEAT**: log color, params.
+
+
+## 2025-12-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_amber` - `v0.3.3-dev.3`](#ndk_amber---v033-dev3)
+ - [`ndk_isar` - `v0.2.3-dev.3`](#ndk_isar---v023-dev3)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.3`](#ndk_rust_verifier---v042-dev3)
+ - [`sembast_cache_manager` - `v1.0.6-dev.3`](#sembast_cache_manager---v106-dev3)
+
+---
+
+#### `ndk_amber` - `v0.3.3-dev.3`
+
+ - **FIX**: missing convert  dependency.
+ - **FIX**: remove hex package depandance.
+
+#### `ndk_isar` - `v0.2.3-dev.3`
+
+ - **FEAT**: log color, params.
+
+#### `ndk_rust_verifier` - `v0.4.2-dev.3`
+
+ - **FIX**: remove hex package depandance.
+
+#### `sembast_cache_manager` - `v1.0.6-dev.3`
+
+ - **FEAT**: wildcard tag search.
+
+
+## 2025-12-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.6.1-dev.2`](#ndk---v061-dev2)
+ - [`ndk_amber` - `v0.3.3-dev.2`](#ndk_amber---v033-dev2)
+ - [`ndk_isar` - `v0.2.3-dev.2`](#ndk_isar---v023-dev2)
+ - [`ndk_objectbox` - `v0.2.7-dev.2`](#ndk_objectbox---v027-dev2)
+ - [`ndk_rust_verifier` - `v0.4.2-dev.2`](#ndk_rust_verifier---v042-dev2)
+ - [`nip07_event_signer` - `v1.0.5-dev.2`](#nip07_event_signer---v105-dev2)
+ - [`sembast_cache_manager` - `v1.0.6-dev.2`](#sembast_cache_manager---v106-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.3.3-dev.2`
+ - `ndk_isar` - `v0.2.3-dev.2`
+ - `ndk_objectbox` - `v0.2.7-dev.2`
+ - `ndk_rust_verifier` - `v0.4.2-dev.2`
+ - `nip07_event_signer` - `v1.0.5-dev.2`
+ - `sembast_cache_manager` - `v1.0.6-dev.2`
+
+---
+
+#### `ndk` - `v0.6.1-dev.2`
+
+ - **FIX**: Handle null error value in NWC response deserialization.
+ - **FIX**: forcing a pre-release.
+ - **FIX**: move test to an apropriate area.
+ - **FIX**: clean relay url function + add tests.
+ - **FEAT**: add test.
+
+
 ## 2025-11-30
 
 ### Changes

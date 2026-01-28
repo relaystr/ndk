@@ -8,6 +8,7 @@ import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
+import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
@@ -17,6 +18,7 @@ import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/verify_nip_05.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
+import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
@@ -137,6 +139,8 @@ class Ndk {
   /// for faster reconnects
   Connectivy get connectivity => _initialization.connectivity;
 
+  ProofOfWork get proofOfWork => _initialization.proofOfWork;
+
   /// Nostr Wallet connect
   @experimental // needs more docs & tests
   Nwc get nwc => _initialization.nwc;
@@ -156,6 +160,11 @@ class Ndk {
   /// Wallet combining all wallet accounts \
   @experimental
   Wallets get wallets => _initialization.wallets;
+
+  /// Fetched ranges tracking
+  /// Track which time ranges have been fetched from which relays for each filter
+  @experimental
+  FetchedRanges get fetchedRanges => _initialization.fetchedRanges;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {

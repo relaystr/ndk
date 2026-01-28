@@ -212,7 +212,7 @@
     },
     {
       "id": "4:3637320921488077827",
-      "lastPropertyId": "4:1024563472021235903",
+      "lastPropertyId": "5:3179649802820230952",
       "name": "DbTag",
       "properties": [
         {
@@ -235,6 +235,11 @@
           "id": "4:1024563472021235903",
           "name": "marker",
           "type": 9
+        },
+        {
+          "id": "5:3179649802820230952",
+          "name": "elements",
+          "type": 30
         }
       ],
       "relations": []
@@ -319,6 +324,12 @@
       "properties": [
         {
           "id": "1:7970259218906410302",
+      "id": "7:4509209106406578683",
+      "lastPropertyId": "8:5182878265676463435",
+      "name": "DbRelaySet",
+      "properties": [
+        {
+          "id": "1:3992132548215188818",
           "name": "dbId",
           "type": 6,
           "flags": 1
@@ -357,6 +368,41 @@
           "id": "8:7773840598494674606",
           "name": "fetchedAt",
           "type": 6
+          "id": "2:8697843502175770683",
+          "name": "id",
+          "indexId": "1:3132180412806400476",
+          "type": 9,
+          "flags": 2080
+        },
+        {
+          "id": "3:847921017835631159",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "4:139189138337679953",
+          "name": "pubKey",
+          "type": 9
+        },
+        {
+          "id": "5:6817323610958374225",
+          "name": "relayMinCountPerPubkey",
+          "type": 6
+        },
+        {
+          "id": "6:1830474112617634546",
+          "name": "direction",
+          "type": 9
+        },
+        {
+          "id": "7:1825872609928641993",
+          "name": "relaysMapJson",
+          "type": 9
+        },
+        {
+          "id": "8:5182878265676463435",
+          "name": "fallbackToBootstrapRelays",
+          "type": 1
         }
       ],
       "relations": []
@@ -368,6 +414,12 @@
       "properties": [
         {
           "id": "1:4429724214335608001",
+      "id": "8:2356961977798202534",
+      "lastPropertyId": "5:849430668794703479",
+      "name": "DbFilterFetchedRangeRecord",
+      "properties": [
+        {
+          "id": "1:3939782810311199282",
           "name": "dbId",
           "type": 6,
           "flags": 1
@@ -600,6 +652,27 @@
         {
           "id": "4:7325103958591855882",
           "name": "counter",
+          "id": "2:3545576993042908087",
+          "name": "filterHash",
+          "indexId": "2:758461294333956924",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:1898730736240140766",
+          "name": "relayUrl",
+          "indexId": "3:735436971837042211",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "4:6718626507552401445",
+          "name": "rangeStart",
+          "type": 6
+        },
+        {
+          "id": "5:849430668794703479",
+          "name": "rangeEnd",
           "type": 6
         }
       ],
@@ -608,6 +681,8 @@
   ],
   "lastEntityId": "12:8398773073536877334",
   "lastIndexId": "2:6502113043226887563",
+  "lastEntityId": "8:2356961977798202534",
+  "lastIndexId": "3:735436971837042211",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

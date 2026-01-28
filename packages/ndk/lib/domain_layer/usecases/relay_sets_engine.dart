@@ -154,6 +154,16 @@ class RelaySetsEngine implements NetworkEngine {
       }
     }
     _globalState.inFlightRequests[state.id] = state;
+
+    // Late auth for subscriptions with authenticateAs
+    if (state.request.authenticateAs != null &&
+        state.request.authenticateAs!.isNotEmpty) {
+      for (final relayUrl in state.requests.keys) {
+        _relayManager.authenticateIfNeeded(
+            relayUrl, state.request.authenticateAs!);
+      }
+    }
+
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       doRelayRequest(state.id, entry.value);
     }
@@ -186,6 +196,15 @@ class RelaySetsEngine implements NetworkEngine {
       state.addRequest(url, filters);
     }
     _globalState.inFlightRequests[state.id] = state;
+
+    // Late auth for subscriptions with authenticateAs
+    if (state.request.authenticateAs != null &&
+        state.request.authenticateAs!.isNotEmpty) {
+      for (final relayUrl in state.requests.keys) {
+        _relayManager.authenticateIfNeeded(
+            relayUrl, state.request.authenticateAs!);
+      }
+    }
 
     for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
       doRelayRequest(state.id, entry.value).then((sent) {
@@ -241,17 +260,21 @@ class RelaySetsEngine implements NetworkEngine {
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
+      final Nip01Event workingEvent;
+
+      if (signer != null) {
+        workingEvent = await signer.sign(nostrEvent);
+      } else {
+        workingEvent = nostrEvent;
+      }
+
       // =====================================================================================
       // specific relays
       // =====================================================================================
-      if (signer != null) {
-        await signer.sign(nostrEvent);
-      }
-
       if (specificRelays != null) {
         for (final relayUrl in specificRelays) {
           // broadcast async
-          doRelayBroadcast(relayUrl, nostrEvent);
+          doRelayBroadcast(relayUrl, workingEvent);
         }
         return;
       }
@@ -260,7 +283,7 @@ class RelaySetsEngine implements NetworkEngine {
       // =====================================================================================
       // TODO should not only depend on cached, but go fetch it if not present in cache
       final nip65List = (await UserRelayLists.getUserRelayListCacheLatest(
-        pubkeys: [nostrEvent.pubKey],
+        pubkeys: [workingEvent.pubKey],
         cacheManager: _cacheManager,
       ));
       var writeRelaysUrls = _relayManager.globalState.relays.keys;
@@ -295,7 +318,7 @@ class RelaySetsEngine implements NetworkEngine {
         }
 
         _relayManager.registerRelayBroadcast(
-          eventToPublish: nostrEvent,
+          eventToPublish: workingEvent,
           relayUrl: relayUrl,
         );
 
@@ -303,16 +326,16 @@ class RelaySetsEngine implements NetworkEngine {
             relay,
             ClientMsg(
               ClientMsgType.kEvent,
-              event: nostrEvent,
+              event: workingEvent,
             ));
       }
 
       // =====================================================================================
       // other inbox
       // =====================================================================================
-      if (nostrEvent.pTags.isNotEmpty) {
+      if (workingEvent.pTags.isNotEmpty) {
         final nip65Data = await UserRelayLists.getUserRelayListCacheLatest(
-          pubkeys: nostrEvent.pTags,
+          pubkeys: workingEvent.pTags,
           cacheManager: _cacheManager,
         );
 
@@ -353,7 +376,7 @@ class RelaySetsEngine implements NetworkEngine {
           }
 
           _relayManager.registerRelayBroadcast(
-            eventToPublish: nostrEvent,
+            eventToPublish: workingEvent,
             relayUrl: relayUrl,
           );
 
@@ -361,7 +384,7 @@ class RelaySetsEngine implements NetworkEngine {
               relay,
               ClientMsg(
                 ClientMsgType.kEvent,
-                event: nostrEvent,
+                event: workingEvent,
               ));
         }
       }
