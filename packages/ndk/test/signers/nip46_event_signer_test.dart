@@ -46,6 +46,7 @@ void main() {
 
     tearDown(() async {
       signer.dispose();
+      await ndk.destroy();
       await mockRelay.stopServer();
     });
 
