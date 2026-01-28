@@ -60,7 +60,7 @@ void main() {
       when(mockNip05.pubKey).thenReturn('testPubKey');
 
       await cacheManager.saveNip05(mockNip05);
-      final result = await cacheManager.loadNip05('testPubKey');
+      final result = await cacheManager.loadNip05(pubKey: 'testPubKey');
 
       expect(result, equals(mockNip05));
     });
@@ -71,7 +71,7 @@ void main() {
 
       await cacheManager.saveNip05(mockNip05);
       await cacheManager.removeNip05('testPubKey');
-      final result = await cacheManager.loadNip05('testPubKey');
+      final result = await cacheManager.loadNip05(pubKey: 'testPubKey');
 
       expect(result, isNull);
     });
@@ -85,8 +85,8 @@ void main() {
       await cacheManager.saveNip05s([mockNip051, mockNip052]);
       await cacheManager.removeAllNip05s();
 
-      expect(await cacheManager.loadNip05('testPubKey1'), isNull);
-      expect(await cacheManager.loadNip05('testPubKey2'), isNull);
+      expect(await cacheManager.loadNip05(pubKey: 'testPubKey1'), isNull);
+      expect(await cacheManager.loadNip05(pubKey: 'testPubKey2'), isNull);
     });
   });
 
