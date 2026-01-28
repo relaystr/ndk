@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ndk/ndk.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
@@ -16,6 +19,19 @@ class BlossomMediaPage extends StatefulWidget {
 }
 
 class _BlossomMediaPageState extends State<BlossomMediaPage> {
+  // Upload state
+  bool _isUploading = false;
+  double _uploadProgress = 0.0;
+  String _uploadError = '';
+  String? _uploadedSha256;
+  String? _uploadedUrl;
+
+  // Download state
+  bool _isDownloading = false;
+  String _downloadError = '';
+  String? _downloadedFilePath;
+
+  // Image/Video demo state
   BlobResponse? _blobResponse;
   late final Player _player;
   late final VideoController _videoController;
@@ -105,17 +121,130 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
     }
   }
 
+  Future<void> _pickAndUploadFile() async {
+    // Pick a file
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result == null) {
+      return;
+    }
+
+    // On web, path is null but bytes are available
+    final file = result.files.single;
+    if (!kIsWeb && file.path == null) {
+      return;
+    }
+
+    final filePath = file.path ?? file.name;
+
+    setState(() {
+      _isUploading = true;
+      _uploadProgress = 0.0;
+      _uploadError = '';
+      _uploadedSha256 = null;
+      _uploadedUrl = null;
+    });
+
+    try {
+      // Use the uploadFromFile method with stream
+      final stream = widget.ndk.files.uploadFromFile(
+        filePath: filePath,
+        serverUrls: ["https://nostr.download", "https://cdn.hzrd149.com"],
+        strategy: UploadStrategy.mirrorAfterSuccess,
+        serverMediaOptimisation: false,
+      );
+
+      await for (final progress in stream) {
+        setState(() {
+          _uploadProgress = progress.progress;
+        });
+
+        // Check if upload is complete
+        if (progress.isComplete) {
+          final successfulUploads = progress.completedUploads
+              .where((r) => r.success && r.descriptor != null)
+              .toList();
+
+          if (successfulUploads.isNotEmpty) {
+            final descriptor = successfulUploads.first.descriptor!;
+            setState(() {
+              _uploadedSha256 = descriptor.sha256;
+              _uploadedUrl = descriptor.url;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _uploadError = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
+    }
+  }
+
+  Future<void> _downloadFile() async {
+    if (_uploadedUrl == null && _uploadedSha256 == null) {
+      setState(() {
+        _downloadError = 'No file uploaded yet to download';
+      });
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _downloadError = '';
+      _downloadedFilePath = null;
+    });
+
+    try {
+      String outputPath;
+
+      if (kIsWeb) {
+        // On web, use the filename as path (triggers browser download)
+        outputPath = 'downloaded_${_uploadedSha256 ?? 'file'}';
+      } else {
+        // On native platforms, get the documents directory
+        final directory = await getApplicationDocumentsDirectory();
+        outputPath =
+            '${directory.path}/downloaded_${_uploadedSha256 ?? 'file'}';
+      }
+
+      // Use the downloadToFile method
+      await widget.ndk.files.downloadToFile(
+        url: _uploadedUrl!,
+        outputPath: outputPath,
+        useAuth: false,
+        serverUrls: ["https://nostr.download", "https://cdn.hzrd149.com"],
+      );
+
+      setState(() {
+        _downloadedFilePath = kIsWeb ? 'Downloaded to browser' : outputPath;
+      });
+    } catch (e) {
+      setState(() {
+        _downloadError = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isDownloading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Blossom Media Page'),
+        title: Text('Blossom Media & File Operations'),
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Image Section
               Card(
@@ -123,7 +252,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      Text('Image',
+                      Text('Image Demo (getBlob)',
                           style: Theme.of(context).textTheme.titleLarge),
                       SizedBox(height: 16),
                       if (_isLoadingImage)
@@ -179,7 +308,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      Text('Video',
+                      Text('Video Demo (checkBlob)',
                           style: Theme.of(context).textTheme.titleLarge),
                       SizedBox(height: 16),
                       if (_isLoadingVideo)
@@ -248,6 +377,148 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 20),
+
+              // Upload Section
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Upload File from Disk',
+                          style: Theme.of(context).textTheme.titleLarge),
+                      SizedBox(height: 16),
+                      Text(
+                        'Demonstrates uploadFromFile() method with streaming progress',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      SizedBox(height: 16),
+                      if (_isUploading) ...[
+                        LinearProgressIndicator(value: _uploadProgress),
+                        SizedBox(height: 8),
+                        Text(
+                            'Uploading: ${(_uploadProgress * 100).toStringAsFixed(1)}%'),
+                      ] else if (_uploadError.isNotEmpty)
+                        Text('Error: $_uploadError',
+                            style: TextStyle(color: Colors.red))
+                      else if (_uploadedSha256 != null) ...[
+                        Text('✓ Upload successful!',
+                            style: TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold)),
+                        SizedBox(height: 8),
+                        Text('SHA256: $_uploadedSha256',
+                            style: TextStyle(
+                                fontSize: 12, fontFamily: 'monospace')),
+                        SizedBox(height: 4),
+                        Text('URL: $_uploadedUrl',
+                            style: TextStyle(fontSize: 12),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
+                      ] else
+                        Text('No file uploaded yet'),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _isUploading ? null : _pickAndUploadFile,
+                            icon: Icon(Icons.upload_file),
+                            label: Text('Pick & Upload File'),
+                          ),
+                          if (_uploadedSha256 != null)
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _uploadedSha256 = null;
+                                  _uploadedUrl = null;
+                                  _uploadError = '';
+                                });
+                              },
+                              child: Text('Clear'),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 20),
+
+              // Download Section
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Download File to Disk',
+                          style: Theme.of(context).textTheme.titleLarge),
+                      SizedBox(height: 16),
+                      Text(
+                        'Demonstrates downloadToFile() method (saves directly to disk)',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      SizedBox(height: 16),
+                      if (_isDownloading)
+                        Center(child: CircularProgressIndicator())
+                      else if (_downloadError.isNotEmpty)
+                        Text('Error: $_downloadError',
+                            style: TextStyle(color: Colors.red))
+                      else if (_downloadedFilePath != null) ...[
+                        Text('✓ Download successful!',
+                            style: TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold)),
+                        SizedBox(height: 8),
+                        Text('Saved to: $_downloadedFilePath',
+                            style: TextStyle(fontSize: 12),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis),
+                      ] else
+                        Text('No file downloaded yet'),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: (_isDownloading || _uploadedUrl == null)
+                                ? null
+                                : _downloadFile,
+                            icon: Icon(Icons.download),
+                            label: Text('Download Uploaded File'),
+                          ),
+                          if (_downloadedFilePath != null)
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _downloadedFilePath = null;
+                                  _downloadError = '';
+                                });
+                              },
+                              child: Text('Clear'),
+                            ),
+                        ],
+                      ),
+                      if (_uploadedUrl == null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Upload a file first to enable download',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
