@@ -121,8 +121,14 @@ class SembastCacheManager extends CacheManager {
     if (tags != null && tags.isNotEmpty) {
       return events.where((event) {
         return tags.entries.every((tagEntry) {
-          final tagName = tagEntry.key;
+          var tagName = tagEntry.key;
           final tagValues = tagEntry.value;
+
+          // Handle the special case where tag key starts with '#'
+          if (tagName.startsWith('#') && tagName.length > 1) {
+            tagName = tagName.substring(1);
+          }
+
           final eventTags = event.getTags(tagName);
 
           if (tagValues.isEmpty &&
