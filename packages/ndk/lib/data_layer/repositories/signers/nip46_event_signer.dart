@@ -48,13 +48,11 @@ class Nip46EventSigner implements EventSigner {
   Future<void> listenRelays() async {
     subscription = requests.subscription(
       explicitRelays: connection.relays,
-      filters: [
-        Filter(
-          authors: [connection.remotePubkey],
-          kinds: [BunkerRequest.kKind],
-          pTags: [localEventSigner.publicKey],
-        ),
-      ],
+      filter: Filter(
+        authors: [connection.remotePubkey],
+        kinds: [BunkerRequest.kKind],
+        pTags: [localEventSigner.publicKey],
+      ),
     );
 
     subscription!.stream.listen(onEvent);
