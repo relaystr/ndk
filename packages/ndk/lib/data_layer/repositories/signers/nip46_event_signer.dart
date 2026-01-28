@@ -18,8 +18,6 @@ class Nip46EventSigner implements EventSigner {
 
   final _pendingRequests = <String, Completer<dynamic>>{};
 
-  late Future<void> _listenFuture;
-
   String? cachedPublicKey;
 
   late Bip340EventSigner localEventSigner;
@@ -44,7 +42,7 @@ class Nip46EventSigner implements EventSigner {
       publicKey: keyPair.publicKey,
     );
 
-    _listenFuture = listenRelays();
+    listenRelays();
   }
 
   Future<void> listenRelays() async {
@@ -87,8 +85,6 @@ class Nip46EventSigner implements EventSigner {
   }
 
   Future<String> remoteRequest({required BunkerRequest request}) async {
-    await _listenFuture;
-
     final completer = Completer<String>();
     _pendingRequests[request.id] = completer;
 
