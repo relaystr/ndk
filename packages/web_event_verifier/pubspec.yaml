@@ -1,0 +1,27 @@
+name: web_event_verifier
+description: "Fast web-based Nostr event verifier using native Web Crypto APIs via nostr-tools"
+version: 0.0.1
+repository: https://github.com/relaystr/ndk
+
+topics:
+  - nostr
+  - ndk
+
+environment:
+  sdk: ^3.10.7
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ndk: ^0.7.1-dev.2
+  web: ^1.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  assets:
+    - lib/assets/
