@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_rust_verifier/data_layer/repositories/verifiers/rust_event_verifier.dart';
+import 'package:web_event_verifier/web_event_verifier.dart';
 
 class MyVerifiers {
   static final bip340Verifier = Bip340EventVerifier();
   static final rustVerifier = RustEventVerifier();
+  static final webVerifier = kIsWeb ? WebEventVerifier() : null;
 }
 
 class VerifiersPerformancePage extends StatefulWidget {
@@ -23,9 +25,11 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
   double _eventCount = 100;
   String _bip340Time = '';
   String _rustTime = '';
+  String _webTime = '';
   bool _isGenerating = false;
   bool _isVerifyingBip340 = false;
   bool _isVerifyingRust = false;
+  bool _isVerifyingWeb = false;
 
   Future<List<Nip01Event>> _generateEvents(int count) async {
     final String? pubkey = widget.ndk.accounts.getPublicKey();
@@ -50,12 +54,6 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
     return signedList;
   }
 
-  _verifyEventsWaiting({required EventVerifier verifier}) async {
-    for (final event in _events) {
-      await verifier.verify(event);
-    }
-  }
-
   _verifyEventsParallel({required EventVerifier verifier}) async {
     final futures = <Future>[];
     for (final event in _events) {
@@ -69,6 +67,7 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
       _isGenerating = true;
       _bip340Time = '';
       _rustTime = '';
+      _webTime = '';
     });
     try {
       final events = await _generateEvents(_eventCount.toInt());
@@ -117,6 +116,25 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
     } finally {
       setState(() {
         _isVerifyingRust = false;
+      });
+    }
+  }
+
+  Future<void> _handleWebVerify() async {
+    if (_events.isEmpty || !kIsWeb || MyVerifiers.webVerifier == null) return;
+    setState(() {
+      _isVerifyingWeb = true;
+    });
+    try {
+      final stopwatch = Stopwatch()..start();
+      await _verifyEventsParallel(verifier: MyVerifiers.webVerifier!);
+      stopwatch.stop();
+      setState(() {
+        _webTime = '${stopwatch.elapsedMilliseconds}ms';
+      });
+    } finally {
+      setState(() {
+        _isVerifyingWeb = false;
       });
     }
   }
@@ -223,6 +241,27 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
+            if (kIsWeb) ...[
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _events.isNotEmpty && !_isVerifyingWeb
+                    ? _handleWebVerify
+                    : null,
+                child: _isVerifyingWeb
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Verify with Web (nostr-tools)'),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _webTime.isEmpty ? 'Not tested yet' : 'Time: $_webTime',
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ),
       ),

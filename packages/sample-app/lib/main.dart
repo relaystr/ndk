@@ -8,10 +8,10 @@ import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/query_performance.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_demo/verifiers_performance.dart';
-import 'package:ndk_demo/zaps_page.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
-import 'amber_page.dart';
+/// Set to true to enable the Query Performance tab
+const bool enableQueryPerformancePage = false;
 
 bool amberAvailable = false;
 
@@ -136,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
-      //const Tab(text: 'Query Performance'),
+      if (enableQueryPerformancePage) const Tab(text: 'Query Performance'),
       // Conditionally add Amber tab if it's part of the design
       // For a fixed length of 6, ensure this list matches.
       // Example: if Amber is the 6th tab:
@@ -160,9 +160,8 @@ class _MyHomePageState extends State<MyHomePage>
     // The main change is how _tabPages is constructed in build() to pass the callback.
 
     _tabController = TabController(
-        length: 7,
-        vsync:
-            this); // Fixed length to 5 (Accounts, Metadata, Relays, NWC, Blossom)
+        length: _tabs.length,
+        vsync: this); // Fixed length to 5 (Accounts, Metadata, Relays, NWC, Blossom)
     _tabController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -248,8 +247,7 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
-      //const Tab(text: 'Query Performance'),
-      // Amber tab removed
+      if (enableQueryPerformancePage) const Tab(text: 'Query Performance'),
     ];
 
     _tabPages = <Widget>[
@@ -259,8 +257,7 @@ class _MyHomePageState extends State<MyHomePage>
       const NwcPage(),
       BlossomMediaPage(ndk: ndk),
       VerifiersPerformancePage(ndk: ndk),
-      //QueryPerformancePage(ndk: ndk),
-      // AmberPage removed
+      if (enableQueryPerformancePage) QueryPerformancePage(ndk: ndk),
     ];
 
     // Ensure TabController length matches dynamic _tabs list if it changed since initState
@@ -369,9 +366,11 @@ Widget metadata(Ndk ndk, BuildContext context) {
         );
       } else {
         // No data, but not an error and not waiting -> metadata not found for pubkey
-        return Center(
-            child: Text(
-                'Metadata not found for this account. You might need to set it in a Nostr client.'));
+        return const Center(
+          child: Text(
+            'Metadata not found for this account. You might need to set it in a Nostr client.',
+          ),
+        );
       }
     },
   );

@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_rust_verifier/data_layer/repositories/verifiers/rust_event_verifier.dart';
+import 'package:web_event_verifier/web_event_verifier.dart';
 
 class MyVerifiers {
   static final bip340Verifier = Bip340EventVerifier();
   static final rustVerifier = RustEventVerifier();
+  static final webVerifier = kIsWeb ? WebEventVerifier() : null;
 }
 
 class QueryPerformancePage extends StatefulWidget {
@@ -20,22 +22,22 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
   int _eventCount = 100;
   String _bip340Time = '';
   String _rustTime = '';
+  String _webTime = '';
   bool _isVerifyingBip340 = false;
   bool _isVerifyingRust = false;
+  bool _isVerifyingWeb = false;
 
-  static const relays = ["ws://localhost:10547"];
+  final _relayController = TextEditingController(text: 'ws://localhost:10547');
 
-  final ndkBip340 = Ndk(NdkConfig(
-    eventVerifier: MyVerifiers.bip340Verifier,
-    cache: MemCacheManager(),
-    bootstrapRelays: relays,
-  ));
+  List<String> get _relays => [_relayController.text];
 
-  final ndkRust = Ndk(NdkConfig(
-    eventVerifier: MyVerifiers.rustVerifier,
-    cache: MemCacheManager(),
-    bootstrapRelays: relays,
-  ));
+  Ndk _createNdk(EventVerifier verifier) {
+    return Ndk(NdkConfig(
+      eventVerifier: verifier,
+      cache: MemCacheManager(),
+      bootstrapRelays: _relays,
+    ));
+  }
 
   Future<void> _runBip340Query() async {
     setState(() {
@@ -43,8 +45,9 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
       _bip340Time = '';
     });
 
+    final ndk = _createNdk(MyVerifiers.bip340Verifier);
     final stopwatch = Stopwatch()..start();
-    await _runQuery(ndkBip340);
+    await _runQuery(ndk);
     stopwatch.stop();
 
     setState(() {
@@ -59,8 +62,9 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
       _rustTime = '';
     });
 
+    final ndk = _createNdk(MyVerifiers.rustVerifier);
     final stopwatch = Stopwatch()..start();
-    await _runQuery(ndkRust);
+    await _runQuery(ndk);
     stopwatch.stop();
 
     setState(() {
@@ -69,14 +73,30 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
     });
   }
 
+  Future<void> _runWebQuery() async {
+    if (!kIsWeb || MyVerifiers.webVerifier == null) return;
+    setState(() {
+      _isVerifyingWeb = true;
+      _webTime = '';
+    });
+
+    final ndk = _createNdk(MyVerifiers.webVerifier!);
+    final stopwatch = Stopwatch()..start();
+    await _runQuery(ndk);
+    stopwatch.stop();
+
+    setState(() {
+      _isVerifyingWeb = false;
+      _webTime = '${stopwatch.elapsedMilliseconds}ms';
+    });
+  }
+
   _runQuery(Ndk ndk) async {
     final query = ndk.requests.query(
-      filters: [
-        Filter(
-          kinds: [1],
-          limit: _eventCount,
-        )
-      ],
+      filter: Filter(
+        kinds: [1],
+        limit: _eventCount,
+      ),
       cacheRead: false,
       cacheWrite: false,
     );
@@ -90,6 +110,7 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
 
   @override
   void dispose() {
+    _relayController.dispose();
     super.dispose();
   }
 
@@ -104,6 +125,14 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Relay URL',
+                border: OutlineInputBorder(),
+              ),
+              controller: _relayController,
+            ),
+            const SizedBox(height: 16),
             TextField(
               decoration: const InputDecoration(
                 labelText: 'Event Count',
@@ -122,10 +151,10 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
               onPressed: _isVerifyingBip340 ? null : _runBip340Query,
               child: _isVerifyingBip340
                   ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Text('Run with BIP340'),
             ),
             const SizedBox(height: 8),
@@ -139,10 +168,10 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
               onPressed: _isVerifyingRust ? null : _runRustQuery,
               child: _isVerifyingRust
                   ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Text('Run with Rust'),
             ),
             const SizedBox(height: 8),
@@ -151,6 +180,25 @@ class _QueryPerformancePageState extends State<QueryPerformancePage> {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
+            if (kIsWeb) ...[
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isVerifyingWeb ? null : _runWebQuery,
+                child: _isVerifyingWeb
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Run with Web (nostr-tools)'),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _webTime.isEmpty ? 'Not run yet' : 'Time: $_webTime',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ],
           ],
         ),
       ),
