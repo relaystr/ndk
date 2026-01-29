@@ -22,11 +22,11 @@ dependencies:
   rust_lib_ndk: ^0.1.7+1
   ndk: ^0.7.1-dev.2
 
-#dependency_overrides:
+dependency_overrides:
 #  rust_lib_ndk:
 #    path: rust_builder
-#  ndk:
-#    path: ../ndk
+  ndk:
+    path: ../ndk
 
 dev_dependencies:
   flutter_test:

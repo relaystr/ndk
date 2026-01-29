@@ -48,6 +48,11 @@ class CashuSeed {
     );
   }
 
+  Mnemonic getSeedPhrase() {
+    _seedCheck();
+    return _userSeedPhrase!;
+  }
+
   /// generate a new seed phrase
   /// optionally specify the language, passphrase and length
   /// returns the generated seed phrase

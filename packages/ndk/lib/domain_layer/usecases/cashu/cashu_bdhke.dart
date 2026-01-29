@@ -7,6 +7,7 @@ import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_proof.dart';
+import '../../repositories/cashu_seed_secret.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';
 import 'cashu_tools.dart';
@@ -20,6 +21,7 @@ class CashuBdhke {
     required CashuCacheDecorator cacheManager,
     required CashuSeed cashuSeed,
     required String mintUrl,
+    required CashuSeedSecretGenerator cashuSeedSecretGenerator,
   }) async {
     List<CashuBlindedMessageItem> items = [];
 
@@ -30,8 +32,17 @@ class CashuBdhke {
           mintUrl: mintUrl,
         );
 
-        final mySecret =
-            await cashuSeed.deriveSecret(counter: myCount, keysetId: keysetId);
+        // final mySecret =
+        //     await cashuSeed.deriveSecret(counter: myCount, keysetId: keysetId);
+
+        final userMnemonic = cashuSeed.getSeedPhrase();
+        final mySecret = await cashuSeedSecretGenerator.deriveSecret(
+          seedPhrase: userMnemonic.sentence,
+          passphrase: userMnemonic.passphrase,
+          counter: myCount,
+          keysetId: keysetId,
+        );
+
         final secret = mySecret.secretHex;
 
         final myR = BigInt.parse(mySecret.blindingHex, radix: 16);

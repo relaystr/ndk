@@ -2,6 +2,7 @@ import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../repositories/cashu_repo.dart';
+import '../../repositories/cashu_seed_secret.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';
@@ -42,9 +43,13 @@ class SplitResult {
 class CashuProofSelect {
   final CashuRepo _cashuRepo;
 
+  final CashuSeedSecretGenerator _cashuSeedSecretGenerator;
+
   CashuProofSelect({
     required CashuRepo cashuRepo,
-  }) : _cashuRepo = cashuRepo;
+    required CashuSeedSecretGenerator cashuSeedSecretGenerator,
+  })  : _cashuRepo = cashuRepo,
+        _cashuSeedSecretGenerator = cashuSeedSecretGenerator;
 
   /// Find keyset by ID from list
   static CahsuKeyset? _findKeysetById(
@@ -205,6 +210,7 @@ class CashuProofSelect {
       cacheManager: cacheManagerCashu,
       cashuSeed: cashuSeed,
       mintUrl: mint,
+      cashuSeedSecretGenerator: _cashuSeedSecretGenerator,
     );
 
     // sort to increase privacy

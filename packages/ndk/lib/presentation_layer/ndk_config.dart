@@ -5,6 +5,7 @@ import '../config/request_defaults.dart';
 import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
+import '../domain_layer/repositories/cashu_seed_secret.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../shared/logger/log_level.dart';
 
@@ -66,6 +67,8 @@ class NdkConfig {
   /// Disabled by default for performance.
   bool fetchedRangesEnabled;
 
+  CashuSeedSecretGenerator cashuSeedSecretGenerator;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -93,6 +96,7 @@ class NdkConfig {
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
     this.cashuUserSeedphrase,
     this.fetchedRangesEnabled = false,
+    required this.cashuSeedSecretGenerator,
   });
 }
 
