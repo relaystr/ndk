@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 
-import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
+import '../data_layer/repositories/cashu_seed_secret_generator/cashu_key_derivation_factory.dart';
 import '../shared/net/user_agent.dart';
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
@@ -278,7 +278,7 @@ class Initialization {
       cashuRepo: cashuRepo,
       cacheManager: _ndkConfig.cache,
       cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
-      cashuKeyDerivation: DartCashuKeyDerivation(),
+      cashuKeyDerivation: createCashuKeyDerivation(),
     );
 
     final WalletsRepo walletsRepo = WalletsRepoImpl(
