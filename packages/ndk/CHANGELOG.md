@@ -1,3 +1,7 @@
+## 0.7.1-dev.3
+
+ - **FIX**: rename stateChanges to authStateChanges.
+
 ## 0.7.1-dev.2
 
  - **FIX**: minIsolatePoolSize.
