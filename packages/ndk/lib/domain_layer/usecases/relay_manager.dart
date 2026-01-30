@@ -644,7 +644,7 @@ class RelayManager<T> {
           "⛁ received CLOSE from ${relayConnectivity.url} for REQ id $id, remaining requests from :${state.requests.keys} kind:${state.requests.values.first.filters.first.kinds}");
       RelayRequestState? request = state.requests[relayConnectivity.url];
       if (request != null) {
-        request.receivedEOSE = true;
+        request.receivedClosed = true;
       }
 
       _checkNetworkClose(state, relayConnectivity);
@@ -656,14 +656,14 @@ class RelayManager<T> {
   void _checkNetworkClose(
       RequestState state, RelayConnectivity relayConnectivity) {
     /// recived everything, close the network controller
-    if (state.didAllRequestsReceivedEOSE) {
+    if (state.didAllRequestsFinish) {
       state.networkController.close();
       updateRelayConnectivity();
       return;
     }
 
     /// check if relays for this request are still connected
-    /// if not ignore it and wait for the ones still alive to receive EOSE
+    /// if not ignore it and wait for the ones still alive to finish
     final listOfRelaysForThisRequest = state.requests.keys.toList();
     final myNotConnectedRelays = globalState.relays.keys
         .where((url) => listOfRelaysForThisRequest.contains(url))
@@ -672,7 +672,9 @@ class RelayManager<T> {
 
     final bool didAllRelaysFinish = state.requests.values.every(
       (element) =>
-          element.receivedEOSE || myNotConnectedRelays.contains(element.url),
+          element.receivedEOSE ||
+          element.receivedClosed ||
+          myNotConnectedRelays.contains(element.url),
     );
 
     if (didAllRelaysFinish) {
