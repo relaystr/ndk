@@ -75,4 +75,18 @@ cargo install flutter_rust_bridge_codegen && flutter_rust_bridge_codegen generat
 flutter_rust_bridge_codegen build-web
 ```
 
+if that fails, try
+
+```shell
+flutter_rust_bridge_codegen build-web -c rust_builder/rust/
+
+wasm-pack build --release --target no-modules --out-dir ../../web/pkg
+```
+
+https://github.com/fzyzcjy/flutter_rust_bridge/issues/2914#issuecomment-3478076794
+
+```shell
+flutter_rust_bridge_codegen build-web -c rust_builder/rust/ --wasm-pack-rustflags "-Ctarget-feature=+atomics -Clink-args=--shared-memory -Clink-args=--max-memory=1073741824 -Clink-args=--import-memory -Clink-args=--export=__wasm_init_tls -Clink-args=--export=__tls_size -Clink-args=--export=__tls_align -Clink-args=--export=__tls_base"
+```
+
 RUN: `flutter run --web-header=Cross-Origin-Opener-Policy=same-origin --web-header=Cross-Origin-Embedder-Policy=require-corp`

@@ -1,10 +1,12 @@
-import 'package:ndk/config/broadcast_defaults.dart';
-
 import '../config/bootstrap_relays.dart';
+import '../config/broadcast_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
+import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
+import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
+import '../domain_layer/repositories/cashu_seed_secret.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../shared/logger/log_level.dart';
 
@@ -47,6 +49,11 @@ class NdkConfig {
   /// value between 0.0 and 1.0
   double defaultBroadcastConsiderDonePercent;
 
+  /// cashu user seed phrase, required for using cashu features \
+  /// you can use CashuSeed.generateSeedPhrase() to generate a new seed phrase \
+  /// Store this securely! Seed phrase allow full access to cashu funds!
+  final CashuUserSeedphrase? cashuUserSeedphrase;
+
   /// whether to save broadcasted events to cache by default
   bool defaultBroadcastSaveToCache;
 
@@ -71,6 +78,7 @@ class NdkConfig {
   /// [eventOutFilters] A list of filters to apply to the output stream (defaults to an empty list). \
   /// [defaultQueryTimeout] The default timeout for queries (defaults to DEFAULT_QUERY_TIMEOUT). \
   /// [logLevel] The log level for the NDK (defaults to warning).
+  /// [cashuUserSeedphrase] The cashu user seed phrase, required for using cashu features
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
@@ -85,6 +93,7 @@ class NdkConfig {
     this.defaultBroadcastSaveToCache = BroadcastDefaults.SAVE_TO_CACHE,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
+    this.cashuUserSeedphrase,
     this.fetchedRangesEnabled = false,
   });
 }

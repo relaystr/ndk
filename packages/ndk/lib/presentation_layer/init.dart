@@ -1,16 +1,23 @@
 import 'package:http/http.dart' as http;
 
+import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import '../shared/net/user_agent.dart';
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
+import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
+import '../data_layer/repositories/wallets/wallets_operations_impl.dart';
+import '../data_layer/repositories/wallets/wallets_repo_impl.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/repositories/blossom.dart';
+import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
+import '../domain_layer/repositories/wallets_operations_repo.dart';
+import '../domain_layer/repositories/wallets_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
@@ -18,6 +25,7 @@ import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
 import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
+import '../domain_layer/usecases/cashu/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/files/blossom.dart';
@@ -37,6 +45,7 @@ import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+import '../domain_layer/usecases/wallets/wallets.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import '../shared/logger/logger.dart';
 import 'ndk_config.dart';
@@ -81,6 +90,8 @@ class Initialization {
   late Search search;
   late GiftWrap giftWrap;
   late Connectivy connectivity;
+  late Cashu cashu;
+  late Wallets wallets;
   late FetchedRanges fetchedRanges;
   late ProofOfWork proofOfWork;
 
@@ -142,6 +153,12 @@ class Initialization {
     final BlossomRepository blossomRepository = BlossomRepositoryImpl(
       client: _httpRequestDS,
     );
+
+    final CashuRepo cashuRepo = CashuRepoImpl(
+      client: _httpRequestDS,
+    );
+
+    final WalletsOperationsRepo walletsOperationsRepo = WalletsOperationsImpl();
 
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
@@ -257,6 +274,23 @@ class Initialization {
 
     connectivity = Connectivy(relayManager);
 
+    cashu = Cashu(
+      cashuRepo: cashuRepo,
+      cacheManager: _ndkConfig.cache,
+      cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
+      cashuKeyDerivation: DartCashuKeyDerivation(),
+    );
+
+    final WalletsRepo walletsRepo = WalletsRepoImpl(
+      cashuUseCase: cashu,
+      nwcUseCase: nwc,
+      cacheManager: _ndkConfig.cache,
+    );
+
+    wallets = Wallets(
+      walletsRepository: walletsRepo,
+      walletsOperationsRepository: walletsOperationsRepo,
+    );
     proofOfWork = ProofOfWork();
 
     /// set the user configured log level

@@ -3,6 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'api/cashu_seed.dart';
 import 'api/event_verifier.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -70,7 +71,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => 786322520;
+  int get rustContentHash => 788124168;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -81,6 +82,14 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Future<CashuSeedDeriveSecretResultRust> crateApiCashuSeedDeriveSecretRust(
+      {required String seedPhrase,
+      required String passphrase,
+      required int counter,
+      required String keysetId});
+
+  Future<String> crateApiCashuSeedGenerateSeedPhrase();
+
   Future<String> crateApiEventVerifierHashEventData(
       {required String pubkey,
       required BigInt createdAt,
@@ -89,6 +98,8 @@ abstract class RustLibApi extends BaseApi {
       required String content});
 
   Future<void> crateApiEventVerifierInitApp();
+
+  Future<int> crateApiCashuSeedKeysetIdToInt({required String keysetId});
 
   Future<bool> crateApiEventVerifierVerifyNostrEvent(
       {required String eventIdHex,
@@ -114,6 +125,62 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  Future<CashuSeedDeriveSecretResultRust> crateApiCashuSeedDeriveSecretRust(
+      {required String seedPhrase,
+      required String passphrase,
+      required int counter,
+      required String keysetId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(seedPhrase, serializer);
+        sse_encode_String(passphrase, serializer);
+        sse_encode_u_32(counter, serializer);
+        sse_encode_String(keysetId, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 1, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_cashu_seed_derive_secret_result_rust,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiCashuSeedDeriveSecretRustConstMeta,
+      argValues: [seedPhrase, passphrase, counter, keysetId],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiCashuSeedDeriveSecretRustConstMeta =>
+      const TaskConstMeta(
+        debugName: "derive_secret_rust",
+        argNames: ["seedPhrase", "passphrase", "counter", "keysetId"],
+      );
+
+  @override
+  Future<String> crateApiCashuSeedGenerateSeedPhrase() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 2, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiCashuSeedGenerateSeedPhraseConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiCashuSeedGenerateSeedPhraseConstMeta =>
+      const TaskConstMeta(
+        debugName: "generate_seed_phrase",
+        argNames: [],
+      );
+
+  @override
   Future<String> crateApiEventVerifierHashEventData(
       {required String pubkey,
       required BigInt createdAt,
@@ -129,7 +196,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_list_list_String(tags, serializer);
         sse_encode_String(content, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 1, port: port_);
+            funcId: 3, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -153,7 +220,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 2, port: port_);
+            funcId: 4, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -169,6 +236,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "init_app",
         argNames: [],
+      );
+
+  @override
+  Future<int> crateApiCashuSeedKeysetIdToInt({required String keysetId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(keysetId, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 5, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_u_32,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiCashuSeedKeysetIdToIntConstMeta,
+      argValues: [keysetId],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiCashuSeedKeysetIdToIntConstMeta =>
+      const TaskConstMeta(
+        debugName: "keyset_id_to_int",
+        argNames: ["keysetId"],
       );
 
   @override
@@ -191,7 +283,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(content, serializer);
         sse_encode_String(signatureHex, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 3, port: port_);
+            funcId: 6, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_bool,
@@ -237,7 +329,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(eventIdHex, serializer);
         sse_encode_String(signatureHex, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 4, port: port_);
+            funcId: 7, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_bool,
@@ -268,6 +360,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  CashuSeedDeriveSecretResultRust
+      dco_decode_cashu_seed_derive_secret_result_rust(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return CashuSeedDeriveSecretResultRust(
+      secretHex: dco_decode_String(arr[0]),
+      blindingHex: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_String).toList();
@@ -287,6 +392,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   int dco_decode_u_16(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  int dco_decode_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
   }
@@ -320,6 +431,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
+  CashuSeedDeriveSecretResultRust
+      sse_decode_cashu_seed_derive_secret_result_rust(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_secretHex = sse_decode_String(deserializer);
+    var var_blindingHex = sse_decode_String(deserializer);
+    return CashuSeedDeriveSecretResultRust(
+        secretHex: var_secretHex, blindingHex: var_blindingHex);
   }
 
   @protected
@@ -360,6 +482,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int sse_decode_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint32();
+  }
+
+  @protected
   BigInt sse_decode_u_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getBigUint64();
@@ -395,6 +523,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_cashu_seed_derive_secret_result_rust(
+      CashuSeedDeriveSecretResultRust self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.secretHex, serializer);
+    sse_encode_String(self.blindingHex, serializer);
+  }
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -425,6 +561,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_u_16(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint16(self);
+  }
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint32(self);
   }
 
   @protected

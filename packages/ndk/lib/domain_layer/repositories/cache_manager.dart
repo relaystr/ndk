@@ -1,3 +1,6 @@
+import '../entities/cashu/cashu_keyset.dart';
+import '../entities/cashu/cashu_mint_info.dart';
+import '../entities/cashu/cashu_proof.dart';
 import '../entities/contact_list.dart';
 import '../entities/filter_fetched_ranges.dart';
 import '../entities/nip_01_event.dart';
@@ -5,6 +8,9 @@ import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
+import '../entities/wallet/wallet.dart';
+import '../entities/wallet/wallet_transaction.dart';
+import '../entities/wallet/wallet_type.dart';
 
 abstract class CacheManager {
   /// closes the cache manger \
@@ -14,6 +20,7 @@ abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Future<Nip01Event?> loadEvent(String id);
+
   /// Load events from cache with flexible filtering \
   /// [ids] - list of event ids \
   /// [pubKeys] - list of authors pubKeys \
@@ -94,6 +101,73 @@ abstract class CacheManager {
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
 
+  /// wallets methods
+
+  Future<void> saveWallet(Wallet wallet);
+
+  Future<void> removeWallet(String id);
+
+  /// return all if [ids] is null
+  Future<List<Wallet>?> getWallets({List<String>? ids});
+
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  });
+
+  /// upserts transactions \
+  /// if transaction with same id exists, it will be updated
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  });
+
+  /// cashu methods
+
+  Future<void> saveKeyset(CahsuKeyset keyset);
+
+  /// get all keysets if no mintUrl is provided \
+  Future<List<CahsuKeyset>> getKeysets({
+    String? mintUrl,
+  });
+
+  Future<void> saveProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  });
+
+  Future<List<CashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
+  });
+
+  Future<void> removeProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  });
+
+  Future<void> saveMintInfo({
+    required CashuMintInfo mintInfo,
+  });
+
+  /// return all if no mintUrls are provided
+  Future<List<CashuMintInfo>?> getMintInfos({
+    List<String>? mintUrls,
+  });
+
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  });
+
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  });
   // =====================
   // Filter Fetched Ranges
   // =====================
@@ -114,8 +188,8 @@ abstract class CacheManager {
       String filterHash, String relayUrl);
 
   /// Load all fetched range records for a relay (all filters)
-  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelayUrl(
-      String relayUrl);
+  Future<List<FilterFetchedRangeRecord>>
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl);
 
   /// Remove all fetched range records for a filter hash
   Future<void> removeFilterFetchedRangeRecords(String filterHash);
