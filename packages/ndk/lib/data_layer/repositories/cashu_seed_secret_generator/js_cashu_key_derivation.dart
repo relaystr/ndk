@@ -61,8 +61,12 @@ class JsCashuKeyDerivation implements CashuKeyDerivation {
         secretHex: secretHex,
         blindingHex: blindingHex,
       );
+    } on Exception catch (e) {
+      // Re-throw Dart exceptions
+      rethrow;
     } catch (e) {
-      throw Exception('Failed to derive cashu secret: $e');
+      // Wrap JS errors with context
+      throw Exception('Failed to derive cashu secret via JS interop: $e');
     }
   }
 }

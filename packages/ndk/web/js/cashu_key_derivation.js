@@ -9,8 +9,12 @@
 // - Legacy derivation (v00): BIP32 hierarchical deterministic
 //
 // Dependencies are loaded from esm.sh CDN:
-// - @noble/hashes: Cryptographic hash functions
-// - @scure/bip32: BIP32 hierarchical deterministic keys
+// - @noble/hashes@1.3.3: Cryptographic hash functions (audited, widely used)
+// - @scure/bip32@1.3.3: BIP32 hierarchical deterministic keys (audited, widely used)
+//
+// NOTE: These specific versions are pinned for reproducibility and security.
+// Consider hosting these libraries locally in production for better reliability
+// and to avoid runtime dependencies on external CDN infrastructure.
 
 import { hmac } from 'https://esm.sh/@noble/hashes@1.3.3/hmac';
 import { sha256 } from 'https://esm.sh/@noble/hashes@1.3.3/sha256';
@@ -40,9 +44,17 @@ const Bytes = {
   fromString: (str) => new TextEncoder().encode(str),
   
   fromHex: (hex) => {
+    // Validate hex string
+    if (!hex || hex.length % 2 !== 0) {
+      throw new Error('Invalid hex string: must have even length');
+    }
+    if (!/^[0-9a-fA-F]*$/.test(hex)) {
+      throw new Error('Invalid hex string: contains non-hex characters');
+    }
+    
     const bytes = new Uint8Array(hex.length / 2);
     for (let i = 0; i < hex.length; i += 2) {
-      bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+      bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
     }
     return bytes;
   },
@@ -75,6 +87,14 @@ const Bytes = {
 };
 
 const isBase64String = (str) => {
+  // Check if string matches Base64 format
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(str)) {
+    return false;
+  }
+  // Additional length validation: Base64 length must be a multiple of 4
+  if (str.length % 4 !== 0) {
+    return false;
+  }
   try {
     return btoa(atob(str)) === str;
   } catch (err) {
@@ -83,12 +103,21 @@ const isBase64String = (str) => {
 };
 
 const getKeysetIdInt = (keysetId) => {
+  // Validate that keysetId is a valid hex string
+  if (!/^[0-9a-fA-F]+$/.test(keysetId)) {
+    throw new Error('Invalid keysetId: must be a hex string');
+  }
+  
   const number = BigInt('0x' + keysetId);
   const modulus = BigInt(2147483647); // 2^31 - 1
   return Number(number % modulus);
 };
 
 const deriveSecret = (seed, keysetId, counter) => {
+  if (!keysetId || keysetId.length < 2) {
+    throw new Error('Invalid keysetId: must be at least 2 characters');
+  }
+  
   const isValidHex = /^[a-fA-F0-9]+$/.test(keysetId);
   if (!isValidHex && isBase64String(keysetId)) {
     return derive_deprecated(seed, keysetId, counter, DerivationType.SECRET);
@@ -99,10 +128,14 @@ const deriveSecret = (seed, keysetId, counter) => {
   } else if (isValidHex && keysetId.startsWith('01')) {
     return derive(seed, keysetId, counter, DerivationType.SECRET);
   }
-  throw new Error(`Unrecognized keyset ID version ${keysetId.slice(0, 2)}`);
+  throw new Error(`Unrecognized keyset ID format or version: ${keysetId.substring(0, 2)}`);
 };
 
 const deriveBlindingFactor = (seed, keysetId, counter) => {
+  if (!keysetId || keysetId.length < 2) {
+    throw new Error('Invalid keysetId: must be at least 2 characters');
+  }
+  
   const isValidHex = /^[a-fA-F0-9]+$/.test(keysetId);
   if (!isValidHex && isBase64String(keysetId)) {
     return derive_deprecated(seed, keysetId, counter, DerivationType.BLINDING_FACTOR);
@@ -113,7 +146,7 @@ const deriveBlindingFactor = (seed, keysetId, counter) => {
   } else if (isValidHex && keysetId.startsWith('01')) {
     return derive(seed, keysetId, counter, DerivationType.BLINDING_FACTOR);
   }
-  throw new Error(`Unrecognized keyset ID version ${keysetId.slice(0, 2)}`);
+  throw new Error(`Unrecognized keyset ID format or version: ${keysetId.substring(0, 2)}`);
 };
 
 const derive = (seed, keysetId, counter, secretOrBlinding) => {
