@@ -82,7 +82,8 @@ class Requests {
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
     Filter? filter,
-    @Deprecated('Use filter instead. Multiple filters support will be removed in a future version.')
+    @Deprecated(
+        'Use filter instead. Multiple filters support will be removed in a future version.')
     List<Filter>? filters,
     String name = '',
     RelaySet? relaySet,
@@ -134,7 +135,8 @@ class Requests {
   /// Returns an [NdkResponse] containing the subscription results as stream
   NdkResponse subscription({
     Filter? filter,
-    @Deprecated('Use filter instead. Multiple filters support will be removed in a future version.')
+    @Deprecated(
+        'Use filter instead. Multiple filters support will be removed in a future version.')
     List<Filter>? filters,
     String name = '',
     String? id,

@@ -179,7 +179,8 @@ class RelayManager<T> {
 
       Logger.log.i("connecting to relay $dirtyUrl");
 
-      relayConnectivity.relayTransport = nostrTransportFactory(url, onReconnect: () {
+      relayConnectivity.relayTransport =
+          nostrTransportFactory(url, onReconnect: () {
         reSubscribeInFlightSubscriptions(relayConnectivity!);
         updateRelayConnectivity();
       }, onDisconnect: (code, error, reason) {
@@ -516,7 +517,8 @@ class RelayManager<T> {
       }
 
       if (accountsToAuth.isEmpty) {
-        Logger.log.w("Received an AUTH challenge but no accounts to authenticate");
+        Logger.log
+            .w("Received an AUTH challenge but no accounts to authenticate");
         return;
       }
 
@@ -545,7 +547,8 @@ class RelayManager<T> {
           ["challenge", challenge]
         ]);
         account.signer.sign(auth).then((signedAuth) {
-          send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
+          send(relayConnectivity,
+              ClientMsg(ClientMsgType.kAuth, event: signedAuth));
           Logger.log.d(
               "AUTH sent for ${account.pubkey.substring(0, 8)} to ${relayConnectivity.url}");
         });
@@ -573,8 +576,7 @@ class RelayManager<T> {
       return;
     }
 
-    Logger.log.d(
-        "Late AUTH for ${accounts.length} accounts on $relayUrl");
+    Logger.log.d("Late AUTH for ${accounts.length} accounts on $relayUrl");
     _authenticateAccounts(relayConnectivity, challenge, accounts.toSet());
   }
 

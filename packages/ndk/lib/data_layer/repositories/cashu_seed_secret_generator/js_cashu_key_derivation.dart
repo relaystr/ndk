@@ -1,20 +1,14 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:bip39_mnemonic/bip39_mnemonic.dart';
-import 'package:convert/convert.dart';
 
 import '../../../domain_layer/repositories/cashu_seed_secret.dart';
 import '../../../domain_layer/usecases/cashu/cashu_seed.dart';
 
 /// JavaScript interop bindings for cashu key derivation
 @JS('cashuKeyDerivation.deriveSecretAndBlinding')
-external JSObject _jsDerive(JSArray<JSNumber> seed, JSString keysetId, JSNumber counter);
-
-@JS('cashuKeyDerivation.deriveSecret')
-external JSString _jsDeriveSecret(JSArray<JSNumber> seed, JSString keysetId, JSNumber counter);
-
-@JS('cashuKeyDerivation.deriveBlindingFactor')
-external JSString _jsDeriveBlindingFactor(JSArray<JSNumber> seed, JSString keysetId, JSNumber counter);
+external JSObject _jsDerive(
+    JSArray<JSNumber> seed, JSString keysetId, JSNumber counter);
 
 /// Extension methods to convert Dart types to JS types
 extension on Uint8List {
@@ -27,10 +21,14 @@ extension on Uint8List {
   }
 }
 
-extension on JSObject {
-  String getStringProperty(String name) {
-    return (this[name.toJS] as JSString).toDart;
-  }
+/// Extension to safely access JSObject properties
+@JS()
+@staticInterop
+class _JSResult {}
+
+extension _JSResultExtension on _JSResult {
+  external JSString get secretHex;
+  external JSString get blindingHex;
 }
 
 /// Web implementation of CashuKeyDerivation using JavaScript interop
@@ -46,19 +44,19 @@ class JsCashuKeyDerivation implements CashuKeyDerivation {
   }) async {
     try {
       final seed = Uint8List.fromList(mnemonic.seed);
-      
+
       // Convert Dart types to JS types
       final jsSeed = seed.toJSArray();
       final jsKeysetId = keysetId.toJS;
       final jsCounter = counter.toJS;
-      
+
       // Call JavaScript function
-      final result = _jsDerive(jsSeed, jsKeysetId, jsCounter);
-      
+      final result = _jsDerive(jsSeed, jsKeysetId, jsCounter) as _JSResult;
+
       // Extract results from JS object
-      final secretHex = result.getStringProperty('secretHex');
-      final blindingHex = result.getStringProperty('blindingHex');
-      
+      final secretHex = result.secretHex.toDart;
+      final blindingHex = result.blindingHex.toDart;
+
       return CashuSeedDeriveSecretResult(
         secretHex: secretHex,
         blindingHex: blindingHex,
