@@ -1,5 +1,16 @@
 // Cashu Key Derivation JavaScript implementation
 // This file provides the core key derivation logic for web platform
+//
+// This implementation is based on the Cashu protocol's key derivation specification
+// and is called from Dart via JS interop when running on web platforms.
+//
+// The implementation supports:
+// - Modern derivation (v01): HMAC-SHA256 based
+// - Legacy derivation (v00): BIP32 hierarchical deterministic
+//
+// Dependencies are loaded from esm.sh CDN:
+// - @noble/hashes: Cryptographic hash functions
+// - @scure/bip32: BIP32 hierarchical deterministic keys
 
 import { hmac } from 'https://esm.sh/@noble/hashes@1.3.3/hmac';
 import { sha256 } from 'https://esm.sh/@noble/hashes@1.3.3/sha256';
