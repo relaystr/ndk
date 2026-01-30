@@ -1,4 +1,5 @@
 import 'package:bip39_mnemonic/bip39_mnemonic.dart';
+import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_seed.dart';
 import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
@@ -42,8 +43,15 @@ void main() {
     test('deriveSecret', () async {
       final seed =
           CashuSeed(userSeedPhrase: CashuUserSeedphrase(seedPhrase: mnemonic));
+
+      final derivation = DartCashuKeyDerivation();
       for (int i = 0; i < 5; i++) {
-        final result = seed.deriveSecret(counter: i, keysetId: keysetId);
+        //final result = seed.deriveSecret(counter: i, keysetId: keysetId);
+        final result = await derivation.deriveSecret(
+          mnemonic: seed.getSeedPhrase(),
+          counter: i,
+          keysetId: keysetId,
+        );
 
         expect(result.secretHex, equals(expectedSecrets["secret_$i"]));
         expect(result.blindingHex, equals(expectedBlindingFactors["r_$i"]));
@@ -52,18 +60,22 @@ void main() {
 
     test('throw without mnemonic', () async {
       final seed = CashuSeed();
+      final derivation = DartCashuKeyDerivation();
 
       expect(
-        () => seed.deriveSecret(counter: 0, keysetId: keysetId),
+        () => derivation.deriveSecret(
+            counter: 0, keysetId: keysetId, mnemonic: seed.getSeedPhrase()),
         throwsA(isA<Exception>()),
       );
     });
 
     test('setting mnemonic', () async {
       final seed = CashuSeed();
+      final derivation = DartCashuKeyDerivation();
       seed.setSeedPhrase(seedPhrase: mnemonic);
 
-      final result = seed.deriveSecret(counter: 0, keysetId: keysetId);
+      final result = await derivation.deriveSecret(
+          counter: 0, keysetId: keysetId, mnemonic: seed.getSeedPhrase());
 
       expect(result.secretHex, equals(expectedSecrets["secret_0"]));
       expect(result.blindingHex, equals(expectedBlindingFactors["r_0"]));
@@ -73,11 +85,13 @@ void main() {
       final generated = CashuSeed.generateSeedPhrase(
         length: MnemonicLength.words24,
       );
+      final derivation = DartCashuKeyDerivation();
       expect(generated.split(' ').length, equals(24));
 
       final seed =
           CashuSeed(userSeedPhrase: CashuUserSeedphrase(seedPhrase: generated));
-      final result = seed.deriveSecret(counter: 0, keysetId: keysetId);
+      final result = await derivation.deriveSecret(
+          counter: 0, keysetId: keysetId, mnemonic: seed.getSeedPhrase());
       expect(result.secretHex.length, equals(64));
       expect(result.blindingHex.length, equals(64));
     });

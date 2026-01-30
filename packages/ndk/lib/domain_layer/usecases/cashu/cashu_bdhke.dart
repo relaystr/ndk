@@ -21,7 +21,7 @@ class CashuBdhke {
     required CashuCacheDecorator cacheManager,
     required CashuSeed cashuSeed,
     required String mintUrl,
-    required CashuSeedSecretGenerator cashuSeedSecretGenerator,
+    required CashuKeyDerivation cashuSeedSecretGenerator,
   }) async {
     List<CashuBlindedMessageItem> items = [];
 
@@ -37,8 +37,7 @@ class CashuBdhke {
 
         final userMnemonic = cashuSeed.getSeedPhrase();
         final mySecret = await cashuSeedSecretGenerator.deriveSecret(
-          seedPhrase: userMnemonic.sentence,
-          passphrase: userMnemonic.passphrase,
+          mnemonic: userMnemonic,
           counter: myCount,
           keysetId: keysetId,
         );

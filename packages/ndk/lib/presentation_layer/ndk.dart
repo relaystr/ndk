@@ -57,7 +57,6 @@ class Ndk {
           NdkConfig(
             cache: MemCacheManager(),
             eventVerifier: Bip340EventVerifier(),
-            cashuSeedSecretGenerator: FakeCashuSeedGenerator(),
           ),
         );
 
@@ -68,7 +67,6 @@ class Ndk {
             cache: MemCacheManager(),
             eventVerifier: Bip340EventVerifier(),
             bootstrapRelays: [],
-            cashuSeedSecretGenerator: FakeCashuSeedGenerator(),
           ),
         );
 

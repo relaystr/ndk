@@ -43,11 +43,11 @@ class SplitResult {
 class CashuProofSelect {
   final CashuRepo _cashuRepo;
 
-  final CashuSeedSecretGenerator _cashuSeedSecretGenerator;
+  final CashuKeyDerivation _cashuSeedSecretGenerator;
 
   CashuProofSelect({
     required CashuRepo cashuRepo,
-    required CashuSeedSecretGenerator cashuSeedSecretGenerator,
+    required CashuKeyDerivation cashuSeedSecretGenerator,
   })  : _cashuRepo = cashuRepo,
         _cashuSeedSecretGenerator = cashuSeedSecretGenerator;
 

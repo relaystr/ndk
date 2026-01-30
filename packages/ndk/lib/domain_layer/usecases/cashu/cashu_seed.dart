@@ -86,40 +86,4 @@ class CashuSeed {
 
     return keysetIdInt.toInt();
   }
-
-  /// derive a secret and blinding factor from the seed phrase
-  /// using the keysetId and counter
-  /// throws an exception if the seed phrase is not set
-  /// returns a [CashuSeedDeriveSecretResult] containing the secret and blinding factor in hex format
-  CashuSeedDeriveSecretResult deriveSecret({
-    required int counter,
-    required String keysetId,
-  }) {
-    _seedCheck();
-
-    final keysetIdInt = keysetIdToInt(keysetId);
-
-    final mnemonicUnit8List = Uint8List.fromList(_userSeedPhrase!.seed);
-
-    final masterKey = Bip32Keys.fromSeed(
-      mnemonicUnit8List,
-    );
-
-    final pathKeySecret = masterKey.derivePath(
-      "m/$derivationPurpose'/$derivationCoinType'/$keysetIdInt'/$counter'/0",
-    );
-
-    final pathKeyBlinding = masterKey.derivePath(
-      "m/$derivationPurpose'/$derivationCoinType'/$keysetIdInt'/$counter'/1",
-    );
-
-    final pathKeySecretHex = hex.encode(pathKeySecret.private!.toList());
-
-    final pathKeyBlindingHex = hex.encode(pathKeyBlinding.private!.toList());
-
-    return CashuSeedDeriveSecretResult(
-      secretHex: pathKeySecretHex,
-      blindingHex: pathKeyBlindingHex,
-    );
-  }
 }

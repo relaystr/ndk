@@ -67,7 +67,7 @@ packages:
     source: hosted
     version: "0.3.1"
   bip39_mnemonic:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: bip39_mnemonic
       sha256: dd6bdfc2547d986b2c00f99bba209c69c0b6fa5c1a185e1f728998282f1249d5

@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
+import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
@@ -101,9 +102,16 @@ void main() {
       final client = HttpRequestDS(http.Client());
       final cashuRepo = CashuRepoImpl(client: client);
       final cashuRepo2 = CashuRepoImpl(client: client);
-      final cashu = Cashu(cashuRepo: cashuRepo, cacheManager: cache);
+      final derivation = DartCashuKeyDerivation();
+      final cashu = Cashu(
+          cashuRepo: cashuRepo,
+          cacheManager: cache,
+          cashuKeyDerivation: derivation);
 
-      final cashu2 = Cashu(cashuRepo: cashuRepo2, cacheManager: cache2);
+      final cashu2 = Cashu(
+          cashuRepo: cashuRepo2,
+          cacheManager: cache2,
+          cashuKeyDerivation: derivation);
 
       const fundAmount = 32;
       const fundUnit = "sat";

@@ -36,23 +36,23 @@ class Cashu {
 
   late final CashuSeed _cashuSeed;
 
-  final CashuSeedSecretGenerator _cashuSeedSecretGenerator;
+  final CashuKeyDerivation _cashuKeyDerivation;
 
   Cashu({
     required CashuRepo cashuRepo,
     required CacheManager cacheManager,
-    required CashuSeedSecretGenerator cashuSeedSecretGenerator,
+    required CashuKeyDerivation cashuKeyDerivation,
     CashuUserSeedphrase? cashuUserSeedphrase,
   })  : _cashuRepo = cashuRepo,
         _cacheManager = cacheManager,
-        _cashuSeedSecretGenerator = cashuSeedSecretGenerator {
+        _cashuKeyDerivation = cashuKeyDerivation {
     _cashuKeysets = CashuKeysets(
       cashuRepo: _cashuRepo,
       cacheManager: _cacheManager,
     );
     _cashuWalletProofSelect = CashuProofSelect(
       cashuRepo: _cashuRepo,
-      cashuSeedSecretGenerator: _cashuSeedSecretGenerator,
+      cashuSeedSecretGenerator: _cashuKeyDerivation,
     );
     _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
 
@@ -406,7 +406,7 @@ class Cashu {
       cacheManager: _cacheManagerCashu,
       cashuSeed: _cashuSeed,
       mintUrl: mintUrl,
-      cashuSeedSecretGenerator: _cashuSeedSecretGenerator,
+      cashuSeedSecretGenerator: _cashuKeyDerivation,
     );
 
     final mintResponse = await _cashuRepo.mintTokens(
@@ -604,7 +604,7 @@ class Cashu {
               cacheManager: _cacheManagerCashu,
               cashuSeed: _cashuSeed,
               mintUrl: mintUrl,
-              cashuSeedSecretGenerator: _cashuSeedSecretGenerator);
+              cashuSeedSecretGenerator: _cashuKeyDerivation);
       myOutputs.addAll(
         blindedMessagesOutputsOverpay,
       );
@@ -621,7 +621,7 @@ class Cashu {
           cacheManager: _cacheManagerCashu,
           cashuSeed: _cashuSeed,
           mintUrl: mintUrl,
-          cashuSeedSecretGenerator: _cashuSeedSecretGenerator);
+          cashuSeedSecretGenerator: _cashuKeyDerivation);
       myOutputs.addAll(blankOutputs);
     }
 
@@ -998,7 +998,7 @@ class Cashu {
         cacheManager: _cacheManagerCashu,
         cashuSeed: _cashuSeed,
         mintUrl: rcvToken.mintUrl,
-        cashuSeedSecretGenerator: _cashuSeedSecretGenerator);
+        cashuSeedSecretGenerator: _cashuKeyDerivation);
 
     blindedMessagesOutputs.sort(
       (a, b) => a.blindedMessage.amount.compareTo(b.blindedMessage.amount),
