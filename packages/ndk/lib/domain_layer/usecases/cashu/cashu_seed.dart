@@ -1,8 +1,4 @@
-import 'dart:typed_data';
-
-import 'package:bip32_keys/bip32_keys.dart';
 import 'package:bip39_mnemonic/bip39_mnemonic.dart';
-import 'package:convert/convert.dart';
 
 import '../../entities/cashu/cashu_user_seedphrase.dart';
 
@@ -21,6 +17,7 @@ class CashuSeed {
   static const int derivationCoinType = 0;
 
   Mnemonic? _userSeedPhrase;
+  List<int> _cachedSeed = [];
 
   CashuSeed({
     CashuUserSeedphrase? userSeedPhrase,
@@ -35,22 +32,30 @@ class CashuSeed {
   }
 
   /// set the user seed phrase
+  /// ? calling this function is expensive because it computes the seed
   /// throws an exception if the seed phrase is invalid
-  void setSeedPhrase({
+  Future<void> setSeedPhrase({
     required String seedPhrase,
     Language language = Language.english,
     String passphrase = '',
-  }) {
+  }) async {
     _userSeedPhrase = Mnemonic.fromSentence(
       seedPhrase,
       language,
       passphrase: passphrase,
     );
+
+    _cachedSeed = _userSeedPhrase!.seed;
   }
 
   Mnemonic getSeedPhrase() {
     _seedCheck();
     return _userSeedPhrase!;
+  }
+
+  List<int> getSeedBytes() {
+    _seedCheck();
+    return _cachedSeed;
   }
 
   /// generate a new seed phrase
@@ -66,12 +71,16 @@ class CashuSeed {
       length: length,
       passphrase: passphrase,
     );
+
     return seed.sentence;
   }
 
   void _seedCheck() {
     if (_userSeedPhrase == null) {
       throw Exception('Seed phrase is not set');
+    }
+    if (_cachedSeed.isEmpty) {
+      throw Exception('Seed bytes are not computed');
     }
   }
 

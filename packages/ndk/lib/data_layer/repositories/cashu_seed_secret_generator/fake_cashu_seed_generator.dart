@@ -1,4 +1,5 @@
-import 'package:bip39_mnemonic/bip39_mnemonic.dart';
+import 'dart:typed_data';
+
 import 'package:ndk/domain_layer/usecases/cashu/cashu_seed.dart';
 
 import '../../../domain_layer/repositories/cashu_seed_secret.dart';
@@ -6,7 +7,7 @@ import '../../../domain_layer/repositories/cashu_seed_secret.dart';
 class FakeCashuSeedGenerator implements CashuKeyDerivation {
   @override
   Future<CashuSeedDeriveSecretResult> deriveSecret({
-    required Mnemonic mnemonic,
+    required Uint8List seedBytes,
     required int counter,
     required String keysetId,
   }) {

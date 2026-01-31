@@ -2,10 +2,9 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:bip32_keys/bip32_keys.dart';
-import 'package:bip39_mnemonic/bip39_mnemonic.dart';
 import 'package:convert/convert.dart';
 
-import '../../../domain_layer/repositories/cashu_seed_secret.dart';
+import '../../../domain_layer/repositories/cashu_key_derivation.dart';
 import '../../../domain_layer/usecases/cashu/cashu_seed.dart';
 
 enum DerivationType {
@@ -25,14 +24,11 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     radix: 16,
   );
 
-  final Uint8List? _seed;
-  Bip32Keys? _cachedMasterKey;
-
-  DartCashuKeyDerivation({Uint8List? seed}) : _seed = seed;
+  DartCashuKeyDerivation();
 
   @override
   Future<CashuSeedDeriveSecretResult> deriveSecret({
-    required Mnemonic mnemonic,
+    required Uint8List seedBytes,
     required int counter,
     required String keysetId,
   }) async {
@@ -42,82 +38,17 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
       throw Exception('Keyset ID must be valid hex');
     }
 
-    final seed = Uint8List.fromList(mnemonic.seed);
-
     // Choose derivation method based on keyset version
     if (keysetId.startsWith('00')) {
       return _deriveDeprecatedWithSeed(
-          seed: seed, keysetId: keysetId, counter: counter);
+          seed: seedBytes, keysetId: keysetId, counter: counter);
     } else if (keysetId.startsWith('01')) {
       return _deriveModernWithSeed(
-          seed: seed, keysetId: keysetId, counter: counter);
+          seed: seedBytes, keysetId: keysetId, counter: counter);
     }
 
     throw Exception(
         'Unrecognized keyset ID version ${keysetId.substring(0, 2)}');
-  }
-
-  /// Derive both secret and blinding factor
-  CashuSeedDeriveSecretResult deriveSecretAndBlinding({
-    required String keysetId,
-    required int counter,
-  }) {
-    if (_seed == null) {
-      throw Exception('Seed must be provided');
-    }
-
-    final isValidHex = RegExp(r'^[a-fA-F0-9]+$').hasMatch(keysetId);
-
-    if (!isValidHex) {
-      throw Exception('Keyset ID must be valid hex');
-    }
-
-    if (keysetId.startsWith('00')) {
-      return _deriveDeprecated(keysetId: keysetId, counter: counter);
-    } else if (keysetId.startsWith('01')) {
-      return _deriveModern(keysetId: keysetId, counter: counter);
-    }
-
-    throw Exception(
-        'Unrecognized keyset ID version ${keysetId.substring(0, 2)}');
-  }
-
-  /// Derive blinding factor only
-  Uint8List deriveBlindingFactor({
-    required String keysetId,
-    required int counter,
-  }) {
-    final isValidHex = RegExp(r'^[a-fA-F0-9]+$').hasMatch(keysetId);
-
-    if (!isValidHex) {
-      throw Exception('Keyset ID must be valid hex');
-    }
-
-    if (keysetId.startsWith('00')) {
-      return _derive(
-        keysetId: keysetId,
-        counter: counter,
-        derivationType: DerivationType.blindingFactor,
-      );
-    } else if (keysetId.startsWith('01')) {
-      return _deriveV01(
-        keysetId: keysetId,
-        counter: counter,
-        derivationType: DerivationType.blindingFactor,
-      );
-    }
-
-    throw Exception(
-        'Unrecognized keyset ID version ${keysetId.substring(0, 2)}');
-  }
-
-  /// Modern derivation method (version 01) - returns both
-  CashuSeedDeriveSecretResult _deriveModern({
-    required String keysetId,
-    required int counter,
-  }) {
-    return _deriveModernWithSeed(
-        seed: _seed!, keysetId: keysetId, counter: counter);
   }
 
   /// Modern derivation method with explicit seed parameter
@@ -143,20 +74,6 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     return CashuSeedDeriveSecretResult(
       secretHex: hex.encode(secret),
       blindingHex: hex.encode(blinding),
-    );
-  }
-
-  /// Modern derivation method (version 01) - single derivation
-  Uint8List _deriveV01({
-    required String keysetId,
-    required int counter,
-    required DerivationType derivationType,
-  }) {
-    return _deriveV01WithSeed(
-      seed: _seed!,
-      keysetId: keysetId,
-      counter: counter,
-      derivationType: derivationType,
     );
   }
 
@@ -213,15 +130,6 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     return hmacDigest;
   }
 
-  /// Deprecated BIP32-based derivation (version 00) - returns both
-  CashuSeedDeriveSecretResult _deriveDeprecated({
-    required String keysetId,
-    required int counter,
-  }) {
-    return _deriveDeprecatedWithSeed(
-        seed: _seed!, keysetId: keysetId, counter: counter);
-  }
-
   /// Deprecated BIP32-based derivation with explicit seed parameter
   static CashuSeedDeriveSecretResult _deriveDeprecatedWithSeed({
     required Uint8List seed,
@@ -248,34 +156,6 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
       secretHex: pathKeySecretHex,
       blindingHex: pathKeyBlindingHex,
     );
-  }
-
-  /// Deprecated BIP32-based derivation (version 00) - single derivation
-  Uint8List _derive({
-    required String keysetId,
-    required int counter,
-    required DerivationType derivationType,
-  }) {
-    // Cache master key to avoid recomputing
-    _cachedMasterKey ??= Bip32Keys.fromSeed(_seed!);
-
-    final keysetIdInt = _keysetIdToInt(keysetId);
-
-    final derivationPath =
-        "m/$derivationPurpose'/$derivationCoinType'/$keysetIdInt'/$counter'/${derivationType.value}";
-
-    final derived = _cachedMasterKey!.derivePath(derivationPath);
-
-    if (derived.private == null) {
-      throw Exception('Could not derive private key');
-    }
-
-    return Uint8List.fromList(derived.private!.toList());
-  }
-
-  /// Convert keyset ID to integer for BIP32 derivation
-  int _keysetIdToInt(String keysetId) {
-    return _keysetIdToIntStatic(keysetId);
   }
 
   static int _keysetIdToIntStatic(String keysetId) {
@@ -322,11 +202,27 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     return Uint8List.fromList(result);
   }
 
-  /// Convert integer to big-endian 64-bit bytes
+  /// Convert integer to big-endian 64-bit bytes - web-compatible
   static Uint8List _bigUint64BE(int value) {
     final buffer = Uint8List(8);
-    final byteData = ByteData.sublistView(buffer);
-    byteData.setUint64(0, value, Endian.big);
+
+    // Manually split into high and low 32-bit parts
+    // This works on both VM and Web
+    final high = (value ~/ 0x100000000) & 0xFFFFFFFF;
+    final low = value & 0xFFFFFFFF;
+
+    // Write high 32 bits (big-endian)
+    buffer[0] = (high >> 24) & 0xff;
+    buffer[1] = (high >> 16) & 0xff;
+    buffer[2] = (high >> 8) & 0xff;
+    buffer[3] = high & 0xff;
+
+    // Write low 32 bits (big-endian)
+    buffer[4] = (low >> 24) & 0xff;
+    buffer[5] = (low >> 16) & 0xff;
+    buffer[6] = (low >> 8) & 0xff;
+    buffer[7] = low & 0xff;
+
     return buffer;
   }
 }
