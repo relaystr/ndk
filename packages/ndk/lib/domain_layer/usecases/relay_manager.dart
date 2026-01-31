@@ -64,6 +64,9 @@ class RelayManager<T> {
   Stream<Map<String, RelayConnectivity>> get relayConnectivityChanges =>
       _relayUpdatesStreamController.stream;
 
+  /// AUTH strategy: eager (on challenge) or lazy (on auth-required)
+  final bool eagerAuth;
+
   /// Creates a new relay manager.
   RelayManager({
     required this.globalState,
@@ -72,6 +75,7 @@ class RelayManager<T> {
     this.engineAdditionalDataFactory,
     List<String>? bootstrapRelays,
     allowReconnect = true,
+    this.eagerAuth = false,
   }) : _accounts = accounts {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
@@ -525,8 +529,13 @@ class RelayManager<T> {
       final challenge = eventJson[1];
       Logger.log.d("AUTH challenge from ${relayConnectivity.url}: $challenge");
 
-      // Store challenge for late authentication
+      // Store challenge for late authentication (multiple accounts on same connection)
       _lastChallengePerRelay[relayConnectivity.url] = challenge;
+
+      // If not eager auth, don't authenticate now - wait for auth-required
+      if (!eagerAuth) {
+        return;
+      }
 
       if (_accounts == null) {
         Logger.log.w("Received an AUTH challenge but no accounts configured");
