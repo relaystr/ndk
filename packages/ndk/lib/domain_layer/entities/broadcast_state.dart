@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
+import 'nip_01_event.dart';
 
 /// hols information about a individual relay broadcast response \
 /// e.g. \
@@ -40,6 +41,9 @@ class BroadcastState {
   final double considerDonePercent;
 
   final Duration timeout;
+
+  /// the event being broadcast (stored for potential retries on auth-required)
+  Nip01Event? event;
 
   /// stream controller for state updates
   final BehaviorSubject<BroadcastState> _stateUpdatesController =

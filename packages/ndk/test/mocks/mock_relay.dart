@@ -133,7 +133,7 @@ class MockRelay {
             "OK",
             event.id,
             authSuccess,
-            authSuccess ? "" : "auth-required"
+            authSuccess ? "" : "auth-required: authentication failed"
           ]));
           return;
         }
@@ -198,28 +198,14 @@ class MockRelay {
             }
           }
 
-          // Check auth for requested pubkeys
-          if (requireAuthForRequests && filters.isNotEmpty) {
-            Set<String> requestedPubkeys = {};
-            for (final filter in filters) {
-              if (filter.authors != null) {
-                requestedPubkeys.addAll(filter.authors!);
-              }
-              if (filter.pTags != null) {
-                requestedPubkeys.addAll(filter.pTags!);
-              }
-            }
-            // Check if any requested pubkey is authenticated
-            bool hasAuthenticatedPubkey = requestedPubkeys
-                .any((pubkey) => authenticatedPubkeys.contains(pubkey));
-            if (!hasAuthenticatedPubkey) {
-              webSocket.add(jsonEncode([
-                "CLOSED",
-                requestId,
-                "auth-required: we can't serve requests to unauthenticated users"
-              ]));
-              return;
-            }
+          // Check auth: any authenticated user can access all data
+          if (requireAuthForRequests && authenticatedPubkeys.isEmpty) {
+            webSocket.add(jsonEncode([
+              "CLOSED",
+              requestId,
+              "auth-required: we can't serve requests to unauthenticated users"
+            ]));
+            return;
           }
 
           if (filters.isNotEmpty) {

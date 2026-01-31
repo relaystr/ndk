@@ -44,6 +44,9 @@ class RelayManager<T> {
   /// stores the last AUTH challenge per relay for late authentication
   final Map<String, String> _lastChallengePerRelay = {};
 
+  /// stores pending AUTH callbacks: authEventId -> callback to execute on AUTH OK
+  final Map<String, void Function()> _pendingAuthCallbacks = {};
+
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
 
@@ -334,12 +337,19 @@ class RelayManager<T> {
     required String relayUrl,
     required Nip01Event eventToPublish,
   }) {
+    final broadcastState = globalState.inFlightBroadcasts[eventToPublish.id];
+    if (broadcastState == null) {
+      Logger.log.w(
+          "registerRelayBroadcast: no broadcast state for ${eventToPublish.id}");
+      return;
+    }
+
+    // Store the event for potential retries on auth-required
+    broadcastState.event ??= eventToPublish;
+
     // new tracking
-    if (globalState
-            .inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] ==
-        null) {
-      globalState.inFlightBroadcasts[eventToPublish.id]!.broadcasts[relayUrl] =
-          RelayBroadcastResponse(
+    if (broadcastState.broadcasts[relayUrl] == null) {
+      broadcastState.broadcasts[relayUrl] = RelayBroadcastResponse(
         relayUrl: relayUrl,
       );
     } else {
@@ -446,24 +456,47 @@ class RelayManager<T> {
 
     if (nostrMsg.type == NostrMessageRawType.ok) {
       final eventJson = nostrMsg.otherData;
-      //nip 20 used to notify clients if an EVENT was successful
-      if (eventJson.length >= 2 && eventJson[2] == false) {
-        Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
+      final String eventId = eventJson[1];
+      final bool success = eventJson[2] == true;
+      final String? msg = eventJson.length > 3 ? eventJson[3] : null;
+
+      // Check if this is an AUTH OK response
+      if (_pendingAuthCallbacks.containsKey(eventId)) {
+        if (success) {
+          Logger.log.d("AUTH OK for $eventId, executing callback");
+          final callback = _pendingAuthCallbacks.remove(eventId);
+          callback?.call();
+        } else {
+          Logger.log.e("AUTH failed for $eventId: $msg");
+          _pendingAuthCallbacks.remove(eventId);
+        }
+        return;
       }
-      if (globalState.inFlightBroadcasts[eventJson[1]] != null &&
+
+      //nip 20 used to notify clients if an EVENT was successful
+      if (!success) {
+        Logger.log.e("NOT OK from ${relayConnectivity.url}: $eventJson");
+
+        // Check if this is auth-required for a broadcast - don't mark as done, will retry
+        if (msg != null && msg.startsWith("auth-required")) {
+          _handleBroadcastAuthRequired(eventId, relayConnectivity);
+          return; // Don't add to network controller yet, wait for retry result
+        }
+      }
+      if (globalState.inFlightBroadcasts[eventId] != null &&
           !globalState
-              .inFlightBroadcasts[eventJson[1]]!.networkController.isClosed) {
-        globalState.inFlightBroadcasts[eventJson[1]]?.networkController.add(
+              .inFlightBroadcasts[eventId]!.networkController.isClosed) {
+        globalState.inFlightBroadcasts[eventId]?.networkController.add(
           RelayBroadcastResponse(
             relayUrl: relayConnectivity.url,
             okReceived: true,
-            broadcastSuccessful: eventJson[2],
-            msg: eventJson[3] ?? '',
+            broadcastSuccessful: success,
+            msg: msg ?? '',
           ),
         );
       } else {
         Logger.log.w(
-            "Received OK for broadcast ${eventJson[1]} but the network controller is already closed");
+            "Received OK for broadcast $eventId but the network controller is already closed");
       }
       return;
     }
@@ -638,6 +671,14 @@ class RelayManager<T> {
   void _handleClosed(
       List<dynamic> eventJson, RelayConnectivity relayConnectivity) {
     String id = eventJson[1];
+    String? message = eventJson.length > 2 ? eventJson[2] : null;
+
+    // Check if this is an auth-required CLOSED message
+    if (message != null && message.startsWith("auth-required")) {
+      _handleClosedAuthRequired(id, relayConnectivity);
+      return;
+    }
+
     RequestState? state = globalState.inFlightRequests[id];
     if (state != null) {
       Logger.log.t(
@@ -651,6 +692,136 @@ class RelayManager<T> {
       _logActiveRequests();
     }
     return;
+  }
+
+  /// Handles CLOSED auth-required by authenticating and re-sending the REQ
+  void _handleClosedAuthRequired(
+      String reqId, RelayConnectivity relayConnectivity) {
+    final challenge = _lastChallengePerRelay[relayConnectivity.url];
+    if (challenge == null) {
+      Logger.log.w(
+          "Received CLOSED auth-required but no challenge stored for ${relayConnectivity.url}");
+      return;
+    }
+
+    final state = globalState.inFlightRequests[reqId];
+    if (state == null) {
+      Logger.log.w("Received CLOSED auth-required for unknown request $reqId");
+      return;
+    }
+
+    final request = state.requests[relayConnectivity.url];
+    if (request == null) {
+      Logger.log.w(
+          "Received CLOSED auth-required but no request state for ${relayConnectivity.url}");
+      return;
+    }
+
+    // Get account to authenticate
+    Account? account;
+    if (state.request.authenticateAs != null &&
+        state.request.authenticateAs!.isNotEmpty) {
+      account = state.request.authenticateAs!.first;
+    } else if (_accounts?.getLoggedAccount() != null) {
+      account = _accounts!.getLoggedAccount()!;
+    }
+
+    if (account == null || !account.signer.canSign()) {
+      Logger.log.w(
+          "Received CLOSED auth-required but no account can sign for ${relayConnectivity.url}");
+      return;
+    }
+
+    Logger.log.d(
+        "AUTH required for REQ $reqId on ${relayConnectivity.url}, authenticating...");
+
+    // Create AUTH event
+    final auth = AuthEvent(pubKey: account.pubkey, tags: [
+      ["relay", relayConnectivity.url],
+      ["challenge", challenge]
+    ]);
+
+    // Sign and send AUTH, then re-send REQ on OK
+    account.signer.sign(auth).then((signedAuth) {
+      // Store callback to re-send REQ after AUTH OK
+      _pendingAuthCallbacks[signedAuth.id] = () {
+        Logger.log.d(
+            "AUTH OK received, re-sending REQ $reqId to ${relayConnectivity.url}");
+        // Re-send the REQ
+        List<dynamic> list = ["REQ", reqId];
+        list.addAll(request.filters.map((filter) => filter.toMap()));
+        _sendRaw(relayConnectivity, jsonEncode(list));
+      };
+
+      send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
+      Logger.log.d(
+          "AUTH sent for ${account!.pubkey.substring(0, 8)} to ${relayConnectivity.url}, waiting for OK...");
+    });
+  }
+
+  /// Handles OK auth-required for broadcasts by authenticating and re-sending the EVENT
+  void _handleBroadcastAuthRequired(
+      String eventId, RelayConnectivity relayConnectivity) {
+    final challenge = _lastChallengePerRelay[relayConnectivity.url];
+    if (challenge == null) {
+      Logger.log.w(
+          "Received OK auth-required but no challenge stored for ${relayConnectivity.url}");
+      return;
+    }
+
+    final broadcastState = globalState.inFlightBroadcasts[eventId];
+    if (broadcastState == null) {
+      Logger.log.w("Received OK auth-required for unknown broadcast $eventId");
+      return;
+    }
+
+    final eventToResend = broadcastState.event;
+    if (eventToResend == null) {
+      Logger.log.w(
+          "Received OK auth-required but no event stored for broadcast $eventId");
+      return;
+    }
+
+    // Get account to authenticate (use the event's author)
+    Account? account;
+    final loggedAccount = _accounts?.getLoggedAccount();
+    if (loggedAccount != null && loggedAccount.pubkey == eventToResend.pubKey) {
+      account = loggedAccount;
+    } else {
+      // Try to find an account that matches the event author
+      account = _accounts?.accounts[eventToResend.pubKey];
+    }
+
+    if (account == null || !account.signer.canSign()) {
+      Logger.log.w(
+          "Received OK auth-required but no account can sign for ${relayConnectivity.url}");
+      return;
+    }
+
+    Logger.log.d(
+        "AUTH required for EVENT $eventId on ${relayConnectivity.url}, authenticating...");
+
+    // Create AUTH event
+    final auth = AuthEvent(pubKey: account.pubkey, tags: [
+      ["relay", relayConnectivity.url],
+      ["challenge", challenge]
+    ]);
+
+    // Sign and send AUTH, then re-send EVENT on OK
+    account.signer.sign(auth).then((signedAuth) {
+      // Store callback to re-send EVENT after AUTH OK
+      _pendingAuthCallbacks[signedAuth.id] = () {
+        Logger.log.d(
+            "AUTH OK received, re-sending EVENT $eventId to ${relayConnectivity.url}");
+        // Re-send the EVENT
+        send(relayConnectivity,
+            ClientMsg(ClientMsgType.kEvent, event: eventToResend));
+      };
+
+      send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
+      Logger.log.d(
+          "AUTH sent for ${account!.pubkey.substring(0, 8)} to ${relayConnectivity.url}, waiting for OK...");
+    });
   }
 
   void _checkNetworkClose(
