@@ -47,6 +47,12 @@ class RelayManager<T> {
   /// stores pending AUTH callbacks: authEventId -> callback to execute on AUTH OK
   final Map<String, void Function()> _pendingAuthCallbacks = {};
 
+  /// stores timers for pending AUTH callbacks to clean them up on timeout
+  final Map<String, Timer> _pendingAuthTimers = {};
+
+  /// timeout for AUTH callbacks (how long to wait for AUTH OK)
+  static const Duration _authCallbackTimeout = Duration(seconds: 30);
+
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
 
@@ -466,6 +472,8 @@ class RelayManager<T> {
 
       // Check if this is an AUTH OK response
       if (_pendingAuthCallbacks.containsKey(eventId)) {
+        _pendingAuthTimers[eventId]?.cancel();
+        _pendingAuthTimers.remove(eventId);
         if (success) {
           Logger.log.d("AUTH OK for $eventId, executing callback");
           final callback = _pendingAuthCallbacks.remove(eventId);
@@ -770,6 +778,14 @@ class RelayManager<T> {
           }
         };
 
+        // Start timeout timer to clean up orphaned callbacks
+        _pendingAuthTimers[signedAuth.id] = Timer(_authCallbackTimeout, () {
+          Logger.log.w(
+              "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}");
+          _pendingAuthCallbacks.remove(signedAuth.id);
+          _pendingAuthTimers.remove(signedAuth.id);
+        });
+
         send(
             relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
         Logger.log.d(
@@ -836,6 +852,14 @@ class RelayManager<T> {
         send(relayConnectivity,
             ClientMsg(ClientMsgType.kEvent, event: eventToResend));
       };
+
+      // Start timeout timer to clean up orphaned callbacks
+      _pendingAuthTimers[signedAuth.id] = Timer(_authCallbackTimeout, () {
+        Logger.log.w(
+            "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}");
+        _pendingAuthCallbacks.remove(signedAuth.id);
+        _pendingAuthTimers.remove(signedAuth.id);
+      });
 
       send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
       Logger.log.d(
