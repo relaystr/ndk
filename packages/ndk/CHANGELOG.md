@@ -1,3 +1,8 @@
+## 0.7.1-dev.3
+
+ - **FIX**: rename stateChanges to authStateChanges.
+ - **FEAT**: gift wrap add custom signer parameter.
+
 ## 0.7.1-dev.2
 
  - **FIX**: minIsolatePoolSize.
