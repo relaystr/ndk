@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../../../data_layer/models/nip_01_event_model.dart';
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/nip_01_event.dart';
+import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 
@@ -14,16 +15,34 @@ class GiftWrap {
 
   GiftWrap({required this.accounts});
 
+  /// Returns the signer to use for signing operations.
+  /// Uses [customSigner] if provided, otherwise falls back to logged-in account's signer.
+  EventSigner _getSigner({EventSigner? customSigner}) {
+    if (customSigner != null) {
+      return customSigner;
+    }
+    final account = accounts.getLoggedAccount();
+    if (account == null) {
+      throw Exception("cannot sign without account or custom signer");
+    }
+    return account.signer;
+  }
+
   /// converts a Nip01Event to a giftWrap Nip01Event \
   /// [rumor] the event you want to wrap \
   /// [recipientPubkey] the reciever of the rumor \
+  /// [customSigner] optional signer to use instead of the logged-in account's signer \
   /// [returns] the wrapped event
   Future<Nip01Event> toGiftWrap({
     required Nip01Event rumor,
     required String recipientPubkey,
+    EventSigner? customSigner,
   }) async {
-    final sealedRumor =
-        await sealRumor(rumor: rumor, recipientPubkey: recipientPubkey);
+    final sealedRumor = await sealRumor(
+      rumor: rumor,
+      recipientPubkey: recipientPubkey,
+      customSigner: customSigner,
+    );
 
     final giftWrap = await wrapEvent(
       recipientPublicKey: recipientPubkey,
@@ -34,16 +53,24 @@ class GiftWrap {
 
   /// Unwraps a gift-wrapped event to retrieve the original rumor \
   /// [giftWrap] the gift-wrapped event to unwrap \
+  /// [customSigner] optional signer to use instead of the logged-in account's signer \
   /// [returns] the original rumor event
   Future<Nip01Event> fromGiftWrap({
     required Nip01Event giftWrap,
+    EventSigner? customSigner,
   }) async {
     if (giftWrap.kind != kGiftWrapEventkind) {
       throw Exception("Event is not a gift wrap (kind:1059)");
     }
 
-    final sealEvent = await unwrapEvent(wrappedEvent: giftWrap);
-    final rumor = await unsealRumor(sealedEvent: sealEvent);
+    final sealEvent = await unwrapEvent(
+      wrappedEvent: giftWrap,
+      customSigner: customSigner,
+    );
+    final rumor = await unsealRumor(
+      sealedEvent: sealEvent,
+      customSigner: customSigner,
+    );
 
     return rumor;
   }
@@ -75,16 +102,15 @@ class GiftWrap {
 
   /// Seals a rumor (creates a kind:13 event)
   ///
+  /// [customSigner] optional signer to use instead of the logged-in account's signer
   Future<Nip01Event> sealRumor({
     required Nip01Event rumor,
     required String recipientPubkey,
+    EventSigner? customSigner,
   }) async {
-    final account = accounts.getLoggedAccount();
-    if (account == null) {
-      throw Exception("cannot sign without account");
-    }
+    final signer = _getSigner(customSigner: customSigner);
 
-    final encryptedContent = await account.signer.encryptNip44(
+    final encryptedContent = await signer.encryptNip44(
       plaintext: Nip01EventModel.fromEntity(rumor).toJsonString(),
       recipientPubKey: recipientPubkey,
     );
@@ -94,7 +120,7 @@ class GiftWrap {
     }
 
     final sealEvent = Nip01Event(
-      pubKey: account.pubkey,
+      pubKey: signer.getPublicKey(),
       kind: kSealEventKind,
       tags: [],
       content: encryptedContent,
@@ -103,15 +129,17 @@ class GiftWrap {
     return sealEvent;
   }
 
+  /// Unseals a sealed event to retrieve the rumor
+  ///
+  /// [customSigner] optional signer to use instead of the logged-in account's signer
   Future<Nip01Event> unsealRumor({
     required Nip01Event sealedEvent,
+    EventSigner? customSigner,
   }) async {
-    final account = accounts.getLoggedAccount();
-    if (account == null) {
-      throw Exception("Cannot decrypt without account");
-    }
+    final signer = _getSigner(customSigner: customSigner);
+
     // Now decrypt the seal to get the rumor
-    final decryptedRumorJson = await account.signer.decryptNip44(
+    final decryptedRumorJson = await signer.decryptNip44(
       ciphertext: sealedEvent.content,
       senderPubKey: sealedEvent.pubKey,
     );
@@ -180,15 +208,16 @@ class GiftWrap {
     return gWEventSigned;
   }
 
+  /// Unwraps a gift wrap to get the seal event
+  ///
+  /// [customSigner] optional signer to use instead of the logged-in account's signer
   Future<Nip01Event> unwrapEvent({
     required Nip01Event wrappedEvent,
+    EventSigner? customSigner,
   }) async {
-    final account = accounts.getLoggedAccount();
-    if (account == null) {
-      throw Exception("Cannot decrypt without account");
-    }
+    final signer = _getSigner(customSigner: customSigner);
 
-    final decryptedEventJson = await account.signer.decryptNip44(
+    final decryptedEventJson = await signer.decryptNip44(
       ciphertext: wrappedEvent.content,
       senderPubKey: wrappedEvent.pubKey,
     );
