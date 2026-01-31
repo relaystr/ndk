@@ -726,46 +726,56 @@ class RelayManager<T> {
       return;
     }
 
-    // Get account to authenticate
-    Account? account;
+    // Collect accounts to authenticate
+    final accountsToAuth = <Account>{};
     if (state.request.authenticateAs != null &&
         state.request.authenticateAs!.isNotEmpty) {
-      account = state.request.authenticateAs!.first;
+      accountsToAuth.addAll(state.request.authenticateAs!);
     } else if (_accounts?.getLoggedAccount() != null) {
-      account = _accounts!.getLoggedAccount()!;
+      accountsToAuth.add(_accounts!.getLoggedAccount()!);
     }
 
-    if (account == null || !account.signer.canSign()) {
+    // Filter to accounts that can sign
+    final signableAccounts =
+        accountsToAuth.where((a) => a.signer.canSign()).toList();
+
+    if (signableAccounts.isEmpty) {
       Logger.log.w(
           "Received CLOSED auth-required but no account can sign for ${relayConnectivity.url}");
       return;
     }
 
     Logger.log.d(
-        "AUTH required for REQ $reqId on ${relayConnectivity.url}, authenticating...");
+        "AUTH required for REQ $reqId on ${relayConnectivity.url}, authenticating ${signableAccounts.length} account(s)...");
 
-    // Create AUTH event
-    final auth = AuthEvent(pubKey: account.pubkey, tags: [
-      ["relay", relayConnectivity.url],
-      ["challenge", challenge]
-    ]);
+    // Track how many AUTH OKs we need before re-sending REQ
+    int pendingAuthCount = signableAccounts.length;
 
-    // Sign and send AUTH, then re-send REQ on OK
-    account.signer.sign(auth).then((signedAuth) {
-      // Store callback to re-send REQ after AUTH OK
-      _pendingAuthCallbacks[signedAuth.id] = () {
+    for (final account in signableAccounts) {
+      final auth = AuthEvent(pubKey: account.pubkey, tags: [
+        ["relay", relayConnectivity.url],
+        ["challenge", challenge]
+      ]);
+
+      account.signer.sign(auth).then((signedAuth) {
+        // Store callback - only re-send REQ after last AUTH OK
+        _pendingAuthCallbacks[signedAuth.id] = () {
+          pendingAuthCount--;
+          if (pendingAuthCount == 0) {
+            Logger.log.d(
+                "All AUTH OK received, re-sending REQ $reqId to ${relayConnectivity.url}");
+            List<dynamic> list = ["REQ", reqId];
+            list.addAll(request.filters.map((filter) => filter.toMap()));
+            _sendRaw(relayConnectivity, jsonEncode(list));
+          }
+        };
+
+        send(
+            relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
         Logger.log.d(
-            "AUTH OK received, re-sending REQ $reqId to ${relayConnectivity.url}");
-        // Re-send the REQ
-        List<dynamic> list = ["REQ", reqId];
-        list.addAll(request.filters.map((filter) => filter.toMap()));
-        _sendRaw(relayConnectivity, jsonEncode(list));
-      };
-
-      send(relayConnectivity, ClientMsg(ClientMsgType.kAuth, event: signedAuth));
-      Logger.log.d(
-          "AUTH sent for ${account!.pubkey.substring(0, 8)} to ${relayConnectivity.url}, waiting for OK...");
-    });
+            "AUTH sent for ${account.pubkey.substring(0, 8)} to ${relayConnectivity.url}");
+      });
+    }
   }
 
   /// Handles OK auth-required for broadcasts by authenticating and re-sending the EVENT
