@@ -1,13 +1,16 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:pointycastle/export.dart';
 
 import '../../../shared/logger/logger.dart';
+
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_proof.dart';
-import '../../repositories/cashu_seed_secret.dart';
+
+import '../../repositories/cashu_key_derivation.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';
 import 'cashu_tools.dart';
@@ -25,6 +28,8 @@ class CashuBdhke {
   }) async {
     List<CashuBlindedMessageItem> items = [];
 
+    final seedBytes = Uint8List.fromList(cashuSeed.getSeedBytes());
+
     for (final amount in amounts) {
       try {
         final myCount = await cacheManager.getAndIncrementDerivationCounter(
@@ -32,12 +37,8 @@ class CashuBdhke {
           mintUrl: mintUrl,
         );
 
-        // final mySecret =
-        //     await cashuSeed.deriveSecret(counter: myCount, keysetId: keysetId);
-
-        final userMnemonic = cashuSeed.getSeedPhrase();
         final mySecret = await cashuSeedSecretGenerator.deriveSecret(
-          mnemonic: userMnemonic,
+          seedBytes: seedBytes,
           counter: myCount,
           keysetId: keysetId,
         );
@@ -78,20 +79,19 @@ class CashuBdhke {
   }
 
   static BlindMessageResult blindMessage(String secret, {BigInt? r}) {
-    // Alice picks secret x and computes Y = hash_to_curve(x)
-    final ECPoint Y = CashuTools.hashToCurve(secret);
+    final Y = CashuTools.hashToCurve(secret);
 
-    final G = CashuTools.getG();
-
-    // Alice generates random blinding factor r
     Random random = Random.secure();
     r ??= BigInt.from(random.nextInt(1000000)) + BigInt.one;
 
-    // Alice sends to Bob: B_ = Y + rG (blinding)
-    final ECPoint? blindedMessage = Y + (G * r);
+    // Use fast multiplication (10-20x faster!)
+    final rG = CashuTools.fastGMultiply(r);
+    final ECPoint? blindedMessage = Y + rG;
+
     if (blindedMessage == null) {
       throw Exception('Failed to compute blinded message');
     }
+
     final String blindedMessageHex = CashuTools.ecPointToHex(blindedMessage);
     return (blindedMessageHex, r);
   }

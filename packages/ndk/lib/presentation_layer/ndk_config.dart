@@ -2,11 +2,9 @@ import '../config/bootstrap_relays.dart';
 import '../config/broadcast_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
-import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
-import '../domain_layer/repositories/cashu_seed_secret.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../shared/logger/log_level.dart';
 

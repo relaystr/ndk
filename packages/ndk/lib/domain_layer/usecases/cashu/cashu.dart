@@ -15,8 +15,9 @@ import '../../entities/cashu/cashu_user_seedphrase.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/cache_manager.dart';
+import '../../repositories/cashu_key_derivation.dart';
 import '../../repositories/cashu_repo.dart';
-import '../../repositories/cashu_seed_secret.dart';
+
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';

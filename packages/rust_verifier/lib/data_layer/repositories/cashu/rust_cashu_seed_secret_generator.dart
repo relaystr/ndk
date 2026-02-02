@@ -1,6 +1,6 @@
 import 'package:bip39_mnemonic/bip39_mnemonic.dart';
+import 'package:ndk/domain_layer/repositories/cashu_key_derivation.dart';
 
-import 'package:ndk/domain_layer/repositories/cashu_seed_secret.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_seed.dart';
 import 'package:ndk_rust_verifier/rust_bridge/api/cashu_seed.dart';
 import '../rust_lib_initializer.dart';

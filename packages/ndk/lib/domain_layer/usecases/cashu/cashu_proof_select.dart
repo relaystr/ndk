@@ -1,8 +1,9 @@
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_proof.dart';
+import '../../repositories/cashu_key_derivation.dart';
 import '../../repositories/cashu_repo.dart';
-import '../../repositories/cashu_seed_secret.dart';
+
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';

@@ -22,6 +22,43 @@ class CashuTools {
     return '$mintUrl/$version$path';
   }
 
+  static final List<ECPoint> _gPowersOf2 = _precomputeGPowersOf2();
+
+  static List<ECPoint> _precomputeGPowersOf2() {
+    final powers = <ECPoint>[];
+    var current = getG();
+
+    for (var i = 0; i < 256; i++) {
+      powers.add(current);
+      current = (current + current)!; // Double the point
+    }
+
+    return powers;
+  }
+
+  /// Fast G multiplication using pre-computed table
+  static ECPoint fastGMultiply(BigInt scalar) {
+    ECPoint? result;
+
+    // Binary method: iterate through bits of scalar
+    var tempScalar = scalar;
+    var bitIndex = 0;
+
+    while (tempScalar > BigInt.zero) {
+      // Check if least significant bit is 1
+      if ((tempScalar & BigInt.one) == BigInt.one) {
+        result = result == null
+            ? _gPowersOf2[bitIndex]
+            : (result + _gPowersOf2[bitIndex])!;
+      }
+
+      tempScalar = tempScalar >> 1; // Right shift (divide by 2)
+      bitIndex++;
+    }
+
+    return result ?? getG();
+  }
+
   /// Splits an amount into a list of powers of two.
   /// eg, 5 will be split into [1, 4]
   static List<int> splitAmount(int value) {
