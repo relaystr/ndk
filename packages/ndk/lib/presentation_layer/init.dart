@@ -108,6 +108,7 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           eagerAuth: _ndkConfig.eagerAuth,
+          authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
 
         engine = RelaySetsEngine(
@@ -125,6 +126,7 @@ class Initialization {
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
           eagerAuth: _ndkConfig.eagerAuth,
+          authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
 
         engine = JitEngine(

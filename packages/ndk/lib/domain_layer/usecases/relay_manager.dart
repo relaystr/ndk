@@ -5,6 +5,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../config/bootstrap_relays.dart';
 import '../../config/relay_defaults.dart';
+import '../../config/request_defaults.dart';
 import '../../shared/decode_nostr_msg/decode_nostr_msg.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../../shared/isolates/isolate_manager.dart';
@@ -51,7 +52,7 @@ class RelayManager<T> {
   final Map<String, Timer> _pendingAuthTimers = {};
 
   /// timeout for AUTH callbacks (how long to wait for AUTH OK)
-  static const Duration _authCallbackTimeout = Duration(seconds: 30);
+  final Duration authCallbackTimeout;
 
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
@@ -82,6 +83,7 @@ class RelayManager<T> {
     List<String>? bootstrapRelays,
     allowReconnect = true,
     this.eagerAuth = false,
+    this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
   }) : _accounts = accounts {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
@@ -779,7 +781,7 @@ class RelayManager<T> {
         };
 
         // Start timeout timer to clean up orphaned callbacks
-        _pendingAuthTimers[signedAuth.id] = Timer(_authCallbackTimeout, () {
+        _pendingAuthTimers[signedAuth.id] = Timer(authCallbackTimeout, () {
           Logger.log.w(
               "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}");
           _pendingAuthCallbacks.remove(signedAuth.id);
@@ -854,7 +856,7 @@ class RelayManager<T> {
       };
 
       // Start timeout timer to clean up orphaned callbacks
-      _pendingAuthTimers[signedAuth.id] = Timer(_authCallbackTimeout, () {
+      _pendingAuthTimers[signedAuth.id] = Timer(authCallbackTimeout, () {
         Logger.log.w(
             "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}");
         _pendingAuthCallbacks.remove(signedAuth.id);
