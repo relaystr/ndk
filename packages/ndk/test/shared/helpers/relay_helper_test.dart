@@ -5,7 +5,8 @@ void main() {
   group('cleanRelayUrl', () {
     group('valid URLs', () {
       test('accepts valid wss URL with port + path', () {
-        expect(cleanRelayUrl('wss://relay.damus.io:5000/abc/aa.co.mm'), 'wss://relay.damus.io:5000/abc/aa.co.mm');
+        expect(cleanRelayUrl('wss://relay.damus.io:5000/abc/aa.co.mm'),
+            'wss://relay.damus.io:5000/abc/aa.co.mm');
       });
 
       test('accepts valid wss URL', () {
