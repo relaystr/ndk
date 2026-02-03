@@ -1,3 +1,7 @@
+## 0.7.1-dev.5
+
+ - **FEAT**: add missing state field in lookup_invoice_response.dart.
+
 ## 0.7.1-dev.4
 
  - **FIX**: move authCallbackTimeout to NdkConfig.
