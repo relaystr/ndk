@@ -24,4 +24,7 @@ class RequestDefaults {
 
   /// default User-Agent header value used for websocket connections
   static const String DEFAULT_USER_AGENT = "dart-NDK/$packageVersion";
+
+  /// default timeout for AUTH callbacks (how long to wait for AUTH OK)
+  static const Duration DEFAULT_AUTH_CALLBACK_TIMEOUT = Duration(seconds: 30);
 }

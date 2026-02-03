@@ -61,6 +61,15 @@ class NdkConfig {
   /// Disabled by default for performance.
   bool fetchedRangesEnabled;
 
+  /// If true, AUTH immediately when relay sends challenge.
+  /// If false (default), AUTH only after relay responds with auth-required.
+  /// False is more privacy-respecting as it doesn't reveal identity until necessary.
+  bool eagerAuth;
+
+  /// Timeout for AUTH callbacks (how long to wait for AUTH OK response).
+  /// Defaults to 30 seconds.
+  Duration authCallbackTimeout;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -86,6 +95,8 @@ class NdkConfig {
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
     this.fetchedRangesEnabled = false,
+    this.eagerAuth = false,
+    this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
   });
 }
 
