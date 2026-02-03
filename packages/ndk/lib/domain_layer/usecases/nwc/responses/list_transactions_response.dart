@@ -46,7 +46,7 @@ class TransactionResult extends Equatable {
   /// The hash of the transaction description.
   final String? descriptionHash;
 
-  /// The hash of the transaction description.
+  /// The state of the payment, can be "pending", "settled", "expired" (for invoices) or "failed" (for payments), optional
   final String? state;
 
   /// The preimage of the transaction.
