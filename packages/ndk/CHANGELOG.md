@@ -1,3 +1,11 @@
+## 0.7.1-dev.4
+
+ - **FIX**: move authCallbackTimeout to NdkConfig.
+ - **FIX**: add timeout for pending AUTH callbacks.
+ - **FIX**: authenticate all accounts in authenticateAs for lazy auth mode.
+ - **FIX**: handle NIP-42 auth-required by re-sending REQ/EVENT after AUTH.
+ - **FEAT**: add eagerAuth in NDK config.
+
 ## 0.7.1-dev.3
 
  - **FIX**: rename stateChanges to authStateChanges.

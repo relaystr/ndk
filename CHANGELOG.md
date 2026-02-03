@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.4`](#ndk---v071-dev4)
+ - [`ndk_amber` - `v0.4.0-dev.4`](#ndk_amber---v040-dev4)
+ - [`ndk_objectbox` - `v0.2.8-dev.4`](#ndk_objectbox---v028-dev4)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.4`](#ndk_rust_verifier---v050-dev4)
+ - [`nip07_event_signer` - `v1.0.6-dev.4`](#nip07_event_signer---v106-dev4)
+ - [`sembast_cache_manager` - `v1.0.7-dev.4`](#sembast_cache_manager---v107-dev4)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.4`](#ndk_cache_manager_test_suite---v101-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.4`
+ - `ndk_objectbox` - `v0.2.8-dev.4`
+ - `ndk_rust_verifier` - `v0.5.0-dev.4`
+ - `nip07_event_signer` - `v1.0.6-dev.4`
+ - `sembast_cache_manager` - `v1.0.7-dev.4`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.4`
+
+---
+
+#### `ndk` - `v0.7.1-dev.4`
+
+ - **FIX**: move authCallbackTimeout to NdkConfig.
+ - **FIX**: add timeout for pending AUTH callbacks.
+ - **FIX**: authenticate all accounts in authenticateAs for lazy auth mode.
+ - **FIX**: handle NIP-42 auth-required by re-sending REQ/EVENT after AUTH.
+ - **FEAT**: add eagerAuth in NDK config.
+
+
 ## 2026-01-31
 
 ### Changes

@@ -417,14 +417,14 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.7.1-dev.3"
+    version: "0.7.1-dev.4"
   ndk_cache_manager_test_suite:
     dependency: "direct dev"
     description:
       path: "../ndk_cache_manager_test_suite"
       relative: true
     source: path
-    version: "1.0.1-dev.3"
+    version: "1.0.1-dev.4"
   node_preamble:
     dependency: transitive
     description:
