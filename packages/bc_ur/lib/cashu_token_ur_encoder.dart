@@ -1,12 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:cbor/cbor.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ur/ur.dart';
 import 'package:ur/ur_encoder.dart';
 import 'package:ur/ur_decoder.dart';
-
-import '../../../shared/logger/logger.dart';
-import '../../entities/cashu/cashu_token.dart';
 
 /// Encoder and decoder for Cashu tokens using UR (Uniform Resources) format.
 /// This implements NUT-16 for animated QR codes support.

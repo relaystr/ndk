@@ -40,10 +40,7 @@ dependencies:
     git:
       url: https://github.com/1-leo/dart-bip32-keys
   bip39_mnemonic: ^4.0.1
-  ur:
-    git:
-      url: https://github.com/bukata-sa/bc-ur-dart.git
-      ref: main
+
 
 
 dev_dependencies:
