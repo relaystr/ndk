@@ -212,7 +212,8 @@ class Wallets {
     if (_walletBalanceStreams[id] == null) {
       _walletBalanceStreams[id] ??= BehaviorSubject<List<WalletBalance>>();
       final subscriptions = <StreamSubscription>[];
-      subscriptions.add(_walletsRepository.getBalancesStream(id).listen((balances) {
+      subscriptions
+          .add(_walletsRepository.getBalancesStream(id).listen((balances) {
         _walletsBalances[id] = balances;
         _walletBalanceStreams[id]?.add(balances);
         _updateCombinedStreams();
@@ -230,7 +231,9 @@ class Wallets {
       _walletRecentTransactionStreams[id] ??=
           BehaviorSubject<List<WalletTransaction>>();
       final subscriptions = <StreamSubscription>[];
-      subscriptions.add(_walletsRepository.getRecentTransactionsStream(id).listen((transactions) {
+      subscriptions.add(_walletsRepository
+          .getRecentTransactionsStream(id)
+          .listen((transactions) {
         transactions = transactions.where((tx) => tx.state.isDone).toList();
         _walletsRecentTransactions[id] = transactions;
         _walletRecentTransactionStreams[id]?.add(transactions);
@@ -240,7 +243,7 @@ class Wallets {
         _subscriptions[id] = subscriptions;
       } else {
         _subscriptions[id]?.addAll(subscriptions);
-    }
+      }
     }
   }
 
@@ -249,7 +252,9 @@ class Wallets {
       _walletPendingTransactionStreams[id] ??=
           BehaviorSubject<List<WalletTransaction>>();
       final subscriptions = <StreamSubscription>[];
-      subscriptions.add(_walletsRepository.getPendingTransactionsStream(id).listen((transactions) {
+      subscriptions.add(_walletsRepository
+          .getPendingTransactionsStream(id)
+          .listen((transactions) {
         transactions = transactions.where((tx) => tx.state.isPending).toList();
         _walletsPendingTransactions[id] = transactions;
         _walletPendingTransactionStreams[id]?.add(transactions);
@@ -273,7 +278,8 @@ class Wallets {
     return _walletRecentTransactionStreams[walletId]!.stream;
   }
 
-  Stream<List<WalletTransaction>> getPendingTransactionsStream(String walletId) {
+  Stream<List<WalletTransaction>> getPendingTransactionsStream(
+      String walletId) {
     _initPendingTransactionStream(walletId);
     return _walletPendingTransactionStreams[walletId]!.stream;
   }
@@ -284,7 +290,8 @@ class Wallets {
     if (balances == null) {
       return 0;
     }
-    final balance = balances.firstWhereOrNull((balance) => balance.unit == unit);
+    final balance =
+        balances.firstWhereOrNull((balance) => balance.unit == unit);
     return balance?.amount ?? 0;
   }
 
