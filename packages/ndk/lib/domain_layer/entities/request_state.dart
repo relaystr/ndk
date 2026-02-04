@@ -11,6 +11,7 @@ import 'nip_01_event.dart';
 class RelayRequestState {
   String url;
   bool receivedEOSE = false;
+  bool receivedClosed = false;
   List<Filter> filters;
 
   /// default const
@@ -84,6 +85,10 @@ class RequestState {
   /// checks if all requests received EOSE
   bool get didAllRequestsReceivedEOSE =>
       !requests.values.any((element) => !element.receivedEOSE);
+
+  /// checks if all requests finished (received EOSE or CLOSED)
+  bool get didAllRequestsFinish => requests.values
+      .every((element) => element.receivedEOSE || element.receivedClosed);
 
   /// Adds single relay request to the state
   void addRequest(String url, List<Filter> filters) {
