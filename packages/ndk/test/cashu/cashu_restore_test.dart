@@ -36,7 +36,7 @@ void main() {
         cashuUserSeedphrase: userSeedPhrase,
       );
 
-      const fundAmount = 21; // Small amount for testing
+      const fundAmount = 21;
       const mintUrl = devMintUrl;
       const unit = "sat";
 
@@ -166,6 +166,6 @@ void main() {
 
       httpClient1.close();
       httpClient2.close();
-    }, skip: true); // Skip by default - requires real mint
+    }, skip: false);
   });
 }

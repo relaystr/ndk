@@ -14,7 +14,9 @@ class CashuBlindedMessage {
   factory CashuBlindedMessage.fromServerMap(Map json) {
     return CashuBlindedMessage(
       id: json['id'],
-      amount: int.tryParse(json['amount']) ?? 0,
+      amount: json['amount'] is int
+          ? json['amount']
+          : int.tryParse(json['amount']) ?? 0,
       blindedMessage: json['B_'],
     );
   }

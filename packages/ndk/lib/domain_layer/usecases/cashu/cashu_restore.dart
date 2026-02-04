@@ -5,36 +5,13 @@ import '../../entities/cashu/cashu_blinded_message.dart';
 import '../../entities/cashu/cashu_blinded_signature.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_proof.dart';
+import '../../entities/cashu/cashu_restore_result.dart';
 import '../../repositories/cashu_key_derivation.dart';
 import '../../repositories/cashu_repo.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';
 import 'cashu_tools.dart';
-
-/// Result of a restore operation for a single keyset
-class CashuRestoreKeysetResult {
-  final String keysetId;
-  final List<CashuProof> restoredProofs;
-  final int lastUsedCounter;
-
-  CashuRestoreKeysetResult({
-    required this.keysetId,
-    required this.restoredProofs,
-    required this.lastUsedCounter,
-  });
-}
-
-/// Overall result of a restore operation
-class CashuRestoreResult {
-  final List<CashuRestoreKeysetResult> keysetResults;
-  final int totalProofsRestored;
-
-  CashuRestoreResult({
-    required this.keysetResults,
-    required this.totalProofsRestored,
-  });
-}
 
 /// Implements NUT-09 (Restore) and uses NUT-13 (Deterministic Secrets)
 /// to restore proofs from a seed phrase.

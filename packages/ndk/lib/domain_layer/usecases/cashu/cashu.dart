@@ -9,6 +9,7 @@ import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
+import '../../entities/cashu/cashu_restore_result.dart';
 import '../../entities/cashu/cashu_spending_result.dart';
 import '../../entities/cashu/cashu_token.dart';
 import '../../entities/cashu/cashu_user_seedphrase.dart';
