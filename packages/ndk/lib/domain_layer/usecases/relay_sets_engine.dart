@@ -7,18 +7,15 @@ import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
 import '../../shared/nips/nip01/client_msg.dart';
-import '../../shared/nips/nip01/helpers.dart';
 import '../../shared/helpers/relay_helper.dart';
 import '../entities/broadcast_response.dart';
 import '../entities/broadcast_state.dart';
 import '../entities/connection_source.dart';
 import '../entities/filter.dart';
 import '../entities/global_state.dart';
-import '../entities/ndk_request.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/relay_connectivity.dart';
 import '../entities/relay_set.dart';
-import '../entities/request_response.dart';
 import '../entities/request_state.dart';
 import '../repositories/cache_manager.dart';
 import '../repositories/event_signer.dart';
@@ -216,49 +213,6 @@ class RelaySetsEngine implements NetworkEngine {
         }
       });
     }
-  }
-
-  //! dead code
-  Future<NdkResponse> requestRelays(
-    String name,
-    Iterable<String> urls,
-    Filter filter, {
-    Duration timeout = kDefaultStreamIdleTimeout,
-    bool closeOnEOSE = true,
-  }) async {
-    String id = Helpers.getRandomString(10);
-    RequestState state = RequestState(closeOnEOSE
-        ? NdkRequest.query(
-            id,
-            name: name,
-            filters: [filter],
-            timeoutDuration: timeout,
-          )
-        : NdkRequest.subscription(
-            id,
-            name: name,
-            filters: [],
-          ));
-
-    for (var url in urls) {
-      state.addRequest(url, RelaySet.sliceFilterAuthors(filter));
-    }
-    _globalState.inFlightRequests[state.id] = state;
-
-    for (MapEntry<String, RelayRequestState> entry in state.requests.entries) {
-      doRelayRequest(state.id, entry.value).then((sent) {
-        if (!sent) {
-          state.requests.remove(entry.value.url);
-          // start fix
-          if (state.requests.isEmpty) {
-            state.networkController.close();
-          }
-          // end fix
-        }
-      });
-    }
-
-    return NdkResponse(state.id, state.stream);
   }
 
   @override
