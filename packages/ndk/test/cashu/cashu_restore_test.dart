@@ -75,12 +75,13 @@ void main() {
         () async {
       // This test uses the real dev mint to properly test the restore functionality
       // It can be run manually when needed by removing the skip flag
-      
-      // Create a shared seed phrase for both wallets  
+
+      // Create a shared seed phrase for both wallets
       final seedPhrase = CashuSeed.generateSeedPhrase();
       final userSeedPhrase = CashuUserSeedphrase(seedPhrase: seedPhrase);
-      
-      print('Using seed phrase for test (first 5 words): ${seedPhrase.split(' ').take(5).join(' ')}...');
+
+      print(
+          'Using seed phrase for test (first 5 words): ${seedPhrase.split(' ').take(5).join(' ')}...');
 
       // Create wallet1
       final httpClient1 = http.Client();
@@ -120,8 +121,8 @@ void main() {
       await expectLater(
         transactionStream,
         emitsInOrder([
-          isA<CashuWalletTransaction>().having(
-              (t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.pending),
           isA<CashuWalletTransaction>().having(
               (t) => t.state, 'state', WalletTransactionState.completed),
         ]),
@@ -144,7 +145,7 @@ void main() {
 
       // Create wallet2 with the SAME seed phrase but DIFFERENT cache
       print('\nStep 3: Creating wallet2 with same seed phrase...');
-      
+
       final httpClient2 = http.Client();
       final httpRequestDS2 = HttpRequestDS(httpClient2);
       final cashuRepo2 = CashuRepoImpl(client: httpRequestDS2);
@@ -164,13 +165,14 @@ void main() {
           .where((element) => element.mintUrl == mintUrl)
           .firstOrNull
           ?.balances[unit];
-      
-      print('Wallet2 balance before restore: ${wallet2BalanceBefore ?? 0} $unit');
+
+      print(
+          'Wallet2 balance before restore: ${wallet2BalanceBefore ?? 0} $unit');
       expect(wallet2BalanceBefore, anyOf(isNull, equals(0)));
 
       // Restore wallet2 using the seed phrase
       print('\nStep 4: Restoring wallet2 from seed phrase...');
-      
+
       final restoreResult = await wallet2.restore(
         mintUrl: mintUrl,
         unit: unit,
@@ -196,7 +198,8 @@ void main() {
 
       // Verify both wallets have the same balance
       expect(wallet2BalanceAfter, equals(wallet1Balance),
-          reason: 'Wallet2 should have the same balance as wallet1 after restore');
+          reason:
+              'Wallet2 should have the same balance as wallet1 after restore');
       expect(wallet2BalanceAfter, equals(fundAmount),
           reason: 'Wallet2 should have the funded amount');
 
