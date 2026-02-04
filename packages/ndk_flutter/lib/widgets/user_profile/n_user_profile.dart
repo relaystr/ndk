@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
-import 'package:nip19/nip19.dart';
 
 class NUserProfile extends StatelessWidget {
   final Ndk ndk;
@@ -161,7 +160,7 @@ class NUserProfile extends StatelessWidget {
 
   String _formatNpub(String pubkey) {
     try {
-      final npub = Nip19.npubFromHex(pubkey);
+      final npub = Nip19.encodePubKey(pubkey);
       return '${npub.substring(0, 6)}...${npub.substring(npub.length - 6)}';
     } catch (e) {
       return _formatPubkey(pubkey);

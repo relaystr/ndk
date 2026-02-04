@@ -4,7 +4,6 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_amber/ndk_amber.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/widgets/login/nostr_connect_dialog_view.dart';
-import 'package:nip19/nip19.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -108,7 +107,7 @@ class LoginController extends ChangeNotifier {
     final amberResponse = await amber.getPublicKey();
 
     final npub = amberResponse['signature'];
-    final pubkey = Nip19.npubToHex(npub);
+    final pubkey = Nip19.decode(npub);
 
     final amberSigner = AmberEventSigner(
       publicKey: pubkey,

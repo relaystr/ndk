@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
-import 'package:nip19/nip19.dart';
 
 class NName extends StatelessWidget {
   final Ndk ndk;
@@ -66,7 +65,7 @@ class NName extends StatelessWidget {
 
   String _formatNpub(String pubkey) {
     try {
-      final npub = Nip19.npubFromHex(pubkey);
+      final npub = Nip19.encodePubKey(pubkey);
       return '${npub.substring(0, 6)}...${npub.substring(npub.length - 6)}';
     } catch (e) {
       return _formatPubkey(pubkey);

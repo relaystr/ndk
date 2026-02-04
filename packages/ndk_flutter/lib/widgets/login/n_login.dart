@@ -5,7 +5,6 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/widgets/login/login_controller.dart';
 import 'package:nip07_event_signer/nip07_event_signer.dart';
-import 'package:nip19/nip19.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -277,9 +276,9 @@ class _NLoginState extends State<NLogin> {
   }
 
   Future<void> loginWithNpub(String npub) async {
-    String? pubkey;
+    String pubkey;
     try {
-      pubkey = Nip19.npubToHex(npub);
+      pubkey = Nip19.decode(npub);
     } catch (e) {
       return;
     }
@@ -294,14 +293,14 @@ class _NLoginState extends State<NLogin> {
   }
 
   Future<void> loginWithNsec(String nsec) async {
-    String? privateKey;
-    String? pubkey;
+    String privateKey;
     try {
-      privateKey = Nip19.nsecToHex(nsec);
-      pubkey = Bip340.getPublicKey(privateKey);
+      privateKey = Nip19.decode(nsec);
     } catch (e) {
       return;
     }
+
+    final pubkey = Bip340.getPublicKey(privateKey);
 
     if (widget.ndk.accounts.hasAccount(pubkey)) {
       widget.ndk.accounts.switchAccount(pubkey: pubkey);
