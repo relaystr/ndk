@@ -21,6 +21,7 @@ import '../../repositories/cashu_repo.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
+import 'cashu_restore.dart';
 
 import 'cashu_seed.dart';
 import 'cashu_token_encoder.dart';
@@ -91,6 +92,80 @@ class Cashu {
     _cashuSeed.setSeedPhrase(
       seedPhrase: userSeedPhrase.seedPhrase,
     );
+  }
+
+  /// Get the cashu seed instance
+  CashuSeed getCashuSeed() {
+    return _cashuSeed;
+  }
+
+  /// Restores proofs from a mint using the wallet's seed phrase.
+  /// 
+  /// This implements NUT-09 (Restore) using NUT-13 (Deterministic Secrets).
+  /// It will scan the mint for proofs that belong to this wallet's seed.
+  /// 
+  /// [mintUrl] - The URL of the mint to restore from
+  /// [unit] - The unit to restore proofs for (default: 'sat')
+  /// [startCounter] - The counter to start scanning from (default: 0)
+  /// [batchSize] - How many secrets to check in each batch (default: 100)
+  /// [gapLimit] - How many consecutive empty batches before stopping (default: 2)
+  /// 
+  /// Returns a [CashuRestoreResult] containing the restored proofs.
+  Future<CashuRestoreResult> restore({
+    required String mintUrl,
+    String unit = 'sat',
+    int startCounter = 0,
+    int batchSize = 100,
+    int gapLimit = 2,
+  }) async {
+    Logger.log.i('Starting restore from $mintUrl');
+
+    // Get keysets for this mint and unit
+    final allKeysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+    final keysets = allKeysets.where((keyset) => keyset.unit == unit).toList();
+
+    if (keysets.isEmpty) {
+      throw Exception('No keysets found for mint $mintUrl with unit $unit');
+    }
+
+    Logger.log.i('Found ${keysets.length} keysets for unit $unit');
+
+    // Create restore instance
+    final cashuRestore = CashuRestore(
+      cashuRepo: _cashuRepo,
+      cashuKeyDerivation: _cashuKeyDerivation,
+      cacheManager: _cacheManagerCashu,
+      cashuSeed: _cashuSeed,
+    );
+
+    // Restore all keysets
+    final result = await cashuRestore.restoreAllKeysets(
+      mintUrl: mintUrl,
+      keysets: keysets,
+      startCounter: startCounter,
+      batchSize: batchSize,
+      gapLimit: gapLimit,
+    );
+
+    // Save all restored proofs
+    final allProofs = result.keysetResults
+        .expand((keysetResult) => keysetResult.restoredProofs)
+        .toList();
+
+    if (allProofs.isNotEmpty) {
+      await _cacheManagerCashu.saveProofs(
+        proofs: allProofs,
+        mintUrl: mintUrl,
+      );
+      Logger.log.i('Saved ${allProofs.length} restored proofs to cache');
+    }
+
+    // Update balance stream
+    await _updateBalances();
+
+    Logger.log.i('Restore completed. Total proofs restored: ${result.totalProofsRestored}');
+
+    return result;
   }
 
   Future<int> getBalanceMintUnit({
