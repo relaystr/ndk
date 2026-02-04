@@ -28,6 +28,7 @@ class MockRelay {
   bool signEvents;
   bool requireAuthForRequests;
   bool requireAuthForEvents;
+  bool sendAuthChallenge;
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
@@ -51,6 +52,7 @@ class MockRelay {
     this.signEvents = true,
     this.requireAuthForRequests = false,
     this.requireAuthForEvents = false,
+    this.sendAuthChallenge = true,
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
@@ -99,7 +101,7 @@ class MockRelay {
       if (customWelcomeMessage != null) {
         webSocket.add(customWelcomeMessage!);
       }
-      if (requireAuthForRequests || requireAuthForEvents) {
+      if ((requireAuthForRequests || requireAuthForEvents) && sendAuthChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }

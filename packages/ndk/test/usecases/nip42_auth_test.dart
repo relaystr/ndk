@@ -92,4 +92,37 @@ void main() {
     await ndk.destroy();
     await relay.stopServer();
   });
+
+  test('request should complete when relay requires auth but sends no challenge',
+      timeout: const Timeout(Duration(seconds: 5)), () async {
+    final key = Bip340.generatePrivateKey();
+    final relay = MockRelay(
+      name: "relay auth no challenge",
+      explicitPort: 5101,
+      requireAuthForRequests: true,
+      sendAuthChallenge: false,
+    );
+
+    await relay.startServer();
+
+    final ndk = Ndk(NdkConfig(
+      eventVerifier: MockEventVerifier(),
+      cache: MemCacheManager(),
+      bootstrapRelays: [relay.url],
+    ));
+
+    final result = await ndk.requests
+        .query(
+          filter: Filter(
+            kinds: [Nip01Event.kTextNodeKind],
+            authors: [key.publicKey],
+          ),
+        )
+        .future;
+
+    expect(result, isEmpty);
+
+    await ndk.destroy();
+    await relay.stopServer();
+  });
 }
