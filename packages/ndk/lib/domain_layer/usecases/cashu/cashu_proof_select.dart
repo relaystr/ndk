@@ -274,139 +274,127 @@ class CashuProofSelect {
 
     final sortedProofs = sortProofsOptimally(proofs, keysets);
 
-    // First try to find exact match (including fees)
-    final exactMatch =
-        _findExactMatchWithFees(sortedProofs, targetAmount, keysets);
-    if (exactMatch.isNotEmpty) {
-      final feeData =
-          calculateFeesWithBreakdown(proofs: exactMatch, keysets: keysets);
-      return ProofSelectionResult(
-        selectedProofs: exactMatch,
-        totalSelected: exactMatch.fold(0, (sum, proof) => sum + proof.amount),
-        fees: feeData['totalFees'],
-        splitAmount: 0,
-        needsSplit: false,
-        feesByKeyset: feeData['feesByKeyset'],
-      );
-    }
-
-    // Iterative selection accounting for fees
-    return _selectWithFeeIteration(
-      sortedProofs: sortedProofs,
-      targetAmount: targetAmount,
-      keysets: keysets,
-      maxIterations: maxIterations,
-    );
-  }
-
-  /// Iteratively select proofs accounting for fees across multiple keysets
-  static ProofSelectionResult _selectWithFeeIteration({
-    required List<CashuProof> sortedProofs,
-    required int targetAmount,
-    required List<CahsuKeyset> keysets,
-    required int maxIterations,
-  }) {
-    final selected = <CashuProof>[];
-    int iteration = 0;
-
-    while (iteration < maxIterations) {
-      iteration++;
-
-      final currentTotal = selected.fold(0, (sum, proof) => sum + proof.amount);
-      final feeData =
-          calculateFeesWithBreakdown(proofs: selected, keysets: keysets);
-      final currentFees = feeData['totalFees'];
-      final requiredTotal = targetAmount + currentFees;
-
-      if (currentTotal >= requiredTotal) {
-        // We have enough!
-        final splitAmount = currentTotal - targetAmount - currentFees;
+    // For large amounts, skip exact match search (it's exponential and slow)
+    // Only try exact match for smaller amounts with fewer proofs
+    if (targetAmount < 1000 && proofs.length <= 15) {
+      final exactMatch =
+          _findExactMatchWithFees(sortedProofs, targetAmount, keysets);
+      if (exactMatch.isNotEmpty) {
+        final feeData =
+            calculateFeesWithBreakdown(proofs: exactMatch, keysets: keysets);
         return ProofSelectionResult(
-          selectedProofs: selected,
-          totalSelected: currentTotal,
-          fees: currentFees,
-          splitAmount: splitAmount.toInt(),
-          needsSplit: splitAmount > 0,
+          selectedProofs: exactMatch,
+          totalSelected: exactMatch.fold(0, (sum, proof) => sum + proof.amount),
+          fees: feeData['totalFees'],
+          splitAmount: 0,
+          needsSplit: false,
           feesByKeyset: feeData['feesByKeyset'],
         );
       }
-
-      // Need more inputs
-      final shortage = requiredTotal - currentTotal;
-
-      // Find next best proof to add (prefer efficient proofs)
-      CashuProof? nextProof = _selectNextOptimalProof(
-        sortedProofs,
-        selected,
-        shortage.toInt(),
-        keysets,
-      );
-
-      if (nextProof == null) {
-        final availableTotal =
-            sortedProofs.fold(0, (sum, proof) => sum + proof.amount);
-
-        throw Exception(
-            'Insufficient funds: need $targetAmount + fees ($currentFees), have $availableTotal available');
-      }
-
-      selected.add(nextProof);
     }
 
-    throw Exception(
-        'Fee calculation did not converge after $maxIterations iterations');
+    // Use optimized greedy selection
+    return _selectGreedy(
+      sortedProofs: sortedProofs,
+      targetAmount: targetAmount,
+      keysets: keysets,
+    );
   }
 
-  /// Select the next optimal proof considering amount and fee efficiency
-  static CashuProof? _selectNextOptimalProof(
-    List<CashuProof> sortedProofs,
-    List<CashuProof> alreadySelected,
-    int shortage,
-    List<CahsuKeyset> keysets,
-  ) {
-    CashuProof? bestProof;
-    double bestEfficiency = -1;
+  /// Fast greedy selection - optimized for performance
+  static ProofSelectionResult _selectGreedy({
+    required List<CashuProof> sortedProofs,
+    required int targetAmount,
+    required List<CahsuKeyset> keysets,
+  }) {
+    // Use index-based selection to avoid expensive list operations
+    final selected = <int>[]; // indices into sortedProofs
+    final used = <bool>[]; // track which proofs are used
+    for (int i = 0; i < sortedProofs.length; i++) {
+      used.add(false);
+    }
 
-    for (final proof in sortedProofs) {
-      if (alreadySelected.contains(proof)) continue;
+    int currentTotal = 0;
+    int estimatedFees = 0;
 
-      final keyset = _findKeysetById(keysets, proof.keysetId);
-      if (keyset == null) continue;
+    // Greedy selection: keep adding largest available proofs until we exceed target + fees
+    for (int i = 0; i < sortedProofs.length; i++) {
+      if (used[i]) continue;
 
-      // Calculate efficiency: amount per fee unit
-      final feePpk = keyset.inputFeePPK;
-      final feeInSats = ((feePpk + 999) ~/ 1000);
-      final efficiency =
-          feeInSats > 0 ? proof.amount / feeInSats : proof.amount.toDouble();
+      final proof = sortedProofs[i];
+      final proofKeyset = _findKeysetById(keysets, proof.keysetId);
+      if (proofKeyset == null) continue;
 
-      // Prefer proofs that can cover the shortage efficiently
-      if (proof.amount >= shortage && efficiency > bestEfficiency) {
-        bestProof = proof;
-        bestEfficiency = efficiency;
+      // Quick fee estimate (will calculate exactly later)
+      final proofFeePPK = proofKeyset.inputFeePPK;
+      final proofFeeEstimate = (proofFeePPK + 999) ~/ 1000;
+
+      final projectedTotal = currentTotal + proof.amount;
+      final projectedFees = estimatedFees + proofFeeEstimate;
+
+      selected.add(i);
+      used[i] = true;
+      currentTotal = projectedTotal;
+      estimatedFees = projectedFees;
+
+      // Check if we have enough
+      if (currentTotal >= targetAmount + estimatedFees) {
+        break;
       }
     }
 
-    // If no proof can cover shortage, pick the most efficient one
-    if (bestProof == null) {
-      for (final proof in sortedProofs) {
-        if (alreadySelected.contains(proof)) continue;
+    // Now calculate exact fees with selected proofs
+    final selectedProofs = selected.map((i) => sortedProofs[i]).toList();
+    final feeData =
+        calculateFeesWithBreakdown(proofs: selectedProofs, keysets: keysets);
+    final exactFees = feeData['totalFees'];
+    final exactTotal =
+        selectedProofs.fold(0, (sum, proof) => sum + proof.amount);
 
-        final keyset = _findKeysetById(keysets, proof.keysetId);
-        if (keyset == null) continue;
-
-        final feePpk = keyset.inputFeePPK;
-        final feeInSats = ((feePpk + 999) ~/ 1000);
-        final efficiency =
-            feeInSats > 0 ? proof.amount / feeInSats : proof.amount.toDouble();
-
-        if (efficiency > bestEfficiency) {
-          bestProof = proof;
-          bestEfficiency = efficiency;
+    // Check if we need more proofs (fees were underestimated)
+    if (exactTotal < targetAmount + exactFees) {
+      // Add one more proof
+      for (int i = 0; i < sortedProofs.length; i++) {
+        if (!used[i]) {
+          selectedProofs.add(sortedProofs[i]);
+          used[i] = true;
+          break;
         }
       }
+
+      // Recalculate
+      final newFeeData =
+          calculateFeesWithBreakdown(proofs: selectedProofs, keysets: keysets);
+      final newFees = newFeeData['totalFees'];
+      final newTotal =
+          selectedProofs.fold(0, (sum, proof) => sum + proof.amount);
+
+      if (newTotal < targetAmount + newFees) {
+        throw Exception(
+            'Insufficient funds: need $targetAmount + fees ($newFees), have $newTotal selected');
+      }
+
+      final splitAmount = newTotal - targetAmount - newFees;
+      return ProofSelectionResult(
+        selectedProofs: selectedProofs,
+        totalSelected: newTotal,
+        fees: newFees,
+        splitAmount: splitAmount.toInt(),
+        needsSplit: splitAmount > 0,
+        feesByKeyset: newFeeData['feesByKeyset'],
+      );
     }
 
-    return bestProof;
+    // We have enough
+    final splitAmount = exactTotal - targetAmount - exactFees;
+    return ProofSelectionResult(
+      selectedProofs: selectedProofs,
+      totalSelected: exactTotal,
+      fees: exactFees,
+      splitAmount: splitAmount.toInt(),
+      needsSplit: splitAmount > 0,
+      feesByKeyset: feeData['feesByKeyset'],
+    );
   }
 
   /// Find exact match including fees across multiple keysets
@@ -433,9 +421,10 @@ class CashuProofSelect {
     List<CashuProof> proofs,
     int targetAmount,
     List<CahsuKeyset> keysets, {
-    int maxProofs = 5,
+    int maxProofs = 3, // Reduced from 5 for performance
   }) {
-    if (proofs.length > 20) return [];
+    // Stricter limits for performance
+    if (proofs.length > 15) return [];
 
     for (int len = 2; len <= maxProofs && len <= proofs.length; len++) {
       final combination =

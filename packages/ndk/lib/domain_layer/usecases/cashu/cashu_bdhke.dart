@@ -120,6 +120,11 @@ class CashuBdhke {
           'Mismatched lengths: ${mintSignatures.length} signatures, ${blindedMessages.length} messages');
     }
 
+    final keysByAmount = <int, CahsuMintKeyPair>{};
+    for (final keyPair in mintPublicKeys.mintKeyPairs) {
+      keysByAmount[keyPair.amount] = keyPair;
+    }
+
     /// copy lists and sort by amount descending
     final sortedSignatures = List<CashuBlindedSignature>.from(mintSignatures)
       ..sort((a, b) => b.amount.compareTo(a.amount));
@@ -130,14 +135,11 @@ class CashuBdhke {
       final signature = sortedSignatures[i];
       final blindedMsg = sortedMessages[i];
 
-      final matchingKeys = mintPublicKeys.mintKeyPairs
-          .where((e) => e.amount == blindedMsg.amount)
-          .toList();
+      final mintPubKey = keysByAmount[blindedMsg.amount];
 
-      if (matchingKeys.isEmpty) {
+      if (mintPubKey == null) {
         throw Exception('No mint public key for amount ${blindedMsg.amount}');
       }
-      final mintPubKey = matchingKeys.first;
 
       final unblindedSig = unblindingSignature(
         cHex: signature.blindedSignature,

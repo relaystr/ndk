@@ -394,5 +394,144 @@ void main() {
               ),
           throwsA(isA<Exception>()));
     });
+
+    test('large value - should converge quickly', () {
+      // Create many medium-sized proofs that need to be combined for a large amount
+      final largeValueProofs = [
+        // Add some larger proofs
+        ...List.generate(
+            10,
+            (i) => CashuProof(
+                amount: 1000,
+                keysetId: 'test-keyset',
+                secret: "proof1000-$i",
+                unblindedSig: "")),
+        // Add medium proofs
+        ...List.generate(
+            20,
+            (i) => CashuProof(
+                amount: 100,
+                keysetId: 'test-keyset',
+                secret: "proof100-$i",
+                unblindedSig: "")),
+        // Add smaller proofs
+        ...List.generate(
+            30,
+            (i) => CashuProof(
+                amount: 10,
+                keysetId: 'test-keyset',
+                secret: "proof10-$i",
+                unblindedSig: "")),
+      ];
+
+      // Target a large amount (8000 sats) - should converge without hitting max iterations
+      final result = CashuProofSelect.selectProofsForSpending(
+        proofs: largeValueProofs,
+        targetAmount: 8000,
+        keysets: keysets,
+      );
+
+      expect(result.selectedProofs.isNotEmpty, true);
+      expect(result.totalSelected - result.fees, greaterThanOrEqualTo(8000));
+    });
+
+    test('very large value with smaller proofs - stress test', () {
+      // This test reproduces the convergence issue
+      final manyProofs = [
+        ...List.generate(
+            10,
+            (i) => CashuProof(
+                amount: 500,
+                keysetId: 'test-keyset',
+                secret: "proof500-$i",
+                unblindedSig: "")),
+        ...List.generate(
+            50,
+            (i) => CashuProof(
+                amount: 50,
+                keysetId: 'test-keyset',
+                secret: "proof50-$i",
+                unblindedSig: "")),
+      ];
+
+      // Target 7000 sats - this would previously fail to converge
+      final result = CashuProofSelect.selectProofsForSpending(
+        proofs: manyProofs,
+        targetAmount: 7000,
+        keysets: keysets,
+      );
+
+      expect(result.selectedProofs.isNotEmpty, true);
+      expect(result.totalSelected - result.fees, greaterThanOrEqualTo(7000));
+    });
+
+    test('extreme large value - 50k sats', () {
+      // Extreme test with very large target amount
+      final extremeProofs = [
+        ...List.generate(
+            30,
+            (i) => CashuProof(
+                amount: 2000,
+                keysetId: 'test-keyset',
+                secret: "proof2000-$i",
+                unblindedSig: "")),
+        ...List.generate(
+            100,
+            (i) => CashuProof(
+                amount: 100,
+                keysetId: 'test-keyset',
+                secret: "proof100-$i",
+                unblindedSig: "")),
+      ];
+
+      // Target 50000 sats - should still converge quickly with optimized algorithm
+      final result = CashuProofSelect.selectProofsForSpending(
+        proofs: extremeProofs,
+        targetAmount: 50000,
+        keysets: keysets,
+      );
+
+      expect(result.selectedProofs.isNotEmpty, true);
+      expect(result.totalSelected - result.fees, greaterThanOrEqualTo(50000));
+      // Should converge in very few iterations thanks to greedy initial selection
+    });
+
+    test('performance benchmark - 200 proofs, 100k sats', () {
+      // Performance test with many proofs
+      final manyProofs = [
+        ...List.generate(
+            50,
+            (i) => CashuProof(
+                amount: 5000,
+                keysetId: 'test-keyset',
+                secret: "proof5000-$i",
+                unblindedSig: "")),
+        ...List.generate(
+            150,
+            (i) => CashuProof(
+                amount: 100,
+                keysetId: 'test-keyset',
+                secret: "proof100-$i",
+                unblindedSig: "")),
+      ];
+
+      final stopwatch = Stopwatch()..start();
+
+      final result = CashuProofSelect.selectProofsForSpending(
+        proofs: manyProofs,
+        targetAmount: 100000,
+        keysets: keysets,
+      );
+
+      stopwatch.stop();
+
+      expect(result.selectedProofs.isNotEmpty, true);
+      expect(result.totalSelected - result.fees, greaterThanOrEqualTo(100000));
+
+      // Should be fast (under 50ms for 200 proofs)
+      print(
+          'Selection time for 200 proofs: ${stopwatch.elapsedMilliseconds}ms');
+      expect(stopwatch.elapsedMilliseconds, lessThan(100));
+    });
   });
 }
