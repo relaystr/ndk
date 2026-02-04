@@ -18,7 +18,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       return throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body},Link: $url");
     }
     return jsonDecode(response.body);
   }
@@ -36,7 +36,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
 
     return response;
@@ -58,7 +58,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url,  ");
     }
 
     return response;
@@ -75,7 +75,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
 
     return response;
@@ -92,7 +92,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
 
     return response;
@@ -109,7 +109,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
 
     return response;
