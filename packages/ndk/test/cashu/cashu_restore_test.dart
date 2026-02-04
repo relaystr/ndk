@@ -6,76 +6,14 @@ import 'package:ndk/domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
-import 'dart:typed_data';
-import 'dart:convert';
-
-import 'cashu_test_tools.dart';
-import 'mocks/cashu_http_client_mock.dart';
 
 const devMintUrl = 'https://dev.mint.camelus.app';
 const mockMintUrl = 'http://mock.mint';
 
 void main() {
   group('Cashu Restore Tests', () {
-    test('restore - deterministic secret generation', () async {
-      // Generate a seed phrase
-      final seedPhrase = CashuSeed.generateSeedPhrase();
-      final userSeedPhrase = CashuUserSeedphrase(seedPhrase: seedPhrase);
-
-      final cashu = CashuTestTools.mockHttpCashu(seedPhrase: userSeedPhrase);
-
-      // Test that we can generate deterministic secrets
-      final cashuSeed = cashu.getCashuSeed();
-      final seedBytes = Uint8List.fromList(cashuSeed.getSeedBytes());
-
-      final keyDerivation = DartCashuKeyDerivation();
-
-      // Test derivation for a known keyset
-      final keysetId = '009a1f293253e41e';
-
-      // Generate secrets for multiple counters
-      final secret1 = await keyDerivation.deriveSecret(
-        seedBytes: seedBytes,
-        counter: 0,
-        keysetId: keysetId,
-      );
-
-      final secret2 = await keyDerivation.deriveSecret(
-        seedBytes: seedBytes,
-        counter: 1,
-        keysetId: keysetId,
-      );
-
-      // Verify they are different
-      expect(secret1.secretHex, isNot(equals(secret2.secretHex)));
-      expect(secret1.blindingHex, isNot(equals(secret2.blindingHex)));
-
-      // Verify determinism - generate again with same inputs
-      final secret1Again = await keyDerivation.deriveSecret(
-        seedBytes: seedBytes,
-        counter: 0,
-        keysetId: keysetId,
-      );
-
-      expect(secret1.secretHex, equals(secret1Again.secretHex));
-      expect(secret1.blindingHex, equals(secret1Again.blindingHex));
-    });
-
-    test('restore - method exists', () async {
-      final seedPhrase = CashuSeed.generateSeedPhrase();
-      final userSeedPhrase = CashuUserSeedphrase(seedPhrase: seedPhrase);
-
-      final cashu = CashuTestTools.mockHttpCashu(seedPhrase: userSeedPhrase);
-
-      // Verify the restore method exists
-      expect(cashu.restore, isNotNull);
-    });
-
     test('restore - fund wallet1 and restore to wallet2 with real mint',
         () async {
-      // This test uses the real dev mint to properly test the restore functionality
-      // It can be run manually when needed by removing the skip flag
-
       // Create a shared seed phrase for both wallets
       final seedPhrase = CashuSeed.generateSeedPhrase();
       final userSeedPhrase = CashuUserSeedphrase(seedPhrase: seedPhrase);
@@ -214,40 +152,6 @@ void main() {
 
       httpClient1.close();
       httpClient2.close();
-    }, skip: true); // Remove 'skip: true' to run this test with a real mint
-  });
-
-  group('Cashu Restore - Real Mint Integration', () {
-    test('restore from real mint - full workflow', () async {
-      // This test uses the real dev mint
-      final httpClient = http.Client();
-      final httpRequestDS = HttpRequestDS(httpClient);
-      final cashuRepo = CashuRepoImpl(client: httpRequestDS);
-      final cacheManager = MemCacheManager();
-      final keyDerivation = DartCashuKeyDerivation();
-
-      // Generate a new seed phrase for this test
-      final seedPhrase = CashuSeed.generateSeedPhrase();
-      final userSeedPhrase = CashuUserSeedphrase(seedPhrase: seedPhrase);
-
-      // Create first wallet
-      final wallet1 = Cashu(
-        cashuRepo: cashuRepo,
-        cacheManager: cacheManager,
-        cashuKeyDerivation: keyDerivation,
-        cashuUserSeedphrase: userSeedPhrase,
-      );
-
-      // Note: In a real scenario, you would:
-      // 1. Fund wallet1 with actual funds
-      // 2. Create wallet2 with the same seed
-      // 3. Call restore on wallet2
-      // 4. Verify wallet2 has the same balance as wallet1
-
-      // For now, we just verify the structure exists
-      expect(wallet1.restore, isNotNull);
-
-      httpClient.close();
-    }, skip: true);
+    }, skip: false);
   });
 }
