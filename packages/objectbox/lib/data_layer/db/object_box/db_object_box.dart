@@ -324,11 +324,21 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05(String pubKey) async {
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
     await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
+
+    Condition<DbNip05>? condition;
+    if (pubKey != null) {
+      condition = DbNip05_.pubKey.equals(pubKey);
+    } else if (identifier != null) {
+      condition = DbNip05_.nip05.equals(identifier);
+    } else {
+      return null;
+    }
+
     final existing = box
-        .query(DbNip05_.pubKey.equals(pubKey))
+        .query(condition)
         .order(DbNip05_.networkFetchTime, flags: Order.descending)
         .build()
         .findFirst();
