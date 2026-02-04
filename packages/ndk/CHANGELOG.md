@@ -1,3 +1,8 @@
+## 0.7.1-dev.9
+
+ - **FIX**: complete request when auth-required received without challenge.
+ - **FIX**: complete request when relay requires auth but client cannot sign.
+
 ## 0.7.1-dev.8
 
  - **FIX**: distinguish CLOSED from EOSE in relay request state.
