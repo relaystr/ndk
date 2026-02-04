@@ -1,3 +1,7 @@
+## 1.0.1-dev.7
+
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
 ## 1.0.1-dev.6
 
  - Update a dependency to the latest release.

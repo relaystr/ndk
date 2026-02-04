@@ -1,3 +1,12 @@
+## 0.7.1-dev.7
+
+ - **REFACTOR**: rename nip05.fetch() to nip05.resolve().
+ - **REFACTOR**: nip05 usecase.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve()  with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add of() method to fetch NIP-05 data without pubkey.
+
 ## 0.7.1-dev.6
 
  - **FIX**: add destroy in tear down.
