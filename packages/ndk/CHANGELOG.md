@@ -1,3 +1,9 @@
+## 0.7.1-dev.6
+
+ - **FIX**: add destroy in tear down.
+ - **FIX**: ensure NIP-46 subscription is ready before sending remote requests.
+ - **FIX**: subscribe before broadcast in connectWithBunkerUrl to avoid missing NIP-46 responses.
+
 ## 0.7.1-dev.5
 
  - **FEAT**: add missing state field in lookup_invoice_response.dart.
