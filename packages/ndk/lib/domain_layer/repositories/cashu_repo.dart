@@ -93,9 +93,10 @@ abstract class CashuRepo {
 
   /// [mintUrl] is the URL of the mint \
   /// [outputs] is a list of [CashuBlindedMessage] to restore \
-  /// Returns a [List<CashuBlindedSignature>] containing the restored blind signatures.
+  /// Returns a tuple of (outputs, signatures) - the matched blinded messages and their signatures.
+  /// According to NUT-09, the response includes both outputs (with amounts filled in) and signatures.
   /// This endpoint is used for wallet restoration (NUT-09).
-  Future<List<CashuBlindedSignature>> restore({
+  Future<(List<CashuBlindedMessage>, List<CashuBlindedSignature>)> restore({
     required String mintUrl,
     required List<CashuBlindedMessage> outputs,
   });

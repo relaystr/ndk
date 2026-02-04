@@ -427,7 +427,7 @@ class CashuRepoImpl implements CashuRepo {
   }
 
   @override
-  Future<List<CashuBlindedSignature>> restore({
+  Future<(List<CashuBlindedMessage>, List<CashuBlindedSignature>)> restore({
     required String mintUrl,
     required List<CashuBlindedMessage> outputs,
   }) async {
@@ -454,10 +454,18 @@ class CashuRepoImpl implements CashuRepo {
       throw Exception('Invalid response format: $responseBody');
     }
 
-    final List<dynamic> signaturesUnparsed = responseBody['signatures'] ?? [];
+    // Parse outputs if present (NUT-09 spec includes them)
+    final List<dynamic> outputsUnparsed = responseBody['outputs'] ?? [];
+    final List<CashuBlindedMessage> restoredOutputs = outputsUnparsed
+        .map((e) => CashuBlindedMessage.fromServerMap(e))
+        .toList();
 
-    return signaturesUnparsed
+    // Parse signatures
+    final List<dynamic> signaturesUnparsed = responseBody['signatures'] ?? [];
+    final List<CashuBlindedSignature> signatures = signaturesUnparsed
         .map((e) => CashuBlindedSignature.fromServerMap(e))
         .toList();
+
+    return (restoredOutputs, signatures);
   }
 }

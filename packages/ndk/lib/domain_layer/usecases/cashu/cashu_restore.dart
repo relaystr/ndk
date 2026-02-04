@@ -142,7 +142,7 @@ class CashuRestore {
         final blindedMessages =
             blindedMessageItems.map((item) => item.blindedMessage).toList();
 
-        final signatures = await cashuRepo.restore(
+        final (restoredOutputs, signatures) = await cashuRepo.restore(
           mintUrl: mintUrl,
           outputs: blindedMessages,
         );
@@ -161,6 +161,7 @@ class CashuRestore {
 
           // Unblind the signatures to get proofs
           final proofs = _unblindRestoreSignatures(
+            restoredOutputs: restoredOutputs,
             signatures: signatures,
             blindedMessageItems: blindedMessageItems,
             keyset: keyset,
@@ -193,14 +194,20 @@ class CashuRestore {
   }
 
   /// Unblinds restore signatures to create proofs
+  /// 
+  /// According to NUT-09, the mint returns both outputs and signatures.
+  /// The outputs contain the B_ values that were matched (with amounts filled in).
+  /// We match outputs[i] with signatures[i], then find the corresponding
+  /// blinded message item from our original list by matching the B_ value.
   List<CashuProof> _unblindRestoreSignatures({
+    required List<CashuBlindedMessage> restoredOutputs,
     required List<CashuBlindedSignature> signatures,
     required List<CashuBlindedMessageItem> blindedMessageItems,
     required CahsuKeyset keyset,
   }) {
     final List<CashuProof> proofs = [];
 
-    // Create a map of blinded message hex to its item for quick lookup
+    // Create a map of blinded message hex (B_) to its item for lookup
     final Map<String, CashuBlindedMessageItem> messageMap = {};
     for (final item in blindedMessageItems) {
       messageMap[item.blindedMessage.blindedMessage] = item;
@@ -212,45 +219,108 @@ class CashuRestore {
       keysByAmount[keyPair.amount] = keyPair.pubkey;
     }
 
-    for (final signature in signatures) {
-      // Find the corresponding blinded message by ID
-      final matchingItem = messageMap.values.firstWhere(
-        (item) => item.blindedMessage.id == signature.id,
-        orElse: () =>
-            throw Exception('No matching blinded message for signature'),
-      );
+    // If we have restoredOutputs, match by B_ value
+    // Otherwise fall back to positional matching
+    if (restoredOutputs.isNotEmpty && restoredOutputs.length == signatures.length) {
+      // Match outputs and signatures by index, then find the blinded message item by B_
+      for (int i = 0; i < signatures.length; i++) {
+        final output = restoredOutputs[i];
+        final signature = signatures[i];
 
-      final mintPubKey = keysByAmount[signature.amount];
-      if (mintPubKey == null) {
-        Logger.log.w('No mint public key for amount ${signature.amount}');
-        continue;
-      }
-
-      try {
-        // Unblind the signature
-        final unblindedSig = CashuBdhke.unblindingSignature(
-          cHex: signature.blindedSignature,
-          kHex: mintPubKey,
-          r: matchingItem.r,
-        );
-
-        if (unblindedSig == null) {
-          Logger.log
-              .w('Failed to unblind signature for amount ${signature.amount}');
+        // Find the corresponding blinded message item by B_ value
+        final blindedItem = messageMap[output.blindedMessage];
+        if (blindedItem == null) {
+          Logger.log.w(
+              'Could not find blinded message item for B_: ${output.blindedMessage}');
           continue;
         }
 
-        // Create the proof
-        final proof = CashuProof(
-          keysetId: signature.id,
-          amount: signature.amount,
-          secret: matchingItem.secret,
-          unblindedSig: CashuTools.ecPointToHex(unblindedSig),
-        );
+        final mintPubKey = keysByAmount[signature.amount];
+        if (mintPubKey == null) {
+          Logger.log.w('No mint public key for amount ${signature.amount}');
+          continue;
+        }
 
-        proofs.add(proof);
-      } catch (e) {
-        Logger.log.e('Error unblinding signature: $e');
+        try {
+          // Unblind the signature
+          final unblindedSig = CashuBdhke.unblindingSignature(
+            cHex: signature.blindedSignature,
+            kHex: mintPubKey,
+            r: blindedItem.r,
+          );
+
+          if (unblindedSig == null) {
+            Logger.log.w(
+                'Failed to unblind signature for amount ${signature.amount}');
+            continue;
+          }
+
+          // Create the proof
+          final proof = CashuProof(
+            keysetId: signature.id,
+            amount: signature.amount,
+            secret: blindedItem.secret,
+            unblindedSig: CashuTools.ecPointToHex(unblindedSig),
+          );
+
+          proofs.add(proof);
+        } catch (e) {
+          Logger.log.e('Error unblinding signature: $e');
+        }
+      }
+    } else {
+      // Fallback: try to match by attempting unblinding with each blinded message
+      Logger.log.w(
+          'No outputs in restore response or length mismatch, using fallback matching');
+
+      final Set<String> usedBlindedMessages = {};
+
+      for (final signature in signatures) {
+        final mintPubKey = keysByAmount[signature.amount];
+        if (mintPubKey == null) {
+          Logger.log.w('No mint public key for amount ${signature.amount}');
+          continue;
+        }
+
+        bool matched = false;
+
+        // Try each unused blinded message
+        for (final blindedItem in blindedMessageItems) {
+          final blindedMsgHex = blindedItem.blindedMessage.blindedMessage;
+
+          if (usedBlindedMessages.contains(blindedMsgHex)) {
+            continue;
+          }
+
+          try {
+            final unblindedSig = CashuBdhke.unblindingSignature(
+              cHex: signature.blindedSignature,
+              kHex: mintPubKey,
+              r: blindedItem.r,
+            );
+
+            if (unblindedSig != null) {
+              final proof = CashuProof(
+                keysetId: signature.id,
+                amount: signature.amount,
+                secret: blindedItem.secret,
+                unblindedSig: CashuTools.ecPointToHex(unblindedSig),
+              );
+
+              proofs.add(proof);
+              usedBlindedMessages.add(blindedMsgHex);
+              matched = true;
+              break;
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+
+        if (!matched) {
+          Logger.log.w(
+              'Could not find matching blinded message for signature with amount ${signature.amount}');
+        }
       }
     }
 
