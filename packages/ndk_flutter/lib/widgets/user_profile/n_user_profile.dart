@@ -47,7 +47,7 @@ class NUserProfile extends StatelessWidget {
   }
 
   Widget _buildProfile(BuildContext context, Metadata? metadata) {
-    String name = _formatNpub(profilePubkey!);
+    String name = NdkFlutter.formatNpub(profilePubkey!);
     String? nip05;
 
     // Check if this is the logged account
@@ -152,18 +152,5 @@ class NUserProfile extends StatelessWidget {
           Text(nip05, style: TextStyle(color: Theme.of(context).disabledColor)),
       ],
     );
-  }
-
-  String _formatPubkey(String pubkey) {
-    return '${pubkey.substring(0, 6)}...${pubkey.substring(pubkey.length - 6)}';
-  }
-
-  String _formatNpub(String pubkey) {
-    try {
-      final npub = Nip19.encodePubKey(pubkey);
-      return '${npub.substring(0, 6)}...${npub.substring(npub.length - 6)}';
-    } catch (e) {
-      return _formatPubkey(pubkey);
-    }
   }
 }

@@ -15,6 +15,11 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 class NdkFlutter {
+  static String formatNpub(String pubkey) {
+    final npub = Nip19.encodePubKey(pubkey);
+    return '${npub.substring(0, 10)}...${npub.substring(npub.length - 4)}';
+  }
+
   static Color getColorFromPubkey(String pubkey) {
     if (pubkey.isEmpty) return const Color(0xFF808080);
 
