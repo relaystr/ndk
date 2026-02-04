@@ -716,13 +716,6 @@ class RelayManager<T> {
   /// Handles CLOSED auth-required by authenticating and re-sending the REQ
   void _handleClosedAuthRequired(
       String reqId, RelayConnectivity relayConnectivity) {
-    final challenge = _lastChallengePerRelay[relayConnectivity.url];
-    if (challenge == null) {
-      Logger.log.w(
-          "Received CLOSED auth-required but no challenge stored for ${relayConnectivity.url}");
-      return;
-    }
-
     final state = globalState.inFlightRequests[reqId];
     if (state == null) {
       Logger.log.w("Received CLOSED auth-required for unknown request $reqId");
@@ -733,6 +726,16 @@ class RelayManager<T> {
     if (request == null) {
       Logger.log.w(
           "Received CLOSED auth-required but no request state for ${relayConnectivity.url}");
+      return;
+    }
+
+    final challenge = _lastChallengePerRelay[relayConnectivity.url];
+    if (challenge == null) {
+      Logger.log.w(
+          "Received CLOSED auth-required but no challenge stored for ${relayConnectivity.url}");
+      // Mark this relay as closed since we can't authenticate without a challenge
+      request.receivedClosed = true;
+      _checkNetworkClose(state, relayConnectivity);
       return;
     }
 
