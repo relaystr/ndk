@@ -752,6 +752,9 @@ class RelayManager<T> {
     if (signableAccounts.isEmpty) {
       Logger.log.w(
           "Received CLOSED auth-required but no account can sign for ${relayConnectivity.url}");
+      // Mark this relay as closed and check if we can complete the request
+      request.receivedClosed = true;
+      _checkNetworkClose(state, relayConnectivity);
       return;
     }
 
