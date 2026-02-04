@@ -690,23 +690,71 @@ class Cashu {
       await _updateBalances();
       yield completedTransaction;
     } catch (e) {
-      final failedTransaction = pendingTransaction.copyWith(
-        state: WalletTransactionState.failed,
-        completionMsg: 'Redeeming failed: $e',
-      );
+      // Check if proofs were actually spent on the mint
+      try {
+        final proofStates = await _cashuRepo.checkTokenState(
+          proofPubkeys: selectionResult.selectedProofs.map((p) => p.Y).toList(),
+          mintUrl: mintUrl,
+        );
 
-      // release proofs
-      _changeProofState(
-        proofs: selectionResult.selectedProofs,
-        state: CashuProofState.unspend,
-      );
-      await _cacheManagerCashu.saveProofs(
-        proofs: selectionResult.selectedProofs,
-        mintUrl: mintUrl,
-      );
+        final allSpent =
+            proofStates.every((state) => state.state == CashuProofState.spend);
 
-      _removePendingTransaction(failedTransaction);
-      yield failedTransaction;
+        if (allSpent) {
+          // Proofs were spent on mint side, mark them as spent locally
+          _changeProofState(
+            proofs: selectionResult.selectedProofs,
+            state: CashuProofState.spend,
+          );
+          await _cacheManagerCashu.saveProofs(
+            proofs: selectionResult.selectedProofs,
+            mintUrl: mintUrl,
+          );
+
+          final failedTransaction = pendingTransaction.copyWith(
+            state: WalletTransactionState.failed,
+            completionMsg:
+                'Proofs were spent but melt failed: $e. Proofs marked as spent to prevent reuse.',
+          );
+          _removePendingTransaction(failedTransaction);
+          yield failedTransaction;
+        } else {
+          // Proofs were not spent, safe to release them
+          _changeProofState(
+            proofs: selectionResult.selectedProofs,
+            state: CashuProofState.unspend,
+          );
+          await _cacheManagerCashu.saveProofs(
+            proofs: selectionResult.selectedProofs,
+            mintUrl: mintUrl,
+          );
+
+          final failedTransaction = pendingTransaction.copyWith(
+            state: WalletTransactionState.failed,
+            completionMsg: 'Redeeming failed: $e',
+          );
+          _removePendingTransaction(failedTransaction);
+          yield failedTransaction;
+        }
+      } catch (stateCheckError) {
+        // If we can't check the state, assume proofs might be spent and mark them as such to be safe
+        _changeProofState(
+          proofs: selectionResult.selectedProofs,
+          state: CashuProofState.spend,
+        );
+        await _cacheManagerCashu.saveProofs(
+          proofs: selectionResult.selectedProofs,
+          mintUrl: mintUrl,
+        );
+
+        final failedTransaction = pendingTransaction.copyWith(
+          state: WalletTransactionState.failed,
+          completionMsg:
+              'Redeeming failed: $e. Could not verify proof state: $stateCheckError. Proofs marked as spent for safety.',
+        );
+        _removePendingTransaction(failedTransaction);
+        yield failedTransaction;
+      }
       return;
     }
   }
