@@ -3,18 +3,20 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 class NPicture extends StatelessWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final String? pubkey;
   final Metadata? metadata;
   final bool useCircleAvatar;
   final double? circleAvatarRadius;
+
+  Ndk get ndk => ndkFlutter.ndk;
 
   String? get _pubkey =>
       metadata?.pubKey ?? pubkey ?? ndk.accounts.getPublicKey();
 
   const NPicture({
     super.key,
-    required this.ndk,
+    required this.ndkFlutter,
     this.pubkey,
     this.metadata,
     this.useCircleAvatar = true,

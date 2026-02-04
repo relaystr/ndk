@@ -5,16 +5,18 @@ import 'package:ndk_flutter/l10n/app_localizations.dart';
 import 'package:nip07_event_signer/nip07_event_signer.dart';
 
 class NSwitchAccount extends StatefulWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final void Function(String pubkey)? onAccountSwitch;
   final void Function(String pubkey)? onAccountRemove;
   final void Function()? onAddAccount;
   final void Function(String pubkey)? beforeAccountSwitch;
   final void Function(String pubkey)? beforeAccountRemove;
 
+  Ndk get ndk => ndkFlutter.ndk;
+
   const NSwitchAccount({
     super.key,
-    required this.ndk,
+    required this.ndkFlutter,
     this.onAccountSwitch,
     this.onAccountRemove,
     this.onAddAccount,
@@ -27,6 +29,8 @@ class NSwitchAccount extends StatefulWidget {
 }
 
 class _NSwitchAccountState extends State<NSwitchAccount> {
+  Ndk get ndk => widget.ndk;
+
   Widget _getAccountTypeChip(BuildContext context, Account account) {
     String label;
     Color backgroundColor;
@@ -62,8 +66,8 @@ class _NSwitchAccountState extends State<NSwitchAccount> {
 
   @override
   Widget build(BuildContext context) {
-    final accounts = widget.ndk.accounts.accounts.values.toList();
-    final loggedPubkey = widget.ndk.accounts.getPublicKey();
+    final accounts = ndk.accounts.accounts.values.toList();
+    final loggedPubkey = ndk.accounts.getPublicKey();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -80,8 +84,8 @@ class _NSwitchAccountState extends State<NSwitchAccount> {
               child: TextButton(
                 onPressed: () {
                   widget.beforeAccountRemove?.call(pubkey);
-                  widget.ndk.accounts.removeAccount(pubkey: pubkey);
-                  NdkFlutter(ndk: widget.ndk).saveAccountsState();
+                  ndk.accounts.removeAccount(pubkey: pubkey);
+                  widget.ndkFlutter.saveAccountsState();
                   setState(() {});
                   widget.onAccountRemove?.call(pubkey);
                 },
@@ -91,16 +95,16 @@ class _NSwitchAccountState extends State<NSwitchAccount> {
 
             onTap = () {
               widget.beforeAccountSwitch?.call(pubkey);
-              widget.ndk.accounts.switchAccount(pubkey: pubkey);
-              NdkFlutter(ndk: widget.ndk).saveAccountsState();
+              ndk.accounts.switchAccount(pubkey: pubkey);
+              widget.ndkFlutter.saveAccountsState();
               setState(() {});
               widget.onAccountSwitch?.call(pubkey);
             };
           }
 
           return ListTile(
-            leading: NPicture(ndk: widget.ndk, pubkey: pubkey),
-            title: NName(ndk: widget.ndk, pubkey: pubkey),
+            leading: NPicture(ndkFlutter: widget.ndkFlutter, pubkey: pubkey),
+            title: NName(ndkFlutter: widget.ndkFlutter, pubkey: pubkey),
             subtitle: subtitle,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,

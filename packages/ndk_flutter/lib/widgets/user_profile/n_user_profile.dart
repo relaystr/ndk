@@ -4,7 +4,7 @@ import 'package:ndk_flutter/l10n/app_localizations.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 class NUserProfile extends StatelessWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final String? pubkey;
   final Metadata? metadata;
   final bool showLogoutButton;
@@ -13,12 +13,14 @@ class NUserProfile extends StatelessWidget {
   final bool showNip05;
   final VoidCallback? onLogout;
 
+  Ndk get ndk => ndkFlutter.ndk;
+
   String? get profilePubkey =>
       metadata?.pubKey ?? pubkey ?? ndk.accounts.getPublicKey();
 
   const NUserProfile({
     super.key,
-    required this.ndk,
+    required this.ndkFlutter,
     this.pubkey,
     this.metadata,
     this.showLogoutButton = true,
@@ -47,7 +49,7 @@ class NUserProfile extends StatelessWidget {
   }
 
   Widget _buildProfile(BuildContext context, Metadata? metadata) {
-    String name = NdkFlutter.formatNpub(profilePubkey!);
+    String name = ndkFlutter.formatNpub(profilePubkey!);
     String? nip05;
 
     // Check if this is the logged account
@@ -76,7 +78,7 @@ class NUserProfile extends StatelessWidget {
                     child: FittedBox(
                       fit: BoxFit.cover,
                       child: NBanner(
-                        ndk: ndk,
+                        ndkFlutter: ndkFlutter,
                         pubkey: profilePubkey,
                         metadata: metadata,
                       ),
@@ -102,7 +104,7 @@ class NUserProfile extends StatelessWidget {
                             ndk.accounts.switchAccount(pubkey: pubkey);
                           }
 
-                          await NdkFlutter(ndk: ndk).saveAccountsState();
+                          await ndkFlutter.saveAccountsState();
 
                           if (onLogout != null) onLogout!();
                         },
@@ -123,7 +125,7 @@ class NUserProfile extends StatelessWidget {
                   color: Theme.of(context).colorScheme.surface,
                   padding: EdgeInsets.all(8),
                   child: NPicture(
-                    ndk: ndk,
+                    ndkFlutter: ndkFlutter,
                     metadata: metadata,
                     pubkey: profilePubkey,
                     circleAvatarRadius: 40,

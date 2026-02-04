@@ -3,14 +3,21 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 class NBanner extends StatelessWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final String? pubkey;
   final Metadata? metadata;
+
+  Ndk get ndk => ndkFlutter.ndk;
 
   String? get _pubkey =>
       metadata?.pubKey ?? pubkey ?? ndk.accounts.getPublicKey();
 
-  const NBanner({super.key, required this.ndk, this.pubkey, this.metadata});
+  const NBanner({
+    super.key,
+    required this.ndkFlutter,
+    this.pubkey,
+    this.metadata,
+  });
 
   @override
   Widget build(BuildContext context) {

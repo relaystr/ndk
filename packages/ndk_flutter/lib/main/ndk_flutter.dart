@@ -15,9 +15,23 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 class NdkFlutter {
-  static String formatNpub(String pubkey) {
+  final Ndk ndk;
+  final String npubSeparator;
+  final int npubPrefixLength;
+  final int npubSuffixLength;
+
+  NdkFlutter({
+    required this.ndk,
+    this.npubSeparator = '…',
+    this.npubPrefixLength = 10,
+    this.npubSuffixLength = 4,
+  });
+
+  String formatNpub(String pubkey) {
     final npub = Nip19.encodePubKey(pubkey);
-    return '${npub.substring(0, 10)}...${npub.substring(npub.length - 4)}';
+    final prefix = npub.substring(0, npubPrefixLength);
+    final suffix = npub.substring(npub.length - npubSuffixLength);
+    return '$prefix$npubSeparator$suffix';
   }
 
   static Color getColorFromPubkey(String pubkey) {
@@ -83,10 +97,6 @@ class NdkFlutter {
       return Nip05Result(error: 'Error fetching NIP-05: $e');
     }
   }
-
-  final Ndk ndk;
-
-  NdkFlutter({required this.ndk});
 
   Future<void> saveAccountsState() async {
     final accounts = NostrWidgetsAccounts(accounts: []);

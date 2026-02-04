@@ -9,8 +9,10 @@ import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginController extends ChangeNotifier {
-  Ndk ndk;
+  NdkFlutter ndkFlutter;
   void Function()? onLoggedIn;
+
+  Ndk get ndk => ndkFlutter.ndk;
 
   final nip05FieldController = TextEditingController();
   bool _isFetchingNip05 = false;
@@ -68,7 +70,11 @@ class LoginController extends ChangeNotifier {
     }
   }
 
-  LoginController({required this.ndk, this.onLoggedIn, this.nostrConnect});
+  LoginController({
+    required this.ndkFlutter,
+    this.onLoggedIn,
+    this.nostrConnect,
+  });
 
   Future<void> loginWithBunkerUrl(BuildContext context) async {
     isBunkerLoading = true;
@@ -122,7 +128,7 @@ class LoginController extends ChangeNotifier {
   }
 
   Future<void> loggedIn() async {
-    await NdkFlutter(ndk: ndk).saveAccountsState();
+    await ndkFlutter.saveAccountsState();
 
     for (var toast in challengeToasts) {
       toastification.dismiss(toast);

@@ -3,19 +3,21 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 class NName extends StatelessWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final String? pubkey;
   final Metadata? metadata;
   final TextStyle? style;
   final int? maxLines;
   final TextOverflow? overflow;
 
+  Ndk get ndk => ndkFlutter.ndk;
+
   String? get _pubkey =>
       metadata?.pubKey ?? pubkey ?? ndk.accounts.getPublicKey();
 
   const NName({
     super.key,
-    required this.ndk,
+    required this.ndkFlutter,
     this.pubkey,
     this.metadata,
     this.style,
@@ -38,7 +40,7 @@ class NName extends StatelessWidget {
         }
 
         return Text(
-          NdkFlutter.formatNpub(_pubkey!),
+          ndkFlutter.formatNpub(_pubkey!),
           style: style,
           maxLines: maxLines,
           overflow: overflow,
