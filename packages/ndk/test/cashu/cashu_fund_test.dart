@@ -211,7 +211,12 @@ void main() {
             headers: {'content-type': 'application/json'},
           ));
 
-      final cashu = CashuTestTools.mockHttpCashu(customMockClient: myHttpMock);
+      final cashu = CashuTestTools.mockHttpCashu(
+        customMockClient: myHttpMock,
+        seedPhrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+      );
 
       final draftTransaction = await cashu.initiateFund(
         mintUrl: mockMintUrl,
@@ -249,7 +254,12 @@ void main() {
 
       final myHttpMock = MockCashuHttpClient();
 
-      final cashu = CashuTestTools.mockHttpCashu(customMockClient: myHttpMock);
+      final cashu = CashuTestTools.mockHttpCashu(
+        customMockClient: myHttpMock,
+        seedPhrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+      );
 
       final draftTransaction = await cashu.initiateFund(
         mintUrl: mockMintUrl,
@@ -281,6 +291,9 @@ void main() {
     });
     test("fund - successfull", () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
+      ndk.cashu.setCashuSeedPhrase(
+        CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
+      );
       const fundAmount = 100;
       const fundUnit = "sat";
 
@@ -315,6 +328,9 @@ void main() {
 
     test("fund - successfull - e2e", () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
+      ndk.cashu.setCashuSeedPhrase(
+        CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
+      );
       const fundAmount = 250;
       const fundUnit = "sat";
 

@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
+import 'package:ndk/domain_layer/usecases/cashu/cashu_seed.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
@@ -30,7 +31,11 @@ void main() {
     });
 
     test("spend - no unit for mint", () {
-      final cashu = CashuTestTools.mockHttpCashu();
+      final cashu = CashuTestTools.mockHttpCashu(
+        seedPhrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+      );
 
       expect(
         () async => await cashu.initiateSpend(
@@ -81,7 +86,12 @@ void main() {
         mintUrl: mockMintUrl,
       );
 
-      final cashu = CashuTestTools.mockHttpCashu(customCache: cache);
+      final cashu = CashuTestTools.mockHttpCashu(
+        customCache: cache,
+        seedPhrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+      );
 
       expect(
         () async => await cashu.initiateSpend(
@@ -96,6 +106,11 @@ void main() {
 
   group('spend', () {
     test("spend - initiateSpend", () async {
+      // Generate unique seed phrases for each test run to ensure unique blinded messages
+      // This prevents "Blinded Message is already signed" errors from the mint
+      final seedPhrase1 = CashuSeed.generateSeedPhrase();
+      final seedPhrase2 = CashuSeed.generateSeedPhrase();
+
       final cache = MemCacheManager();
       final cache2 = MemCacheManager();
 
@@ -104,14 +119,18 @@ void main() {
       final cashuRepo2 = CashuRepoImpl(client: client);
       final derivation = DartCashuKeyDerivation();
       final cashu = Cashu(
-          cashuRepo: cashuRepo,
-          cacheManager: cache,
-          cashuKeyDerivation: derivation);
+        cashuRepo: cashuRepo,
+        cacheManager: cache,
+        cashuKeyDerivation: derivation,
+        cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: seedPhrase1),
+      );
 
       final cashu2 = Cashu(
-          cashuRepo: cashuRepo2,
-          cacheManager: cache2,
-          cashuKeyDerivation: derivation);
+        cashuRepo: cashuRepo2,
+        cacheManager: cache2,
+        cashuKeyDerivation: derivation,
+        cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: seedPhrase2),
+      );
 
       const fundAmount = 32;
       const fundUnit = "sat";

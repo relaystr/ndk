@@ -62,14 +62,20 @@ void main() {
       final derivation = DartCashuKeyDerivation();
 
       final cashu = Cashu(
-          cashuRepo: cashuRepo,
-          cacheManager: cache,
-          cashuKeyDerivation: derivation);
+        cashuRepo: cashuRepo,
+        cacheManager: cache,
+        cashuKeyDerivation: derivation,
+        cashuUserSeedphrase:
+            CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
+      );
 
       final cashu2 = Cashu(
-          cashuRepo: cashuRepo2,
-          cacheManager: cache2,
-          cashuKeyDerivation: derivation);
+        cashuRepo: cashuRepo2,
+        cacheManager: cache2,
+        cashuKeyDerivation: derivation,
+        cashuUserSeedphrase:
+            CashuUserSeedphrase(seedPhrase: CashuSeed.generateSeedPhrase()),
+      );
 
       const fundAmount = 32;
       const fundUnit = "sat";

@@ -2,6 +2,7 @@ import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/domain_layer/repositories/cashu_repo.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
 import 'mocks/cashu_http_client_mock.dart';
@@ -10,20 +11,24 @@ class CashuTestTools {
   static Cashu mockHttpCashu({
     MockCashuHttpClient? customMockClient,
     CacheManager? customCache,
+    CashuUserSeedphrase? seedPhrase,
+    CashuRepo? customRepo,
   }) {
     final MockCashuHttpClient mockClient =
         customMockClient ?? MockCashuHttpClient();
     final HttpRequestDS httpRequestDS = HttpRequestDS(mockClient);
 
-    final CashuRepo cashuRepo = CashuRepoImpl(
-      client: httpRequestDS,
-    );
+    final CashuRepo cashuRepo = customRepo ??
+        CashuRepoImpl(
+          client: httpRequestDS,
+        );
 
     final CacheManager cache = customCache ?? MemCacheManager();
 
     final derivation = DartCashuKeyDerivation();
 
     final cashu = Cashu(
+        cashuUserSeedphrase: seedPhrase,
         cashuRepo: cashuRepo,
         cacheManager: cache,
         cashuKeyDerivation: derivation);
