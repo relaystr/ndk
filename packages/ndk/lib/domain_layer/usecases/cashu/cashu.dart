@@ -110,14 +110,15 @@ class Cashu {
   /// [batchSize] - How many secrets to check in each batch (default: 100)
   /// [gapLimit] - How many consecutive empty batches before stopping (default: 2)
   ///
-  /// Returns a [CashuRestoreResult] containing the restored proofs.
-  Future<CashuRestoreResult> restore({
+  /// Yields [CashuRestoreResult] updates as proofs are discovered during scanning.
+  /// The final yielded result contains all restored proofs.
+  Stream<CashuRestoreResult> restore({
     required String mintUrl,
     String unit = 'sat',
     int startCounter = 0,
     int batchSize = 100,
     int gapLimit = 2,
-  }) async {
+  }) async* {
     Logger.log.i('Starting restore from $mintUrl');
 
     // Get keysets for this mint and unit
@@ -138,35 +139,35 @@ class Cashu {
       cashuSeed: _cashuSeed,
     );
 
-    // Restore all keysets
-    final result = await cashuRestore.restoreAllKeysets(
+    // Restore all keysets and yield progress
+    await for (final result in cashuRestore.restoreAllKeysets(
       mintUrl: mintUrl,
       keysets: keysets,
       startCounter: startCounter,
       batchSize: batchSize,
       gapLimit: gapLimit,
-    );
+    )) {
+      // Save restored proofs incrementally as they're discovered
+      final newProofs = result.keysetResults
+          .expand((keysetResult) => keysetResult.restoredProofs)
+          .toList();
 
-    // Save all restored proofs
-    final allProofs = result.keysetResults
-        .expand((keysetResult) => keysetResult.restoredProofs)
-        .toList();
+      if (newProofs.isNotEmpty) {
+        await _cacheManagerCashu.saveProofs(
+          proofs: newProofs,
+          mintUrl: mintUrl,
+        );
+        Logger.log.i('Saved ${newProofs.length} restored proofs to cache');
 
-    if (allProofs.isNotEmpty) {
-      await _cacheManagerCashu.saveProofs(
-        proofs: allProofs,
-        mintUrl: mintUrl,
-      );
-      Logger.log.i('Saved ${allProofs.length} restored proofs to cache');
+        // Update balance stream
+        await _updateBalances();
+      }
+
+      // Yield progress update
+      yield result;
     }
 
-    // Update balance stream
-    await _updateBalances();
-
-    Logger.log.i(
-        'Restore completed. Total proofs restored: ${result.totalProofsRestored}');
-
-    return result;
+    Logger.log.i('Restore completed');
   }
 
   Future<int> getBalanceMintUnit({

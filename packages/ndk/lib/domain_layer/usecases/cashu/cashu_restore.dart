@@ -194,7 +194,7 @@ class CashuRestore {
   }
 
   /// Unblinds restore signatures to create proofs
-  /// 
+  ///
   /// According to NUT-09, the mint returns both outputs and signatures.
   /// The outputs contain the B_ values that were matched (with amounts filled in).
   /// We match outputs[i] with signatures[i], then find the corresponding
@@ -221,7 +221,8 @@ class CashuRestore {
 
     // If we have restoredOutputs, match by B_ value
     // Otherwise fall back to positional matching
-    if (restoredOutputs.isNotEmpty && restoredOutputs.length == signatures.length) {
+    if (restoredOutputs.isNotEmpty &&
+        restoredOutputs.length == signatures.length) {
       // Match outputs and signatures by index, then find the blinded message item by B_
       for (int i = 0; i < signatures.length; i++) {
         final output = restoredOutputs[i];
@@ -337,13 +338,15 @@ class CashuRestore {
   /// [startCounter] - The counter to start scanning from (default: 0)
   /// [batchSize] - How many secrets to check in each batch (default: 100)
   /// [gapLimit] - How many consecutive empty batches before stopping (default: 2)
-  Future<CashuRestoreResult> restoreAllKeysets({
+  ///
+  /// Yields [CashuRestoreResult] updates after each keyset is processed.
+  Stream<CashuRestoreResult> restoreAllKeysets({
     required String mintUrl,
     required List<CahsuKeyset> keysets,
     int startCounter = 0,
     int batchSize = 100,
     int gapLimit = 2,
-  }) async {
+  }) async* {
     final List<CashuRestoreKeysetResult> keysetResults = [];
     int totalProofs = 0;
 
@@ -368,14 +371,15 @@ class CashuRestore {
             counter: result.lastUsedCounter + 1,
           );
         }
+
+        // Yield progress after each keyset is processed
+        yield CashuRestoreResult(
+          keysetResults: List.from(keysetResults),
+          totalProofsRestored: totalProofs,
+        );
       } catch (e) {
         Logger.log.e('Error restoring keyset ${keyset.id}: $e');
       }
     }
-
-    return CashuRestoreResult(
-      keysetResults: keysetResults,
-      totalProofsRestored: totalProofs,
-    );
   }
 }

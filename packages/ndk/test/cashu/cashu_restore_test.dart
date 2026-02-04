@@ -3,6 +3,7 @@ import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_user_seedphrase.dart';
+import 'package:ndk/domain_layer/usecases/cashu/cashu_restore.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
@@ -111,13 +112,20 @@ void main() {
       // Restore wallet2 using the seed phrase
       print('\nStep 4: Restoring wallet2 from seed phrase...');
 
-      final restoreResult = await wallet2.restore(
+      CashuRestoreResult? restoreResult;
+      final restoreStream = wallet2.restore(
         mintUrl: mintUrl,
         unit: unit,
       );
 
+      await for (final result in restoreStream) {
+        restoreResult = result;
+        print(
+            '  Progress: ${result.totalProofsRestored} proofs restored so far...');
+      }
+
       print('Restore completed!');
-      print('Total proofs restored: ${restoreResult.totalProofsRestored}');
+      print('Total proofs restored: ${restoreResult!.totalProofsRestored}');
       for (final keysetResult in restoreResult.keysetResults) {
         print(
             '  Keyset ${keysetResult.keysetId}: ${keysetResult.restoredProofs.length} proofs');
@@ -147,11 +155,17 @@ void main() {
       expect(wallet2Proofs.length, greaterThan(0),
           reason: 'Wallet2 should have proofs after restore');
 
+      // Verify that proofs have different secrets (the bug we fixed!)
+      final secrets = wallet2Proofs.map((p) => p.secret).toSet();
+      print('Wallet2 has ${secrets.length} unique secrets');
+      expect(secrets.length, equals(wallet2Proofs.length),
+          reason: 'Each proof should have a unique secret');
+
       print('\n✅ Test passed! Restore functionality works correctly.');
       print('Wallet1 and Wallet2 both have $fundAmount $unit');
 
       httpClient1.close();
       httpClient2.close();
-    }, skip: false);
+    }, skip: true); // Skip by default - requires real mint
   });
 }
