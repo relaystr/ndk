@@ -52,13 +52,13 @@ class CashuRestore {
   });
 
   /// Restores proofs for a single keyset from a mint.
-  /// 
+  ///
   /// This implements NUT-09 restore protocol:
   /// 1. Generates deterministic blinded messages using NUT-13
   /// 2. Calls the mint's restore endpoint with these messages
   /// 3. Receives back blind signatures for proofs that exist
   /// 4. Unblinds the signatures to get the actual proofs
-  /// 
+  ///
   /// [mintUrl] - The URL of the mint to restore from
   /// [keyset] - The keyset to restore proofs for
   /// [startCounter] - The counter to start scanning from (default: 0)
@@ -73,21 +73,22 @@ class CashuRestore {
   }) async {
     final String keysetId = keyset.id;
     final seedBytes = Uint8List.fromList(cashuSeed.getSeedBytes());
-    
+
     List<CashuProof> allRestoredProofs = [];
     int currentCounter = startCounter;
     int consecutiveEmptyBatches = 0;
     int lastUsedCounter = startCounter - 1;
 
-    Logger.log.i('Starting restore for keyset $keysetId from counter $startCounter');
+    Logger.log
+        .i('Starting restore for keyset $keysetId from counter $startCounter');
 
     while (consecutiveEmptyBatches < gapLimit) {
       // Generate blinded messages for this batch
       final List<CashuBlindedMessageItem> blindedMessageItems = [];
-      
+
       for (int i = 0; i < batchSize; i++) {
         final counter = currentCounter + i;
-        
+
         try {
           // Derive secret and blinding factor using NUT-13
           final derivedSecret = await cashuKeyDerivation.deriveSecret(
@@ -100,6 +101,7 @@ class CashuRestore {
           final r = BigInt.parse(derivedSecret.blindingHex, radix: 16);
 
           // Create blinded message
+          // ignore: non_constant_identifier_names, constant_identifier_names
           final (B_, rActual) = CashuBdhke.blindMessage(secret, r: r);
 
           if (B_.isEmpty) {
@@ -122,12 +124,14 @@ class CashuRestore {
             amount: 0,
           ));
         } catch (e) {
-          Logger.log.w('Error creating blinded message for counter $counter: $e');
+          Logger.log
+              .w('Error creating blinded message for counter $counter: $e');
         }
       }
 
       if (blindedMessageItems.isEmpty) {
-        Logger.log.w('No valid blinded messages created for batch starting at $currentCounter');
+        Logger.log.w(
+            'No valid blinded messages created for batch starting at $currentCounter');
         consecutiveEmptyBatches++;
         currentCounter += batchSize;
         continue;
@@ -135,9 +139,8 @@ class CashuRestore {
 
       // Call restore endpoint
       try {
-        final blindedMessages = blindedMessageItems
-            .map((item) => item.blindedMessage)
-            .toList();
+        final blindedMessages =
+            blindedMessageItems.map((item) => item.blindedMessage).toList();
 
         final signatures = await cashuRepo.restore(
           mintUrl: mintUrl,
@@ -146,13 +149,15 @@ class CashuRestore {
 
         if (signatures.isEmpty) {
           // No signatures returned for this batch
-          Logger.log.d('No signatures returned for batch starting at $currentCounter');
+          Logger.log.d(
+              'No signatures returned for batch starting at $currentCounter');
           consecutiveEmptyBatches++;
         } else {
           // Found some proofs! Reset empty batch counter
           consecutiveEmptyBatches = 0;
-          
-          Logger.log.i('Found ${signatures.length} signatures in batch starting at $currentCounter');
+
+          Logger.log.i(
+              'Found ${signatures.length} signatures in batch starting at $currentCounter');
 
           // Unblind the signatures to get proofs
           final proofs = _unblindRestoreSignatures(
@@ -162,12 +167,13 @@ class CashuRestore {
           );
 
           allRestoredProofs.addAll(proofs);
-          
+
           // Update last used counter
           lastUsedCounter = currentCounter + batchSize - 1;
         }
       } catch (e) {
-        Logger.log.e('Error calling restore endpoint for batch starting at $currentCounter: $e');
+        Logger.log.e(
+            'Error calling restore endpoint for batch starting at $currentCounter: $e');
         // On error, we consider this batch as empty and continue
         consecutiveEmptyBatches++;
       }
@@ -175,11 +181,9 @@ class CashuRestore {
       currentCounter += batchSize;
     }
 
-    Logger.log.i(
-      'Restore completed for keyset $keysetId. '
-      'Found ${allRestoredProofs.length} proofs. '
-      'Last used counter: $lastUsedCounter'
-    );
+    Logger.log.i('Restore completed for keyset $keysetId. '
+        'Found ${allRestoredProofs.length} proofs. '
+        'Last used counter: $lastUsedCounter');
 
     return CashuRestoreKeysetResult(
       keysetId: keysetId,
@@ -212,7 +216,8 @@ class CashuRestore {
       // Find the corresponding blinded message by ID
       final matchingItem = messageMap.values.firstWhere(
         (item) => item.blindedMessage.id == signature.id,
-        orElse: () => throw Exception('No matching blinded message for signature'),
+        orElse: () =>
+            throw Exception('No matching blinded message for signature'),
       );
 
       final mintPubKey = keysByAmount[signature.amount];
@@ -230,7 +235,8 @@ class CashuRestore {
         );
 
         if (unblindedSig == null) {
-          Logger.log.w('Failed to unblind signature for amount ${signature.amount}');
+          Logger.log
+              .w('Failed to unblind signature for amount ${signature.amount}');
           continue;
         }
 
@@ -252,10 +258,10 @@ class CashuRestore {
   }
 
   /// Restores proofs for all keysets from a mint.
-  /// 
+  ///
   /// This is the main restore method that should be called by wallets.
   /// It will restore proofs for all active keysets in the mint.
-  /// 
+  ///
   /// [mintUrl] - The URL of the mint to restore from
   /// [keysets] - The list of keysets to restore proofs for
   /// [startCounter] - The counter to start scanning from (default: 0)

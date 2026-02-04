@@ -100,16 +100,16 @@ class Cashu {
   }
 
   /// Restores proofs from a mint using the wallet's seed phrase.
-  /// 
+  ///
   /// This implements NUT-09 (Restore) using NUT-13 (Deterministic Secrets).
   /// It will scan the mint for proofs that belong to this wallet's seed.
-  /// 
+  ///
   /// [mintUrl] - The URL of the mint to restore from
   /// [unit] - The unit to restore proofs for (default: 'sat')
   /// [startCounter] - The counter to start scanning from (default: 0)
   /// [batchSize] - How many secrets to check in each batch (default: 100)
   /// [gapLimit] - How many consecutive empty batches before stopping (default: 2)
-  /// 
+  ///
   /// Returns a [CashuRestoreResult] containing the restored proofs.
   Future<CashuRestoreResult> restore({
     required String mintUrl,
@@ -163,7 +163,8 @@ class Cashu {
     // Update balance stream
     await _updateBalances();
 
-    Logger.log.i('Restore completed. Total proofs restored: ${result.totalProofsRestored}');
+    Logger.log.i(
+        'Restore completed. Total proofs restored: ${result.totalProofsRestored}');
 
     return result;
   }
