@@ -7,4 +7,7 @@ class CashuConfig {
 
   static const Duration FUNDING_CHECK_INTERVAL = Duration(seconds: 2);
   static const Duration SPEND_CHECK_INTERVAL = Duration(seconds: 5);
+
+  /// Timeout for network requests to mint - fails fast if mint is offline
+  static const Duration NETWORK_TIMEOUT = Duration(seconds: 10);
 }

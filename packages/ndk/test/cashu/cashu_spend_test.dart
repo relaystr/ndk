@@ -17,6 +17,75 @@ void main() {
   setUp(() {});
 
   group('spend tests - exceptions ', () {
+    test("spend - offline mint should fail immediately", () async {
+      final cache = MemCacheManager();
+
+      await cache.saveKeyset(
+        CahsuKeyset(
+          id: 'testKeyset',
+          mintUrl: 'https://offline.mint.example.com',
+          unit: 'sat',
+          active: true,
+          inputFeePPK: 0,
+          mintKeyPairs: {
+            CahsuMintKeyPair(
+              amount: 1,
+              pubkey: 'testPubKey-1',
+            ),
+            CahsuMintKeyPair(
+              amount: 2,
+              pubkey: 'testPubKey-2',
+            ),
+            CahsuMintKeyPair(
+              amount: 4,
+              pubkey: 'testPubKey-4',
+            ),
+          },
+        ),
+      );
+
+      await cache.saveProofs(
+        proofs: [
+          CashuProof(
+            keysetId: 'testKeyset',
+            amount: 1,
+            secret: 'testSecret-1',
+            unblindedSig: '',
+          ),
+          CashuProof(
+            keysetId: 'testKeyset',
+            amount: 2,
+            secret: 'testSecret-2',
+            unblindedSig: '',
+          ),
+          CashuProof(
+            keysetId: 'testKeyset',
+            amount: 4,
+            secret: 'testSecret-4',
+            unblindedSig: '',
+          ),
+        ],
+        mintUrl: 'https://offline.mint.example.com',
+      );
+
+      final cashu = CashuTestTools.mockHttpCashu(
+        customCache: cache,
+        seedPhrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+      );
+
+      // This should throw an exception quickly (not hang)
+      expect(
+        () async => await cashu.initiateSpend(
+          mintUrl: 'https://offline.mint.example.com',
+          amount: 3,
+          unit: 'sat',
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
+
     test("spend - amount", () {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 

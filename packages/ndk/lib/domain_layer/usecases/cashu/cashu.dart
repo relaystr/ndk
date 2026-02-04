@@ -950,46 +950,60 @@ class Cashu {
       throw Exception('No proof public keys provided for checking state');
     }
 
-    while (true) {
-      final checkResult = await _cashuRepo.checkTokenState(
-        proofPubkeys: transaction.proofPubKeys!,
-        mintUrl: transaction.mintUrl,
-      );
-
-      /// check that all proofs are spent
-      if (checkResult.every((e) => e.state == CashuProofState.spend)) {
-        Logger.log.d('All proofs are spent for transaction ${transaction.id}');
-        final completedTransaction = transaction.copyWith(
-          state: WalletTransactionState.completed,
-          transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        );
-        await _addAndSaveLatestTransaction(completedTransaction);
-        _removePendingTransaction(transaction);
-
-        // mark proofs as spent in db
-        final allPendingProofs = await _cacheManagerCashu.getProofs(
-          mintUrl: transaction.mintUrl,
-          state: CashuProofState.pending,
-        );
-
-        final transactionProofs = allPendingProofs
-            .where((e) => transaction.proofPubKeys!.contains(e.Y))
-            .toList();
-
-        _changeProofState(
-          proofs: transactionProofs,
-          state: CashuProofState.spend,
-        );
-        await _cacheManagerCashu.saveProofs(
-          proofs: transactionProofs,
+    try {
+      while (true) {
+        final checkResult = await _cashuRepo.checkTokenState(
+          proofPubkeys: transaction.proofPubKeys!,
           mintUrl: transaction.mintUrl,
         );
 
-        return;
+        /// check that all proofs are spent
+        if (checkResult.every((e) => e.state == CashuProofState.spend)) {
+          Logger.log
+              .d('All proofs are spent for transaction ${transaction.id}');
+          final completedTransaction = transaction.copyWith(
+            state: WalletTransactionState.completed,
+            transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          );
+          await _addAndSaveLatestTransaction(completedTransaction);
+          _removePendingTransaction(transaction);
+
+          // mark proofs as spent in db
+          final allPendingProofs = await _cacheManagerCashu.getProofs(
+            mintUrl: transaction.mintUrl,
+            state: CashuProofState.pending,
+          );
+
+          final transactionProofs = allPendingProofs
+              .where((e) => transaction.proofPubKeys!.contains(e.Y))
+              .toList();
+
+          _changeProofState(
+            proofs: transactionProofs,
+            state: CashuProofState.spend,
+          );
+          await _cacheManagerCashu.saveProofs(
+            proofs: transactionProofs,
+            mintUrl: transaction.mintUrl,
+          );
+
+          return;
+        }
+
+        // retry after a delay
+        await Future.delayed(CashuConfig.SPEND_CHECK_INTERVAL);
       }
-
-      // retry after a delay
-      await Future.delayed(CashuConfig.SPEND_CHECK_INTERVAL);
+    } catch (e) {
+      Logger.log.e(
+          'Error checking spending state for transaction ${transaction.id}: $e');
+      // Mark transaction as failed
+      final failedTransaction = transaction.copyWith(
+        state: WalletTransactionState.failed,
+        transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        completionMsg: 'Failed to verify spending state: $e',
+      );
+      _removePendingTransaction(transaction);
+      await _addAndSaveLatestTransaction(failedTransaction);
     }
   }
 

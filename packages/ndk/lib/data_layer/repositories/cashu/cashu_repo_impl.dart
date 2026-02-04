@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../config/cashu_config.dart';
 import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
 import '../../../domain_layer/entities/cashu/cashu_blinded_message.dart';
 import '../../../domain_layer/entities/cashu/cashu_blinded_signature.dart';
@@ -37,11 +38,18 @@ class CashuRepoImpl implements CashuRepo {
       'outputs': outputs.map((e) => e.toJson()).toList(),
     };
 
-    final response = await client.post(
-      url: Uri.parse(url),
-      body: jsonEncode(body),
-      headers: headers,
-    );
+    final response = await client
+        .post(
+          url: Uri.parse(url),
+          body: jsonEncode(body),
+          headers: headers,
+        )
+        .timeout(
+          CashuConfig.NETWORK_TIMEOUT,
+          onTimeout: () => throw Exception(
+            'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
+          ),
+        );
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -71,10 +79,17 @@ class CashuRepoImpl implements CashuRepo {
   }) async {
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'keysets');
 
-    final response = await client.get(
-      url: Uri.parse(url),
-      headers: headers,
-    );
+    final response = await client
+        .get(
+          url: Uri.parse(url),
+          headers: headers,
+        )
+        .timeout(
+          CashuConfig.NETWORK_TIMEOUT,
+          onTimeout: () => throw Exception(
+            'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
+          ),
+        );
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -109,10 +124,17 @@ class CashuRepoImpl implements CashuRepo {
       url = baseUrl;
     }
 
-    final response = await client.get(
-      url: Uri.parse(url),
-      headers: headers,
-    );
+    final response = await client
+        .get(
+          url: Uri.parse(url),
+          headers: headers,
+        )
+        .timeout(
+          CashuConfig.NETWORK_TIMEOUT,
+          onTimeout: () => throw Exception(
+            'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
+          ),
+        );
     if (response.statusCode != 200) {
       throw Exception(
         'Error fetching keys: ${response.statusCode}, ${response.body}',
@@ -280,11 +302,18 @@ class CashuRepoImpl implements CashuRepo {
       'unit': unit,
     };
 
-    final response = await client.post(
-      url: Uri.parse(url),
-      body: jsonEncode(body),
-      headers: headers,
-    );
+    final response = await client
+        .post(
+          url: Uri.parse(url),
+          body: jsonEncode(body),
+          headers: headers,
+        )
+        .timeout(
+          CashuConfig.NETWORK_TIMEOUT,
+          onTimeout: () => throw Exception(
+            'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
+          ),
+        );
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -345,11 +374,18 @@ class CashuRepoImpl implements CashuRepo {
     };
     final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'melt/$method');
 
-    final response = await client.post(
-      url: Uri.parse(url),
-      body: jsonEncode(body),
-      headers: headers,
-    );
+    final response = await client
+        .post(
+          url: Uri.parse(url),
+          body: jsonEncode(body),
+          headers: headers,
+        )
+        .timeout(
+          CashuConfig.NETWORK_TIMEOUT,
+          onTimeout: () => throw Exception(
+            'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
+          ),
+        );
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -400,11 +436,18 @@ class CashuRepoImpl implements CashuRepo {
     final body = {
       'Ys': proofPubkeys,
     };
-    final response = await client.post(
-      url: Uri.parse(url),
-      body: jsonEncode(body),
-      headers: headers,
-    );
+    final response = await client
+        .post(
+          url: Uri.parse(url),
+          body: jsonEncode(body),
+          headers: headers,
+        )
+        .timeout(
+          CashuConfig.NETWORK_TIMEOUT,
+          onTimeout: () => throw Exception(
+            'Network timeout: Unable to reach mint at $mintUrl. The mint may be offline.',
+          ),
+        );
     if (response.statusCode != 200) {
       throw Exception(
         'Error checking token state: ${response.statusCode}, ${response.body}',
