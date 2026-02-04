@@ -1,3 +1,7 @@
+## 0.2.8-dev.8
+
+ - Update a dependency to the latest release.
+
 ## 0.2.8-dev.7
 
  - **FEAT**: add caching support for nip05.resolve() with identifier lookup.

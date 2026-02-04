@@ -1,3 +1,7 @@
+## 0.7.1-dev.8
+
+ - **FIX**: distinguish CLOSED from EOSE in relay request state.
+
 ## 0.7.1-dev.7
 
  - **REFACTOR**: rename nip05.fetch() to nip05.resolve().
