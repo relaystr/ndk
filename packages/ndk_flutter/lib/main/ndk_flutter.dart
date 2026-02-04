@@ -35,8 +35,6 @@ class NdkFlutter {
   }
 
   static Color getColorFromPubkey(String pubkey) {
-    if (pubkey.isEmpty) return const Color(0xFF808080);
-
     // Hash the pubkey using SHA-256 for better distribution
     final bytes = utf8.encode(pubkey);
     final digest = sha256.convert(bytes);
