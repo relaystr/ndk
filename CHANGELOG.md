@@ -15,6 +15,45 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.7.1-dev.9`](#ndk---v071-dev9)
+ - [`ndk_amber` - `v0.4.0-dev.9`](#ndk_amber---v040-dev9)
+ - [`ndk_objectbox` - `v0.2.8-dev.9`](#ndk_objectbox---v028-dev9)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.9`](#ndk_rust_verifier---v050-dev9)
+ - [`nip07_event_signer` - `v1.0.6-dev.9`](#nip07_event_signer---v106-dev9)
+ - [`sembast_cache_manager` - `v1.0.7-dev.9`](#sembast_cache_manager---v107-dev9)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.9`](#ndk_cache_manager_test_suite---v101-dev9)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.9`
+ - `ndk_objectbox` - `v0.2.8-dev.9`
+ - `ndk_rust_verifier` - `v0.5.0-dev.9`
+ - `nip07_event_signer` - `v1.0.6-dev.9`
+ - `sembast_cache_manager` - `v1.0.7-dev.9`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.9`
+
+---
+
+#### `ndk` - `v0.7.1-dev.9`
+
+ - **FIX**: complete request when auth-required received without challenge.
+ - **FIX**: complete request when relay requires auth but client cannot sign.
+
+
+## 2026-02-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.7.1-dev.8`](#ndk---v071-dev8)
  - [`ndk_amber` - `v0.4.0-dev.8`](#ndk_amber---v040-dev8)
  - [`ndk_objectbox` - `v0.2.8-dev.8`](#ndk_objectbox---v028-dev8)
