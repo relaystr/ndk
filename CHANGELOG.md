@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-05
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.0`](#ndk_flutter---v002-dev0)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.0`
+
+ - **REFACTOR**: migrate widgets to use NdkFlutter instead of Ndk.
+ - **REFACTOR**: centralize npub formatting in NdkFlutter.
+ - **FIX**: add intl dependency.
+ - **FIX**: remove defensive empty pubkey check in getColorFromPubkey.
+ - **FIX**: remove nip19 package.
+ - **FEAT**: add widgets demo page for ndk_flutter in sample-app.
+ - **FEAT**: add web verifier.
+
+
 ## 2026-02-04
 
 ### Changes
