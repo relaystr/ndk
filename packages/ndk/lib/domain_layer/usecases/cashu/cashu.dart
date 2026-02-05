@@ -154,14 +154,49 @@ class Cashu {
           .toList();
 
       if (newProofs.isNotEmpty) {
-        await _cacheManagerCashu.saveProofs(
-          proofs: newProofs,
-          mintUrl: mintUrl,
-        );
-        Logger.log.i('Saved ${newProofs.length} restored proofs to cache');
+        // Check which proofs are actually unspent
+        try {
+          final proofStates = await _cashuRepo.checkTokenState(
+            proofPubkeys: newProofs.map((p) => p.Y).toList(),
+            mintUrl: mintUrl,
+          );
 
-        // Update balance stream
-        await _updateBalances();
+          // Filter out spent proofs
+          final unspentProofs = <CashuProof>[];
+          for (int i = 0; i < newProofs.length; i++) {
+            if (i < proofStates.length &&
+                proofStates[i].state == CashuProofState.unspend) {
+              unspentProofs.add(newProofs[i]);
+            }
+          }
+
+          if (unspentProofs.isNotEmpty) {
+            await _cacheManagerCashu.saveProofs(
+              proofs: unspentProofs,
+              mintUrl: mintUrl,
+            );
+            Logger.log.i(
+                'Saved ${unspentProofs.length} unspent proofs to cache (filtered out ${newProofs.length - unspentProofs.length} spent proofs)');
+
+            // Update balance stream
+            await _updateBalances();
+          } else {
+            Logger.log.i(
+                'All ${newProofs.length} restored proofs were already spent, skipping save');
+          }
+        } catch (e) {
+          Logger.log.e('Error checking proof states during restore: $e');
+          // If we can't check state, save the proofs anyway (better to have duplicates than lose proofs)
+          await _cacheManagerCashu.saveProofs(
+            proofs: newProofs,
+            mintUrl: mintUrl,
+          );
+          Logger.log.w(
+              'Saved ${newProofs.length} proofs without state check due to error');
+
+          // Update balance stream
+          await _updateBalances();
+        }
       }
 
       // Yield progress update

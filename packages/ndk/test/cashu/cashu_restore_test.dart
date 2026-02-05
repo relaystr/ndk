@@ -67,6 +67,25 @@ void main() {
         ]),
       );
 
+      print('Wallet1 funded successfully!');
+      // cycle proofs 2
+      final spendResult =
+          await wallet1.initiateSpend(mintUrl: mintUrl, amount: 2, unit: unit);
+
+      final stream = wallet1.receive(spendResult.token.toV4TokenString());
+
+      await expectLater(
+        stream,
+        emitsInOrder([
+          isA<CashuWalletTransaction>()
+              .having((t) => t.state, 'state', WalletTransactionState.pending),
+          isA<CashuWalletTransaction>().having(
+              (t) => t.state, 'state', WalletTransactionState.completed),
+        ]),
+      );
+
+      print('Proofs cycled successfully!');
+
       // Check wallet1 balance
       final wallet1Balances = await wallet1.getBalances();
       final wallet1Balance = wallet1Balances
