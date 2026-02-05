@@ -9,6 +9,7 @@ import '../../entities/cashu/cashu_mint_balance.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/cashu/cashu_quote.dart';
+import '../../entities/cashu/cashu_restore_result.dart';
 import '../../entities/cashu/cashu_spending_result.dart';
 import '../../entities/cashu/cashu_token.dart';
 import '../../entities/cashu/cashu_user_seedphrase.dart';
@@ -21,6 +22,7 @@ import '../../repositories/cashu_repo.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
+import 'cashu_restore.dart';
 
 import 'cashu_seed.dart';
 import 'cashu_token_encoder.dart';
@@ -91,6 +93,117 @@ class Cashu {
     _cashuSeed.setSeedPhrase(
       seedPhrase: userSeedPhrase.seedPhrase,
     );
+  }
+
+  /// Get the cashu seed instance
+  CashuSeed getCashuSeed() {
+    return _cashuSeed;
+  }
+
+  /// Restores proofs from a mint using the wallet's seed phrase.
+  ///
+  /// This implements NUT-09 (Restore) using NUT-13 (Deterministic Secrets).
+  /// It will scan the mint for proofs that belong to this wallet's seed.
+  ///
+  /// [mintUrl] - The URL of the mint to restore from
+  /// [unit] - The unit to restore proofs for (default: 'sat')
+  /// [startCounter] - The counter to start scanning from (default: 0)
+  /// [batchSize] - How many secrets to check in each batch (default: 100)
+  /// [gapLimit] - How many consecutive empty batches before stopping (default: 2)
+  ///
+  /// Yields [CashuRestoreResult] updates as proofs are discovered during scanning.
+  /// The final yielded result contains all restored proofs.
+  Stream<CashuRestoreResult> restore({
+    required String mintUrl,
+    String unit = 'sat',
+    int startCounter = 0,
+    int batchSize = 100,
+    int gapLimit = 2,
+  }) async* {
+    Logger.log.i('Starting restore from $mintUrl');
+
+    // Get keysets for this mint and unit
+    final allKeysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
+    final keysets = allKeysets.where((keyset) => keyset.unit == unit).toList();
+
+    if (keysets.isEmpty) {
+      throw Exception('No keysets found for mint $mintUrl with unit $unit');
+    }
+
+    Logger.log.i('Found ${keysets.length} keysets for unit $unit');
+
+    // Create restore instance
+    final cashuRestore = CashuRestore(
+      cashuRepo: _cashuRepo,
+      cashuKeyDerivation: _cashuKeyDerivation,
+      cacheManager: _cacheManagerCashu,
+      cashuSeed: _cashuSeed,
+    );
+
+    // Restore all keysets and yield progress
+    await for (final result in cashuRestore.restoreAllKeysets(
+      mintUrl: mintUrl,
+      keysets: keysets,
+      startCounter: startCounter,
+      batchSize: batchSize,
+      gapLimit: gapLimit,
+    )) {
+      // Save restored proofs incrementally as they're discovered
+      final newProofs = result.keysetResults
+          .expand((keysetResult) => keysetResult.restoredProofs)
+          .toList();
+
+      if (newProofs.isNotEmpty) {
+        // Check which proofs are actually unspent
+        try {
+          final proofStates = await _cashuRepo.checkTokenState(
+            proofPubkeys: newProofs.map((p) => p.Y).toList(),
+            mintUrl: mintUrl,
+          );
+
+          // Filter out spent proofs
+          final unspentProofs = <CashuProof>[];
+          for (int i = 0; i < newProofs.length; i++) {
+            if (i < proofStates.length &&
+                proofStates[i].state == CashuProofState.unspend) {
+              unspentProofs.add(newProofs[i]);
+            }
+          }
+
+          if (unspentProofs.isNotEmpty) {
+            await _cacheManagerCashu.saveProofs(
+              proofs: unspentProofs,
+              mintUrl: mintUrl,
+            );
+            Logger.log.i(
+                'Saved ${unspentProofs.length} unspent proofs to cache (filtered out ${newProofs.length - unspentProofs.length} spent proofs)');
+
+            // Update balance stream
+            await _updateBalances();
+          } else {
+            Logger.log.i(
+                'All ${newProofs.length} restored proofs were already spent, skipping save');
+          }
+        } catch (e) {
+          Logger.log.e('Error checking proof states during restore: $e');
+          // If we can't check state, save the proofs anyway (better to have duplicates than lose proofs)
+          await _cacheManagerCashu.saveProofs(
+            proofs: newProofs,
+            mintUrl: mintUrl,
+          );
+          Logger.log.w(
+              'Saved ${newProofs.length} proofs without state check due to error');
+
+          // Update balance stream
+          await _updateBalances();
+        }
+      }
+
+      // Yield progress update
+      yield result;
+    }
+
+    Logger.log.i('Restore completed');
   }
 
   Future<int> getBalanceMintUnit({

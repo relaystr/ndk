@@ -138,4 +138,16 @@ class CashuCacheDecorator implements CacheManager {
       return currentValue;
     });
   }
+
+  Future<void> setDerivationCounter({
+    required String keysetId,
+    required String mintUrl,
+    required int counter,
+  }) async {
+    await _delegate.setCashuSecretCounter(
+      mintUrl: mintUrl,
+      keysetId: keysetId,
+      counter: counter,
+    );
+  }
 }

@@ -468,4 +468,47 @@ class CashuRepoImpl implements CashuRepo {
             ))
         .toList();
   }
+
+  @override
+  Future<(List<CashuBlindedMessage>, List<CashuBlindedSignature>)> restore({
+    required String mintUrl,
+    required List<CashuBlindedMessage> outputs,
+  }) async {
+    final url = CashuTools.composeUrl(mintUrl: mintUrl, path: 'restore');
+
+    final body = {
+      'outputs': outputs.map((e) => e.toJson()).toList(),
+    };
+
+    final response = await client.post(
+      url: Uri.parse(url),
+      body: jsonEncode(body),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Error restoring from mint: ${response.statusCode}, ${response.body}',
+      );
+    }
+
+    final responseBody = jsonDecode(response.body);
+    if (responseBody is! Map<String, dynamic>) {
+      throw Exception('Invalid response format: $responseBody');
+    }
+
+    // Parse outputs if present (NUT-09 spec includes them)
+    final List<dynamic> outputsUnparsed = responseBody['outputs'] ?? [];
+    final List<CashuBlindedMessage> restoredOutputs = outputsUnparsed
+        .map((e) => CashuBlindedMessage.fromServerMap(e))
+        .toList();
+
+    // Parse signatures
+    final List<dynamic> signaturesUnparsed = responseBody['signatures'] ?? [];
+    final List<CashuBlindedSignature> signatures = signaturesUnparsed
+        .map((e) => CashuBlindedSignature.fromServerMap(e))
+        .toList();
+
+    return (restoredOutputs, signatures);
+  }
 }
