@@ -70,6 +70,10 @@ class NdkConfig {
   /// Defaults to 30 seconds.
   Duration authCallbackTimeout;
 
+  /// Timeout for bunker/NIP-46 remote signer requests.
+  /// Defaults to 3 minutes.
+  Duration bunkerRequestTimeout;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
@@ -97,6 +101,7 @@ class NdkConfig {
     this.fetchedRangesEnabled = false,
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
+    this.bunkerRequestTimeout = RequestDefaults.DEFAULT_BUNKER_REQUEST_TIMEOUT,
   });
 }
 

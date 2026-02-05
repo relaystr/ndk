@@ -175,6 +175,7 @@ class Initialization {
     bunkers = Bunkers(
       broadcast: broadcast,
       requests: requests,
+      defaultRequestTimeout: _ndkConfig.bunkerRequestTimeout,
     );
 
     follows = Follows(

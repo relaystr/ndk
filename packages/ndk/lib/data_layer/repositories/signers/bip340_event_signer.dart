@@ -20,7 +20,8 @@ class Bip340EventSigner implements EventSigner {
   });
 
   @override
-  Future<Nip01Event> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event, {Duration? timeout}) async {
+    // timeout is ignored for local signer
     if (Helpers.isNotBlank(privateKey)) {
       return event.copyWith(sig: Bip340.sign(event.id, privateKey!));
     }
@@ -33,12 +34,16 @@ class Bip340EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey,
+      {String? id, Duration? timeout}) async {
+    // timeout is ignored for local signer
     return Nip04.decrypt(privateKey!, destPubKey, msg);
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey,
+      {String? id, Duration? timeout}) async {
+    // timeout is ignored for local signer
     return Nip04.encrypt(privateKey!, destPubKey, msg);
   }
 
@@ -51,7 +56,9 @@ class Bip340EventSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
+    Duration? timeout,
   }) {
+    // timeout is ignored for local signer
     return Nip44.encryptMessage(
       plaintext,
       privateKey!,
@@ -63,7 +70,9 @@ class Bip340EventSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
+    Duration? timeout,
   }) {
+    // timeout is ignored for local signer
     return Nip44.decryptMessage(
       ciphertext,
       privateKey!,

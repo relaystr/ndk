@@ -13,7 +13,9 @@ class Nip07EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey,
+      {String? id, Duration? timeout}) async {
+    // timeout is ignored for local signer
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');
     }
@@ -29,7 +31,9 @@ class Nip07EventSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
+    Duration? timeout,
   }) async {
+    // timeout is ignored for local signer
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');
     }
@@ -42,7 +46,9 @@ class Nip07EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey,
+      {String? id, Duration? timeout}) async {
+    // timeout is ignored for local signer
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');
     }
@@ -58,7 +64,9 @@ class Nip07EventSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
+    Duration? timeout,
   }) async {
+    // timeout is ignored for local signer
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');
     }
@@ -89,7 +97,8 @@ class Nip07EventSigner implements EventSigner {
   }
 
   @override
-  Future<Nip01Event> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event, {Duration? timeout}) async {
+    // timeout is ignored for local signer
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');
     }

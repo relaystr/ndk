@@ -6,6 +6,7 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 
+import '../../../config/request_defaults.dart';
 import '../../../domain_layer/usecases/bunkers/models/bunker_request.dart';
 
 class Nip46EventSigner implements EventSigner {
@@ -13,6 +14,7 @@ class Nip46EventSigner implements EventSigner {
   Requests requests;
   Broadcast broadcast;
   Function(String)? authCallback;
+  final Duration defaultTimeout;
 
   NdkResponse? subscription;
 
@@ -28,6 +30,7 @@ class Nip46EventSigner implements EventSigner {
     required this.broadcast,
     this.authCallback,
     this.cachedPublicKey,
+    this.defaultTimeout = RequestDefaults.DEFAULT_BUNKER_REQUEST_TIMEOUT,
   }) {
     final privKey = connection.privateKey;
     final pubKey = Bip340.getPublicKey(privKey);
@@ -84,7 +87,10 @@ class Nip46EventSigner implements EventSigner {
     }
   }
 
-  Future<String> remoteRequest({required BunkerRequest request}) async {
+  Future<String> remoteRequest({
+    required BunkerRequest request,
+    Duration? timeout,
+  }) async {
     final completer = Completer<String>();
     _pendingRequests[request.id] = completer;
 
@@ -110,7 +116,13 @@ class Nip46EventSigner implements EventSigner {
     );
     await broadcastRes.broadcastDoneFuture;
 
-    return completer.future;
+    final effectiveTimeout = timeout ?? defaultTimeout;
+    try {
+      return await completer.future.timeout(effectiveTimeout);
+    } on TimeoutException {
+      _pendingRequests.remove(request.id);
+      rethrow;
+    }
   }
 
   @override
@@ -119,13 +131,14 @@ class Nip46EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey,
+      {String? id, Duration? timeout}) async {
     final request = BunkerRequest(
       method: BunkerRequestMethods.nip04Decrypt,
       params: [destPubKey, msg],
     );
 
-    final decryptedText = await remoteRequest(request: request);
+    final decryptedText = await remoteRequest(request: request, timeout: timeout);
     return decryptedText;
   }
 
@@ -133,24 +146,26 @@ class Nip46EventSigner implements EventSigner {
   Future<String?> decryptNip44({
     required String ciphertext,
     required String senderPubKey,
+    Duration? timeout,
   }) async {
     final request = BunkerRequest(
       method: BunkerRequestMethods.nip44Decrypt,
       params: [senderPubKey, ciphertext],
     );
 
-    final decryptedText = await remoteRequest(request: request);
+    final decryptedText = await remoteRequest(request: request, timeout: timeout);
     return decryptedText;
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey,
+      {String? id, Duration? timeout}) async {
     final request = BunkerRequest(
       method: BunkerRequestMethods.nip04Encrypt,
       params: [destPubKey, msg],
     );
 
-    final encryptedText = await remoteRequest(request: request);
+    final encryptedText = await remoteRequest(request: request, timeout: timeout);
     return encryptedText;
   }
 
@@ -158,13 +173,14 @@ class Nip46EventSigner implements EventSigner {
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,
+    Duration? timeout,
   }) async {
     final request = BunkerRequest(
       method: BunkerRequestMethods.nip44Encrypt,
       params: [recipientPubKey, plaintext],
     );
 
-    final encryptedText = await remoteRequest(request: request);
+    final encryptedText = await remoteRequest(request: request, timeout: timeout);
     return encryptedText;
   }
 
@@ -185,7 +201,7 @@ class Nip46EventSigner implements EventSigner {
   }
 
   @override
-  Future<Nip01Event> sign(Nip01Event event) async {
+  Future<Nip01Event> sign(Nip01Event event, {Duration? timeout}) async {
     final eventMap = {
       "kind": event.kind,
       "content": event.content,
@@ -198,7 +214,7 @@ class Nip46EventSigner implements EventSigner {
       params: [jsonEncode(eventMap)],
     );
 
-    final signedEventJson = await remoteRequest(request: request);
+    final signedEventJson = await remoteRequest(request: request, timeout: timeout);
     final signedEvent = jsonDecode(signedEventJson);
 
     return event.copyWith(id: signedEvent["id"], sig: signedEvent["sig"]);
