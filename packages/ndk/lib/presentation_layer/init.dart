@@ -16,6 +16,7 @@ import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
+import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
@@ -28,7 +29,7 @@ import '../domain_layer/usecases/jit_engine/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/lnurl/lnurl.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
-import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nip05/nip_05.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
@@ -80,9 +81,10 @@ class Initialization {
   late Search search;
   late GiftWrap giftWrap;
   late Connectivy connectivity;
+  late FetchedRanges fetchedRanges;
   late ProofOfWork proofOfWork;
 
-  late VerifyNip05 verifyNip05;
+  late Nip05Usecase nip05;
 
   late final NetworkEngine engine;
 
@@ -105,6 +107,8 @@ class Initialization {
           accounts: accounts,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
+          eagerAuth: _ndkConfig.eagerAuth,
+          authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
 
         engine = RelaySetsEngine(
@@ -121,6 +125,8 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
+          eagerAuth: _ndkConfig.eagerAuth,
+          authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
 
         engine = JitEngine(
@@ -163,6 +169,7 @@ class Initialization {
       accounts: accounts,
       considerDonePercent: _ndkConfig.defaultBroadcastConsiderDonePercent,
       timeout: _ndkConfig.defaultBroadcastTimeout,
+      saveToCache: _ndkConfig.defaultBroadcastSaveToCache,
     );
 
     bunkers = Bunkers(
@@ -205,7 +212,7 @@ class Initialization {
       blockedRelays: _globalState.blockedRelays,
     );
 
-    verifyNip05 = VerifyNip05(
+    nip05 = Nip05Usecase(
       database: _ndkConfig.cache,
       nip05Repository: nip05repository,
     );
@@ -240,6 +247,15 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       requests: requests,
     );
+
+    fetchedRanges = FetchedRanges(
+      cacheManager: _ndkConfig.cache,
+    );
+
+    // Connect fetchedRanges to requests for automatic range recording (if enabled)
+    if (_ndkConfig.fetchedRangesEnabled) {
+      requests.fetchedRanges = fetchedRanges;
+    }
 
     giftWrap = GiftWrap(accounts: accounts);
 

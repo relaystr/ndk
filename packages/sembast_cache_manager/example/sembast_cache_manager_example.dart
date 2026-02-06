@@ -101,7 +101,7 @@ Future<void> main() async {
     print(
         '✅ Contact list loaded: ${loadedContactList?.contacts.length} contacts');
 
-    final loadedNip05 = await cacheManager.loadNip05(nip05.pubKey);
+    final loadedNip05 = await cacheManager.loadNip05(pubKey: nip05.pubKey);
     print(
         '✅ NIP-05 loaded: ${loadedNip05?.nip05} (valid: ${loadedNip05?.valid})\n');
 

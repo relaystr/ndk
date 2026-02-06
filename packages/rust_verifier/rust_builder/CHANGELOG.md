@@ -1,3 +1,7 @@
+## 0.1.7+1
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.1.7-dev.0+1
 
  - **REFACTOR**: secp256k1 to rust native dep.

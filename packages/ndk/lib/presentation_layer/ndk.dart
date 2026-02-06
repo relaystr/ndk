@@ -7,6 +7,7 @@ import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
+import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
@@ -14,7 +15,7 @@ import '../domain_layer/usecases/follows/follows.dart';
 import '../domain_layer/usecases/gift_wrap/gift_wrap.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
-import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nip05/nip_05.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/relay_manager.dart';
@@ -104,8 +105,8 @@ class Ndk {
   /// calculate relay set
   RelaySets get relaySets => _initialization.relaySets;
 
-  /// Verifies NIP-05 events
-  VerifyNip05 get nip05 => _initialization.verifyNip05;
+  /// NIP-05 operations (verify and fetch)
+  Nip05Usecase get nip05 => _initialization.nip05;
 
   /// manage files on nostr \
   /// upload, download, delete files \
@@ -149,6 +150,11 @@ class Ndk {
   /// Search
   @experimental
   Search get search => _initialization.search;
+
+  /// Fetched ranges tracking
+  /// Track which time ranges have been fetched from which relays for each filter
+  @experimental
+  FetchedRanges get fetchedRanges => _initialization.fetchedRanges;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {

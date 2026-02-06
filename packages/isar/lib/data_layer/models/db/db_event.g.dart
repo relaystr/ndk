@@ -21,6 +21,10 @@ const DbEventSchema = IsarGeneratedSchema(
     embedded: false,
     properties: [
       IsarPropertySchema(
+        name: 'tagsJson',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
         name: 'id',
         type: IsarType.string,
       ),
@@ -35,14 +39,6 @@ const DbEventSchema = IsarGeneratedSchema(
       IsarPropertySchema(
         name: 'createdAt',
         type: IsarType.long,
-      ),
-      IsarPropertySchema(
-        name: 'tags',
-        type: IsarType.json,
-      ),
-      IsarPropertySchema(
-        name: 'pTags',
-        type: IsarType.stringList,
       ),
       IsarPropertySchema(
         name: 'content',
@@ -73,32 +69,31 @@ const DbEventSchema = IsarGeneratedSchema(
 
 @isarProtected
 int serializeDbEvent(IsarWriter writer, DbEvent object) {
-  IsarCore.writeString(writer, 1, object.id);
-  IsarCore.writeString(writer, 2, object.pubKey);
-  IsarCore.writeLong(writer, 3, object.kind);
-  IsarCore.writeLong(writer, 4, object.createdAt);
-  IsarCore.writeString(writer, 5, isarJsonEncode(object.tags));
+  IsarCore.writeString(writer, 1, object.tagsJson);
+  IsarCore.writeString(writer, 2, object.id);
+  IsarCore.writeString(writer, 3, object.pubKey);
+  IsarCore.writeLong(writer, 4, object.kind);
+  IsarCore.writeLong(writer, 5, object.createdAt);
+  IsarCore.writeString(writer, 6, object.content);
   {
-    final list = object.pTags;
-    final listWriter = IsarCore.beginList(writer, 6, list.length);
-    for (var i = 0; i < list.length; i++) {
-      IsarCore.writeString(listWriter, i, list[i]);
+    final value = object.sig;
+    if (value == null) {
+      IsarCore.writeNull(writer, 7);
+    } else {
+      IsarCore.writeString(writer, 7, value);
     }
-    IsarCore.endList(writer, listWriter);
   }
-  IsarCore.writeString(writer, 7, object.content);
-  IsarCore.writeString(writer, 8, object.sig ?? '');
   {
     final value = object.validSig;
     if (value == null) {
-      IsarCore.writeNull(writer, 9);
+      IsarCore.writeNull(writer, 8);
     } else {
-      IsarCore.writeBool(writer, 9, value);
+      IsarCore.writeBool(writer, 8, value);
     }
   }
   {
     final list = object.sources;
-    final listWriter = IsarCore.beginList(writer, 10, list.length);
+    final listWriter = IsarCore.beginList(writer, 9, list.length);
     for (var i = 0; i < list.length; i++) {
       IsarCore.writeString(listWriter, i, list[i]);
     }
@@ -109,47 +104,42 @@ int serializeDbEvent(IsarWriter writer, DbEvent object) {
 
 @isarProtected
 DbEvent deserializeDbEvent(IsarReader reader) {
+  final String _tagsJson;
+  _tagsJson = IsarCore.readString(reader, 1) ?? '';
+  final String _id;
+  _id = IsarCore.readString(reader, 2) ?? '';
   final String _pubKey;
-  _pubKey = IsarCore.readString(reader, 2) ?? '';
+  _pubKey = IsarCore.readString(reader, 3) ?? '';
   final int _kind;
-  _kind = IsarCore.readLong(reader, 3);
+  _kind = IsarCore.readLong(reader, 4);
   final int _createdAt;
   {
-    final value = IsarCore.readLong(reader, 4);
+    final value = IsarCore.readLong(reader, 5);
     if (value == -9223372036854775808) {
       _createdAt = 0;
     } else {
       _createdAt = value;
     }
   }
-  final List<List<String>> _tags;
-  {
-    final json = isarJsonDecode(IsarCore.readString(reader, 5) ?? 'null');
-    if (json is List) {
-      _tags = castToListOfListOfString(json);
-    } else {
-      _tags = const <List<String>>[];
-    }
-  }
   final String _content;
-  _content = IsarCore.readString(reader, 7) ?? '';
-  final String _sig;
-  _sig = IsarCore.readString(reader, 8) ?? '';
+  _content = IsarCore.readString(reader, 6) ?? '';
+  final String? _sig;
+  _sig = IsarCore.readString(reader, 7);
   final bool? _validSig;
   {
-    if (IsarCore.readNull(reader, 9)) {
+    if (IsarCore.readNull(reader, 8)) {
       _validSig = null;
     } else {
-      _validSig = IsarCore.readBool(reader, 9);
+      _validSig = IsarCore.readBool(reader, 8);
     }
   }
   final List<String> _sources;
   {
-    final length = IsarCore.readList(reader, 10, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 9, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
-        _sources = const <String>[];
+        _sources = const [];
       } else {
         final list = List<String>.filled(length, '', growable: true);
         for (var i = 0; i < length; i++) {
@@ -161,10 +151,11 @@ DbEvent deserializeDbEvent(IsarReader reader) {
     }
   }
   final object = DbEvent(
+    tagsJson: _tagsJson,
+    id: _id,
     pubKey: _pubKey,
     kind: _kind,
     createdAt: _createdAt,
-    tags: _tags,
     content: _content,
     sig: _sig,
     validSig: _validSig,
@@ -181,61 +172,37 @@ dynamic deserializeDbEventProp(IsarReader reader, int property) {
     case 2:
       return IsarCore.readString(reader, 2) ?? '';
     case 3:
-      return IsarCore.readLong(reader, 3);
+      return IsarCore.readString(reader, 3) ?? '';
     case 4:
+      return IsarCore.readLong(reader, 4);
+    case 5:
       {
-        final value = IsarCore.readLong(reader, 4);
+        final value = IsarCore.readLong(reader, 5);
         if (value == -9223372036854775808) {
           return 0;
         } else {
           return value;
         }
       }
-    case 5:
-      {
-        final json = isarJsonDecode(IsarCore.readString(reader, 5) ?? 'null');
-        if (json is List) {
-          return json;
-        } else {
-          return const <dynamic>[];
-        }
-      }
     case 6:
-      {
-        final length = IsarCore.readList(reader, 6, IsarCore.readerPtrPtr);
-        {
-          final reader = IsarCore.readerPtr;
-          if (reader.isNull) {
-            return const <String>[];
-          } else {
-            final list = List<String>.filled(length, '', growable: true);
-            for (var i = 0; i < length; i++) {
-              list[i] = IsarCore.readString(reader, i) ?? '';
-            }
-            IsarCore.freeReader(reader);
-            return list;
-          }
-        }
-      }
+      return IsarCore.readString(reader, 6) ?? '';
     case 7:
-      return IsarCore.readString(reader, 7) ?? '';
+      return IsarCore.readString(reader, 7);
     case 8:
-      return IsarCore.readString(reader, 8) ?? '';
-    case 9:
       {
-        if (IsarCore.readNull(reader, 9)) {
+        if (IsarCore.readNull(reader, 8)) {
           return null;
         } else {
-          return IsarCore.readBool(reader, 9);
+          return IsarCore.readBool(reader, 8);
         }
       }
-    case 10:
+    case 9:
       {
-        final length = IsarCore.readList(reader, 10, IsarCore.readerPtrPtr);
+        final length = IsarCore.readList(reader, 9, IsarCore.readerPtrPtr);
         {
           final reader = IsarCore.readerPtr;
           if (reader.isNull) {
-            return const <String>[];
+            return const [];
           } else {
             final list = List<String>.filled(length, '', growable: true);
             for (var i = 0; i < length; i++) {
@@ -254,6 +221,7 @@ dynamic deserializeDbEventProp(IsarReader reader, int property) {
 sealed class _DbEventUpdate {
   bool call({
     required String id,
+    String? tagsJson,
     String? pubKey,
     int? kind,
     int? createdAt,
@@ -271,6 +239,7 @@ class _DbEventUpdateImpl implements _DbEventUpdate {
   @override
   bool call({
     required String id,
+    Object? tagsJson = ignore,
     Object? pubKey = ignore,
     Object? kind = ignore,
     Object? createdAt = ignore,
@@ -281,12 +250,13 @@ class _DbEventUpdateImpl implements _DbEventUpdate {
     return collection.updateProperties([
           id
         ], {
-          if (pubKey != ignore) 2: pubKey as String?,
-          if (kind != ignore) 3: kind as int?,
-          if (createdAt != ignore) 4: createdAt as int?,
-          if (content != ignore) 7: content as String?,
-          if (sig != ignore) 8: sig as String?,
-          if (validSig != ignore) 9: validSig as bool?,
+          if (tagsJson != ignore) 1: tagsJson as String?,
+          if (pubKey != ignore) 3: pubKey as String?,
+          if (kind != ignore) 4: kind as int?,
+          if (createdAt != ignore) 5: createdAt as int?,
+          if (content != ignore) 6: content as String?,
+          if (sig != ignore) 7: sig as String?,
+          if (validSig != ignore) 8: validSig as bool?,
         }) >
         0;
   }
@@ -295,6 +265,7 @@ class _DbEventUpdateImpl implements _DbEventUpdate {
 sealed class _DbEventUpdateAll {
   int call({
     required List<String> id,
+    String? tagsJson,
     String? pubKey,
     int? kind,
     int? createdAt,
@@ -312,6 +283,7 @@ class _DbEventUpdateAllImpl implements _DbEventUpdateAll {
   @override
   int call({
     required List<String> id,
+    Object? tagsJson = ignore,
     Object? pubKey = ignore,
     Object? kind = ignore,
     Object? createdAt = ignore,
@@ -320,12 +292,13 @@ class _DbEventUpdateAllImpl implements _DbEventUpdateAll {
     Object? validSig = ignore,
   }) {
     return collection.updateProperties(id, {
-      if (pubKey != ignore) 2: pubKey as String?,
-      if (kind != ignore) 3: kind as int?,
-      if (createdAt != ignore) 4: createdAt as int?,
-      if (content != ignore) 7: content as String?,
-      if (sig != ignore) 8: sig as String?,
-      if (validSig != ignore) 9: validSig as bool?,
+      if (tagsJson != ignore) 1: tagsJson as String?,
+      if (pubKey != ignore) 3: pubKey as String?,
+      if (kind != ignore) 4: kind as int?,
+      if (createdAt != ignore) 5: createdAt as int?,
+      if (content != ignore) 6: content as String?,
+      if (sig != ignore) 7: sig as String?,
+      if (validSig != ignore) 8: validSig as bool?,
     });
   }
 }
@@ -338,6 +311,7 @@ extension DbEventUpdate on IsarCollection<String, DbEvent> {
 
 sealed class _DbEventQueryUpdate {
   int call({
+    String? tagsJson,
     String? pubKey,
     int? kind,
     int? createdAt,
@@ -355,6 +329,7 @@ class _DbEventQueryUpdateImpl implements _DbEventQueryUpdate {
 
   @override
   int call({
+    Object? tagsJson = ignore,
     Object? pubKey = ignore,
     Object? kind = ignore,
     Object? createdAt = ignore,
@@ -363,12 +338,13 @@ class _DbEventQueryUpdateImpl implements _DbEventQueryUpdate {
     Object? validSig = ignore,
   }) {
     return query.updateProperties(limit: limit, {
-      if (pubKey != ignore) 2: pubKey as String?,
-      if (kind != ignore) 3: kind as int?,
-      if (createdAt != ignore) 4: createdAt as int?,
-      if (content != ignore) 7: content as String?,
-      if (sig != ignore) 8: sig as String?,
-      if (validSig != ignore) 9: validSig as bool?,
+      if (tagsJson != ignore) 1: tagsJson as String?,
+      if (pubKey != ignore) 3: pubKey as String?,
+      if (kind != ignore) 4: kind as int?,
+      if (createdAt != ignore) 5: createdAt as int?,
+      if (content != ignore) 6: content as String?,
+      if (sig != ignore) 7: sig as String?,
+      if (validSig != ignore) 8: validSig as bool?,
     });
   }
 }
@@ -388,6 +364,7 @@ class _DbEventQueryBuilderUpdateImpl implements _DbEventQueryUpdate {
 
   @override
   int call({
+    Object? tagsJson = ignore,
     Object? pubKey = ignore,
     Object? kind = ignore,
     Object? createdAt = ignore,
@@ -398,12 +375,13 @@ class _DbEventQueryBuilderUpdateImpl implements _DbEventQueryUpdate {
     final q = query.build();
     try {
       return q.updateProperties(limit: limit, {
-        if (pubKey != ignore) 2: pubKey as String?,
-        if (kind != ignore) 3: kind as int?,
-        if (createdAt != ignore) 4: createdAt as int?,
-        if (content != ignore) 7: content as String?,
-        if (sig != ignore) 8: sig as String?,
-        if (validSig != ignore) 9: validSig as bool?,
+        if (tagsJson != ignore) 1: tagsJson as String?,
+        if (pubKey != ignore) 3: pubKey as String?,
+        if (kind != ignore) 4: kind as int?,
+        if (createdAt != ignore) 5: createdAt as int?,
+        if (content != ignore) 6: content as String?,
+        if (sig != ignore) 7: sig as String?,
+        if (validSig != ignore) 8: validSig as bool?,
       });
     } finally {
       q.close();
@@ -421,7 +399,7 @@ extension DbEventQueryBuilderUpdate
 
 extension DbEventQueryFilter
     on QueryBuilder<DbEvent, DbEvent, QFilterCondition> {
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idEqualTo(
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -436,7 +414,7 @@ extension DbEventQueryFilter
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonGreaterThan(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -451,7 +429,8 @@ extension DbEventQueryFilter
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idGreaterThanOrEqualTo(
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition>
+      tagsJsonGreaterThanOrEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -466,7 +445,7 @@ extension DbEventQueryFilter
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idLessThan(
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonLessThan(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -481,7 +460,8 @@ extension DbEventQueryFilter
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idLessThanOrEqualTo(
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition>
+      tagsJsonLessThanOrEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -489,6 +469,178 @@ extension DbEventQueryFilter
       return query.addFilterCondition(
         LessOrEqualCondition(
           property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 1,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 1,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 1,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> tagsJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 1,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> idLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -504,7 +656,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 1,
+          property: 2,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -520,7 +672,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 1,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -535,7 +687,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 1,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -548,7 +700,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 1,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -562,7 +714,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 1,
+          property: 2,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -574,7 +726,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 1,
+          property: 2,
           value: '',
         ),
       );
@@ -585,7 +737,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 1,
+          property: 2,
           value: '',
         ),
       );
@@ -599,7 +751,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 2,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -614,7 +766,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 2,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -630,7 +782,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 2,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -645,7 +797,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 2,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -660,7 +812,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 2,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -676,7 +828,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 2,
+          property: 3,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -692,7 +844,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 2,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -707,7 +859,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 2,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -721,7 +873,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 2,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -735,7 +887,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 2,
+          property: 3,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -747,7 +899,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 2,
+          property: 3,
           value: '',
         ),
       );
@@ -758,7 +910,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 2,
+          property: 3,
           value: '',
         ),
       );
@@ -771,7 +923,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 3,
+          property: 4,
           value: value,
         ),
       );
@@ -784,7 +936,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 3,
+          property: 4,
           value: value,
         ),
       );
@@ -798,7 +950,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 3,
+          property: 4,
           value: value,
         ),
       );
@@ -811,7 +963,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 3,
+          property: 4,
           value: value,
         ),
       );
@@ -824,7 +976,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 3,
+          property: 4,
           value: value,
         ),
       );
@@ -838,7 +990,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 3,
+          property: 4,
           lower: lower,
           upper: upper,
         ),
@@ -852,7 +1004,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 4,
+          property: 5,
           value: value,
         ),
       );
@@ -865,7 +1017,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 4,
+          property: 5,
           value: value,
         ),
       );
@@ -879,7 +1031,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 4,
+          property: 5,
           value: value,
         ),
       );
@@ -892,7 +1044,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 4,
+          property: 5,
           value: value,
         ),
       );
@@ -906,7 +1058,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 4,
+          property: 5,
           value: value,
         ),
       );
@@ -920,197 +1072,10 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 4,
+          property: 5,
           lower: lower,
           upper: upper,
         ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EqualCondition(
-          property: 6,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementGreaterThan(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterCondition(
-          property: 6,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition>
-      pTagsElementGreaterThanOrEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterOrEqualCondition(
-          property: 6,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementLessThan(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessCondition(
-          property: 6,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition>
-      pTagsElementLessThanOrEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessOrEqualCondition(
-          property: 6,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementBetween(
-    String lower,
-    String upper, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        BetweenCondition(
-          property: 6,
-          lower: lower,
-          upper: upper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        StartsWithCondition(
-          property: 6,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EndsWithCondition(
-          property: 6,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        ContainsCondition(
-          property: 6,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        MatchesCondition(
-          property: 6,
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const EqualCondition(
-          property: 6,
-          value: '',
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition>
-      pTagsElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const GreaterCondition(
-          property: 6,
-          value: '',
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsIsEmpty() {
-    return not().pTagsIsNotEmpty();
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> pTagsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 6, value: null),
       );
     });
   }
@@ -1122,7 +1087,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1137,7 +1102,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1153,7 +1118,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1168,7 +1133,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1184,7 +1149,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1200,7 +1165,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 7,
+          property: 6,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -1216,7 +1181,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1231,7 +1196,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1245,7 +1210,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1259,7 +1224,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 7,
+          property: 6,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1271,7 +1236,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 7,
+          property: 6,
           value: '',
         ),
       );
@@ -1282,21 +1247,33 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 7,
+          property: 6,
           value: '',
         ),
       );
     });
   }
 
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sigIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 7));
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sigIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 7));
+    });
+  }
+
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sigEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1305,13 +1282,13 @@ extension DbEventQueryFilter
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sigGreaterThan(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1320,13 +1297,13 @@ extension DbEventQueryFilter
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sigGreaterThanOrEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1335,13 +1312,13 @@ extension DbEventQueryFilter
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sigLessThan(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1350,13 +1327,13 @@ extension DbEventQueryFilter
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sigLessThanOrEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1365,14 +1342,14 @@ extension DbEventQueryFilter
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sigBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 8,
+          property: 7,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -1388,7 +1365,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1403,7 +1380,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1417,7 +1394,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1431,7 +1408,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 8,
+          property: 7,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1443,7 +1420,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 8,
+          property: 7,
           value: '',
         ),
       );
@@ -1454,7 +1431,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 8,
+          property: 7,
           value: '',
         ),
       );
@@ -1463,13 +1440,13 @@ extension DbEventQueryFilter
 
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> validSigIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 9));
+      return query.addFilterCondition(const IsNullCondition(property: 8));
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> validSigIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 9));
+      return query.addFilterCondition(const IsNullCondition(property: 8));
     });
   }
 
@@ -1479,7 +1456,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 9,
+          property: 8,
           value: value,
         ),
       );
@@ -1493,7 +1470,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 10,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1509,7 +1486,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 10,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1525,7 +1502,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 10,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1540,7 +1517,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 10,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1556,7 +1533,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 10,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1572,7 +1549,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 10,
+          property: 9,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -1589,7 +1566,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 10,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1604,7 +1581,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 10,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1618,7 +1595,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 10,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1632,7 +1609,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 10,
+          property: 9,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1645,7 +1622,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 10,
+          property: 9,
           value: '',
         ),
       );
@@ -1657,7 +1634,7 @@ extension DbEventQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 10,
+          property: 9,
           value: '',
         ),
       );
@@ -1671,7 +1648,7 @@ extension DbEventQueryFilter
   QueryBuilder<DbEvent, DbEvent, QAfterFilterCondition> sourcesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 10, value: null),
+        const GreaterOrEqualCondition(property: 9, value: null),
       );
     });
   }
@@ -1681,7 +1658,7 @@ extension DbEventQueryObject
     on QueryBuilder<DbEvent, DbEvent, QFilterCondition> {}
 
 extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortById(
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByTagsJson(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
@@ -1691,11 +1668,32 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByIdDesc(
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByTagsJsonDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
         1,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortById(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        2,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByIdDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        2,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -1706,7 +1704,7 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        2,
+        3,
         caseSensitive: caseSensitive,
       );
     });
@@ -1716,7 +1714,7 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        2,
+        3,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -1725,35 +1723,23 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByKind() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(3);
+      return query.addSortBy(4);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByKindDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(3, sort: Sort.desc);
+      return query.addSortBy(4, sort: Sort.desc);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(4);
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByCreatedAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(4, sort: Sort.desc);
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByTags() {
-    return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5);
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByTagsDesc() {
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5, sort: Sort.desc);
     });
@@ -1763,7 +1749,7 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        7,
+        6,
         caseSensitive: caseSensitive,
       );
     });
@@ -1773,7 +1759,7 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        7,
+        6,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -1784,7 +1770,7 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        8,
+        7,
         caseSensitive: caseSensitive,
       );
     });
@@ -1794,7 +1780,7 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        8,
+        7,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -1803,78 +1789,80 @@ extension DbEventQuerySortBy on QueryBuilder<DbEvent, DbEvent, QSortBy> {
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByValidSig() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(9);
+      return query.addSortBy(8);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> sortByValidSigDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(9, sort: Sort.desc);
+      return query.addSortBy(8, sort: Sort.desc);
     });
   }
 }
 
 extension DbEventQuerySortThenBy
     on QueryBuilder<DbEvent, DbEvent, QSortThenBy> {
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenById(
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByTagsJson(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(1, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByIdDesc(
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByTagsJsonDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(1, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByPubKey(
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(2, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByPubKeyDesc(
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByIdDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(2, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByPubKey(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByPubKeyDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByKind() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(3);
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByKindDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(3, sort: Sort.desc);
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(4);
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByCreatedAtDesc() {
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByKindDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(4, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByTags() {
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5);
     });
   }
 
-  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByTagsDesc() {
+  QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5, sort: Sort.desc);
     });
@@ -1883,287 +1871,264 @@ extension DbEventQuerySortThenBy
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByContent(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(7, caseSensitive: caseSensitive);
+      return query.addSortBy(6, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByContentDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenBySig(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(8, caseSensitive: caseSensitive);
+      return query.addSortBy(7, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenBySigDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByValidSig() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(9);
+      return query.addSortBy(8);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterSortBy> thenByValidSigDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(9, sort: Sort.desc);
+      return query.addSortBy(8, sort: Sort.desc);
     });
   }
 }
 
 extension DbEventQueryWhereDistinct
     on QueryBuilder<DbEvent, DbEvent, QDistinct> {
+  QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctByTagsJson(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(1, caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctByPubKey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(2, caseSensitive: caseSensitive);
+      return query.addDistinctBy(3, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctByKind() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(3);
+      return query.addDistinctBy(4);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(4);
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctByTags() {
-    return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(5);
-    });
-  }
-
-  QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctByPTags() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(6);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctByContent(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(7, caseSensitive: caseSensitive);
+      return query.addDistinctBy(6, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctBySig(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(8, caseSensitive: caseSensitive);
+      return query.addDistinctBy(7, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctByValidSig() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(9);
+      return query.addDistinctBy(8);
     });
   }
 
   QueryBuilder<DbEvent, DbEvent, QAfterDistinct> distinctBySources() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(10);
+      return query.addDistinctBy(9);
     });
   }
 }
 
 extension DbEventQueryProperty1 on QueryBuilder<DbEvent, DbEvent, QProperty> {
-  QueryBuilder<DbEvent, String, QAfterProperty> idProperty() {
+  QueryBuilder<DbEvent, String, QAfterProperty> tagsJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<DbEvent, String, QAfterProperty> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
     });
   }
 
   QueryBuilder<DbEvent, String, QAfterProperty> pubKeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(2);
+      return query.addProperty(3);
     });
   }
 
   QueryBuilder<DbEvent, int, QAfterProperty> kindProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(3);
+      return query.addProperty(4);
     });
   }
 
   QueryBuilder<DbEvent, int, QAfterProperty> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(4);
-    });
-  }
-
-  QueryBuilder<DbEvent, List<dynamic>, QAfterProperty> tagsProperty() {
-    return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
-    });
-  }
-
-  QueryBuilder<DbEvent, List<String>, QAfterProperty> pTagsProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(6);
     });
   }
 
   QueryBuilder<DbEvent, String, QAfterProperty> contentProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(7);
+      return query.addProperty(6);
     });
   }
 
-  QueryBuilder<DbEvent, String, QAfterProperty> sigProperty() {
+  QueryBuilder<DbEvent, String?, QAfterProperty> sigProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(8);
+      return query.addProperty(7);
     });
   }
 
   QueryBuilder<DbEvent, bool?, QAfterProperty> validSigProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(9);
+      return query.addProperty(8);
     });
   }
 
   QueryBuilder<DbEvent, List<String>, QAfterProperty> sourcesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(10);
+      return query.addProperty(9);
     });
   }
 }
 
 extension DbEventQueryProperty2<R> on QueryBuilder<DbEvent, R, QAfterProperty> {
-  QueryBuilder<DbEvent, (R, String), QAfterProperty> idProperty() {
+  QueryBuilder<DbEvent, (R, String), QAfterProperty> tagsJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(1);
     });
   }
 
-  QueryBuilder<DbEvent, (R, String), QAfterProperty> pubKeyProperty() {
+  QueryBuilder<DbEvent, (R, String), QAfterProperty> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
     });
   }
 
-  QueryBuilder<DbEvent, (R, int), QAfterProperty> kindProperty() {
+  QueryBuilder<DbEvent, (R, String), QAfterProperty> pubKeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
     });
   }
 
-  QueryBuilder<DbEvent, (R, int), QAfterProperty> createdAtProperty() {
+  QueryBuilder<DbEvent, (R, int), QAfterProperty> kindProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<DbEvent, (R, List<dynamic>), QAfterProperty> tagsProperty() {
+  QueryBuilder<DbEvent, (R, int), QAfterProperty> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<DbEvent, (R, List<String>), QAfterProperty> pTagsProperty() {
+  QueryBuilder<DbEvent, (R, String), QAfterProperty> contentProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<DbEvent, (R, String), QAfterProperty> contentProperty() {
+  QueryBuilder<DbEvent, (R, String?), QAfterProperty> sigProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<DbEvent, (R, String), QAfterProperty> sigProperty() {
+  QueryBuilder<DbEvent, (R, bool?), QAfterProperty> validSigProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
     });
   }
 
-  QueryBuilder<DbEvent, (R, bool?), QAfterProperty> validSigProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(9);
-    });
-  }
-
   QueryBuilder<DbEvent, (R, List<String>), QAfterProperty> sourcesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(10);
+      return query.addProperty(9);
     });
   }
 }
 
 extension DbEventQueryProperty3<R1, R2>
     on QueryBuilder<DbEvent, (R1, R2), QAfterProperty> {
-  QueryBuilder<DbEvent, (R1, R2, String), QOperations> idProperty() {
+  QueryBuilder<DbEvent, (R1, R2, String), QOperations> tagsJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(1);
     });
   }
 
-  QueryBuilder<DbEvent, (R1, R2, String), QOperations> pubKeyProperty() {
+  QueryBuilder<DbEvent, (R1, R2, String), QOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
     });
   }
 
-  QueryBuilder<DbEvent, (R1, R2, int), QOperations> kindProperty() {
+  QueryBuilder<DbEvent, (R1, R2, String), QOperations> pubKeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
     });
   }
 
-  QueryBuilder<DbEvent, (R1, R2, int), QOperations> createdAtProperty() {
+  QueryBuilder<DbEvent, (R1, R2, int), QOperations> kindProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<DbEvent, (R1, R2, List<dynamic>), QOperations> tagsProperty() {
+  QueryBuilder<DbEvent, (R1, R2, int), QOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<DbEvent, (R1, R2, List<String>), QOperations> pTagsProperty() {
+  QueryBuilder<DbEvent, (R1, R2, String), QOperations> contentProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<DbEvent, (R1, R2, String), QOperations> contentProperty() {
+  QueryBuilder<DbEvent, (R1, R2, String?), QOperations> sigProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<DbEvent, (R1, R2, String), QOperations> sigProperty() {
+  QueryBuilder<DbEvent, (R1, R2, bool?), QOperations> validSigProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
     });
   }
 
-  QueryBuilder<DbEvent, (R1, R2, bool?), QOperations> validSigProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(9);
-    });
-  }
-
   QueryBuilder<DbEvent, (R1, R2, List<String>), QOperations> sourcesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(10);
+      return query.addProperty(9);
     });
   }
 }

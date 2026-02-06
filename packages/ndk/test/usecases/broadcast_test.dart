@@ -351,5 +351,56 @@ void main() async {
         await relay2.stopServer();
       }
     });
+
+    test('broadcast saves event to cache by default', () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+
+      Nip01Event event = Nip01Event(
+          pubKey: key0.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "test cache save");
+
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: key0.privateKey!,
+      );
+
+      await ndk.broadcast
+          .broadcast(nostrEvent: signedEvent)
+          .broadcastDoneFuture;
+
+      // Verify event is saved in cache
+      final cachedEvent = await ndk.config.cache.loadEvent(signedEvent.id);
+      expect(cachedEvent, isNotNull);
+      expect(cachedEvent!.id, signedEvent.id);
+      expect(cachedEvent.content, "test cache save");
+    });
+
+    test('broadcast does not save to cache when saveToCache is false',
+        () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
+
+      Nip01Event event = Nip01Event(
+          pubKey: key0.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: [],
+          content: "test no cache save");
+
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: key0.privateKey!,
+      );
+
+      await ndk.broadcast
+          .broadcast(nostrEvent: signedEvent, saveToCache: false)
+          .broadcastDoneFuture;
+
+      // Verify event is NOT saved in cache
+      final cachedEvent = await ndk.config.cache.loadEvent(signedEvent.id);
+      expect(cachedEvent, isNull);
+    });
   });
 }

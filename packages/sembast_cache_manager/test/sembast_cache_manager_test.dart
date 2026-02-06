@@ -125,9 +125,9 @@ void main() {
         final eventsBefore = await cacheManager.loadEvents(until: 1234567895);
         expect(eventsBefore.length, equals(2));
 
-        // Test pTag filter
+        // Test tags filter (p tag)
         final eventsByPTag = await cacheManager.loadEvents(
-          pTag: 'target_pubkey',
+          tags: {'p': ['target_pubkey']},
         );
         expect(eventsByPTag.length, equals(1));
         expect(eventsByPTag.first.pTags.contains('target_pubkey'), isTrue);
@@ -390,7 +390,7 @@ void main() {
         );
 
         await cacheManager.saveNip05(nip05);
-        final loaded = await cacheManager.loadNip05('test_pubkey');
+        final loaded = await cacheManager.loadNip05(pubKey: 'test_pubkey');
 
         expect(loaded, isNotNull);
         expect(loaded!.pubKey, equals(nip05.pubKey));
@@ -565,7 +565,7 @@ void main() {
         expect(await cacheManager.loadContactList('test_pubkey'), isNull);
 
         await cacheManager.removeNip05('test_pubkey');
-        expect(await cacheManager.loadNip05('test_pubkey'), isNull);
+        expect(await cacheManager.loadNip05(pubKey: 'test_pubkey'), isNull);
 
         await cacheManager.removeUserRelayList('test_pubkey');
         expect(await cacheManager.loadUserRelayList('test_pubkey'), isNull);
@@ -587,7 +587,7 @@ void main() {
 
         await cacheManager.saveNip05(nip05);
         await cacheManager.removeAllNip05s();
-        expect(await cacheManager.loadNip05('test_pubkey'), isNull);
+        expect(await cacheManager.loadNip05(pubKey: 'test_pubkey'), isNull);
 
         await cacheManager.saveUserRelayList(userRelayList);
         await cacheManager.removeAllUserRelayLists();

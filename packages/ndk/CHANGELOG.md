@@ -1,3 +1,149 @@
+## 0.7.1-dev.10
+
+ - **REFACTOR**: remove unused requestRelays method".
+ - **REFACTOR**: remove unused requestRelays method.
+ - **FIX**: fail fast when all relays are offline.
+
+## 0.7.1-dev.9
+
+ - **FIX**: complete request when auth-required received without challenge.
+ - **FIX**: complete request when relay requires auth but client cannot sign.
+
+## 0.7.1-dev.8
+
+ - **FIX**: distinguish CLOSED from EOSE in relay request state.
+
+## 0.7.1-dev.7
+
+ - **REFACTOR**: rename nip05.fetch() to nip05.resolve().
+ - **REFACTOR**: nip05 usecase.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve()  with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add of() method to fetch NIP-05 data without pubkey.
+
+## 0.7.1-dev.6
+
+ - **FIX**: add destroy in tear down.
+ - **FIX**: ensure NIP-46 subscription is ready before sending remote requests.
+ - **FIX**: subscribe before broadcast in connectWithBunkerUrl to avoid missing NIP-46 responses.
+
+## 0.7.1-dev.5
+
+ - **FEAT**: add missing state field in lookup_invoice_response.dart.
+
+## 0.7.1-dev.4
+
+ - **FIX**: move authCallbackTimeout to NdkConfig.
+ - **FIX**: add timeout for pending AUTH callbacks.
+ - **FIX**: authenticate all accounts in authenticateAs for lazy auth mode.
+ - **FIX**: handle NIP-42 auth-required by re-sending REQ/EVENT after AUTH.
+ - **FEAT**: add eagerAuth in NDK config.
+
+## 0.7.1-dev.3
+
+ - **FIX**: rename stateChanges to authStateChanges.
+ - **FEAT**: gift wrap add custom signer parameter.
+
+## 0.7.1-dev.2
+
+ - **FIX**: minIsolatePoolSize.
+
+## 0.7.1-dev.1
+
+ - **FEAT**: add saveToCache option for broadcast.
+
+## 0.7.1-dev.0
+
+ - **FIX**: use Accounts instead of pubkeys to authenticate.
+ - **FEAT**: nip42 multi auth.
+
+## 0.7.0
+
+ - **FEAT**: isolate manager stub.
+ - **FIX**: remove unused import.
+ - **FIX**: sha256 convert in isolate.
+ - **FIX**: fetched ranges integration test.
+ - **FIX**: rename coverage usecase to fetchedRanges.
+ - **FIX**: timerange until.
+ - **FIX**: added ranges.
+ - **FEAT**: cache managers support.
+ - **FEAT**: mark as experimental.
+ - **FEAT**: coverage disabled by default.
+ - **FEAT**: unify cache events api.
+ - **FEAT**: integration tests.
+ - **FEAT**: unit tests.
+ - **FEAT**: automatic coverage.
+ - **FEAT**: coverage usecase.
+ - **REFACTOR**: proof of work as instance.
+ - **REFACTOR**(fix): encode zapRequest.
+ - **REFACTOR**(fix): encode gift wrap.
+ - **REFACTOR**(fix): use signed event in sets engine.
+ - **REFACTOR**(fix): brodcast detect need for signing.
+ - **REFACTOR**(fix): mock relay fix send encode.
+ - **REFACTOR**: zap request calc id.
+ - **REFACTOR**(fix): auth event id.
+ - **REFACTOR**(fix): sign event in test.
+ - **REFACTOR**: immutable event sources.
+ - **REFACTOR**: ndk tests.
+ - **REFACTOR**: valid sig.
+ - **REFACTOR**: other packages.
+ - **REFACTOR**: entities.
+ - **REFACTOR**: signer, amber.
+ - **REFACTOR**: event service.
+ - **REFACTOR**: nip01 immutable.
+ - **REFACTOR**: decode nip01 event in isolate.
+ - **FIX**: remove meaningless comments.
+ - **FIX**: mem cache methods (loadNip05s, loadMetadatas).
+ - **FIX**: blossom signing.
+ - **FIX**: add copy with to extended class.
+ - **FIX**: websocket state check optimization.
+ - **FEAT**: add test suite in actual cache tests.
+ - **FEAT**: global test suite.
+ - **FEAT**: preserve order decoding.
+ - **FEAT**: eose extract request id.
+ - **FEAT**: isolate pool.
+ - **FEAT**: deligate tasks to isolates.
+ - **FEAT**: add tests.
+ - **FEAT**: deprecation message for filters.
+ - **FIX**: bip340 event verifier.
+ - **FEAT**: add test.
+ - **FIX**: clean imports.
+ - **FIX**: improve relay reconnection.
+ - **FIX**: close relay.
+ - **FIX**: Handle null error value in NWC response deserialization.
+ - **FIX**: forcing a pre-release.
+ - **FIX**: move test to an apropriate area.
+ - **FIX**: clean relay url function + add tests.
+ - **FEAT**: add test.
+ - **FIX**: update the mock relay + test.
+ - **FIX**: test pass.
+ - **FEAT**: add a test.
+ - **FIX**: use mock relay.
+ - **FIX**: new test pass.
+ - **FEAT**: test.
+
+## 0.6.1-dev.9
+
+ - **FEAT**: isolate manager stub.
+
+## 0.6.1-dev.8
+
+ - **FIX**: remove unused import.
+ - **FIX**: sha256 convert in isolate.
+ - **FIX**: fetched ranges integration test.
+ - **FIX**: rename coverage usecase to fetchedRanges.
+ - **FIX**: timerange until.
+ - **FIX**: added ranges.
+ - **FEAT**: cache managers support.
+ - **FEAT**: mark as experimental.
+ - **FEAT**: coverage disabled by default.
+ - **FEAT**: unify cache events api.
+ - **FEAT**: integration tests.
+ - **FEAT**: unit tests.
+ - **FEAT**: automatic coverage.
+ - **FEAT**: coverage usecase.
+
 ## 0.6.1-dev.7
 
  - **REFACTOR**: proof of work as instance.

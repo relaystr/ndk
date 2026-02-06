@@ -1,6 +1,6 @@
 name: sembast_cache_manager
 description: A Sembast-based cache manager for the NDK (Nostr Development Kit) library, providing persistent storage for Nostr protocol data.
-version: 1.0.6-dev.8
+version: 1.0.7-dev.10
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
@@ -10,8 +10,16 @@ topics:
 environment:
   sdk: ">=3.4.0 <4.0.0"
 
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
+
 dependencies:
-  ndk: ^0.6.1-dev.7
+  ndk: ^0.7.1-dev.10
   path: ^1.9.1
   sembast: ^3.8.5+1
 

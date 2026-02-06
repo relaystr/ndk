@@ -149,7 +149,7 @@ void main() async {
     String pubKey1 = "pubKey1";
     String pubKey2 = "pubKey2";
     String pubKey3 = "pubKey3";
-    DbEvent event11 = DbEvent(
+    DbEvent event11 = DbEvent.fromNip01Event(Nip01Event(
         pubKey: pubKey1,
         content: "content 11",
         kind: 1,
@@ -159,8 +159,8 @@ void main() async {
         createdAt: now,
         sig: 'signature',
         validSig: true,
-        sources: ["wss://relay1.com", "wss://relay2.com"]);
-    DbEvent event12 = DbEvent(
+        sources: ["wss://relay1.com", "wss://relay2.com"]));
+    DbEvent event12 = DbEvent.fromNip01Event(Nip01Event(
         pubKey: pubKey1,
         content: "content 12",
         kind: 2,
@@ -168,8 +168,8 @@ void main() async {
         createdAt: now,
         sig: '',
         validSig: null,
-        sources: []);
-    DbEvent event21 = DbEvent(
+        sources: []));
+    DbEvent event21 = DbEvent.fromNip01Event(Nip01Event(
         pubKey: pubKey2,
         content: "content 21",
         kind: 1,
@@ -177,8 +177,8 @@ void main() async {
         createdAt: now,
         sig: '',
         validSig: null,
-        sources: []);
-    DbEvent event22 = DbEvent(
+        sources: []));
+    DbEvent event22 = DbEvent.fromNip01Event(Nip01Event(
         pubKey: pubKey2,
         content: "content 22",
         kind: 2,
@@ -186,8 +186,8 @@ void main() async {
         createdAt: now,
         sig: '',
         validSig: null,
-        sources: []);
-    DbEvent event33 = DbEvent(
+        sources: []));
+    DbEvent event33 = DbEvent.fromNip01Event(Nip01Event(
         pubKey: pubKey3,
         content: "content 33",
         kind: 3,
@@ -195,7 +195,7 @@ void main() async {
         createdAt: now,
         sig: '',
         validSig: null,
-        sources: []);
+        sources: []));
     cacheManager.removeAllEventsByPubKey(pubKey1);
     cacheManager.removeAllEventsByPubKey(pubKey2);
     cacheManager.removeAllEventsByPubKey(pubKey3);
@@ -266,7 +266,7 @@ void main() async {
     int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     String pubKey1 = "pubKey1";
     String pubKey2 = "pubKey2";
-    DbEvent event11 = DbEvent(
+    DbEvent event11 = DbEvent.fromNip01Event(Nip01Event(
         pubKey: pubKey1,
         content: "content 11",
         kind: 1,
@@ -278,8 +278,8 @@ void main() async {
         createdAt: now,
         sig: 'signature',
         validSig: true,
-        sources: ["wss://relay1.com", "wss://relay2.com"]);
-    DbEvent event12 = DbEvent(
+        sources: ["wss://relay1.com", "wss://relay2.com"]));
+    DbEvent event12 = DbEvent.fromNip01Event(Nip01Event(
         pubKey: pubKey2,
         content: "content 12",
         kind: 1,
@@ -291,23 +291,23 @@ void main() async {
         createdAt: now,
         sig: '',
         validSig: null,
-        sources: []);
+        sources: []));
     cacheManager.removeAllEventsByPubKey(pubKey1);
     cacheManager.removeAllEventsByPubKey(pubKey2);
     await cacheManager.saveEvents([event11, event12]);
 
     List<Nip01Event>? loadedEventsPubkey1 = await cacheManager.loadEvents(
-        kinds: [1, 2], pubKeys: [pubKey1, "dupaupa"], pTag: pubKey1);
+        kinds: [1, 2], pubKeys: [pubKey1, "dupaupa"], tags: {'p': [pubKey1]});
     expect(loadedEventsPubkey1.length, 1);
     expect(loadedEventsPubkey1.first.pTags, event11.pTags);
 
     List<Nip01Event>? loadedEventsPubkey2 =
-        await cacheManager.loadEvents(pTag: pubKey2);
+        await cacheManager.loadEvents(tags: {'p': [pubKey2]});
     expect(loadedEventsPubkey2.length, 1);
     expect(loadedEventsPubkey2.first.pTags, event12.pTags);
 
     List<Nip01Event>? loadedEventsPubkey2AndKind1 =
-        await cacheManager.loadEvents(kinds: [1, 2], pTag: pubKey1);
+        await cacheManager.loadEvents(kinds: [1, 2], tags: {'p': [pubKey1]});
     expect(loadedEventsPubkey2AndKind1.length, 1);
     expect(loadedEventsPubkey2AndKind1.first.pTags, event11.pTags);
     expect(loadedEventsPubkey2AndKind1.first.kind, 1);

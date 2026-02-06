@@ -1,3 +1,62 @@
+## 0.5.0-dev.10
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.9
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.8
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.7
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.4
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.3
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.2
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.1
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.0+1
+
+ - Update a dependency to the latest release.
+
+## 0.5.0
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: add doc.
+ - **REFACTOR**: secp256k1 to rust native dep.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: rust verifier web assets.
+
+## 0.4.2-dev.10
+
+ - **REFACTOR**: other packages.
+ - **FIX**: clean imports.
+ - **FIX**: remove hex package depandance.
+ - **FEAT**: add doc.
+
 ## 0.4.2-dev.8
 
  - **REFACTOR**: other packages.

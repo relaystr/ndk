@@ -16,6 +16,7 @@ class Broadcast {
   final GlobalState _globalState;
   final double _considerDonePercent;
   final Duration _timeout;
+  final bool _saveToCache;
 
   /// creates a new [Broadcast] instance
   ///
@@ -26,12 +27,14 @@ class Broadcast {
     required Accounts accounts,
     required double considerDonePercent,
     required Duration timeout,
+    required bool saveToCache,
   })  : _accounts = accounts,
         _cacheManager = cacheManager,
         _engine = networkEngine,
         _globalState = globalState,
         _considerDonePercent = considerDonePercent,
-        _timeout = timeout;
+        _timeout = timeout,
+        _saveToCache = saveToCache;
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
@@ -47,6 +50,7 @@ class Broadcast {
   /// [customSigner] if you want to use a different signer than the one from currently logged in user in [Accounts] \
   /// [considerDonePercent] the percentage (0.0, 1.0) of relays that need to respond with "OK" for the broadcast to be considered done (overrides the default value) \
   /// [timeout] the timeout for the broadcast (overrides the default timeout) \
+  /// [saveToCache] whether to save the event to cache (overrides the default value from config) \
   /// [returns] a [NdkBroadcastResponse] object containing the result => success per relay
   NdkBroadcastResponse broadcast({
     required Nip01Event nostrEvent,
@@ -54,9 +58,11 @@ class Broadcast {
     EventSigner? customSigner,
     double? considerDonePercent,
     Duration? timeout,
+    bool? saveToCache,
   }) {
     final myConsiderDonePercent = considerDonePercent ?? _considerDonePercent;
     final myTimeout = timeout ?? _timeout;
+    final mySaveToCache = saveToCache ?? _saveToCache;
 
     final broadcastState = BroadcastState(
       considerDonePercent: myConsiderDonePercent,
@@ -64,6 +70,11 @@ class Broadcast {
     );
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
+
+    // save event to cache if enabled
+    if (mySaveToCache) {
+      _cacheManager.saveEvent(nostrEvent);
+    }
 
     final signer = nostrEvent.sig == null
         ? _checkSinger(customSigner: customSigner)

@@ -27,6 +27,8 @@ class MockRelay {
       {}; // Track active subscriptions
   bool signEvents;
   bool requireAuthForRequests;
+  bool requireAuthForEvents;
+  bool sendAuthChallenge;
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
@@ -49,6 +51,8 @@ class MockRelay {
     Map<KeyPair, Nip65>? nip65s,
     this.signEvents = true,
     this.requireAuthForRequests = false,
+    this.requireAuthForEvents = false,
+    this.sendAuthChallenge = true,
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
@@ -90,14 +94,14 @@ class MockRelay {
     var stream = server.transform(WebSocketTransformer());
 
     String challenge = '';
-    bool signedChallenge = false;
+    Set<String> authenticatedPubkeys = {};
 
     stream.listen((webSocket) {
       _webSocket = webSocket;
       if (customWelcomeMessage != null) {
         webSocket.add(customWelcomeMessage!);
       }
-      if (requireAuthForRequests && !signedChallenge) {
+      if ((requireAuthForRequests || requireAuthForEvents) && sendAuthChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
@@ -117,34 +121,37 @@ class MockRelay {
 
         if (eventJson[0] == "AUTH") {
           Nip01Event event = Nip01EventModel.fromJson(eventJson[1]);
+          bool authSuccess = false;
           if (verify(event.pubKey, event.id, event.sig!)) {
             String? relay = event.getFirstTag("relay");
             String? eventChallenge = event.getFirstTag("challenge");
             if (eventChallenge == challenge && relay == url) {
-              signedChallenge = true;
+              authenticatedPubkeys.add(event.pubKey);
+              authSuccess = true;
             }
           }
 
           webSocket.add(jsonEncode([
             "OK",
             event.id,
-            signedChallenge,
-            signedChallenge ? "" : "auth-required"
+            authSuccess,
+            authSuccess ? "" : "auth-required: authentication failed"
           ]));
           return;
         }
-        if (requireAuthForRequests && !signedChallenge) {
-          webSocket.add(jsonEncode([
-            "CLOSED",
-            "sub_1",
-            "auth-required: we can't serve requests to unauthenticated users"
-          ]));
-          return;
-        }
-
         if (eventJson[0] == "EVENT") {
           Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
+            // Check auth for events if required (any authenticated user is OK)
+            if (requireAuthForEvents && authenticatedPubkeys.isEmpty) {
+              webSocket.add(jsonEncode([
+                "OK",
+                newEvent.id,
+                false,
+                "auth-required: we only accept events from authenticated users"
+              ]));
+              return;
+            }
             if (newEvent.kind == ContactList.kKind) {
               _contactLists[newEvent.pubKey] = newEvent;
             } else if (newEvent.kind == Metadata.kKind) {
@@ -192,6 +199,17 @@ class MockRelay {
               }
             }
           }
+
+          // Check auth: any authenticated user can access all data
+          if (requireAuthForRequests && authenticatedPubkeys.isEmpty) {
+            webSocket.add(jsonEncode([
+              "CLOSED",
+              requestId,
+              "auth-required: we can't serve requests to unauthenticated users"
+            ]));
+            return;
+          }
+
           if (filters.isNotEmpty) {
             // Store the active subscription
             _activeSubscriptions[requestId] = filters;
