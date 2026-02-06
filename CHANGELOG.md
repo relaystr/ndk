@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-06
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.10`](#ndk---v071-dev10)
+ - [`ndk_amber` - `v0.4.0-dev.10`](#ndk_amber---v040-dev10)
+ - [`ndk_objectbox` - `v0.2.8-dev.10`](#ndk_objectbox---v028-dev10)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.10`](#ndk_rust_verifier---v050-dev10)
+ - [`nip07_event_signer` - `v1.0.6-dev.10`](#nip07_event_signer---v106-dev10)
+ - [`sembast_cache_manager` - `v1.0.7-dev.10`](#sembast_cache_manager---v107-dev10)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.10`](#ndk_cache_manager_test_suite---v101-dev10)
+ - [`ndk_flutter` - `v0.0.2-dev.1`](#ndk_flutter---v002-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.10`
+ - `ndk_objectbox` - `v0.2.8-dev.10`
+ - `ndk_rust_verifier` - `v0.5.0-dev.10`
+ - `nip07_event_signer` - `v1.0.6-dev.10`
+ - `sembast_cache_manager` - `v1.0.7-dev.10`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.10`
+ - `ndk_flutter` - `v0.0.2-dev.1`
+
+---
+
+#### `ndk` - `v0.7.1-dev.10`
+
+ - **REFACTOR**: remove unused requestRelays method".
+ - **REFACTOR**: remove unused requestRelays method.
+ - **FIX**: fail fast when all relays are offline.
+
+
 ## 2026-02-05
 
 ### Changes
