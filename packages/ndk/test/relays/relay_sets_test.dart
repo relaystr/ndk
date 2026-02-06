@@ -415,6 +415,131 @@ void main() async {
       await ndk.destroy();
     });
   });
+  group("misc", () {
+    // test('nwc info', () async {
+    //   RelayManager relayManager = RelayManager();
+    //   String relay = "wss://relay.getalby.com/v1";
+    //   await relayManager.connectRelay(relay);
+    //   var filter = Filter(
+    //       kinds: [13194],
+    //       authors: [
+    //         "69effe7b49a6dd5cf525bd0905917a5005ffe480b58eeb8e861418cf3ae760d9"
+    //       ]);
+    //   if (await relayManager.reconnectRelay(relay, force: true)) {
+    //     // await relayManager.requestRelays([relay], filter, onEvent: (event) {
+    //     //   print(event);
+    //     // });
+    //     await for (final event in (await relayManager.requestRelays([relay], filter)).stream)  {
+    //       print(event);
+    //     };
+    //   }
+    //   // await Future<void>.delayed(const Duration(seconds: 10));
+    // }, timeout: const Timeout.factor(10));
+
+    // test('metadataaa', () async {
+    //   // relay1.startServer();
+    //
+    //   Filter filter = Filter(authors: [
+    //     // key1.publicKey
+    //     "40ecf59b56009813ea4c3081b19d9d525f76dbf251a5a0389b4bea27c3a6b98f",
+    //     // "413213696c9455cc637d0d67c32e4e3e428baedf9413d224d33b2c96750076dc",
+    //     // "7ee67d1ef3356c3afaa0386d19a8220fafe42a2530396448d8bdbb295e276ba3",
+    //     // "6ddc59edf9cbf4d9a7a5311ac019b8c5803eb6e3ab7f40e9bfaec36c7e41c553",
+    //     // "65ab9ba3b4d0f4402cbb41e8a2df216c4f1ee9ad1b345c47910f4b2829208bdd"
+    //   ], kinds: [
+    //     Metadata.KIND
+    //   ]);
+    //   //
+    //   //
+    //   List<dynamic> request = [
+    //     "REQ",
+    //     Helpers.getRandomString(10),
+    //     filter.toMap()
+    //   ];
+    //   final encoded = jsonEncode(request);
+    //   String relay = 'wss://relay.damus.io';
+    //   // NostrRequest rr = NostrRequest.query("569298423984982349");
+    //   // rr.addRequest(relay, [filter]);
+    //   // nostrRequests[rr.id] = rr;
+    //   // nostrRequests[rr.id]!.onEvent = (event) {
+    //   //   print(event);
+    //   // };
+    //   // _doRequest(rr.id, rr.requests!.values.first);
+    //   // rr.requests!.values.first.controller!.stream.listen((event) {
+    //   //   print(event);
+    //   // });
+    //
+    //   // final wsUrl = Uri.parse(relay);
+    //   // var channel = WebSocketChannel.connect(wsUrl);
+    //   // await channel.ready;
+    //   //
+    //   // channel.stream.listen((message) {
+    //   //   print(message);
+    //   // });
+    //   // channel.sink.add(encoded);
+    //
+    //   // const connectionOptions = SocketConnectionOptions(
+    //   //   timeoutConnectionMs: 30000, // connection fail timeout after 4000 ms
+    //   //   /// see ping/pong messages in [logEventStream] stream
+    //   //   skipPingMessages: true,
+    //   //
+    //   //   /// Set this attribute to `true` if do not need any ping/pong
+    //   //   /// messages and ping measurement. Default is `false`
+    //   //   pingRestrictionForce: true,
+    //   // );
+    //   // final textSocketHandler = IWebSocketHandler<String, String>.createClient(
+    //   //   relay, // Postman echo ws server
+    //   //   SocketSimpleTextProcessor(),
+    //   //   connectionOptions: connectionOptions
+    //   // );
+    //   //
+    //   // /// 2. Listen to webSocket messages:
+    //   // textSocketHandler.incomingMessagesStream.listen((inMsg) {
+    //   //   print('> webSocket  got text message from server: "$inMsg" '
+    //   //       '[ping: ${textSocketHandler.pingDelayMs}]');
+    //   // });
+    //   // //
+    //   // /// 3. Connect & send message:
+    //   // await textSocketHandler.connect();
+    //   // textSocketHandler.sendMessage(encoded);
+    //   // await Future<void>.delayed(const Duration(seconds: 4));
+    //
+    //   //
+    //   // var webSocket = await WebSocket.connect(relay);
+    //   // webSocket.listen((event) {
+    //   //   print(event);
+    //   // });
+    //   // webSocket.add(encoded);
+    //   // final wsUrl = Uri.parse(relay);
+    //   // var channel = WebSocketChannel.connect(wsUrl);
+    //   // channel.stream.listen((event) {
+    //   //   print(event);
+    //   // });
+    //   // channel.sink.add(encoded);
+    //   //
+    //   //
+    //   RelayManager manager = RelayManager();
+    //   await manager.connectRelay(relay);
+    //   // manager.webSockets[relay]!.sendMessage(encoded);
+    //
+    //   await for (final event in (await manager.requestRelays(
+    //       [relay],
+    //       filter
+    //   )).controller.stream) {
+    //     print(event);
+    //   };
+    //
+    //   // await for (final event in (await manager.requestRelays(
+    //   //         [relay],
+    //   //   filter
+    //   //       ))
+    //   //     .stream) {
+    //   //   print(event);
+    //   // }
+    //   // await Future<void>.delayed(const Duration(seconds: 10));
+    //   // sleep(Duration(seconds: 10));
+    // }, timeout: const Timeout.factor(10));
+  });
 
   group("Calculate best relays (external REAL)", skip: true, () {
 // ================================================================================================
