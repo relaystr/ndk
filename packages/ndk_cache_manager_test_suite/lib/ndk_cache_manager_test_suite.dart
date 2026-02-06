@@ -269,7 +269,9 @@ void _runEventTests(CacheManager Function() getCacheManager) {
     await cacheManager.saveEvents(events);
 
     final loadedEvents = await cacheManager.loadEvents(
-      tags: {'#p': ['target_pubkey_ptag']},
+      tags: {
+        'p': ['target_pubkey_ptag']
+      },
     );
 
     expect(loadedEvents.length, equals(1));

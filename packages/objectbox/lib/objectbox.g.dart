@@ -807,7 +807,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final nostrIdOffset = fbb.writeString(object.nostrId);
         final pubKeyOffset = fbb.writeString(object.pubKey);
         final contentOffset = fbb.writeString(object.content);
-        final sigOffset = fbb.writeString(object.sig);
+        final sigOffset = object.sig == null
+            ? null
+            : fbb.writeString(object.sig!);
         final sourcesOffset = fbb.writeList(
           object.sources.map(fbb.writeString).toList(growable: false),
         );
@@ -872,7 +874,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
               ).vTableGet(buffer, rootOffset, 6, '')
               ..sig = const fb.StringReader(
                 asciiOptimization: true,
-              ).vTableGet(buffer, rootOffset, 16, '')
+              ).vTableGetNullable(buffer, rootOffset, 16)
               ..validSig = const fb.BoolReader().vTableGetNullable(
                 buffer,
                 rootOffset,
