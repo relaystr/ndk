@@ -79,9 +79,7 @@ class Cashu {
   BehaviorSubject<List<CashuWalletTransaction>>? _latestTransactionsSubject;
 
   final Set<CashuWalletTransaction> _pendingTransactions = {};
-  final BehaviorSubject<List<CashuWalletTransaction>>
-      _pendingTransactionsSubject =
-      BehaviorSubject<List<CashuWalletTransaction>>.seeded([]);
+  BehaviorSubject<List<CashuWalletTransaction>>? _pendingTransactionsSubject;
 
   /// stream of balances \
   BehaviorSubject<List<CashuMintBalance>>? _balanceSubject;
@@ -311,7 +309,23 @@ class Cashu {
   /// pending transactions that are not yet completed \
   /// e.g. funding transactions
   BehaviorSubject<List<CashuWalletTransaction>> get pendingTransactions {
-    return _pendingTransactionsSubject;
+    if (_pendingTransactionsSubject == null) {
+      _pendingTransactionsSubject =
+          BehaviorSubject<List<CashuWalletTransaction>>.seeded(
+        _pendingTransactions.toList(),
+      );
+      _getPendingTransactionsDb().then((transactions) {
+        _pendingTransactions.clear();
+        _pendingTransactions.addAll(transactions);
+        _pendingTransactionsSubject?.add(_pendingTransactions.toList());
+      }).catchError((error) {
+        _pendingTransactionsSubject?.addError(
+          Exception('Failed to load pending transactions: $error'),
+        );
+      });
+    }
+
+    return _pendingTransactionsSubject!;
   }
 
   /// mints this usecase has interacted with \
@@ -336,16 +350,33 @@ class Cashu {
   }
 
   Future<List<CashuWalletTransaction>> _getLatestTransactionsDb({
-    int limit = 10,
+    int limit = 50,
   }) async {
     final transactions = await _cacheManagerCashu.getTransactions(
       limit: limit,
     );
 
-    final fTransactions =
-        transactions.whereType<CashuWalletTransaction>().toList();
+    // Filter to exclude draft and pending transactions (includes completed, failed, canceled)
+    final fTransactions = transactions
+        .whereType<CashuWalletTransaction>()
+        .where((tx) => !tx.state.isPending)
+        .toList();
 
     return fTransactions;
+  }
+
+  Future<List<CashuWalletTransaction>> _getPendingTransactionsDb() async {
+    final transactions = await _cacheManagerCashu.getTransactions(
+      limit: 20,
+    );
+
+    // Filter to only include draft and pending transactions
+    final pendingTransactions = transactions
+        .whereType<CashuWalletTransaction>()
+        .where((tx) => tx.state.isPending)
+        .toList();
+
+    return pendingTransactions;
   }
 
   Future<List<CashuMintInfo>> _getMintInfosDb() async {
@@ -447,8 +478,10 @@ class Cashu {
     );
 
     // add to pending transactions
-    _pendingTransactions.add(draftTransaction);
-    _pendingTransactionsSubject.add(_pendingTransactions.toList());
+    await _addAndSavePendingTransaction(draftTransaction);
+
+    // save draft transaction to cache
+    await _cacheManagerCashu.saveTransactions(transactions: [draftTransaction]);
 
     return draftTransaction;
   }
@@ -474,6 +507,9 @@ class Cashu {
 
     await _checkIfMintIsKnown(mintUrl);
 
+    // Remove draft transaction from pending if it exists
+    _removePendingTransaction(draftTransaction);
+
     CashuQuoteState payStatus;
 
     final pendingTransaction = draftTransaction.copyWith(
@@ -481,8 +517,12 @@ class Cashu {
     );
 
     // update pending transactions
-    _pendingTransactions.add(pendingTransaction);
-    _pendingTransactionsSubject.add(_pendingTransactions.toList());
+    await _addAndSavePendingTransaction(pendingTransaction);
+
+    // save pending state to cache
+    await _cacheManagerCashu
+        .saveTransactions(transactions: [pendingTransaction]);
+
     yield pendingTransaction;
 
     while (true) {
@@ -502,11 +542,15 @@ class Cashu {
         final expiredTransaction = pendingTransaction.copyWith(
           state: WalletTransactionState.failed,
           completionMsg: 'Quote expired before payment was received',
+          transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         );
-        yield expiredTransaction;
-        // remove expired transaction
+
+        // remove from pending and save to latest transactions
         _removePendingTransaction(expiredTransaction);
+        await _addAndSaveLatestTransaction(expiredTransaction);
+
         Logger.log.w('Quote expired before payment was received');
+        yield expiredTransaction;
         return;
       }
 
@@ -542,10 +586,13 @@ class Cashu {
       final failedTransaction = pendingTransaction.copyWith(
         state: WalletTransactionState.failed,
         completionMsg: 'Minting failed, no signatures returned',
+        transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
-      // remove expired transaction
 
+      // remove from pending and save to latest transactions
       _removePendingTransaction(failedTransaction);
+      await _addAndSaveLatestTransaction(failedTransaction);
+
       yield failedTransaction;
       throw Exception('Minting failed, no signatures returned');
     }
@@ -560,9 +607,13 @@ class Cashu {
       final failedTransaction = pendingTransaction.copyWith(
         state: WalletTransactionState.failed,
         completionMsg: 'Unblinding failed, no tokens returned',
+        transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
-      // remove expired transaction
+
+      // remove from pending and save to latest transactions
       _removePendingTransaction(failedTransaction);
+      await _addAndSaveLatestTransaction(failedTransaction);
+
       yield failedTransaction;
       throw Exception('Unblinding failed, no tokens returned');
     }
@@ -742,10 +793,13 @@ class Cashu {
     myOutputs.sort(
         (a, b) => b.amount.compareTo(a.amount)); // sort outputs by amount desc
 
+    // Remove draft transaction from pending if it exists
+    _removePendingTransaction(draftRedeemTransaction);
+
     final pendingTransaction = draftRedeemTransaction.copyWith(
       state: WalletTransactionState.pending,
     );
-    _addPendingTransaction(pendingTransaction);
+    await _addAndSavePendingTransaction(pendingTransaction);
     yield pendingTransaction;
 
     try {
@@ -951,8 +1005,8 @@ class Cashu {
       usedKeysets: keysetsForUnit,
     );
     // add to pending transactions
+    await _addAndSavePendingTransaction(pendingTransaction);
 
-    _addPendingTransaction(pendingTransaction);
     Logger.log.d(
         'Initiated spend for $amount $unit from mint $mintUrl, using ${selectionResult.selectedProofs.length} proofs');
 
@@ -1027,11 +1081,11 @@ class Cashu {
     pendingTransaction = pendingTransaction.copyWith(
       proofPubKeys: proofsToReturn.map((e) => e.Y).toList(),
     );
-    _addPendingTransaction(pendingTransaction);
+    await _addAndSavePendingTransaction(pendingTransaction);
 
     await _updateBalances();
 
-    _checkSpendingState(
+    checkSpendingState(
       transaction: pendingTransaction,
     );
 
@@ -1045,7 +1099,7 @@ class Cashu {
     pendingTransaction = pendingTransaction.copyWith(
       token: token.toV4TokenString(),
     );
-    _addPendingTransaction(pendingTransaction);
+    await _addAndSavePendingTransaction(pendingTransaction);
 
     return CashuSpendingResult(
       token: token,
@@ -1056,7 +1110,7 @@ class Cashu {
   /// todo: restore pending transaction from cache
   /// todo: recover funds
   /// todo: timeout
-  void _checkSpendingState({
+  void checkSpendingState({
     required CashuWalletTransaction transaction,
   }) async {
     if (transaction.proofPubKeys == null || transaction.proofPubKeys!.isEmpty) {
@@ -1164,7 +1218,7 @@ class Cashu {
       note: rcvToken.memo,
     );
 
-    _addPendingTransaction(pendingTransaction);
+    await _addAndSavePendingTransaction(pendingTransaction);
     yield pendingTransaction;
 
     List<int> splittedAmounts = CashuTools.splitAmount(rcvSum);
@@ -1273,21 +1327,23 @@ class Cashu {
     return cashuToken;
   }
 
-  void _addPendingTransaction(
+  Future<void> _addAndSavePendingTransaction(
     CashuWalletTransaction transaction,
-  ) {
+  ) async {
     // update transaction
     _pendingTransactions.removeWhere((t) => t.id == transaction.id);
 
     _pendingTransactions.add(transaction);
-    _pendingTransactionsSubject.add(_pendingTransactions.toList());
+    _pendingTransactionsSubject?.add(_pendingTransactions.toList());
+    // save pending transaction to cache
+    await _cacheManagerCashu.saveTransactions(transactions: [transaction]);
   }
 
   void _removePendingTransaction(
     CashuWalletTransaction transaction,
   ) {
     _pendingTransactions.removeWhere((t) => t.id == transaction.id);
-    _pendingTransactionsSubject.add(_pendingTransactions.toList());
+    _pendingTransactionsSubject?.add(_pendingTransactions.toList());
   }
 
   Future<void> _addAndSaveLatestTransaction(

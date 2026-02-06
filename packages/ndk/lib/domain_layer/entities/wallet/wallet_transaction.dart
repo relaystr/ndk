@@ -80,7 +80,11 @@ abstract class WalletTransaction {
                   .toList()
               : null,
           token: metadata['token'] as String? ?? token,
-          proofPubKeys: proofPubKeys,
+          proofPubKeys: metadata['proofPubKeys'] != null
+              ? (metadata['proofPubKeys'] as List<dynamic>)
+                  .map((p) => p.toString())
+                  .toList()
+              : proofPubKeys,
         );
       case WalletType.NWC:
         return NwcWalletTransaction(
