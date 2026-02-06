@@ -1,3 +1,9 @@
+## 0.7.1-dev.10
+
+ - **REFACTOR**: remove unused requestRelays method".
+ - **REFACTOR**: remove unused requestRelays method.
+ - **FIX**: fail fast when all relays are offline.
+
 ## 0.7.1-dev.9
 
  - **FIX**: complete request when auth-required received without challenge.

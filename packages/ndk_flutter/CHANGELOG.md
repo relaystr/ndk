@@ -1,3 +1,7 @@
+## 0.0.2-dev.1
+
+ - Update a dependency to the latest release.
+
 ## 0.0.2-dev.0
 
  - **REFACTOR**: migrate widgets to use NdkFlutter instead of Ndk.
