@@ -62,7 +62,7 @@ void main() {
           stopwatch.elapsedMilliseconds,
           lessThan(2000),
           reason:
-              'Query should complete shortly after AUTH timeout (500ms), not wait for query timeout (5s). '
+              'Query should complete shortly after AUTH timeout (1s), not wait for query timeout (5s). '
               'Elapsed: ${stopwatch.elapsedMilliseconds}ms',
         );
 
@@ -130,7 +130,7 @@ void main() {
           stopwatch.elapsedMilliseconds,
           lessThan(2000),
           reason:
-              'Query should complete shortly after AUTH timeouts (500ms), not wait for query timeout (5s). '
+              'Query should complete shortly after AUTH timeouts (1s), not wait for query timeout (5s). '
               'Elapsed: ${stopwatch.elapsedMilliseconds}ms',
         );
 
