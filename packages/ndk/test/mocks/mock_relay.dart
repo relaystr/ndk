@@ -29,6 +29,7 @@ class MockRelay {
   bool requireAuthForRequests;
   bool requireAuthForEvents;
   bool sendAuthChallenge;
+  bool ignoreAuthResponse; // Don't respond to AUTH messages (simulates timeout)
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
@@ -53,6 +54,7 @@ class MockRelay {
     this.requireAuthForRequests = false,
     this.requireAuthForEvents = false,
     this.sendAuthChallenge = true,
+    this.ignoreAuthResponse = false,
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
@@ -120,6 +122,11 @@ class MockRelay {
         var eventJson = json.decode(message);
 
         if (eventJson[0] == "AUTH") {
+          // If ignoreAuthResponse is true, don't respond (simulates timeout)
+          if (ignoreAuthResponse) {
+            log("MockRelay: Ignoring AUTH response (simulating timeout)");
+            return;
+          }
           Nip01Event event = Nip01EventModel.fromJson(eventJson[1]);
           bool authSuccess = false;
           if (verify(event.pubKey, event.id, event.sig!)) {
