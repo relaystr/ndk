@@ -709,4 +709,22 @@ class DbObjectBox implements CacheManager {
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
     box.removeAll();
   }
+
+  @override
+  Future<void> clearAll() async {
+    await dbRdy;
+    await _objectBox.store.runInTransactionAsync(
+      TxMode.write,
+      (Store store, _) {
+        store.box<DbNip01Event>().removeAll();
+        store.box<DbUserRelayList>().removeAll();
+        store.box<DbRelaySet>().removeAll();
+        store.box<DbContactList>().removeAll();
+        store.box<DbMetadata>().removeAll();
+        store.box<DbNip05>().removeAll();
+        store.box<DbFilterFetchedRangeRecord>().removeAll();
+      },
+      null,
+    );
+  }
 }

@@ -129,4 +129,7 @@ abstract class CacheManager {
 
   /// Remove all filter fetched range records
   Future<void> removeAllFilterFetchedRangeRecords();
+
+  /// Clears all cached data
+  Future<void> clearAll();
 }
