@@ -792,6 +792,10 @@ class RelayManager<T> {
               "AUTH callback timeout for ${signedAuth.id} on ${relayConnectivity.url}");
           _pendingAuthCallbacks.remove(signedAuth.id);
           _pendingAuthTimers.remove(signedAuth.id);
+
+          // Mark relay as closed when AUTH times out so the request can complete
+          request.receivedClosed = true;
+          _checkNetworkClose(state, relayConnectivity);
         });
 
         send(
