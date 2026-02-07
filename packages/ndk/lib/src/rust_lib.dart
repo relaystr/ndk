@@ -31,18 +31,3 @@ external int verifyNostrEventNative(
   Pointer<Utf8> content,
   Pointer<Utf8> signatureHex,
 );
-
-/// Verifies a Schnorr signature.
-///
-/// Returns 1 if valid, 0 if invalid.
-@Native<
-    Int32 Function(
-      Pointer<Utf8>, // pubKeyHex
-      Pointer<Utf8>, // eventIdHex
-      Pointer<Utf8>, // signatureHex
-    )>(symbol: 'verify_schnorr_signature')
-external int verifySchnorrSignatureNative(
-  Pointer<Utf8> pubKeyHex,
-  Pointer<Utf8> eventIdHex,
-  Pointer<Utf8> signatureHex,
-);
