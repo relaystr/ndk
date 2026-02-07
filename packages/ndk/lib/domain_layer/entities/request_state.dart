@@ -63,6 +63,14 @@ class RequestState {
 
   late StreamSubscription<Nip01Event> _streamSubscription;
 
+  /// Cancels the timeout timer without closing streams.
+  /// Used when a duplicate request is detected and this request's stream
+  /// will be fed from another in-flight request.
+  void cancelTimeout() {
+    _timeout?.cancel();
+    _timeout = null;
+  }
+
   /// Creates a new [RequestState] instance
   RequestState(this.request) : unresolvedFilters = request.filters {
     // if we have a timeout set, we start it
