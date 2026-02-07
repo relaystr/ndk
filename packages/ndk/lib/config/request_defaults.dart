@@ -27,4 +27,7 @@ class RequestDefaults {
 
   /// default timeout for AUTH callbacks (how long to wait for AUTH OK)
   static const Duration DEFAULT_AUTH_CALLBACK_TIMEOUT = Duration(seconds: 30);
+
+  /// default timeout for bunker/NIP-46 remote signer requests
+  static const Duration DEFAULT_BUNKER_REQUEST_TIMEOUT = Duration(minutes: 3);
 }
