@@ -1,39 +1,72 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Drift Cache Manager
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A Drift-based cache manager for the NDK (Nostr Development Kit) library, providing persistent SQLite storage for Nostr protocol data.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- **Cross-Platform**: Works on Android, iOS, macOS, Windows, Linux, and Web
+- **SQLite Storage**: Uses Drift for reliable SQLite database operations
+- **NDK Integration**: Implements NDK's CacheManager interface
+- **Debug/Release Separation**: Automatically uses separate databases for debug and release modes
+- **Full Data Support**: Caches events, metadata, contact lists, relay lists, relay sets, NIP-05, and filter ranges
 
-## Getting started
+## Supported Platforms
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+| Platform | Storage |
+|----------|---------|
+| Android | SQLite |
+| iOS | SQLite |
+| macOS | SQLite |
+| Windows | SQLite |
+| Linux | SQLite |
+| Web | IndexedDB (via sql.js) |
+
+## Getting Started
+
+```bash
+flutter pub add drift_cache_manager
+```
+
+### Web Setup
+
+For web support, download these files to your `web/` folder:
+- `sqlite3.wasm` from [sql.js releases](https://github.com/simolus3/sqlite3.dart/releases)
+- `drift_worker.js` from [drift releases](https://github.com/simolus3/drift/releases)
+
+See [Drift web prerequisites](https://drift.simonbinder.eu/platforms/web/#prerequisites) for details.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+### Basic Setup
 
 ```dart
-const like = 'sample';
+import 'package:drift_cache_manager/drift_cache_manager.dart';
+import 'package:ndk/ndk.dart';
+
+// Create cache manager (uses 'ndk_cache_debug' in debug, 'ndk_cache' in release)
+final cacheManager = await DriftCacheManager.create();
+
+// Or with a custom database name
+final cacheManager = await DriftCacheManager.create(dbName: 'my_app_cache');
+
+// Configure NDK with cache
+final ndk = Ndk(
+  NdkConfig(
+    cache: cacheManager,
+  ),
+);
 ```
 
-## Additional information
+## Architecture
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+The cache manager uses Drift tables for each data type:
+
+| Table | Primary Key | Description |
+|-------|-------------|-------------|
+| Events | id | Nostr events with tags stored as JSON |
+| Metadatas | pubKey | User profile metadata |
+| ContactLists | pubKey | User contact lists |
+| UserRelayLists | pubKey | User relay configurations |
+| RelaySets | id | Relay set configurations |
+| Nip05s | pubKey | NIP-05 verification data |
+| FilterFetchedRangeRecords | key | Query range tracking |
