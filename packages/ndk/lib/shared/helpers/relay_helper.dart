@@ -1,12 +1,7 @@
+import 'package:ndk/shared/helpers/url_normalizer.dart';
+
 final RegExp relayUrlRegex = RegExp(
     r'^(wss?:\/\/)([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*|[0-9]{1,3}(?:\.[0-9]{1,3}){3}):?([0-9]{1,5})?(\/[^\s]*)?$');
-
-/// Unreserved characters per RFC 3986 section 2.3
-/// ALPHA / DIGIT / "-" / "." / "_" / "~"
-final RegExp _unreservedCharRegex = RegExp(r'^[A-Za-z0-9\-._~]$');
-
-/// Matches valid hexadecimal digit pairs for percent-encoding
-final RegExp _hexPairRegex = RegExp(r'^[0-9A-Fa-f]{2}$');
 
 /// Matches extra slashes after protocol (e.g., wss:/// or wss:////)
 final RegExp _extraSlashesRegex =
@@ -74,7 +69,7 @@ String? cleanRelayUrl(String adr) {
 
   // RFC 3986 Section 6.2.2.3: Path segment normalization
   // Remove dot segments using the algorithm from Section 5.2.4
-  String path = _removeDotSegments(uri.path);
+  String path = removeDotSegments(uri.path);
 
   // Remove trailing slash from path
   if (path.length > 1 && path.endsWith('/')) {
@@ -90,17 +85,17 @@ String? cleanRelayUrl(String adr) {
 
   // Add normalized path
   if (path.isNotEmpty && path != '/') {
-    buffer.write(_normalizePercentEncoding(path));
+    buffer.write(normalizePercentEncoding(path));
   }
 
   // Preserve query string if present (with normalized percent-encoding)
   if (uri.hasQuery) {
-    buffer.write('?${_normalizePercentEncoding(uri.query)}');
+    buffer.write('?${normalizePercentEncoding(uri.query)}');
   }
 
   // Preserve fragment if present (with normalized percent-encoding)
   if (uri.hasFragment) {
-    buffer.write('#${_normalizePercentEncoding(uri.fragment)}');
+    buffer.write('#${normalizePercentEncoding(uri.fragment)}');
   }
 
   final normalizedUrl = buffer.toString();
@@ -111,70 +106,6 @@ String? cleanRelayUrl(String adr) {
   }
 
   return normalizedUrl;
-}
-
-/// RFC 3986 Section 5.2.4: Remove Dot Segments
-///
-/// This algorithm removes "." and ".." segments from a path.
-String _removeDotSegments(String path) {
-  if (path.isEmpty) return path;
-
-  final input = path.split('/');
-  final output = <String>[];
-
-  for (final segment in input) {
-    if (segment == '.') {
-      // Skip "." segments
-      continue;
-    } else if (segment == '..') {
-      // Go up one level for ".." segments
-      if (output.isNotEmpty && output.last != '') {
-        output.removeLast();
-      }
-    } else {
-      output.add(segment);
-    }
-  }
-
-  // Reconstruct path
-  if (path.startsWith('/') && (output.isEmpty || output.first != '')) {
-    return '/${output.join('/')}';
-  }
-  return output.join('/');
-}
-
-/// RFC 3986 Section 6.2.2.2: Percent-Encoding Normalization
-///
-/// - Decodes percent-encoded unreserved characters (A-Z, a-z, 0-9, -, ., _, ~)
-/// - Uppercases hex digits in remaining percent-encodings
-String _normalizePercentEncoding(String input) {
-  final result = StringBuffer();
-  int i = 0;
-
-  while (i < input.length) {
-    if (input[i] == '%' && i + 2 < input.length) {
-      final hex = input.substring(i + 1, i + 3);
-      // Validate hex digits
-      if (_hexPairRegex.hasMatch(hex)) {
-        final charCode = int.parse(hex, radix: 16);
-        final char = String.fromCharCode(charCode);
-
-        // Decode if it's an unreserved character
-        if (_unreservedCharRegex.hasMatch(char)) {
-          result.write(char);
-        } else {
-          // Keep percent-encoded but uppercase the hex digits
-          result.write('%${hex.toUpperCase()}');
-        }
-        i += 3;
-        continue;
-      }
-    }
-    result.write(input[i]);
-    i++;
-  }
-
-  return result.toString();
 }
 
 List<String> cleanRelayUrls(List<String> urls) {
