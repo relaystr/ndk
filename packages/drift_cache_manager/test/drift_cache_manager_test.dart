@@ -1,12 +1,16 @@
-import 'package:flutter_test/flutter_test.dart';
-
+import 'package:drift/native.dart';
 import 'package:drift_cache_manager/drift_cache_manager.dart';
+import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 
 void main() {
-  test('adds one to input values', () {
-    final calculator = Calculator();
-    expect(calculator.addOne(2), 3);
-    expect(calculator.addOne(-7), -6);
-    expect(calculator.addOne(0), 1);
-  });
+  runCacheManagerTestSuite(
+    name: 'DriftCacheManager',
+    createCacheManager: () async {
+      final db = NdkCacheDatabase.forTesting(NativeDatabase.memory());
+      return DriftCacheManager(db);
+    },
+    cleanUp: (cm) async {
+      await cm.close();
+    },
+  );
 }
