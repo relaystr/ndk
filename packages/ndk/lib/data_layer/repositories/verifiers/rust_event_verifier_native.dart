@@ -16,11 +16,16 @@ class RustEventVerifier implements EventVerifier {
 
   @override
   Future<bool> verify(Nip01Event event) async {
+    // Check if signature is present
+    if (event.sig == null) {
+      return false;
+    }
+
     // Convert strings to native pointers
     final eventIdPtr = event.id.toNativeUtf8();
     final pubKeyPtr = event.pubKey.toNativeUtf8();
     final contentPtr = event.content.toNativeUtf8();
-    final signaturePtr = event.sig.toNativeUtf8();
+    final signaturePtr = event.sig!.toNativeUtf8();
 
     // Prepare tags data
     final tags = event.tags;
