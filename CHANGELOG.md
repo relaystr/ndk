@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.11`](#ndk---v071-dev11)
+ - [`ndk_objectbox` - `v0.2.8-dev.11`](#ndk_objectbox---v028-dev11)
+ - [`sembast_cache_manager` - `v1.0.7-dev.11`](#sembast_cache_manager---v107-dev11)
+ - [`ndk_amber` - `v0.4.0-dev.11`](#ndk_amber---v040-dev11)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.11`](#ndk_rust_verifier---v050-dev11)
+ - [`nip07_event_signer` - `v1.0.6-dev.11`](#nip07_event_signer---v106-dev11)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.11`](#ndk_cache_manager_test_suite---v101-dev11)
+ - [`ndk_flutter` - `v0.0.2-dev.2`](#ndk_flutter---v002-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.11`
+ - `ndk_rust_verifier` - `v0.5.0-dev.11`
+ - `nip07_event_signer` - `v1.0.6-dev.11`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.11`
+ - `ndk_flutter` - `v0.0.2-dev.2`
+
+---
+
+#### `ndk` - `v0.7.1-dev.11`
+
+ - **FIX**: close duplicate request when original completes.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **DOCS**: add DANGER warning to clearAll() method.
+
+#### `ndk_objectbox` - `v0.2.8-dev.11`
+
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
+#### `sembast_cache_manager` - `v1.0.7-dev.11`
+
+ - **FIX**(sembast): clearAll only deletes cache manager stores.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
+
 ## 2026-02-06
 
 ### Changes

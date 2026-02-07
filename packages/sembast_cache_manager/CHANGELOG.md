@@ -1,3 +1,8 @@
+## 1.0.7-dev.11
+
+ - **FIX**(sembast): clearAll only deletes cache manager stores.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
 ## 1.0.7-dev.10
 
  - Update a dependency to the latest release.
