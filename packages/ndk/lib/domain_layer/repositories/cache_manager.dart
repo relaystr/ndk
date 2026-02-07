@@ -129,4 +129,11 @@ abstract class CacheManager {
 
   /// Remove all filter fetched range records
   Future<void> removeAllFilterFetchedRangeRecords();
+
+  /// Clears all cached data.
+  ///
+  /// **DANGER**: This will permanently delete ALL cached data including events,
+  /// metadata, contact lists, relay sets, user relay lists, nip05 records,
+  /// and filter fetched range records. This operation cannot be undone.
+  Future<void> clearAll();
 }

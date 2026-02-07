@@ -424,4 +424,16 @@ class MemCacheManager implements CacheManager {
   Future<void> removeAllFilterFetchedRangeRecords() async {
     filterFetchedRangeRecords.clear();
   }
+
+  @override
+  Future<void> clearAll() async {
+    events.clear();
+    userRelayLists.clear();
+    relaySets.clear();
+    contactLists.clear();
+    metadatas.clear();
+    nip05s.clear();
+    nip05sByIdentifier.clear();
+    filterFetchedRangeRecords.clear();
+  }
 }

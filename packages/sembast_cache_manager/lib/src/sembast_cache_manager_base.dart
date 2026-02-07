@@ -522,4 +522,17 @@ class SembastCacheManager extends CacheManager {
   Future<void> removeAllFilterFetchedRangeRecords() async {
     await _filterFetchedRangeStore.delete(_database);
   }
+
+  @override
+  Future<void> clearAll() async {
+    await Future.wait([
+      _eventsStore.delete(_database),
+      _metadataStore.delete(_database),
+      _contactListStore.delete(_database),
+      _relayListStore.delete(_database),
+      _nip05Store.delete(_database),
+      _relaySetStore.delete(_database),
+      _filterFetchedRangeStore.delete(_database),
+    ]);
+  }
 }
