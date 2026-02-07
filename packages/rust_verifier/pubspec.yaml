@@ -3,8 +3,8 @@ description: Nostr Development Kit - the most performant lib for all your nostr 
 version: 0.5.0-dev.10
 homepage: https://github.com/relaystr/ndk
 
-#discontinued: true
-#replacement: ndk
+discontinued: true
+replacement: ndk & ndk_flutter
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
