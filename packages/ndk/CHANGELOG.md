@@ -1,3 +1,9 @@
+## 0.7.1-dev.11
+
+ - **FIX**: close duplicate request when original completes.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **DOCS**: add DANGER warning to clearAll() method.
+
 ## 0.7.1-dev.10
 
  - **REFACTOR**: remove unused requestRelays method".

@@ -1,3 +1,7 @@
+## 0.2.8-dev.11
+
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
 ## 0.2.8-dev.10
 
  - Update a dependency to the latest release.
