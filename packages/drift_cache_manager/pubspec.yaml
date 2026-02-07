@@ -29,8 +29,4 @@ dev_dependencies:
   ndk_cache_manager_test_suite:
     path: ../ndk_cache_manager_test_suite
 
-dependency_overrides:
-  ndk:
-    path: ../ndk
-
 flutter:
