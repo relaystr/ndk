@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'tables.dart';
@@ -19,7 +20,11 @@ part 'database.g.dart';
 )
 class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase({String? dbName})
-    : super(_openConnection(dbName ?? 'ndk_cache'));
+    : super(
+        _openConnection(
+          dbName ?? (kDebugMode ? 'ndk_cache_debug' : 'ndk_cache'),
+        ),
+      );
 
   NdkCacheDatabase.forTesting(super.e);
 
