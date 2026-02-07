@@ -155,12 +155,11 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
-    final metadatas = <Metadata?>[];
-    for (final pubKey in pubKeys) {
-      final metadata = await loadMetadata(pubKey);
-      metadatas.add(metadata);
-    }
-    return metadatas;
+    final snapshots = await _metadataStore.records(pubKeys).get(_database);
+    return snapshots.map((data) {
+      if (data == null) return null;
+      return MetadataExtension.fromJsonStorage(data);
+    }).toList();
   }
 
   @override
@@ -183,12 +182,11 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
-    final nip05s = <Nip05?>[];
-    for (final pubKey in pubKeys) {
-      final nip05 = await loadNip05(pubKey: pubKey);
-      nip05s.add(nip05);
-    }
-    return nip05s;
+    final snapshots = await _nip05Store.records(pubKeys).get(_database);
+    return snapshots.map((data) {
+      if (data == null) return null;
+      return Nip05Extension.fromJsonStorage(data);
+    }).toList();
   }
 
   @override
@@ -284,13 +282,9 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveContactLists(List<ContactList> contactLists) async {
-    await _database.transaction((txn) async {
-      for (final contactList in contactLists) {
-        await _contactListStore
-            .record(contactList.pubKey)
-            .put(txn, contactList.toJsonForStorage());
-      }
-    });
+    final keys = contactLists.map((c) => c.pubKey).toList();
+    final values = contactLists.map((c) => c.toJsonForStorage()).toList();
+    await _contactListStore.records(keys).put(_database, values);
   }
 
   @override
@@ -302,11 +296,9 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveEvents(List<Nip01Event> events) async {
-    await _database.transaction((txn) async {
-      for (final event in events) {
-        await _eventsStore.record(event.id).put(txn, event.toJsonForStorage());
-      }
-    });
+    final keys = events.map((e) => e.id).toList();
+    final values = events.map((e) => e.toJsonForStorage()).toList();
+    await _eventsStore.records(keys).put(_database, values);
   }
 
   @override
@@ -318,13 +310,9 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveMetadatas(List<Metadata> metadatas) async {
-    await _database.transaction((txn) async {
-      for (final metadata in metadatas) {
-        await _metadataStore
-            .record(metadata.pubKey)
-            .put(txn, metadata.toJsonForStorage());
-      }
-    });
+    final keys = metadatas.map((m) => m.pubKey).toList();
+    final values = metadatas.map((m) => m.toJsonForStorage()).toList();
+    await _metadataStore.records(keys).put(_database, values);
   }
 
   @override
@@ -336,13 +324,9 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveNip05s(List<Nip05> nip05s) async {
-    await _database.transaction((txn) async {
-      for (final nip05 in nip05s) {
-        await _nip05Store
-            .record(nip05.pubKey)
-            .put(txn, nip05.toJsonForStorage());
-      }
-    });
+    final keys = nip05s.map((n) => n.pubKey).toList();
+    final values = nip05s.map((n) => n.toJsonForStorage()).toList();
+    await _nip05Store.records(keys).put(_database, values);
   }
 
   @override
@@ -362,13 +346,9 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
-    await _database.transaction((txn) async {
-      for (final userRelayList in userRelayLists) {
-        await _relayListStore
-            .record(userRelayList.pubKey)
-            .put(txn, userRelayList.toJsonForStorage());
-      }
-    });
+    final keys = userRelayLists.map((u) => u.pubKey).toList();
+    final values = userRelayLists.map((u) => u.toJsonForStorage()).toList();
+    await _relayListStore.records(keys).put(_database, values);
   }
 
   @override
@@ -397,31 +377,31 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
+    sembast.Filter? filter;
+    if (search.isNotEmpty) {
+      final pattern = RegExp.escape(search);
+      filter = sembast.Filter.or([
+        sembast.Filter.matchesRegExp(
+            'name', RegExp(pattern, caseSensitive: false)),
+        sembast.Filter.matchesRegExp(
+            'displayName', RegExp(pattern, caseSensitive: false)),
+        sembast.Filter.matchesRegExp(
+            'about', RegExp(pattern, caseSensitive: false)),
+        sembast.Filter.matchesRegExp(
+            'nip05', RegExp(pattern, caseSensitive: false)),
+      ]);
+    }
+
     final finder = sembast.Finder(
+      filter: filter,
       limit: limit,
-      sortOrders: [
-        sembast.SortOrder('updatedAt', false),
-      ], // Sort by most recently updated
+      sortOrders: [sembast.SortOrder('updatedAt', false)],
     );
 
     final records = await _metadataStore.find(_database, finder: finder);
-    final metadatas = records
+    return records
         .map((record) => MetadataExtension.fromJsonStorage(record.value))
         .toList();
-
-    // Filter by search term in memory (search in name, displayName, about, nip05)
-    if (search.isNotEmpty) {
-      final searchLower = search.toLowerCase();
-      return metadatas.where((metadata) {
-        return (metadata.name?.toLowerCase().contains(searchLower) ?? false) ||
-            (metadata.displayName?.toLowerCase().contains(searchLower) ??
-                false) ||
-            (metadata.about?.toLowerCase().contains(searchLower) ?? false) ||
-            (metadata.nip05?.toLowerCase().contains(searchLower) ?? false);
-      });
-    }
-
-    return metadatas;
   }
 
   // =====================
@@ -439,13 +419,9 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<void> saveFilterFetchedRangeRecords(
       List<FilterFetchedRangeRecord> records) async {
-    await _database.transaction((txn) async {
-      for (final record in records) {
-        await _filterFetchedRangeStore
-            .record(record.key)
-            .put(txn, record.toJson());
-      }
-    });
+    final keys = records.map((r) => r.key).toList();
+    final values = records.map((r) => r.toJson()).toList();
+    await _filterFetchedRangeStore.records(keys).put(_database, values);
   }
 
   @override
