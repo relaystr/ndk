@@ -444,6 +444,17 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
+  Future<void> removeEvents(List<String> ids) async {
+    await dbRdy;
+    final eventBox = _objectBox.store.box<DbNip01Event>();
+    final events = eventBox
+        .query(DbNip01Event_.nostrId.oneOf(ids))
+        .build()
+        .find();
+    eventBox.removeMany(events.map((e) => e.dbId).toList());
+  }
+
+  @override
   Future<void> removeMetadata(String pubKey) async {
     await dbRdy;
     final metadataBox = _objectBox.store.box<DbMetadata>();
