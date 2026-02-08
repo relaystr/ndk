@@ -34,6 +34,8 @@ import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 
 /// A factory function that creates a new [CacheManager] instance for testing.
 typedef CacheManagerFactory = Future<CacheManager> Function();
@@ -381,6 +383,37 @@ void _runEventTests(CacheManager Function() getCacheManager) {
 
     await cacheManager.removeEvent(event.id);
     expect(await cacheManager.loadEvent(event.id), isNull);
+  });
+
+  test('removeEvents', () async {
+    final cacheManager = getCacheManager();
+    final key1 = Bip340.generatePrivateKey();
+    final key2 = Bip340.generatePrivateKey();
+    final key3 = Bip340.generatePrivateKey();
+    final signer1 = Bip340EventSigner(
+        privateKey: key1.privateKey, publicKey: key1.publicKey);
+    final signer2 = Bip340EventSigner(
+        privateKey: key2.privateKey, publicKey: key2.publicKey);
+    final signer3 = Bip340EventSigner(
+        privateKey: key3.privateKey, publicKey: key3.publicKey);
+
+    final event1 = await signer1.sign(Nip01Event(
+        pubKey: key1.publicKey, kind: 1, tags: [], content: 'Event 1'));
+    final event2 = await signer2.sign(Nip01Event(
+        pubKey: key2.publicKey, kind: 1, tags: [], content: 'Event 2'));
+    final event3 = await signer3.sign(Nip01Event(
+        pubKey: key3.publicKey, kind: 1, tags: [], content: 'Event 3'));
+
+    await cacheManager.saveEvents([event1, event2, event3]);
+    expect(await cacheManager.loadEvent(event1.id), isNotNull);
+    expect(await cacheManager.loadEvent(event2.id), isNotNull);
+    expect(await cacheManager.loadEvent(event3.id), isNotNull);
+
+    await cacheManager.removeEvents([event1.id, event2.id]);
+
+    expect(await cacheManager.loadEvent(event1.id), isNull);
+    expect(await cacheManager.loadEvent(event2.id), isNull);
+    expect(await cacheManager.loadEvent(event3.id), isNotNull);
   });
 
   test('removeAllEventsByPubKey', () async {
