@@ -343,6 +343,13 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<void> removeEvents(List<String> ids) async {
+    for (final id in ids) {
+      events.remove(id);
+    }
+  }
+
+  @override
   Future<void> saveEvent(Nip01Event event) async {
     events[event.id] = event;
   }

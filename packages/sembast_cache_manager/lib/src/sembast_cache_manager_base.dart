@@ -255,6 +255,11 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<void> removeEvents(List<String> ids) async {
+    await _eventsStore.records(ids).delete(_database);
+  }
+
+  @override
   Future<void> removeMetadata(String pubKey) async {
     await _metadataStore.record(pubKey).delete(_database);
   }
