@@ -167,9 +167,55 @@ pub fn hash_event_data(
     tags: Vec<Vec<String>>,
     content: &str,
 ) -> String {
-    let event = json!([0, pubkey, created_at, kind, tags, content]);
-
-    let serialized_event = serde_json::to_string(&event).expect("Serialization error");
+    // Manually build JSON string to avoid serde_json overhead
+    let mut serialized_event = String::with_capacity(256);
+    serialized_event.push_str("[0,\"");
+    serialized_event.push_str(pubkey);
+    serialized_event.push_str("\",");
+    serialized_event.push_str(&created_at.to_string());
+    serialized_event.push(',');
+    serialized_event.push_str(&kind.to_string());
+    serialized_event.push_str(",[");
+    
+    for (i, tag) in tags.iter().enumerate() {
+        if i > 0 {
+            serialized_event.push(',');
+        }
+        serialized_event.push('[');
+        for (j, item) in tag.iter().enumerate() {
+            if j > 0 {
+                serialized_event.push(',');
+            }
+            serialized_event.push('"');
+            // Escape special characters in JSON strings
+            for c in item.chars() {
+                match c {
+                    '"' => serialized_event.push_str("\\\""),
+                    '\\' => serialized_event.push_str("\\\\"),
+                    '\n' => serialized_event.push_str("\\n"),
+                    '\r' => serialized_event.push_str("\\r"),
+                    '\t' => serialized_event.push_str("\\t"),
+                    _ => serialized_event.push(c),
+                }
+            }
+            serialized_event.push('"');
+        }
+        serialized_event.push(']');
+    }
+    
+    serialized_event.push_str("],\"");
+    // Escape special characters in content
+    for c in content.chars() {
+        match c {
+            '"' => serialized_event.push_str("\\\""),
+            '\\' => serialized_event.push_str("\\\\"),
+            '\n' => serialized_event.push_str("\\n"),
+            '\r' => serialized_event.push_str("\\r"),
+            '\t' => serialized_event.push_str("\\t"),
+            _ => serialized_event.push(c),
+        }
+    }
+    serialized_event.push_str("\"]");
 
     let mut hasher = Sha256::new();
     hasher.update(serialized_event.as_bytes());
