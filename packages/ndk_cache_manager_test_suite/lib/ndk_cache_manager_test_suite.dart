@@ -385,7 +385,7 @@ void _runEventTests(CacheManager Function() getCacheManager) {
     expect(await cacheManager.loadEvent(event.id), isNull);
   });
 
-  test('removeEvents', () async {
+  test('removeEvents by ids', () async {
     final cacheManager = getCacheManager();
     final key1 = Bip340.generatePrivateKey();
     final key2 = Bip340.generatePrivateKey();
@@ -409,11 +409,196 @@ void _runEventTests(CacheManager Function() getCacheManager) {
     expect(await cacheManager.loadEvent(event2.id), isNotNull);
     expect(await cacheManager.loadEvent(event3.id), isNotNull);
 
-    await cacheManager.removeEvents([event1.id, event2.id]);
+    await cacheManager.removeEvents(ids: [event1.id, event2.id]);
 
     expect(await cacheManager.loadEvent(event1.id), isNull);
     expect(await cacheManager.loadEvent(event2.id), isNull);
     expect(await cacheManager.loadEvent(event3.id), isNotNull);
+  });
+
+  test('removeEvents with pubKeys and kinds', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final events = [
+      Nip01Event(
+        pubKey: 'author_filter_1',
+        kind: 1,
+        tags: [],
+        content: 'Event 1 kind 1',
+        createdAt: 1000,
+      ),
+      Nip01Event(
+        pubKey: 'author_filter_1',
+        kind: 2,
+        tags: [],
+        content: 'Event 2 kind 2',
+        createdAt: 2000,
+      ),
+      Nip01Event(
+        pubKey: 'author_filter_2',
+        kind: 1,
+        tags: [],
+        content: 'Event 3 kind 1',
+        createdAt: 3000,
+      ),
+      Nip01Event(
+        pubKey: 'author_filter_1',
+        kind: 1,
+        tags: [],
+        content: 'Event 4 kind 1',
+        createdAt: 4000,
+      ),
+    ];
+
+    await cacheManager.saveEvents(events);
+
+    // Remove all kind 1 events from author_filter_1
+    await cacheManager.removeEvents(
+      pubKeys: ['author_filter_1'],
+      kinds: [1],
+    );
+
+    // Event 1 and 4 should be removed (author_filter_1, kind 1)
+    expect(await cacheManager.loadEvent(events[0].id), isNull);
+    expect(await cacheManager.loadEvent(events[3].id), isNull);
+
+    // Event 2 should remain (author_filter_1, but kind 2)
+    expect(await cacheManager.loadEvent(events[1].id), isNotNull);
+
+    // Event 3 should remain (kind 1, but author_filter_2)
+    expect(await cacheManager.loadEvent(events[2].id), isNotNull);
+  });
+
+  test('removeEvents with time range', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final events = [
+      Nip01Event(
+        pubKey: 'time_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 1',
+        createdAt: 1000,
+      ),
+      Nip01Event(
+        pubKey: 'time_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 2',
+        createdAt: 2000,
+      ),
+      Nip01Event(
+        pubKey: 'time_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 3',
+        createdAt: 3000,
+      ),
+      Nip01Event(
+        pubKey: 'time_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 4',
+        createdAt: 4000,
+      ),
+    ];
+
+    await cacheManager.saveEvents(events);
+
+    // Remove events from time_filter_author before timestamp 2500
+    await cacheManager.removeEvents(
+      pubKeys: ['time_filter_author'],
+      until: 2500,
+    );
+
+    // Events 1 and 2 should be removed (createdAt <= 2500)
+    expect(await cacheManager.loadEvent(events[0].id), isNull);
+    expect(await cacheManager.loadEvent(events[1].id), isNull);
+
+    // Events 3 and 4 should remain (createdAt > 2500)
+    expect(await cacheManager.loadEvent(events[2].id), isNotNull);
+    expect(await cacheManager.loadEvent(events[3].id), isNotNull);
+  });
+
+  test('removeEvents with empty parameters does nothing', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final event = Nip01Event(
+      pubKey: 'empty_filter_author',
+      kind: 1,
+      tags: [],
+      content: 'Event 1',
+      createdAt: 1000,
+    );
+
+    await cacheManager.saveEvent(event);
+
+    // Empty parameters should not delete anything
+    await cacheManager.removeEvents();
+
+    expect(await cacheManager.loadEvent(event.id), isNotNull);
+  });
+
+  test('removeEvents with tags filter', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final events = [
+      Nip01Event(
+        pubKey: 'tag_filter_author',
+        kind: 1,
+        tags: [
+          ['p', 'target_pubkey_1']
+        ],
+        content: 'Event 1 with p tag',
+        createdAt: 1000,
+      ),
+      Nip01Event(
+        pubKey: 'tag_filter_author',
+        kind: 1,
+        tags: [
+          ['p', 'target_pubkey_2']
+        ],
+        content: 'Event 2 with different p tag',
+        createdAt: 2000,
+      ),
+      Nip01Event(
+        pubKey: 'tag_filter_author',
+        kind: 1,
+        tags: [
+          ['e', 'some_event_id']
+        ],
+        content: 'Event 3 with e tag',
+        createdAt: 3000,
+      ),
+      Nip01Event(
+        pubKey: 'tag_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 4 without tags',
+        createdAt: 4000,
+      ),
+    ];
+
+    await cacheManager.saveEvents(events);
+
+    // Remove events with p tag = target_pubkey_1
+    await cacheManager.removeEvents(
+      tags: {
+        'p': ['target_pubkey_1']
+      },
+    );
+
+    // Event 1 should be removed (has p tag with target_pubkey_1)
+    expect(await cacheManager.loadEvent(events[0].id), isNull);
+
+    // Events 2, 3, 4 should remain
+    expect(await cacheManager.loadEvent(events[1].id), isNotNull);
+    expect(await cacheManager.loadEvent(events[2].id), isNotNull);
+    expect(await cacheManager.loadEvent(events[3].id), isNotNull);
   });
 
   test('removeAllEventsByPubKey', () async {

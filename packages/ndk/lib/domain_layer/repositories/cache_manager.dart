@@ -35,7 +35,22 @@ abstract class CacheManager {
     int? limit,
   });
   Future<void> removeEvent(String id);
-  Future<void> removeEvents(List<String> ids);
+
+  /// Remove events from cache with flexible filtering \
+  /// [ids] - list of event ids \
+  /// [pubKeys] - list of authors pubKeys \
+  /// [kinds] - list of kinds \
+  /// [tags] - map of tags (e.g. {'p': ['pubkey1'], 'e': ['eventid1']}) \
+  /// [since] - timestamp \
+  /// [until] - timestamp
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  });
   Future<void> removeAllEventsByPubKey(String pubKey);
   Future<void> removeAllEvents();
 
