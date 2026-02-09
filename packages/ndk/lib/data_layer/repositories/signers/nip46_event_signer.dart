@@ -282,9 +282,11 @@ class Nip46EventSigner implements EventSigner {
     return false;
   }
 
-  void dispose() async {
-    if (subscription == null) return;
-    await requests.closeSubscription(subscription!.requestId);
+  @override
+  Future<void> dispose() async {
+    if (subscription != null) {
+      await requests.closeSubscription(subscription!.requestId);
+    }
     await _pendingRequestsController.close();
   }
 }

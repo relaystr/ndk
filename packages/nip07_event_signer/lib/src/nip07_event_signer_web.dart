@@ -232,7 +232,8 @@ class Nip07EventSigner implements EventSigner {
     return false;
   }
 
-  void dispose() {
-    _pendingRequestsController.close();
+  @override
+  Future<void> dispose() async {
+    await _pendingRequestsController.close();
   }
 }

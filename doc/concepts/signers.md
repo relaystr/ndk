@@ -111,7 +111,7 @@ StreamBuilder<List<PendingSignerRequest>>(
 Always dispose signers when done to avoid memory leaks:
 
 ```dart
-signer.dispose();
+await signer.dispose();
 ```
 
 ## When to Use

@@ -47,4 +47,9 @@ abstract class EventSigner {
   /// may still have the request pending. If the user approves on the remote side
   /// after cancellation, the result will be ignored.
   bool cancelRequest(String requestId);
+
+  /// Dispose of resources used by the signer.
+  ///
+  /// Call this when the signer is no longer needed to avoid memory leaks.
+  Future<void> dispose();
 }

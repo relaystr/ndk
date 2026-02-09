@@ -87,4 +87,9 @@ class Bip340EventSigner implements EventSigner {
 
   @override
   bool cancelRequest(String requestId) => false;
+
+  @override
+  Future<void> dispose() async {
+    await _pendingRequestsController.close();
+  }
 }
