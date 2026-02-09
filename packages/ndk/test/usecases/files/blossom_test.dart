@@ -21,8 +21,8 @@ void main() {
   late Blossom client;
 
   setUp(() async {
-    server = MockBlossomServer(port: 3000);
-    server2 = MockBlossomServer(port: 3001);
+    server = MockBlossomServer(port: 30000);
+    server2 = MockBlossomServer(port: 30001);
     await server.start();
     await server2.start();
 
@@ -53,7 +53,7 @@ void main() {
       // Upload blob
       final uploadResponse = await client.uploadBlob(
         data: testData,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
       expect(uploadResponse.first.success, true);
 
@@ -62,12 +62,12 @@ void main() {
       // Retrieve blob
       final getResponse = await client.getBlob(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       final getResponseAuth = await client.getBlob(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
         useAuth: true,
       );
       expect(utf8.decode(getResponse.data), equals('Hello, Blossom!'));
@@ -80,7 +80,7 @@ void main() {
       // Upload blob
       final uploadResponse = await client.uploadBlob(
         data: testData,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
       expect(uploadResponse.first.success, true);
 
@@ -89,22 +89,22 @@ void main() {
       // Retrieve blob
       final getResponse = client.checkBlob(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
       final getResponseAuth = client.checkBlob(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
         useAuth: true,
       );
 
       /// expect not to throw
 
-      expect(getResponse, completion('http://localhost:3000/$sha256'));
-      expect(getResponseAuth, completion('http://localhost:3000/$sha256'));
+      expect(getResponse, completion('http://localhost:${server.port}/$sha256'));
+      expect(getResponseAuth, completion('http://localhost:${server.port}/$sha256'));
 
       final getResponseVoid = client.checkBlob(
         sha256: "nonexistent_sha256",
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       expect(getResponseVoid, throwsException);
@@ -116,7 +116,7 @@ void main() {
       // Upload blob
       final uploadResponse = await client.uploadBlob(
         data: testData,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
       expect(uploadResponse.first.success, true);
 
@@ -127,8 +127,8 @@ void main() {
         sha256: sha256,
         serverUrls: [
           'http://dead.example.com',
-          'http://localhost:3001',
-          'http://localhost:3000',
+          'http://localhost:${server2.port}',
+          'http://localhost:${server.port}',
         ],
       );
       expect(utf8.decode(getResponse.data), equals('Hello World!'));
@@ -141,16 +141,16 @@ void main() {
 
       await client.uploadBlob(
         data: testData1,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
       await client.uploadBlob(
         data: testData2,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       final listResponse = await client.listBlobs(
         pubkey: 'test_pubkey',
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       expect(listResponse.length, equals(2));
@@ -162,7 +162,7 @@ void main() {
       // Upload blob
       final uploadResponse = await client.uploadBlob(
         data: testData,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
       expect(uploadResponse.first.success, true);
 
@@ -171,14 +171,14 @@ void main() {
       // Delete blob
       final deleteResponse = await client.deleteBlob(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
       expect(deleteResponse.first.success, true);
 
       // Retrieve blob
       final getResponse = client.getBlob(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
       //check that something throws an error
       expect(getResponse, throwsException);
@@ -194,8 +194,8 @@ void main() {
         data: testData,
         serverUrls: [
           'http://dead.example.com',
-          'http://localhost:3001',
-          'http://localhost:3000',
+          'http://localhost:${server2.port}',
+          'http://localhost:${server.port}',
         ],
         strategy: UploadStrategy.firstSuccess,
       );
@@ -209,16 +209,16 @@ void main() {
       expect(deadServer, throwsException);
 
       final server1 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:3001',
+        'http://localhost:${server2.port}',
       ]);
 
       expect(utf8.decode(server1.data), equals('strategy test'));
 
-      final server2 = client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:3000',
+      final served2 = client.getBlob(sha256: sha256, serverUrls: [
+        'http://localhost:${server.port}',
       ]);
 
-      expect(server2, throwsException);
+      expect(served2, throwsException);
     });
 
     test('Upload to first successful server only - mirrorAfterSuccess',
@@ -231,8 +231,8 @@ void main() {
         data: testData,
         serverUrls: [
           'http://dead.example.com',
-          'http://localhost:3001',
-          'http://localhost:3000',
+          'http://localhost:${server2.port}',
+          'http://localhost:${server.port}',
         ],
         strategy: UploadStrategy.mirrorAfterSuccess,
       );
@@ -248,16 +248,16 @@ void main() {
       expect(deadServer, throwsException);
 
       final server1 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:3001',
+        'http://localhost:${server2.port}',
       ]);
 
       expect(utf8.decode(server1.data), equals(myData));
 
-      final server2 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:3000',
+      final served2 = await client.getBlob(sha256: sha256, serverUrls: [
+        'http://localhost:${server.port}',
       ]);
 
-      expect(utf8.decode(server2.data), equals(myData));
+      expect(utf8.decode(served2.data), equals(myData));
     });
 
     test('Upload to first successful server only - allSimultaneous', () async {
@@ -269,8 +269,8 @@ void main() {
         data: testData,
         serverUrls: [
           'http://dead.example.com',
-          'http://localhost:3001',
-          'http://localhost:3000',
+          'http://localhost:${server2.port}',
+          'http://localhost:${server.port}',
         ],
         strategy: UploadStrategy.allSimultaneous,
       );
@@ -286,16 +286,16 @@ void main() {
       expect(deadServer, throwsException);
 
       final server1 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:3001',
+        'http://localhost:${server2.port}',
       ]);
 
       expect(utf8.decode(server1.data), equals(myData));
 
-      final server2 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:3000',
+      final served2 = await client.getBlob(sha256: sha256, serverUrls: [
+        'http://localhost:${server.port}',
       ]);
 
-      expect(utf8.decode(server2.data), equals(myData));
+      expect(utf8.decode(served2.data), equals(myData));
     });
   });
 
@@ -312,7 +312,7 @@ void main() {
       // Upload the test file
       final uploadResponse = await client.uploadBlob(
         data: testData,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       expect(uploadResponse.first.success, true);
@@ -321,7 +321,7 @@ void main() {
       // Now test the streaming download
       final stream = await blossomRepo.getBlobStream(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
         chunkSize: 1024 * 1024, // 1MB chunks
       );
 
@@ -360,7 +360,7 @@ void main() {
 
       final uploadResponse = await client.uploadBlob(
         data: testData,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       expect(uploadResponse.first.success, true);
@@ -369,7 +369,7 @@ void main() {
       // Test the streaming download
       final stream = await blossomRepo.getBlobStream(
         sha256: sha256,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       // Should receive exactly one chunk with the complete file
@@ -382,7 +382,7 @@ void main() {
       expect(
         () => blossomRepo.getBlobStream(
           sha256: 'nonexistent_sha256',
-          serverUrls: ['http://localhost:3000'],
+          serverUrls: ['http://localhost:${server.port}'],
         ),
         throwsException,
       );
@@ -396,7 +396,7 @@ void main() {
 
       final uploadResponse = await client.uploadBlob(
         data: testData,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       final sha256 = uploadResponse.first.descriptor!.sha256;
@@ -405,9 +405,9 @@ void main() {
       final stream = await blossomRepo.getBlobStream(
         sha256: sha256,
         serverUrls: [
-          'http://nonexistent-server:3000',
-          'http://localhost:3000',
-          'http://another-nonexistent:3000',
+          'http://nonexistent-server:${server.port}',
+          'http://localhost:${server.port}',
+          'http://another-nonexistent:${server.port}',
         ],
       );
 
@@ -425,7 +425,7 @@ void main() {
 
       final uploadResponse = await client.uploadBlob(
         data: testData,
-        serverUrls: ['http://localhost:3000'],
+        serverUrls: ['http://localhost:${server.port}'],
       );
 
       final sha256 = uploadResponse.first.descriptor!.sha256;
@@ -434,9 +434,9 @@ void main() {
       final stream = await client.getBlobStream(
         sha256: sha256,
         serverUrls: [
-          'http://nonexistent-server:3000',
-          'http://localhost:3000',
-          'http://another-nonexistent:3000',
+          'http://nonexistent-server:${server.port}',
+          'http://localhost:${server.port}',
+          'http://another-nonexistent:${server.port}',
         ],
         useAuth: true,
         chunkSize: 1024,
@@ -454,7 +454,7 @@ void main() {
   group("report", () {
     test('report', () async {
       final reportRsp = await client.report(
-          serverUrl: 'http://localhost:3000',
+          serverUrl: 'http://localhost:${server.port}',
           sha256: "some_sha256",
           eventId: "some_event_id",
           reportMsg: "some_report_msg",
@@ -475,7 +475,7 @@ void main() {
 
     await ndk.blossom.listBlobs(
       pubkey: ndk.accounts.getPublicKey()!,
-      serverUrls: ["http://localhost:3000"],
+      serverUrls: ["http://localhost:${server.port}"],
     );
   });
 }

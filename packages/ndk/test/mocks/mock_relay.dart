@@ -27,6 +27,8 @@ class MockRelay {
       {}; // Track active subscriptions
   bool signEvents;
   bool requireAuthForRequests;
+  bool requireAuthForEvents;
+  bool sendAuthChallenge;
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
@@ -49,6 +51,8 @@ class MockRelay {
     Map<KeyPair, Nip65>? nip65s,
     this.signEvents = true,
     this.requireAuthForRequests = false,
+    this.requireAuthForEvents = false,
+    this.sendAuthChallenge = true,
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
@@ -97,7 +101,7 @@ class MockRelay {
       if (customWelcomeMessage != null) {
         webSocket.add(customWelcomeMessage!);
       }
-      if (requireAuthForRequests) {
+      if ((requireAuthForRequests || requireAuthForEvents) && sendAuthChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
@@ -131,13 +135,23 @@ class MockRelay {
             "OK",
             event.id,
             authSuccess,
-            authSuccess ? "" : "auth-required"
+            authSuccess ? "" : "auth-required: authentication failed"
           ]));
           return;
         }
         if (eventJson[0] == "EVENT") {
           Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
+            // Check auth for events if required (any authenticated user is OK)
+            if (requireAuthForEvents && authenticatedPubkeys.isEmpty) {
+              webSocket.add(jsonEncode([
+                "OK",
+                newEvent.id,
+                false,
+                "auth-required: we only accept events from authenticated users"
+              ]));
+              return;
+            }
             if (newEvent.kind == ContactList.kKind) {
               _contactLists[newEvent.pubKey] = newEvent;
             } else if (newEvent.kind == Metadata.kKind) {
@@ -186,28 +200,14 @@ class MockRelay {
             }
           }
 
-          // Check auth for requested pubkeys
-          if (requireAuthForRequests && filters.isNotEmpty) {
-            Set<String> requestedPubkeys = {};
-            for (final filter in filters) {
-              if (filter.authors != null) {
-                requestedPubkeys.addAll(filter.authors!);
-              }
-              if (filter.pTags != null) {
-                requestedPubkeys.addAll(filter.pTags!);
-              }
-            }
-            // Check if any requested pubkey is authenticated
-            bool hasAuthenticatedPubkey = requestedPubkeys
-                .any((pubkey) => authenticatedPubkeys.contains(pubkey));
-            if (!hasAuthenticatedPubkey) {
-              webSocket.add(jsonEncode([
-                "CLOSED",
-                requestId,
-                "auth-required: we can't serve requests to unauthenticated users"
-              ]));
-              return;
-            }
+          // Check auth: any authenticated user can access all data
+          if (requireAuthForRequests && authenticatedPubkeys.isEmpty) {
+            webSocket.add(jsonEncode([
+              "CLOSED",
+              requestId,
+              "auth-required: we can't serve requests to unauthenticated users"
+            ]));
+            return;
           }
 
           if (filters.isNotEmpty) {

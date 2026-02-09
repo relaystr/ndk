@@ -1,3 +1,49 @@
+## 1.0.7-dev.11
+
+ - **FIX**(sembast): clearAll only deletes cache manager stores.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
+## 1.0.7-dev.10
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.9
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.8
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.7
+
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+## 1.0.7-dev.6
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.5
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.4
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.3
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.2
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.1
+
+ - Update a dependency to the latest release.
+
 ## 1.0.7-dev.0
 
  - Update a dependency to the latest release.

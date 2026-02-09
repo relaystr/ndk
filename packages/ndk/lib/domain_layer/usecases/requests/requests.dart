@@ -265,6 +265,8 @@ class Requests {
       /// concurrency check - check if request is inFlight
       final streamWasReplaced = request.cacheRead && concurrency.check(state);
       if (streamWasReplaced) {
+        // Cancel timeout for duplicate - it will complete when original completes
+        state.cancelTimeout();
         return;
       } else {
         // add to in flight

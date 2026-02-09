@@ -89,7 +89,7 @@ abstract class CacheManager {
 
   Future<void> saveNip05(Nip05 nip05);
   Future<void> saveNip05s(List<Nip05> nip05s);
-  Future<Nip05?> loadNip05(String pubKey);
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier});
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
@@ -129,4 +129,11 @@ abstract class CacheManager {
 
   /// Remove all filter fetched range records
   Future<void> removeAllFilterFetchedRangeRecords();
+
+  /// Clears all cached data.
+  ///
+  /// **DANGER**: This will permanently delete ALL cached data including events,
+  /// metadata, contact lists, relay sets, user relay lists, nip05 records,
+  /// and filter fetched range records. This operation cannot be undone.
+  Future<void> clearAll();
 }

@@ -263,5 +263,44 @@ void main() async {
       await relay1.stopServer();
       await ndk.destroy();
     });
+
+    test('should NOT record fetched ranges when relay requires auth and client cannot authenticate',
+        timeout: const Timeout(Duration(seconds: 5)), () async {
+      MockRelay relay1 = MockRelay(
+        name: "relay auth required test",
+        explicitPort: 4210,
+        signEvents: false,
+        requireAuthForRequests: true,
+      );
+      await relay1.startServer(textNotes: textNotes);
+
+      final ndk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [relay1.url],
+          fetchedRangesEnabled: true,
+        ),
+      );
+
+      await ndk.relays.seedRelaysConnected;
+
+      final filter = Filter(
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key1.publicKey],
+      );
+
+      final response = ndk.requests.query(filter: filter);
+      await response.future;
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
+
+      expect(fetchedRanges.isEmpty, isTrue,
+          reason: 'FetchedRanges should NOT be recorded when relay returns CLOSED auth-required');
+
+      await relay1.stopServer();
+      await ndk.destroy();
+    });
   });
 }

@@ -1,3 +1,64 @@
+## 0.7.1-dev.11
+
+ - **FIX**: close duplicate request when original completes.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **DOCS**: add DANGER warning to clearAll() method.
+
+## 0.7.1-dev.10
+
+ - **REFACTOR**: remove unused requestRelays method".
+ - **REFACTOR**: remove unused requestRelays method.
+ - **FIX**: fail fast when all relays are offline.
+
+## 0.7.1-dev.9
+
+ - **FIX**: complete request when auth-required received without challenge.
+ - **FIX**: complete request when relay requires auth but client cannot sign.
+
+## 0.7.1-dev.8
+
+ - **FIX**: distinguish CLOSED from EOSE in relay request state.
+
+## 0.7.1-dev.7
+
+ - **REFACTOR**: rename nip05.fetch() to nip05.resolve().
+ - **REFACTOR**: nip05 usecase.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve()  with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add of() method to fetch NIP-05 data without pubkey.
+
+## 0.7.1-dev.6
+
+ - **FIX**: add destroy in tear down.
+ - **FIX**: ensure NIP-46 subscription is ready before sending remote requests.
+ - **FIX**: subscribe before broadcast in connectWithBunkerUrl to avoid missing NIP-46 responses.
+
+## 0.7.1-dev.5
+
+ - **FEAT**: add missing state field in lookup_invoice_response.dart.
+
+## 0.7.1-dev.4
+
+ - **FIX**: move authCallbackTimeout to NdkConfig.
+ - **FIX**: add timeout for pending AUTH callbacks.
+ - **FIX**: authenticate all accounts in authenticateAs for lazy auth mode.
+ - **FIX**: handle NIP-42 auth-required by re-sending REQ/EVENT after AUTH.
+ - **FEAT**: add eagerAuth in NDK config.
+
+## 0.7.1-dev.3
+
+ - **FIX**: rename stateChanges to authStateChanges.
+ - **FEAT**: gift wrap add custom signer parameter.
+
+## 0.7.1-dev.2
+
+ - **FIX**: minIsolatePoolSize.
+
+## 0.7.1-dev.1
+
+ - **FEAT**: add saveToCache option for broadcast.
+
 ## 0.7.1-dev.0
 
  - **FIX**: use Accounts instead of pubkeys to authenticate.

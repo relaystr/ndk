@@ -21,7 +21,7 @@ class Accounts {
 
   /// Stream of authentication state changes
   /// Emits the current Account when logged in, or null when logged out
-  Stream<Account?> get stateChanges => _stateController.stream;
+  Stream<Account?> get authStateChanges => _stateController.stream;
 
   /// adds a new Account and sets the logged pubkey
   void loginPrivateKey({required String pubkey, required String privkey}) {

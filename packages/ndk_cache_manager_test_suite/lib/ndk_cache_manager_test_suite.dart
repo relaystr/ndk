@@ -107,6 +107,10 @@ void runCacheManagerTestSuite({
     group('Search Operations', () {
       _runSearchTests(() => cacheManager);
     });
+
+    group('ClearAll Operations', () {
+      _runClearAllTests(() => cacheManager);
+    });
   });
 }
 
@@ -674,7 +678,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveNip05(nip05);
-    final loaded = await cacheManager.loadNip05('nip05_pubkey_1');
+    final loaded = await cacheManager.loadNip05(pubKey: 'nip05_pubkey_1');
 
     expect(loaded, isNotNull);
     expect(loaded!.pubKey, equals(nip05.pubKey));
@@ -682,6 +686,26 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     expect(loaded.valid, equals(nip05.valid));
     expect(loaded.networkFetchTime, equals(nip05.networkFetchTime));
     expect(loaded.relays, equals(nip05.relays));
+  });
+
+  test('loadNip05 by identifier', () async {
+    final cacheManager = getCacheManager();
+    final nip05 = Nip05(
+      pubKey: 'nip05_id_pubkey',
+      nip05: 'testuser@example.com',
+      valid: true,
+      networkFetchTime: 1234567890,
+      relays: ['wss://relay1.com'],
+    );
+
+    await cacheManager.saveNip05(nip05);
+    final loaded =
+        await cacheManager.loadNip05(identifier: 'testuser@example.com');
+
+    expect(loaded, isNotNull);
+    expect(loaded!.pubKey, equals(nip05.pubKey));
+    expect(loaded.nip05, equals(nip05.nip05));
+    expect(loaded.valid, equals(nip05.valid));
   });
 
   test('saveNip05s batch operation', () async {
@@ -694,7 +718,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     await cacheManager.saveNip05s(nip05s);
 
     for (final nip05 in nip05s) {
-      final loaded = await cacheManager.loadNip05(nip05.pubKey);
+      final loaded = await cacheManager.loadNip05(pubKey: nip05.pubKey);
       expect(loaded, isNotNull);
       expect(loaded!.nip05, equals(nip05.nip05));
       expect(loaded.valid, equals(nip05.valid));
@@ -730,10 +754,10 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveNip05(nip05);
-    expect(await cacheManager.loadNip05('nip05_remove'), isNotNull);
+    expect(await cacheManager.loadNip05(pubKey: 'nip05_remove'), isNotNull);
 
     await cacheManager.removeNip05('nip05_remove');
-    expect(await cacheManager.loadNip05('nip05_remove'), isNull);
+    expect(await cacheManager.loadNip05(pubKey: 'nip05_remove'), isNull);
   });
 
   test('removeAllNip05s', () async {
@@ -747,7 +771,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     await cacheManager.removeAllNip05s();
 
     for (final nip05 in nip05s) {
-      expect(await cacheManager.loadNip05(nip05.pubKey), isNull);
+      expect(await cacheManager.loadNip05(pubKey: nip05.pubKey), isNull);
     }
   });
 }
@@ -995,5 +1019,91 @@ void _runSearchTests(CacheManager Function() getCacheManager) {
 
     final results = await cacheManager.searchMetadatas('User', 2);
     expect(results.length, lessThanOrEqualTo(2));
+  });
+}
+
+// ============================================================================
+// ClearAll Tests
+// ============================================================================
+
+void _runClearAllTests(CacheManager Function() getCacheManager) {
+  test('clearAll removes all cached data', () async {
+    final cacheManager = getCacheManager();
+
+    // Save data to all cache types
+    final event = Nip01Event(
+      pubKey: 'clearall_event_pubkey',
+      kind: 1,
+      tags: [],
+      content: 'Test event',
+      createdAt: 1234567890,
+    );
+    await cacheManager.saveEvent(event);
+
+    final metadata = Metadata(pubKey: 'clearall_metadata_pubkey', name: 'Test');
+    await cacheManager.saveMetadata(metadata);
+
+    final contactList = ContactList(
+      pubKey: 'clearall_contact_pubkey',
+      contacts: ['contact1'],
+    );
+    await cacheManager.saveContactList(contactList);
+
+    final nip05 = Nip05(
+      pubKey: 'clearall_nip05_pubkey',
+      nip05: 'test@example.com',
+      valid: true,
+    );
+    await cacheManager.saveNip05(nip05);
+
+    final userRelayList = UserRelayList(
+      pubKey: 'clearall_relay_pubkey',
+      createdAt: 1234567890,
+      refreshedTimestamp: 1234567890,
+      relays: {'wss://relay.com': ReadWriteMarker.readWrite},
+    );
+    await cacheManager.saveUserRelayList(userRelayList);
+
+    final relaySet = RelaySet(
+      name: 'clearall_set',
+      pubKey: 'clearall_relayset_pubkey',
+      relayMinCountPerPubkey: 1,
+      direction: RelayDirection.inbox,
+      relaysMap: {},
+      notCoveredPubkeys: [],
+    );
+    await cacheManager.saveRelaySet(relaySet);
+
+    // Verify data exists
+    expect(await cacheManager.loadEvent(event.id), isNotNull);
+    expect(
+        await cacheManager.loadMetadata('clearall_metadata_pubkey'), isNotNull);
+    expect(await cacheManager.loadContactList('clearall_contact_pubkey'),
+        isNotNull);
+    expect(await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'),
+        isNotNull);
+    expect(await cacheManager.loadUserRelayList('clearall_relay_pubkey'),
+        isNotNull);
+    expect(
+        await cacheManager.loadRelaySet(
+            'clearall_set', 'clearall_relayset_pubkey'),
+        isNotNull);
+
+    // Clear all
+    await cacheManager.clearAll();
+
+    // Verify all data is removed
+    expect(await cacheManager.loadEvent(event.id), isNull);
+    expect(await cacheManager.loadMetadata('clearall_metadata_pubkey'), isNull);
+    expect(
+        await cacheManager.loadContactList('clearall_contact_pubkey'), isNull);
+    expect(
+        await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'), isNull);
+    expect(
+        await cacheManager.loadUserRelayList('clearall_relay_pubkey'), isNull);
+    expect(
+        await cacheManager.loadRelaySet(
+            'clearall_set', 'clearall_relayset_pubkey'),
+        isNull);
   });
 }
