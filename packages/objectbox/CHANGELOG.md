@@ -1,3 +1,8 @@
+## 0.2.8-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
 ## 0.2.8-dev.11
 
  - **FEAT**(cache): add clearAll() method to CacheManager.

@@ -3,6 +3,59 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.12`](#ndk---v071-dev12)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.12`](#ndk_cache_manager_test_suite---v101-dev12)
+ - [`ndk_objectbox` - `v0.2.8-dev.12`](#ndk_objectbox---v028-dev12)
+ - [`sembast_cache_manager` - `v1.0.7-dev.12`](#sembast_cache_manager---v107-dev12)
+ - [`ndk_amber` - `v0.4.0-dev.12`](#ndk_amber---v040-dev12)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.12`](#ndk_rust_verifier---v050-dev12)
+ - [`nip07_event_signer` - `v1.0.6-dev.12`](#nip07_event_signer---v106-dev12)
+ - [`ndk_flutter` - `v0.0.2-dev.3`](#ndk_flutter---v002-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.12`
+ - `ndk_rust_verifier` - `v0.5.0-dev.12`
+ - `nip07_event_signer` - `v1.0.6-dev.12`
+ - `ndk_flutter` - `v0.0.2-dev.3`
+
+---
+
+#### `ndk` - `v0.7.1-dev.12`
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **DOCS**: add safety note to removeEvents documentation.
+
+#### `ndk_cache_manager_test_suite` - `v1.0.1-dev.12`
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+
+#### `ndk_objectbox` - `v0.2.8-dev.12`
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
+#### `sembast_cache_manager` - `v1.0.7-dev.12`
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
+
 ## 2026-02-07
 
 ### Changes
