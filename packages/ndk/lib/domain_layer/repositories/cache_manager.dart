@@ -42,7 +42,8 @@ abstract class CacheManager {
   /// [kinds] - list of kinds \
   /// [tags] - map of tags (e.g. {'p': ['pubkey1'], 'e': ['eventid1']}) \
   /// [since] - timestamp \
-  /// [until] - timestamp
+  /// [until] - timestamp \
+  /// If all parameters are empty, returns early (doesn't delete everything)
   Future<void> removeEvents({
     List<String>? ids,
     List<String>? pubKeys,
