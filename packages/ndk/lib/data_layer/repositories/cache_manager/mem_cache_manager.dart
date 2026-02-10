@@ -343,6 +343,38 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  }) async {
+    // If all parameters are empty, return early (don't delete everything)
+    if ((ids == null || ids.isEmpty) &&
+        (pubKeys == null || pubKeys.isEmpty) &&
+        (kinds == null || kinds.isEmpty) &&
+        (tags == null || tags.isEmpty) &&
+        since == null &&
+        until == null) {
+      return;
+    }
+
+    final eventsToRemove = await loadEvents(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+    );
+    for (final event in eventsToRemove) {
+      events.remove(event.id);
+    }
+  }
+
+  @override
   Future<void> saveEvent(Nip01Event event) async {
     events[event.id] = event;
   }
