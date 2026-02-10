@@ -198,7 +198,6 @@ class Broadcast {
     for (final e in allEventsAndAllVersions) {
       tags.add(["e", e.id]);
       kinds.add(e.kind);
-      idsToRemoveFromCache.add(e.id);
 
       // Generate "a" tag to delete all versions of this kind from this pubkey
       // Works for replaceable events (NIP-09) and as extension for regular events
@@ -225,10 +224,22 @@ class Broadcast {
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
     // Remove events from cache
-    // TODO: eventAndAllVersions sends "a" tag to delete all versions on relays,
-    // but only removes the specific event ID from cache, not all versions
-    for (final id in idsToRemoveFromCache) {
-      _cacheManager.removeEvent(id);
+    if (idsToRemoveFromCache.isNotEmpty) {
+      _cacheManager.removeEvents(ids: idsToRemoveFromCache.toList());
+    }
+
+    // Remove all versions from cache for eventAndAllVersions
+    for (final e in allEventsAndAllVersions) {
+      final dTag = e.getDtag();
+      _cacheManager.removeEvents(
+        pubKeys: [e.pubKey],
+        kinds: [e.kind],
+        tags: dTag != null
+            ? {
+                'd': [dTag]
+              }
+            : null,
+      );
     }
 
     return broadcast(

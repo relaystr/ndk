@@ -545,6 +545,82 @@ void main() async {
       expect(kTags.length, 0);
     });
 
+    test(
+        'broadcastDeletion with eventAndAllVersions removes all versions from cache',
+        () async {
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+
+      const articleKind = 30023;
+      final dTag = "my-article-${DateTime.now().millisecondsSinceEpoch}";
+
+      // Create multiple versions of the same replaceable event
+      Nip01Event version1 = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: articleKind,
+        tags: [
+          ["d", dTag]
+        ],
+        content: "version 1",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 - 100,
+      );
+
+      Nip01Event version2 = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: articleKind,
+        tags: [
+          ["d", dTag]
+        ],
+        content: "version 2",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 - 50,
+      );
+
+      Nip01Event version3 = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: articleKind,
+        tags: [
+          ["d", dTag]
+        ],
+        content: "version 3",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+
+      // Save all versions to cache
+      await ndk.config.cache.saveEvent(version1);
+      await ndk.config.cache.saveEvent(version2);
+      await ndk.config.cache.saveEvent(version3);
+
+      // Verify all versions are in cache
+      List<Nip01Event> cachedBefore = await ndk.config.cache.loadEvents(
+        kinds: [articleKind],
+        pubKeys: [key0.publicKey],
+        tags: {
+          'd': [dTag]
+        },
+      );
+      expect(cachedBefore.length, 3);
+
+      // Delete using eventAndAllVersions
+      await ndk.broadcast
+          .broadcastDeletion(eventAndAllVersions: version3)
+          .broadcastDoneFuture;
+
+      // Wait for cache removal (fire and forget async operation)
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Verify ALL versions are removed from cache
+      List<Nip01Event> cachedAfter = await ndk.config.cache.loadEvents(
+        kinds: [articleKind],
+        pubKeys: [key0.publicKey],
+        tags: {
+          'd': [dTag]
+        },
+      );
+      expect(cachedAfter.length, 0);
+    });
+
     test('broadcastDeletion with multiple events generates correct tags',
         () async {
       ndk.accounts.loginPrivateKey(
