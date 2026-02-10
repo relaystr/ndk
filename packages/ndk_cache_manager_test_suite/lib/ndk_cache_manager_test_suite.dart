@@ -276,7 +276,7 @@ void _runEventTests(CacheManager Function() getCacheManager) {
 
     final loadedEvents = await cacheManager.loadEvents(
       tags: {
-        '#p': ['target_pubkey_ptag']
+        'p': ['target_pubkey_ptag']
       },
     );
 
