@@ -1,3 +1,9 @@
+## 0.7.1-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **DOCS**: add safety note to removeEvents documentation.
+
 ## 0.7.1-dev.11
 
  - **FIX**: close duplicate request when original completes.

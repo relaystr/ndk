@@ -1,3 +1,8 @@
+## 1.0.7-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
 ## 1.0.7-dev.11
 
  - **FIX**(sembast): clearAll only deletes cache manager stores.
