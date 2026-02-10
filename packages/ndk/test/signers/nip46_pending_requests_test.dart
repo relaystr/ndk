@@ -4,20 +4,16 @@ import 'package:nostr_bunker/nostr_bunker.dart';
 import 'package:test/test.dart';
 
 import '../mocks/mock_event_verifier.dart';
-// import '../mocks/mock_relay.dart';
+import '../mocks/mock_relay.dart';
 
 void main() {
   test('two unapproved requests should be pending', () async {
-    // TODO use the mock relay
     // Start mock relay
-    // final mockRelay = MockRelay(
-    //   name: 'nip46-bunker-test-relay',
-    //   explicitPort: 4048,
-    // );
-    // await mockRelay.startServer();
-
-    final relayUrl = "wss://nostr-01.uid.ovh";
-    // final relayUrl = mockRelay.url;
+    final mockRelay = MockRelay(
+      name: 'nip46-bunker-test-relay',
+      explicitPort: 4048,
+    );
+    await mockRelay.startServer();
 
     // Generate user keypair
     final userKeyPair = Bip340.generatePrivateKey();
@@ -26,7 +22,7 @@ void main() {
     // Create bunker
     final bunker = Bunker(
       privateKeys: [userKeyPair.privateKey!],
-      defaultBunkerRelays: [relayUrl],
+      defaultBunkerRelays: [mockRelay.url],
     );
 
     final bunkerUrl = bunker.getBunkerUrl(
@@ -34,6 +30,9 @@ void main() {
       appAuthorisationMode: AuthorisationMode.allwaysAsk,
       enableApp: true,
     );
+
+    // Wait for bunker to connect and subscribe to the relay
+    await Future.delayed(Duration(milliseconds: 500));
 
     // Collect pending requests from bunker
     final bunkerPendingRequests = <Nip46Request>[];
@@ -46,7 +45,7 @@ void main() {
       NdkConfig(
         cache: MemCacheManager(),
         eventVerifier: MockEventVerifier(),
-        bootstrapRelays: [relayUrl],
+        bootstrapRelays: [mockRelay.url],
       ),
     );
 
@@ -95,6 +94,6 @@ void main() {
     bunker.stop();
     bunker.dispose();
     await clientNdk.destroy();
-    // await mockRelay.stopServer();
+    await mockRelay.stopServer();
   });
 }
