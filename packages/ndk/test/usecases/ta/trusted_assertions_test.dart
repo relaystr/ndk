@@ -12,6 +12,10 @@ void main() {
 
     // Provider keys
     final providerKey = Bip340.generatePrivateKey();
+    final providerSigner = Bip340EventSigner(
+      privateKey: providerKey.privateKey,
+      publicKey: providerKey.publicKey,
+    );
 
     // Subject (user being rated)
     final subjectKey = Bip340.generatePrivateKey();
@@ -43,14 +47,15 @@ void main() {
       relay = MockRelay(name: 'nip85-relay', explicitPort: 5196);
 
       // Create assertion event
-      final assertionEvent = createNip85UserAssertion(
-        providerPubkey: providerKey.publicKey,
-        subjectPubkey: subjectKey.publicKey,
-        rank: 89,
-        followers: 2500,
-        postCount: 150,
+      final assertionEvent = await providerSigner.sign(
+        createNip85UserAssertion(
+          providerPubkey: providerKey.publicKey,
+          subjectPubkey: subjectKey.publicKey,
+          rank: 89,
+          followers: 2500,
+          postCount: 150,
+        ),
       );
-      assertionEvent.sign(providerKey.privateKey!);
 
       // Start relay with NIP-85 assertions
       await relay.startServer(
@@ -153,17 +158,22 @@ void main() {
     test('getUserMetrics with custom providers', () async {
       // Create a second provider
       final provider2Key = Bip340.generatePrivateKey();
+      final provider2Signer = Bip340EventSigner(
+        privateKey: provider2Key.privateKey,
+        publicKey: provider2Key.publicKey,
+      );
 
       final relay2 = MockRelay(name: 'nip85-relay-2', explicitPort: 5197);
 
-      final assertionEvent2 = createNip85UserAssertion(
-        providerPubkey: provider2Key.publicKey,
-        subjectPubkey: subjectKey.publicKey,
-        rank: 75,
-        followers: 500,
-        postCount: 50,
+      final assertionEvent2 = await provider2Signer.sign(
+        createNip85UserAssertion(
+          providerPubkey: provider2Key.publicKey,
+          subjectPubkey: subjectKey.publicKey,
+          rank: 75,
+          followers: 500,
+          postCount: 50,
+        ),
       );
-      assertionEvent2.sign(provider2Key.privateKey!);
 
       await relay2.startServer(
         nip85Assertions: {
