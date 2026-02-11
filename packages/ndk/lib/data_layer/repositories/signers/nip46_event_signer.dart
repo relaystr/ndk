@@ -88,7 +88,10 @@ class Nip46EventSigner implements EventSigner {
       _notifyPendingRequestsChange();
 
       if (response["error"] != null && response["result"] != "auth_url") {
-        entry.completer.completeError(Exception(response["error"]));
+        entry.completer.completeError(SignerRequestRejectedException(
+          requestId: response["id"],
+          originalMessage: response["error"],
+        ));
       } else {
         entry.completer.complete(response["result"]);
       }
@@ -118,7 +121,10 @@ class Nip46EventSigner implements EventSigner {
       ciphertext: ciphertext,
       counterpartyPubkey: counterpartyPubkey,
     );
-    _pendingRequests[request.id] = _PendingRequestEntry(completer, pendingRequest);
+    _pendingRequests[request.id] = _PendingRequestEntry(
+      completer,
+      pendingRequest,
+    );
     _notifyPendingRequestsChange();
 
     final encryptedRequest = await localEventSigner.encryptNip44(

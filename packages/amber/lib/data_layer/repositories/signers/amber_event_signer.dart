@@ -30,6 +30,17 @@ class AmberEventSigner implements EventSigner {
     required this.amberFlutterDS,
   });
 
+  String get _npub =>
+      publicKey.startsWith('npub') ? publicKey : Nip19.encodePubKey(publicKey);
+
+  String _extractResult(Map<dynamic, dynamic> map) {
+    final result = map['signature'] as String?;
+    if (result == null || result.isEmpty) {
+      throw Exception('Empty result from Amber');
+    }
+    return result;
+  }
+
   String _generateRequestId() {
     return 'amber_${DateTime.now().millisecondsSinceEpoch}_${_requestCounter++}';
   }
@@ -74,10 +85,11 @@ class AmberEventSigner implements EventSigner {
       }
       return result;
     } catch (e) {
+      final error = SignerRequestRejectedException(requestId: requestId);
       if (!completer.isCompleted) {
-        completer.completeError(e);
+        completer.completeError(error);
       }
-      rethrow;
+      throw error;
     } finally {
       _pendingRequests.remove(requestId);
       _notifyPendingRequestsChange();
@@ -89,14 +101,12 @@ class AmberEventSigner implements EventSigner {
     return _trackRequest(
       SignerMethod.signEvent,
       () async {
-        final npub = publicKey.startsWith('npub')
-            ? publicKey
-            : Nip19.encodePubKey(publicKey);
-        Map<dynamic, dynamic> map = await amberFlutterDS.amber.signEvent(
-            currentUser: npub,
-            eventJson: Nip01EventModel.fromEntity(event).toJsonString(),
-            id: event.id);
-        return event.copyWith(sig: map['signature']);
+        final map = await amberFlutterDS.amber.signEvent(
+          currentUser: _npub,
+          eventJson: Nip01EventModel.fromEntity(event).toJsonString(),
+          id: event.id,
+        );
+        return event.copyWith(sig: _extractResult(map));
       },
       event: event,
     );
@@ -112,12 +122,13 @@ class AmberEventSigner implements EventSigner {
     return _trackRequest(
       SignerMethod.nip04Decrypt,
       () async {
-        final npub = publicKey.startsWith('npub')
-            ? publicKey
-            : Nip19.encodePubKey(publicKey);
-        Map<dynamic, dynamic> map = await amberFlutterDS.amber.nip04Decrypt(
-            ciphertext: msg, currentUser: npub, pubKey: destPubKey, id: id);
-        return map['signature'];
+        final map = await amberFlutterDS.amber.nip04Decrypt(
+          ciphertext: msg,
+          currentUser: _npub,
+          pubKey: destPubKey,
+          id: id,
+        );
+        return _extractResult(map);
       },
       ciphertext: msg,
       counterpartyPubkey: destPubKey,
@@ -129,12 +140,13 @@ class AmberEventSigner implements EventSigner {
     return _trackRequest(
       SignerMethod.nip04Encrypt,
       () async {
-        final npub = publicKey.startsWith('npub')
-            ? publicKey
-            : Nip19.encodePubKey(publicKey);
-        Map<dynamic, dynamic> map = await amberFlutterDS.amber.nip04Encrypt(
-            plaintext: msg, currentUser: npub, pubKey: destPubKey, id: id);
-        return map['signature'];
+        final map = await amberFlutterDS.amber.nip04Encrypt(
+          plaintext: msg,
+          currentUser: _npub,
+          pubKey: destPubKey,
+          id: id,
+        );
+        return _extractResult(map);
       },
       plaintext: msg,
       counterpartyPubkey: destPubKey,
@@ -154,16 +166,12 @@ class AmberEventSigner implements EventSigner {
     return _trackRequest(
       SignerMethod.nip44Encrypt,
       () async {
-        final userPubkey = publicKey.startsWith('npub')
-            ? publicKey
-            : Nip19.encodePubKey(publicKey);
-        final amberResult = await amberFlutterDS.amber.nip44Encrypt(
+        final map = await amberFlutterDS.amber.nip44Encrypt(
           plaintext: plaintext,
-          currentUser: userPubkey,
+          currentUser: _npub,
           pubKey: recipientPubKey,
         );
-
-        return amberResult['signature'];
+        return _extractResult(map);
       },
       plaintext: plaintext,
       counterpartyPubkey: recipientPubKey,
@@ -178,16 +186,12 @@ class AmberEventSigner implements EventSigner {
     return _trackRequest(
       SignerMethod.nip44Decrypt,
       () async {
-        final userPubkey = publicKey.startsWith('npub')
-            ? publicKey
-            : Nip19.encodePubKey(publicKey);
-        final amberResult = await amberFlutterDS.amber.nip44Decrypt(
+        final map = await amberFlutterDS.amber.nip44Decrypt(
           ciphertext: ciphertext,
-          currentUser: userPubkey,
+          currentUser: _npub,
           pubKey: senderPubKey,
         );
-
-        return amberResult['signature'];
+        return _extractResult(map);
       },
       ciphertext: ciphertext,
       counterpartyPubkey: senderPubKey,

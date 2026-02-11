@@ -72,9 +72,29 @@ When cancelled, the caller receives a `SignerRequestCancelledException`:
 try {
   await signer.sign(event);
 } on SignerRequestCancelledException catch (e) {
-  print('User cancelled: ${e.requestId}');
+  print('User cancelled locally: ${e.requestId}');
 }
 ```
+
+### Handling Remote Rejections
+
+When the user rejects a request on the remote signer (bunker, browser extension, Amber), the caller receives a `SignerRequestRejectedException`:
+
+```dart
+try {
+  await signer.sign(event);
+} on SignerRequestRejectedException catch (e) {
+  print('User rejected on remote signer: ${e.requestId}');
+  print('Original message: ${e.originalMessage}');
+} on SignerRequestCancelledException catch (e) {
+  print('User cancelled locally: ${e.requestId}');
+}
+```
+
+| Exception | When thrown |
+|-----------|-------------|
+| `SignerRequestCancelledException` | `cancelRequest()` called locally |
+| `SignerRequestRejectedException` | User rejected on remote signer |
 
 ## UI Example
 

@@ -27,8 +27,9 @@ class Nip07EventSigner implements EventSigner {
   }
 
   void _notifyPendingRequestsChange() {
-    _pendingRequestsController
-        .add(_pendingRequests.values.map((e) => e.request).toList());
+    _pendingRequestsController.add(
+      _pendingRequests.values.map((e) => e.request).toList(),
+    );
   }
 
   /// Wraps an async operation to track it as a pending request
@@ -66,10 +67,14 @@ class Nip07EventSigner implements EventSigner {
       }
       return result;
     } catch (e) {
+      final error = SignerRequestRejectedException(
+        requestId: requestId,
+        originalMessage: e.toString(),
+      );
       if (!completer.isCompleted) {
-        completer.completeError(e);
+        completer.completeError(error);
       }
-      rethrow;
+      throw error;
     } finally {
       _pendingRequests.remove(requestId);
       _notifyPendingRequestsChange();
@@ -175,14 +180,11 @@ class Nip07EventSigner implements EventSigner {
   }
 
   Future<String> getPublicKeyAsync() async {
-    return _trackRequest(
-      SignerMethod.getPublicKey,
-      () async {
-        final pubkey = (await js.nostr!.getPublicKey().toDart).toDart;
-        cachedPublicKey = pubkey;
-        return pubkey;
-      },
-    );
+    return _trackRequest(SignerMethod.getPublicKey, () async {
+      final pubkey = (await js.nostr!.getPublicKey().toDart).toDart;
+      cachedPublicKey = pubkey;
+      return pubkey;
+    });
   }
 
   @override
@@ -191,26 +193,22 @@ class Nip07EventSigner implements EventSigner {
       throw Exception('NIP-07 extension not available');
     }
 
-    return _trackRequest(
-      SignerMethod.signEvent,
-      () async {
-        final jsEvent = js.NostrEvent()
-          ..pubkey = event.pubKey
-          ..created_at = event.createdAt
-          ..kind = event.kind
-          ..content = event.content
-          ..tags = event.tags
-              .map((tag) => tag.map((item) => item.toJS).toList().toJS)
-              .toList()
-              .toJS;
+    return _trackRequest(SignerMethod.signEvent, () async {
+      final jsEvent = js.NostrEvent()
+        ..pubkey = event.pubKey
+        ..created_at = event.createdAt
+        ..kind = event.kind
+        ..content = event.content
+        ..tags = event.tags
+            .map((tag) => tag.map((item) => item.toJS).toList().toJS)
+            .toList()
+            .toJS;
 
-        // Sign the event using NIP-07
-        final signedEvent = await js.nostr!.signEvent(jsEvent).toDart;
+      // Sign the event using NIP-07
+      final signedEvent = await js.nostr!.signEvent(jsEvent).toDart;
 
-        return event.copyWith(id: signedEvent.id!, sig: signedEvent.sig!);
-      },
-      event: event,
-    );
+      return event.copyWith(id: signedEvent.id!, sig: signedEvent.sig!);
+    }, event: event);
   }
 
   @override
