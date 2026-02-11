@@ -21,11 +21,13 @@ External signers (NIP-46, NIP-07, Amber) require user approval for operations. T
 
 ### Listening to Pending Requests
 
-```dart
-final signer = ndk.accounts.getLoggedAccount()?.signer;
+You can access pending requests directly from an `Account` or through its signer:
 
-// Stream-based (reactive)
-signer?.pendingRequestsStream.listen((requests) {
+```dart
+final account = ndk.accounts.getLoggedAccount();
+
+// Stream-based (reactive) - directly on account
+account?.pendingRequestsStream.listen((requests) {
   print('${requests.length} pending request(s)');
   for (final request in requests) {
     print('- ${request.method.protocolString} (${request.id})');
@@ -33,7 +35,7 @@ signer?.pendingRequestsStream.listen((requests) {
 });
 
 // Snapshot (synchronous)
-final currentRequests = signer?.pendingRequests ?? [];
+final currentRequests = account?.pendingRequests ?? [];
 ```
 
 ### PendingSignerRequest Properties
@@ -57,7 +59,7 @@ class PendingSignerRequest {
 
 ```dart
 // Cancel a specific request
-final cancelled = signer.cancelRequest(requestId);
+final cancelled = account.cancelRequest(requestId);
 
 if (cancelled) {
   print('Request cancelled');
@@ -100,7 +102,7 @@ try {
 
 ```dart
 StreamBuilder<List<PendingSignerRequest>>(
-  stream: signer.pendingRequestsStream,
+  stream: account.pendingRequestsStream,
   builder: (context, snapshot) {
     final requests = snapshot.data ?? [];
 
@@ -117,7 +119,7 @@ StreamBuilder<List<PendingSignerRequest>>(
           subtitle: Text('Created ${request.createdAt}'),
           trailing: IconButton(
             icon: Icon(Icons.cancel),
-            onPressed: () => signer.cancelRequest(request.id),
+            onPressed: () => account.cancelRequest(request.id),
           ),
         );
       },
@@ -126,12 +128,12 @@ StreamBuilder<List<PendingSignerRequest>>(
 )
 ```
 
-## Disposing Signers
+## Disposing Accounts
 
-Always dispose signers when done to avoid memory leaks:
+Always dispose accounts when done to avoid memory leaks:
 
 ```dart
-await signer.dispose();
+await account.dispose();
 ```
 
 ## When to Use
