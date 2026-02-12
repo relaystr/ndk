@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:ndk/ndk.dart';
-import 'package:ndk/simple_profiler.dart';
 
 import '../../../rust_bridge/api/event_verifier.dart';
 import '../../../rust_bridge/frb_generated.dart';
@@ -12,16 +11,12 @@ import '../../../rust_bridge/frb_generated.dart';
 /// verification of Nostr events using Rust's performance capabilities.
 /// The rust code runs in a separate isolate further increasing the the smoothness of the main thread.
 class RustEventVerifier implements EventVerifier {
-  /// A completer that tracks the initialization status of the Rust library (shared across all instances)
-  static final Completer<bool> _isInitialized = Completer<bool>();
-  static bool _initStarted = false;
+  /// A future that tracks the initialization status of the Rust library (shared across all instances)
+  static Future<void>? _initFuture;
 
   /// Creates a new instance of [RustEventVerifier] and initializes the Rust library
   RustEventVerifier() {
-    if (!_initStarted) {
-      _initStarted = true;
-      _init();
-    }
+    _initFuture ??= _init();
   }
 
   /// Initializes the Rust library.
@@ -29,11 +24,9 @@ class RustEventVerifier implements EventVerifier {
   /// This method is called in the constructor and sets up the Rust environment
   /// for event verification.
   ///
-  /// Returns a [Future<bool>] that completes when initialization is done.
-  static Future<bool> _init() async {
+  /// Returns a [Future] that completes when initialization is done.
+  static Future<void> _init() async {
     await RustLib.init();
-    _isInitialized.complete(true);
-    return true;
   }
 
   /// Waits for the Rust library to be fully initialized.
@@ -41,13 +34,13 @@ class RustEventVerifier implements EventVerifier {
   /// Call this method before benchmarking to ensure initialization overhead
   /// is not included in performance measurements.
   Future<void> ensureInitialized() async {
-    await _isInitialized.future;
+    await _initFuture;
   }
 
   /// Verifies a Nostr event using the Rust implementation.
   ///
-  /// This method waits for the Rust library to be initialized before
-  /// performing the verification.
+  /// Pleases ensure that the Rust library is initialized before calling this method!
+  /// You can call [ensureInitialized] to wait for initialization to complete.
   ///
   /// [event] The [Nip01Event] to be verified.
   ///
@@ -56,10 +49,6 @@ class RustEventVerifier implements EventVerifier {
 
   @override
   Future<bool> verify(Nip01Event event) async {
-    final profiler = SimpleProfiler('RustEventVerifier');
-    profiler.checkpoint('Starting verification for event with id ${event.id}');
-    await _isInitialized.future;
-    profiler.checkpoint('After initialization wait');
     if (event.sig == null) {
       return false;
     }
@@ -74,7 +63,6 @@ class RustEventVerifier implements EventVerifier {
       signatureHex: event.sig!,
     );
 
-    profiler.checkpoint('Finished verification for event with id ${event.id}');
     return result;
   }
 }
