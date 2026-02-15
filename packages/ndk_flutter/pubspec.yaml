@@ -1,6 +1,6 @@
 name: ndk_flutter
 description: "A Flutter UI package providing ready-to-use widgets."
-version: 0.0.2-dev.3
+version: 0.0.2-dev.4
 repository: https://github.com/relaystr/ndk
 topics:
   - ndk
