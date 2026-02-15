@@ -1,3 +1,8 @@
+## 0.0.2-dev.4
+
+ - **FIX**(ndk_flutter): suppress experimental_member_use warning.
+ - **FIX**(ndk_flutter): pass cachedPublicKey to signers during session restore.
+
 ## 0.0.2-dev.3
 
  - Update a dependency to the latest release.
