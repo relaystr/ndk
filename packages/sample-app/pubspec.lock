@@ -515,28 +515,28 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.7.1-dev.8"
+    version: "0.7.1-dev.11"
   ndk_amber:
     dependency: "direct main"
     description:
       path: "../amber"
       relative: true
     source: path
-    version: "0.4.0-dev.8"
+    version: "0.4.0-dev.11"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2-dev.2"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
       path: "../rust_verifier"
       relative: true
     source: path
-    version: "0.5.0-dev.8"
+    version: "0.5.0-dev.11"
   nested:
     dependency: transitive
     description:
@@ -549,10 +549,10 @@ packages:
     dependency: transitive
     description:
       name: nip07_event_signer
-      sha256: "5c51d0f32bc83c21f6668d5c49a8af7661ea6411631313832a9c5b1f7b364e9b"
+      sha256: fe89f8372c60cdaff8e936b097c0060e07fa80742955c9c986be6e870595ecc3
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.5"
+    version: "1.0.6-dev.11"
   objective_c:
     dependency: transitive
     description:

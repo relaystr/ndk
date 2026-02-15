@@ -12,7 +12,6 @@ platforms:
   ios:
   linux:
   macos:
-  web:
   windows:
 
 dependencies:

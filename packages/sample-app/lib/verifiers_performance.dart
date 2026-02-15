@@ -108,6 +108,9 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
       _isVerifyingRust = true;
     });
     try {
+      // Ensure Rust library is initialized before starting the timer
+      await MyVerifiers.rustVerifier.ensureInitialized();
+
       final stopwatch = Stopwatch()..start();
       await _verifyEventsParallel(verifier: MyVerifiers.rustVerifier);
       stopwatch.stop();
