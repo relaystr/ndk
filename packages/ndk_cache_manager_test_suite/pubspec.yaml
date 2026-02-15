@@ -1,5 +1,6 @@
 name: ndk_cache_manager_test_suite
 description: Shared test suite for CacheManager implementations in the NDK (Nostr Development Kit) ecosystem.
+publish_to: none
 version: 1.0.1-dev.12
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
