@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
+import '../../../config/request_defaults.dart';
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
 import 'models/bunker_request.dart';
@@ -17,14 +18,17 @@ import '../requests/requests.dart';
 class Bunkers {
   final Broadcast _broadcast;
   final Requests _requests;
+  final Duration _defaultRequestTimeout;
 
   static const int kMaxWaitingTimeForConnectionSeconds = 600;
 
   Bunkers({
     required Broadcast broadcast,
     required Requests requests,
+    Duration defaultRequestTimeout = RequestDefaults.DEFAULT_BUNKER_REQUEST_TIMEOUT,
   })  : _broadcast = broadcast,
-        _requests = requests;
+        _requests = requests,
+        _defaultRequestTimeout = defaultRequestTimeout;
 
   /// Connects to a bunker using a bunker URL (bunker://)
   /// authCallback is called with the auth URL if the bunker requires authentication
@@ -190,6 +194,7 @@ class Bunkers {
       requests: _requests,
       broadcast: _broadcast,
       authCallback: authCallback,
+      defaultTimeout: _defaultRequestTimeout,
     );
   }
 }

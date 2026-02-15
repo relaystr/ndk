@@ -32,6 +32,7 @@ class MockRelay {
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
+  bool skipNip46Responses;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -56,6 +57,7 @@ class MockRelay {
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
+    this.skipNip46Responses = false,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -409,6 +411,9 @@ class MockRelay {
 
   /// Handle NIP-46 remote signer requests
   void _handleNip46Request(Nip01Event event, WebSocket webSocket) async {
+    // Skip NIP-46 responses if configured (useful for timeout testing)
+    if (skipNip46Responses) return;
+
     try {
       // Get the 'p' tag which contains the remote signer's public key
       String? targetPubkey = event.getFirstTag('p');
