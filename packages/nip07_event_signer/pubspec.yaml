@@ -11,6 +11,7 @@ environment:
 
 dependencies:
   ndk: ^0.7.1-dev.12
+  rxdart: ^0.28.0
 
 dev_dependencies:
   lints: ^5.0.0
