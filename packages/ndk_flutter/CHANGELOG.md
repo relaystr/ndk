@@ -1,3 +1,7 @@
+## 0.0.2-dev.5
+
+ - Update a dependency to the latest release.
+
 ## 0.0.2-dev.4
 
  - **FIX**(ndk_flutter): suppress experimental_member_use warning.

@@ -1,3 +1,9 @@
+## 1.0.6-dev.13
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add unified pending requests API.
+
 ## 1.0.6-dev.12
 
  - Update a dependency to the latest release.

@@ -3,6 +3,58 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-17
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.13`](#ndk---v071-dev13)
+ - [`ndk_amber` - `v0.4.0-dev.13`](#ndk_amber---v040-dev13)
+ - [`nip07_event_signer` - `v1.0.6-dev.13`](#nip07_event_signer---v106-dev13)
+ - [`ndk_objectbox` - `v0.2.8-dev.13`](#ndk_objectbox---v028-dev13)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.13`](#ndk_rust_verifier---v050-dev13)
+ - [`sembast_cache_manager` - `v1.0.7-dev.13`](#sembast_cache_manager---v107-dev13)
+ - [`ndk_flutter` - `v0.0.2-dev.5`](#ndk_flutter---v002-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.8-dev.13`
+ - `ndk_rust_verifier` - `v0.5.0-dev.13`
+ - `sembast_cache_manager` - `v1.0.7-dev.13`
+ - `ndk_flutter` - `v0.0.2-dev.5`
+
+---
+
+#### `ndk` - `v0.7.1-dev.13`
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: expose signer API on Account entity.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add nip46 pending requests integration test.
+ - **FEAT**: add unified pending requests API.
+
+#### `ndk_amber` - `v0.4.0-dev.13`
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add unified pending requests API.
+
+#### `nip07_event_signer` - `v1.0.6-dev.13`
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add unified pending requests API.
+
+
 ## 2026-02-15
 
 ### Changes
