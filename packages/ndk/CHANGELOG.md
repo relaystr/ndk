@@ -1,3 +1,8 @@
+## 0.7.1-dev.14
+
+ - **FIX**: remove all event versions from cache on NIP-09 deletion.
+ - **FEAT**(broadcast): add NIP-09 compliant deletion with e, k, and a tags.
+
 ## 0.7.1-dev.13
 
  - **REFACTOR**: make dispose() async.
