@@ -3,6 +3,57 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.14`](#ndk---v071-dev14)
+ - [`ndk_objectbox` - `v0.2.8-dev.14`](#ndk_objectbox---v028-dev14)
+ - [`nip07_event_signer` - `v1.0.6-dev.14`](#nip07_event_signer---v106-dev14)
+ - [`sembast_cache_manager` - `v1.0.7-dev.14`](#sembast_cache_manager---v107-dev14)
+ - [`ndk_amber` - `v0.4.0-dev.14`](#ndk_amber---v040-dev14)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.14`](#ndk_rust_verifier---v050-dev14)
+ - [`ndk_flutter` - `v0.0.2-dev.6`](#ndk_flutter---v002-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.14`
+ - `ndk_rust_verifier` - `v0.5.0-dev.14`
+ - `ndk_flutter` - `v0.0.2-dev.6`
+
+---
+
+#### `ndk` - `v0.7.1-dev.14`
+
+ - **REFACTOR**: extract URL normalization to separate file.
+ - **FIX**: remove all event versions from cache on NIP-09 deletion.
+ - **FIX**: flanky test.
+ - **FEAT**(broadcast): add NIP-09 compliant deletion with e, k, and a tags.
+ - **FEAT**: implement RFC 3986 compliant relay URL normalization.
+
+#### `ndk_objectbox` - `v0.2.8-dev.14`
+
+ - **FIX**: objectbox nullable sig.
+
+#### `nip07_event_signer` - `v1.0.6-dev.14`
+
+ - **FIX**(nip07): use nostr-tools for proper NIP-04/NIP-44 test mock.
+
+#### `sembast_cache_manager` - `v1.0.7-dev.14`
+
+ - **PERF**(sembast): optimize batch operations and queries.
+
+
 ## 2026-02-17
 
 ### Changes

@@ -1,3 +1,7 @@
+## 0.4.0-dev.14
+
+ - Update a dependency to the latest release.
+
 ## 0.4.0-dev.13
 
  - **REFACTOR**: make dispose() async.
