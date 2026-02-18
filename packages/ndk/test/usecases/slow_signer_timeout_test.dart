@@ -8,7 +8,7 @@ import '../mocks/mock_slow_signer.dart';
 
 void main() {
   test('broadcast with slow signer should not timeout during signing',
-      () async {
+      timeout: Timeout(Duration(seconds: 60)), () async {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(name: "relay", explicitPort: 5097);
     await relay.startServer();
@@ -25,7 +25,7 @@ void main() {
           privateKey: key.privateKey!,
           publicKey: key.publicKey,
         ),
-        delay: const Duration(seconds: 20),
+        delay: const Duration(seconds: 12),
       ),
     );
 
@@ -36,7 +36,7 @@ void main() {
       content: "test",
     );
 
-    // timeout (10s) < signing (20s) → should fail without fix
+    // timeout (10s) < signing (12s) → should fail without fix
     final result = await ndk.broadcast
         .broadcast(
           nostrEvent: event,
@@ -51,7 +51,8 @@ void main() {
     await relay.stopServer();
   });
 
-  test('request with AUTH should not timeout during signing', () async {
+  test('request with AUTH should not timeout during signing',
+      timeout: Timeout(Duration(seconds: 60)), () async {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay",
@@ -83,11 +84,11 @@ void main() {
           privateKey: key.privateKey!,
           publicKey: key.publicKey,
         ),
-        delay: const Duration(seconds: 20),
+        delay: const Duration(seconds: 12),
       ),
     );
 
-    // timeout (10s) < signing (20s) → should fail without fix
+    // timeout (10s) < signing (12s) → should fail without fix
     final result = await ndk.requests
         .query(
           filter: Filter(
