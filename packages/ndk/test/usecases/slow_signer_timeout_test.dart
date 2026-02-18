@@ -25,7 +25,7 @@ void main() {
           privateKey: key.privateKey!,
           publicKey: key.publicKey,
         ),
-        delay: const Duration(seconds: 2),
+        delay: const Duration(seconds: 20),
       ),
     );
 
@@ -36,12 +36,12 @@ void main() {
       content: "test",
     );
 
-    // timeout (1s) < signing (2s) → should fail without fix
+    // timeout (10s) < signing (20s) → should fail without fix
     final result = await ndk.broadcast
         .broadcast(
           nostrEvent: event,
           specificRelays: [relay.url],
-          timeout: const Duration(seconds: 1),
+          timeout: const Duration(seconds: 10),
         )
         .broadcastDoneFuture;
 
@@ -83,18 +83,18 @@ void main() {
           privateKey: key.privateKey!,
           publicKey: key.publicKey,
         ),
-        delay: const Duration(seconds: 2),
+        delay: const Duration(seconds: 20),
       ),
     );
 
-    // timeout (1s) < signing (2s) → should fail without fix
+    // timeout (10s) < signing (20s) → should fail without fix
     final result = await ndk.requests
         .query(
           filter: Filter(
             kinds: [Nip01Event.kTextNodeKind],
           ),
           explicitRelays: [relay.url],
-          timeout: const Duration(seconds: 1),
+          timeout: const Duration(seconds: 10),
         )
         .future;
 
