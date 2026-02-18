@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   media_kit: ^1.1.11
   media_kit_video: ^1.2.5
   media_kit_libs_video: ^1.0.5
@@ -38,6 +40,7 @@ dependencies:
 
   ndk: 0.7.0
   ndk_amber: 0.4.0
+  ndk_flutter: 0.0.1
   ndk_rust_verifier: 0.5.0
 
   cupertino_icons: ^1.0.8
@@ -65,6 +68,10 @@ dependency_overrides:
     path: ../rust_verifier
   ndk_amber:
     path: ../amber
+  ndk_flutter:
+    path: ../ndk_flutter
+  nip07_event_signer:
+    path: ../nip07_event_signer
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your

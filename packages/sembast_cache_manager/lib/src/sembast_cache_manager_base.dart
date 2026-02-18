@@ -121,8 +121,14 @@ class SembastCacheManager extends CacheManager {
     if (tags != null && tags.isNotEmpty) {
       return events.where((event) {
         return tags.entries.every((tagEntry) {
-          final tagName = tagEntry.key;
+          var tagName = tagEntry.key;
           final tagValues = tagEntry.value;
+
+          // Handle the special case where tag key starts with '#'
+          if (tagName.startsWith('#') && tagName.length > 1) {
+            tagName = tagName.substring(1);
+          }
+
           final eventTags = event.getTags(tagName);
 
           if (tagValues.isEmpty &&
@@ -158,17 +164,28 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05(String pubKey) async {
-    final data = await _nip05Store.record(pubKey).get(_database);
-    if (data == null) return null;
-    return Nip05Extension.fromJsonStorage(data);
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
+    if (pubKey != null) {
+      final data = await _nip05Store.record(pubKey).get(_database);
+      if (data == null) return null;
+      return Nip05Extension.fromJsonStorage(data);
+    }
+    if (identifier != null) {
+      final finder = sembast.Finder(
+        filter: sembast.Filter.equals('nip05', identifier),
+      );
+      final record = await _nip05Store.findFirst(_database, finder: finder);
+      if (record == null) return null;
+      return Nip05Extension.fromJsonStorage(record.value);
+    }
+    return null;
   }
 
   @override
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys) async {
     final nip05s = <Nip05?>[];
     for (final pubKey in pubKeys) {
-      final nip05 = await loadNip05(pubKey);
+      final nip05 = await loadNip05(pubKey: pubKey);
       nip05s.add(nip05);
     }
     return nip05s;
@@ -235,6 +252,90 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<void> removeEvent(String id) async {
     await _eventsStore.record(id).delete(_database);
+  }
+
+  @override
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  }) async {
+    // If all parameters are empty, return early (don't delete everything)
+    if ((ids == null || ids.isEmpty) &&
+        (pubKeys == null || pubKeys.isEmpty) &&
+        (kinds == null || kinds.isEmpty) &&
+        (tags == null || tags.isEmpty) &&
+        since == null &&
+        until == null) {
+      return;
+    }
+
+    // Build filter conditions
+    final filters = <sembast.Filter>[];
+
+    if (ids != null && ids.isNotEmpty) {
+      filters.add(sembast.Filter.inList('id', ids));
+    }
+    if (pubKeys != null && pubKeys.isNotEmpty) {
+      filters.add(sembast.Filter.inList('pubkey', pubKeys));
+    }
+    if (kinds != null && kinds.isNotEmpty) {
+      filters.add(sembast.Filter.inList('kind', kinds));
+    }
+    if (since != null) {
+      filters.add(sembast.Filter.greaterThanOrEquals('created_at', since));
+    }
+    if (until != null) {
+      filters.add(sembast.Filter.lessThanOrEquals('created_at', until));
+    }
+
+    // If tags are specified, we need to load events first and filter in memory
+    if (tags != null && tags.isNotEmpty) {
+      final finder = sembast.Finder(
+        filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      );
+      final records = await _eventsStore.find(_database, finder: finder);
+      final events = records
+          .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
+          .toList();
+
+      // Filter by tags in memory
+      final matchingEvents = events.where((event) {
+        return tags.entries.every((tagEntry) {
+          var tagName = tagEntry.key;
+          final tagValues = tagEntry.value;
+
+          if (tagName.startsWith('#') && tagName.length > 1) {
+            tagName = tagName.substring(1);
+          }
+
+          final eventTags = event.getTags(tagName);
+
+          if (tagValues.isEmpty &&
+              event.tags.where((e) => e[0] == tagName).isNotEmpty) {
+            return true;
+          }
+
+          return tagValues.any(
+            (value) => eventTags.contains(value.toLowerCase()),
+          );
+        });
+      }).toList();
+
+      // Delete matching events by ID
+      await _eventsStore
+          .records(matchingEvents.map((e) => e.id).toList())
+          .delete(_database);
+    } else {
+      // No tags filter, delete directly with finder
+      final finder = sembast.Finder(
+        filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      );
+      await _eventsStore.delete(_database, finder: finder);
+    }
   }
 
   @override
@@ -504,5 +605,18 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<void> removeAllFilterFetchedRangeRecords() async {
     await _filterFetchedRangeStore.delete(_database);
+  }
+
+  @override
+  Future<void> clearAll() async {
+    await Future.wait([
+      _eventsStore.delete(_database),
+      _metadataStore.delete(_database),
+      _contactListStore.delete(_database),
+      _relayListStore.delete(_database),
+      _nip05Store.delete(_database),
+      _relaySetStore.delete(_database),
+      _filterFetchedRangeStore.delete(_database),
+    ]);
   }
 }

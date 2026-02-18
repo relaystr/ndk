@@ -25,8 +25,11 @@ class MemCacheManager implements CacheManager {
   /// In memory storage
   Map<String, Metadata> metadatas = {};
 
-  /// In memory storage
+  /// In memory storage indexed by pubKey
   Map<String, Nip05> nip05s = {};
+
+  /// In memory storage indexed by nip05 identifier
+  Map<String, Nip05> nip05sByIdentifier = {};
 
   /// In memory storage
   Map<String, Nip01Event> events = {};
@@ -67,11 +70,18 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> saveNip05(Nip05 nip05) async {
     nip05s[nip05.pubKey] = nip05;
+    nip05sByIdentifier[nip05.nip05] = nip05;
   }
 
   @override
-  Future<Nip05?> loadNip05(String pubKey) async {
-    return nip05s[pubKey];
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
+    if (pubKey != null) {
+      return nip05s[pubKey];
+    }
+    if (identifier != null) {
+      return nip05sByIdentifier[identifier];
+    }
+    return null;
   }
 
   @override
@@ -87,16 +97,22 @@ class MemCacheManager implements CacheManager {
   Future<void> saveNip05s(List<Nip05> nip05s) async {
     for (var nip05 in nip05s) {
       this.nip05s[nip05.pubKey] = nip05;
+      nip05sByIdentifier[nip05.nip05] = nip05;
     }
   }
 
   @override
   Future<void> removeAllNip05s() async {
     nip05s.clear();
+    nip05sByIdentifier.clear();
   }
 
   @override
   Future<void> removeNip05(String pubKey) async {
+    final nip05 = nip05s[pubKey];
+    if (nip05 != null) {
+      nip05sByIdentifier.remove(nip05.nip05);
+    }
     nip05s.remove(pubKey);
   }
 
@@ -327,6 +343,38 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  }) async {
+    // If all parameters are empty, return early (don't delete everything)
+    if ((ids == null || ids.isEmpty) &&
+        (pubKeys == null || pubKeys.isEmpty) &&
+        (kinds == null || kinds.isEmpty) &&
+        (tags == null || tags.isEmpty) &&
+        since == null &&
+        until == null) {
+      return;
+    }
+
+    final eventsToRemove = await loadEvents(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+    );
+    for (final event in eventsToRemove) {
+      events.remove(event.id);
+    }
+  }
+
+  @override
   Future<void> saveEvent(Nip01Event event) async {
     events[event.id] = event;
   }
@@ -406,6 +454,18 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> removeAllFilterFetchedRangeRecords() async {
+    filterFetchedRangeRecords.clear();
+  }
+
+  @override
+  Future<void> clearAll() async {
+    events.clear();
+    userRelayLists.clear();
+    relaySets.clear();
+    contactLists.clear();
+    metadatas.clear();
+    nip05s.clear();
+    nip05sByIdentifier.clear();
     filterFetchedRangeRecords.clear();
   }
 }

@@ -34,6 +34,8 @@ import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/relay_set.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 
 /// A factory function that creates a new [CacheManager] instance for testing.
 typedef CacheManagerFactory = Future<CacheManager> Function();
@@ -106,6 +108,10 @@ void runCacheManagerTestSuite({
 
     group('Search Operations', () {
       _runSearchTests(() => cacheManager);
+    });
+
+    group('ClearAll Operations', () {
+      _runClearAllTests(() => cacheManager);
     });
   });
 }
@@ -269,7 +275,9 @@ void _runEventTests(CacheManager Function() getCacheManager) {
     await cacheManager.saveEvents(events);
 
     final loadedEvents = await cacheManager.loadEvents(
-      tags: {'#p': ['target_pubkey_ptag']},
+      tags: {
+        '#p': ['target_pubkey_ptag']
+      },
     );
 
     expect(loadedEvents.length, equals(1));
@@ -375,6 +383,222 @@ void _runEventTests(CacheManager Function() getCacheManager) {
 
     await cacheManager.removeEvent(event.id);
     expect(await cacheManager.loadEvent(event.id), isNull);
+  });
+
+  test('removeEvents by ids', () async {
+    final cacheManager = getCacheManager();
+    final key1 = Bip340.generatePrivateKey();
+    final key2 = Bip340.generatePrivateKey();
+    final key3 = Bip340.generatePrivateKey();
+    final signer1 = Bip340EventSigner(
+        privateKey: key1.privateKey, publicKey: key1.publicKey);
+    final signer2 = Bip340EventSigner(
+        privateKey: key2.privateKey, publicKey: key2.publicKey);
+    final signer3 = Bip340EventSigner(
+        privateKey: key3.privateKey, publicKey: key3.publicKey);
+
+    final event1 = await signer1.sign(Nip01Event(
+        pubKey: key1.publicKey, kind: 1, tags: [], content: 'Event 1'));
+    final event2 = await signer2.sign(Nip01Event(
+        pubKey: key2.publicKey, kind: 1, tags: [], content: 'Event 2'));
+    final event3 = await signer3.sign(Nip01Event(
+        pubKey: key3.publicKey, kind: 1, tags: [], content: 'Event 3'));
+
+    await cacheManager.saveEvents([event1, event2, event3]);
+    expect(await cacheManager.loadEvent(event1.id), isNotNull);
+    expect(await cacheManager.loadEvent(event2.id), isNotNull);
+    expect(await cacheManager.loadEvent(event3.id), isNotNull);
+
+    await cacheManager.removeEvents(ids: [event1.id, event2.id]);
+
+    expect(await cacheManager.loadEvent(event1.id), isNull);
+    expect(await cacheManager.loadEvent(event2.id), isNull);
+    expect(await cacheManager.loadEvent(event3.id), isNotNull);
+  });
+
+  test('removeEvents with pubKeys and kinds', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final events = [
+      Nip01Event(
+        pubKey: 'author_filter_1',
+        kind: 1,
+        tags: [],
+        content: 'Event 1 kind 1',
+        createdAt: 1000,
+      ),
+      Nip01Event(
+        pubKey: 'author_filter_1',
+        kind: 2,
+        tags: [],
+        content: 'Event 2 kind 2',
+        createdAt: 2000,
+      ),
+      Nip01Event(
+        pubKey: 'author_filter_2',
+        kind: 1,
+        tags: [],
+        content: 'Event 3 kind 1',
+        createdAt: 3000,
+      ),
+      Nip01Event(
+        pubKey: 'author_filter_1',
+        kind: 1,
+        tags: [],
+        content: 'Event 4 kind 1',
+        createdAt: 4000,
+      ),
+    ];
+
+    await cacheManager.saveEvents(events);
+
+    // Remove all kind 1 events from author_filter_1
+    await cacheManager.removeEvents(
+      pubKeys: ['author_filter_1'],
+      kinds: [1],
+    );
+
+    // Event 1 and 4 should be removed (author_filter_1, kind 1)
+    expect(await cacheManager.loadEvent(events[0].id), isNull);
+    expect(await cacheManager.loadEvent(events[3].id), isNull);
+
+    // Event 2 should remain (author_filter_1, but kind 2)
+    expect(await cacheManager.loadEvent(events[1].id), isNotNull);
+
+    // Event 3 should remain (kind 1, but author_filter_2)
+    expect(await cacheManager.loadEvent(events[2].id), isNotNull);
+  });
+
+  test('removeEvents with time range', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final events = [
+      Nip01Event(
+        pubKey: 'time_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 1',
+        createdAt: 1000,
+      ),
+      Nip01Event(
+        pubKey: 'time_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 2',
+        createdAt: 2000,
+      ),
+      Nip01Event(
+        pubKey: 'time_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 3',
+        createdAt: 3000,
+      ),
+      Nip01Event(
+        pubKey: 'time_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 4',
+        createdAt: 4000,
+      ),
+    ];
+
+    await cacheManager.saveEvents(events);
+
+    // Remove events from time_filter_author before timestamp 2500
+    await cacheManager.removeEvents(
+      pubKeys: ['time_filter_author'],
+      until: 2500,
+    );
+
+    // Events 1 and 2 should be removed (createdAt <= 2500)
+    expect(await cacheManager.loadEvent(events[0].id), isNull);
+    expect(await cacheManager.loadEvent(events[1].id), isNull);
+
+    // Events 3 and 4 should remain (createdAt > 2500)
+    expect(await cacheManager.loadEvent(events[2].id), isNotNull);
+    expect(await cacheManager.loadEvent(events[3].id), isNotNull);
+  });
+
+  test('removeEvents with empty parameters does nothing', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final event = Nip01Event(
+      pubKey: 'empty_filter_author',
+      kind: 1,
+      tags: [],
+      content: 'Event 1',
+      createdAt: 1000,
+    );
+
+    await cacheManager.saveEvent(event);
+
+    // Empty parameters should not delete anything
+    await cacheManager.removeEvents();
+
+    expect(await cacheManager.loadEvent(event.id), isNotNull);
+  });
+
+  test('removeEvents with tags filter', () async {
+    final cacheManager = getCacheManager();
+    await cacheManager.removeAllEvents();
+
+    final events = [
+      Nip01Event(
+        pubKey: 'tag_filter_author',
+        kind: 1,
+        tags: [
+          ['p', 'target_pubkey_1']
+        ],
+        content: 'Event 1 with p tag',
+        createdAt: 1000,
+      ),
+      Nip01Event(
+        pubKey: 'tag_filter_author',
+        kind: 1,
+        tags: [
+          ['p', 'target_pubkey_2']
+        ],
+        content: 'Event 2 with different p tag',
+        createdAt: 2000,
+      ),
+      Nip01Event(
+        pubKey: 'tag_filter_author',
+        kind: 1,
+        tags: [
+          ['e', 'some_event_id']
+        ],
+        content: 'Event 3 with e tag',
+        createdAt: 3000,
+      ),
+      Nip01Event(
+        pubKey: 'tag_filter_author',
+        kind: 1,
+        tags: [],
+        content: 'Event 4 without tags',
+        createdAt: 4000,
+      ),
+    ];
+
+    await cacheManager.saveEvents(events);
+
+    // Remove events with p tag = target_pubkey_1
+    await cacheManager.removeEvents(
+      tags: {
+        'p': ['target_pubkey_1']
+      },
+    );
+
+    // Event 1 should be removed (has p tag with target_pubkey_1)
+    expect(await cacheManager.loadEvent(events[0].id), isNull);
+
+    // Events 2, 3, 4 should remain
+    expect(await cacheManager.loadEvent(events[1].id), isNotNull);
+    expect(await cacheManager.loadEvent(events[2].id), isNotNull);
+    expect(await cacheManager.loadEvent(events[3].id), isNotNull);
   });
 
   test('removeAllEventsByPubKey', () async {
@@ -672,7 +896,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveNip05(nip05);
-    final loaded = await cacheManager.loadNip05('nip05_pubkey_1');
+    final loaded = await cacheManager.loadNip05(pubKey: 'nip05_pubkey_1');
 
     expect(loaded, isNotNull);
     expect(loaded!.pubKey, equals(nip05.pubKey));
@@ -680,6 +904,26 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     expect(loaded.valid, equals(nip05.valid));
     expect(loaded.networkFetchTime, equals(nip05.networkFetchTime));
     expect(loaded.relays, equals(nip05.relays));
+  });
+
+  test('loadNip05 by identifier', () async {
+    final cacheManager = getCacheManager();
+    final nip05 = Nip05(
+      pubKey: 'nip05_id_pubkey',
+      nip05: 'testuser@example.com',
+      valid: true,
+      networkFetchTime: 1234567890,
+      relays: ['wss://relay1.com'],
+    );
+
+    await cacheManager.saveNip05(nip05);
+    final loaded =
+        await cacheManager.loadNip05(identifier: 'testuser@example.com');
+
+    expect(loaded, isNotNull);
+    expect(loaded!.pubKey, equals(nip05.pubKey));
+    expect(loaded.nip05, equals(nip05.nip05));
+    expect(loaded.valid, equals(nip05.valid));
   });
 
   test('saveNip05s batch operation', () async {
@@ -692,7 +936,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     await cacheManager.saveNip05s(nip05s);
 
     for (final nip05 in nip05s) {
-      final loaded = await cacheManager.loadNip05(nip05.pubKey);
+      final loaded = await cacheManager.loadNip05(pubKey: nip05.pubKey);
       expect(loaded, isNotNull);
       expect(loaded!.nip05, equals(nip05.nip05));
       expect(loaded.valid, equals(nip05.valid));
@@ -728,10 +972,10 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     );
 
     await cacheManager.saveNip05(nip05);
-    expect(await cacheManager.loadNip05('nip05_remove'), isNotNull);
+    expect(await cacheManager.loadNip05(pubKey: 'nip05_remove'), isNotNull);
 
     await cacheManager.removeNip05('nip05_remove');
-    expect(await cacheManager.loadNip05('nip05_remove'), isNull);
+    expect(await cacheManager.loadNip05(pubKey: 'nip05_remove'), isNull);
   });
 
   test('removeAllNip05s', () async {
@@ -745,7 +989,7 @@ void _runNip05Tests(CacheManager Function() getCacheManager) {
     await cacheManager.removeAllNip05s();
 
     for (final nip05 in nip05s) {
-      expect(await cacheManager.loadNip05(nip05.pubKey), isNull);
+      expect(await cacheManager.loadNip05(pubKey: nip05.pubKey), isNull);
     }
   });
 }
@@ -993,5 +1237,91 @@ void _runSearchTests(CacheManager Function() getCacheManager) {
 
     final results = await cacheManager.searchMetadatas('User', 2);
     expect(results.length, lessThanOrEqualTo(2));
+  });
+}
+
+// ============================================================================
+// ClearAll Tests
+// ============================================================================
+
+void _runClearAllTests(CacheManager Function() getCacheManager) {
+  test('clearAll removes all cached data', () async {
+    final cacheManager = getCacheManager();
+
+    // Save data to all cache types
+    final event = Nip01Event(
+      pubKey: 'clearall_event_pubkey',
+      kind: 1,
+      tags: [],
+      content: 'Test event',
+      createdAt: 1234567890,
+    );
+    await cacheManager.saveEvent(event);
+
+    final metadata = Metadata(pubKey: 'clearall_metadata_pubkey', name: 'Test');
+    await cacheManager.saveMetadata(metadata);
+
+    final contactList = ContactList(
+      pubKey: 'clearall_contact_pubkey',
+      contacts: ['contact1'],
+    );
+    await cacheManager.saveContactList(contactList);
+
+    final nip05 = Nip05(
+      pubKey: 'clearall_nip05_pubkey',
+      nip05: 'test@example.com',
+      valid: true,
+    );
+    await cacheManager.saveNip05(nip05);
+
+    final userRelayList = UserRelayList(
+      pubKey: 'clearall_relay_pubkey',
+      createdAt: 1234567890,
+      refreshedTimestamp: 1234567890,
+      relays: {'wss://relay.com': ReadWriteMarker.readWrite},
+    );
+    await cacheManager.saveUserRelayList(userRelayList);
+
+    final relaySet = RelaySet(
+      name: 'clearall_set',
+      pubKey: 'clearall_relayset_pubkey',
+      relayMinCountPerPubkey: 1,
+      direction: RelayDirection.inbox,
+      relaysMap: {},
+      notCoveredPubkeys: [],
+    );
+    await cacheManager.saveRelaySet(relaySet);
+
+    // Verify data exists
+    expect(await cacheManager.loadEvent(event.id), isNotNull);
+    expect(
+        await cacheManager.loadMetadata('clearall_metadata_pubkey'), isNotNull);
+    expect(await cacheManager.loadContactList('clearall_contact_pubkey'),
+        isNotNull);
+    expect(await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'),
+        isNotNull);
+    expect(await cacheManager.loadUserRelayList('clearall_relay_pubkey'),
+        isNotNull);
+    expect(
+        await cacheManager.loadRelaySet(
+            'clearall_set', 'clearall_relayset_pubkey'),
+        isNotNull);
+
+    // Clear all
+    await cacheManager.clearAll();
+
+    // Verify all data is removed
+    expect(await cacheManager.loadEvent(event.id), isNull);
+    expect(await cacheManager.loadMetadata('clearall_metadata_pubkey'), isNull);
+    expect(
+        await cacheManager.loadContactList('clearall_contact_pubkey'), isNull);
+    expect(
+        await cacheManager.loadNip05(pubKey: 'clearall_nip05_pubkey'), isNull);
+    expect(
+        await cacheManager.loadUserRelayList('clearall_relay_pubkey'), isNull);
+    expect(
+        await cacheManager.loadRelaySet(
+            'clearall_set', 'clearall_relayset_pubkey'),
+        isNull);
   });
 }

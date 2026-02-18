@@ -1,3 +1,56 @@
+## 0.2.8-dev.13
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
+## 0.2.8-dev.11
+
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
+## 0.2.8-dev.10
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.9
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.8
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.7
+
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+## 0.2.8-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.4
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.3
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.2
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.1
+
+ - Update a dependency to the latest release.
+
 ## 0.2.8-dev.0
 
  - **REFACTOR**: other packages.

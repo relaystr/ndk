@@ -35,6 +35,23 @@ abstract class CacheManager {
     int? limit,
   });
   Future<void> removeEvent(String id);
+
+  /// Remove events from cache with flexible filtering \
+  /// [ids] - list of event ids \
+  /// [pubKeys] - list of authors pubKeys \
+  /// [kinds] - list of kinds \
+  /// [tags] - map of tags (e.g. {'p': ['pubkey1'], 'e': ['eventid1']}) \
+  /// [since] - timestamp \
+  /// [until] - timestamp \
+  /// If all parameters are empty, returns early (doesn't delete everything)
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  });
   Future<void> removeAllEventsByPubKey(String pubKey);
   Future<void> removeAllEvents();
 
@@ -89,7 +106,7 @@ abstract class CacheManager {
 
   Future<void> saveNip05(Nip05 nip05);
   Future<void> saveNip05s(List<Nip05> nip05s);
-  Future<Nip05?> loadNip05(String pubKey);
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier});
   Future<List<Nip05?>> loadNip05s(List<String> pubKeys);
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
@@ -129,4 +146,11 @@ abstract class CacheManager {
 
   /// Remove all filter fetched range records
   Future<void> removeAllFilterFetchedRangeRecords();
+
+  /// Clears all cached data.
+  ///
+  /// **DANGER**: This will permanently delete ALL cached data including events,
+  /// metadata, contact lists, relay sets, user relay lists, nip05 records,
+  /// and filter fetched range records. This operation cannot be undone.
+  Future<void> clearAll();
 }

@@ -1,7 +1,11 @@
 import 'package:ndk/ndk.dart';
+import 'package:rxdart/rxdart.dart';
 
 class Nip07EventSigner implements EventSigner {
   String? cachedPublicKey;
+
+  final _pendingRequestsController =
+      BehaviorSubject<List<PendingSignerRequest>>.seeded([]);
 
   Nip07EventSigner({this.cachedPublicKey});
 
@@ -48,5 +52,21 @@ class Nip07EventSigner implements EventSigner {
   @override
   Future<Nip01Event> sign(Nip01Event event) async {
     throw UnsupportedError('NIP-07 is not available on this platform');
+  }
+
+  // Stub implementation - always returns empty since NIP-07 is not available
+  @override
+  Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
+      _pendingRequestsController.stream;
+
+  @override
+  List<PendingSignerRequest> get pendingRequests => [];
+
+  @override
+  bool cancelRequest(String requestId) => false;
+
+  @override
+  Future<void> dispose() async {
+    await _pendingRequestsController.close();
   }
 }

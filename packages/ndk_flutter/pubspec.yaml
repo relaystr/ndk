@@ -1,0 +1,46 @@
+name: ndk_flutter
+description: "A Flutter UI package providing ready-to-use widgets."
+version: 0.0.2-dev.5
+repository: https://github.com/relaystr/ndk
+topics:
+  - ndk
+  - nostr
+  - widgets
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
+
+environment:
+  sdk: ^3.9.0
+  flutter: ">=1.17.0"
+
+dependencies:
+  amberflutter: ^0.0.9
+  crypto: ">=3.0.0 <4.0.0"
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_secure_storage: ">=8.0.0 <11.0.0"
+  http: ">=1.0.0 <2.0.0"
+  intl: ^0.20.2
+  ndk: ^0.7.1-dev.13
+  ndk_amber: ^0.4.0-dev.13
+  nip07_event_signer: ^1.0.6-dev.13
+  pretty_qr_code: ">=3.0.0 <4.0.0"
+  toastification: ">=3.0.0 <4.0.0"
+  url_launcher: ">=6.0.0 <7.0.0"
+  web: ">=1.0.0 <2.0.0"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  generate: true

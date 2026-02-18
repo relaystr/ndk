@@ -3,18 +3,19 @@ import '../../entities/nip_05.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/nip_05_repo.dart';
 
-/// usecase to verify the Nip05 object
-class VerifyNip05 {
+/// usecase to handle Nip05 operations (verify and fetch)
+class Nip05Usecase {
   // Static map to keep track of in-flight requests
   static final Map<String, Future<Nip05>> _inFlightRequests = {};
+  static final Map<String, Future<Nip05?>> _inFlightFetches = {};
 
   final CacheManager _database;
   final Nip05Repository _nip05Repository;
 
-  /// creates a new [VerifyNip05] instance
+  /// creates a new [Nip05Usecase] instance
   /// [_database] the cache manager
   /// [_nip05Repository] the nip05 repository
-  VerifyNip05({
+  Nip05Usecase({
     required CacheManager database,
     required Nip05Repository nip05Repository,
   })  : _database = database,
@@ -32,7 +33,7 @@ class VerifyNip05 {
       throw Exception("nip05 or pubkey empty");
     }
 
-    final databaseResult = await _database.loadNip05(pubkey);
+    final databaseResult = await _database.loadNip05(pubKey: pubkey);
 
     if (databaseResult != null) {
       int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -79,5 +80,53 @@ class VerifyNip05 {
 
     await _database.saveNip05(result);
     return result;
+  }
+
+  /// resolves NIP-05 data without requiring a pubkey for validation
+  /// returns the [Nip05] object with pubkey and relays
+  ///
+  /// [nip05] the nip05 identifier (e.g. "username@example.com")
+  /// returns the [Nip05] object or null if not found
+  Future<Nip05?> resolve(String nip05) async {
+    if (nip05.isEmpty) {
+      throw Exception("nip05 empty");
+    }
+
+    // Check cache first
+    final databaseResult = await _database.loadNip05(identifier: nip05);
+    if (databaseResult != null) {
+      int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      int lastCheck = databaseResult.networkFetchTime ?? 0;
+      if (now - lastCheck < NIP_05_VALID_DURATION.inSeconds) {
+        return databaseResult;
+      }
+    }
+
+    // Check if there's an in-flight fetch for this nip05
+    if (_inFlightFetches.containsKey(nip05)) {
+      return await _inFlightFetches[nip05]!;
+    }
+
+    // Create a new fetch and add it to the in-flight map
+    final fetch = _performFetch(nip05);
+    _inFlightFetches[nip05] = fetch;
+
+    try {
+      return await fetch;
+    } finally {
+      _inFlightFetches.remove(nip05);
+    }
+  }
+
+  Future<Nip05?> _performFetch(String nip05) async {
+    try {
+      final result = await _nip05Repository.fetchNip05(nip05);
+      if (result != null) {
+        await _database.saveNip05(result);
+      }
+      return result;
+    } catch (e) {
+      return null;
+    }
   }
 }

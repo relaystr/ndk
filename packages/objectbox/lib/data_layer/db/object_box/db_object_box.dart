@@ -324,11 +324,21 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05(String pubKey) async {
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
     await dbRdy;
     final box = _objectBox.store.box<DbNip05>();
+
+    Condition<DbNip05>? condition;
+    if (pubKey != null) {
+      condition = DbNip05_.pubKey.equals(pubKey);
+    } else if (identifier != null) {
+      condition = DbNip05_.nip05.equals(identifier);
+    } else {
+      return null;
+    }
+
     final existing = box
-        .query(DbNip05_.pubKey.equals(pubKey))
+        .query(condition)
         .order(DbNip05_.networkFetchTime, flags: Order.descending)
         .build()
         .findFirst();
@@ -431,6 +441,79 @@ class DbObjectBox implements CacheManager {
     if (existingEvent != null) {
       eventBox.remove(existingEvent.dbId);
     }
+  }
+
+  @override
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  }) async {
+    await dbRdy;
+
+    // If all parameters are empty, return early (don't delete everything)
+    if ((ids == null || ids.isEmpty) &&
+        (pubKeys == null || pubKeys.isEmpty) &&
+        (kinds == null || kinds.isEmpty) &&
+        (tags == null || tags.isEmpty) &&
+        since == null &&
+        until == null) {
+      return;
+    }
+
+    final eventBox = _objectBox.store.box<DbNip01Event>();
+
+    // Build conditions list
+    final conditions = <Condition<DbNip01Event>>[];
+
+    if (ids != null && ids.isNotEmpty) {
+      conditions.add(DbNip01Event_.nostrId.oneOf(ids));
+    }
+    if (pubKeys != null && pubKeys.isNotEmpty) {
+      conditions.add(DbNip01Event_.pubKey.oneOf(pubKeys));
+    }
+    if (kinds != null && kinds.isNotEmpty) {
+      conditions.add(DbNip01Event_.kind.oneOf(kinds));
+    }
+    if (since != null) {
+      conditions.add(DbNip01Event_.createdAt.greaterOrEqual(since));
+    }
+    if (until != null) {
+      conditions.add(DbNip01Event_.createdAt.lessOrEqual(until));
+    }
+
+    // Build and execute the query
+    final query = conditions.isEmpty
+        ? eventBox.query().build()
+        : eventBox.query(conditions.reduce((a, b) => a.and(b))).build();
+    var results = query.find();
+
+    // Apply tag filters in memory if needed
+    if (tags != null && tags.isNotEmpty) {
+      results = results.where((event) {
+        return tags.entries.every((tagEntry) {
+          String tagKey = tagEntry.key;
+          List<String> tagValues = tagEntry.value;
+
+          if (tagKey.startsWith('#') && tagKey.length > 1) {
+            tagKey = tagKey.substring(1);
+          }
+
+          List<DbTag> eventTags =
+              event.tags.where((t) => t.key == tagKey).toList();
+
+          return eventTags.any((tag) =>
+              tagValues.contains(tag.value) ||
+              tagValues.contains(tag.value.toLowerCase()));
+        });
+      }).toList();
+    }
+
+    // Remove matching events
+    eventBox.removeMany(results.map((e) => e.dbId).toList());
   }
 
   @override
@@ -698,5 +781,23 @@ class DbObjectBox implements CacheManager {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
     box.removeAll();
+  }
+
+  @override
+  Future<void> clearAll() async {
+    await dbRdy;
+    await _objectBox.store.runInTransactionAsync(
+      TxMode.write,
+      (Store store, _) {
+        store.box<DbNip01Event>().removeAll();
+        store.box<DbUserRelayList>().removeAll();
+        store.box<DbRelaySet>().removeAll();
+        store.box<DbContactList>().removeAll();
+        store.box<DbMetadata>().removeAll();
+        store.box<DbNip05>().removeAll();
+        store.box<DbFilterFetchedRangeRecord>().removeAll();
+      },
+      null,
+    );
   }
 }

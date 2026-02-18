@@ -5,8 +5,16 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../../../domain_layer/usecases/bunkers/models/bunker_request.dart';
+
+/// Internal class to track a pending request with its completer and metadata
+class _PendingRequestEntry {
+  final Completer<String> completer;
+  final PendingSignerRequest request;
+  _PendingRequestEntry(this.completer, this.request);
+}
 
 class Nip46EventSigner implements EventSigner {
   BunkerConnection connection;
@@ -16,7 +24,9 @@ class Nip46EventSigner implements EventSigner {
 
   NdkResponse? subscription;
 
-  final _pendingRequests = <String, Completer<dynamic>>{};
+  final _pendingRequests = <String, _PendingRequestEntry>{};
+  final _pendingRequestsController =
+      BehaviorSubject<List<PendingSignerRequest>>.seeded([]);
 
   String? cachedPublicKey;
 
@@ -48,13 +58,11 @@ class Nip46EventSigner implements EventSigner {
   Future<void> listenRelays() async {
     subscription = requests.subscription(
       explicitRelays: connection.relays,
-      filters: [
-        Filter(
-          authors: [connection.remotePubkey],
-          kinds: [BunkerRequest.kKind],
-          pTags: [localEventSigner.publicKey],
-        ),
-      ],
+      filter: Filter(
+        authors: [connection.remotePubkey],
+        kinds: [BunkerRequest.kKind],
+        pTags: [localEventSigner.publicKey],
+      ),
     );
 
     subscription!.stream.listen(onEvent);
@@ -76,19 +84,48 @@ class Nip46EventSigner implements EventSigner {
     }
 
     if (_pendingRequests[response["id"]] != null) {
-      final completer = _pendingRequests.remove(response["id"])!;
+      final entry = _pendingRequests.remove(response["id"])!;
+      _notifyPendingRequestsChange();
 
       if (response["error"] != null && response["result"] != "auth_url") {
-        completer.completeError(Exception(response["error"]));
+        entry.completer.completeError(SignerRequestRejectedException(
+          requestId: response["id"],
+          originalMessage: response["error"],
+        ));
       } else {
-        completer.complete(response["result"]);
+        entry.completer.complete(response["result"]);
       }
     }
   }
 
-  Future<String> remoteRequest({required BunkerRequest request}) async {
+  void _notifyPendingRequestsChange() {
+    _pendingRequestsController
+        .add(_pendingRequests.values.map((e) => e.request).toList());
+  }
+
+  Future<String> remoteRequest({
+    required BunkerRequest request,
+    Nip01Event? event,
+    String? plaintext,
+    String? ciphertext,
+    String? counterpartyPubkey,
+  }) async {
     final completer = Completer<String>();
-    _pendingRequests[request.id] = completer;
+    final pendingRequest = PendingSignerRequest(
+      id: request.id,
+      method: request.method,
+      createdAt: DateTime.now(),
+      signerPubkey: cachedPublicKey ?? '',
+      event: event,
+      plaintext: plaintext,
+      ciphertext: ciphertext,
+      counterpartyPubkey: counterpartyPubkey,
+    );
+    _pendingRequests[request.id] = _PendingRequestEntry(
+      completer,
+      pendingRequest,
+    );
+    _notifyPendingRequestsChange();
 
     final encryptedRequest = await localEventSigner.encryptNip44(
       plaintext: jsonEncode(request),
@@ -123,11 +160,15 @@ class Nip46EventSigner implements EventSigner {
   @override
   Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
     final request = BunkerRequest(
-      method: BunkerRequestMethods.nip04Decrypt,
+      method: SignerMethod.nip04Decrypt,
       params: [destPubKey, msg],
     );
 
-    final decryptedText = await remoteRequest(request: request);
+    final decryptedText = await remoteRequest(
+      request: request,
+      ciphertext: msg,
+      counterpartyPubkey: destPubKey,
+    );
     return decryptedText;
   }
 
@@ -137,22 +178,30 @@ class Nip46EventSigner implements EventSigner {
     required String senderPubKey,
   }) async {
     final request = BunkerRequest(
-      method: BunkerRequestMethods.nip44Decrypt,
+      method: SignerMethod.nip44Decrypt,
       params: [senderPubKey, ciphertext],
     );
 
-    final decryptedText = await remoteRequest(request: request);
+    final decryptedText = await remoteRequest(
+      request: request,
+      ciphertext: ciphertext,
+      counterpartyPubkey: senderPubKey,
+    );
     return decryptedText;
   }
 
   @override
   Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
     final request = BunkerRequest(
-      method: BunkerRequestMethods.nip04Encrypt,
+      method: SignerMethod.nip04Encrypt,
       params: [destPubKey, msg],
     );
 
-    final encryptedText = await remoteRequest(request: request);
+    final encryptedText = await remoteRequest(
+      request: request,
+      plaintext: msg,
+      counterpartyPubkey: destPubKey,
+    );
     return encryptedText;
   }
 
@@ -162,11 +211,15 @@ class Nip46EventSigner implements EventSigner {
     required String recipientPubKey,
   }) async {
     final request = BunkerRequest(
-      method: BunkerRequestMethods.nip44Encrypt,
+      method: SignerMethod.nip44Encrypt,
       params: [recipientPubKey, plaintext],
     );
 
-    final encryptedText = await remoteRequest(request: request);
+    final encryptedText = await remoteRequest(
+      request: request,
+      plaintext: plaintext,
+      counterpartyPubkey: recipientPubKey,
+    );
     return encryptedText;
   }
 
@@ -177,7 +230,7 @@ class Nip46EventSigner implements EventSigner {
   }
 
   Future<String> getPublicKeyAsync() async {
-    final request = BunkerRequest(method: BunkerRequestMethods.getPublicKey);
+    final request = BunkerRequest(method: SignerMethod.getPublicKey);
 
     final publicKey = await remoteRequest(request: request);
 
@@ -196,25 +249,50 @@ class Nip46EventSigner implements EventSigner {
     };
 
     final request = BunkerRequest(
-      method: BunkerRequestMethods.signEvent,
+      method: SignerMethod.signEvent,
       params: [jsonEncode(eventMap)],
     );
 
-    final signedEventJson = await remoteRequest(request: request);
+    final signedEventJson = await remoteRequest(
+      request: request,
+      event: event,
+    );
     final signedEvent = jsonDecode(signedEventJson);
 
     return event.copyWith(id: signedEvent["id"], sig: signedEvent["sig"]);
   }
 
   Future<String> ping() async {
-    final request = BunkerRequest(method: BunkerRequestMethods.ping);
+    final request = BunkerRequest(method: SignerMethod.ping);
 
     final response = await remoteRequest(request: request);
     return response;
   }
 
-  void dispose() async {
-    if (subscription == null) return;
-    await requests.closeSubscription(subscription!.requestId);
+  @override
+  Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
+      _pendingRequestsController.stream;
+
+  @override
+  List<PendingSignerRequest> get pendingRequests =>
+      _pendingRequests.values.map((e) => e.request).toList();
+
+  @override
+  bool cancelRequest(String requestId) {
+    final entry = _pendingRequests.remove(requestId);
+    if (entry != null) {
+      entry.completer.completeError(SignerRequestCancelledException(requestId));
+      _notifyPendingRequestsChange();
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (subscription != null) {
+      await requests.closeSubscription(subscription!.requestId);
+    }
+    await _pendingRequestsController.close();
   }
 }

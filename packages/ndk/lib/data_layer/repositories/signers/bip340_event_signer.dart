@@ -1,4 +1,7 @@
+import 'package:rxdart/rxdart.dart';
+
 import '../../../domain_layer/entities/nip_01_event.dart';
+import '../../../domain_layer/entities/pending_signer_request.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../../shared/nips/nip04/nip04.dart';
 import '../../../shared/nips/nip01/bip340.dart';
@@ -69,5 +72,24 @@ class Bip340EventSigner implements EventSigner {
       privateKey!,
       senderPubKey,
     );
+  }
+
+  // Local signer - no pending requests (operations are instant)
+  final _pendingRequestsController =
+      BehaviorSubject<List<PendingSignerRequest>>.seeded([]);
+
+  @override
+  Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
+      _pendingRequestsController.stream;
+
+  @override
+  List<PendingSignerRequest> get pendingRequests => [];
+
+  @override
+  bool cancelRequest(String requestId) => false;
+
+  @override
+  Future<void> dispose() async {
+    await _pendingRequestsController.close();
   }
 }

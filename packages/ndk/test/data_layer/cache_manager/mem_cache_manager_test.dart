@@ -58,9 +58,10 @@ void main() {
     test('saveNip05 and loadNip05', () async {
       final mockNip05 = MockNip05();
       when(mockNip05.pubKey).thenReturn('testPubKey');
+      when(mockNip05.nip05).thenReturn('test@example.com');
 
       await cacheManager.saveNip05(mockNip05);
-      final result = await cacheManager.loadNip05('testPubKey');
+      final result = await cacheManager.loadNip05(pubKey: 'testPubKey');
 
       expect(result, equals(mockNip05));
     });
@@ -68,10 +69,11 @@ void main() {
     test('removeNip05', () async {
       final mockNip05 = MockNip05();
       when(mockNip05.pubKey).thenReturn('testPubKey');
+      when(mockNip05.nip05).thenReturn('test@example.com');
 
       await cacheManager.saveNip05(mockNip05);
       await cacheManager.removeNip05('testPubKey');
-      final result = await cacheManager.loadNip05('testPubKey');
+      final result = await cacheManager.loadNip05(pubKey: 'testPubKey');
 
       expect(result, isNull);
     });
@@ -80,13 +82,15 @@ void main() {
       final mockNip051 = MockNip05();
       final mockNip052 = MockNip05();
       when(mockNip051.pubKey).thenReturn('testPubKey1');
+      when(mockNip051.nip05).thenReturn('test1@example.com');
       when(mockNip052.pubKey).thenReturn('testPubKey2');
+      when(mockNip052.nip05).thenReturn('test2@example.com');
 
       await cacheManager.saveNip05s([mockNip051, mockNip052]);
       await cacheManager.removeAllNip05s();
 
-      expect(await cacheManager.loadNip05('testPubKey1'), isNull);
-      expect(await cacheManager.loadNip05('testPubKey2'), isNull);
+      expect(await cacheManager.loadNip05(pubKey: 'testPubKey1'), isNull);
+      expect(await cacheManager.loadNip05(pubKey: 'testPubKey2'), isNull);
     });
   });
 

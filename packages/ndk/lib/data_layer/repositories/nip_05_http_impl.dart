@@ -45,4 +45,37 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
 
     return result;
   }
+
+  @override
+  Future<Nip05?> fetchNip05(String nip05) async {
+    String username = nip05.split("@")[0];
+    String url = nip05.split("@")[1];
+
+    String myUrl = "https://$url/.well-known/nostr.json?name=$username";
+
+    final json = await httpDS.jsonRequest(myUrl);
+
+    Map names = json["names"];
+    Map relays = json["relays"] ?? {};
+
+    // Get pubkey from username or fallback to "_"
+    String? pubkey = names[username] ?? names["_"];
+
+    if (pubkey == null) {
+      return null;
+    }
+
+    List<String> pRelays = [];
+    if (relays[pubkey] != null) {
+      pRelays = List<String>.from(relays[pubkey]);
+    }
+
+    return Nip05Model(
+      pubKey: pubkey,
+      nip05: nip05,
+      valid: true,
+      networkFetchTime: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      relays: pRelays,
+    );
+  }
 }
