@@ -1,3 +1,7 @@
+## 0.4.0-dev.15
+
+ - **FIX**(amber): use completer.future for cancelRequest to work.
+
 ## 0.4.0-dev.14
 
  - Update a dependency to the latest release.
