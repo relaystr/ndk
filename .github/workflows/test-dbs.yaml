@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [sembast_cache_manager, objectbox]
+        package: [sembast_cache_manager, objectbox, drift_cache_manager]
     defaults:
       run:
         working-directory: ./packages/${{ matrix.package }}
