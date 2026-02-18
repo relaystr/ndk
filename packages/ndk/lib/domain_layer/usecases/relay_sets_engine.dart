@@ -285,6 +285,7 @@ class RelaySetsEngine implements NetworkEngine {
         broadcastState.addError(e, stackTrace);
         return;
       }
+      broadcastState.startTimeout();
 
       // =====================================================================================
       // specific relays
@@ -414,7 +415,8 @@ class RelaySetsEngine implements NetworkEngine {
 
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: doneStream,
+      broadcastDoneStream: broadcastState.stateUpdates
+          .map((state) => state.broadcasts.values.toList()),
     );
   }
 }
