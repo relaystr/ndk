@@ -183,6 +183,66 @@ class DriftCacheManager extends CacheManager {
     await _db.delete(_db.events).go();
   }
 
+  @override
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  }) async {
+    final hasNoFilters = (ids == null || ids.isEmpty) &&
+        (pubKeys == null || pubKeys.isEmpty) &&
+        (kinds == null || kinds.isEmpty) &&
+        (tags == null || tags.isEmpty) &&
+        since == null &&
+        until == null;
+
+    if (hasNoFilters) return;
+
+    // With tags filter, we need to load events first (tags filtered in memory)
+    if (tags != null && tags.isNotEmpty) {
+      final eventsToRemove = await loadEvents(
+        ids: ids,
+        pubKeys: pubKeys,
+        kinds: kinds,
+        tags: tags,
+        since: since,
+        until: until,
+      );
+
+      if (eventsToRemove.isEmpty) return;
+
+      final idsToRemove = eventsToRemove.map((e) => e.id).toList();
+      await (_db.delete(_db.events)..where((t) => t.id.isIn(idsToRemove))).go();
+      return;
+    }
+
+    // No tags filter, delete directly without loading events
+    await (_db.delete(_db.events)..where((t) {
+      final conditions = <Expression<bool>>[];
+
+      if (ids != null && ids.isNotEmpty) {
+        conditions.add(t.id.isIn(ids));
+      }
+      if (pubKeys != null && pubKeys.isNotEmpty) {
+        conditions.add(t.pubKey.isIn(pubKeys));
+      }
+      if (kinds != null && kinds.isNotEmpty) {
+        conditions.add(t.kind.isIn(kinds));
+      }
+      if (since != null) {
+        conditions.add(t.createdAt.isBiggerOrEqualValue(since));
+      }
+      if (until != null) {
+        conditions.add(t.createdAt.isSmallerOrEqualValue(until));
+      }
+
+      return conditions.reduce((a, b) => a & b);
+    })).go();
+  }
+
   Nip01Event _eventFromRow(DbEvent row) {
     final tags = (jsonDecode(row.tagsJson) as List)
         .map((e) => (e as List).map((item) => item.toString()).toList())
@@ -878,5 +938,18 @@ class DriftCacheManager extends CacheManager {
       search: search,
       limit: limit,
     );
+  }
+
+  @override
+  Future<void> clearAll() async {
+    await Future.wait([
+      _db.delete(_db.events).go(),
+      _db.delete(_db.metadatas).go(),
+      _db.delete(_db.contactLists).go(),
+      _db.delete(_db.userRelayLists).go(),
+      _db.delete(_db.relaySets).go(),
+      _db.delete(_db.nip05s).go(),
+      _db.delete(_db.filterFetchedRangeRecords).go(),
+    ]);
   }
 }
