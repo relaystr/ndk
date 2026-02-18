@@ -1,3 +1,7 @@
+## 0.2.8-dev.14
+
+ - **FIX**: objectbox nullable sig.
+
 ## 0.2.8-dev.13
 
  - Update a dependency to the latest release.
