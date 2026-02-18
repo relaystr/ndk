@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
-import '../../shared/isolates/isolate_manager.dart';
+import '../../domain_layer/entities/file_hash_progress.dart';
 import 'file_io.dart';
 
 /// Native platform implementation using dart:io
@@ -57,34 +56,47 @@ class FileIONative implements FileIO {
   }
 
   @override
-  Future<String> computeFileHash(String filePath) async {
-    return await IsolateManager.instance.runInComputeIsolate<String, String>(
-      _computeFileHashSync,
-      filePath,
+  Stream<FileHashProgress> computeFileHash(String filePath) async* {
+    final file = File(filePath);
+    final totalBytes = await file.length();
+
+    final digestSink = _DigestSink();
+    final input = sha256.startChunkedConversion(digestSink);
+
+    int processedBytes = 0;
+    yield FileHashProgress(
+      processedBytes: processedBytes,
+      totalBytes: totalBytes,
+    );
+
+    await for (final chunk in file.openRead()) {
+      input.add(chunk);
+      processedBytes += chunk.length;
+      yield FileHashProgress(
+        processedBytes: processedBytes,
+        totalBytes: totalBytes,
+      );
+    }
+
+    input.close();
+
+    yield FileHashProgress(
+      processedBytes: totalBytes,
+      totalBytes: totalBytes,
+      isComplete: true,
+      hash: digestSink.value?.toString(),
     );
   }
 }
 
-/// Synchronous function to compute file hash (runs in isolate)
-/// Must be top-level function for isolate compatibility
-String _computeFileHashSync(String filePath) {
-  final file = File(filePath);
-  final output = AccumulatorSink<Digest>();
-  final input = sha256.startChunkedConversion(output);
+class _DigestSink implements Sink<Digest> {
+  Digest? value;
 
-  // Read file synchronously in chunks
-  final fileSync = file.openSync();
-  try {
-    final buffer = List<int>.filled(64 * 1024, 0); // 64KB buffer
-    int bytesRead;
-
-    while ((bytesRead = fileSync.readIntoSync(buffer)) > 0) {
-      input.add(buffer.sublist(0, bytesRead));
-    }
-
-    input.close();
-    return output.events.single.toString();
-  } finally {
-    fileSync.closeSync();
+  @override
+  void add(Digest data) {
+    value = data;
   }
+
+  @override
+  void close() {}
 }

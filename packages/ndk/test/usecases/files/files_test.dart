@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ndk/domain_layer/entities/ndk_file.dart';
-import 'package:ndk/domain_layer/repositories/blossom.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
@@ -278,7 +277,7 @@ void main() {
       await testFile.writeAsString(testContent);
 
       // Upload with mirror strategy
-      final uploadResults = <BlobUploadResult>[];
+      List<BlobUploadResult> uploadResults = const [];
       await for (final progress in client.uploadFromFile(
         filePath: testFile.path,
         serverUrls: [
@@ -288,7 +287,7 @@ void main() {
         strategy: UploadStrategy.mirrorAfterSuccess,
       )) {
         if (progress.completedUploads.isNotEmpty) {
-          uploadResults.addAll(progress.completedUploads);
+          uploadResults = progress.completedUploads;
         }
       }
 

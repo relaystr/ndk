@@ -678,6 +678,60 @@ void main() {
       expect(utf8.decode(getResponse.data), equals(testContent));
     });
 
+    test('uploadBlobFromFile emits phase-aware BlobUploadProgress stream',
+        () async {
+      final testFile = File('${tempDir.path}/test_progress_stream.txt');
+      await testFile.writeAsString('Progress stream validation payload');
+
+      final events = <BlobUploadProgress>[];
+
+      await for (final progress in client.uploadBlobFromFile(
+        filePath: testFile.path,
+        serverUrls: ['http://localhost:3000'],
+      )) {
+        events.add(progress);
+      }
+
+      expect(events, isNotEmpty);
+      expect(events.first.phase, equals(UploadPhase.hashing));
+      expect(events.any((e) => e.phase == UploadPhase.uploading), isTrue);
+      expect(events.any((e) => e.phase == UploadPhase.mirroring), isTrue);
+
+      final firstUploadingIndex =
+          events.indexWhere((e) => e.phase == UploadPhase.uploading);
+      final firstMirroringIndex =
+          events.indexWhere((e) => e.phase == UploadPhase.mirroring);
+
+      expect(firstUploadingIndex, greaterThan(0));
+      expect(firstMirroringIndex, greaterThan(firstUploadingIndex));
+
+      // Once upload starts, hashing should not appear again.
+      final hasHashingAfterUpload = events
+          .skip(firstUploadingIndex)
+          .any((e) => e.phase == UploadPhase.hashing);
+      expect(hasHashingAfterUpload, isFalse);
+
+      // Overall percentage should map to phase bands.
+      for (final event in events) {
+        expect(event.percentage, inInclusiveRange(0, 100));
+
+        switch (event.phase) {
+          case UploadPhase.hashing:
+            expect(event.percentage, inInclusiveRange(0, 33));
+          case UploadPhase.uploading:
+            expect(event.percentage, inInclusiveRange(33, 66));
+          case UploadPhase.mirroring:
+            expect(event.percentage, inInclusiveRange(66, 100));
+        }
+      }
+
+      final lastEvent = events.last;
+      expect(lastEvent.isComplete, isTrue);
+      expect(lastEvent.phase, equals(UploadPhase.mirroring));
+      expect(lastEvent.percentage, closeTo(100, 0.000001));
+      expect(lastEvent.completedUploads.any((u) => u.success), isTrue);
+    });
+
     test('downloadBlobToFile should download a blob to disk', () async {
       // First, upload some test data
       final testContent = 'Test content for download to file';
@@ -773,7 +827,7 @@ void main() {
       await testFile.writeAsString(testContent);
 
       // Upload with mirror strategy
-      final uploadResults = <BlobUploadResult>[];
+      List<BlobUploadResult> uploadResults = const [];
       await for (final progress in client.uploadBlobFromFile(
         filePath: testFile.path,
         serverUrls: [
@@ -783,7 +837,7 @@ void main() {
         strategy: UploadStrategy.mirrorAfterSuccess,
       )) {
         if (progress.completedUploads.isNotEmpty) {
-          uploadResults.addAll(progress.completedUploads);
+          uploadResults = progress.completedUploads;
         }
       }
 
@@ -805,6 +859,49 @@ void main() {
 
       expect(utf8.decode(fromServer1.data), equals(testContent));
       expect(utf8.decode(fromServer2.data), equals(testContent));
+    });
+
+    test(
+        'uploadBlobFromFile mirrorAfterSuccess reports mirrorsTotal and mirrorsCompleted progression',
+        () async {
+      final testFile = File('${tempDir.path}/test_mirror_progress.txt');
+      await testFile.writeAsString('Mirror progress test');
+
+      final events = <BlobUploadProgress>[];
+      await for (final progress in client.uploadBlobFromFile(
+        filePath: testFile.path,
+        serverUrls: [
+          'http://localhost:3000',
+          'http://localhost:3001',
+        ],
+        strategy: UploadStrategy.mirrorAfterSuccess,
+      )) {
+        events.add(progress);
+      }
+
+      final mirrorEvents = events
+          .where((e) =>
+              e.phase == UploadPhase.mirroring &&
+              (e.mirrorsTotal > 0 || e.mirrorsCompleted > 0))
+          .toList();
+
+      expect(mirrorEvents, isNotEmpty);
+
+      // With 2 servers and first success strategy, only 1 mirror should be needed.
+      expect(mirrorEvents.every((e) => e.mirrorsTotal == 1), isTrue);
+
+      // Should emit start of mirroring and completion of mirroring.
+      expect(mirrorEvents.any((e) => e.mirrorsCompleted == 0), isTrue);
+      expect(mirrorEvents.any((e) => e.mirrorsCompleted == e.mirrorsTotal),
+          isTrue);
+
+      // Progression should be monotonic.
+      for (var i = 1; i < mirrorEvents.length; i++) {
+        expect(
+          mirrorEvents[i].mirrorsCompleted,
+          greaterThanOrEqualTo(mirrorEvents[i - 1].mirrorsCompleted),
+        );
+      }
     });
 
     test('downloadBlobToFile should handle server fallback', () async {

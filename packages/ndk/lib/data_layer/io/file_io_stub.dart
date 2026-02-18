@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../domain_layer/entities/file_hash_progress.dart';
 import 'file_io.dart';
 
 /// Stub implementation that should never be used
@@ -40,7 +41,7 @@ class FileIONative implements FileIO {
   }
 
   @override
-  Future<String> computeFileHash(String filePath) {
+  Stream<FileHashProgress> computeFileHash(String filePath) {
     throw UnimplementedError();
   }
 }
@@ -82,7 +83,7 @@ class FileIOWeb implements FileIO {
   }
 
   @override
-  Future<String> computeFileHash(String filePath) {
+  Stream<FileHashProgress> computeFileHash(String filePath) {
     throw UnimplementedError();
   }
 }

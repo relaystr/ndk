@@ -6,12 +6,15 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../../domain_layer/entities/blossom_blobs.dart';
 import '../../../domain_layer/entities/blossom_strategies.dart';
+import '../../../domain_layer/entities/file_hash_progress.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/tuple.dart';
 import '../../../domain_layer/repositories/blossom.dart';
 import '../../data_sources/http_request.dart';
 import '../../io/file_io.dart';
 import '../../models/nip_01_event_model.dart';
+
+enum UploadPhase { hashing, uploading, mirroring }
 
 /// Progress information for blob uploads
 class BlobUploadProgress {
@@ -21,15 +24,51 @@ class BlobUploadProgress {
   final List<BlobUploadResult> completedUploads;
   final bool isComplete;
 
+  final UploadPhase phase; // hashing | uploading | mirroring
+  final double progressPhase; // 0.0 - 1.0 for current phase
+  final double percentagePhase; // 0.0 - 100.0 for current phase
+
+  // For mirroring phase
+  final int mirrorsTotal;
+  final int mirrorsCompleted;
+
   BlobUploadProgress({
     required this.currentServer,
     required this.sentBytes,
     required this.totalBytes,
     required this.completedUploads,
+    this.phase = UploadPhase.uploading,
+    double? progressPhase,
+    int? mirrorsTotal,
+    int? mirrorsCompleted,
     this.isComplete = false,
-  });
+  })  : progressPhase =
+            ((progressPhase ?? (totalBytes > 0 ? sentBytes / totalBytes : 0))
+                    .clamp(0.0, 1.0))
+                .toDouble(),
+        percentagePhase =
+            ((progressPhase ?? (totalBytes > 0 ? sentBytes / totalBytes : 0))
+                        .clamp(0.0, 1.0))
+                    .toDouble() *
+                100,
+        mirrorsTotal = mirrorsTotal ?? 0,
+        mirrorsCompleted = mirrorsCompleted ?? 0;
 
-  double get progress => totalBytes > 0 ? sentBytes / totalBytes : 0;
+  double get uploadProgress => totalBytes > 0 ? sentBytes / totalBytes : 0;
+
+  /// Overall progress mapped across fixed phases:
+  /// hashing: 0-33%, uploading: 33-66%, mirroring: 66-100%
+  double get progress {
+    switch (phase) {
+      case UploadPhase.hashing:
+        return progressPhase * 0.33;
+      case UploadPhase.uploading:
+        return 0.33 + (progressPhase * 0.33);
+      case UploadPhase.mirroring:
+        return 0.66 + (progressPhase * 0.34);
+    }
+  }
+
   double get percentage => progress * 100;
 }
 
@@ -157,6 +196,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
             sentBytes: progress.sentBytes,
             totalBytes: progress.totalBytes,
             completedUploads: results,
+            phase: UploadPhase.uploading,
+            progressPhase: progress.progress,
           );
 
           if (progress.isComplete && progress.response != null) {
@@ -197,24 +238,53 @@ class BlossomRepositoryImpl implements BlossomRepository {
       final remainingServers = serverUrls.sublist(successIndex + 1);
 
       if (remainingServers.isNotEmpty) {
-        final mirrorResults = await Future.wait(
-          remainingServers.map((url) => mirrorToServer(
-                fileUrl: successfulUpload!.descriptor!.url,
-                serverUrl: url,
-                sha256: successfulUpload.descriptor!.sha256,
-                authorization: authorization,
-              )),
+        var mirrorsCompleted = 0;
+        final mirrorsTotal = remainingServers.length;
+
+        yield BlobUploadProgress(
+          currentServer: successfulUpload.serverUrl,
+          sentBytes: contentLength,
+          totalBytes: contentLength,
+          completedUploads: List.from(results),
+          phase: UploadPhase.mirroring,
+          progressPhase: 0,
+          mirrorsTotal: mirrorsTotal,
+          mirrorsCompleted: mirrorsCompleted,
         );
-        results.addAll(mirrorResults);
+
+        for (final url in remainingServers) {
+          final mirrorResult = await mirrorToServer(
+            fileUrl: successfulUpload.descriptor!.url,
+            serverUrl: url,
+            sha256: successfulUpload.descriptor!.sha256,
+            authorization: authorization,
+          );
+          results.add(mirrorResult);
+          mirrorsCompleted++;
+
+          yield BlobUploadProgress(
+            currentServer: url,
+            sentBytes: contentLength,
+            totalBytes: contentLength,
+            completedUploads: List.from(results),
+            phase: UploadPhase.mirroring,
+            progressPhase:
+                mirrorsTotal > 0 ? mirrorsCompleted / mirrorsTotal : 1,
+            mirrorsTotal: mirrorsTotal,
+            mirrorsCompleted: mirrorsCompleted,
+          );
+        }
       }
     }
 
     // Emit final progress
     yield BlobUploadProgress(
       currentServer: '',
-      sentBytes: contentLength,
+      sentBytes: successfulUpload != null ? contentLength : 0,
       totalBytes: contentLength,
       completedUploads: results,
+      phase: UploadPhase.mirroring,
+      progressPhase: 1,
       isComplete: true,
     );
   }
@@ -234,6 +304,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
         sentBytes: 0,
         totalBytes: contentLength,
         completedUploads: [],
+        phase: UploadPhase.uploading,
+        progressPhase: 0,
       ),
     );
 
@@ -255,6 +327,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
               sentBytes: progress.sentBytes,
               totalBytes: progress.totalBytes,
               completedUploads: List.from(results),
+              phase: UploadPhase.uploading,
+              progressPhase: progress.progress,
             ));
             continue;
           }
@@ -271,6 +345,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
               sentBytes: progress.sentBytes,
               totalBytes: contentLength,
               completedUploads: List.from(results),
+              phase: UploadPhase.uploading,
+              progressPhase: progress.progress,
             ));
           } else if (progress.isComplete && progress.error != null) {
             final result = BlobUploadResult(
@@ -284,6 +360,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
               sentBytes: progress.sentBytes,
               totalBytes: contentLength,
               completedUploads: List.from(results),
+              phase: UploadPhase.uploading,
+              progressPhase: progress.progress,
             ));
           }
         }
@@ -300,12 +378,23 @@ class BlossomRepositoryImpl implements BlossomRepository {
           sentBytes: 0,
           totalBytes: contentLength,
           completedUploads: List.from(results),
+          phase: UploadPhase.uploading,
+          progressPhase: 0,
         ));
       }
     }).toList();
 
     // When all uploads complete, close the stream
     Future.wait(uploadFutures).then((_) async {
+      progressSubject.add(BlobUploadProgress(
+        currentServer: '',
+        sentBytes: contentLength,
+        totalBytes: contentLength,
+        completedUploads: List.from(results),
+        phase: UploadPhase.mirroring,
+        progressPhase: 1,
+        isComplete: true,
+      ));
       await progressSubject.close();
     });
 
@@ -338,6 +427,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
             sentBytes: progress.sentBytes,
             totalBytes: progress.totalBytes,
             completedUploads: results,
+            phase: UploadPhase.uploading,
+            progressPhase: progress.progress,
           );
 
           if (progress.isComplete && progress.response != null) {
@@ -354,6 +445,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
               sentBytes: progress.sentBytes,
               totalBytes: contentLength,
               completedUploads: results,
+              phase: UploadPhase.mirroring,
+              progressPhase: 1,
               isComplete: true,
             );
             return;
@@ -381,6 +474,8 @@ class BlossomRepositoryImpl implements BlossomRepository {
       sentBytes: 0,
       totalBytes: contentLength,
       completedUploads: results,
+      phase: UploadPhase.mirroring,
+      progressPhase: 1,
       isComplete: true,
     );
   }
@@ -768,7 +863,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
   }
 
   @override
-  Future<String> computeFileHash(String filePath) {
+  Stream<FileHashProgress> computeFileHash(String filePath) {
     return fileIO.computeFileHash(filePath);
   }
 }

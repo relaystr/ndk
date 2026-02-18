@@ -126,7 +126,25 @@ class Blossom {
     _checkSigner();
 
     // Compute file hash without loading entire file into memory
-    final fileHash = await _blossomImpl.computeFileHash(filePath);
+    String? fileHash;
+    await for (final hashProgress in _blossomImpl.computeFileHash(filePath)) {
+      yield BlobUploadProgress(
+        currentServer: '',
+        sentBytes: hashProgress.processedBytes,
+        totalBytes: hashProgress.totalBytes,
+        completedUploads: const [],
+        phase: UploadPhase.hashing,
+        progressPhase: hashProgress.progress,
+      );
+
+      if (hashProgress.isComplete && hashProgress.hash != null) {
+        fileHash = hashProgress.hash;
+      }
+    }
+
+    if (fileHash == null) {
+      throw Exception('Failed to compute file hash');
+    }
 
     // Create authorization event with file hash
     final Nip01Event myAuthorization = Nip01Utils.createEventCalculateId(

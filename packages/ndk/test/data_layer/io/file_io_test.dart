@@ -10,6 +10,21 @@ void main() {
     late Directory tempDir;
     late FileIONative fileIO;
 
+    Future<String> computeFinalHash(String filePath) async {
+      String? hash;
+
+      await for (final progress in fileIO.computeFileHash(filePath)) {
+        if (progress.isComplete && progress.hash != null) {
+          hash = progress.hash;
+        }
+      }
+
+      if (hash == null) {
+        throw Exception('Hash stream completed without final hash');
+      }
+      return hash;
+    }
+
     setUp(() async {
       // Create a temporary directory for testing
       tempDir = await Directory.systemTemp.createTemp('file_io_test_');
@@ -31,7 +46,7 @@ void main() {
       await testFile.writeAsBytes(testBytes);
 
       // Compute hash using FileIO method (chunked)
-      final chunkedHash = await fileIO.computeFileHash(testFile.path);
+      final chunkedHash = await computeFinalHash(testFile.path);
 
       // Compute hash using traditional in-memory method
       final inMemoryHash = sha256.convert(testBytes).toString();
@@ -52,7 +67,7 @@ void main() {
       await testFile.writeAsBytes(testBytes);
 
       // Compute hash using FileIO method (chunked)
-      final chunkedHash = await fileIO.computeFileHash(testFile.path);
+      final chunkedHash = await computeFinalHash(testFile.path);
 
       // Compute hash using traditional in-memory method
       final inMemoryHash = sha256.convert(testBytes).toString();
@@ -68,7 +83,7 @@ void main() {
       await testFile.writeAsBytes(testBytes);
 
       // Compute hash using FileIO method (chunked)
-      final chunkedHash = await fileIO.computeFileHash(testFile.path);
+      final chunkedHash = await computeFinalHash(testFile.path);
 
       // Compute hash using traditional in-memory method
       final inMemoryHash = sha256.convert(testBytes).toString();
@@ -95,7 +110,7 @@ void main() {
       await testFile.writeAsBytes(testBytes);
 
       // Compute hash using FileIO method (chunked)
-      final chunkedHash = await fileIO.computeFileHash(testFile.path);
+      final chunkedHash = await computeFinalHash(testFile.path);
 
       // Compute hash using traditional in-memory method
       final inMemoryHash = sha256.convert(testBytes).toString();
@@ -122,7 +137,7 @@ void main() {
       await sink.close();
 
       // Compute hash using FileIO method (chunked)
-      final chunkedHash = await fileIO.computeFileHash(testFile.path);
+      final chunkedHash = await computeFinalHash(testFile.path);
 
       // Read file in memory and compute hash for comparison
       final fileBytes = await testFile.readAsBytes();
@@ -136,8 +151,8 @@ void main() {
       final nonExistentPath = '${tempDir.path}/does_not_exist.txt';
 
       // Should throw an error when trying to hash non-existent file
-      expect(
-        () => fileIO.computeFileHash(nonExistentPath),
+      await expectLater(
+        fileIO.computeFileHash(nonExistentPath).drain<void>(),
         throwsA(anything),
       );
     });

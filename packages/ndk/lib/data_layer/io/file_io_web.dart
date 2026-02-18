@@ -3,10 +3,10 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
-import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:web/web.dart';
 
+import '../../domain_layer/entities/file_hash_progress.dart';
 import 'file_io.dart';
 
 /// Web platform implementation using File System Access API
@@ -237,20 +237,51 @@ class FileIOWeb implements FileIO {
   }
 
   @override
-  Future<String> computeFileHash(String filePath) async {
+  Stream<FileHashProgress> computeFileHash(String filePath) async* {
     final file = await _getFile(filePath);
     if (file == null) {
       throw Exception('No file selected or file not found');
     }
 
-    final output = AccumulatorSink<Digest>();
-    final input = sha256.startChunkedConversion(output);
+    final totalBytes = file.size;
+
+    final digestSink = _DigestSink();
+    final input = sha256.startChunkedConversion(digestSink);
+
+    int processedBytes = 0;
+    yield FileHashProgress(
+      processedBytes: processedBytes,
+      totalBytes: totalBytes,
+    );
 
     await for (var chunk in readFileAsStream(filePath)) {
       input.add(chunk);
+      processedBytes += chunk.length;
+      yield FileHashProgress(
+        processedBytes: processedBytes,
+        totalBytes: totalBytes,
+      );
     }
+
     input.close();
 
-    return output.events.single.toString();
+    yield FileHashProgress(
+      processedBytes: totalBytes,
+      totalBytes: totalBytes,
+      isComplete: true,
+      hash: digestSink.value?.toString(),
+    );
   }
+}
+
+class _DigestSink implements Sink<Digest> {
+  Digest? value;
+
+  @override
+  void add(Digest data) {
+    value = data;
+  }
+
+  @override
+  void close() {}
 }

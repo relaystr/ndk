@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import '../../domain_layer/entities/file_hash_progress.dart';
+
 /// Platform-agnostic file I/O interface for reading and writing files
 /// Implementations use dart:io for native and dart:html for web
 abstract class FileIO {
@@ -25,6 +27,6 @@ abstract class FileIO {
   Future<Uint8List> readFile(String filePath);
 
   /// Computes SHA256 hash of a file by reading it in chunks
-  /// Returns the hash as a hex string without loading the entire file into memory
-  Future<String> computeFileHash(String filePath);
+  /// Returns stream updates with progress and a final event containing [FileHashProgress.hash]
+  Stream<FileHashProgress> computeFileHash(String filePath);
 }

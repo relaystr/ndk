@@ -2,6 +2,7 @@ import 'package:ndk/domain_layer/entities/blossom_strategies.dart';
 
 import '../../data_layer/repositories/blossom/blossom_impl.dart';
 import '../entities/blossom_blobs.dart';
+import '../entities/file_hash_progress.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/tuple.dart';
 
@@ -132,6 +133,6 @@ abstract class BlossomRepository {
   });
 
   /// Computes SHA256 hash of a file by reading it in chunks
-  /// Returns the hash as a hex string without loading the entire file into memory
-  Future<String> computeFileHash(String filePath);
+  /// Returns stream updates with progress and a final event containing [FileHashProgress.hash]
+  Stream<FileHashProgress> computeFileHash(String filePath);
 }
