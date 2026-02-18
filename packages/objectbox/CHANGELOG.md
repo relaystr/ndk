@@ -1,3 +1,12 @@
+## 0.2.8-dev.13
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
 ## 0.2.8-dev.11
 
  - **FEAT**(cache): add clearAll() method to CacheManager.

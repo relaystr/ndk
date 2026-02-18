@@ -444,6 +444,79 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  }) async {
+    await dbRdy;
+
+    // If all parameters are empty, return early (don't delete everything)
+    if ((ids == null || ids.isEmpty) &&
+        (pubKeys == null || pubKeys.isEmpty) &&
+        (kinds == null || kinds.isEmpty) &&
+        (tags == null || tags.isEmpty) &&
+        since == null &&
+        until == null) {
+      return;
+    }
+
+    final eventBox = _objectBox.store.box<DbNip01Event>();
+
+    // Build conditions list
+    final conditions = <Condition<DbNip01Event>>[];
+
+    if (ids != null && ids.isNotEmpty) {
+      conditions.add(DbNip01Event_.nostrId.oneOf(ids));
+    }
+    if (pubKeys != null && pubKeys.isNotEmpty) {
+      conditions.add(DbNip01Event_.pubKey.oneOf(pubKeys));
+    }
+    if (kinds != null && kinds.isNotEmpty) {
+      conditions.add(DbNip01Event_.kind.oneOf(kinds));
+    }
+    if (since != null) {
+      conditions.add(DbNip01Event_.createdAt.greaterOrEqual(since));
+    }
+    if (until != null) {
+      conditions.add(DbNip01Event_.createdAt.lessOrEqual(until));
+    }
+
+    // Build and execute the query
+    final query = conditions.isEmpty
+        ? eventBox.query().build()
+        : eventBox.query(conditions.reduce((a, b) => a.and(b))).build();
+    var results = query.find();
+
+    // Apply tag filters in memory if needed
+    if (tags != null && tags.isNotEmpty) {
+      results = results.where((event) {
+        return tags.entries.every((tagEntry) {
+          String tagKey = tagEntry.key;
+          List<String> tagValues = tagEntry.value;
+
+          if (tagKey.startsWith('#') && tagKey.length > 1) {
+            tagKey = tagKey.substring(1);
+          }
+
+          List<DbTag> eventTags =
+              event.tags.where((t) => t.key == tagKey).toList();
+
+          return eventTags.any((tag) =>
+              tagValues.contains(tag.value) ||
+              tagValues.contains(tag.value.toLowerCase()));
+        });
+      }).toList();
+    }
+
+    // Remove matching events
+    eventBox.removeMany(results.map((e) => e.dbId).toList());
+  }
+
+  @override
   Future<void> removeMetadata(String pubKey) async {
     await dbRdy;
     final metadataBox = _objectBox.store.box<DbMetadata>();

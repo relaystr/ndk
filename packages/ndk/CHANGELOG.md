@@ -1,3 +1,17 @@
+## 0.7.1-dev.13
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: expose signer API on Account entity.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add nip46 pending requests integration test.
+ - **FEAT**: add unified pending requests API.
+
+## 0.7.1-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **DOCS**: add safety note to removeEvents documentation.
+
 ## 0.7.1-dev.11
 
  - **FIX**: close duplicate request when original completes.

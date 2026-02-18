@@ -255,6 +255,90 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  }) async {
+    // If all parameters are empty, return early (don't delete everything)
+    if ((ids == null || ids.isEmpty) &&
+        (pubKeys == null || pubKeys.isEmpty) &&
+        (kinds == null || kinds.isEmpty) &&
+        (tags == null || tags.isEmpty) &&
+        since == null &&
+        until == null) {
+      return;
+    }
+
+    // Build filter conditions
+    final filters = <sembast.Filter>[];
+
+    if (ids != null && ids.isNotEmpty) {
+      filters.add(sembast.Filter.inList('id', ids));
+    }
+    if (pubKeys != null && pubKeys.isNotEmpty) {
+      filters.add(sembast.Filter.inList('pubkey', pubKeys));
+    }
+    if (kinds != null && kinds.isNotEmpty) {
+      filters.add(sembast.Filter.inList('kind', kinds));
+    }
+    if (since != null) {
+      filters.add(sembast.Filter.greaterThanOrEquals('created_at', since));
+    }
+    if (until != null) {
+      filters.add(sembast.Filter.lessThanOrEquals('created_at', until));
+    }
+
+    // If tags are specified, we need to load events first and filter in memory
+    if (tags != null && tags.isNotEmpty) {
+      final finder = sembast.Finder(
+        filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      );
+      final records = await _eventsStore.find(_database, finder: finder);
+      final events = records
+          .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
+          .toList();
+
+      // Filter by tags in memory
+      final matchingEvents = events.where((event) {
+        return tags.entries.every((tagEntry) {
+          var tagName = tagEntry.key;
+          final tagValues = tagEntry.value;
+
+          if (tagName.startsWith('#') && tagName.length > 1) {
+            tagName = tagName.substring(1);
+          }
+
+          final eventTags = event.getTags(tagName);
+
+          if (tagValues.isEmpty &&
+              event.tags.where((e) => e[0] == tagName).isNotEmpty) {
+            return true;
+          }
+
+          return tagValues.any(
+            (value) => eventTags.contains(value.toLowerCase()),
+          );
+        });
+      }).toList();
+
+      // Delete matching events by ID
+      await _eventsStore
+          .records(matchingEvents.map((e) => e.id).toList())
+          .delete(_database);
+    } else {
+      // No tags filter, delete directly with finder
+      final finder = sembast.Finder(
+        filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      );
+      await _eventsStore.delete(_database, finder: finder);
+    }
+  }
+
+  @override
   Future<void> removeMetadata(String pubKey) async {
     await _metadataStore.record(pubKey).delete(_database);
   }
