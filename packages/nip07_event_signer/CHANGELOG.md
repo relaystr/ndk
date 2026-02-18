@@ -1,3 +1,7 @@
+## 1.0.6-dev.14
+
+ - **FIX**(nip07): use nostr-tools for proper NIP-04/NIP-44 test mock.
+
 ## 1.0.6-dev.13
 
  - **REFACTOR**: make dispose() async.
