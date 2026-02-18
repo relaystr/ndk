@@ -95,7 +95,8 @@ class MockRelay {
     this.server = server;
     var stream = server.transform(WebSocketTransformer());
 
-    String challenge = '';
+    // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
+    final String challenge = Helpers.getRandomString(10);
     Set<String> authenticatedPubkeys = {};
 
     stream.listen((webSocket) {
@@ -107,7 +108,6 @@ class MockRelay {
       }
       if ((requireAuthForRequests || requireAuthForEvents) &&
           sendAuthChallenge) {
-        challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
       webSocket.listen((message) async {
