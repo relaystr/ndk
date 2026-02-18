@@ -15,6 +15,39 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_amber` - `v0.4.0-dev.15`](#ndk_amber---v040-dev15)
+ - [`nip07_event_signer` - `v1.0.6-dev.15`](#nip07_event_signer---v106-dev15)
+ - [`ndk_flutter` - `v0.0.2-dev.7`](#ndk_flutter---v002-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.0.2-dev.7`
+
+---
+
+#### `ndk_amber` - `v0.4.0-dev.15`
+
+ - **FIX**(amber): use completer.future for cancelRequest to work.
+
+#### `nip07_event_signer` - `v1.0.6-dev.15`
+
+ - **FIX**: use completer.future for cancelRequest to work.
+
+
+## 2026-02-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.7.1-dev.14`](#ndk---v071-dev14)
  - [`ndk_objectbox` - `v0.2.8-dev.14`](#ndk_objectbox---v028-dev14)
  - [`nip07_event_signer` - `v1.0.6-dev.14`](#nip07_event_signer---v106-dev14)

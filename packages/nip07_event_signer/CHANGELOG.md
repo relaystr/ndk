@@ -1,3 +1,7 @@
+## 1.0.6-dev.15
+
+ - **FIX**: use completer.future for cancelRequest to work.
+
 ## 1.0.6-dev.14
 
  - **FIX**(nip07): use nostr-tools for proper NIP-04/NIP-44 test mock.
