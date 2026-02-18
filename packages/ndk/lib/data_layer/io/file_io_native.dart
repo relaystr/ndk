@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../../domain_layer/entities/file_hash_progress.dart';
+import '../../shared/isolates/isolate_manager.dart';
 import 'file_io.dart';
 
 /// Native platform implementation using dart:io
@@ -56,37 +57,46 @@ class FileIONative implements FileIO {
   }
 
   @override
-  Stream<FileHashProgress> computeFileHash(String filePath) async* {
-    final file = File(filePath);
-    final totalBytes = await file.length();
+  Stream<FileHashProgress> computeFileHash(String filePath) {
+    return IsolateManager.instance
+        .runInComputeIsolateStream<String, FileHashProgress>(
+            _computeFileHashTask, filePath);
+  }
+}
 
-    final digestSink = _DigestSink();
-    final input = sha256.startChunkedConversion(digestSink);
+Future<void> _computeFileHashTask(
+  String filePath,
+  void Function(FileHashProgress progress) emit,
+) async {
+  final file = File(filePath);
+  final totalBytes = await file.length();
 
-    int processedBytes = 0;
-    yield FileHashProgress(
+  final digestSink = _DigestSink();
+  final input = sha256.startChunkedConversion(digestSink);
+
+  int processedBytes = 0;
+  emit(FileHashProgress(
+    processedBytes: processedBytes,
+    totalBytes: totalBytes,
+  ));
+
+  await for (final chunk in file.openRead()) {
+    input.add(chunk);
+    processedBytes += chunk.length;
+    emit(FileHashProgress(
       processedBytes: processedBytes,
       totalBytes: totalBytes,
-    );
-
-    await for (final chunk in file.openRead()) {
-      input.add(chunk);
-      processedBytes += chunk.length;
-      yield FileHashProgress(
-        processedBytes: processedBytes,
-        totalBytes: totalBytes,
-      );
-    }
-
-    input.close();
-
-    yield FileHashProgress(
-      processedBytes: totalBytes,
-      totalBytes: totalBytes,
-      isComplete: true,
-      hash: digestSink.value?.toString(),
-    );
+    ));
   }
+
+  input.close();
+
+  emit(FileHashProgress(
+    processedBytes: totalBytes,
+    totalBytes: totalBytes,
+    isComplete: true,
+    hash: digestSink.value?.toString(),
+  ));
 }
 
 class _DigestSink implements Sink<Digest> {
