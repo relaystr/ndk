@@ -1,4 +1,5 @@
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/entities/pending_signer_request.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 
 /// A wrapper signer that adds a delay to simulate slow signing
@@ -60,4 +61,18 @@ class MockSlowSigner implements EventSigner {
       senderPubKey: senderPubKey,
     );
   }
+
+  @override
+  Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
+      _innerSigner.pendingRequestsStream;
+
+  @override
+  List<PendingSignerRequest> get pendingRequests =>
+      _innerSigner.pendingRequests;
+
+  @override
+  bool cancelRequest(String requestId) => _innerSigner.cancelRequest(requestId);
+
+  @override
+  Future<void> dispose() => _innerSigner.dispose();
 }
