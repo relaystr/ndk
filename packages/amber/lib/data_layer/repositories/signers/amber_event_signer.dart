@@ -58,7 +58,7 @@ class AmberEventSigner implements EventSigner {
     String? plaintext,
     String? ciphertext,
     String? counterpartyPubkey,
-  }) async {
+  }) {
     final requestId = _generateRequestId();
     final completer = Completer<T>();
     final pendingRequest = PendingSignerRequest(
@@ -78,22 +78,21 @@ class AmberEventSigner implements EventSigner {
     );
     _notifyPendingRequestsChange();
 
-    try {
-      final result = await operation();
+    operation().then((result) {
       if (!completer.isCompleted) {
         completer.complete(result);
       }
-      return result;
-    } catch (e) {
-      final error = SignerRequestRejectedException(requestId: requestId);
+    }).catchError((e) {
       if (!completer.isCompleted) {
+        final error = SignerRequestRejectedException(requestId: requestId);
         completer.completeError(error);
       }
-      throw error;
-    } finally {
+    }).whenComplete(() {
       _pendingRequests.remove(requestId);
       _notifyPendingRequestsChange();
-    }
+    });
+
+    return completer.future;
   }
 
   @override
