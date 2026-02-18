@@ -1,3 +1,11 @@
+## 0.7.1-dev.14
+
+ - **REFACTOR**: extract URL normalization to separate file.
+ - **FIX**: remove all event versions from cache on NIP-09 deletion.
+ - **FIX**: flanky test.
+ - **FEAT**(broadcast): add NIP-09 compliant deletion with e, k, and a tags.
+ - **FEAT**: implement RFC 3986 compliant relay URL normalization.
+
 ## 0.7.1-dev.13
 
  - **REFACTOR**: make dispose() async.
