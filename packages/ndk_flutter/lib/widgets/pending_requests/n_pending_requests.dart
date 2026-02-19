@@ -340,43 +340,14 @@ class _NPendingRequestsState extends State<NPendingRequests> {
                     if (request.method == SignerMethod.signEvent &&
                         request.event != null) ...[
                       const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: ShapeDecoration(
-                          color: colorScheme.secondaryContainer,
-                          shape: const StadiumBorder(),
-                        ),
-                        child: Text(
-                          NostrKinds.getDescription(context, request.event!.kind),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: colorScheme.onSecondaryContainer,
-                          ),
-                        ),
+                      _buildChip(
+                        context,
+                        NostrKinds.getDescription(context, request.event!.kind),
                       ),
                     ],
                     if (_getNipProtocol(request.method) != null) ...[
                       const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: ShapeDecoration(
-                          color: colorScheme.primaryContainer,
-                          shape: const StadiumBorder(),
-                        ),
-                        child: Text(
-                          _getNipProtocol(request.method)!,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                      ),
+                      _buildChip(context, _getNipProtocol(request.method)!),
                     ],
                   ],
                 ),
@@ -401,6 +372,21 @@ class _NPendingRequestsState extends State<NPendingRequests> {
             child: const Text('Cancel'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChip(BuildContext context, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: ShapeDecoration(
+        color: colorScheme.primaryContainer,
+        shape: const StadiumBorder(),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 10, color: colorScheme.onPrimaryContainer),
       ),
     );
   }
