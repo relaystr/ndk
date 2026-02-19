@@ -17,7 +17,7 @@ void main() {
       eventVerifier: MockEventVerifier(),
       cache: MemCacheManager(),
       bootstrapRelays: [relay.url],
-    ));
+    )); 
 
     ndk.accounts.loginExternalSigner(
       signer: MockSlowSigner(
