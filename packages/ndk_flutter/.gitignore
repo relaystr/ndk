@@ -29,6 +29,3 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 /build/
 /coverage/
-
-# Generated localization files
-lib/l10n/app_localizations*.dart
