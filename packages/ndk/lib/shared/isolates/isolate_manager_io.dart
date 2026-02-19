@@ -18,6 +18,11 @@ final int computeIsolatePoolSize = math.max(
     math.min(Platform.numberOfProcessors ~/ kNumberOfProcessorsFactor,
         kMaxIsolatePoolSize));
 
+typedef StreamComputeTask<Q, P> = FutureOr<void> Function(
+  Q argument,
+  void Function(P progress) emit,
+);
+
 class IsolateConfig {
   Isolate isolate;
   SendPort sendPort;
@@ -145,6 +150,47 @@ class IsolateManager {
     return _runTask(task, argument, _computePool);
   }
 
+  /// dedicated for compute operations that need streaming progress updates
+  ///
+  /// Example:
+  /// ```dart
+  /// Stream<int> progress = IsolateManager.instance
+  ///     .runInComputeIsolateStream<String, int>(
+  ///   (path, emit) async {
+  ///     emit(0);
+  ///     // ...do work in chunks and emit updates...
+  ///     emit(100);
+  ///   },
+  ///   '/tmp/file.bin',
+  /// );
+  ///
+  /// await for (final value in progress) {
+  ///   print('progress: $value%');
+  /// }
+  /// ```
+  Stream<P> runInComputeIsolateStream<Q, P>(
+    StreamComputeTask<Q, P> task,
+    Q argument,
+  ) async* {
+    await ready;
+
+    final sendPort = _computePool.getNextSendPort();
+    final port = ReceivePort();
+    sendPort.send(['stream', task, argument, port.sendPort]);
+
+    await for (final message in port) {
+      if (message is Map && message['type'] == 'progress') {
+        yield message['data'] as P;
+      } else if (message is Map && message['type'] == 'done') {
+        port.close();
+        break;
+      } else if (message is Map && message['error'] != null) {
+        port.close();
+        throw Exception(message['error']);
+      }
+    }
+  }
+
   Future<void> dispose() async {
     _encodePool.killAll();
     _computePool.killAll();
@@ -155,8 +201,36 @@ class IsolateManager {
 void _isolateEntry(SendPort sendPort) {
   final port = ReceivePort();
   sendPort.send(port.sendPort);
-  port.listen((message) {
-    if (message is! List || message.length != 3) {
+  port.listen((message) async {
+    if (message is! List || message.isEmpty) {
+      return;
+    }
+
+    if (message[0] == 'stream' && message.length == 4) {
+      final task = message[1] as Function;
+      final argument = message[2];
+      final replyPort = message[3] as SendPort;
+
+      try {
+        void emit(dynamic progress) {
+          replyPort.send({'type': 'progress', 'data': progress});
+        }
+
+        final result = task(argument, emit);
+        if (result is Future) {
+          await result;
+        }
+
+        replyPort.send({'type': 'done'});
+      } catch (e, stackTrace) {
+        // ignore: avoid_print
+        print('_isolateEntry Stream Error: $e\n$stackTrace');
+        replyPort.send({'error': 'Error: $e'});
+      }
+      return;
+    }
+
+    if (message.length != 3) {
       return;
     }
 
