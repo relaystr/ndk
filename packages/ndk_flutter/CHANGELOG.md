@@ -1,3 +1,10 @@
+## 0.0.2-dev.8
+
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
 ## 0.0.2-dev.7
 
  - Update a dependency to the latest release.

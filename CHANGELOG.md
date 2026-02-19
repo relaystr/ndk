@@ -15,6 +15,30 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_flutter` - `v0.0.2-dev.8`](#ndk_flutter---v002-dev8)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.8`
+
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+
+## 2026-02-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`drift_cache_manager` - `v0.0.2-dev.0`](#drift_cache_manager---v002-dev0)
 
 ---
