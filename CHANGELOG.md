@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2-dev.0`](#drift_cache_manager---v002-dev0)
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.0`
+
+ - **FEAT**: implement removeEvents and clearAll methods.
+ - **FEAT**: use separate database names for debug and release modes.
+ - **FEAT**: drift cache manager.
+ - **FEAT**: create package.
+ - **DOCS**: prepare drift_cache_manager for pub.dev publication.
+
+
 ## 2026-02-18
 
 ### Changes
