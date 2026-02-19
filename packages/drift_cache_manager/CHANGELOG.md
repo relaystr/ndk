@@ -1,3 +1,11 @@
+## 0.0.2-dev.0
+
+ - **FEAT**: implement removeEvents and clearAll methods.
+ - **FEAT**: use separate database names for debug and release modes.
+ - **FEAT**: drift cache manager.
+ - **FEAT**: create package.
+ - **DOCS**: prepare drift_cache_manager for pub.dev publication.
+
 ## 0.0.1
 
 * Initial release
