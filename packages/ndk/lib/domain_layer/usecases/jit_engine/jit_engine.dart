@@ -162,18 +162,24 @@ class JitEngine with Logger implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner? signer,
-    required Stream<List<RelayBroadcastResponse>> doneStream,
+    required BroadcastState broadcastState,
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
       await relayManagerLight.seedRelaysConnected;
 
       final Nip01Event workingNostrEvent;
-      if (signer != null) {
-        workingNostrEvent = await signer.sign(nostrEvent);
-      } else {
-        workingNostrEvent = nostrEvent;
+      try {
+        if (signer != null) {
+          workingNostrEvent = await signer.sign(nostrEvent);
+        } else {
+          workingNostrEvent = nostrEvent;
+        }
+      } catch (e) {
+        broadcastState.startTimeout();
+        rethrow;
       }
+      broadcastState.startTimeout();
 
       if (specificRelays != null) {
         final cleanedSpecificRelays = cleanRelayUrls(specificRelays.toList());
@@ -216,7 +222,8 @@ class JitEngine with Logger implements NetworkEngine {
     asyncStuff();
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: doneStream,
+      broadcastDoneStream: broadcastState.stateUpdates
+          .map((state) => state.broadcasts.values.toList()),
     );
   }
 

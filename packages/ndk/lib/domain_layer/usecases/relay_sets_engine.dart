@@ -265,17 +265,23 @@ class RelaySetsEngine implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner? signer,
-    required Stream<List<RelayBroadcastResponse>> doneStream,
+    required BroadcastState broadcastState,
     Iterable<String>? specificRelays,
   }) {
     Future<void> asyncStuff() async {
       final Nip01Event workingEvent;
 
-      if (signer != null) {
-        workingEvent = await signer.sign(nostrEvent);
-      } else {
-        workingEvent = nostrEvent;
+      try {
+        if (signer != null) {
+          workingEvent = await signer.sign(nostrEvent);
+        } else {
+          workingEvent = nostrEvent;
+        }
+      } catch (e) {
+        broadcastState.startTimeout();
+        rethrow;
       }
+      broadcastState.startTimeout();
 
       // =====================================================================================
       // specific relays
@@ -403,7 +409,8 @@ class RelaySetsEngine implements NetworkEngine {
 
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: doneStream,
+      broadcastDoneStream: broadcastState.stateUpdates
+          .map((state) => state.broadcasts.values.toList()),
     );
   }
 }
