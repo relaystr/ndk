@@ -849,6 +849,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final contentParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 14, '');
+        final nostrIdParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
         final createdAtParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -861,6 +864,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
                 kind: kindParam,
                 dbTags: dbTagsParam,
                 content: contentParam,
+                nostrId: nostrIdParam,
                 createdAt: createdAtParam,
               )
               ..dbId = const fb.Int64Reader().vTableGet(
@@ -869,9 +873,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
                 4,
                 0,
               )
-              ..nostrId = const fb.StringReader(
-                asciiOptimization: true,
-              ).vTableGet(buffer, rootOffset, 6, '')
               ..sig = const fb.StringReader(
                 asciiOptimization: true,
               ).vTableGetNullable(buffer, rootOffset, 16)

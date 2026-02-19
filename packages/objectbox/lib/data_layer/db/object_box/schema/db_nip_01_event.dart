@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:ndk/entities.dart' as ndk_entities;
 import 'package:objectbox/objectbox.dart';
 
@@ -11,21 +9,19 @@ class DbNip01Event {
     required this.kind,
     required this.dbTags,
     required this.content,
+    required this.nostrId,
     int createdAt = 0,
   }) {
     this.createdAt = (createdAt == 0)
         ? DateTime.now().millisecondsSinceEpoch ~/ 1000
         : createdAt;
-
-    nostrId =
-        _calculateId(pubKey, this.createdAt, kind, _tagsToList(tags), content);
   }
 
   @Id()
   int dbId = 0;
 
   @Property()
-  String nostrId = '';
+  final String nostrId;
 
   @Property()
   final String pubKey;
@@ -37,7 +33,7 @@ class DbNip01Event {
   final int kind;
 
   @Property()
-  String content;
+  final String content;
 
   @Property()
   String? sig;
@@ -57,11 +53,6 @@ class DbNip01Event {
     dbTags = value.map((tag) => tag.toString()).toList();
   }
 
-  bool get isIdValid {
-    return nostrId ==
-        _calculateId(pubKey, createdAt, kind, _tagsToList(tags), content);
-  }
-
   @override
   bool operator ==(other) => other is DbNip01Event && nostrId == other.nostrId;
 
@@ -70,15 +61,6 @@ class DbNip01Event {
 
   static int secondsSinceEpoch() {
     return DateTime.now().millisecondsSinceEpoch ~/ 1000;
-  }
-
-  static String _calculateId(String publicKey, int createdAt, int kind,
-      List<List<String>> tags, String content) {
-    final jsonData =
-        json.encode([0, publicKey, createdAt, kind, tags, content]);
-    final bytes = utf8.encode(jsonData);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
   }
 
   String? getEId() {
@@ -144,13 +126,14 @@ class DbNip01Event {
 
   factory DbNip01Event.fromNdk(ndk_entities.Nip01Event ndkE) {
     final dbE = DbNip01Event(
+      nostrId: ndkE.id,
       pubKey: ndkE.pubKey,
       content: ndkE.content,
       createdAt: ndkE.createdAt,
       kind: ndkE.kind,
       dbTags: _listToTags(ndkE.tags).map((tag) => tag.toString()).toList(),
     );
-    dbE.nostrId = ndkE.id;
+
     dbE.sig = ndkE.sig;
     dbE.validSig = ndkE.validSig;
     dbE.sources = ndkE.sources;
