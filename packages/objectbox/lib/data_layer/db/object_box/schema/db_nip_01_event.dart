@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:ndk/entities.dart' as ndk_entities;
 import 'package:objectbox/objectbox.dart';
 
@@ -7,7 +6,6 @@ class DbNip01Event {
   DbNip01Event({
     required this.pubKey,
     required this.kind,
-    required this.dbTags,
     required this.content,
     required this.nostrId,
     int createdAt = 0,
@@ -44,14 +42,8 @@ class DbNip01Event {
   @Property()
   List<String> sources = [];
 
-  @Property()
-  List<String> dbTags = [];
-
-  List<DbTag> get tags => dbTags.map((tag) => DbTag.fromString(tag)).toList();
-
-  set tags(List<DbTag> value) {
-    dbTags = value.map((tag) => tag.toString()).toList();
-  }
+  @Backlink('event')
+  final tags = ToMany<DbTag>();
 
   @override
   bool operator ==(other) => other is DbNip01Event && nostrId == other.nostrId;
@@ -73,10 +65,13 @@ class DbNip01Event {
   }
 
   static List<String> getTags(List<DbTag> list, String tagKey) {
-    return list
-        .where((tag) => tag.key == tagKey)
-        .map((tag) => tag.value.trim().toLowerCase())
-        .toList();
+    final result = <String>[];
+    for (final tag in list) {
+      if (tag.key == tagKey) {
+        result.add(tag.normalizedValue);
+      }
+    }
+    return result;
   }
 
   List<String> get tTags {
@@ -88,10 +83,13 @@ class DbNip01Event {
   }
 
   List<String> get replyETags {
-    return tags
-        .where((tag) => tag.key == "e" && tag.marker == "reply")
-        .map((tag) => tag.value.trim().toLowerCase())
-        .toList();
+    final result = <String>[];
+    for (final tag in tags) {
+      if (tag.key == "e" && tag.marker == "reply") {
+        result.add(tag.normalizedValue);
+      }
+    }
+    return result;
   }
 
   String? getDtag() {
@@ -131,21 +129,29 @@ class DbNip01Event {
       content: ndkE.content,
       createdAt: ndkE.createdAt,
       kind: ndkE.kind,
-      dbTags: _listToTags(ndkE.tags).map((tag) => tag.toString()).toList(),
     );
 
+    dbE.tags.addAll(_listToTags(ndkE.tags));
     dbE.sig = ndkE.sig;
     dbE.validSig = ndkE.validSig;
     dbE.sources = ndkE.sources;
     return dbE;
   }
 
-  static List<List<String>> _tagsToList(List<DbTag> tags) {
-    return tags.map((tag) => tag.toList()).toList();
+  static List<List<String>> _tagsToList(Iterable<DbTag> tags) {
+    final result = <List<String>>[];
+    for (final tag in tags) {
+      result.add(tag.toList());
+    }
+    return result;
   }
 
   static List<DbTag> _listToTags(List<List<String>> list) {
-    return list.map((tagList) => DbTag.fromList(tagList)).toList();
+    final result = <DbTag>[];
+    for (final tagList in list) {
+      result.add(DbTag.fromList(tagList));
+    }
+    return result;
   }
 }
 
@@ -163,12 +169,23 @@ class DbTag {
   @Property()
   String? marker;
 
+  @Index()
+  @Property()
+  String normalizedValue;
+
   /// Store all elements of the tag to preserve full tag data
   @Property()
   List<String> elements;
 
+  final event = ToOne<DbNip01Event>();
+
   DbTag(
-      {this.key = '', this.value = '', this.marker, this.elements = const []});
+      {this.key = '',
+      this.value = '',
+      this.marker,
+      this.elements = const [],
+      String? normalizedValue})
+      : normalizedValue = normalizedValue ?? value.trim().toLowerCase();
 
   List<String> toList() {
     // Return the full elements if available, otherwise construct from key/value/marker
@@ -184,28 +201,6 @@ class DbTag {
       value: list.length >= 2 ? list[1] : '',
       marker: list.length >= 4 ? list[3] : null,
       elements: list,
-    );
-  }
-
-  @override
-  String toString() {
-    return json.encode({
-      'key': key,
-      'value': value,
-      'marker': marker,
-      'elements': elements,
-    });
-  }
-
-  factory DbTag.fromString(String jsonString) {
-    final Map<String, dynamic> data = json.decode(jsonString);
-    return DbTag(
-      key: data['key'] ?? '',
-      value: data['value'] ?? '',
-      marker: data['marker'],
-      elements: data['elements'] != null
-          ? List<String>.from(data['elements'])
-          : <String>[],
     );
   }
 }

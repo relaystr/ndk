@@ -201,18 +201,13 @@
           "id": "9:7564063012610719918",
           "name": "sources",
           "type": 30
-        },
-        {
-          "id": "10:6188110795031782335",
-          "name": "dbTags",
-          "type": 30
         }
       ],
       "relations": []
     },
     {
       "id": "4:3637320921488077827",
-      "lastPropertyId": "5:3179649802820230952",
+      "lastPropertyId": "7:2825987005528791073",
       "name": "DbTag",
       "properties": [
         {
@@ -240,6 +235,21 @@
           "id": "5:3179649802820230952",
           "name": "elements",
           "type": 30
+        },
+        {
+          "id": "6:8358736823481971129",
+          "name": "normalizedValue",
+          "indexId": "4:4576592982883023835",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "7:2825987005528791073",
+          "name": "eventId",
+          "indexId": "5:689756751240935184",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "DbNip01Event"
         }
       ],
       "relations": []
@@ -408,7 +418,7 @@
     }
   ],
   "lastEntityId": "8:2356961977798202534",
-  "lastIndexId": "3:735436971837042211",
+  "lastIndexId": "5:689756751240935184",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
@@ -416,7 +426,8 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    4248118904091022656
+    4248118904091022656,
+    6188110795031782335
   ],
   "retiredRelationUids": [],
   "version": 1

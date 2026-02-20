@@ -261,20 +261,20 @@ final _entities = <obx_int.ModelEntity>[
         type: 30,
         flags: 0,
       ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(10, 6188110795031782335),
-        name: 'dbTags',
-        type: 30,
-        flags: 0,
-      ),
     ],
     relations: <obx_int.ModelRelation>[],
-    backlinks: <obx_int.ModelBacklink>[],
+    backlinks: <obx_int.ModelBacklink>[
+      obx_int.ModelBacklink(
+        name: 'tags',
+        srcEntity: 'DbTag',
+        srcField: 'event',
+      ),
+    ],
   ),
   obx_int.ModelEntity(
     id: const obx_int.IdUid(4, 3637320921488077827),
     name: 'DbTag',
-    lastPropertyId: const obx_int.IdUid(5, 3179649802820230952),
+    lastPropertyId: const obx_int.IdUid(7, 2825987005528791073),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -306,6 +306,22 @@ final _entities = <obx_int.ModelEntity>[
         name: 'elements',
         type: 30,
         flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 8358736823481971129),
+        name: 'normalizedValue',
+        type: 9,
+        flags: 2048,
+        indexId: const obx_int.IdUid(4, 4576592982883023835),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 2825987005528791073),
+        name: 'eventId',
+        type: 11,
+        flags: 520,
+        indexId: const obx_int.IdUid(5, 689756751240935184),
+        relationField: 'event',
+        relationTarget: 'DbNip01Event',
       ),
     ],
     relations: <obx_int.ModelRelation>[],
@@ -539,12 +555,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
     lastEntityId: const obx_int.IdUid(8, 2356961977798202534),
-    lastIndexId: const obx_int.IdUid(3, 735436971837042211),
+    lastIndexId: const obx_int.IdUid(5, 689756751240935184),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [],
     retiredIndexUids: const [],
-    retiredPropertyUids: const [4248118904091022656],
+    retiredPropertyUids: const [4248118904091022656, 6188110795031782335],
     retiredRelationUids: const [],
     modelVersion: 5,
     modelVersionParserMinimum: 5,
@@ -798,7 +814,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
     DbNip01Event: obx_int.EntityDefinition<DbNip01Event>(
       model: _entities[2],
       toOneRelations: (DbNip01Event object) => [],
-      toManyRelations: (DbNip01Event object) => {},
+      toManyRelations: (DbNip01Event object) => {
+        obx_int.RelInfo<DbTag>.toOneBacklink(
+          7,
+          object.dbId,
+          (DbTag srcObject) => srcObject.event,
+        ): object.tags,
+      },
       getId: (DbNip01Event object) => object.dbId,
       setId: (DbNip01Event object, int id) {
         object.dbId = id;
@@ -813,9 +835,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final sourcesOffset = fbb.writeList(
           object.sources.map(fbb.writeString).toList(growable: false),
         );
-        final dbTagsOffset = fbb.writeList(
-          object.dbTags.map(fbb.writeString).toList(growable: false),
-        );
         fbb.startTable(11);
         fbb.addInt64(0, object.dbId);
         fbb.addOffset(1, nostrIdOffset);
@@ -826,7 +845,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addOffset(6, sigOffset);
         fbb.addBool(7, object.validSig);
         fbb.addOffset(8, sourcesOffset);
-        fbb.addOffset(9, dbTagsOffset);
         fbb.finish(fbb.endTable());
         return object.dbId;
       },
@@ -842,10 +860,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
           12,
           0,
         );
-        final dbTagsParam = const fb.ListReader<String>(
-          fb.StringReader(asciiOptimization: true),
-          lazy: false,
-        ).vTableGet(buffer, rootOffset, 22, []);
         final contentParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 14, '');
@@ -862,7 +876,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
             DbNip01Event(
                 pubKey: pubKeyParam,
                 kind: kindParam,
-                dbTags: dbTagsParam,
                 content: contentParam,
                 nostrId: nostrIdParam,
                 createdAt: createdAtParam,
@@ -885,13 +898,21 @@ obx_int.ModelDefinition getObjectBoxModel() {
                 fb.StringReader(asciiOptimization: true),
                 lazy: false,
               ).vTableGet(buffer, rootOffset, 20, []);
-
+        obx_int.InternalToManyAccess.setRelInfo<DbNip01Event>(
+          object.tags,
+          store,
+          obx_int.RelInfo<DbTag>.toOneBacklink(
+            7,
+            object.dbId,
+            (DbTag srcObject) => srcObject.event,
+          ),
+        );
         return object;
       },
     ),
     DbTag: obx_int.EntityDefinition<DbTag>(
       model: _entities[3],
-      toOneRelations: (DbTag object) => [],
+      toOneRelations: (DbTag object) => [object.event],
       toManyRelations: (DbTag object) => {},
       getId: (DbTag object) => object.id,
       setId: (DbTag object, int id) {
@@ -906,12 +927,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final elementsOffset = fbb.writeList(
           object.elements.map(fbb.writeString).toList(growable: false),
         );
-        fbb.startTable(6);
+        final normalizedValueOffset = fbb.writeString(object.normalizedValue);
+        fbb.startTable(8);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, keyOffset);
         fbb.addOffset(2, valueOffset);
         fbb.addOffset(3, markerOffset);
         fbb.addOffset(4, elementsOffset);
+        fbb.addOffset(5, normalizedValueOffset);
+        fbb.addInt64(6, object.event.targetId);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -931,13 +955,23 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fb.StringReader(asciiOptimization: true),
           lazy: false,
         ).vTableGet(buffer, rootOffset, 12, []);
+        final normalizedValueParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 14, '');
         final object = DbTag(
           key: keyParam,
           value: valueParam,
           marker: markerParam,
           elements: elementsParam,
+          normalizedValue: normalizedValueParam,
         )..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
-
+        object.event.targetId = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          16,
+          0,
+        );
+        object.event.attach(store);
         return object;
       },
     ),
@@ -1365,9 +1399,9 @@ class DbNip01Event_ {
     _entities[2].properties[8],
   );
 
-  /// See [DbNip01Event.dbTags].
-  static final dbTags = obx.QueryStringVectorProperty<DbNip01Event>(
-    _entities[2].properties[9],
+  /// see [DbNip01Event.tags]
+  static final tags = obx.QueryBacklinkToMany<DbTag, DbNip01Event>(
+    DbTag_.event,
   );
 }
 
@@ -1392,6 +1426,16 @@ class DbTag_ {
   /// See [DbTag.elements].
   static final elements = obx.QueryStringVectorProperty<DbTag>(
     _entities[3].properties[4],
+  );
+
+  /// See [DbTag.normalizedValue].
+  static final normalizedValue = obx.QueryStringProperty<DbTag>(
+    _entities[3].properties[5],
+  );
+
+  /// See [DbTag.event].
+  static final event = obx.QueryRelationToOne<DbTag, DbNip01Event>(
+    _entities[3].properties[6],
   );
 }
 
