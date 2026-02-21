@@ -173,7 +173,7 @@ class Nip51List {
         List<dynamic> tags = jsonDecode(json ?? '');
         list.parseTags(tags, private: true);
       } catch (e) {
-        Logger.log.w(e);
+        Logger.log.w(() => e);
       }
     }
     return list;
@@ -308,7 +308,7 @@ class Nip51Set extends Nip51List {
         set.parseSetTags(tags);
       } catch (e) {
         set.name = "<invalid encrypted content>";
-        Logger.log.d(e);
+        Logger.log.d(() => e);
       }
     } else {
       set.parseTags(event.tags, private: false);

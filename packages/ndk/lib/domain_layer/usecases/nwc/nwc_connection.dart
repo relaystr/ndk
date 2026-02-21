@@ -43,8 +43,8 @@ class NwcConnection {
     if (subscription != null) {
       _streamSubscription = subscription!.stream.listen(onData);
     } else {
-      Logger.log
-          .e("NwcConnection: Attempted to listen on a null subscription.");
+      Logger.log.e(
+          () => "NwcConnection: Attempted to listen on a null subscription.");
     }
   }
 
@@ -80,7 +80,8 @@ class NwcConnection {
   /// does this connection only support legacy notifications
   bool isLegacyNotifications() {
     return (supportedVersions.length == 1 && supportedVersions.first == "0.0" ||
-        !supportedVersions.any((e) => e != "0.0")) && !supportedEncryptions.any((e) => e != "nip04");
+            !supportedVersions.any((e) => e != "0.0")) &&
+        !supportedEncryptions.any((e) => e != "nip04");
   }
 
   @override

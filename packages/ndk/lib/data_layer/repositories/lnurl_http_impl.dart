@@ -18,7 +18,7 @@ class LnurlTransportHttpImpl implements LnurlTransport {
       final response = await httpDS.jsonRequest(lnurl);
       return LnurlResponse.fromJson(response);
     } catch (e) {
-      Logger.log.w(e);
+      Logger.log.w(() => e);
       return null;
     }
   }
@@ -28,7 +28,7 @@ class LnurlTransportHttpImpl implements LnurlTransport {
     try {
       return await httpDS.jsonRequest(callbacklink);
     } catch (e) {
-      Logger.log.d(e);
+      Logger.log.d(() => e);
       return null;
     }
   }

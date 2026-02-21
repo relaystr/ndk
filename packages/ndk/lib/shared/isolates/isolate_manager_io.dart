@@ -69,7 +69,7 @@ class IsolateManager {
 
   Future<void> _initialize() async {
     try {
-      Logger.log.d(
+      Logger.log.d(() =>
           "Initializing encoding isolate pool size = $encodingIsolatePoolSize");
       // Initialize encoding isolate pool
       for (int i = 0; i < encodingIsolatePoolSize; i++) {
@@ -77,7 +77,7 @@ class IsolateManager {
         _encodePool.add(config);
       }
 
-      Logger.log.d(
+      Logger.log.d(() =>
           "Initializing compute isolate pool size = $encodingIsolatePoolSize");
       // Initialize compute isolate pool
       for (int i = 0; i < computeIsolatePoolSize; i++) {
@@ -88,11 +88,11 @@ class IsolateManager {
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.complete();
       }
-      Logger.log.d("Finished initializing isolate pools");
+      Logger.log.d(() => "Finished initializing isolate pools");
     } catch (e) {
       if (!_readyCompleter.isCompleted) {
         _readyCompleter.completeError(e);
-        Logger.log.e("Error initializing isolate pools", error: e);
+        Logger.log.e(() => "Error initializing isolate pools", error: e);
       }
     }
   }
