@@ -3,6 +3,8 @@ import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class DbNip01Event {
+  static const _sep = '\x1F';
+
   DbNip01Event({
     required this.pubKey,
     required this.kind,
@@ -42,8 +44,35 @@ class DbNip01Event {
   @Property()
   List<String> sources = [];
 
-  @Backlink('event')
-  final tags = ToMany<DbTag>();
+  /// Tags stored as packed strings using \x1F separator.
+  /// Each element is a single tag joined: "p\x1Fabc" or "e\x1Fdef\x1F\x1Freply"
+  @Property()
+  List<String> tagsPacked = [];
+
+  /// Searchable tag index: ["p:abc", "e:def", "t:nostr"]
+  /// Stores "key:normalizedValue" pairs for querying by tag.
+  //@Index()
+  @Property()
+  List<String> tagsIndex = [];
+
+  @Transient()
+  List<List<String>>? _cachedTags;
+
+  @Transient()
+  List<List<String>> get tags {
+    _cachedTags ??= [for (final s in tagsPacked) s.split(_sep)];
+    return _cachedTags!;
+  }
+
+  set tags(List<List<String>> value) {
+    _cachedTags = value;
+    tagsPacked = [for (final tag in value) tag.join(_sep)];
+    tagsIndex = [
+      for (final tag in value)
+        if (tag.length >= 2 && tag[0].isNotEmpty && tag[1].isNotEmpty)
+          '${tag[0]}:${tag[1].trim().toLowerCase()}'
+    ];
+  }
 
   @override
   bool operator ==(other) => other is DbNip01Event && nostrId == other.nostrId;
@@ -57,45 +86,38 @@ class DbNip01Event {
 
   String? getEId() {
     for (var tag in tags) {
-      if (tag.key == "e") {
-        return tag.value;
+      if (tag.isNotEmpty && tag[0] == "e" && tag.length >= 2) {
+        return tag[1];
       }
     }
     return null;
   }
 
-  static List<String> getTags(List<DbTag> list, String tagKey) {
-    final result = <String>[];
-    for (final tag in list) {
-      if (tag.key == tagKey) {
-        result.add(tag.normalizedValue);
-      }
-    }
-    return result;
+  static List<String> getTagValues(List<List<String>> list, String tagKey) {
+    return [
+      for (final tag in list)
+        if (tag.isNotEmpty && tag[0] == tagKey && tag.length >= 2)
+          tag[1].trim().toLowerCase()
+    ];
   }
 
-  List<String> get tTags {
-    return getTags(tags, "t");
-  }
+  List<String> get tTags => getTagValues(tags, "t");
 
-  List<String> get pTags {
-    return getTags(tags, "p");
-  }
+  List<String> get pTags => getTagValues(tags, "p");
 
-  List<String> get replyETags {
-    final result = <String>[];
-    for (final tag in tags) {
-      if (tag.key == "e" && tag.marker == "reply") {
-        result.add(tag.normalizedValue);
-      }
-    }
-    return result;
-  }
+  List<String> get replyETags => [
+        for (final tag in tags)
+          if (tag.isNotEmpty &&
+              tag[0] == "e" &&
+              tag.length >= 4 &&
+              tag[3] == "reply")
+            tag[1].trim().toLowerCase()
+      ];
 
   String? getDtag() {
     for (var tag in tags) {
-      if (tag.key == "d") {
-        return tag.value;
+      if (tag.isNotEmpty && tag[0] == "d" && tag.length >= 2) {
+        return tag[1];
       }
     }
     return null;
@@ -107,19 +129,17 @@ class DbNip01Event {
   }
 
   ndk_entities.Nip01Event toNdk() {
-    final ndkE = ndk_entities.Nip01Event(
+    return ndk_entities.Nip01Event(
       pubKey: pubKey,
       content: content,
       createdAt: createdAt,
       kind: kind,
-      tags: _tagsToList(tags),
+      tags: tags,
       id: nostrId,
       sig: sig,
       validSig: validSig,
       sources: sources,
     );
-
-    return ndkE;
   }
 
   factory DbNip01Event.fromNdk(ndk_entities.Nip01Event ndkE) {
@@ -130,77 +150,10 @@ class DbNip01Event {
       createdAt: ndkE.createdAt,
       kind: ndkE.kind,
     );
-
-    dbE.tags.addAll(_listToTags(ndkE.tags));
+    dbE.tags = ndkE.tags;
     dbE.sig = ndkE.sig;
     dbE.validSig = ndkE.validSig;
     dbE.sources = ndkE.sources;
     return dbE;
-  }
-
-  static List<List<String>> _tagsToList(Iterable<DbTag> tags) {
-    final result = <List<String>>[];
-    for (final tag in tags) {
-      result.add(tag.toList());
-    }
-    return result;
-  }
-
-  static List<DbTag> _listToTags(List<List<String>> list) {
-    final result = <DbTag>[];
-    for (final tagList in list) {
-      result.add(DbTag.fromList(tagList));
-    }
-    return result;
-  }
-}
-
-@Entity()
-class DbTag {
-  @Id()
-  int id = 0;
-
-  @Property()
-  String key;
-
-  @Property()
-  String value;
-
-  @Property()
-  String? marker;
-
-  @Index()
-  @Property()
-  String normalizedValue;
-
-  /// Store all elements of the tag to preserve full tag data
-  @Property()
-  List<String> elements;
-
-  final event = ToOne<DbNip01Event>();
-
-  DbTag(
-      {this.key = '',
-      this.value = '',
-      this.marker,
-      this.elements = const [],
-      String? normalizedValue})
-      : normalizedValue = normalizedValue ?? value.trim().toLowerCase();
-
-  List<String> toList() {
-    // Return the full elements if available, otherwise construct from key/value/marker
-    if (elements.isNotEmpty) {
-      return elements;
-    }
-    return marker != null ? [key, value, '', marker!] : [key, value];
-  }
-
-  static DbTag fromList(List<String> list) {
-    return DbTag(
-      key: list.isNotEmpty ? list[0] : '',
-      value: list.length >= 2 ? list[1] : '',
-      marker: list.length >= 4 ? list[3] : null,
-      elements: list,
-    );
   }
 }

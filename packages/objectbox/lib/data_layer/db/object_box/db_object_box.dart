@@ -130,7 +130,7 @@ class DbObjectBox implements CacheManager {
     }
 
     if (tags != null && tags.isNotEmpty) {
-      final matchingEventIds = _findEventIdsByTags(tags);
+      final matchingEventIds = _findEventIdsByTags(eventBox, tags);
       if (matchingEventIds.isEmpty) {
         return [];
       }
@@ -463,7 +463,7 @@ class DbObjectBox implements CacheManager {
     }
 
     if (tags != null && tags.isNotEmpty) {
-      final matchingEventIds = _findEventIdsByTags(tags);
+      final matchingEventIds = _findEventIdsByTags(eventBox, tags);
       if (matchingEventIds.isEmpty) {
         return;
       }
@@ -480,34 +480,42 @@ class DbObjectBox implements CacheManager {
     eventBox.removeMany(results.map((e) => e.dbId).toList());
   }
 
-  Set<int> _findEventIdsByTags(Map<String, List<String>> tags) {
-    final tagBox = _objectBox.store.box<DbTag>();
-
+  /// Find event DB IDs matching all given tag filters.
+  /// [tags] is a map of tag key -> list of acceptable values.
+  /// Returns the intersection of matching event IDs across all tag keys.
+  ///
+  /// Usage (on the calling side):
+  /// ```
+  /// final eventBox = store.box<DbNip01Event>();
+  /// final ids = DbNip01Event.findEventIdsByTags(eventBox, {"p": ["abc"], "t": ["nostr"]});
+  /// ```
+  static Set<int> _findEventIdsByTags(
+    Box<DbNip01Event> eventBox,
+    Map<String, List<String>> tags,
+  ) {
     Set<int>? matchingEventIds;
 
     for (final entry in tags.entries) {
-      final normalizedTagKey = _normalizeTagKey(entry.key);
-      final normalizedTagValues = entry.value
-          .map((value) => value.trim().toLowerCase())
-          .where((value) => value.isNotEmpty)
-          .toSet();
+      final key = entry.key.trim().toLowerCase();
+      final values = entry.value
+          .map((v) => v.trim().toLowerCase())
+          .where((v) => v.isNotEmpty)
+          .toList();
 
-      if (normalizedTagKey.isEmpty || normalizedTagValues.isEmpty) {
+      if (key.isEmpty || values.isEmpty) {
         return <int>{};
       }
 
-      final tagCondition = DbTag_.key
-          .equals(normalizedTagKey)
-          .and(DbTag_.normalizedValue.oneOf(normalizedTagValues.toList()));
+      final indexValues = [for (final v in values) '$key:$v'];
 
-      final query = tagBox.query(tagCondition).build();
-      final tagMatches = query.find();
+      Condition<DbNip01Event>? condition;
+      for (final v in indexValues) {
+        final c = DbNip01Event_.tagsIndex.containsElement(v);
+        condition = condition == null ? c : condition.or(c);
+      }
+      final query = eventBox.query(condition!).build();
+      final eventIdsForTag = query.findIds().toSet();
       query.close();
-
-      final eventIdsForTag = tagMatches
-          .map((tag) => tag.event.targetId)
-          .where((eventId) => eventId != 0)
-          .toSet();
 
       if (matchingEventIds == null) {
         matchingEventIds = eventIdsForTag;
