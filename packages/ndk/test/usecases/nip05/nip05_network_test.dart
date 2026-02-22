@@ -45,7 +45,8 @@ void main() {
           throwsException);
       expect(
           nip05Usecase.check(nip05: '', pubkey: 'testPubkey'), throwsException);
-      expect(nip05Usecase.check(nip05: 'test@example.com', pubkey: 'testPubkey'),
+      expect(
+          nip05Usecase.check(nip05: 'test@example.com', pubkey: 'testPubkey'),
           isA<Future<Nip05>>());
     });
     test('returns Nip05 if the http call completes successfully', () async {
@@ -78,8 +79,8 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      var result =
-          await nip05Usecase.check(nip05: 'username@url.test', pubkey: 'pubkey');
+      var result = await nip05Usecase.check(
+          nip05: 'username@url.test', pubkey: 'pubkey');
 
       expect(result.valid, false);
     });
@@ -111,8 +112,8 @@ void main() {
         nip05Repository: nip05Repos,
       );
 
-      var result =
-          await nip05Usecase.check(nip05: 'username@url.test', pubkey: 'pubkey');
+      var result = await nip05Usecase.check(
+          nip05: 'username@url.test', pubkey: 'pubkey');
 
       expect(result.valid, true);
     });
@@ -374,7 +375,8 @@ void main() {
 
       // Save an expired nip05 in cache
       final expiredTimestamp = (DateTime.now()
-              .subtract(Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100))
+              .subtract(
+                  Duration(seconds: NIP_05_VALID_DURATION.inSeconds + 100))
               .millisecondsSinceEpoch ~/
           1000);
       final expiredNip05 = Nip05(
@@ -388,7 +390,8 @@ void main() {
       // resolve() should refetch because cache is expired
       final result = await nip05Usecase.resolve('username@example.com');
       expect(result, isNotNull);
-      expect(result!.pubKey, equals('pubkey')); // From network, not 'old_pubkey'
+      expect(
+          result!.pubKey, equals('pubkey')); // From network, not 'old_pubkey'
 
       // Second call should return cached result (now valid)
       final result2 = await nip05Usecase.resolve('username@example.com');

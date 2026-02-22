@@ -46,7 +46,7 @@ class Zaps {
           amountSats: amountSats,
           zapRequest: zapRequest);
     } catch (e) {
-      Logger.log.d(()=>e);
+      Logger.log.d(() => e);
       return null;
     }
   }
