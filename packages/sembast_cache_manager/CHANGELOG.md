@@ -1,3 +1,7 @@
+## 1.0.7-dev.15
+
+ - Update a dependency to the latest release.
+
 ## 1.0.7-dev.14
 
  - **PERF**(sembast): optimize batch operations and queries.
