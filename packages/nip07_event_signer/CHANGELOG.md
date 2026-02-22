@@ -1,3 +1,7 @@
+## 1.0.6-dev.16
+
+ - Update a dependency to the latest release.
+
 ## 1.0.6-dev.15
 
  - **FIX**: use completer.future for cancelRequest to work.

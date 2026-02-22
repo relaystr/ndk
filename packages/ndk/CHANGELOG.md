@@ -1,3 +1,7 @@
+## 0.7.1-dev.15
+
+ - **FIX**(perf): lazy log.
+
 ## 0.7.1-dev.14
 
  - **REFACTOR**: extract URL normalization to separate file.
