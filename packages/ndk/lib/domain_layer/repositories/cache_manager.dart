@@ -14,6 +14,7 @@ abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Future<Nip01Event?> loadEvent(String id);
+
   /// Load events from cache with flexible filtering \
   /// [ids] - list of event ids \
   /// [pubKeys] - list of authors pubKeys \
@@ -131,8 +132,8 @@ abstract class CacheManager {
       String filterHash, String relayUrl);
 
   /// Load all fetched range records for a relay (all filters)
-  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelayUrl(
-      String relayUrl);
+  Future<List<FilterFetchedRangeRecord>>
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl);
 
   /// Remove all fetched range records for a filter hash
   Future<void> removeFilterFetchedRangeRecords(String filterHash);

@@ -268,7 +268,9 @@ class MemCacheManager implements CacheManager {
         continue;
       }
       // Filter by pubKeys
-      if (pubKeys != null && pubKeys.isNotEmpty && !pubKeys.contains(event.pubKey)) {
+      if (pubKeys != null &&
+          pubKeys.isNotEmpty &&
+          !pubKeys.contains(event.pubKey)) {
         continue;
       }
       // Filter by kinds

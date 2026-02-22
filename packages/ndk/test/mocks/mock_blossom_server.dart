@@ -265,7 +265,7 @@ class MockBlossomServer {
         .addHandler(_createRouter().call);
 
     _server = await serve(handler, 'localhost', port);
-    Logger.log.i('Mock Blossom Server running on port $port');
+    Logger.log.i(() => 'Mock Blossom Server running on port $port');
   }
 
   Future<void> stop() async {

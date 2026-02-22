@@ -80,7 +80,7 @@ class Lnurl {
       callback += "&nostr=$eventStr";
     }
 
-    Logger.log.d("getInvoice callback $callback");
+    Logger.log.d(() => "getInvoice callback $callback");
 
     try {
       var response = await _transport.fetchInvoice(callback);
@@ -90,7 +90,7 @@ class Lnurl {
           amountSats: amountSats,
           nostrPubkey: lnurlResponse.nostrPubkey);
     } catch (e) {
-      Logger.log.d(e);
+      Logger.log.d(() => e);
     }
     return null;
   }

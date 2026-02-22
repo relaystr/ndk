@@ -84,7 +84,7 @@ class RelayInfo {
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       return RelayInfo.fromJson(decodedResponse, uri.toString());
     } catch (e) {
-      Logger.log.d(e);
+      Logger.log.d(() => e);
       return null;
     }
   }

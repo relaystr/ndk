@@ -55,11 +55,11 @@ class StreamResponseCleaner {
         }
       }
       _outController.add(event);
-      Logger.log.t("added event ${event.content}");
+      Logger.log.t(() => "added event ${event.content}");
     }, onDone: () async {
       _canClose();
     }, onError: (error) {
-      Logger.log.e("⛔ $error ");
+      Logger.log.e(() => "⛔ $error ");
     });
   }
 
