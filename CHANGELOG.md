@@ -15,6 +15,29 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_objectbox` - `v0.2.8-dev.16`](#ndk_objectbox---v028-dev16)
+
+---
+
+#### `ndk_objectbox` - `v0.2.8-dev.16`
+
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+
+
+## 2026-02-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.7.1-dev.15`](#ndk---v071-dev15)
  - [`ndk_amber` - `v0.4.0-dev.16`](#ndk_amber---v040-dev16)
  - [`ndk_objectbox` - `v0.2.8-dev.15`](#ndk_objectbox---v028-dev15)
