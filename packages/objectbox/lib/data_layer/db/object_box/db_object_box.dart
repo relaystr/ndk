@@ -531,13 +531,6 @@ class DbObjectBox implements CacheManager {
     return matchingEventIds ?? <int>{};
   }
 
-  String _normalizeTagKey(String tagKey) {
-    if (tagKey.startsWith('#') && tagKey.length > 1) {
-      return tagKey.substring(1);
-    }
-    return tagKey;
-  }
-
   @override
   Future<void> removeMetadata(String pubKey) async {
     await dbRdy;
