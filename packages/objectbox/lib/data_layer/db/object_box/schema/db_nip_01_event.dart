@@ -1,31 +1,27 @@
-import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:ndk/entities.dart' as ndk_entities;
 import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class DbNip01Event {
+  static const _sep = '\x1F';
+
   DbNip01Event({
     required this.pubKey,
     required this.kind,
-    required this.dbTags,
     required this.content,
+    required this.nostrId,
     int createdAt = 0,
   }) {
     this.createdAt = (createdAt == 0)
         ? DateTime.now().millisecondsSinceEpoch ~/ 1000
         : createdAt;
-
-    nostrId =
-        _calculateId(pubKey, this.createdAt, kind, _tagsToList(tags), content);
   }
 
   @Id()
   int dbId = 0;
 
   @Property()
-  String nostrId = '';
+  final String nostrId;
 
   @Property()
   final String pubKey;
@@ -37,7 +33,7 @@ class DbNip01Event {
   final int kind;
 
   @Property()
-  String content;
+  final String content;
 
   @Property()
   String? sig;
@@ -48,18 +44,34 @@ class DbNip01Event {
   @Property()
   List<String> sources = [];
 
+  /// Tags stored as packed strings using \x1F separator.
+  /// Each element is a single tag joined: "p\x1Fabc" or "e\x1Fdef\x1F\x1Freply"
   @Property()
-  List<String> dbTags = [];
+  List<String> tagsPacked = [];
 
-  List<DbTag> get tags => dbTags.map((tag) => DbTag.fromString(tag)).toList();
+  /// Searchable tag index: ["p:abc", "e:def", "t:nostr"]
+  /// Stores "key:normalizedValue" pairs for querying by tag.
+  //@Index()
+  @Property()
+  List<String> tagsIndex = [];
 
-  set tags(List<DbTag> value) {
-    dbTags = value.map((tag) => tag.toString()).toList();
+  @Transient()
+  List<List<String>>? _cachedTags;
+
+  @Transient()
+  List<List<String>> get tags {
+    _cachedTags ??= [for (final s in tagsPacked) s.split(_sep)];
+    return _cachedTags!;
   }
 
-  bool get isIdValid {
-    return nostrId ==
-        _calculateId(pubKey, createdAt, kind, _tagsToList(tags), content);
+  set tags(List<List<String>> value) {
+    _cachedTags = value;
+    tagsPacked = [for (final tag in value) tag.join(_sep)];
+    tagsIndex = [
+      for (final tag in value)
+        if (tag.length >= 2 && tag[0].isNotEmpty && tag[1].isNotEmpty)
+          '${tag[0]}:${tag[1].trim().toLowerCase()}'
+    ];
   }
 
   @override
@@ -72,50 +84,40 @@ class DbNip01Event {
     return DateTime.now().millisecondsSinceEpoch ~/ 1000;
   }
 
-  static String _calculateId(String publicKey, int createdAt, int kind,
-      List<List<String>> tags, String content) {
-    final jsonData =
-        json.encode([0, publicKey, createdAt, kind, tags, content]);
-    final bytes = utf8.encode(jsonData);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
-  }
-
   String? getEId() {
     for (var tag in tags) {
-      if (tag.key == "e") {
-        return tag.value;
+      if (tag.isNotEmpty && tag[0] == "e" && tag.length >= 2) {
+        return tag[1];
       }
     }
     return null;
   }
 
-  static List<String> getTags(List<DbTag> list, String tagKey) {
-    return list
-        .where((tag) => tag.key == tagKey)
-        .map((tag) => tag.value.trim().toLowerCase())
-        .toList();
+  static List<String> getTagValues(List<List<String>> list, String tagKey) {
+    return [
+      for (final tag in list)
+        if (tag.isNotEmpty && tag[0] == tagKey && tag.length >= 2)
+          tag[1].trim().toLowerCase()
+    ];
   }
 
-  List<String> get tTags {
-    return getTags(tags, "t");
-  }
+  List<String> get tTags => getTagValues(tags, "t");
 
-  List<String> get pTags {
-    return getTags(tags, "p");
-  }
+  List<String> get pTags => getTagValues(tags, "p");
 
-  List<String> get replyETags {
-    return tags
-        .where((tag) => tag.key == "e" && tag.marker == "reply")
-        .map((tag) => tag.value.trim().toLowerCase())
-        .toList();
-  }
+  List<String> get replyETags => [
+        for (final tag in tags)
+          if (tag.isNotEmpty &&
+              tag[0] == "e" &&
+              tag.length >= 4 &&
+              tag[3] == "reply")
+            tag[1].trim().toLowerCase()
+      ];
 
   String? getDtag() {
     for (var tag in tags) {
-      if (tag.key == "d") {
-        return tag.value;
+      if (tag.isNotEmpty && tag[0] == "d" && tag.length >= 2) {
+        return tag[1];
       }
     }
     return null;
@@ -127,102 +129,31 @@ class DbNip01Event {
   }
 
   ndk_entities.Nip01Event toNdk() {
-    final ndkE = ndk_entities.Nip01Event(
+    return ndk_entities.Nip01Event(
       pubKey: pubKey,
       content: content,
       createdAt: createdAt,
       kind: kind,
-      tags: _tagsToList(tags),
+      tags: tags,
       id: nostrId,
       sig: sig,
       validSig: validSig,
       sources: sources,
     );
-
-    return ndkE;
   }
 
   factory DbNip01Event.fromNdk(ndk_entities.Nip01Event ndkE) {
     final dbE = DbNip01Event(
+      nostrId: ndkE.id,
       pubKey: ndkE.pubKey,
       content: ndkE.content,
       createdAt: ndkE.createdAt,
       kind: ndkE.kind,
-      dbTags: _listToTags(ndkE.tags).map((tag) => tag.toString()).toList(),
     );
-    dbE.nostrId = ndkE.id;
+    dbE.tags = ndkE.tags;
     dbE.sig = ndkE.sig;
     dbE.validSig = ndkE.validSig;
     dbE.sources = ndkE.sources;
     return dbE;
-  }
-
-  static List<List<String>> _tagsToList(List<DbTag> tags) {
-    return tags.map((tag) => tag.toList()).toList();
-  }
-
-  static List<DbTag> _listToTags(List<List<String>> list) {
-    return list.map((tagList) => DbTag.fromList(tagList)).toList();
-  }
-}
-
-@Entity()
-class DbTag {
-  @Id()
-  int id = 0;
-
-  @Property()
-  String key;
-
-  @Property()
-  String value;
-
-  @Property()
-  String? marker;
-
-  /// Store all elements of the tag to preserve full tag data
-  @Property()
-  List<String> elements;
-
-  DbTag(
-      {this.key = '', this.value = '', this.marker, this.elements = const []});
-
-  List<String> toList() {
-    // Return the full elements if available, otherwise construct from key/value/marker
-    if (elements.isNotEmpty) {
-      return elements;
-    }
-    return marker != null ? [key, value, '', marker!] : [key, value];
-  }
-
-  static DbTag fromList(List<String> list) {
-    return DbTag(
-      key: list.isNotEmpty ? list[0] : '',
-      value: list.length >= 2 ? list[1] : '',
-      marker: list.length >= 4 ? list[3] : null,
-      elements: list,
-    );
-  }
-
-  @override
-  String toString() {
-    return json.encode({
-      'key': key,
-      'value': value,
-      'marker': marker,
-      'elements': elements,
-    });
-  }
-
-  factory DbTag.fromString(String jsonString) {
-    final Map<String, dynamic> data = json.decode(jsonString);
-    return DbTag(
-      key: data['key'] ?? '',
-      value: data['value'] ?? '',
-      marker: data['marker'],
-      elements: data['elements'] != null
-          ? List<String>.from(data['elements'])
-          : <String>[],
-    );
   }
 }
