@@ -99,8 +99,10 @@ void main() {
 
       /// expect not to throw
 
-      expect(getResponse, completion('http://localhost:${server.port}/$sha256'));
-      expect(getResponseAuth, completion('http://localhost:${server.port}/$sha256'));
+      expect(
+          getResponse, completion('http://localhost:${server.port}/$sha256'));
+      expect(getResponseAuth,
+          completion('http://localhost:${server.port}/$sha256'));
 
       final getResponseVoid = client.checkBlob(
         sha256: "nonexistent_sha256",

@@ -39,50 +39,64 @@ class NdkLogger {
     _outputs.clear();
   }
 
+  /// Check whether a [logLevel] is currently enabled
+  bool isEnabled(LogLevel logLevel) {
+    return logLevel.shouldLog(level);
+  }
+
   /// Log a trace message
-  void t(dynamic message, {Object? error, StackTrace? stackTrace}) {
+  void t(Object? Function() message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.trace, message, error, stackTrace);
   }
 
   /// Log a debug message
-  void d(dynamic message, {Object? error, StackTrace? stackTrace}) {
+  void d(Object? Function() message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.debug, message, error, stackTrace);
   }
 
   /// Log an info message
-  void i(dynamic message, {Object? error, StackTrace? stackTrace}) {
+  void i(Object? Function() message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.info, message, error, stackTrace);
   }
 
   /// Log a warning message
-  void w(dynamic message, {Object? error, StackTrace? stackTrace}) {
+  void w(Object? Function() message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.warning, message, error, stackTrace);
   }
 
   /// Log an error message
-  void e(dynamic message, {Object? error, StackTrace? stackTrace}) {
+  void e(Object? Function() message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.error, message, error, stackTrace);
   }
 
   /// Log a fatal message
-  void f(dynamic message, {Object? error, StackTrace? stackTrace}) {
+  void f(Object? Function() message, {Object? error, StackTrace? stackTrace}) {
     _log(LogLevel.fatal, message, error, stackTrace);
   }
 
   /// Internal logging method
   void _log(
     LogLevel logLevel,
-    dynamic message,
+    Object? Function() message,
     Object? error,
     StackTrace? stackTrace,
   ) {
-    if (!logLevel.shouldLog(level)) {
+    if (!isEnabled(logLevel)) {
       return;
     }
 
+    _emit(logLevel, message(), error, stackTrace);
+  }
+
+  void _emit(
+    LogLevel logLevel,
+    Object? message,
+    Object? error,
+    StackTrace? stackTrace,
+  ) {
     final event = LogEvent(
       level: logLevel,
-      message: message.toString(),
+      message: message?.toString() ?? 'null',
       error: error,
       stackTrace: stackTrace,
     );

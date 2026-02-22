@@ -59,7 +59,7 @@ class Follows {
       }
     } catch (e) {
       // probably timeout;
-      Logger.log.e(e);
+      Logger.log.e(() => e);
     }
     if (loadedContactList != null &&
         (contactList == null ||

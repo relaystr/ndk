@@ -86,7 +86,7 @@ class CacheRead {
 
       // write found events to response stream
       for (final event in foundEvents) {
-        Logger.log.t("found event in cache $event ");
+        Logger.log.t(() => "found event in cache $event ");
         outController.add(event);
       }
     }

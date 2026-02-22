@@ -1,7 +1,8 @@
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 
 import '../../../../domain_layer/entities/pending_signer_request.dart';
-export '../../../../domain_layer/entities/pending_signer_request.dart' show SignerMethod;
+export '../../../../domain_layer/entities/pending_signer_request.dart'
+    show SignerMethod;
 
 class BunkerRequest {
   static const int kKind = 24133;
