@@ -159,7 +159,7 @@ class RelayManager<T> {
     }
 
     if (isRelayConnected(url)) {
-      Logger.log.t(() => () => "relay already connected: $url");
+      Logger.log.t(() => "relay already connected: $url");
       updateRelayConnectivity();
       return Tuple(true, "");
     }
