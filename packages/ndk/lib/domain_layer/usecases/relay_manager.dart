@@ -54,6 +54,14 @@ class RelayManager<T> {
   /// timeout for AUTH callbacks (how long to wait for AUTH OK)
   final Duration authCallbackTimeout;
 
+  /// Handler for NIP-77 NEG-MSG messages
+  void Function(String subscriptionId, String relayUrl, String payload)?
+      onNegMsg;
+
+  /// Handler for NIP-77 NEG-ERR messages
+  void Function(String subscriptionId, String relayUrl, String errorMsg)?
+      onNegErr;
+
   /// nostr transport factory, to create new transports (usually websocket)
   final NostrTransportFactory nostrTransportFactory;
 
@@ -517,9 +525,27 @@ class RelayManager<T> {
     }
     if (nostrMsg.type == NostrMessageRawType.notice) {
       final eventJson = nostrMsg.otherData;
+      final noticeMsg = eventJson[1] as String? ?? '';
       Logger.log
-          .w(() => "NOTICE from ${relayConnectivity.url}: ${eventJson[1]}");
+          .w(() => "NOTICE from ${relayConnectivity.url}: $noticeMsg");
       _logActiveRequests();
+
+      // Check if this is a negentropy-related error
+      if (noticeMsg.toLowerCase().contains('negentropy')) {
+        // Fail all in-flight negotiations for this relay
+        final relayUrl = relayConnectivity.url;
+        final toRemove = <String>[];
+        for (final entry in globalState.inFlightNegotiations.entries) {
+          if (entry.value.relayUrl == relayUrl) {
+            entry.value.completeWithError(
+                Exception('Relay does not support NIP-77: $noticeMsg'));
+            toRemove.add(entry.key);
+          }
+        }
+        for (final key in toRemove) {
+          globalState.inFlightNegotiations.remove(key);
+        }
+      }
     } else if (nostrMsg.type == NostrMessageRawType.event) {
       _handleIncomingEvent(
           nostrMsg, relayConnectivity, message.toString().codeUnits.length);
@@ -578,6 +604,24 @@ class RelayManager<T> {
       }
 
       _authenticateAccounts(relayConnectivity, challenge, accountsToAuth);
+      return;
+    }
+    if (nostrMsg.type == NostrMessageRawType.negMsg) {
+      final msgData = nostrMsg.otherData;
+      if (msgData.length >= 3 && onNegMsg != null) {
+        final subscriptionId = msgData[1] as String;
+        final payload = msgData[2] as String;
+        onNegMsg!(subscriptionId, relayConnectivity.url, payload);
+      }
+      return;
+    }
+    if (nostrMsg.type == NostrMessageRawType.negErr) {
+      final msgData = nostrMsg.otherData;
+      if (msgData.length >= 3 && onNegErr != null) {
+        final subscriptionId = msgData[1] as String;
+        final errorMsg = msgData[2] as String;
+        onNegErr!(subscriptionId, relayConnectivity.url, errorMsg);
+      }
       return;
     }
     //

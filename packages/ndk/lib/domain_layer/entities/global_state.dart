@@ -1,4 +1,5 @@
 import 'broadcast_state.dart';
+import 'nip77_state.dart';
 import 'relay_connectivity.dart';
 import 'request_state.dart';
 
@@ -22,4 +23,8 @@ class GlobalState {
 
   /// clean urls of relays that are blocked
   Set<String> blockedRelays = {};
+
+  /// holds the state of all in-flight NIP-77 negentropy reconciliations
+  /// key: subscription Id
+  final Map<String, Nip77State> inFlightNegotiations = {};
 }

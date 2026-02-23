@@ -94,6 +94,13 @@ export 'domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 export 'domain_layer/entities/filter_fetched_ranges.dart';
 export 'domain_layer/usecases/proof_of_work/proof_of_work.dart';
 export 'domain_layer/entities/nip_01_utils.dart';
+export 'domain_layer/usecases/nip77/nip77.dart'
+    show
+        Nip77,
+        Nip77Response,
+        Nip77NotSupportedException,
+        Nip77TimeoutException;
+export 'domain_layer/entities/nip77_state.dart' show Nip77Result;
 
 /**
  * other stuff
