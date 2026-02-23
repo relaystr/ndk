@@ -64,6 +64,26 @@ void main() async {
       ndk = Ndk(config);
     });
 
+    test('getPublicList returns correct list for public key', () async {
+      // Use key0 to create a list, then fetch it as a public list
+      ndk.accounts.loginExternalSigner(signer: signer0);
+      await ndk.lists.addElementToList(
+        kind: Nip51List.kBookmarks,
+        tag: Nip51List.kPubkey,
+        value: 'publicListPubkey',
+      );
+      // Now fetch the list using getPublicList (simulating a different user)
+      final publicList = await ndk.lists.getPublicList(
+        kind: Nip51List.kBookmarks,
+        publicKey: key0.publicKey,
+      );
+      expect(publicList, isNotNull);
+      expect(publicList!.kind, Nip51List.kBookmarks);
+      expect(publicList.pubKey, key0.publicKey);
+      expect(publicList.elements.any((e) => e.value == 'publicListPubkey'),
+          isTrue);
+    });
+
     tearDown(() async {
       await relay0.stopServer();
     });
