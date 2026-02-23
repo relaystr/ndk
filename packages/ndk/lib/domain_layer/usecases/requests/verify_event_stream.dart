@@ -29,7 +29,8 @@ class VerifyEventStream {
     final valid = await eventVerifier.verify(data);
 
     if (!valid) {
-      Logger.log.w('WARNING: Event with id ${data.id} has invalid signature');
+      Logger.log
+          .w(() => 'WARNING: Event with id ${data.id} has invalid signature');
       return null;
     }
 

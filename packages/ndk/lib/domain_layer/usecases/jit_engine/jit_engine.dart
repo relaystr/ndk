@@ -123,8 +123,8 @@ class JitEngine with Logger implements NetworkEngine {
       }
 
       if (filter.search != null) {
-        Logger.log
-            .w("search filter not implemented yet, using blast all strategy");
+        Logger.log.w(() =>
+            "search filter not implemented yet, using blast all strategy");
       }
 
       // if (filter.ids != null) {

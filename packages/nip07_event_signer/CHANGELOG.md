@@ -1,3 +1,15 @@
+## 1.0.6-dev.16
+
+ - Update a dependency to the latest release.
+
+## 1.0.6-dev.15
+
+ - **FIX**: use completer.future for cancelRequest to work.
+
+## 1.0.6-dev.14
+
+ - **FIX**(nip07): use nostr-tools for proper NIP-04/NIP-44 test mock.
+
 ## 1.0.6-dev.13
 
  - **REFACTOR**: make dispose() async.

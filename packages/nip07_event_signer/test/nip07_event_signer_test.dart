@@ -43,8 +43,16 @@ void injectSetupCode() {
         _privkey: privateKeyBytes,
         _privkeyHex: privateKeyHex,
         _pubkey: publicKeyHex,
+        _hang: false,
+
+        setHang: function(hang) {
+          this._hang = hang;
+        },
 
         getPublicKey: function() {
+          if (this._hang) {
+            return new Promise(() => {}); // Never resolves
+          }
           return Promise.resolve(this._pubkey);
         },
 
@@ -179,8 +187,8 @@ void main() {
 
       final encrypted = 'invalid_data';
 
-      expect(
-        () => nip07Signer.decrypt(encrypted, bip340EventSigner.publicKey),
+      await expectLater(
+        nip07Signer.decrypt(encrypted, bip340EventSigner.publicKey),
         throwsA(anything),
       );
     });
@@ -220,8 +228,8 @@ void main() {
 
       final encrypted = 'invalid_nip44_data';
 
-      expect(
-        () => nip07Signer.decryptNip44(
+      await expectLater(
+        nip07Signer.decryptNip44(
           ciphertext: encrypted,
           senderPubKey: bip340EventSigner.publicKey,
         ),
@@ -357,6 +365,115 @@ void main() {
       );
 
       expect(decrypted, equals(message));
+    });
+
+    test('cancelRequest returns false for non-existent request', () async {
+      await setupNostrExtension();
+
+      final result = nip07Signer.cancelRequest('non_existent_id');
+      expect(result, isFalse);
+    });
+
+    test('pendingRequests is empty initially', () async {
+      await setupNostrExtension();
+
+      expect(nip07Signer.pendingRequests, isEmpty);
+    });
+
+    test(
+      'pendingRequests contains request while operation is in progress',
+      () async {
+        await setupNostrExtension();
+        eval('window.nostr.setHang(true);');
+        addTearDown(() => eval('window.nostr.setHang(false);'));
+
+        // Start operation without awaiting
+        final future = nip07Signer.getPublicKeyAsync();
+
+        // Give it a moment to register
+        await Future.delayed(Duration(milliseconds: 10));
+
+        expect(nip07Signer.pendingRequests, hasLength(1));
+        expect(
+          nip07Signer.pendingRequests.first.method,
+          equals(SignerMethod.getPublicKey),
+        );
+
+        // Cancel to clean up (since it will never complete)
+        final requestId = nip07Signer.pendingRequests.first.id;
+        nip07Signer.cancelRequest(requestId);
+
+        // Catch the cancellation error
+        try {
+          await future;
+        } catch (_) {}
+
+        expect(nip07Signer.pendingRequests, isEmpty);
+      },
+    );
+
+    test('cancelRequest returns true and removes pending request', () async {
+      await setupNostrExtension();
+      eval('window.nostr.setHang(true);');
+      addTearDown(() => eval('window.nostr.setHang(false);'));
+
+      // Start operation without awaiting
+      final future = nip07Signer.getPublicKeyAsync();
+
+      // Give it a moment to register
+      await Future.delayed(Duration(milliseconds: 10));
+
+      expect(nip07Signer.pendingRequests, hasLength(1));
+      final requestId = nip07Signer.pendingRequests.first.id;
+
+      // Cancel the request
+      final result = nip07Signer.cancelRequest(requestId);
+      expect(result, isTrue);
+      expect(nip07Signer.pendingRequests, isEmpty);
+
+      // The future should complete with error
+      Object? thrownError;
+      try {
+        await future;
+      } catch (e) {
+        thrownError = e;
+      }
+      expect(thrownError, isA<SignerRequestCancelledException>());
+    });
+
+    test('pendingRequestsStream emits updates', () async {
+      await setupNostrExtension();
+      eval('window.nostr.setHang(true);');
+      addTearDown(() => eval('window.nostr.setHang(false);'));
+
+      final emissions = <List<PendingSignerRequest>>[];
+      final subscription = nip07Signer.pendingRequestsStream.listen(
+        emissions.add,
+      );
+      addTearDown(() => subscription.cancel());
+
+      // Start operation
+      final future = nip07Signer.getPublicKeyAsync();
+
+      // Wait for emission
+      await Future.delayed(Duration(milliseconds: 10));
+
+      // Should have emitted at least once with the pending request
+      expect(emissions.any((list) => list.length == 1), isTrue);
+
+      // Cancel to clean up
+      final requestId = nip07Signer.pendingRequests.first.id;
+      nip07Signer.cancelRequest(requestId);
+
+      // Catch the cancellation error
+      try {
+        await future;
+      } catch (_) {}
+
+      await Future.delayed(Duration(milliseconds: 10));
+
+      // Should have emitted empty list after cancellation
+      expect(emissions.last, isEmpty);
     });
   });
 }

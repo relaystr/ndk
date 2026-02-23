@@ -93,9 +93,12 @@ void main() {
       );
 
       // Verify client2 received the ephemeral event
-      expect(receivedEvents.length, equals(1),
-          reason:
-              'Ephemeral events should be broadcast to matching subscriptions',);
+      expect(
+        receivedEvents.length,
+        equals(1),
+        reason:
+            'Ephemeral events should be broadcast to matching subscriptions',
+      );
       expect(receivedEvents.first.kind, equals(21133));
       expect(receivedEvents.first.content, equals('test ephemeral content'));
 

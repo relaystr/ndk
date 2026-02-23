@@ -100,7 +100,8 @@ class Metadatas {
     }
 
     if (missingPubKeys.isNotEmpty) {
-      Logger.log.d("loading missing user metadatas ${missingPubKeys.length}");
+      Logger.log
+          .d(() => "loading missing user metadatas ${missingPubKeys.length}");
       try {
         await for (final event in (_requests.query(
                 name: "load-metadatas",
@@ -110,7 +111,7 @@ class Metadatas {
                 relaySet: relaySet))
             .stream
             .timeout(const Duration(seconds: 5), onTimeout: (sink) {
-          Logger.log.w("timeout metadatas.length:${metadatas.length}");
+          Logger.log.w(() => "timeout metadatas.length:${metadatas.length}");
         })) {
           if (metadatas[event.pubKey] == null ||
               metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
@@ -123,9 +124,9 @@ class Metadatas {
           }
         }
       } catch (e) {
-        Logger.log.e(e);
+        Logger.log.e(() => e);
       }
-      Logger.log.d("Loaded ${metadatas.length} user metadatas ");
+      Logger.log.d(() => "Loaded ${metadatas.length} user metadatas ");
     }
     return metadatas.values.toList();
   }

@@ -2,6 +2,7 @@ import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
+import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/accounts_page.dart';
@@ -23,6 +24,8 @@ final ndk = Ndk(
     logLevel: Logger.logLevels.trace,
   ),
 );
+
+final ndkFlutter = NdkFlutter(ndk: ndk);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,10 +91,15 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: ndk_flutter.AppLocalizations.supportedLocales,
-      home: SafeArea(
-        top: false,
-        child: MyHomePage(key: _homePageKey),
-      ), // Pass the instance key
+      home: Stack(
+        children: [
+          SafeArea(
+            top: false,
+            child: MyHomePage(key: _homePageKey),
+          ),
+          NPendingRequests(ndkFlutter: ndkFlutter),
+        ],
+      ),
     );
   }
 }

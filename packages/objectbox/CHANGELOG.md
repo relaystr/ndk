@@ -1,3 +1,17 @@
+## 0.2.8-dev.16
+
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+
+## 0.2.8-dev.15
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.14
+
+ - **FIX**: objectbox nullable sig.
+
 ## 0.2.8-dev.13
 
  - Update a dependency to the latest release.

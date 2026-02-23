@@ -40,7 +40,7 @@ class Nip07EventSigner implements EventSigner {
     String? plaintext,
     String? ciphertext,
     String? counterpartyPubkey,
-  }) async {
+  }) {
     final requestId = _generateRequestId();
     final completer = Completer<T>();
     final pendingRequest = PendingSignerRequest(
@@ -60,25 +60,28 @@ class Nip07EventSigner implements EventSigner {
     );
     _notifyPendingRequestsChange();
 
-    try {
-      final result = await operation();
-      if (!completer.isCompleted) {
-        completer.complete(result);
-      }
-      return result;
-    } catch (e) {
-      final error = SignerRequestRejectedException(
-        requestId: requestId,
-        originalMessage: e.toString(),
-      );
-      if (!completer.isCompleted) {
-        completer.completeError(error);
-      }
-      throw error;
-    } finally {
-      _pendingRequests.remove(requestId);
-      _notifyPendingRequestsChange();
-    }
+    // Run operation and complete the completer when done
+    operation()
+        .then((result) {
+          if (!completer.isCompleted) {
+            completer.complete(result);
+          }
+        })
+        .catchError((e) {
+          if (!completer.isCompleted) {
+            final error = SignerRequestRejectedException(
+              requestId: requestId,
+              originalMessage: e.toString(),
+            );
+            completer.completeError(error);
+          }
+        })
+        .whenComplete(() {
+          _pendingRequests.remove(requestId);
+          _notifyPendingRequestsChange();
+        });
+
+    return completer.future;
   }
 
   @override

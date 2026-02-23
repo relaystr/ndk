@@ -82,7 +82,8 @@ class Requests {
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
     Filter? filter,
-    @Deprecated('Use filter instead. Multiple filters support will be removed in a future version.')
+    @Deprecated(
+        'Use filter instead. Multiple filters support will be removed in a future version.')
     List<Filter>? filters,
     String name = '',
     RelaySet? relaySet,
@@ -134,7 +135,8 @@ class Requests {
   /// Returns an [NdkResponse] containing the subscription results as stream
   NdkResponse subscription({
     Filter? filter,
-    @Deprecated('Use filter instead. Multiple filters support will be removed in a future version.')
+    @Deprecated(
+        'Use filter instead. Multiple filters support will be removed in a future version.')
     List<Filter>? filters,
     String name = '',
     String? id,
@@ -168,7 +170,7 @@ class Requests {
     final relayUrls = _globalState.inFlightRequests[subId]?.requests.keys;
 
     if (relayUrls == null) {
-      Logger.log.w(
+      Logger.log.w(() =>
           "no relay urls found for subscription $subId, cannot close :: debug: $debugLabel");
       return;
     }
@@ -183,8 +185,8 @@ class Requests {
     final state = _globalState.inFlightRequests[subId];
 
     if (state == null) {
-      Logger.log
-          .w("no request state found for subscription $subId, cannot close");
+      Logger.log.w(
+          () => "no request state found for subscription $subId, cannot close");
       return;
     }
 
@@ -257,7 +259,7 @@ class Requests {
     // use done future for replay subject
     state.controller.done.then((_) {
       _globalState.inFlightRequests.remove(state.id);
-      Logger.log.d("req done: ${state.id}");
+      Logger.log.d(() => "req done: ${state.id}");
     });
 
     /// avoids sending events to response stream before a listener could be attached

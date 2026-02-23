@@ -103,7 +103,8 @@ class MockRelay {
       if (customWelcomeMessage != null) {
         webSocket.add(customWelcomeMessage!);
       }
-      if ((requireAuthForRequests || requireAuthForEvents) && sendAuthChallenge) {
+      if ((requireAuthForRequests || requireAuthForEvents) &&
+          sendAuthChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }

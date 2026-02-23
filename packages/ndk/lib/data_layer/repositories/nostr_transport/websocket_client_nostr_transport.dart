@@ -19,11 +19,13 @@ class WebSocketClientNostrTransport implements NostrTransport {
   /// Creates a new WebSocketNostrTransport instance.
   ///
   /// [_websocketDS] is the WebSocket data source to be used for communication.
-  WebSocketClientNostrTransport(this._websocketDS, {Function? onReconnect, Function(int?,Object?,String?)? onDisconnect}) {
+  WebSocketClientNostrTransport(this._websocketDS,
+      {Function? onReconnect, Function(int?, Object?, String?)? onDisconnect}) {
     Completer completer = Completer();
     ready = completer.future;
     _stateStreamSubscription = _websocketDS.ws.connection.listen((state) {
-      Logger.log.d("${_websocketDS.url} connection state changed to $state");
+      Logger.log
+          .d(() => "${_websocketDS.url} connection state changed to $state");
       switch (state) {
         case Connected() || Reconnected():
           completer.complete();
@@ -45,7 +47,7 @@ class WebSocketClientNostrTransport implements NostrTransport {
           // Do nothing, just waiting for reconnection to be established
           break;
         default:
-          Logger.log.w(
+          Logger.log.w(() =>
               "${_websocketDS.url} connection state changed to unknown state: $state");
       }
     });
