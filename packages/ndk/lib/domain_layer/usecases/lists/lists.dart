@@ -126,7 +126,7 @@ class Lists {
         )
       ], timeout: timeout).stream) {
         if (refreshedList == null ||
-            refreshedList.createdAt <= event.createdAt) {
+            refreshedList.createdAt < event.createdAt) {
           refreshedList = await Nip51List.fromEvent(event, signer);
           await _cacheManager.saveEvent(event);
         }
