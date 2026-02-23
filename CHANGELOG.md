@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.16`](#ndk---v071-dev16)
+ - [`ndk_amber` - `v0.4.0-dev.17`](#ndk_amber---v040-dev17)
+ - [`ndk_objectbox` - `v0.2.8-dev.17`](#ndk_objectbox---v028-dev17)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.16`](#ndk_rust_verifier---v050-dev16)
+ - [`nip07_event_signer` - `v1.0.6-dev.17`](#nip07_event_signer---v106-dev17)
+ - [`sembast_cache_manager` - `v1.0.7-dev.16`](#sembast_cache_manager---v107-dev16)
+ - [`drift_cache_manager` - `v0.0.2-dev.2`](#drift_cache_manager---v002-dev2)
+ - [`ndk_flutter` - `v0.0.2-dev.10`](#ndk_flutter---v002-dev10)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.17`
+ - `ndk_objectbox` - `v0.2.8-dev.17`
+ - `ndk_rust_verifier` - `v0.5.0-dev.16`
+ - `nip07_event_signer` - `v1.0.6-dev.17`
+ - `sembast_cache_manager` - `v1.0.7-dev.16`
+ - `drift_cache_manager` - `v0.0.2-dev.2`
+ - `ndk_flutter` - `v0.0.2-dev.10`
+
+---
+
+#### `ndk` - `v0.7.1-dev.16`
+
+ - **REFACTOR**: uploadBlob use dataStreamFactory.
+ - **FIX**: web init.
+ - **FIX**: use isolate manager for native hash calc.
+ - **FIX**: get file hash for uploadBlobFromFile().
+ - **FIX**: flanky blossom test depending on order.
+ - **FEAT**: isolate manager with stream response.
+ - **FEAT**: improved upload progress report.
+ - **FEAT**: blossom mirrorToServers().
+ - **FEAT**: files api uploadFromFile(), downloadToFile().
+ - **FEAT**: blossom file stream.
+
+
 ## 2026-02-22
 
 ### Changes

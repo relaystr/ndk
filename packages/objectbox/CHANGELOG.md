@@ -1,3 +1,7 @@
+## 0.2.8-dev.17
+
+ - Update a dependency to the latest release.
+
 ## 0.2.8-dev.16
 
  - **FIX**(perf): improved tag storage.

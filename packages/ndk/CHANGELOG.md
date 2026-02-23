@@ -1,3 +1,16 @@
+## 0.7.1-dev.16
+
+ - **REFACTOR**: uploadBlob use dataStreamFactory.
+ - **FIX**: web init.
+ - **FIX**: use isolate manager for native hash calc.
+ - **FIX**: get file hash for uploadBlobFromFile().
+ - **FIX**: flanky blossom test depending on order.
+ - **FEAT**: isolate manager with stream response.
+ - **FEAT**: improved upload progress report.
+ - **FEAT**: blossom mirrorToServers().
+ - **FEAT**: files api uploadFromFile(), downloadToFile().
+ - **FEAT**: blossom file stream.
+
 ## 0.7.1-dev.15
 
  - **FIX**(perf): lazy log.
