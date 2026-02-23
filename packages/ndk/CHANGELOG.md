@@ -1,3 +1,7 @@
+## 0.7.1-dev.17
+
+ - **FIX**(broadcast): return immediately when all relays have responded.
+
 ## 0.7.1-dev.16
 
  - **REFACTOR**: uploadBlob use dataStreamFactory.
