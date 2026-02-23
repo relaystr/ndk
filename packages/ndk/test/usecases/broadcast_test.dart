@@ -437,6 +437,38 @@ void main() async {
       expect(cachedEvent, isNull);
     });
 
+    test('broadcast to offline relay returns fast', () async {
+      // Create a relay URL that is not running (offline)
+      const offlineRelayUrl = 'ws://localhost:59999';
+
+      Nip01Event event = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "test offline broadcast",
+      );
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: key0.privateKey!,
+      );
+
+      final startTime = DateTime.now();
+
+      final response = ndk.broadcast.broadcast(
+        nostrEvent: signedEvent,
+        specificRelays: [offlineRelayUrl],
+        timeout: const Duration(minutes: 1),
+      );
+
+      await response.broadcastDoneFuture;
+
+      final endTime = DateTime.now();
+
+      final elapsedTime = endTime.millisecondsSinceEpoch - startTime.millisecondsSinceEpoch;
+
+      expect(elapsedTime, lessThan(20000));
+    });
+
     // NIP-09 Compliance Tests
 
     test('broadcastDeletion with event generates e and k tags (NIP-09)',
