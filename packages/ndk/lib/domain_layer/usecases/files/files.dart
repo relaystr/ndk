@@ -1,8 +1,7 @@
+import '../../entities/blob_upload_progress.dart';
 import '../../entities/blossom_blobs.dart';
 import '../../entities/blossom_strategies.dart';
 import '../../entities/ndk_file.dart';
-import '../../repositories/blossom.dart';
-import '../../../data_layer/repositories/blossom/blossom_impl.dart';
 import 'blossom.dart';
 
 /// high level usecase to manage files on nostr

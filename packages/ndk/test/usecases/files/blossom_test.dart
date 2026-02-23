@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/io/file_io_platform.dart';
 import 'package:ndk/data_layer/repositories/blossom/blossom_impl.dart';
+import 'package:ndk/domain_layer/entities/blob_upload_progress.dart';
 import 'package:ndk/domain_layer/repositories/blossom.dart';
 
 import 'package:ndk/ndk.dart';

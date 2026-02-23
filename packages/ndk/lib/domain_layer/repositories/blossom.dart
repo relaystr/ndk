@@ -1,6 +1,6 @@
 import 'package:ndk/domain_layer/entities/blossom_strategies.dart';
 
-import '../../data_layer/repositories/blossom/blossom_impl.dart';
+import '../entities/blob_upload_progress.dart';
 import '../entities/blossom_blobs.dart';
 import '../entities/file_hash_progress.dart';
 import '../entities/nip_01_event.dart';
