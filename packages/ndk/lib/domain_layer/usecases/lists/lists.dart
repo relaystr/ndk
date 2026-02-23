@@ -123,6 +123,7 @@ class Lists {
         Filter(
           authors: [publicKey],
           kinds: [kind],
+          limit: 1,
         )
       ], timeout: timeout).stream) {
         if (refreshedList == null ||
