@@ -15,6 +15,46 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.7.1-dev.17`](#ndk---v071-dev17)
+ - [`ndk_amber` - `v0.4.0-dev.18`](#ndk_amber---v040-dev18)
+ - [`ndk_objectbox` - `v0.2.8-dev.18`](#ndk_objectbox---v028-dev18)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.17`](#ndk_rust_verifier---v050-dev17)
+ - [`nip07_event_signer` - `v1.0.6-dev.18`](#nip07_event_signer---v106-dev18)
+ - [`sembast_cache_manager` - `v1.0.7-dev.17`](#sembast_cache_manager---v107-dev17)
+ - [`drift_cache_manager` - `v0.0.2-dev.3`](#drift_cache_manager---v002-dev3)
+ - [`ndk_flutter` - `v0.0.2-dev.11`](#ndk_flutter---v002-dev11)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.18`
+ - `ndk_objectbox` - `v0.2.8-dev.18`
+ - `ndk_rust_verifier` - `v0.5.0-dev.17`
+ - `nip07_event_signer` - `v1.0.6-dev.18`
+ - `sembast_cache_manager` - `v1.0.7-dev.17`
+ - `drift_cache_manager` - `v0.0.2-dev.3`
+ - `ndk_flutter` - `v0.0.2-dev.11`
+
+---
+
+#### `ndk` - `v0.7.1-dev.17`
+
+ - **FIX**(broadcast): return immediately when all relays have responded.
+
+
+## 2026-02-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.7.1-dev.16`](#ndk---v071-dev16)
  - [`ndk_amber` - `v0.4.0-dev.17`](#ndk_amber---v040-dev17)
  - [`ndk_objectbox` - `v0.2.8-dev.17`](#ndk_objectbox---v028-dev17)
