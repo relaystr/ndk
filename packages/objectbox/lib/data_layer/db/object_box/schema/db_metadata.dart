@@ -156,7 +156,7 @@ class DbMetadata {
       updatedAt: updatedAt,
       refreshedTimestamp: refreshedTimestamp,
       tags: parsedTags,
-      rawContent: rawContentJson != null
+      content: rawContentJson != null
           ? jsonDecode(rawContentJson!) as Map<String, dynamic>
           : null,
     );

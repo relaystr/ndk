@@ -401,7 +401,7 @@ class DriftCacheManager extends CacheManager {
       updatedAt: row.updatedAt,
       refreshedTimestamp: row.refreshedTimestamp,
       tags: tags,
-      rawContent: row.rawContentJson != null
+      content: row.rawContentJson != null
           ? jsonDecode(row.rawContentJson!) as Map<String, dynamic>
           : null,
     );

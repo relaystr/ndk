@@ -75,10 +75,10 @@ class Metadata {
     this.updatedAt,
     this.refreshedTimestamp,
     List<List<String>>? tags,
-    Map<String, dynamic>? rawContent,
+    Map<String, dynamic>? content,
   })  : tags = tags ?? [],
-        content = rawContent ?? {} {
-    // Initialize rawContent with provided known fields
+        content = content ?? {} {
+    // Initialize content with provided known fields
     if (name != null) this.name = name;
     if (displayName != null) this.displayName = displayName;
     if (picture != null) this.picture = picture;
@@ -230,7 +230,7 @@ class Metadata {
     int? refreshedTimestamp,
     List<String>? sources,
     List<List<String>>? tags,
-    Map<String, dynamic>? rawContent,
+    Map<String, dynamic>? content,
   }) {
     Metadata metadata = Metadata(
       pubKey: pubKey ?? this.pubKey,
@@ -246,7 +246,7 @@ class Metadata {
       updatedAt: updatedAt ?? this.updatedAt,
       refreshedTimestamp: refreshedTimestamp ?? this.refreshedTimestamp,
       tags: tags ?? List.from(this.tags),
-      rawContent: rawContent ?? content,
+      content: content ?? this.content,
     );
 
     metadata.sources = sources ?? List.from(this.sources);

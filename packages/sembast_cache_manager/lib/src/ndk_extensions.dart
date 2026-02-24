@@ -91,7 +91,7 @@ extension MetadataExtension on Metadata {
       'refreshedTimestamp': refreshedTimestamp,
       'sources': sources,
       'tags': tags,
-      'rawContent': content,
+      'content': content,
     };
   }
 
@@ -104,10 +104,10 @@ extension MetadataExtension on Metadata {
           .toList();
     }
 
-    // Create a mutable copy of rawContent if it exists
-    Map<String, dynamic>? rawContentCopy;
-    if (json['rawContent'] != null) {
-      rawContentCopy = Map<String, dynamic>.from(json['rawContent'] as Map<String, dynamic>);
+    // Create a mutable copy of content if it exists
+    Map<String, dynamic>? contentCopy;
+    if (json['content'] != null) {
+      contentCopy = Map<String, dynamic>.from(json['content'] as Map<String, dynamic>);
     }
 
     final metadata = Metadata(
@@ -124,7 +124,7 @@ extension MetadataExtension on Metadata {
       updatedAt: json['updatedAt'] as int?,
       refreshedTimestamp: json['refreshedTimestamp'] as int?,
       tags: parsedTags,
-      rawContent: rawContentCopy,
+      content: contentCopy,
     );
 
     if (json['sources'] != null) {

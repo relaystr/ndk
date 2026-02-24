@@ -807,7 +807,7 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
     expect(loaded!.name, equals('Updated Name'));
   });
 
-  test('metadata preserves tags and rawContent', () async {
+  test('metadata preserves tags and content', () async {
     final cacheManager = getCacheManager();
     final metadata = Metadata(
       pubKey: 'metadata_tags_rawcontent',
@@ -817,7 +817,7 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
         ['i', 'github:user123', 'abc123'],
         ['i', 'twitter:handle', 'xyz789'],
       ],
-      rawContent: {
+      content: {
         'name': 'Test User',
         'display_name': 'Test Display',
         'custom_field': 'custom_value',

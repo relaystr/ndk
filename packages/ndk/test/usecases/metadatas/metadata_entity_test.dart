@@ -235,7 +235,7 @@ void main() {
       expect(copied.tags[0], ['i', 'twitter:bob', 'proof2']);
     });
 
-    test('fromEvent preserves rawContent', () {
+    test('fromEvent preserves content', () {
       final event = Nip01Event(
         pubKey: 'testPubKey',
         content: '{"name":"John","custom_field":"custom_value"}',
@@ -251,12 +251,12 @@ void main() {
       expect(metadata.content['name'], 'John');
     });
 
-    test('toEvent preserves custom fields from rawContent', () {
+    test('toEvent preserves custom fields from content', () {
       final metadata = Metadata(
         pubKey: 'testPubKey',
         name: 'John',
         updatedAt: 1234567890,
-        rawContent: {
+        content: {
           'name': 'OldName',
           'custom_field': 'custom_value',
           'another_custom': 123,
@@ -321,10 +321,10 @@ void main() {
       expect(content['another'], 456);
     });
 
-    test('copyWith copies rawContent', () {
+    test('copyWith copies content', () {
       final metadata = Metadata(
         pubKey: 'testPubKey',
-        rawContent: {'custom': 'value'},
+        content: {'custom': 'value'},
       );
 
       final copied = metadata.copyWith();
@@ -333,21 +333,21 @@ void main() {
       expect(copied.content['custom'], 'value');
     });
 
-    test('copyWith updates rawContent', () {
+    test('copyWith updates content', () {
       final metadata = Metadata(
         pubKey: 'testPubKey',
-        rawContent: {'custom': 'old'},
+        content: {'custom': 'old'},
       );
 
       final copied = metadata.copyWith(
-        rawContent: {'custom': 'new', 'added': 'field'},
+        content: {'custom': 'new', 'added': 'field'},
       );
 
       expect(copied.content['custom'], 'new');
       expect(copied.content['added'], 'field');
     });
 
-    test('empty rawContent does not break toEvent', () {
+    test('empty content does not break toEvent', () {
       final metadata = Metadata(
         pubKey: 'testPubKey',
         name: 'John',
@@ -367,7 +367,7 @@ void main() {
       expect(metadata.tags, isNotEmpty);
     });
 
-    test('setCustomField creates rawContent and sets value', () {
+    test('setCustomField creates content and sets value', () {
       final metadata = Metadata(pubKey: 'testPubKey');
 
       metadata.setCustomField('badges', ['A', 'B']);
@@ -376,10 +376,10 @@ void main() {
       expect(metadata.getCustomField('badges'), ['A', 'B']);
     });
 
-    test('setCustomField updates existing rawContent', () {
+    test('setCustomField updates existing content', () {
       final metadata = Metadata(
         pubKey: 'testPubKey',
-        rawContent: {'existing': 'value'},
+        content: {'existing': 'value'},
       );
 
       metadata.setCustomField('new_field', 'new_value');
@@ -397,7 +397,7 @@ void main() {
     test('getCustomField returns value for existing key', () {
       final metadata = Metadata(
         pubKey: 'testPubKey',
-        rawContent: {'custom': 'value'},
+        content: {'custom': 'value'},
       );
 
       expect(metadata.getCustomField('custom'), 'value');
