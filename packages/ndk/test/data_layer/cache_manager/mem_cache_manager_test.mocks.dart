@@ -549,6 +549,12 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       ) as String);
 
   @override
+  Map<String, dynamic> get content => (super.noSuchMethod(
+        Invocation.getter(#content),
+        returnValue: <String, dynamic>{},
+      ) as Map<String, dynamic>);
+
+  @override
   List<String> get sources => (super.noSuchMethod(
         Invocation.getter(#sources),
         returnValue: <String>[],
@@ -564,6 +570,15 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
   set pubKey(String? value) => super.noSuchMethod(
         Invocation.setter(
           #pubKey,
+          value,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  set content(Map<String, dynamic>? value) => super.noSuchMethod(
+        Invocation.setter(
+          #content,
           value,
         ),
         returnValueForMissingStub: null,
@@ -687,15 +702,6 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       );
 
   @override
-  set content(Map<String, dynamic>? value) => super.noSuchMethod(
-        Invocation.setter(
-          #rawContent,
-          value,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   Map<String, dynamic> toFullJson() => (super.noSuchMethod(
         Invocation.method(
           #toFullJson,
@@ -790,7 +796,7 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
     int? refreshedTimestamp,
     List<String>? sources,
     List<List<String>>? tags,
-    Map<String, dynamic>? rawContent,
+    Map<String, dynamic>? content,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -811,7 +817,7 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
             #refreshedTimestamp: refreshedTimestamp,
             #sources: sources,
             #tags: tags,
-            #rawContent: rawContent,
+            #content: content,
           },
         ),
         returnValue: _FakeMetadata_2(
@@ -834,7 +840,7 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
               #refreshedTimestamp: refreshedTimestamp,
               #sources: sources,
               #tags: tags,
-              #rawContent: rawContent,
+              #content: content,
             },
           ),
         ),
