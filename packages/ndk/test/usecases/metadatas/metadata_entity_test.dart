@@ -246,9 +246,9 @@ void main() {
 
       final metadata = Metadata.fromEvent(event);
 
-      expect(metadata.rawContent, isNotNull);
-      expect(metadata.rawContent!['custom_field'], 'custom_value');
-      expect(metadata.rawContent!['name'], 'John');
+      expect(metadata.content, isNotNull);
+      expect(metadata.content['custom_field'], 'custom_value');
+      expect(metadata.content['name'], 'John');
     });
 
     test('toEvent preserves custom fields from rawContent', () {
@@ -329,8 +329,8 @@ void main() {
 
       final copied = metadata.copyWith();
 
-      expect(copied.rawContent, isNotNull);
-      expect(copied.rawContent!['custom'], 'value');
+      expect(copied.content, isNotNull);
+      expect(copied.content['custom'], 'value');
     });
 
     test('copyWith updates rawContent', () {
@@ -343,8 +343,8 @@ void main() {
         rawContent: {'custom': 'new', 'added': 'field'},
       );
 
-      expect(copied.rawContent!['custom'], 'new');
-      expect(copied.rawContent!['added'], 'field');
+      expect(copied.content['custom'], 'new');
+      expect(copied.content['added'], 'field');
     });
 
     test('empty rawContent does not break toEvent', () {
@@ -372,7 +372,7 @@ void main() {
 
       metadata.setCustomField('badges', ['A', 'B']);
 
-      expect(metadata.rawContent, isNotNull);
+      expect(metadata.content, isNotNull);
       expect(metadata.getCustomField('badges'), ['A', 'B']);
     });
 
@@ -417,6 +417,21 @@ void main() {
 
       expect(content['name'], 'John');
       expect(content['badges'], ['A', 'B']);
+    });
+
+    test('set custom field update known field', () {
+      final metadata = Metadata(name: 'John');
+      metadata.setCustomField('name', "Alice");
+
+      expect(metadata.name, equals("Alice"));
+    });
+
+    test('a', () {
+      final metadata = Metadata(name: 'John');
+      metadata.name = "Alice";
+
+      expect(metadata.content["name"], equals("Alice"));
+      expect(metadata.getCustomField("name"), equals("Alice"));
     });
   });
 

@@ -288,8 +288,8 @@ class DriftCacheManager extends CacheManager {
             refreshedTimestamp: Value(metadata.refreshedTimestamp),
             sourcesJson: jsonEncode(metadata.sources),
             tagsJson: Value(jsonEncode(metadata.tags)),
-            rawContentJson: Value(metadata.rawContent != null
-                ? jsonEncode(metadata.rawContent)
+            rawContentJson: Value(metadata.content.isNotEmpty
+                ? jsonEncode(metadata.content)
                 : null),
           ),
         );
@@ -317,8 +317,8 @@ class DriftCacheManager extends CacheManager {
                 refreshedTimestamp: Value(metadata.refreshedTimestamp),
                 sourcesJson: jsonEncode(metadata.sources),
                 tagsJson: Value(jsonEncode(metadata.tags)),
-                rawContentJson: Value(metadata.rawContent != null
-                    ? jsonEncode(metadata.rawContent)
+                rawContentJson: Value(metadata.content.isNotEmpty
+                    ? jsonEncode(metadata.content)
                     : null),
               ),
             )

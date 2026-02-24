@@ -687,7 +687,7 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       );
 
   @override
-  set rawContent(Map<String, dynamic>? value) => super.noSuchMethod(
+  set content(Map<String, dynamic>? value) => super.noSuchMethod(
         Invocation.setter(
           #rawContent,
           value,

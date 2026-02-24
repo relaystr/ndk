@@ -91,7 +91,7 @@ extension MetadataExtension on Metadata {
       'refreshedTimestamp': refreshedTimestamp,
       'sources': sources,
       'tags': tags,
-      'rawContent': rawContent,
+      'rawContent': content,
     };
   }
 

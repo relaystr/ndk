@@ -832,9 +832,9 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
     expect(loaded!.tags.length, equals(2));
     expect(loaded.tags[0], equals(['i', 'github:user123', 'abc123']));
     expect(loaded.tags[1], equals(['i', 'twitter:handle', 'xyz789']));
-    expect(loaded.rawContent, isNotNull);
-    expect(loaded.rawContent!['custom_field'], equals('custom_value'));
-    expect(loaded.rawContent!['nested'], equals({'key': 'value'}));
+    expect(loaded.content, isNotNull);
+    expect(loaded.content['custom_field'], equals('custom_value'));
+    expect(loaded.content['nested'], equals({'key': 'value'}));
   });
 
   test('metadata with empty tags and null rawContent', () async {
@@ -849,7 +849,7 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
 
     expect(loaded, isNotNull);
     expect(loaded!.tags, isEmpty);
-    expect(loaded.rawContent, isNull);
+    expect(loaded.content, isNull);
   });
 }
 
