@@ -555,6 +555,12 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       ) as List<String>);
 
   @override
+  List<List<String>> get tags => (super.noSuchMethod(
+        Invocation.getter(#tags),
+        returnValue: <List<String>>[],
+      ) as List<List<String>>);
+
+  @override
   set pubKey(String? value) => super.noSuchMethod(
         Invocation.setter(
           #pubKey,
@@ -672,6 +678,24 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       );
 
   @override
+  set tags(List<List<String>>? value) => super.noSuchMethod(
+        Invocation.setter(
+          #tags,
+          value,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  set rawContent(Map<String, dynamic>? value) => super.noSuchMethod(
+        Invocation.setter(
+          #rawContent,
+          value,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   Map<String, dynamic> toFullJson() => (super.noSuchMethod(
         Invocation.method(
           #toFullJson,
@@ -703,6 +727,28 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
           ),
         ),
       ) as _i3.Nip01Event);
+
+  @override
+  void setCustomField(
+    String? key,
+    dynamic value,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setCustomField,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  dynamic getCustomField(String? key) => super.noSuchMethod(Invocation.method(
+        #getCustomField,
+        [key],
+      ));
 
   @override
   String getName() => (super.noSuchMethod(
@@ -743,6 +789,8 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
     int? updatedAt,
     int? refreshedTimestamp,
     List<String>? sources,
+    List<List<String>>? tags,
+    Map<String, dynamic>? rawContent,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -762,6 +810,8 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
             #updatedAt: updatedAt,
             #refreshedTimestamp: refreshedTimestamp,
             #sources: sources,
+            #tags: tags,
+            #rawContent: rawContent,
           },
         ),
         returnValue: _FakeMetadata_2(
@@ -783,6 +833,8 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
               #updatedAt: updatedAt,
               #refreshedTimestamp: refreshedTimestamp,
               #sources: sources,
+              #tags: tags,
+              #rawContent: rawContent,
             },
           ),
         ),
