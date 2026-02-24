@@ -1,5 +1,6 @@
+import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
-import 'package:ndk/entities.dart';
 import 'dart:convert';
 
 void main() {
@@ -146,5 +147,318 @@ void main() {
       final metadata = Metadata(pubKey: 'testPubKey');
       expect(metadata.hashCode, 'testPubKey'.hashCode);
     });
+
+    test('fromEvent preserves tags', () {
+      final event = Nip01Event(
+        pubKey: 'testPubKey',
+        content: '{"name":"John"}',
+        kind: Metadata.kKind,
+        tags: [
+          ['i', 'github:alice', 'proof'],
+          ['i', 'twitter:bob', 'proof2'],
+        ],
+        createdAt: 1234567890,
+      );
+
+      final metadata = Metadata.fromEvent(event);
+
+      expect(metadata.tags.length, 2);
+      expect(metadata.tags[0], ['i', 'github:alice', 'proof']);
+      expect(metadata.tags[1], ['i', 'twitter:bob', 'proof2']);
+    });
+
+    test('toEvent includes tags', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        name: 'John',
+        updatedAt: 1234567890,
+        tags: [
+          ['i', 'github:alice', 'proof'],
+        ],
+      );
+
+      final event = metadata.toEvent();
+
+      expect(event.tags.length, 1);
+      expect(event.tags[0], ['i', 'github:alice', 'proof']);
+    });
+
+    test('roundtrip fromEvent toEvent preserves tags', () {
+      final originalEvent = Nip01Event(
+        pubKey: 'testPubKey',
+        content: '{"name":"John","display_name":"John Doe"}',
+        kind: Metadata.kKind,
+        tags: [
+          ['i', 'github:alice', 'proof'],
+          ['i', 'twitter:bob', 'proof2'],
+        ],
+        createdAt: 1234567890,
+      );
+
+      final metadata = Metadata.fromEvent(originalEvent);
+      final recreatedEvent = metadata.toEvent();
+
+      expect(recreatedEvent.tags.length, 2);
+      expect(recreatedEvent.tags[0], ['i', 'github:alice', 'proof']);
+      expect(recreatedEvent.tags[1], ['i', 'twitter:bob', 'proof2']);
+    });
+
+    test('copyWith copies tags', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        tags: [
+          ['i', 'github:alice', 'proof'],
+        ],
+      );
+
+      final copied = metadata.copyWith();
+
+      expect(copied.tags.length, 1);
+      expect(copied.tags[0], ['i', 'github:alice', 'proof']);
+    });
+
+    test('copyWith updates tags', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        tags: [
+          ['i', 'github:alice', 'proof'],
+        ],
+      );
+
+      final copied = metadata.copyWith(
+        tags: [
+          ['i', 'twitter:bob', 'proof2'],
+        ],
+      );
+
+      expect(copied.tags.length, 1);
+      expect(copied.tags[0], ['i', 'twitter:bob', 'proof2']);
+    });
+
+    test('fromEvent preserves rawContent', () {
+      final event = Nip01Event(
+        pubKey: 'testPubKey',
+        content: '{"name":"John","custom_field":"custom_value"}',
+        kind: Metadata.kKind,
+        tags: [],
+        createdAt: 1234567890,
+      );
+
+      final metadata = Metadata.fromEvent(event);
+
+      expect(metadata.rawContent, isNotNull);
+      expect(metadata.rawContent!['custom_field'], 'custom_value');
+      expect(metadata.rawContent!['name'], 'John');
+    });
+
+    test('toEvent preserves custom fields from rawContent', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        name: 'John',
+        updatedAt: 1234567890,
+        rawContent: {
+          'name': 'OldName',
+          'custom_field': 'custom_value',
+          'another_custom': 123,
+        },
+      );
+
+      final event = metadata.toEvent();
+      final content = jsonDecode(event.content);
+
+      // Known fields should be updated
+      expect(content['name'], 'John');
+      // Custom fields should be preserved
+      expect(content['custom_field'], 'custom_value');
+      expect(content['another_custom'], 123);
+    });
+
+    test('roundtrip preserves custom fields and tags', () {
+      final originalEvent = Nip01Event(
+        pubKey: 'testPubKey',
+        content: '{"name":"John","display_name":"John Doe","custom":"value"}',
+        kind: Metadata.kKind,
+        tags: [
+          ['i', 'github:alice', 'proof'],
+        ],
+        createdAt: 1234567890,
+      );
+
+      final metadata = Metadata.fromEvent(originalEvent);
+      final recreatedEvent = metadata.toEvent();
+      final content = jsonDecode(recreatedEvent.content);
+
+      // Known fields preserved
+      expect(content['name'], 'John');
+      expect(content['display_name'], 'John Doe');
+      // Custom fields preserved
+      expect(content['custom'], 'value');
+      // Tags preserved
+      expect(recreatedEvent.tags.length, 1);
+      expect(recreatedEvent.tags[0], ['i', 'github:alice', 'proof']);
+    });
+
+    test('modifying known fields keeps custom fields intact', () {
+      final metadata = Metadata.fromEvent(Nip01Event(
+        pubKey: 'testPubKey',
+        content: '{"name":"John","custom_field":"custom_value","another":456}',
+        kind: Metadata.kKind,
+        tags: [],
+        createdAt: 1234567890,
+      ));
+
+      // Modify a known field
+      metadata.name = 'Jane';
+      metadata.updatedAt = 9999999999;
+
+      final event = metadata.toEvent();
+      final content = jsonDecode(event.content);
+
+      // Modified field updated
+      expect(content['name'], 'Jane');
+      // Custom fields still there
+      expect(content['custom_field'], 'custom_value');
+      expect(content['another'], 456);
+    });
+
+    test('copyWith copies rawContent', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        rawContent: {'custom': 'value'},
+      );
+
+      final copied = metadata.copyWith();
+
+      expect(copied.rawContent, isNotNull);
+      expect(copied.rawContent!['custom'], 'value');
+    });
+
+    test('copyWith updates rawContent', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        rawContent: {'custom': 'old'},
+      );
+
+      final copied = metadata.copyWith(
+        rawContent: {'custom': 'new', 'added': 'field'},
+      );
+
+      expect(copied.rawContent!['custom'], 'new');
+      expect(copied.rawContent!['added'], 'field');
+    });
+
+    test('empty rawContent does not break toEvent', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        name: 'John',
+        updatedAt: 1234567890,
+      );
+
+      final event = metadata.toEvent();
+      final content = jsonDecode(event.content);
+
+      expect(content['name'], 'John');
+      expect(content.containsKey('custom'), false);
+    });
+
+    test('should be able to add a tag when the list is empty', () {
+      final metadata = Metadata();
+      metadata.tags.add([]);
+      expect(metadata.tags, isNotEmpty);
+    });
+
+    test('setCustomField creates rawContent and sets value', () {
+      final metadata = Metadata(pubKey: 'testPubKey');
+
+      metadata.setCustomField('badges', ['A', 'B']);
+
+      expect(metadata.rawContent, isNotNull);
+      expect(metadata.getCustomField('badges'), ['A', 'B']);
+    });
+
+    test('setCustomField updates existing rawContent', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        rawContent: {'existing': 'value'},
+      );
+
+      metadata.setCustomField('new_field', 'new_value');
+
+      expect(metadata.getCustomField('existing'), 'value');
+      expect(metadata.getCustomField('new_field'), 'new_value');
+    });
+
+    test('getCustomField returns null for non-existent key', () {
+      final metadata = Metadata(pubKey: 'testPubKey');
+
+      expect(metadata.getCustomField('nonexistent'), null);
+    });
+
+    test('getCustomField returns value for existing key', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        rawContent: {'custom': 'value'},
+      );
+
+      expect(metadata.getCustomField('custom'), 'value');
+    });
+
+    test('setCustomField is reflected in toEvent output', () {
+      final metadata = Metadata(
+        pubKey: 'testPubKey',
+        name: 'John',
+        updatedAt: 1234567890,
+      );
+
+      metadata.setCustomField('badges', ['A', 'B']);
+
+      final event = metadata.toEvent();
+      final content = jsonDecode(event.content);
+
+      expect(content['name'], 'John');
+      expect(content['badges'], ['A', 'B']);
+    });
+  });
+
+  test("complete metadata workflow preserves all data", () async {
+    final keypair = Bip340.generatePrivateKey();
+
+    final signer = Bip340EventSigner(
+      privateKey: keypair.privateKey,
+      publicKey: keypair.publicKey,
+    );
+
+    final cache = MemCacheManager();
+
+    final metadataEvent = Nip01Event(
+      pubKey: keypair.publicKey,
+      kind: 0,
+      tags: [
+        ["i", "badge"]
+      ],
+      content: '{"name":"Alice","badges":["A","B"]}',
+    );
+
+    final signedMetadataEvent = await signer.sign(metadataEvent);
+
+    final metadata = Metadata.fromEvent(signedMetadataEvent);
+
+    await cache.saveMetadata(metadata);
+
+    final savedMetadata = await cache.loadMetadata(keypair.publicKey);
+
+    expect(savedMetadata, isNotNull);
+
+    savedMetadata!.tags.add(["i", "test"]);
+
+    final newMetadataEvent = savedMetadata.toEvent();
+
+    final newMetadataSignedEvent = await signer.sign(newMetadataEvent);
+
+    expect(newMetadataSignedEvent.tags.length, equals(2));
+    expect(
+      List.from(jsonDecode(newMetadataSignedEvent.content)["badges"]).length,
+      equals(2),
+    );
   });
 }

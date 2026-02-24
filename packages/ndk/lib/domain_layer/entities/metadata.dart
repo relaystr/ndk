@@ -45,20 +45,29 @@ class Metadata {
 
   List<String> sources = [];
 
+  /// event tags (e.g., NIP-39 identity tags)
+  List<List<String>> tags = [];
+
+  /// raw content JSON to preserve custom fields
+  Map<String, dynamic>? rawContent;
+
   /// basic metadata nostr
-  Metadata(
-      {this.pubKey = "",
-      this.name,
-      this.displayName,
-      this.picture,
-      this.banner,
-      this.website,
-      this.about,
-      this.nip05,
-      this.lud16,
-      this.lud06,
-      this.updatedAt,
-      this.refreshedTimestamp});
+  Metadata({
+    this.pubKey = "",
+    this.name,
+    this.displayName,
+    this.picture,
+    this.banner,
+    this.website,
+    this.about,
+    this.nip05,
+    this.lud16,
+    this.lud06,
+    this.updatedAt,
+    this.refreshedTimestamp,
+    List<List<String>>? tags,
+    this.rawContent,
+  }) : tags = tags ?? [];
 
   /// convert from json
   Metadata.fromJson(Map<String, dynamic> json) {
@@ -116,21 +125,43 @@ class Metadata {
     if (Helpers.isNotBlank(event.content)) {
       Map<String, dynamic> json = jsonDecode(event.content);
       metadata = Metadata.fromJson(json);
+      metadata.rawContent = json;
     }
     metadata.pubKey = event.pubKey;
     metadata.updatedAt = event.createdAt;
     metadata.sources = event.sources;
+    metadata.tags = event.tags;
     return metadata;
   }
 
   /// convert to nip01 event
   Nip01Event toEvent() {
+    // Merge with original content to preserve custom fields
+    final Map<String, dynamic> content = rawContent != null
+        ? Map<String, dynamic>.from(rawContent!)
+        : <String, dynamic>{};
+    // Update with current values
+    content.addAll(toJson());
+
     return Nip01Event(
         pubKey: pubKey,
-        content: jsonEncode(toJson()),
+        content: jsonEncode(content),
         kind: kKind,
-        tags: [],
+        tags: tags,
         createdAt: updatedAt ?? 0);
+  }
+
+  /// Set a custom field in the content
+  /// Creates rawContent if it doesn't exist
+  void setCustomField(String key, dynamic value) {
+    rawContent ??= {};
+    rawContent![key] = value;
+  }
+
+  /// Get a custom field from the content
+  /// Returns null if the field doesn't exist
+  dynamic getCustomField(String key) {
+    return rawContent?[key];
   }
 
   /// return display name if set, otherwise name if set, otherwise pubKey
@@ -180,6 +211,8 @@ class Metadata {
     int? updatedAt,
     int? refreshedTimestamp,
     List<String>? sources,
+    List<List<String>>? tags,
+    Map<String, dynamic>? rawContent,
   }) {
     Metadata metadata = Metadata(
       pubKey: pubKey ?? this.pubKey,
@@ -194,6 +227,8 @@ class Metadata {
       lud06: lud06 ?? this.lud06,
       updatedAt: updatedAt ?? this.updatedAt,
       refreshedTimestamp: refreshedTimestamp ?? this.refreshedTimestamp,
+      tags: tags ?? List.from(this.tags),
+      rawContent: rawContent ?? this.rawContent,
     );
 
     metadata.sources = sources ?? List.from(this.sources);
