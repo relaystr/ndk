@@ -104,6 +104,12 @@ extension MetadataExtension on Metadata {
           .toList();
     }
 
+    // Create a mutable copy of rawContent if it exists
+    Map<String, dynamic>? rawContentCopy;
+    if (json['rawContent'] != null) {
+      rawContentCopy = Map<String, dynamic>.from(json['rawContent'] as Map<String, dynamic>);
+    }
+
     final metadata = Metadata(
       pubKey: json['pubKey'] as String? ?? '',
       name: json['name'] as String?,
@@ -118,7 +124,7 @@ extension MetadataExtension on Metadata {
       updatedAt: json['updatedAt'] as int?,
       refreshedTimestamp: json['refreshedTimestamp'] as int?,
       tags: parsedTags,
-      rawContent: json['rawContent'] as Map<String, dynamic>?,
+      rawContent: rawContentCopy,
     );
 
     if (json['sources'] != null) {

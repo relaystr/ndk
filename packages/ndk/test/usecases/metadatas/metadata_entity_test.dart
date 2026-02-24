@@ -426,7 +426,7 @@ void main() {
       expect(metadata.name, equals("Alice"));
     });
 
-    test('a', () {
+    test('helper setter update content', () {
       final metadata = Metadata(name: 'John');
       metadata.name = "Alice";
 

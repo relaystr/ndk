@@ -837,7 +837,7 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
     expect(loaded.content['nested'], equals({'key': 'value'}));
   });
 
-  test('metadata with empty tags and null rawContent', () async {
+  test('metadata with empty tags and content', () async {
     final cacheManager = getCacheManager();
     final metadata = Metadata(
       pubKey: 'metadata_empty_tags',
@@ -849,7 +849,8 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
 
     expect(loaded, isNotNull);
     expect(loaded!.tags, isEmpty);
-    expect(loaded.content, isNull);
+    expect(loaded.content, isNotEmpty);
+    expect(loaded.content['name'], equals('Test User'));
   });
 }
 
