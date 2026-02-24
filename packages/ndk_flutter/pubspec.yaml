@@ -30,7 +30,7 @@ dependencies:
   http: ">=1.0.0 <2.0.0"
   intl: ^0.20.2
   ndk: ^0.7.1-dev.17
-  ndk_amber: ^0.4.0-dev.18
+  ndk_amber: ^0.4.1-dev.17
   nip07_event_signer: ^1.0.6-dev.18
   pretty_qr_code: ">=3.0.0 <4.0.0"
   toastification: ">=3.0.0 <4.0.0"

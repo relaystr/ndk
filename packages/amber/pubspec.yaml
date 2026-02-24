@@ -1,6 +1,6 @@
 name: ndk_amber
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.4.0-dev.18
+version: 0.4.1-dev.17
 homepage: https://github.com/relaystr/ndk
 
 environment:

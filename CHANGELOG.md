@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_amber` - `v0.4.1-dev.17`](#ndk_amber---v041-dev17)
+
+---
+
+#### `ndk_amber` - `v0.4.1-dev.17`
+
+ - chore: version bump
+
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
 ## 2026-02-23
 
 ### Changes
