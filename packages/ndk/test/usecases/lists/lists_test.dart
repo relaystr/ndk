@@ -10,41 +10,49 @@ import '../../mocks/mock_relay.dart';
 
 void main() async {
   group('lists', () {
-    KeyPair key0 = Bip340.generatePrivateKey();
-    KeyPair key1 = Bip340.generatePrivateKey();
-    Bip340EventSigner signer0 = Bip340EventSigner(
-      privateKey: key0.privateKey,
-      publicKey: key0.publicKey,
-    );
-    Bip340EventSigner signer1 = Bip340EventSigner(
-      privateKey: key1.privateKey,
-      publicKey: key1.publicKey,
-    );
+    late KeyPair key0;
+    late KeyPair key1;
+    late Bip340EventSigner signer0;
+    late Bip340EventSigner signer1;
 
-    final Nip51List bookmarkListKey0 = Nip51List(
-        pubKey: key0.publicKey,
-        kind: Nip51List.kBookmarks,
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        elements: [
-          Nip51ListElement(
-              tag: Nip51List.kPubkey, value: key1.publicKey, private: false)
-        ]);
-
-    final Nip51Set favoriteRelaysKey1 = Nip51Set(
-        pubKey: key1.publicKey,
-        kind: Nip51List.kRelaySet,
-        name: "my favorite relays",
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        elements: [
-          Nip51ListElement(
-              tag: Nip51List.kRelay, value: "wss://bla.com", private: true)
-        ]);
+    late Nip51List bookmarkListKey0;
+    late Nip51Set favoriteRelaysKey1;
 
     late MockRelay relay0;
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 4096);
+      key0 = Bip340.generatePrivateKey();
+      key1 = Bip340.generatePrivateKey();
+      signer0 = Bip340EventSigner(
+        privateKey: key0.privateKey,
+        publicKey: key0.publicKey,
+      );
+      signer1 = Bip340EventSigner(
+        privateKey: key1.privateKey,
+        publicKey: key1.publicKey,
+      );
+
+      bookmarkListKey0 = Nip51List(
+          pubKey: key0.publicKey,
+          kind: Nip51List.kBookmarks,
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          elements: [
+            Nip51ListElement(
+                tag: Nip51List.kPubkey, value: key1.publicKey, private: false)
+          ]);
+
+      favoriteRelaysKey1 = Nip51Set(
+          pubKey: key1.publicKey,
+          kind: Nip51List.kRelaySet,
+          name: "my favorite relays",
+          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          elements: [
+            Nip51ListElement(
+                tag: Nip51List.kRelay, value: "wss://bla.com", private: true)
+          ]);
+
+      relay0 = MockRelay(name: "relay 0");
       Nip01Event event0 = await bookmarkListKey0.toEvent(signer0);
       Nip01Event event1 = await favoriteRelaysKey1.toEvent(signer1);
 
