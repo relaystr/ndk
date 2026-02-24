@@ -698,6 +698,29 @@ class $MetadatasTable extends Metadatas
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _tagsJsonMeta = const VerificationMeta(
+    'tagsJson',
+  );
+  @override
+  late final GeneratedColumn<String> tagsJson = GeneratedColumn<String>(
+    'tags_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _rawContentJsonMeta = const VerificationMeta(
+    'rawContentJson',
+  );
+  @override
+  late final GeneratedColumn<String> rawContentJson = GeneratedColumn<String>(
+    'raw_content_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     pubKey,
@@ -713,6 +736,8 @@ class $MetadatasTable extends Metadatas
     updatedAt,
     refreshedTimestamp,
     sourcesJson,
+    tagsJson,
+    rawContentJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -817,6 +842,21 @@ class $MetadatasTable extends Metadatas
     } else if (isInserting) {
       context.missing(_sourcesJsonMeta);
     }
+    if (data.containsKey('tags_json')) {
+      context.handle(
+        _tagsJsonMeta,
+        tagsJson.isAcceptableOrUnknown(data['tags_json']!, _tagsJsonMeta),
+      );
+    }
+    if (data.containsKey('raw_content_json')) {
+      context.handle(
+        _rawContentJsonMeta,
+        rawContentJson.isAcceptableOrUnknown(
+          data['raw_content_json']!,
+          _rawContentJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -878,6 +918,14 @@ class $MetadatasTable extends Metadatas
         DriftSqlType.string,
         data['${effectivePrefix}sources_json'],
       )!,
+      tagsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tags_json'],
+      )!,
+      rawContentJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_content_json'],
+      ),
     );
   }
 
@@ -901,6 +949,8 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
   final int? updatedAt;
   final int? refreshedTimestamp;
   final String sourcesJson;
+  final String tagsJson;
+  final String? rawContentJson;
   const DbMetadata({
     required this.pubKey,
     this.name,
@@ -915,6 +965,8 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
     this.updatedAt,
     this.refreshedTimestamp,
     required this.sourcesJson,
+    required this.tagsJson,
+    this.rawContentJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -954,6 +1006,10 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
       map['refreshed_timestamp'] = Variable<int>(refreshedTimestamp);
     }
     map['sources_json'] = Variable<String>(sourcesJson);
+    map['tags_json'] = Variable<String>(tagsJson);
+    if (!nullToAbsent || rawContentJson != null) {
+      map['raw_content_json'] = Variable<String>(rawContentJson);
+    }
     return map;
   }
 
@@ -992,6 +1048,10 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
           ? const Value.absent()
           : Value(refreshedTimestamp),
       sourcesJson: Value(sourcesJson),
+      tagsJson: Value(tagsJson),
+      rawContentJson: rawContentJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rawContentJson),
     );
   }
 
@@ -1014,6 +1074,8 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
       updatedAt: serializer.fromJson<int?>(json['updatedAt']),
       refreshedTimestamp: serializer.fromJson<int?>(json['refreshedTimestamp']),
       sourcesJson: serializer.fromJson<String>(json['sourcesJson']),
+      tagsJson: serializer.fromJson<String>(json['tagsJson']),
+      rawContentJson: serializer.fromJson<String?>(json['rawContentJson']),
     );
   }
   @override
@@ -1033,6 +1095,8 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
       'updatedAt': serializer.toJson<int?>(updatedAt),
       'refreshedTimestamp': serializer.toJson<int?>(refreshedTimestamp),
       'sourcesJson': serializer.toJson<String>(sourcesJson),
+      'tagsJson': serializer.toJson<String>(tagsJson),
+      'rawContentJson': serializer.toJson<String?>(rawContentJson),
     };
   }
 
@@ -1050,6 +1114,8 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
     Value<int?> updatedAt = const Value.absent(),
     Value<int?> refreshedTimestamp = const Value.absent(),
     String? sourcesJson,
+    String? tagsJson,
+    Value<String?> rawContentJson = const Value.absent(),
   }) => DbMetadata(
     pubKey: pubKey ?? this.pubKey,
     name: name.present ? name.value : this.name,
@@ -1066,6 +1132,10 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
         ? refreshedTimestamp.value
         : this.refreshedTimestamp,
     sourcesJson: sourcesJson ?? this.sourcesJson,
+    tagsJson: tagsJson ?? this.tagsJson,
+    rawContentJson: rawContentJson.present
+        ? rawContentJson.value
+        : this.rawContentJson,
   );
   DbMetadata copyWithCompanion(MetadatasCompanion data) {
     return DbMetadata(
@@ -1088,6 +1158,10 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
       sourcesJson: data.sourcesJson.present
           ? data.sourcesJson.value
           : this.sourcesJson,
+      tagsJson: data.tagsJson.present ? data.tagsJson.value : this.tagsJson,
+      rawContentJson: data.rawContentJson.present
+          ? data.rawContentJson.value
+          : this.rawContentJson,
     );
   }
 
@@ -1106,7 +1180,9 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
           ..write('lud06: $lud06, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('refreshedTimestamp: $refreshedTimestamp, ')
-          ..write('sourcesJson: $sourcesJson')
+          ..write('sourcesJson: $sourcesJson, ')
+          ..write('tagsJson: $tagsJson, ')
+          ..write('rawContentJson: $rawContentJson')
           ..write(')'))
         .toString();
   }
@@ -1126,6 +1202,8 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
     updatedAt,
     refreshedTimestamp,
     sourcesJson,
+    tagsJson,
+    rawContentJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -1143,7 +1221,9 @@ class DbMetadata extends DataClass implements Insertable<DbMetadata> {
           other.lud06 == this.lud06 &&
           other.updatedAt == this.updatedAt &&
           other.refreshedTimestamp == this.refreshedTimestamp &&
-          other.sourcesJson == this.sourcesJson);
+          other.sourcesJson == this.sourcesJson &&
+          other.tagsJson == this.tagsJson &&
+          other.rawContentJson == this.rawContentJson);
 }
 
 class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
@@ -1160,6 +1240,8 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
   final Value<int?> updatedAt;
   final Value<int?> refreshedTimestamp;
   final Value<String> sourcesJson;
+  final Value<String> tagsJson;
+  final Value<String?> rawContentJson;
   final Value<int> rowid;
   const MetadatasCompanion({
     this.pubKey = const Value.absent(),
@@ -1175,6 +1257,8 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
     this.updatedAt = const Value.absent(),
     this.refreshedTimestamp = const Value.absent(),
     this.sourcesJson = const Value.absent(),
+    this.tagsJson = const Value.absent(),
+    this.rawContentJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MetadatasCompanion.insert({
@@ -1191,6 +1275,8 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
     this.updatedAt = const Value.absent(),
     this.refreshedTimestamp = const Value.absent(),
     required String sourcesJson,
+    this.tagsJson = const Value.absent(),
+    this.rawContentJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : pubKey = Value(pubKey),
        sourcesJson = Value(sourcesJson);
@@ -1208,6 +1294,8 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
     Expression<int>? updatedAt,
     Expression<int>? refreshedTimestamp,
     Expression<String>? sourcesJson,
+    Expression<String>? tagsJson,
+    Expression<String>? rawContentJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1224,6 +1312,8 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (refreshedTimestamp != null) 'refreshed_timestamp': refreshedTimestamp,
       if (sourcesJson != null) 'sources_json': sourcesJson,
+      if (tagsJson != null) 'tags_json': tagsJson,
+      if (rawContentJson != null) 'raw_content_json': rawContentJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1242,6 +1332,8 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
     Value<int?>? updatedAt,
     Value<int?>? refreshedTimestamp,
     Value<String>? sourcesJson,
+    Value<String>? tagsJson,
+    Value<String?>? rawContentJson,
     Value<int>? rowid,
   }) {
     return MetadatasCompanion(
@@ -1258,6 +1350,8 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
       updatedAt: updatedAt ?? this.updatedAt,
       refreshedTimestamp: refreshedTimestamp ?? this.refreshedTimestamp,
       sourcesJson: sourcesJson ?? this.sourcesJson,
+      tagsJson: tagsJson ?? this.tagsJson,
+      rawContentJson: rawContentJson ?? this.rawContentJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1304,6 +1398,12 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
     if (sourcesJson.present) {
       map['sources_json'] = Variable<String>(sourcesJson.value);
     }
+    if (tagsJson.present) {
+      map['tags_json'] = Variable<String>(tagsJson.value);
+    }
+    if (rawContentJson.present) {
+      map['raw_content_json'] = Variable<String>(rawContentJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1326,6 +1426,8 @@ class MetadatasCompanion extends UpdateCompanion<DbMetadata> {
           ..write('updatedAt: $updatedAt, ')
           ..write('refreshedTimestamp: $refreshedTimestamp, ')
           ..write('sourcesJson: $sourcesJson, ')
+          ..write('tagsJson: $tagsJson, ')
+          ..write('rawContentJson: $rawContentJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3945,6 +4047,8 @@ typedef $$MetadatasTableCreateCompanionBuilder =
       Value<int?> updatedAt,
       Value<int?> refreshedTimestamp,
       required String sourcesJson,
+      Value<String> tagsJson,
+      Value<String?> rawContentJson,
       Value<int> rowid,
     });
 typedef $$MetadatasTableUpdateCompanionBuilder =
@@ -3962,6 +4066,8 @@ typedef $$MetadatasTableUpdateCompanionBuilder =
       Value<int?> updatedAt,
       Value<int?> refreshedTimestamp,
       Value<String> sourcesJson,
+      Value<String> tagsJson,
+      Value<String?> rawContentJson,
       Value<int> rowid,
     });
 
@@ -4036,6 +4142,16 @@ class $$MetadatasTableFilterComposer
 
   ColumnFilters<String> get sourcesJson => $composableBuilder(
     column: $table.sourcesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tagsJson => $composableBuilder(
+    column: $table.tagsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rawContentJson => $composableBuilder(
+    column: $table.rawContentJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4113,6 +4229,16 @@ class $$MetadatasTableOrderingComposer
     column: $table.sourcesJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get tagsJson => $composableBuilder(
+    column: $table.tagsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rawContentJson => $composableBuilder(
+    column: $table.rawContentJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$MetadatasTableAnnotationComposer
@@ -4168,6 +4294,14 @@ class $$MetadatasTableAnnotationComposer
     column: $table.sourcesJson,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get tagsJson =>
+      $composableBuilder(column: $table.tagsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get rawContentJson => $composableBuilder(
+    column: $table.rawContentJson,
+    builder: (column) => column,
+  );
 }
 
 class $$MetadatasTableTableManager
@@ -4214,6 +4348,8 @@ class $$MetadatasTableTableManager
                 Value<int?> updatedAt = const Value.absent(),
                 Value<int?> refreshedTimestamp = const Value.absent(),
                 Value<String> sourcesJson = const Value.absent(),
+                Value<String> tagsJson = const Value.absent(),
+                Value<String?> rawContentJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MetadatasCompanion(
                 pubKey: pubKey,
@@ -4229,6 +4365,8 @@ class $$MetadatasTableTableManager
                 updatedAt: updatedAt,
                 refreshedTimestamp: refreshedTimestamp,
                 sourcesJson: sourcesJson,
+                tagsJson: tagsJson,
+                rawContentJson: rawContentJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4246,6 +4384,8 @@ class $$MetadatasTableTableManager
                 Value<int?> updatedAt = const Value.absent(),
                 Value<int?> refreshedTimestamp = const Value.absent(),
                 required String sourcesJson,
+                Value<String> tagsJson = const Value.absent(),
+                Value<String?> rawContentJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MetadatasCompanion.insert(
                 pubKey: pubKey,
@@ -4261,6 +4401,8 @@ class $$MetadatasTableTableManager
                 updatedAt: updatedAt,
                 refreshedTimestamp: refreshedTimestamp,
                 sourcesJson: sourcesJson,
+                tagsJson: tagsJson,
+                rawContentJson: rawContentJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -33,6 +33,8 @@ class Metadatas extends Table {
   IntColumn get updatedAt => integer().nullable()();
   IntColumn get refreshedTimestamp => integer().nullable()();
   TextColumn get sourcesJson => text()(); // JSON encoded sources
+  TextColumn get tagsJson => text().withDefault(const Constant('[]'))(); // JSON encoded tags
+  TextColumn get rawContentJson => text().nullable()(); // JSON encoded rawContent
 
   @override
   Set<Column> get primaryKey => {pubKey};

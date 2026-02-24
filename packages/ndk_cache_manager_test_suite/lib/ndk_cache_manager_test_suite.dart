@@ -806,6 +806,51 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
     expect(loaded, isNotNull);
     expect(loaded!.name, equals('Updated Name'));
   });
+
+  test('metadata preserves tags and rawContent', () async {
+    final cacheManager = getCacheManager();
+    final metadata = Metadata(
+      pubKey: 'metadata_tags_rawcontent',
+      name: 'Test User',
+      displayName: 'Test Display',
+      tags: [
+        ['i', 'github:user123', 'abc123'],
+        ['i', 'twitter:handle', 'xyz789'],
+      ],
+      rawContent: {
+        'name': 'Test User',
+        'display_name': 'Test Display',
+        'custom_field': 'custom_value',
+        'nested': {'key': 'value'},
+      },
+    );
+
+    await cacheManager.saveMetadata(metadata);
+    final loaded = await cacheManager.loadMetadata('metadata_tags_rawcontent');
+
+    expect(loaded, isNotNull);
+    expect(loaded!.tags.length, equals(2));
+    expect(loaded.tags[0], equals(['i', 'github:user123', 'abc123']));
+    expect(loaded.tags[1], equals(['i', 'twitter:handle', 'xyz789']));
+    expect(loaded.rawContent, isNotNull);
+    expect(loaded.rawContent!['custom_field'], equals('custom_value'));
+    expect(loaded.rawContent!['nested'], equals({'key': 'value'}));
+  });
+
+  test('metadata with empty tags and null rawContent', () async {
+    final cacheManager = getCacheManager();
+    final metadata = Metadata(
+      pubKey: 'metadata_empty_tags',
+      name: 'Test User',
+    );
+
+    await cacheManager.saveMetadata(metadata);
+    final loaded = await cacheManager.loadMetadata('metadata_empty_tags');
+
+    expect(loaded, isNotNull);
+    expect(loaded!.tags, isEmpty);
+    expect(loaded.rawContent, isNull);
+  });
 }
 
 // ============================================================================

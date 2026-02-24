@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:objectbox/objectbox.dart';
 import 'package:ndk/entities.dart' as ndk_entities;
 
@@ -50,21 +52,32 @@ class DbMetadata {
   @Property()
   List<String>? splitNameWords;
 
-  DbMetadata(
-      {this.pubKey = "",
-      this.name,
-      this.displayName,
-      this.splitNameWords,
-      this.splitDisplayNameWords,
-      this.picture,
-      this.banner,
-      this.website,
-      this.about,
-      this.nip05,
-      this.lud16,
-      this.lud06,
-      this.updatedAt,
-      this.refreshedTimestamp});
+  /// JSON encoded tags (List<List<String>>)
+  @Property()
+  String? tagsJson;
+
+  /// JSON encoded rawContent (Map<String, dynamic>)
+  @Property()
+  String? rawContentJson;
+
+  DbMetadata({
+    this.pubKey = "",
+    this.name,
+    this.displayName,
+    this.splitNameWords,
+    this.splitDisplayNameWords,
+    this.picture,
+    this.banner,
+    this.website,
+    this.about,
+    this.nip05,
+    this.lud16,
+    this.lud06,
+    this.updatedAt,
+    this.refreshedTimestamp,
+    this.tagsJson,
+    this.rawContentJson,
+  });
 
   String? get cleanNip05 {
     if (nip05 != null) {
@@ -121,6 +134,14 @@ class DbMetadata {
   int get hashCode => pubKey.hashCode;
 
   ndk_entities.Metadata toNdk() {
+    // Parse tags from JSON
+    List<List<String>>? parsedTags;
+    if (tagsJson != null) {
+      parsedTags = (jsonDecode(tagsJson!) as List)
+          .map((tag) => (tag as List).map((e) => e.toString()).toList())
+          .toList();
+    }
+
     final ndkM = ndk_entities.Metadata(
       pubKey: pubKey,
       name: name,
@@ -134,6 +155,10 @@ class DbMetadata {
       lud06: lud06,
       updatedAt: updatedAt,
       refreshedTimestamp: refreshedTimestamp,
+      tags: parsedTags,
+      rawContent: rawContentJson != null
+          ? jsonDecode(rawContentJson!) as Map<String, dynamic>
+          : null,
     );
 
     return ndkM;
@@ -155,6 +180,9 @@ class DbMetadata {
       lud06: ndkM.lud06,
       updatedAt: ndkM.updatedAt,
       refreshedTimestamp: ndkM.refreshedTimestamp,
+      tagsJson: ndkM.tags.isNotEmpty ? jsonEncode(ndkM.tags) : null,
+      rawContentJson:
+          ndkM.rawContent != null ? jsonEncode(ndkM.rawContent) : null,
     );
 
     return dbM;

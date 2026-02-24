@@ -104,7 +104,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(2, 530428573583615038),
     name: 'DbMetadata',
-    lastPropertyId: const obx_int.IdUid(15, 3659729329624536988),
+    lastPropertyId: const obx_int.IdUid(17, 113627794962189077),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -195,6 +195,18 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(15, 3659729329624536988),
         name: 'splitNameWords',
         type: 30,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(16, 3647171789847206317),
+        name: 'tagsJson',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(17, 113627794962189077),
+        name: 'rawContentJson',
+        type: 9,
         flags: 0,
       ),
     ],
@@ -708,7 +720,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
                     .map(fbb.writeString)
                     .toList(growable: false),
               );
-        fbb.startTable(16);
+        final tagsJsonOffset = object.tagsJson == null
+            ? null
+            : fbb.writeString(object.tagsJson!);
+        final rawContentJsonOffset = object.rawContentJson == null
+            ? null
+            : fbb.writeString(object.rawContentJson!);
+        fbb.startTable(18);
         fbb.addInt64(0, object.dbId);
         fbb.addOffset(1, pubKeyOffset);
         fbb.addOffset(2, nameOffset);
@@ -724,6 +742,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(12, object.refreshedTimestamp);
         fbb.addOffset(13, splitDisplayNameWordsOffset);
         fbb.addOffset(14, splitNameWordsOffset);
+        fbb.addOffset(15, tagsJsonOffset);
+        fbb.addOffset(16, rawContentJsonOffset);
         fbb.finish(fbb.endTable());
         return object.dbId;
       },
@@ -775,6 +795,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         );
         final refreshedTimestampParam = const fb.Int64Reader()
             .vTableGetNullable(buffer, rootOffset, 28);
+        final tagsJsonParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 34);
+        final rawContentJsonParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 36);
         final object = DbMetadata(
           pubKey: pubKeyParam,
           name: nameParam,
@@ -790,6 +816,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           lud06: lud06Param,
           updatedAt: updatedAtParam,
           refreshedTimestamp: refreshedTimestampParam,
+          tagsJson: tagsJsonParam,
+          rawContentJson: rawContentJsonParam,
         )..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
         return object;
@@ -1270,6 +1298,16 @@ class DbMetadata_ {
   /// See [DbMetadata.splitNameWords].
   static final splitNameWords = obx.QueryStringVectorProperty<DbMetadata>(
     _entities[1].properties[14],
+  );
+
+  /// See [DbMetadata.tagsJson].
+  static final tagsJson = obx.QueryStringProperty<DbMetadata>(
+    _entities[1].properties[15],
+  );
+
+  /// See [DbMetadata.rawContentJson].
+  static final rawContentJson = obx.QueryStringProperty<DbMetadata>(
+    _entities[1].properties[16],
   );
 }
 

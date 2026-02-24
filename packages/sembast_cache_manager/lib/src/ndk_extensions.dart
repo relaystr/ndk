@@ -90,10 +90,20 @@ extension MetadataExtension on Metadata {
       'updatedAt': updatedAt,
       'refreshedTimestamp': refreshedTimestamp,
       'sources': sources,
+      'tags': tags,
+      'rawContent': rawContent,
     };
   }
 
   static Metadata fromJsonStorage(Map<String, Object?> json) {
+    // Parse tags from storage
+    List<List<String>>? parsedTags;
+    if (json['tags'] != null) {
+      parsedTags = (json['tags'] as List)
+          .map((tag) => (tag as List).map((e) => e.toString()).toList())
+          .toList();
+    }
+
     final metadata = Metadata(
       pubKey: json['pubKey'] as String? ?? '',
       name: json['name'] as String?,
@@ -107,6 +117,8 @@ extension MetadataExtension on Metadata {
       lud06: json['lud06'] as String?,
       updatedAt: json['updatedAt'] as int?,
       refreshedTimestamp: json['refreshedTimestamp'] as int?,
+      tags: parsedTags,
+      rawContent: json['rawContent'] as Map<String, dynamic>?,
     );
 
     if (json['sources'] != null) {
