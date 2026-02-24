@@ -117,24 +117,22 @@ class Lists {
     Nip51List? list =
         !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
 
-    if (list == null) {
-      Nip51List? refreshedList;
-      await for (final event in _requests.query(filters: [
-        Filter(
-          authors: [publicKey],
-          kinds: [kind],
-          limit: 1,
-        )
-      ], timeout: timeout).stream) {
-        if (refreshedList == null ||
-            refreshedList.createdAt < event.createdAt) {
-          refreshedList = await Nip51List.fromEvent(event, signer);
-          await _cacheManager.saveEvent(event);
-        }
-      }
-      return refreshedList;
-    }
-    return list;
+    if (list != null) return list;
+
+    final events = await _requests.query(filters: [
+      Filter(
+        authors: [publicKey],
+        kinds: [kind],
+        limit: 1,
+      )
+    ], timeout: timeout).future;
+
+    if (events.isEmpty) return null;
+
+    events.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    await _cacheManager.saveEvent(events.last);
+    return await Nip51List.fromEvent(events.last, signer);
   }
 
   /// Adds an element to a NIP-51 list.
