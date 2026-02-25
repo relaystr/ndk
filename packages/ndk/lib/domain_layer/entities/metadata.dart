@@ -13,41 +13,79 @@ class Metadata {
   /// content JSON to preserve custom fields
   Map<String, dynamic> content = {};
 
+  /// Private cached fields for known properties
+  String? _name;
+  String? _displayName;
+  String? _picture;
+  String? _banner;
+  String? _website;
+  String? _about;
+  String? _nip05;
+  String? _lud16;
+  String? _lud06;
+
   /// name
-  String? get name => content['name'] as String?;
-  set name(String? value) => content['name'] = value;
+  String? get name => _name;
+  set name(String? value) {
+    _name = value;
+    content['name'] = value;
+  }
 
   /// displayName
-  String? get displayName => content['display_name'] as String?;
-  set displayName(String? value) => content['display_name'] = value;
+  String? get displayName => _displayName;
+  set displayName(String? value) {
+    _displayName = value;
+    content['display_name'] = value;
+  }
 
   /// picture
-  String? get picture => content['picture'] as String?;
-  set picture(String? value) => content['picture'] = value;
+  String? get picture => _picture;
+  set picture(String? value) {
+    _picture = value;
+    content['picture'] = value;
+  }
 
   /// banner
-  String? get banner => content['banner'] as String?;
-  set banner(String? value) => content['banner'] = value;
+  String? get banner => _banner;
+  set banner(String? value) {
+    _banner = value;
+    content['banner'] = value;
+  }
 
   /// website
-  String? get website => content['website'] as String?;
-  set website(String? value) => content['website'] = value;
+  String? get website => _website;
+  set website(String? value) {
+    _website = value;
+    content['website'] = value;
+  }
 
   /// about
-  String? get about => content['about'] as String?;
-  set about(String? value) => content['about'] = value;
+  String? get about => _about;
+  set about(String? value) {
+    _about = value;
+    content['about'] = value;
+  }
 
   /// nip05
-  String? get nip05 => content['nip05'] as String?;
-  set nip05(String? value) => content['nip05'] = value;
+  String? get nip05 => _nip05;
+  set nip05(String? value) {
+    _nip05 = value;
+    content['nip05'] = value;
+  }
 
   /// lud16
-  String? get lud16 => content['lud16'] as String?;
-  set lud16(String? value) => content['lud16'] = value;
+  String? get lud16 => _lud16;
+  set lud16(String? value) {
+    _lud16 = value;
+    content['lud16'] = value;
+  }
 
   /// lud06
-  String? get lud06 => content['lud06'] as String?;
-  set lud06(String? value) => content['lud06'] = value;
+  String? get lud06 => _lud06;
+  set lud06(String? value) {
+    _lud06 = value;
+    content['lud06'] = value;
+  }
 
   /// updated at
   int? updatedAt;
@@ -92,19 +130,30 @@ class Metadata {
 
   /// convert from json
   Metadata.fromJson(Map<String, dynamic> json) {
-    name = json['name'];
-    displayName = json['display_name'];
-    picture = json['picture'];
-    banner = json['banner'];
-    website = json['website'];
-    about = json['about'];
+    _name = json['name'];
+    _displayName = json['display_name'];
+    _picture = json['picture'];
+    _banner = json['banner'];
+    _website = json['website'];
+    _about = json['about'];
     try {
-      nip05 = json['nip05'];
+      _nip05 = json['nip05'];
     } catch (e) {
       // sometimes people put maps in here
     }
-    lud16 = json['lud16'];
-    lud06 = json['lud06'];
+    _lud16 = json['lud16'];
+    _lud06 = json['lud06'];
+    
+    // Also populate content map for consistency
+    if (_name != null) content['name'] = _name;
+    if (_displayName != null) content['display_name'] = _displayName;
+    if (_picture != null) content['picture'] = _picture;
+    if (_banner != null) content['banner'] = _banner;
+    if (_website != null) content['website'] = _website;
+    if (_about != null) content['about'] = _about;
+    if (_nip05 != null) content['nip05'] = _nip05;
+    if (_lud16 != null) content['lud16'] = _lud16;
+    if (_lud06 != null) content['lud06'] = _lud06;
   }
 
   /// clean nip05
@@ -146,7 +195,22 @@ class Metadata {
     if (Helpers.isNotBlank(event.content)) {
       Map<String, dynamic> json = jsonDecode(event.content);
       metadata = Metadata.fromJson(json);
+      // Store the full content map for custom fields
       metadata.content = json;
+      // Ensure cached fields are populated from content
+      metadata._name = json['name'];
+      metadata._displayName = json['display_name'];
+      metadata._picture = json['picture'];
+      metadata._banner = json['banner'];
+      metadata._website = json['website'];
+      metadata._about = json['about'];
+      try {
+        metadata._nip05 = json['nip05'];
+      } catch (e) {
+        // sometimes people put maps in here
+      }
+      metadata._lud16 = json['lud16'];
+      metadata._lud06 = json['lud06'];
     }
     metadata.pubKey = event.pubKey;
     metadata.updatedAt = event.createdAt;
@@ -175,6 +239,37 @@ class Metadata {
   /// Works for both known fields (name, display_name, etc.) and custom fields
   void setCustomField(String key, dynamic value) {
     content[key] = value;
+    
+    // Update cached fields if this is a known property
+    switch (key) {
+      case 'name':
+        _name = value as String?;
+        break;
+      case 'display_name':
+        _displayName = value as String?;
+        break;
+      case 'picture':
+        _picture = value as String?;
+        break;
+      case 'banner':
+        _banner = value as String?;
+        break;
+      case 'website':
+        _website = value as String?;
+        break;
+      case 'about':
+        _about = value as String?;
+        break;
+      case 'nip05':
+        _nip05 = value as String?;
+        break;
+      case 'lud16':
+        _lud16 = value as String?;
+        break;
+      case 'lud06':
+        _lud06 = value as String?;
+        break;
+    }
   }
 
   /// Get a custom field from the content
