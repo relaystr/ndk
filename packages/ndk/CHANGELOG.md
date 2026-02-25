@@ -1,3 +1,7 @@
+## 0.7.1-dev.19
+
+ - **FIX**: propagate signer exceptions through broadcast.
+
 ## 0.7.1-dev.18
 
  - **FIX**: getPublicList() reduce db calls by saving last event.
