@@ -1,3 +1,59 @@
+## 0.7.1-dev.18
+
+ - **FIX**: getPublicList() reduce db calls by saving last event.
+ - **FIX**: getPublicList add limit.
+ - **FIX**: getPublicList only save latest event.
+ - **FEAT**: add missing getPublicList.
+
+## 0.7.1-dev.17
+
+ - **FIX**(broadcast): return immediately when all relays have responded.
+
+## 0.7.1-dev.16
+
+ - **REFACTOR**: uploadBlob use dataStreamFactory.
+ - **FIX**: web init.
+ - **FIX**: use isolate manager for native hash calc.
+ - **FIX**: get file hash for uploadBlobFromFile().
+ - **FIX**: flanky blossom test depending on order.
+ - **FEAT**: isolate manager with stream response.
+ - **FEAT**: improved upload progress report.
+ - **FEAT**: blossom mirrorToServers().
+ - **FEAT**: files api uploadFromFile(), downloadToFile().
+ - **FEAT**: blossom file stream.
+
+## 0.7.1-dev.15
+
+ - **FIX**(perf): lazy log.
+
+## 0.7.1-dev.14
+
+ - **REFACTOR**: extract URL normalization to separate file.
+ - **FIX**: remove all event versions from cache on NIP-09 deletion.
+ - **FIX**: flanky test.
+ - **FEAT**(broadcast): add NIP-09 compliant deletion with e, k, and a tags.
+ - **FEAT**: implement RFC 3986 compliant relay URL normalization.
+
+## 0.7.1-dev.13
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: expose signer API on Account entity.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add nip46 pending requests integration test.
+ - **FEAT**: add unified pending requests API.
+
+## 0.7.1-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **DOCS**: add safety note to removeEvents documentation.
+
+## 0.7.1-dev.11
+
+ - **FIX**: close duplicate request when original completes.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **DOCS**: add DANGER warning to clearAll() method.
+
 ## 0.7.1-dev.10
 
  - **REFACTOR**: remove unused requestRelays method".

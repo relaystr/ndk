@@ -95,7 +95,7 @@ class Nip04 {
     try {
       y = liftX(x);
     } on Error {
-      Logger.log.d("error in handle pubKey");
+      Logger.log.d(() => "error in handle pubKey");
     }
     ECPoint endPoint = secp256k1.curve.createPoint(x, y!);
     return ECPublicKey(endPoint, secp256k1);

@@ -29,6 +29,9 @@ export 'domain_layer/entities/request_state.dart';
 export 'domain_layer/entities/tuple.dart';
 export 'domain_layer/entities/user_relay_list.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
+export 'domain_layer/entities/blossom_strategies.dart';
+export 'domain_layer/entities/blob_upload_progress.dart';
+export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/account.dart';
 
 /// models

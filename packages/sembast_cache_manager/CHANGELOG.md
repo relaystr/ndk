@@ -1,3 +1,37 @@
+## 1.0.7-dev.18
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.17
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.16
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.15
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.14
+
+ - **PERF**(sembast): optimize batch operations and queries.
+
+## 1.0.7-dev.13
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
+## 1.0.7-dev.11
+
+ - **FIX**(sembast): clearAll only deletes cache manager stores.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
 ## 1.0.7-dev.10
 
  - Update a dependency to the latest release.

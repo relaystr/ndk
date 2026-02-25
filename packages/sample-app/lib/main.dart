@@ -2,6 +2,7 @@ import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
+import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/accounts_page.dart';
@@ -10,6 +11,7 @@ import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_demo/verifiers_performance.dart';
 import 'package:ndk_demo/widgets_demo_page.dart';
+import 'package:ndk_demo/pending_requests_page.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
 
@@ -22,6 +24,8 @@ final ndk = Ndk(
     logLevel: Logger.logLevels.trace,
   ),
 );
+
+final ndkFlutter = NdkFlutter(ndk: ndk);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,10 +91,15 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: ndk_flutter.AppLocalizations.supportedLocales,
-      home: SafeArea(
-        top: false,
-        child: MyHomePage(key: _homePageKey),
-      ), // Pass the instance key
+      home: Stack(
+        children: [
+          SafeArea(
+            top: false,
+            child: MyHomePage(key: _homePageKey),
+          ),
+          NPendingRequests(ndkFlutter: ndkFlutter),
+        ],
+      ),
     );
   }
 }
@@ -142,11 +151,7 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
       const Tab(text: 'Widgets'),
-      //const Tab(text: 'Query Performance'),
-      // Conditionally add Amber tab if it's part of the design
-      // For a fixed length of 6, ensure this list matches.
-      // Example: if Amber is the 6th tab:
-      // const Tab(text: 'Amber'),
+      const Tab(text: 'Pending'),
     ];
     // If amberAvailable leads to a 6th tab, it should be consistently defined.
     // Let's assume 5 base tabs and Amber is conditional, making length 5 or 6.
@@ -255,20 +260,18 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
       const Tab(text: 'Widgets'),
-      //const Tab(text: 'Query Performance'),
-      // Amber tab removed
+      const Tab(text: 'Pending'),
     ];
 
     _tabPages = <Widget>[
-      AccountsPage(onAccountChanged: _handleAccountChange), // Pass the callback
+      AccountsPage(onAccountChanged: _handleAccountChange),
       metadata(ndk, context),
       const RelaysPage(),
       const NwcPage(),
       BlossomMediaPage(ndk: ndk),
       VerifiersPerformancePage(ndk: ndk),
       WidgetsDemoPage(onAccountChanged: _handleAccountChange),
-      //QueryPerformancePage(ndk: ndk),
-      // AmberPage removed
+      const PendingRequestsPage(),
     ];
 
     // Ensure TabController length matches dynamic _tabs list if it changed since initState

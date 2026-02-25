@@ -1,3 +1,11 @@
+## 1.0.1-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+
+## 1.0.1-dev.11
+
+ - Update a dependency to the latest release.
+
 ## 1.0.1-dev.10
 
  - Update a dependency to the latest release.

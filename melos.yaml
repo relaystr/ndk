@@ -10,6 +10,7 @@ packages:
   - packages/rust_verifier/rust_builder
   - packages/nip07_event_signer
   - packages/sembast_cache_manager
+  - packages/drift_cache_manager
   - packages/ndk_cache_manager_test_suite
   - packages/ndk_flutter
 

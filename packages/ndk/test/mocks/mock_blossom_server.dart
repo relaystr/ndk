@@ -31,6 +31,12 @@ class MockBlossomServer {
           headers: {'Content-Type': _blobs[sha256]!.contentType});
     });
 
+    // GET /static/test.txt - Static test file endpoint
+    router.get('/static/test.txt', (Request request) {
+      return Response.ok('Static file content for testing',
+          headers: {'Content-Type': 'text/plain'});
+    });
+
     // HEAD /<sha256> - Has Blob
     router.head('/<sha256>', (Request request, String sha256) {
       if (!_blobs.containsKey(sha256)) {
@@ -265,7 +271,7 @@ class MockBlossomServer {
         .addHandler(_createRouter().call);
 
     _server = await serve(handler, 'localhost', port);
-    Logger.log.i('Mock Blossom Server running on port $port');
+    Logger.log.i(() => 'Mock Blossom Server running on port $port');
   }
 
   Future<void> stop() async {

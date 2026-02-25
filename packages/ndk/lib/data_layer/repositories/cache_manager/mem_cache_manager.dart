@@ -268,7 +268,9 @@ class MemCacheManager implements CacheManager {
         continue;
       }
       // Filter by pubKeys
-      if (pubKeys != null && pubKeys.isNotEmpty && !pubKeys.contains(event.pubKey)) {
+      if (pubKeys != null &&
+          pubKeys.isNotEmpty &&
+          !pubKeys.contains(event.pubKey)) {
         continue;
       }
       // Filter by kinds
@@ -340,6 +342,38 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeEvent(String id) async {
     events.remove(id);
+  }
+
+  @override
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  }) async {
+    // If all parameters are empty, return early (don't delete everything)
+    if ((ids == null || ids.isEmpty) &&
+        (pubKeys == null || pubKeys.isEmpty) &&
+        (kinds == null || kinds.isEmpty) &&
+        (tags == null || tags.isEmpty) &&
+        since == null &&
+        until == null) {
+      return;
+    }
+
+    final eventsToRemove = await loadEvents(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+    );
+    for (final event in eventsToRemove) {
+      events.remove(event.id);
+    }
   }
 
   @override
@@ -422,6 +456,18 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> removeAllFilterFetchedRangeRecords() async {
+    filterFetchedRangeRecords.clear();
+  }
+
+  @override
+  Future<void> clearAll() async {
+    events.clear();
+    userRelayLists.clear();
+    relaySets.clear();
+    contactLists.clear();
+    metadatas.clear();
+    nip05s.clear();
+    nip05sByIdentifier.clear();
     filterFetchedRangeRecords.clear();
   }
 }

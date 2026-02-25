@@ -1,4 +1,5 @@
 import 'package:amberflutter/amberflutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/domain_layer/entities/metadata.dart';
@@ -6,6 +7,7 @@ import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart' as bip340_utils;
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip19/nip19.dart' as nip19_decoder;
+import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'main.dart';
@@ -534,6 +536,42 @@ class _AccountsPageState extends State<AccountsPage> {
     }
   }
 
+  Future<void> _loginWithNip07() async {
+    try {
+      final nip07Signer = Nip07EventSigner();
+
+      // Check if NIP-07 extension is available
+      if (!nip07Signer.canSign()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'NIP-07 extension not detected. Please install a Nostr extension like nos2x, Alby, or Flamingo.'),
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
+      // Get the public key from the extension
+      final String pubkeyHex = await nip07Signer.getPublicKeyAsync();
+
+      // Login with the external signer
+      ndk.accounts.loginExternalSigner(signer: nip07Signer);
+
+      _loadCurrentUser();
+      _loadAccounts();
+      widget.onAccountChanged?.call();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logged in with NIP-07 extension!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('NIP-07 login failed: $e')),
+      );
+    }
+  }
+
   void _loadCurrentUser() {
     final currentAccountPubkey = ndk.accounts.getLoggedAccount()?.pubkey;
     setState(() {
@@ -751,7 +789,8 @@ class _AccountsPageState extends State<AccountsPage> {
                     onPressed: () {
                       final keyPair = bip340_utils.Bip340.generatePrivateKey();
                       final nsec = keyPair.privateKeyBech32 ??
-                                   nip19_decoder.Nip19.encodePrivateKey(keyPair.privateKey!);
+                          nip19_decoder.Nip19.encodePrivateKey(
+                              keyPair.privateKey!);
                       setState(() {
                         _privateKeyController.text = nsec;
                       });
@@ -850,6 +889,22 @@ class _AccountsPageState extends State<AccountsPage> {
                 },
                 child: const Text('Login with Nostr Connect'),
               ),
+              if (kIsWeb) ...[
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    await _loginWithNip07();
+                    if (mounted && _currentAccount != null) {
+                      // If login was successful
+                      setState(() {
+                        _isAddingAccount =
+                            false; // Exit adding mode after successful login
+                      });
+                    }
+                  },
+                  child: const Text('Login with NIP-07 (Browser Extension)'),
+                ),
+              ],
             ] else ...[
               // Logged in view (not adding account)
               Row(

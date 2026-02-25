@@ -13,14 +13,7 @@ class WidgetsDemoPage extends StatefulWidget {
 }
 
 class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
-  late NdkFlutter ndkFlutter;
   bool _showLogin = false;
-
-  @override
-  void initState() {
-    super.initState();
-    ndkFlutter = NdkFlutter(ndk: ndk);
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -46,7 +46,7 @@ class Zaps {
           amountSats: amountSats,
           zapRequest: zapRequest);
     } catch (e) {
-      Logger.log.d(e);
+      Logger.log.d(() => e);
       return null;
     }
   }
@@ -159,8 +159,8 @@ class Zaps {
             if (streamSubscription != null) {
               streamSubscription.cancel();
             }
-            Logger.log
-                .w("timed out waiting for zap receipt for invoice $invoice");
+            Logger.log.w(
+                () => "timed out waiting for zap receipt for invoice $invoice");
           });
 
           streamSubscription =
@@ -170,12 +170,12 @@ class Zaps {
             if (bolt11 != null && bolt11 == invoice.invoice ||
                 preimage != null && preimage == payResponse.preimage) {
               ZapReceipt receipt = ZapReceipt.fromEvent(event);
-              Logger.log.d("Zap Receipt: $receipt");
+              Logger.log.d(() => "Zap Receipt: $receipt");
               if (receipt.isValid(
                   nostrPubKey: invoice.nostrPubkey!, recipientLnurl: lnurl)) {
                 zapResponse.emitReceipt(receipt);
               } else {
-                Logger.log.w("Zap Receipt invalid: $receipt");
+                Logger.log.w(() => "Zap Receipt invalid: $receipt");
               }
               timeout.cancel();
               _requests

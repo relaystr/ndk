@@ -264,7 +264,8 @@ void main() async {
       await ndk.destroy();
     });
 
-    test('should NOT record fetched ranges when relay requires auth and client cannot authenticate',
+    test(
+        'should NOT record fetched ranges when relay requires auth and client cannot authenticate',
         timeout: const Timeout(Duration(seconds: 5)), () async {
       MockRelay relay1 = MockRelay(
         name: "relay auth required test",
@@ -297,7 +298,8 @@ void main() async {
       final fetchedRanges = await ndk.fetchedRanges.getForFilter(filter);
 
       expect(fetchedRanges.isEmpty, isTrue,
-          reason: 'FetchedRanges should NOT be recorded when relay returns CLOSED auth-required');
+          reason:
+              'FetchedRanges should NOT be recorded when relay returns CLOSED auth-required');
 
       await relay1.stopServer();
       await ndk.destroy();

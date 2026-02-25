@@ -5,7 +5,8 @@ void main() {
   group('cleanRelayUrl', () {
     group('valid URLs', () {
       test('accepts valid wss URL with port + path', () {
-        expect(cleanRelayUrl('wss://relay.damus.io:5000/abc/aa.co.mm'), 'wss://relay.damus.io:5000/abc/aa.co.mm');
+        expect(cleanRelayUrl('wss://relay.damus.io:5000/abc/aa.co.mm'),
+            'wss://relay.damus.io:5000/abc/aa.co.mm');
       });
 
       test('accepts valid wss URL', () {
@@ -145,20 +146,30 @@ void main() {
       ];
       expect(cleanRelayUrls(urls), ['wss://relay.damus.io', 'wss://nos.lol']);
     });
+
+    test('normalizes URLs with RFC 3986 compliance', () {
+      final urls = [
+        'WSS://RELAY.DAMUS.IO',
+        'wss://nos.lol:443',
+        'WS://LOCALHOST:80',
+      ];
+      expect(cleanRelayUrls(urls),
+          ['wss://relay.damus.io', 'wss://nos.lol', 'ws://localhost']);
+    });
   });
 
   group('RELAY_URL_REGEX', () {
     test('matches valid relay URL pattern', () {
-      expect(RELAY_URL_REGEX.hasMatch('wss://relay.damus.io'), true);
-      expect(RELAY_URL_REGEX.hasMatch('ws://localhost'), true);
-      expect(RELAY_URL_REGEX.hasMatch('wss://192.168.1.1'), true);
-      expect(RELAY_URL_REGEX.hasMatch('wss://relay.example.com:8080'), true);
+      expect(relayUrlRegex.hasMatch('wss://relay.damus.io'), true);
+      expect(relayUrlRegex.hasMatch('ws://localhost'), true);
+      expect(relayUrlRegex.hasMatch('wss://192.168.1.1'), true);
+      expect(relayUrlRegex.hasMatch('wss://relay.example.com:8080'), true);
     });
 
     test('does not match invalid patterns', () {
-      expect(RELAY_URL_REGEX.hasMatch('http://example.com'), false);
-      expect(RELAY_URL_REGEX.hasMatch('wss://'), false);
-      expect(RELAY_URL_REGEX.hasMatch('wss:///example.com'), false);
+      expect(relayUrlRegex.hasMatch('http://example.com'), false);
+      expect(relayUrlRegex.hasMatch('wss://'), false);
+      expect(relayUrlRegex.hasMatch('wss:///example.com'), false);
     });
   });
 }

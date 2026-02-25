@@ -1,3 +1,35 @@
+## 0.5.0-dev.18
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.17
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.16
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.15
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.14
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.13
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.12
+
+ - Update a dependency to the latest release.
+
+## 0.5.0-dev.11
+
+ - Update a dependency to the latest release.
+
 ## 0.5.0-dev.10
 
  - Update a dependency to the latest release.

@@ -1,3 +1,42 @@
+## 0.2.8-dev.19
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.18
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.17
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.16
+
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+
+## 0.2.8-dev.15
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.14
+
+ - **FIX**: objectbox nullable sig.
+
+## 0.2.8-dev.13
+
+ - Update a dependency to the latest release.
+
+## 0.2.8-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
+## 0.2.8-dev.11
+
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
 ## 0.2.8-dev.10
 
  - Update a dependency to the latest release.

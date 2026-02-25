@@ -14,6 +14,7 @@ abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Future<Nip01Event?> loadEvent(String id);
+
   /// Load events from cache with flexible filtering \
   /// [ids] - list of event ids \
   /// [pubKeys] - list of authors pubKeys \
@@ -35,6 +36,23 @@ abstract class CacheManager {
     int? limit,
   });
   Future<void> removeEvent(String id);
+
+  /// Remove events from cache with flexible filtering \
+  /// [ids] - list of event ids \
+  /// [pubKeys] - list of authors pubKeys \
+  /// [kinds] - list of kinds \
+  /// [tags] - map of tags (e.g. {'p': ['pubkey1'], 'e': ['eventid1']}) \
+  /// [since] - timestamp \
+  /// [until] - timestamp \
+  /// If all parameters are empty, returns early (doesn't delete everything)
+  Future<void> removeEvents({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+  });
   Future<void> removeAllEventsByPubKey(String pubKey);
   Future<void> removeAllEvents();
 
@@ -114,8 +132,8 @@ abstract class CacheManager {
       String filterHash, String relayUrl);
 
   /// Load all fetched range records for a relay (all filters)
-  Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelayUrl(
-      String relayUrl);
+  Future<List<FilterFetchedRangeRecord>>
+      loadFilterFetchedRangeRecordsByRelayUrl(String relayUrl);
 
   /// Remove all fetched range records for a filter hash
   Future<void> removeFilterFetchedRangeRecords(String filterHash);
@@ -129,4 +147,11 @@ abstract class CacheManager {
 
   /// Remove all filter fetched range records
   Future<void> removeAllFilterFetchedRangeRecords();
+
+  /// Clears all cached data.
+  ///
+  /// **DANGER**: This will permanently delete ALL cached data including events,
+  /// metadata, contact lists, relay sets, user relay lists, nip05 records,
+  /// and filter fetched range records. This operation cannot be undone.
+  Future<void> clearAll();
 }

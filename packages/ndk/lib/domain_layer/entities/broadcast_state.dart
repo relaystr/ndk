@@ -65,6 +65,14 @@ class BroadcastState {
   /// completes when all relays have responded or timed out
   /// first string is the relay url, second is the response
   bool get publishDone {
+    // Check if all relays have responded (success or failure)
+    final allResponded = broadcasts.values.every(
+      (element) => element.okReceived || element.msg.isNotEmpty,
+    );
+    if (allResponded && broadcasts.isNotEmpty) {
+      return true;
+    }
+
     final doneCount = broadcasts.values
         .where((element) => element.okReceived)
         .length
