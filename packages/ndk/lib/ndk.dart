@@ -53,6 +53,7 @@ export 'domain_layer/entities/account.dart';
 export 'domain_layer/repositories/event_verifier.dart';
 export 'domain_layer/repositories/event_signer.dart';
 export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
+export 'data_layer/repositories/verifiers/rust_event_verifier.dart';
 export 'data_layer/repositories/signers/bip340_event_signer.dart';
 export 'domain_layer/entities/pending_signer_request.dart';
 export 'domain_layer/entities/signer_request_cancelled_exception.dart';

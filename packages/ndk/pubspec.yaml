@@ -34,6 +34,9 @@ dependencies:
   cryptography: ^2.7.0
   meta: ">=1.10.0 <2.0.0"
   xxh3: ^1.2.0
+  hooks: ^1.0.0
+  native_toolchain_rust: ^1.0.1
+  ffi: ^2.1.4
   web: ^1.1.1
 
 dev_dependencies:
@@ -45,7 +48,7 @@ dev_dependencies:
   # shelf used for blossom mock server
   shelf: ^1.4.2
   shelf_router: ^1.1.4
+  ffigen: ^20.1.1
   ndk_cache_manager_test_suite:
     path: ../ndk_cache_manager_test_suite
   nostr_bunker: ^1.3.4
-
