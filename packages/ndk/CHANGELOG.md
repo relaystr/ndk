@@ -1,3 +1,10 @@
+## 0.7.1-dev.18
+
+ - **FIX**: getPublicList() reduce db calls by saving last event.
+ - **FIX**: getPublicList add limit.
+ - **FIX**: getPublicList only save latest event.
+ - **FEAT**: add missing getPublicList.
+
 ## 0.7.1-dev.17
 
  - **FIX**(broadcast): return immediately when all relays have responded.
