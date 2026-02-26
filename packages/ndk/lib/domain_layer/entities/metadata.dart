@@ -8,7 +8,7 @@ class Metadata {
   static const int kKind = 0;
 
   /// public key
-  late String pubKey;
+  String pubKey = '';
 
   /// content JSON to preserve custom fields
   Map<String, dynamic> content = {};
