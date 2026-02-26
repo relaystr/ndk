@@ -702,15 +702,6 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       );
 
   @override
-  Map<String, dynamic> toFullJson() => (super.noSuchMethod(
-        Invocation.method(
-          #toFullJson,
-          [],
-        ),
-        returnValue: <String, dynamic>{},
-      ) as Map<String, dynamic>);
-
-  @override
   Map<String, dynamic> toJson() => (super.noSuchMethod(
         Invocation.method(
           #toJson,

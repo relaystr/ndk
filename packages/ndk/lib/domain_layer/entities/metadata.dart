@@ -128,32 +128,42 @@ class Metadata {
     if (lud06 != null) this.lud06 = lud06;
   }
 
-  /// convert from json
+  /// convert from json (all Metadata fields)
   Metadata.fromJson(Map<String, dynamic> json) {
-    _name = json['name'];
-    _displayName = json['display_name'];
-    _picture = json['picture'];
-    _banner = json['banner'];
-    _website = json['website'];
-    _about = json['about'];
-    try {
-      _nip05 = json['nip05'];
-    } catch (e) {
-      // sometimes people put maps in here
+    pubKey = json['pubKey'] as String? ?? '';
+
+    // Restore content and update cached known properties
+    if (json['content'] != null) {
+      content = Map<String, dynamic>.from(json['content'] as Map);
+      _name = content['name'] as String?;
+      _displayName = content['display_name'] as String?;
+      _picture = content['picture'] as String?;
+      _banner = content['banner'] as String?;
+      _website = content['website'] as String?;
+      _about = content['about'] as String?;
+      try {
+        _nip05 = content['nip05'] as String?;
+      } catch (e) {
+        // sometimes people put maps in here
+      }
+      _lud16 = content['lud16'] as String?;
+      _lud06 = content['lud06'] as String?;
     }
-    _lud16 = json['lud16'];
-    _lud06 = json['lud06'];
-    
-    // Also populate content map for consistency
-    if (_name != null) content['name'] = _name;
-    if (_displayName != null) content['display_name'] = _displayName;
-    if (_picture != null) content['picture'] = _picture;
-    if (_banner != null) content['banner'] = _banner;
-    if (_website != null) content['website'] = _website;
-    if (_about != null) content['about'] = _about;
-    if (_nip05 != null) content['nip05'] = _nip05;
-    if (_lud16 != null) content['lud16'] = _lud16;
-    if (_lud06 != null) content['lud06'] = _lud06;
+
+    // Restore tags
+    if (json['tags'] != null) {
+      tags = (json['tags'] as List)
+          .map((t) => (t as List).map((e) => e as String).toList())
+          .toList();
+    }
+
+    refreshedTimestamp = json['refreshedTimestamp'] as int?;
+
+    if (json['sources'] != null) {
+      sources = (json['sources'] as List).map((e) => e as String).toList();
+    }
+
+    updatedAt = json['updatedAt'] as int?;
   }
 
   /// clean nip05
@@ -167,25 +177,15 @@ class Metadata {
     return null;
   }
 
-  /// convert to json (full all fields)
-  Map<String, dynamic> toFullJson() {
-    var data = toJson();
-    data['pub_key'] = pubKey;
-    return data;
-  }
-
-  /// convert from json (except pub_key)
+  /// convert to json (all Metadata fields, only non-null/non-empty)
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['name'] = name;
-    data['display_name'] = displayName;
-    data['picture'] = picture;
-    data['banner'] = banner;
-    data['website'] = website;
-    data['about'] = about;
-    data['nip05'] = nip05;
-    data['lud16'] = lud16;
-    data['lud06'] = lud06;
+    final Map<String, dynamic> data = {};
+    if (pubKey.isNotEmpty) data['pubKey'] = pubKey;
+    if (content.isNotEmpty) data['content'] = content;
+    if (tags.isNotEmpty) data['tags'] = tags;
+    if (refreshedTimestamp != null) data['refreshedTimestamp'] = refreshedTimestamp;
+    if (sources.isNotEmpty) data['sources'] = sources;
+    if (updatedAt != null) data['updatedAt'] = updatedAt;
     return data;
   }
 
@@ -194,23 +194,22 @@ class Metadata {
     Metadata metadata = Metadata();
     if (Helpers.isNotBlank(event.content)) {
       Map<String, dynamic> json = jsonDecode(event.content);
-      metadata = Metadata.fromJson(json);
       // Store the full content map for custom fields
       metadata.content = json;
-      // Ensure cached fields are populated from content
-      metadata._name = json['name'];
-      metadata._displayName = json['display_name'];
-      metadata._picture = json['picture'];
-      metadata._banner = json['banner'];
-      metadata._website = json['website'];
-      metadata._about = json['about'];
+      // Populate cached fields from content
+      metadata._name = json['name'] as String?;
+      metadata._displayName = json['display_name'] as String?;
+      metadata._picture = json['picture'] as String?;
+      metadata._banner = json['banner'] as String?;
+      metadata._website = json['website'] as String?;
+      metadata._about = json['about'] as String?;
       try {
-        metadata._nip05 = json['nip05'];
+        metadata._nip05 = json['nip05'] as String?;
       } catch (e) {
         // sometimes people put maps in here
       }
-      metadata._lud16 = json['lud16'];
-      metadata._lud06 = json['lud06'];
+      metadata._lud16 = json['lud16'] as String?;
+      metadata._lud06 = json['lud06'] as String?;
     }
     metadata.pubKey = event.pubKey;
     metadata.updatedAt = event.createdAt;
@@ -221,12 +220,6 @@ class Metadata {
 
   /// convert to nip01 event
   Nip01Event toEvent() {
-    // Merge with original content to preserve custom fields
-    final Map<String, dynamic> content =
-        Map<String, dynamic>.from(this.content);
-    // Update with current values
-    content.addAll(toJson());
-
     return Nip01Event(
         pubKey: pubKey,
         content: jsonEncode(content),

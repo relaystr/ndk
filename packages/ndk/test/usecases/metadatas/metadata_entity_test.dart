@@ -5,21 +5,32 @@ import 'dart:convert';
 
 void main() {
   group('Metadata', () {
-    test('fromJson', () {
+    test('fromJson restores all Metadata fields', () {
       final json = {
-        'name': 'John',
-        'display_name': 'John Doe',
-        'picture': 'http://example.com/picture.jpg',
-        'banner': 'http://example.com/banner.jpg',
-        'website': 'http://example.com',
-        'about': 'About me',
-        'nip05': 'john@example.com',
-        'lud16': 'john@lightning.com',
-        'lud06': 'lnurl1234',
+        'pubKey': 'testPubKey',
+        'content': {
+          'name': 'John',
+          'display_name': 'John Doe',
+          'picture': 'http://example.com/picture.jpg',
+          'banner': 'http://example.com/banner.jpg',
+          'website': 'http://example.com',
+          'about': 'About me',
+          'nip05': 'john@example.com',
+          'lud16': 'john@lightning.com',
+          'lud06': 'lnurl1234',
+          'custom_field': 'custom_value',
+        },
+        'tags': [
+          ['i', 'github:alice', 'proof']
+        ],
+        'refreshedTimestamp': 1234567890,
+        'sources': ['relay1', 'relay2'],
+        'updatedAt': 9876543210,
       };
 
       final metadata = Metadata.fromJson(json);
 
+      expect(metadata.pubKey, 'testPubKey');
       expect(metadata.name, 'John');
       expect(metadata.displayName, 'John Doe');
       expect(metadata.picture, 'http://example.com/picture.jpg');
@@ -29,9 +40,15 @@ void main() {
       expect(metadata.nip05, 'john@example.com');
       expect(metadata.lud16, 'john@lightning.com');
       expect(metadata.lud06, 'lnurl1234');
+      expect(metadata.content['custom_field'], 'custom_value');
+      expect(metadata.tags.length, 1);
+      expect(metadata.tags[0], ['i', 'github:alice', 'proof']);
+      expect(metadata.refreshedTimestamp, 1234567890);
+      expect(metadata.sources, ['relay1', 'relay2']);
+      expect(metadata.updatedAt, 9876543210);
     });
 
-    test('toJson', () {
+    test('toJson includes all Metadata fields', () {
       final metadata = Metadata(
         pubKey: 'testPubKey',
         name: 'John',
@@ -43,31 +60,61 @@ void main() {
         nip05: 'john@example.com',
         lud16: 'john@lightning.com',
         lud06: 'lnurl1234',
+        updatedAt: 1234567890,
+        refreshedTimestamp: 9876543210,
+        tags: [
+          ['i', 'github:alice', 'proof']
+        ],
+        content: {'custom_field': 'custom_value'},
       );
+      metadata.sources = ['relay1', 'relay2'];
 
       final json = metadata.toJson();
 
-      expect(json['name'], 'John');
-      expect(json['display_name'], 'John Doe');
-      expect(json['picture'], 'http://example.com/picture.jpg');
-      expect(json['banner'], 'http://example.com/banner.jpg');
-      expect(json['website'], 'http://example.com');
-      expect(json['about'], 'About me');
-      expect(json['nip05'], 'john@example.com');
-      expect(json['lud16'], 'john@lightning.com');
-      expect(json['lud06'], 'lnurl1234');
+      expect(json['pubKey'], 'testPubKey');
+      expect(json['content']['name'], 'John');
+      expect(json['content']['display_name'], 'John Doe');
+      expect(json['content']['picture'], 'http://example.com/picture.jpg');
+      expect(json['content']['banner'], 'http://example.com/banner.jpg');
+      expect(json['content']['website'], 'http://example.com');
+      expect(json['content']['about'], 'About me');
+      expect(json['content']['nip05'], 'john@example.com');
+      expect(json['content']['lud16'], 'john@lightning.com');
+      expect(json['content']['lud06'], 'lnurl1234');
+      expect(json['content']['custom_field'], 'custom_value');
+      expect(json['tags'].length, 1);
+      expect(json['tags'][0], ['i', 'github:alice', 'proof']);
+      expect(json['refreshedTimestamp'], 9876543210);
+      expect(json['sources'], ['relay1', 'relay2']);
+      expect(json['updatedAt'], 1234567890);
     });
 
-    test('toFullJson', () {
-      final metadata = Metadata(
+    test('roundtrip toJson fromJson preserves all data', () {
+      final original = Metadata(
         pubKey: 'testPubKey',
         name: 'John',
+        displayName: 'John Doe',
+        updatedAt: 1234567890,
+        refreshedTimestamp: 9876543210,
+        tags: [
+          ['i', 'github:alice', 'proof']
+        ],
+        content: {'custom_field': 'custom_value'},
       );
+      original.sources = ['relay1', 'relay2'];
 
-      final json = metadata.toFullJson();
+      final json = original.toJson();
+      final restored = Metadata.fromJson(json);
 
-      expect(json['pub_key'], 'testPubKey');
-      expect(json['name'], 'John');
+      expect(restored.pubKey, original.pubKey);
+      expect(restored.name, original.name);
+      expect(restored.displayName, original.displayName);
+      expect(restored.content['custom_field'], 'custom_value');
+      expect(restored.tags.length, 1);
+      expect(restored.tags[0], ['i', 'github:alice', 'proof']);
+      expect(restored.refreshedTimestamp, original.refreshedTimestamp);
+      expect(restored.sources, original.sources);
+      expect(restored.updatedAt, original.updatedAt);
     });
 
     test('fromEvent', () {
