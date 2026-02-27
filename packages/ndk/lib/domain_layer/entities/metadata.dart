@@ -183,7 +183,9 @@ class Metadata {
     if (pubKey.isNotEmpty) data['pubKey'] = pubKey;
     if (content.isNotEmpty) data['content'] = content;
     if (tags.isNotEmpty) data['tags'] = tags;
-    if (refreshedTimestamp != null) data['refreshedTimestamp'] = refreshedTimestamp;
+    if (refreshedTimestamp != null) {
+      data['refreshedTimestamp'] = refreshedTimestamp;
+    }
     if (sources.isNotEmpty) data['sources'] = sources;
     if (updatedAt != null) data['updatedAt'] = updatedAt;
     return data;
@@ -232,7 +234,7 @@ class Metadata {
   /// Works for both known fields (name, display_name, etc.) and custom fields
   void setCustomField(String key, dynamic value) {
     content[key] = value;
-    
+
     // Update cached fields if this is a known property
     switch (key) {
       case 'name':
