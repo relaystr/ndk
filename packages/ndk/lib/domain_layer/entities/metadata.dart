@@ -8,34 +8,84 @@ class Metadata {
   static const int kKind = 0;
 
   /// public key
-  late String pubKey;
+  String pubKey = '';
+
+  /// content JSON to preserve custom fields
+  Map<String, dynamic> content = {};
+
+  /// Private cached fields for known properties
+  String? _name;
+  String? _displayName;
+  String? _picture;
+  String? _banner;
+  String? _website;
+  String? _about;
+  String? _nip05;
+  String? _lud16;
+  String? _lud06;
 
   /// name
-  String? name;
+  String? get name => _name;
+  set name(String? value) {
+    _name = value;
+    content['name'] = value;
+  }
 
   /// displayName
-  String? displayName;
+  String? get displayName => _displayName;
+  set displayName(String? value) {
+    _displayName = value;
+    content['display_name'] = value;
+  }
 
   /// picture
-  String? picture;
+  String? get picture => _picture;
+  set picture(String? value) {
+    _picture = value;
+    content['picture'] = value;
+  }
 
   /// banner
-  String? banner;
+  String? get banner => _banner;
+  set banner(String? value) {
+    _banner = value;
+    content['banner'] = value;
+  }
 
   /// website
-  String? website;
+  String? get website => _website;
+  set website(String? value) {
+    _website = value;
+    content['website'] = value;
+  }
 
   /// about
-  String? about;
+  String? get about => _about;
+  set about(String? value) {
+    _about = value;
+    content['about'] = value;
+  }
 
   /// nip05
-  String? nip05;
+  String? get nip05 => _nip05;
+  set nip05(String? value) {
+    _nip05 = value;
+    content['nip05'] = value;
+  }
 
   /// lud16
-  String? lud16;
+  String? get lud16 => _lud16;
+  set lud16(String? value) {
+    _lud16 = value;
+    content['lud16'] = value;
+  }
 
   /// lud06
-  String? lud06;
+  String? get lud06 => _lud06;
+  set lud06(String? value) {
+    _lud06 = value;
+    content['lud06'] = value;
+  }
 
   /// updated at
   int? updatedAt;
@@ -45,36 +95,75 @@ class Metadata {
 
   List<String> sources = [];
 
-  /// basic metadata nostr
-  Metadata(
-      {this.pubKey = "",
-      this.name,
-      this.displayName,
-      this.picture,
-      this.banner,
-      this.website,
-      this.about,
-      this.nip05,
-      this.lud16,
-      this.lud06,
-      this.updatedAt,
-      this.refreshedTimestamp});
+  /// event tags (e.g., NIP-39 identity tags)
+  List<List<String>> tags = [];
 
-  /// convert from json
+  /// basic metadata nostr
+  Metadata({
+    this.pubKey = "",
+    String? name,
+    String? displayName,
+    String? picture,
+    String? banner,
+    String? website,
+    String? about,
+    String? nip05,
+    String? lud16,
+    String? lud06,
+    this.updatedAt,
+    this.refreshedTimestamp,
+    List<List<String>>? tags,
+    Map<String, dynamic>? content,
+  })  : tags = tags ?? [],
+        content = content ?? {} {
+    // Initialize content with provided known fields
+    if (name != null) this.name = name;
+    if (displayName != null) this.displayName = displayName;
+    if (picture != null) this.picture = picture;
+    if (banner != null) this.banner = banner;
+    if (website != null) this.website = website;
+    if (about != null) this.about = about;
+    if (nip05 != null) this.nip05 = nip05;
+    if (lud16 != null) this.lud16 = lud16;
+    if (lud06 != null) this.lud06 = lud06;
+  }
+
+  /// convert from json (all Metadata fields)
   Metadata.fromJson(Map<String, dynamic> json) {
-    name = json['name'];
-    displayName = json['display_name'];
-    picture = json['picture'];
-    banner = json['banner'];
-    website = json['website'];
-    about = json['about'];
-    try {
-      nip05 = json['nip05'];
-    } catch (e) {
-      // sometimes people put maps in here
+    pubKey = json['pubKey'] as String? ?? '';
+
+    // Restore content and update cached known properties
+    if (json['content'] != null) {
+      content = Map<String, dynamic>.from(json['content'] as Map);
+      _name = content['name'] as String?;
+      _displayName = content['display_name'] as String?;
+      _picture = content['picture'] as String?;
+      _banner = content['banner'] as String?;
+      _website = content['website'] as String?;
+      _about = content['about'] as String?;
+      try {
+        _nip05 = content['nip05'] as String?;
+      } catch (e) {
+        // sometimes people put maps in here
+      }
+      _lud16 = content['lud16'] as String?;
+      _lud06 = content['lud06'] as String?;
     }
-    lud16 = json['lud16'];
-    lud06 = json['lud06'];
+
+    // Restore tags
+    if (json['tags'] != null) {
+      tags = (json['tags'] as List)
+          .map((t) => (t as List).map((e) => e as String).toList())
+          .toList();
+    }
+
+    refreshedTimestamp = json['refreshedTimestamp'] as int?;
+
+    if (json['sources'] != null) {
+      sources = (json['sources'] as List).map((e) => e as String).toList();
+    }
+
+    updatedAt = json['updatedAt'] as int?;
   }
 
   /// clean nip05
@@ -88,25 +177,17 @@ class Metadata {
     return null;
   }
 
-  /// convert to json (full all fields)
-  Map<String, dynamic> toFullJson() {
-    var data = toJson();
-    data['pub_key'] = pubKey;
-    return data;
-  }
-
-  /// convert from json (except pub_key)
+  /// convert to json (all Metadata fields, only non-null/non-empty)
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['name'] = name;
-    data['display_name'] = displayName;
-    data['picture'] = picture;
-    data['banner'] = banner;
-    data['website'] = website;
-    data['about'] = about;
-    data['nip05'] = nip05;
-    data['lud16'] = lud16;
-    data['lud06'] = lud06;
+    final Map<String, dynamic> data = {};
+    if (pubKey.isNotEmpty) data['pubKey'] = pubKey;
+    if (content.isNotEmpty) data['content'] = content;
+    if (tags.isNotEmpty) data['tags'] = tags;
+    if (refreshedTimestamp != null) {
+      data['refreshedTimestamp'] = refreshedTimestamp;
+    }
+    if (sources.isNotEmpty) data['sources'] = sources;
+    if (updatedAt != null) data['updatedAt'] = updatedAt;
     return data;
   }
 
@@ -115,11 +196,27 @@ class Metadata {
     Metadata metadata = Metadata();
     if (Helpers.isNotBlank(event.content)) {
       Map<String, dynamic> json = jsonDecode(event.content);
-      metadata = Metadata.fromJson(json);
+      // Store the full content map for custom fields
+      metadata.content = json;
+      // Populate cached fields from content
+      metadata._name = json['name'] as String?;
+      metadata._displayName = json['display_name'] as String?;
+      metadata._picture = json['picture'] as String?;
+      metadata._banner = json['banner'] as String?;
+      metadata._website = json['website'] as String?;
+      metadata._about = json['about'] as String?;
+      try {
+        metadata._nip05 = json['nip05'] as String?;
+      } catch (e) {
+        // sometimes people put maps in here
+      }
+      metadata._lud16 = json['lud16'] as String?;
+      metadata._lud06 = json['lud06'] as String?;
     }
     metadata.pubKey = event.pubKey;
     metadata.updatedAt = event.createdAt;
     metadata.sources = event.sources;
+    metadata.tags = event.tags;
     return metadata;
   }
 
@@ -127,10 +224,52 @@ class Metadata {
   Nip01Event toEvent() {
     return Nip01Event(
         pubKey: pubKey,
-        content: jsonEncode(toJson()),
+        content: jsonEncode(content),
         kind: kKind,
-        tags: [],
+        tags: tags,
         createdAt: updatedAt ?? 0);
+  }
+
+  /// Set a custom field in the content
+  /// Works for both known fields (name, display_name, etc.) and custom fields
+  void setCustomField(String key, dynamic value) {
+    content[key] = value;
+
+    // Update cached fields if this is a known property
+    switch (key) {
+      case 'name':
+        _name = value as String?;
+        break;
+      case 'display_name':
+        _displayName = value as String?;
+        break;
+      case 'picture':
+        _picture = value as String?;
+        break;
+      case 'banner':
+        _banner = value as String?;
+        break;
+      case 'website':
+        _website = value as String?;
+        break;
+      case 'about':
+        _about = value as String?;
+        break;
+      case 'nip05':
+        _nip05 = value as String?;
+        break;
+      case 'lud16':
+        _lud16 = value as String?;
+        break;
+      case 'lud06':
+        _lud06 = value as String?;
+        break;
+    }
+  }
+
+  /// Get a custom field from the content
+  dynamic getCustomField(String key) {
+    return content[key];
   }
 
   /// return display name if set, otherwise name if set, otherwise pubKey
@@ -180,6 +319,8 @@ class Metadata {
     int? updatedAt,
     int? refreshedTimestamp,
     List<String>? sources,
+    List<List<String>>? tags,
+    Map<String, dynamic>? content,
   }) {
     Metadata metadata = Metadata(
       pubKey: pubKey ?? this.pubKey,
@@ -194,6 +335,8 @@ class Metadata {
       lud06: lud06 ?? this.lud06,
       updatedAt: updatedAt ?? this.updatedAt,
       refreshedTimestamp: refreshedTimestamp ?? this.refreshedTimestamp,
+      tags: tags ?? List.from(this.tags),
+      content: content ?? this.content,
     );
 
     metadata.sources = sources ?? List.from(this.sources);
