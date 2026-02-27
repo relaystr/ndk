@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-02-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.14`](#ndk_flutter---v002-dev14)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.14`
+
+ - **FIX**: wasm compatible conditional import.
+
+
 ## 2026-02-25
 
 ### Changes
