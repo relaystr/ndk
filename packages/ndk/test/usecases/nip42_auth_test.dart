@@ -38,12 +38,10 @@ void main() {
       privkey: key.privateKey!,
     );
 
-    final result = await ndk.requests
-        .query(
-          filter: Filter(kinds: [Nip01Event.kTextNodeKind]),
-          explicitRelays: [relay.url],
-        )
-        .future;
+    final result = await ndk.requests.query(
+      filter: Filter(kinds: [Nip01Event.kTextNodeKind]),
+      explicitRelays: [relay.url],
+    ).future;
 
     expect(result, isNotEmpty);
     expect(result.first.content, "test event");
@@ -80,12 +78,10 @@ void main() {
       content: "test broadcast",
     );
 
-    final result = await ndk.broadcast
-        .broadcast(
-          nostrEvent: event,
-          specificRelays: [relay.url],
-        )
-        .broadcastDoneFuture;
+    final result = await ndk.broadcast.broadcast(
+      nostrEvent: event,
+      specificRelays: [relay.url],
+    ).broadcastDoneFuture;
 
     expect(result.any((r) => r.broadcastSuccessful), isTrue);
 
@@ -93,7 +89,8 @@ void main() {
     await relay.stopServer();
   });
 
-  test('request should complete when relay requires auth but sends no challenge',
+  test(
+      'request should complete when relay requires auth but sends no challenge',
       timeout: const Timeout(Duration(seconds: 5)), () async {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(

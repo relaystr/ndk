@@ -65,6 +65,14 @@ class BroadcastState {
   /// completes when all relays have responded or timed out
   /// first string is the relay url, second is the response
   bool get publishDone {
+    // Check if all relays have responded (success or failure)
+    final allResponded = broadcasts.values.every(
+      (element) => element.okReceived || element.msg.isNotEmpty,
+    );
+    if (allResponded && broadcasts.isNotEmpty) {
+      return true;
+    }
+
     final doneCount = broadcasts.values
         .where((element) => element.okReceived)
         .length
@@ -111,5 +119,11 @@ class BroadcastState {
     _networkSubscription.cancel();
     _stateUpdatesController.close();
     networkController.close();
+  }
+
+  /// Add an error to the broadcast state stream and dispose
+  void addError(Object error, [StackTrace? stackTrace]) {
+    _stateUpdatesController.addError(error, stackTrace);
+    _dispose();
   }
 }

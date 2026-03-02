@@ -1,3 +1,41 @@
+## 0.4.1-dev.19
+
+ - Update a dependency to the latest release.
+
+## 0.4.1-dev.18
+
+ - Update a dependency to the latest release.
+
+## 0.4.1-dev.17
+
+ - chore: version bump
+
+## 0.4.0-dev.18
+
+ - Update a dependency to the latest release.
+
+## 0.4.0-dev.17
+
+ - Update a dependency to the latest release.
+
+## 0.4.0-dev.16
+
+ - Update a dependency to the latest release.
+
+## 0.4.0-dev.15
+
+ - **FIX**(amber): use completer.future for cancelRequest to work.
+
+## 0.4.0-dev.14
+
+ - Update a dependency to the latest release.
+
+## 0.4.0-dev.13
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add unified pending requests API.
+
 ## 0.4.0-dev.12
 
  - Update a dependency to the latest release.

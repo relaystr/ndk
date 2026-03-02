@@ -63,7 +63,8 @@ class UserRelayLists {
     Set<String> found = {};
 
     if (missingPubKeys.isNotEmpty) {
-      Logger.log.d("loading missing relay lists ${missingPubKeys.length}");
+      Logger.log
+          .d(() => "loading missing relay lists ${missingPubKeys.length}");
       if (onProgress != null) {
         onProgress.call(
             "Loading missing relay lists", 0, missingPubKeys.length);
@@ -111,7 +112,7 @@ class UserRelayLists {
           }
         }
       } catch (e) {
-        Logger.log.e(e);
+        Logger.log.e(() => e);
       }
       Set<UserRelayList> relayLists = Set.of(fromNip65s.values);
       // Only add kind3 contents relays if there is no Nip65 for given pubKey.
@@ -139,7 +140,7 @@ class UserRelayLists {
             "Loading missing relay lists", found.length, missingPubKeys.length);
       }
     }
-    Logger.log.d("Loaded ${found.length} relay lists ");
+    Logger.log.d(() => "Loaded ${found.length} relay lists ");
   }
 
   /// return single user relay list

@@ -26,7 +26,7 @@ class DbObjectBox implements CacheManager {
   }
 
   Future _init(bool attach, String? directory) async {
-    final objectbox;
+    final ObjectBoxInit objectbox;
     if (attach) {
       objectbox = await ObjectBoxInit.attach(directory: directory);
     } else {
@@ -129,6 +129,17 @@ class DbObjectBox implements CacheManager {
           (condition == null) ? untilCondition : condition.and(untilCondition);
     }
 
+    if (tags != null && tags.isNotEmpty) {
+      final matchingEventIds = _findEventIdsByTags(eventBox, tags);
+      if (matchingEventIds.isEmpty) {
+        return [];
+      }
+
+      final tagCondition = DbNip01Event_.dbId.oneOf(matchingEventIds.toList());
+      condition =
+          (condition == null) ? tagCondition : condition.and(tagCondition);
+    }
+
     // Create and build the query
     QueryBuilder<DbNip01Event> queryBuilder;
     if (condition != null) {
@@ -147,41 +158,7 @@ class DbObjectBox implements CacheManager {
     }
     final results = query.find();
 
-    // For tag filtering, we need to do it in memory since ObjectBox doesn't support
-    // complex JSON querying within arrays
-    List<DbNip01Event> filteredResults = results;
-
-    // Apply tag filters in memory if needed
-    if (tags != null && tags.isNotEmpty) {
-      filteredResults = results.where((event) {
-        // Check if the event matches all tag filters
-        return tags.entries.every((tagEntry) {
-          String tagKey = tagEntry.key;
-          List<String> tagValues = tagEntry.value;
-
-          // Handle the special case where tag key starts with '#'
-          if (tagKey.startsWith('#') && tagKey.length > 1) {
-            tagKey = tagKey.substring(1); // Remove the '#' prefix
-          }
-
-          // Get all tags with this key
-          List<DbTag> eventTags =
-              event.tags.where((t) => t.key == tagKey).toList();
-
-          // Check if any of the event's tags with this key have a value in the requested values
-          return eventTags.any((tag) =>
-              tagValues.contains(tag.value) ||
-              tagValues.contains(tag.value.toLowerCase()));
-        });
-      }).toList();
-    }
-
-    // Apply limit after filtering if tags were applied
-    final limitedResults = (limit != null && limit > 0 && tags != null)
-        ? filteredResults.take(limit).toList()
-        : filteredResults;
-
-    return limitedResults.map((dbEvent) => dbEvent.toNdk()).toList();
+    return results.map((dbEvent) => dbEvent.toNdk()).toList();
   }
 
   @override
@@ -485,35 +462,73 @@ class DbObjectBox implements CacheManager {
       conditions.add(DbNip01Event_.createdAt.lessOrEqual(until));
     }
 
+    if (tags != null && tags.isNotEmpty) {
+      final matchingEventIds = _findEventIdsByTags(eventBox, tags);
+      if (matchingEventIds.isEmpty) {
+        return;
+      }
+      conditions.add(DbNip01Event_.dbId.oneOf(matchingEventIds.toList()));
+    }
+
     // Build and execute the query
     final query = conditions.isEmpty
         ? eventBox.query().build()
         : eventBox.query(conditions.reduce((a, b) => a.and(b))).build();
-    var results = query.find();
-
-    // Apply tag filters in memory if needed
-    if (tags != null && tags.isNotEmpty) {
-      results = results.where((event) {
-        return tags.entries.every((tagEntry) {
-          String tagKey = tagEntry.key;
-          List<String> tagValues = tagEntry.value;
-
-          if (tagKey.startsWith('#') && tagKey.length > 1) {
-            tagKey = tagKey.substring(1);
-          }
-
-          List<DbTag> eventTags =
-              event.tags.where((t) => t.key == tagKey).toList();
-
-          return eventTags.any((tag) =>
-              tagValues.contains(tag.value) ||
-              tagValues.contains(tag.value.toLowerCase()));
-        });
-      }).toList();
-    }
+    final results = query.find();
 
     // Remove matching events
     eventBox.removeMany(results.map((e) => e.dbId).toList());
+  }
+
+  /// Find event DB IDs matching all given tag filters.
+  /// [tags] is a map of tag key -> list of acceptable values.
+  /// Returns the intersection of matching event IDs across all tag keys.
+  ///
+  /// Usage (on the calling side):
+  /// ```
+  /// final eventBox = store.box<DbNip01Event>();
+  /// final ids = DbNip01Event.findEventIdsByTags(eventBox, {"p": ["abc"], "t": ["nostr"]});
+  /// ```
+  static Set<int> _findEventIdsByTags(
+    Box<DbNip01Event> eventBox,
+    Map<String, List<String>> tags,
+  ) {
+    Set<int>? matchingEventIds;
+
+    for (final entry in tags.entries) {
+      final key = entry.key.trim().toLowerCase();
+      final values = entry.value
+          .map((v) => v.trim().toLowerCase())
+          .where((v) => v.isNotEmpty)
+          .toList();
+
+      if (key.isEmpty || values.isEmpty) {
+        return <int>{};
+      }
+
+      final indexValues = [for (final v in values) '$key:$v'];
+
+      Condition<DbNip01Event>? condition;
+      for (final v in indexValues) {
+        final c = DbNip01Event_.tagsIndex.containsElement(v);
+        condition = condition == null ? c : condition.or(c);
+      }
+      final query = eventBox.query(condition!).build();
+      final eventIdsForTag = query.findIds().toSet();
+      query.close();
+
+      if (matchingEventIds == null) {
+        matchingEventIds = eventIdsForTag;
+      } else {
+        matchingEventIds = matchingEventIds.intersection(eventIdsForTag);
+      }
+
+      if (matchingEventIds.isEmpty) {
+        return <int>{};
+      }
+    }
+
+    return matchingEventIds ?? <int>{};
   }
 
   @override
@@ -693,7 +708,8 @@ class DbObjectBox implements CacheManager {
       List<FilterFetchedRangeRecord> records) async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
-    box.putMany(records.map((r) => DbFilterFetchedRangeRecord.fromNdk(r)).toList());
+    box.putMany(
+        records.map((r) => DbFilterFetchedRangeRecord.fromNdk(r)).toList());
   }
 
   @override

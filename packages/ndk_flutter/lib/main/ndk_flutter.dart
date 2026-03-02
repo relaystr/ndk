@@ -164,7 +164,7 @@ class NdkFlutter {
 
     for (var account in accounts.accounts) {
       if (account.kind == AccountKinds.nip07) {
-        final signer = Nip07EventSigner();
+        final signer = Nip07EventSigner(cachedPublicKey: account.pubkey);
         ndk.accounts.addAccount(
           pubkey: account.pubkey,
           type: AccountType.externalSigner,
@@ -195,6 +195,7 @@ class NdkFlutter {
           ),
           requests: ndk.requests,
           broadcast: ndk.broadcast,
+          cachedPublicKey: account.pubkey,
         );
         ndk.accounts.addAccount(
           pubkey: account.pubkey,

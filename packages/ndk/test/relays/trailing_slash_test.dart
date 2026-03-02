@@ -38,6 +38,9 @@ void main() {
       final broadcastResponses = await broadcast.broadcastDoneFuture;
       expect(broadcastResponses.first.broadcastSuccessful, isTrue);
 
+      // Small delay to ensure relay has processed and stored the event
+      await Future.delayed(Duration(milliseconds: 100));
+
       ndk.destroy();
     });
 
@@ -49,9 +52,7 @@ void main() {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final query = ndk.requests.query(
-        filters: [
-          Filter(kinds: [1], limit: 1),
-        ],
+        filter: Filter(kinds: [1], limit: 1),
         explicitRelays: [relay.url],
       );
 
@@ -67,9 +68,7 @@ void main() {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final query = ndk.requests.query(
-        filters: [
-          Filter(kinds: [1], limit: 1),
-        ],
+        filter: Filter(kinds: [1], limit: 1),
         explicitRelays: ["${relay.url}/"],
       );
 
@@ -85,9 +84,7 @@ void main() {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final query = ndk.requests.subscription(
-        filters: [
-          Filter(kinds: [1], limit: 1),
-        ],
+        filter: Filter(kinds: [1], limit: 1),
         explicitRelays: [relay.url],
       );
 
@@ -103,9 +100,7 @@ void main() {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final query = ndk.requests.subscription(
-        filters: [
-          Filter(kinds: [1], limit: 1),
-        ],
+        filter: Filter(kinds: [1], limit: 1),
         explicitRelays: ["${relay.url}/"],
       );
 
@@ -185,9 +180,7 @@ void main() {
       ));
 
       final query = ndk.requests.query(
-        filters: [
-          Filter(kinds: [1], limit: 1),
-        ],
+        filter: Filter(kinds: [1], limit: 1),
         explicitRelays: [relay.url],
       );
 
@@ -207,9 +200,7 @@ void main() {
       ));
 
       final query = ndk.requests.query(
-        filters: [
-          Filter(kinds: [1], limit: 1),
-        ],
+        filter: Filter(kinds: [1], limit: 1),
         explicitRelays: ["${relay.url}/"],
       );
 
@@ -229,9 +220,7 @@ void main() {
       ));
 
       final query = ndk.requests.subscription(
-        filters: [
-          Filter(kinds: [1], limit: 1),
-        ],
+        filter: Filter(kinds: [1], limit: 1),
         explicitRelays: [relay.url],
       );
 
@@ -251,9 +240,7 @@ void main() {
       ));
 
       final query = ndk.requests.subscription(
-        filters: [
-          Filter(kinds: [1], limit: 1),
-        ],
+        filter: Filter(kinds: [1], limit: 1),
         explicitRelays: ["${relay.url}/"],
       );
 
@@ -340,9 +327,7 @@ void main() {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
 
       final query = ndk.requests.query(
-        filters: [
-          Filter(kinds: [0]),
-        ],
+        filter: Filter(kinds: [0]),
         explicitRelays: ["wss:///example.com"],
       );
 

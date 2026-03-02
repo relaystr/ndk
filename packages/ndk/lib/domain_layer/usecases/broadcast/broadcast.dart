@@ -87,8 +87,7 @@ class Broadcast {
       nostrEvent: nostrEvent,
       signer: signer,
       specificRelays: cleanedSpecificRelays,
-      doneStream: broadcastState.stateUpdates
-          .map((state) => state.broadcasts.values.toList()),
+      broadcastState: broadcastState,
     );
   }
 
@@ -117,45 +116,133 @@ class Broadcast {
     return broadcast(nostrEvent: event, specificRelays: customRelays);
   }
 
-  /// request a deletion of an event \
-  /// [eventId] event you want to delete \
-  /// [eventIds] events you want to delete \
-  /// [customRelays] relay URls to send the deletion request to specific relays \
+  /// Request a deletion of an event (NIP-09 compliant).
+  ///
+  /// **New API recommended:**
+  /// - [event] single event to delete → generates `e` + `k` tags
+  /// - [events] multiple events to delete → generates `e` + `k` tags
+  /// - [eventAndAllVersions] event to delete including all versions → generates `e` + `a` + `k` tags
+  /// - [eventsAndAllVersions] events to delete including all versions → generates `e` + `a` + `k` tags
+  ///
+  /// **Legacy API without `k` tag:**
+  /// - [eventId] event ID to delete → generates only `e` tag
+  /// - [eventIds] event IDs to delete → generates only `e` tags
+  ///
+  /// [customRelays] relay URLs to send the deletion request to specific relays
   /// [customSigner] if you want to use a different signer than the default specified in [NdkConfig]
+  /// [reason] reason for deletion (content of the deletion event)
   NdkBroadcastResponse broadcastDeletion({
+    // New API (NIP-09 compliant)
+    Nip01Event? event,
+    List<Nip01Event>? events,
+    Nip01Event? eventAndAllVersions,
+    List<Nip01Event>? eventsAndAllVersions,
+    // Legacy API (backward compatible, without "k" tag)
     String? eventId,
     List<String>? eventIds,
+    // Common parameters
     Iterable<String>? customRelays,
     EventSigner? customSigner,
     String reason = "delete",
   }) {
     final EventSigner mySigner = _checkSinger(customSigner: customSigner);
 
-    List<String> idsToDelete = [];
+    // Collect all events from new API
+    List<Nip01Event> allEvents = [];
+    if (event != null) {
+      allEvents.add(event);
+    }
+    if (events != null) {
+      allEvents.addAll(events);
+    }
+
+    List<Nip01Event> allEventsAndAllVersions = [];
+    if (eventAndAllVersions != null) {
+      allEventsAndAllVersions.add(eventAndAllVersions);
+    }
+    if (eventsAndAllVersions != null) {
+      allEventsAndAllVersions.addAll(eventsAndAllVersions);
+    }
+
+    // Collect all IDs from legacy API
+    List<String> allEventIds = [];
     if (eventId != null) {
-      idsToDelete.add(eventId);
+      allEventIds.add(eventId);
     }
     if (eventIds != null) {
-      idsToDelete.addAll(eventIds);
+      allEventIds.addAll(eventIds);
     }
 
-    if (idsToDelete.isEmpty) {
+    // Validate that at least one parameter is provided
+    if (allEvents.isEmpty &&
+        allEventsAndAllVersions.isEmpty &&
+        allEventIds.isEmpty) {
       throw ArgumentError(
-          "At least one eventId must be provided for deletion.");
+          "At least one event or eventId must be provided for deletion.");
     }
 
-    Nip01Event event = Nip01Event(
+    // Build tags
+    List<List<String>> tags = [];
+    Set<int> kinds = {};
+    Set<String> idsToRemoveFromCache = {};
+
+    // 1. Events from new API → e + k tags
+    for (final e in allEvents) {
+      tags.add(["e", e.id]);
+      kinds.add(e.kind);
+      idsToRemoveFromCache.add(e.id);
+    }
+
+    // 2. Events with all versions → e + a + k tags
+    for (final e in allEventsAndAllVersions) {
+      tags.add(["e", e.id]);
+      kinds.add(e.kind);
+
+      // Generate "a" tag to delete all versions of this kind from this pubkey
+      // Works for replaceable events (NIP-09) and as extension for regular events
+      final dTag = e.getDtag();
+      tags.add(["a", "${e.kind}:${e.pubKey}:${dTag ?? ''}"]);
+    }
+
+    // 3. Event IDs from legacy API → e tags only (no k tag)
+    for (final id in allEventIds) {
+      tags.add(["e", id]);
+      idsToRemoveFromCache.add(id);
+    }
+
+    // 4. Add "k" tags for each unique kind (only from new API events)
+    for (final k in kinds) {
+      tags.add(["k", k.toString()]);
+    }
+
+    Nip01Event deletionEvent = Nip01Event(
         pubKey: mySigner.getPublicKey(),
         kind: Deletion.kKind,
-        tags: idsToDelete.map((e) => ["e", e]).toList(),
+        tags: tags,
         content: reason,
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000);
-    // TODO not bulletproof, think of better way
-    for (final id in idsToDelete) {
-      _cacheManager.removeEvent(id);
+
+    // Remove events from cache
+    if (idsToRemoveFromCache.isNotEmpty) {
+      _cacheManager.removeEvents(ids: idsToRemoveFromCache.toList());
     }
+
+    // Remove all versions from cache for eventAndAllVersions
+    for (final e in allEventsAndAllVersions) {
+      final dTag = e.getDtag();
+      _cacheManager.removeEvents(
+        pubKeys: [e.pubKey],
+        kinds: [e.kind],
+        tags: dTag != null
+            ? {
+                'd': [dTag]
+              }
+            : null,
+      );
+    }
+
     return broadcast(
-      nostrEvent: event,
+      nostrEvent: deletionEvent,
       specificRelays: customRelays,
       customSigner: mySigner,
     );

@@ -64,11 +64,14 @@ void main() async {
           .broadcast(nostrEvent: signedEvent)
           .broadcastDoneFuture;
 
-      List<Nip01Event> result = await ndk.requests.query(
-        filters: [
-          Filter(authors: [key0.publicKey], kinds: [Nip01Event.kTextNodeKind])
-        ],
-      ).future;
+      List<Nip01Event> result = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [key0.publicKey],
+              kinds: [Nip01Event.kTextNodeKind],
+            ),
+          )
+          .future;
       expect(result.length, 1);
 
       final event2 = Nip01Event(
@@ -85,11 +88,14 @@ void main() async {
           .broadcast(nostrEvent: signedEvent2)
           .broadcastDoneFuture;
 
-      result = await ndk.requests.query(
-        filters: [
-          Filter(authors: [key0.publicKey], kinds: [Nip01Event.kTextNodeKind])
-        ],
-      ).future;
+      result = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [key0.publicKey],
+              kinds: [Nip01Event.kTextNodeKind],
+            ),
+          )
+          .future;
       expect(result.length, 2);
     });
 
@@ -110,17 +116,27 @@ void main() async {
           ndk.broadcast.broadcast(nostrEvent: signedEvent);
       await response.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [signedEvent.pubKey],
+              kinds: [Nip01Event.kTextNodeKind],
+            ),
+          )
+          .future;
       expect(list.first, signedEvent);
 
       response = ndk.broadcast.broadcastDeletion(eventId: signedEvent.id);
       await response.broadcastDoneFuture;
 
-      list = await ndk.requests.query(filters: [
-        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      list = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [signedEvent.pubKey],
+              kinds: [Nip01Event.kTextNodeKind],
+            ),
+          )
+          .future;
       expect(list, isEmpty);
     });
 
@@ -154,19 +170,26 @@ void main() async {
           ndk.broadcast.broadcast(nostrEvent: signedEvent2);
       await response2.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(
-            authors: [signedEvent1.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+              filter: Filter(
+            authors: [signedEvent1.pubKey],
+            kinds: [Nip01Event.kTextNodeKind],
+          ))
+          .future;
 
       response1 = ndk.broadcast
           .broadcastDeletion(eventIds: [signedEvent1.id, signedEvent2.id]);
       await response1.broadcastDoneFuture;
 
-      list = await ndk.requests.query(filters: [
-        Filter(
-            authors: [signedEvent1.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      list = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [signedEvent1.pubKey],
+              kinds: [Nip01Event.kTextNodeKind],
+            ),
+          )
+          .future;
       expect(list, isEmpty);
     });
 
@@ -188,9 +211,14 @@ void main() async {
           ndk.broadcast.broadcast(nostrEvent: signedEvent);
       await response.broadcastDoneFuture;
 
-      List<Nip01Event> list = await ndk.requests.query(filters: [
-        Filter(authors: [signedEvent.pubKey], kinds: [Nip01Event.kTextNodeKind])
-      ]).future;
+      List<Nip01Event> list = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [signedEvent.pubKey],
+              kinds: [Nip01Event.kTextNodeKind],
+            ),
+          )
+          .future;
       expect(list.first, signedEvent);
 
       final reaction = "♡";
@@ -198,9 +226,14 @@ void main() async {
           .broadcastReaction(eventId: signedEvent.id, reaction: reaction);
       await response.broadcastDoneFuture;
 
-      list = await ndk.requests.query(filters: [
-        Filter(authors: [signedEvent.pubKey], kinds: [Reaction.kKind])
-      ]).future;
+      list = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [signedEvent.pubKey],
+              kinds: [Reaction.kKind],
+            ),
+          )
+          .future;
       expect(list.first.content, reaction);
     });
 
@@ -264,14 +297,15 @@ void main() async {
                 customTimeout + const Duration(milliseconds: 600)));
 
         // Verify the event was published to at least one relay (the fast one)
-        List<Nip01Event> result = await ndk.requests.query(
-          filters: [
-            Filter(
+        List<Nip01Event> result = await ndk.requests
+            .query(
+              filter: Filter(
                 authors: [key0.publicKey],
                 kinds: [Nip01Event.kTextNodeKind],
-                search: "testing timeout")
-          ],
-        ).future;
+                search: "testing timeout",
+              ),
+            )
+            .future;
         expect(result.length, 1);
       } finally {
         await slowRelay.stopServer();
@@ -401,6 +435,265 @@ void main() async {
       // Verify event is NOT saved in cache
       final cachedEvent = await ndk.config.cache.loadEvent(signedEvent.id);
       expect(cachedEvent, isNull);
+    });
+
+    test('broadcast to offline relay returns fast', () async {
+      // Create a relay URL that is not running (offline)
+      const offlineRelayUrl = 'ws://localhost:59999';
+
+      Nip01Event event = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "test offline broadcast",
+      );
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: key0.privateKey!,
+      );
+
+      final startTime = DateTime.now();
+
+      final response = ndk.broadcast.broadcast(
+        nostrEvent: signedEvent,
+        specificRelays: [offlineRelayUrl],
+        timeout: const Duration(minutes: 1),
+      );
+
+      await response.broadcastDoneFuture;
+
+      final endTime = DateTime.now();
+
+      final elapsedTime = endTime.millisecondsSinceEpoch - startTime.millisecondsSinceEpoch;
+
+      expect(elapsedTime, lessThan(20000));
+    });
+
+    // NIP-09 Compliance Tests
+
+    test('broadcastDeletion with event generates e and k tags (NIP-09)',
+        () async {
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+
+      Nip01Event textNote = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "test event for NIP-09 deletion",
+      );
+
+      await ndk.broadcast
+          .broadcastDeletion(event: textNote)
+          .broadcastDoneFuture;
+
+      List<Nip01Event> deletionEvents = await ndk.config.cache
+          .loadEvents(kinds: [5], pubKeys: [key0.publicKey]);
+
+      expect(deletionEvents.length, 1);
+      final deletionEvent = deletionEvents.first;
+
+      final eTags =
+          deletionEvent.tags.where((t) => t.length >= 2 && t[0] == 'e');
+      expect(eTags.length, 1);
+      expect(eTags.first[1], textNote.id);
+
+      final kTags =
+          deletionEvent.tags.where((t) => t.length >= 2 && t[0] == 'k');
+      expect(kTags.length, 1);
+      expect(kTags.first[1], Nip01Event.kTextNodeKind.toString());
+    });
+
+    test(
+        'broadcastDeletion with eventAndAllVersions generates e, a, and k tags',
+        () async {
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+
+      const articleKind = 30023;
+      Nip01Event article = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: articleKind,
+        tags: [
+          ["d", "my-article-identifier"]
+        ],
+        content: "article content",
+      );
+
+      await ndk.broadcast
+          .broadcastDeletion(eventAndAllVersions: article)
+          .broadcastDoneFuture;
+
+      List<Nip01Event> deletionEvents = await ndk.config.cache
+          .loadEvents(kinds: [5], pubKeys: [key0.publicKey]);
+
+      expect(deletionEvents.length, 1);
+      final deletionEvent = deletionEvents.first;
+
+      final eTags =
+          deletionEvent.tags.where((t) => t.length >= 2 && t[0] == 'e');
+      expect(eTags.length, 1);
+      expect(eTags.first[1], article.id);
+
+      final aTags =
+          deletionEvent.tags.where((t) => t.length >= 2 && t[0] == 'a');
+      expect(aTags.length, 1);
+      expect(aTags.first[1],
+          "$articleKind:${key0.publicKey}:my-article-identifier");
+
+      final kTags =
+          deletionEvent.tags.where((t) => t.length >= 2 && t[0] == 'k');
+      expect(kTags.length, 1);
+      expect(kTags.first[1], articleKind.toString());
+    });
+
+    test('broadcastDeletion with eventId generates only e tag', () async {
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+
+      await ndk.broadcast
+          .broadcastDeletion(eventId: "abc123")
+          .broadcastDoneFuture;
+
+      List<Nip01Event> deletionEvents = await ndk.config.cache
+          .loadEvents(kinds: [5], pubKeys: [key0.publicKey]);
+
+      expect(deletionEvents.length, 1);
+      final deletionEvent = deletionEvents.first;
+
+      final eTags =
+          deletionEvent.tags.where((t) => t.length >= 2 && t[0] == 'e');
+      expect(eTags.length, 1);
+      expect(eTags.first[1], "abc123");
+
+      final kTags =
+          deletionEvent.tags.where((t) => t.length >= 2 && t[0] == 'k');
+      expect(kTags.length, 0);
+    });
+
+    test(
+        'broadcastDeletion with eventAndAllVersions removes all versions from cache',
+        () async {
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+
+      const articleKind = 30023;
+      final dTag = "my-article-${DateTime.now().millisecondsSinceEpoch}";
+
+      // Create multiple versions of the same replaceable event
+      Nip01Event version1 = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: articleKind,
+        tags: [
+          ["d", dTag]
+        ],
+        content: "version 1",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 - 100,
+      );
+
+      Nip01Event version2 = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: articleKind,
+        tags: [
+          ["d", dTag]
+        ],
+        content: "version 2",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000 - 50,
+      );
+
+      Nip01Event version3 = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: articleKind,
+        tags: [
+          ["d", dTag]
+        ],
+        content: "version 3",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+
+      // Save all versions to cache
+      await ndk.config.cache.saveEvent(version1);
+      await ndk.config.cache.saveEvent(version2);
+      await ndk.config.cache.saveEvent(version3);
+
+      // Verify all versions are in cache
+      List<Nip01Event> cachedBefore = await ndk.config.cache.loadEvents(
+        kinds: [articleKind],
+        pubKeys: [key0.publicKey],
+        tags: {
+          'd': [dTag]
+        },
+      );
+      expect(cachedBefore.length, 3);
+
+      // Delete using eventAndAllVersions
+      await ndk.broadcast
+          .broadcastDeletion(eventAndAllVersions: version3)
+          .broadcastDoneFuture;
+
+      // Wait for cache removal (fire and forget async operation)
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Verify ALL versions are removed from cache
+      List<Nip01Event> cachedAfter = await ndk.config.cache.loadEvents(
+        kinds: [articleKind],
+        pubKeys: [key0.publicKey],
+        tags: {
+          'd': [dTag]
+        },
+      );
+      expect(cachedAfter.length, 0);
+    });
+
+    test('broadcastDeletion with multiple events generates correct tags',
+        () async {
+      ndk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+
+      Nip01Event textNote = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: "text note",
+      );
+
+      Nip01Event repost = Nip01Event(
+        pubKey: key0.publicKey,
+        kind: 6,
+        tags: [],
+        content: "repost",
+      );
+
+      await ndk.broadcast
+          .broadcastDeletion(events: [textNote, repost]).broadcastDoneFuture;
+
+      List<Nip01Event> deletionEvents = await ndk.config.cache
+          .loadEvents(kinds: [5], pubKeys: [key0.publicKey]);
+
+      expect(deletionEvents.length, 1);
+      final deletionEvent = deletionEvents.first;
+
+      final eTags = deletionEvent.tags
+          .where((t) => t.length >= 2 && t[0] == 'e')
+          .toList();
+      expect(eTags.length, 2);
+      expect(eTags.map((t) => t[1]).toSet(), {textNote.id, repost.id});
+
+      final kTags = deletionEvent.tags
+          .where((t) => t.length >= 2 && t[0] == 'k')
+          .toList();
+      expect(kTags.length, 2);
+      expect(kTags.map((t) => t[1]).toSet(), {'1', '6'});
     });
   });
 }

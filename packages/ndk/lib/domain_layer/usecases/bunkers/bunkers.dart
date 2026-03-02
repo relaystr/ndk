@@ -56,7 +56,7 @@ class Bunkers {
     );
 
     final request = BunkerRequest(
-      method: BunkerRequestMethods.connect,
+      method: SignerMethod.connect,
       params: [remotePubkey, secret],
     );
 

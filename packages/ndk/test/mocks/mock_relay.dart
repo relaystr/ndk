@@ -17,15 +17,15 @@ class MockRelay {
   String name;
   int? _port;
   HttpServer? server;
-  WebSocket? _webSocket;
   Map<KeyPair, Nip65>? _nip65s;
   Map<KeyPair, Nip01Event>? textNotes;
   Map<String, Nip01Event> _contactLists = {};
   Map<String, Nip01Event> _metadatas = {};
   Map<String, Nip01Event> _nip85Assertions = {}; // NIP-85 assertions keyed by "author:dTag"
   final Set<Nip01Event> _storedEvents = {}; // Store received events
-  final Map<String, List<Filter>> _activeSubscriptions =
-      {}; // Track active subscriptions
+
+  // Track all connected clients with their subscriptions
+  final Map<WebSocket, Map<String, List<Filter>>> _clientSubscriptions = {};
   bool signEvents;
   bool requireAuthForRequests;
   bool requireAuthForEvents;
@@ -102,11 +102,14 @@ class MockRelay {
     Set<String> authenticatedPubkeys = {};
 
     stream.listen((webSocket) {
-      _webSocket = webSocket;
+      // Register this client
+      _clientSubscriptions[webSocket] = {};
+
       if (customWelcomeMessage != null) {
         webSocket.add(customWelcomeMessage!);
       }
-      if ((requireAuthForRequests || requireAuthForEvents) && sendAuthChallenge) {
+      if ((requireAuthForRequests || requireAuthForEvents) &&
+          sendAuthChallenge) {
         challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
@@ -174,9 +177,13 @@ class MockRelay {
                     .removeWhere((key, event) => event.id == idToDelete);
                 _metadatas.removeWhere((key, event) => event.id == idToDelete);
               }
-            } else if (newEvent.kind == kNip46Kind) {
-              // Handle NIP-46 remote signer request
-              _handleNip46Request(newEvent, webSocket);
+            } else if (_isEphemeralKind(newEvent.kind)) {
+              // Ephemeral events (kinds 20000-29999) are broadcast but NOT stored
+              _broadcastEventToSubscriptions(newEvent);
+              // Also handle NIP-46 if targeting our mock signer
+              if (newEvent.kind == kNip46Kind) {
+                _handleNip46Request(newEvent, webSocket);
+              }
             } else {
               _storedEvents.add(newEvent);
             }
@@ -216,28 +223,33 @@ class MockRelay {
           }
 
           if (filters.isNotEmpty) {
-            // Store the active subscription
-            _activeSubscriptions[requestId] = filters;
-            _respondToRequest(filters, requestId);
+            // Store the subscription for this client
+            _clientSubscriptions[webSocket]?[requestId] = filters;
+            _respondToRequest(webSocket, filters, requestId);
           } else {
             // If no valid filters are provided, send EOSE immediately for this request ID
             log("MockRelay: No valid filters provided for REQ $requestId, sending EOSE.");
-            _webSocket!.add(jsonEncode(["EOSE", requestId]));
+            webSocket.add(jsonEncode(["EOSE", requestId]));
           }
           return;
         }
 
         if (eventJson[0] == "CLOSE") {
           String subscriptionId = eventJson[1];
-          // Remove the subscription from active subscriptions
-          if (_activeSubscriptions.containsKey(subscriptionId)) {
-            _activeSubscriptions.remove(subscriptionId);
+          // Remove the subscription for this client
+          if (_clientSubscriptions[webSocket]?.containsKey(subscriptionId) ??
+              false) {
+            _clientSubscriptions[webSocket]?.remove(subscriptionId);
             log("MockRelay: Closed subscription $subscriptionId");
           } else {
             log("MockRelay: Attempted to close non-existent subscription $subscriptionId");
           }
           return;
         }
+      }, onDone: () {
+        // Clean up when client disconnects
+        _clientSubscriptions.remove(webSocket);
+        log("MockRelay: Client disconnected");
       });
     }, onError: (error) {
       log('Error: $error');
@@ -249,12 +261,13 @@ class MockRelay {
     return myPromise.future;
   }
 
-  void _respondToRequest(List<Filter> filters, String requestId) {
+  void _respondToRequest(
+      WebSocket webSocket, List<Filter> filters, String requestId) {
     if (sendMalformedEvents) {
       final malformedEventJson =
           '["EVENT", "$requestId", {"id":null,"pubkey":null,"created_at":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"kind":0,"tags":[],"content":null,"sig":null}]';
-      _webSocket!.add(malformedEventJson);
-      _webSocket!.add(jsonEncode(["EOSE", requestId]));
+      webSocket.add(malformedEventJson);
+      webSocket.add(jsonEncode(["EOSE", requestId]));
       return;
     }
 
@@ -379,22 +392,22 @@ class MockRelay {
     }
 
     for (final event in allMatchingEvents) {
-      _webSocket!.add(jsonEncode(
+      webSocket.add(jsonEncode(
           ["EVENT", requestId, Nip01EventModel.fromEntity(event).toJson()]));
     }
 
-    _webSocket!.add(jsonEncode(["EOSE", requestId]));
+    webSocket.add(jsonEncode(["EOSE", requestId]));
   }
 
-  /// sends event on the websocket connection \
-  /// if key pair is provided, it will sign the event
+  /// Sends event to all connected clients
+  /// If key pair is provided, it will sign the event
   void sendEvent({
     required Nip01Event event,
     required String subId,
     KeyPair? keyPair,
   }) {
-    if (_webSocket == null) {
-      throw Exception("WebSocket is not connected");
+    if (_clientSubscriptions.isEmpty) {
+      throw Exception("No clients connected");
     }
 
     Nip01Event? signedEvent;
@@ -404,19 +417,91 @@ class MockRelay {
     }
 
     final eventToSend = signedEvent ?? event;
-
     final eventToSendModel = Nip01EventModel.fromEntity(eventToSend);
 
-    _webSocket!.add(jsonEncode(["EVENT", subId, eventToSendModel]));
+    // Send to all connected clients
+    for (var clientSocket in _clientSubscriptions.keys) {
+      clientSocket.add(jsonEncode(["EVENT", subId, eventToSendModel.toJson()]));
+    }
   }
 
-  /// sends a CLOSED message for a given subscription ID
+  /// Sends a CLOSED message to all connected clients
   void sendClosed(String subId, {String message = ""}) {
-    if (_webSocket == null) {
-      throw Exception("WebSocket is not connected");
+    // Send to all connected clients
+    for (var clientSocket in _clientSubscriptions.keys) {
+      clientSocket.add(jsonEncode(["CLOSED", subId, message]));
+    }
+  }
+
+  /// Check if a kind is ephemeral (20000-29999) per NIP-01
+  bool _isEphemeralKind(int kind) {
+    return kind >= 20000 && kind < 30000;
+  }
+
+  /// Broadcast an event to all clients with matching subscriptions
+  void _broadcastEventToSubscriptions(Nip01Event event) {
+    for (var clientEntry in _clientSubscriptions.entries) {
+      final clientSocket = clientEntry.key;
+      final subscriptions = clientEntry.value;
+
+      for (var subEntry in subscriptions.entries) {
+        final subscriptionId = subEntry.key;
+        final filters = subEntry.value;
+
+        for (var filter in filters) {
+          if (_eventMatchesFilter(event, filter)) {
+            clientSocket.add(jsonEncode([
+              "EVENT",
+              subscriptionId,
+              Nip01EventModel.fromEntity(event).toJson()
+            ]));
+            break; // Only send once per subscription
+          }
+        }
+      }
+    }
+  }
+
+  /// Check if an event matches a filter
+  bool _eventMatchesFilter(Nip01Event event, Filter filter) {
+    // Check kinds filter
+    if (filter.kinds != null && !filter.kinds!.contains(event.kind)) {
+      return false;
     }
 
-    _webSocket!.add(jsonEncode(["CLOSED", subId, message]));
+    // Check authors filter
+    if (filter.authors != null && !filter.authors!.contains(event.pubKey)) {
+      return false;
+    }
+
+    // Check ids filter
+    if (filter.ids != null && !filter.ids!.contains(event.id)) {
+      return false;
+    }
+
+    // Check #p tag filter
+    if (filter.pTags != null) {
+      List<String> eventPTags = event.tags
+          .where((tag) => tag.isNotEmpty && tag[0] == 'p')
+          .map((tag) => tag[1])
+          .toList();
+      if (!filter.pTags!.any((pTag) => eventPTags.contains(pTag))) {
+        return false;
+      }
+    }
+
+    // Check #e tag filter
+    if (filter.eTags != null) {
+      List<String> eventETags = event.tags
+          .where((tag) => tag.isNotEmpty && tag[0] == 'e')
+          .map((tag) => tag[1])
+          .toList();
+      if (!filter.eTags!.any((eTag) => eventETags.contains(eTag))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   Future<void> stopServer() async {
@@ -485,55 +570,8 @@ class MockRelay {
       Nip01Event responseEvent = Nip01Utils.signWithPrivateKey(
           event: responseEventUnsinged, privateKey: _remoteSignerPrivateKey);
 
-      // NIP-46 events are ephemeral (kind 24133), don't store them
-      // Instead, deliver directly to matching subscriptions
-
-      // Find matching subscriptions for this NIP-46 response
-      for (var entry in _activeSubscriptions.entries) {
-        String subscriptionId = entry.key;
-        List<Filter> filters = entry.value;
-
-        // Check if any filter matches this event
-        for (var filter in filters) {
-          bool matches = true;
-
-          // Check kinds filter
-          if (filter.kinds != null &&
-              !filter.kinds!.contains(responseEvent.kind)) {
-            matches = false;
-          }
-
-          // Check authors filter
-          if (matches &&
-              filter.authors != null &&
-              !filter.authors!.contains(responseEvent.pubKey)) {
-            matches = false;
-          }
-
-          // Check #p tag filter
-          if (matches && filter.pTags != null) {
-            List<String> eventPTags = responseEvent.tags
-                .where((tag) => tag.isNotEmpty && tag[0] == 'p')
-                .map((tag) => tag[1])
-                .toList();
-            bool hasPTag =
-                filter.pTags!.any((pTag) => eventPTags.contains(pTag));
-            if (!hasPTag) {
-              matches = false;
-            }
-          }
-
-          // If this filter matches, send the event with the correct subscription ID
-          if (matches) {
-            webSocket.add(jsonEncode([
-              "EVENT",
-              subscriptionId,
-              Nip01EventModel.fromEntity(responseEvent).toJson()
-            ]));
-            break; // Only send once per subscription
-          }
-        }
-      }
+      // NIP-46 events are ephemeral (kind 24133), broadcast to matching subscriptions
+      _broadcastEventToSubscriptions(responseEvent);
     } catch (e) {
       log('MockRelay: Error handling NIP-46 request: $e');
     }

@@ -1,0 +1,25 @@
+name: db-tests
+on: [push, workflow_dispatch]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [sembast_cache_manager, objectbox, drift_cache_manager]
+    defaults:
+      run:
+        working-directory: ./packages/${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+          architecture: x64 # optional, x64 or arm64
+      - run: flutter pub get
+      - name: Install ObjectBox C library (for objectbox package)
+        if: matrix.package == 'objectbox'
+        run: bash <(curl -s https://raw.githubusercontent.com/objectbox/objectbox-dart/main/install.sh)
+      - run: flutter test

@@ -49,7 +49,7 @@ class Helpers {
       return [convert.hex.encode(eightBitWords), bech32.hrp];
     } catch (e) {
       Logger.log.w(
-        'decodeBech32 error: $e, \n \n String is: $bech32String \n \n',
+        () => 'decodeBech32 error: $e, \n \n String is: $bech32String \n \n',
         error: e,
       );
     }
