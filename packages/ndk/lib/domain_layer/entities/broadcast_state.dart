@@ -120,4 +120,10 @@ class BroadcastState {
     _stateUpdatesController.close();
     networkController.close();
   }
+
+  /// Add an error to the broadcast state stream and dispose
+  void addError(Object error, [StackTrace? stackTrace]) {
+    _stateUpdatesController.addError(error, stackTrace);
+    _dispose();
+  }
 }

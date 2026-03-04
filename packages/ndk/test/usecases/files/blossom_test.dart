@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/io/file_io_platform.dart';
 import 'package:ndk/data_layer/repositories/blossom/blossom_impl.dart';
-import 'package:ndk/domain_layer/entities/blob_upload_progress.dart';
 import 'package:ndk/domain_layer/repositories/blossom.dart';
 
 import 'package:ndk/ndk.dart';
@@ -940,6 +939,27 @@ void main() {
       expect(await downloadFile.exists(), true);
       final downloadedContent = await downloadFile.readAsString();
       expect(downloadedContent, equals(testContent));
+    });
+
+    test(
+        'uploadBlob should work without logged in account using temporary signer',
+        () async {
+      final ndkNoLogin = Ndk(
+        NdkConfig(
+          eventVerifier: MockEventVerifier(),
+          cache: MemCacheManager(),
+        ),
+      );
+
+      final testData = Uint8List.fromList(utf8.encode('Temporary signer test'));
+
+      final uploadResponse = await ndkNoLogin.blossom.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:${server.port}'],
+      );
+
+      expect(uploadResponse.first.success, true);
+      expect(uploadResponse.first.descriptor, isNotNull);
     });
   });
 }

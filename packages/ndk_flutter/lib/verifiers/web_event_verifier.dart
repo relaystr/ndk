@@ -5,4 +5,4 @@
 library;
 
 export 'src/web_event_verifier_stub.dart'
-    if (dart.library.html) 'src/web_event_verifier_web.dart';
+    if (dart.library.js) 'src/web_event_verifier_web.dart';

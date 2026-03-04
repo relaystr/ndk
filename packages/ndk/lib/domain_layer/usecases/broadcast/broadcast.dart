@@ -87,8 +87,7 @@ class Broadcast {
       nostrEvent: nostrEvent,
       signer: signer,
       specificRelays: cleanedSpecificRelays,
-      doneStream: broadcastState.stateUpdates
-          .map((state) => state.broadcasts.values.toList()),
+      broadcastState: broadcastState,
     );
   }
 

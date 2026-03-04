@@ -94,6 +94,47 @@ class Lists {
     return list;
   }
 
+  /// Returns a NIP-51 list by kind for a given public key.
+  ///
+  /// Retrieves the most recent list event for the specified kind and public key.
+  /// Unlike [getSingleNip51List], this works with any public key, not just
+  /// the logged-in user.
+  ///
+  /// [kind] the kind of NIP-51 list to retrieve \
+  /// [publicKey] the public key of the user whose list to retrieve \
+  /// [forceRefresh] if true, bypass cache and query relays directly \
+  /// [timeout] maximum duration to wait for relay responses
+  ///
+  /// Returns the list if found, null otherwise.
+  Future<Nip51List?> getPublicList({
+    required int kind,
+    required String publicKey,
+    bool forceRefresh = false,
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    final signer = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+
+    Nip51List? list =
+        !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
+
+    if (list != null) return list;
+
+    final events = await _requests.query(filters: [
+      Filter(
+        authors: [publicKey],
+        kinds: [kind],
+        limit: 1,
+      )
+    ], timeout: timeout).future;
+
+    if (events.isEmpty) return null;
+
+    events.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    await _cacheManager.saveEvent(events.last);
+    return await Nip51List.fromEvent(events.last, signer);
+  }
+
   /// Adds an element to a NIP-51 list.
   ///
   /// If the list doesn't exist, it will be created. The updated list is
