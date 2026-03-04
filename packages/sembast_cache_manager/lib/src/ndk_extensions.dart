@@ -90,10 +90,26 @@ extension MetadataExtension on Metadata {
       'updatedAt': updatedAt,
       'refreshedTimestamp': refreshedTimestamp,
       'sources': sources,
+      'tags': tags,
+      'content': content,
     };
   }
 
   static Metadata fromJsonStorage(Map<String, Object?> json) {
+    // Parse tags from storage
+    List<List<String>>? parsedTags;
+    if (json['tags'] != null) {
+      parsedTags = (json['tags'] as List)
+          .map((tag) => (tag as List).map((e) => e.toString()).toList())
+          .toList();
+    }
+
+    // Create a mutable copy of content if it exists
+    Map<String, dynamic>? contentCopy;
+    if (json['content'] != null) {
+      contentCopy = Map<String, dynamic>.from(json['content'] as Map<String, dynamic>);
+    }
+
     final metadata = Metadata(
       pubKey: json['pubKey'] as String? ?? '',
       name: json['name'] as String?,
@@ -107,6 +123,8 @@ extension MetadataExtension on Metadata {
       lud06: json['lud06'] as String?,
       updatedAt: json['updatedAt'] as int?,
       refreshedTimestamp: json['refreshedTimestamp'] as int?,
+      tags: parsedTags,
+      content: contentCopy,
     );
 
     if (json['sources'] != null) {

@@ -287,6 +287,10 @@ class DriftCacheManager extends CacheManager {
             updatedAt: Value(metadata.updatedAt),
             refreshedTimestamp: Value(metadata.refreshedTimestamp),
             sourcesJson: jsonEncode(metadata.sources),
+            tagsJson: Value(jsonEncode(metadata.tags)),
+            rawContentJson: Value(metadata.content.isNotEmpty
+                ? jsonEncode(metadata.content)
+                : null),
           ),
         );
   }
@@ -312,6 +316,10 @@ class DriftCacheManager extends CacheManager {
                 updatedAt: Value(metadata.updatedAt),
                 refreshedTimestamp: Value(metadata.refreshedTimestamp),
                 sourcesJson: jsonEncode(metadata.sources),
+                tagsJson: Value(jsonEncode(metadata.tags)),
+                rawContentJson: Value(metadata.content.isNotEmpty
+                    ? jsonEncode(metadata.content)
+                    : null),
               ),
             )
             .toList(),
@@ -375,6 +383,10 @@ class DriftCacheManager extends CacheManager {
   }
 
   Metadata _metadataFromRow(DbMetadata row) {
+    final tags = (jsonDecode(row.tagsJson) as List)
+        .map((e) => (e as List).map((item) => item.toString()).toList())
+        .toList();
+
     final metadata = Metadata(
       pubKey: row.pubKey,
       name: row.name,
@@ -388,6 +400,10 @@ class DriftCacheManager extends CacheManager {
       lud06: row.lud06,
       updatedAt: row.updatedAt,
       refreshedTimestamp: row.refreshedTimestamp,
+      tags: tags,
+      content: row.rawContentJson != null
+          ? jsonDecode(row.rawContentJson!) as Map<String, dynamic>
+          : null,
     );
     metadata.sources = (jsonDecode(row.sourcesJson) as List)
         .map((e) => e.toString())

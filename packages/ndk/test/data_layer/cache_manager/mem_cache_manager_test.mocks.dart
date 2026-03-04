@@ -549,15 +549,36 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       ) as String);
 
   @override
+  Map<String, dynamic> get content => (super.noSuchMethod(
+        Invocation.getter(#content),
+        returnValue: <String, dynamic>{},
+      ) as Map<String, dynamic>);
+
+  @override
   List<String> get sources => (super.noSuchMethod(
         Invocation.getter(#sources),
         returnValue: <String>[],
       ) as List<String>);
 
   @override
+  List<List<String>> get tags => (super.noSuchMethod(
+        Invocation.getter(#tags),
+        returnValue: <List<String>>[],
+      ) as List<List<String>>);
+
+  @override
   set pubKey(String? value) => super.noSuchMethod(
         Invocation.setter(
           #pubKey,
+          value,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  set content(Map<String, dynamic>? value) => super.noSuchMethod(
+        Invocation.setter(
+          #content,
           value,
         ),
         returnValueForMissingStub: null,
@@ -672,13 +693,13 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       );
 
   @override
-  Map<String, dynamic> toFullJson() => (super.noSuchMethod(
-        Invocation.method(
-          #toFullJson,
-          [],
+  set tags(List<List<String>>? value) => super.noSuchMethod(
+        Invocation.setter(
+          #tags,
+          value,
         ),
-        returnValue: <String, dynamic>{},
-      ) as Map<String, dynamic>);
+        returnValueForMissingStub: null,
+      );
 
   @override
   Map<String, dynamic> toJson() => (super.noSuchMethod(
@@ -703,6 +724,28 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
           ),
         ),
       ) as _i3.Nip01Event);
+
+  @override
+  void setCustomField(
+    String? key,
+    dynamic value,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setCustomField,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  dynamic getCustomField(String? key) => super.noSuchMethod(Invocation.method(
+        #getCustomField,
+        [key],
+      ));
 
   @override
   String getName() => (super.noSuchMethod(
@@ -743,6 +786,8 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
     int? updatedAt,
     int? refreshedTimestamp,
     List<String>? sources,
+    List<List<String>>? tags,
+    Map<String, dynamic>? content,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -762,6 +807,8 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
             #updatedAt: updatedAt,
             #refreshedTimestamp: refreshedTimestamp,
             #sources: sources,
+            #tags: tags,
+            #content: content,
           },
         ),
         returnValue: _FakeMetadata_2(
@@ -783,6 +830,8 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
               #updatedAt: updatedAt,
               #refreshedTimestamp: refreshedTimestamp,
               #sources: sources,
+              #tags: tags,
+              #content: content,
             },
           ),
         ),

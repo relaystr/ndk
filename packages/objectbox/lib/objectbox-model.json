@@ -69,7 +69,7 @@
     },
     {
       "id": "2:530428573583615038",
-      "lastPropertyId": "15:3659729329624536988",
+      "lastPropertyId": "17:113627794962189077",
       "name": "DbMetadata",
       "properties": [
         {
@@ -147,6 +147,16 @@
           "id": "15:3659729329624536988",
           "name": "splitNameWords",
           "type": 30
+        },
+        {
+          "id": "16:3647171789847206317",
+          "name": "tagsJson",
+          "type": 9
+        },
+        {
+          "id": "17:113627794962189077",
+          "name": "rawContentJson",
+          "type": 9
         }
       ],
       "relations": []
