@@ -25,6 +25,7 @@ dependencies:
 
 dev_dependencies:
   lints: ^6.1.0
+  test: any
   ndk_cache_manager_test_suite:
     path: ../ndk_cache_manager_test_suite
 
