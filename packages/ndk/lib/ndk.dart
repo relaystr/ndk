@@ -94,6 +94,9 @@ export 'domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 export 'domain_layer/entities/filter_fetched_ranges.dart';
 export 'domain_layer/usecases/proof_of_work/proof_of_work.dart';
 export 'domain_layer/entities/nip_01_utils.dart';
+export 'domain_layer/usecases/ta/trusted_assertions.dart';
+export 'domain_layer/entities/nip_85.dart';
+export 'config/nip85_defaults.dart';
 
 /**
  * other stuff
