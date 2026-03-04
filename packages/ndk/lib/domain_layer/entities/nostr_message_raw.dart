@@ -7,6 +7,8 @@ enum NostrMessageRawType {
   ok,
   closed,
   auth,
+  negMsg,
+  negErr,
   unknown,
 }
 
