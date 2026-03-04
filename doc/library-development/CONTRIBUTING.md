@@ -45,7 +45,7 @@ If you want to work on it yourself, assign it to yourself and start working on i
 Feel free to reach out to us via the following channels:
 
 - [GitHub Issues](https://github.com/relaystr/ndk/issues)
-- weekly dev calls (every Wednesday at 14:00 CEST) [link](https://call.element.io/room/#/ndk-47014?password=ywCMPkavHoMfbtwWdzknXg&roomId=%21ntFcnshzkrZDCYXOEF%3Acall.ems.host). Let us know beforehand if you want to discuss something specific so we can add it to the agenda.
+- weekly dev calls (every Wednesday at 11:00 CEST) [link](https://call.element.io/room/#/ndk-47014?password=ywCMPkavHoMfbtwWdzknXg&roomId=%21ntFcnshzkrZDCYXOEF%3Acall.ems.host). Let us know beforehand if you want to discuss something specific so we can add it to the agenda.
 - Nostr: [fmar](https://njump.me/fmar.dev) [leo](https://njump.me/leo@camelus.app)
 - Email: leo: contact(a t)camelus.app [pgp](https://camelus.app/pgp-key.txt)
 
