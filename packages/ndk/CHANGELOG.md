@@ -1,3 +1,16 @@
+## 0.7.1-dev.20
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: allow blossom uploadBlob without login via temporary/custom signer.
+ - **FIX**: tests passes.
+ - **FIX**: toJson and fromJson.
+ - **FIX**: meme cache mock.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: mem cache manager mock.
+ - **FIX**: preserve tags and custom fields in metadata.
+ - **FEAT**: cache known properties.
+
 ## 0.7.1-dev.19
 
  - **FIX**: propagate signer exceptions through broadcast.
