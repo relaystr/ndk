@@ -1,3 +1,7 @@
+## 0.0.2-dev.15
+
+ - **FIX**: wasm compatible conditional import.
+
 ## 0.0.2-dev.14
 
  - **FIX**: wasm compatible conditional import.
