@@ -10,18 +10,18 @@
     <meta name="generator" content="Retype 4.1.0">
 
     <!-- Primary Meta Tags -->
-    <title>Metadata</title>
-    <meta name="title" content="Metadata">
-    <meta name="description" content="Gives you the metadata for a given pubkey. Uses caching, so repeated calls are ok.">
+    <title>Signers</title>
+    <meta name="title" content="Signers">
+    <meta name="description" content="Signers are responsible for cryptographic operations: signing events, encrypting and decrypting messages. NDK supports multiple signer types with a unified">
 
     <!-- Canonical -->
-    <link rel="canonical" href="https://dart-nostr.com/usecases/metadata/">
+    <link rel="canonical" href="https://dart-nostr.com/concepts/signers/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dart-nostr.com/usecases/metadata/">
-    <meta property="og:title" content="Metadata">
-    <meta property="og:description" content="Gives you the metadata for a given pubkey. Uses caching, so repeated calls are ok.">
+    <meta property="og:url" content="https://dart-nostr.com/concepts/signers/">
+    <meta property="og:title" content="Signers">
+    <meta property="og:description" content="Signers are responsible for cryptographic operations: signing events, encrypting and decrypting messages. NDK supports multiple signer types with a unified">
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
@@ -142,38 +142,222 @@
                 <!-- Rendered if sidebar right is enabled -->
                 <div id="retype-sidebar-right-toggle"></div>
                 <!-- Page content  -->
-<doc-anchor-target id="metadata" class="break-words">
+<doc-anchor-target id="signers" class="break-words">
     <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#metadata">#</doc-anchor-trigger>
-        <span>Metadata</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#signers">#</doc-anchor-trigger>
+        <span>Signers</span>
     </h1>
 </doc-anchor-target>
-<p><span class="no-link inline-flex align-middle items-center justify-center font-medium leading-none whitespace-nowrap text-badge-primary-text bg-badge-primary border border-badge-primary-border h-6 px-2 text-xs rounded-md">
-    <span>high level</span>
-</span></p>
-<doc-anchor-target id="example">
+<p>Signers are responsible for cryptographic operations: signing events, encrypting and decrypting messages. NDK supports multiple signer types with a unified API.</p>
+<doc-anchor-target id="signer-types">
     <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#example">#</doc-anchor-trigger>
-        <span>Example</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#signer-types">#</doc-anchor-trigger>
+        <span>Signer Types</span>
     </h2>
 </doc-anchor-target>
-<div id="example-code-1" class="codeblock-wrapper"><doc-codeblock>
-<pre translate="no" class="language-dart"><code v-pre class="language-dart">final Metadata? response = await ndk.metadata.loadMetadata(
-    '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d');
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>Pending Requests</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>Bip340EventSigner</code></td>
+<td>Local signer with private key</td>
+<td>No (instant)</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>Nip46EventSigner</code></td>
+<td>Remote signer via NIP-46 bunker</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>Nip07EventSigner</code></td>
+<td>Browser extension (NIP-07)</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>AmberEventSigner</code></td>
+<td>Android Amber app</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+</div>
+<doc-anchor-target id="pending-requests">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#pending-requests">#</doc-anchor-trigger>
+        <span>Pending Requests</span>
+    </h2>
+</doc-anchor-target>
+<p>External signers (NIP-46, NIP-07, Amber) require user approval for operations. The unified pending requests API allows your UI to:</p>
+<ul>
+<li>Display pending operations to the user</li>
+<li>Cancel pending requests</li>
+<li>React to request completion</li>
+</ul>
+<doc-anchor-target id="listening-to-pending-requests">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#listening-to-pending-requests">#</doc-anchor-trigger>
+        <span>Listening to Pending Requests</span>
+    </h3>
+</doc-anchor-target>
+<p>You can access pending requests directly from an <code translate="no" v-pre>Account</code> or through its signer:</p>
+<div id="listening-to-pending-requests-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">final account = ndk.accounts.getLoggedAccount();
 
-// read entity
-print(&quot;METADATA:&quot;);
-print(&quot;name: ${response?.name ?? 'no name'}&quot;);</code></pre>
+// Stream-based (reactive) - directly on account
+account?.pendingRequestsStream.listen((requests) {
+  print('${requests.length} pending request(s)');
+  for (final request in requests) {
+    print('- ${request.method.protocolString} (${request.id})');
+  }
+});
+
+// Snapshot (synchronous)
+final currentRequests = account?.pendingRequests ?? [];</code></pre>
 </doc-codeblock></div>
-<doc-anchor-target id="how-to-use">
+<doc-anchor-target id="pendingsignerrequest-properties">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#pendingsignerrequest-properties">#</doc-anchor-trigger>
+        <span>PendingSignerRequest Properties</span>
+    </h3>
+</doc-anchor-target>
+<div id="pendingsignerrequest-properties-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">class PendingSignerRequest {
+  final String id;                    // Unique request identifier
+  final SignerMethod method;          // signEvent, nip44Encrypt, etc.
+  final DateTime createdAt;           // When the request was created
+  final String signerPubkey;          // Public key of the signer
+  final Nip01Event? event;            // Event being signed (for signEvent)
+  final String? plaintext;            // Text being encrypted
+  final String? ciphertext;           // Text being decrypted
+  final String? counterpartyPubkey;   // Other party's pubkey (encrypt/decrypt)
+
+  String? get content;                // Returns plaintext or ciphertext
+}</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="cancelling-requests">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#cancelling-requests">#</doc-anchor-trigger>
+        <span>Cancelling Requests</span>
+    </h3>
+</doc-anchor-target>
+<div id="cancelling-requests-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">// Cancel a specific request
+final cancelled = account.cancelRequest(requestId);
+
+if (cancelled) {
+  print('Request cancelled');
+} else {
+  print('Request not found');
+}</code></pre>
+</doc-codeblock></div>
+<p>When cancelled, the caller receives a <code translate="no" v-pre>SignerRequestCancelledException</code>:</p>
+<div id="cancelling-requests-code-2" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">try {
+  await signer.sign(event);
+} on SignerRequestCancelledException catch (e) {
+  print('User cancelled locally: ${e.requestId}');
+}</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="handling-remote-rejections">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#handling-remote-rejections">#</doc-anchor-trigger>
+        <span>Handling Remote Rejections</span>
+    </h3>
+</doc-anchor-target>
+<p>When the user rejects a request on the remote signer (bunker, browser extension, Amber), the caller receives a <code translate="no" v-pre>SignerRequestRejectedException</code>:</p>
+<div id="handling-remote-rejections-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">try {
+  await signer.sign(event);
+} on SignerRequestRejectedException catch (e) {
+  print('User rejected on remote signer: ${e.requestId}');
+  print('Original message: ${e.originalMessage}');
+} on SignerRequestCancelledException catch (e) {
+  print('User cancelled locally: ${e.requestId}');
+}</code></pre>
+</doc-codeblock></div>
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th>Exception</th>
+<th>When thrown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code translate="no" v-pre>SignerRequestCancelledException</code></td>
+<td><code translate="no" v-pre>cancelRequest()</code> called locally</td>
+</tr>
+<tr>
+<td><code translate="no" v-pre>SignerRequestRejectedException</code></td>
+<td>User rejected on remote signer</td>
+</tr>
+</tbody>
+</table>
+</div>
+<doc-anchor-target id="ui-example">
     <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#how-to-use">#</doc-anchor-trigger>
-        <span>How to use</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#ui-example">#</doc-anchor-trigger>
+        <span>UI Example</span>
     </h2>
 </doc-anchor-target>
-<p>Gives you the metadata for a given pubkey. <br />
-Uses caching, so repeated calls are ok.</p>
-<p>Use <code translate="no" v-pre>broadcastMetadata()</code> to update or set metadata.</p>
+<div id="ui-example-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">StreamBuilder&lt;List&lt;PendingSignerRequest&gt;&gt;(
+  stream: account.pendingRequestsStream,
+  builder: (context, snapshot) {
+    final requests = snapshot.data ?? [];
+
+    if (requests.isEmpty) {
+      return Text('No pending requests');
+    }
+
+    return ListView.builder(
+      itemCount: requests.length,
+      itemBuilder: (context, index) {
+        final request = requests[index];
+        return ListTile(
+          title: Text(request.method.protocolString),
+          subtitle: Text('Created ${request.createdAt}'),
+          trailing: IconButton(
+            icon: Icon(Icons.cancel),
+            onPressed: () =&gt; account.cancelRequest(request.id),
+          ),
+        );
+      },
+    );
+  },
+)</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="disposing-accounts">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#disposing-accounts">#</doc-anchor-trigger>
+        <span>Disposing Accounts</span>
+    </h2>
+</doc-anchor-target>
+<p>Always dispose accounts when done to avoid memory leaks:</p>
+<div id="disposing-accounts-code-1" class="codeblock-wrapper"><doc-codeblock>
+<pre translate="no" class="language-dart"><code v-pre class="language-dart">await account.dispose();</code></pre>
+</doc-codeblock></div>
+<doc-anchor-target id="when-to-use">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#when-to-use">#</doc-anchor-trigger>
+        <span>When to Use</span>
+    </h2>
+</doc-anchor-target>
+<p>Use the pending requests API when:</p>
+<ul>
+<li>Building UI for external signers (bunkers, browser extensions, mobile apps)</li>
+<li>Showing users what operations are waiting for approval</li>
+<li>Allowing users to cancel stuck or unwanted requests</li>
+<li>Implementing request timeouts in your application</li>
+</ul>
 
                 
                 <!-- Required only on API pages -->
@@ -183,20 +367,20 @@ Uses caching, so repeated calls are ok.</p>
             
                 <nav id="retype-nextprev" class="print:hidden flex mt-14">
                     <div class="w-1/2">
-                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-body-link border border-base-border hover:border-base-border-hover rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/lists/">
+                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-body-link border border-base-border hover:border-base-border-hover rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../concepts/performance/">
                             <svg xmlns="http://www.w3.org/2000/svg" class="mr-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19 11H7.41l5.29-5.29a.996.996 0 10-1.41-1.41l-7 7a1 1 0 000 1.42l7 7a1.024 1.024 0 001.42-.01.996.996 0 000-1.41L7.41 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                             <span>
                                 <span class="block text-xs font-normal text-base-text-muted">Previous</span>
-                                <span class="block mt-1">Lists</span>
+                                <span class="block mt-1">Performance</span>
                             </span>
                         </a>
                     </div>
             
                     <div class="w-1/2">
-                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-body-link border border-base-border hover:border-base-border-hover rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/nwc/">
+                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-body-link border border-base-border hover:border-base-border-hover rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../common-terminology/">
                             <span>
                                 <span class="block text-xs font-normal text-right text-base-text-muted">Next</span>
-                                <span class="block mt-1">Nwc</span>
+                                <span class="block mt-1">Common Terminology</span>
                             </span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                         </a>
@@ -240,6 +424,6 @@ Uses caching, so repeated calls are ok.</p>
 
     <div id="retype-overlay-target"></div>
 
-    <script data-cfasync="false">window.__DOCS__ = { "title": "Metadata", level: 2, icon: "file", hasPrism: true, hasMermaid: false, hasMath: false, tocDepth: 23 }</script>
+    <script data-cfasync="false">window.__DOCS__ = { "title": "Signers", level: 2, icon: "file", hasPrism: true, hasMermaid: false, hasMath: false, tocDepth: 23 }</script>
 </body>
 </html>
