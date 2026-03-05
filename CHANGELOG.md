@@ -11,6 +11,56 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - [`ndk` - `v0.7.1`](#ndk---v071)
+ - [`ndk_amber` - `v0.4.1`](#ndk_amber---v041)
+ - [`ndk_objectbox` - `v0.2.8`](#ndk_objectbox---v028)
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2`](#drift_cache_manager---v002)
+ - [`ndk_flutter` - `v0.0.2`](#ndk_flutter---v002)
+ - [`ndk_rust_verifier` - `v0.5.0`](#ndk_rust_verifier---v050)
+ - [`nip07_event_signer` - `v1.0.6`](#nip07_event_signer---v106)
+ - [`sembast_cache_manager` - `v1.0.7`](#sembast_cache_manager---v107)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `drift_cache_manager` - `v0.0.2`
+ - `ndk` - `v0.7.1`
+ - `ndk_amber` - `v0.4.1`
+ - `ndk_flutter` - `v0.0.2`
+ - `ndk_objectbox` - `v0.2.8`
+ - `ndk_rust_verifier` - `v0.5.0`
+ - `nip07_event_signer` - `v1.0.6`
+ - `sembast_cache_manager` - `v1.0.7`
+
+---
+
+#### `ndk` - `v0.7.1`
+
+#### `ndk_amber` - `v0.4.1`
+
+#### `ndk_objectbox` - `v0.2.8`
+
+#### `drift_cache_manager` - `v0.0.2`
+
+#### `ndk_flutter` - `v0.0.2`
+
+#### `ndk_rust_verifier` - `v0.5.0`
+
+#### `nip07_event_signer` - `v1.0.6`
+
+#### `sembast_cache_manager` - `v1.0.7`
+
+
+## 2026-03-05
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - There are no breaking changes in this release.
 
 Packages with other changes:
