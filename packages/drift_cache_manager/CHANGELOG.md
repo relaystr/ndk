@@ -1,3 +1,10 @@
+## 0.0.2-dev.6
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
 ## 0.0.2-dev.5
 
  - Update a dependency to the latest release.
