@@ -1,3 +1,12 @@
+## 1.0.7-dev.20
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: sembast missing import.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
 ## 1.0.7-dev.19
 
  - Update a dependency to the latest release.

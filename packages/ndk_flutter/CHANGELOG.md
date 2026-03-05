@@ -1,3 +1,7 @@
+## 0.0.2-dev.16
+
+ - Update a dependency to the latest release.
+
 ## 0.0.2-dev.15
 
  - **FIX**: wasm compatible conditional import.
