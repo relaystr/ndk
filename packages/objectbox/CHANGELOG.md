@@ -1,3 +1,7 @@
+## 0.2.8
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.2.8-dev.21
 
  - **REFACTOR**: rename rawContent to content.
