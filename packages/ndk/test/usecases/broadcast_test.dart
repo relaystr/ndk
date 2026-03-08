@@ -464,7 +464,8 @@ void main() async {
 
       final endTime = DateTime.now();
 
-      final elapsedTime = endTime.millisecondsSinceEpoch - startTime.millisecondsSinceEpoch;
+      final elapsedTime =
+          endTime.millisecondsSinceEpoch - startTime.millisecondsSinceEpoch;
 
       expect(elapsedTime, lessThan(20000));
     });

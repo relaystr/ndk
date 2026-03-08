@@ -29,7 +29,23 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          // Add new columns for metadata tags and rawContent
+          await m.addColumn(metadatas, metadatas.tagsJson);
+          await m.addColumn(metadatas, metadatas.rawContentJson);
+        }
+      },
+    );
+  }
 
   static QueryExecutor _openConnection(String dbName) {
     return driftDatabase(
