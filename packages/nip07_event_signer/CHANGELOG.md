@@ -1,3 +1,7 @@
+## 1.0.7-dev.0
+
+ - Update a dependency to the latest release.
+
 ## 1.0.6
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
