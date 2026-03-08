@@ -425,7 +425,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.7.1"
+    version: "0.7.2-dev.0"
   ndk_cache_manager_test_suite:
     dependency: "direct dev"
     description:
