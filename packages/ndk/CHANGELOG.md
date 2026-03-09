@@ -1,3 +1,7 @@
+## 0.7.2-dev.0
+
+ - **FEAT**: paginated requests.
+
 ## 0.7.1
 
  - FEAT: cache known properties.
