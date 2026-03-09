@@ -11,6 +11,7 @@ Available databases:
 - [`DbObjectBox`](https://pub.dev/packages/ndk_objectbox)
 - [`IsarCacheManager`](https://pub.dev/packages/ndk_isar) [discontinued! use ObjectBox or Sembast]
 - [`SembastCacheManager`](https://pub.dev/packages/sembast_cache_manager)
+- [`DriftCacheManager`](https://pub.dev/packages/drift_cache_manager)
 
 If you want your own database, you need to implement the `CacheManager` interface. Contributions for more database implementations are welcome!
 
@@ -45,6 +46,27 @@ import 'package:sembast_cache_manager/sembast_cache_manager.dart';
 
   final tempDir = await Directory.systemTemp.createTemp('sembast_cache_db');
   final db = await SembastCacheManager.create(databasePath: tempDir.path);
+
+  final ndkConfig = NdkConfig(
+    cache: db,
+    eventSigner: eventSigner,
+    eventVerifier: eventVerifier,
+  );
+
+  final ndk = Ndk(ndkConfig);
+```
+
+```dart drift example
+import 'package:ndk/ndk.dart';
+import 'package:drift_cache_manager/drift_cache_manager.dart';
+
+...
+
+  // Uses 'ndk_cache_debug' in debug mode, 'ndk_cache' in release
+  final db = await DriftCacheManager.create();
+
+  // Or with a custom database name
+  // final db = await DriftCacheManager.create(dbName: 'my_app_cache');
 
   final ndkConfig = NdkConfig(
     cache: db,

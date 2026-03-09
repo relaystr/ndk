@@ -270,7 +270,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(5, 9064926152786621222),
     name: 'DbMetadata',
-    lastPropertyId: const obx_int.IdUid(15, 5509990970229448774),
+    lastPropertyId: const obx_int.IdUid(17, 113627794962189077),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -452,6 +452,9 @@ final _entities = <obx_int.ModelEntity>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(2, 1669435324271492158),
         name: 'pubKey',
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(16, 3647171789847206317),
+        name: 'tagsJson',
         type: 9,
         flags: 0,
       ),
@@ -477,6 +480,11 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(6, 9210345680519567987),
         name: 'relays',
         type: 30,
+        flags: 0,
+      ),
+        id: const obx_int.IdUid(17, 113627794962189077),
+        name: 'rawContentJson',
+        type: 9,
         flags: 0,
       ),
     ],
@@ -780,25 +788,36 @@ final _entities = <obx_int.ModelEntity>[
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(1, 1329597633054929515),
+    id: const obx_int.IdUid(10, 3095440836008321964),
+    name: 'DbNip01Event',
+    lastPropertyId: const obx_int.IdUid(11, 7172612518832098824),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 259779066852927131),
         name: 'dbId',
         type: 6,
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 1399303250510831756),
-        name: 'id',
+        id: const obx_int.IdUid(2, 1318440097097011584),
+        name: 'nostrId',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
         id: const obx_int.IdUid(3, 6260811896451838534),
         name: 'walletId',
+        id: const obx_int.IdUid(3, 5437562097776545192),
+        name: 'pubKey',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
         id: const obx_int.IdUid(4, 674856260732666819),
         name: 'changeAmount',
+        id: const obx_int.IdUid(4, 1245004817671349135),
+        name: 'createdAt',
         type: 6,
         flags: 0,
       ),
@@ -811,12 +830,22 @@ final _entities = <obx_int.ModelEntity>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(6, 5146526142177936726),
         name: 'walletType',
+        id: const obx_int.IdUid(5, 7178102097242596316),
+        name: 'kind',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 2820588492995586636),
+        name: 'content',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
         id: const obx_int.IdUid(7, 9076753469586209630),
         name: 'state',
+        id: const obx_int.IdUid(7, 2411352972343350022),
+        name: 'sig',
         type: 9,
         flags: 0,
       ),
@@ -842,6 +871,27 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(11, 4709299339516840484),
         name: 'metadataJsonString',
         type: 9,
+        id: const obx_int.IdUid(8, 2696440180432923379),
+        name: 'validSig',
+        type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(9, 6945248969658289364),
+        name: 'sources',
+        type: 30,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(10, 1929751550871942657),
+        name: 'tagsPacked',
+        type: 30,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(11, 7172612518832098824),
+        name: 'tagsIndex',
+        type: 30,
         flags: 0,
       ),
     ],
@@ -887,14 +937,53 @@ Future<obx.Store> openStore({
 /// [obx.Store.new].
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
+    // If this version is not found, it means that this file was generated
+    // with an older version of the ObjectBox Dart generator.
+    // Please regenerate this file with the current generator version.
+    // Typically, this is done with `dart run build_runner build`.
+    generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(14, 4149711010520675264),
-    lastIndexId: const obx_int.IdUid(5, 6532412047047265516),
+    lastEntityId: const obx_int.IdUid(10, 3095440836008321964),
+    lastIndexId: const obx_int.IdUid(5, 689756751240935184),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
-    retiredEntityUids: const [],
+    retiredEntityUids: const [
+      7160354677947505848,
+      3637320921488077827,
+      2527316766299101244,
+    ],
     retiredIndexUids: const [],
-    retiredPropertyUids: const [],
+    retiredPropertyUids: const [
+      4248118904091022656,
+      6188110795031782335,
+      1845247413054177411,
+      3881479899267615466,
+      906982549236467078,
+      4024855326378855057,
+      8369487538579223995,
+      4676453295471475548,
+      9113759858694952977,
+      2027711114854456160,
+      7564063012610719918,
+      2662554970568175356,
+      7256594753475161899,
+      7261401074391147060,
+      1024563472021235903,
+      3179649802820230952,
+      8358736823481971129,
+      2825987005528791073,
+      6019469239963186216,
+      4146528373241564239,
+      2971934688198463456,
+      7060700504434369684,
+      5485949772610384728,
+      8509820245224948242,
+      2546705209398464317,
+      4639462490281891171,
+      8552838594244204623,
+      4909240609738358806,
+      937467896011098938,
+    ],
     retiredRelationUids: const [],
     modelVersion: 5,
     modelVersionParserMinimum: 5,
@@ -1267,7 +1356,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
                     .map(fbb.writeString)
                     .toList(growable: false),
               );
-        fbb.startTable(16);
+        final tagsJsonOffset = object.tagsJson == null
+            ? null
+            : fbb.writeString(object.tagsJson!);
+        final rawContentJsonOffset = object.rawContentJson == null
+            ? null
+            : fbb.writeString(object.rawContentJson!);
+        fbb.startTable(18);
         fbb.addInt64(0, object.dbId);
         fbb.addOffset(1, pubKeyOffset);
         fbb.addOffset(2, nameOffset);
@@ -1283,6 +1378,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(12, object.refreshedTimestamp);
         fbb.addOffset(13, splitDisplayNameWordsOffset);
         fbb.addOffset(14, splitNameWordsOffset);
+        fbb.addOffset(15, tagsJsonOffset);
+        fbb.addOffset(16, rawContentJsonOffset);
         fbb.finish(fbb.endTable());
         return object.dbId;
       },
@@ -1334,6 +1431,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         );
         final refreshedTimestampParam = const fb.Int64Reader()
             .vTableGetNullable(buffer, rootOffset, 28);
+        final tagsJsonParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 34);
+        final rawContentJsonParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 36);
         final object = DbMetadata(
           pubKey: pubKeyParam,
           name: nameParam,
@@ -1349,6 +1452,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           lud06: lud06Param,
           updatedAt: updatedAtParam,
           refreshedTimestamp: refreshedTimestampParam,
+          tagsJson: tagsJsonParam,
+          rawContentJson: rawContentJsonParam,
         )..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
         return object;
@@ -1682,6 +1787,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
       toManyRelations: (DbWallet object) => {},
       getId: (DbWallet object) => object.dbId,
       setId: (DbWallet object, int id) {
+    DbRelaySet: obx_int.EntityDefinition<DbRelaySet>(
+      model: _entities[4],
+      toOneRelations: (DbRelaySet object) => [],
+      toManyRelations: (DbRelaySet object) => {},
+      getId: (DbRelaySet object) => object.dbId,
+      setId: (DbRelaySet object, int id) {
         object.dbId = id;
       },
       objectToFB: (DbWallet object, fb.Builder fbb) {
@@ -2037,6 +2148,167 @@ class DbCashuSecretCounter_ {
   static final keysetId = obx.QueryStringProperty<DbCashuSecretCounter>(
     _entities[1].properties[2],
   );
+    DbFilterFetchedRangeRecord:
+        obx_int.EntityDefinition<DbFilterFetchedRangeRecord>(
+          model: _entities[5],
+          toOneRelations: (DbFilterFetchedRangeRecord object) => [],
+          toManyRelations: (DbFilterFetchedRangeRecord object) => {},
+          getId: (DbFilterFetchedRangeRecord object) => object.dbId,
+          setId: (DbFilterFetchedRangeRecord object, int id) {
+            object.dbId = id;
+          },
+          objectToFB: (DbFilterFetchedRangeRecord object, fb.Builder fbb) {
+            final filterHashOffset = fbb.writeString(object.filterHash);
+            final relayUrlOffset = fbb.writeString(object.relayUrl);
+            fbb.startTable(6);
+            fbb.addInt64(0, object.dbId);
+            fbb.addOffset(1, filterHashOffset);
+            fbb.addOffset(2, relayUrlOffset);
+            fbb.addInt64(3, object.rangeStart);
+            fbb.addInt64(4, object.rangeEnd);
+            fbb.finish(fbb.endTable());
+            return object.dbId;
+          },
+          objectFromFB: (obx.Store store, ByteData fbData) {
+            final buffer = fb.BufferContext(fbData);
+            final rootOffset = buffer.derefObject(0);
+            final filterHashParam = const fb.StringReader(
+              asciiOptimization: true,
+            ).vTableGet(buffer, rootOffset, 6, '');
+            final relayUrlParam = const fb.StringReader(
+              asciiOptimization: true,
+            ).vTableGet(buffer, rootOffset, 8, '');
+            final rangeStartParam = const fb.Int64Reader().vTableGet(
+              buffer,
+              rootOffset,
+              10,
+              0,
+            );
+            final rangeEndParam = const fb.Int64Reader().vTableGet(
+              buffer,
+              rootOffset,
+              12,
+              0,
+            );
+            final object =
+                DbFilterFetchedRangeRecord(
+                    filterHash: filterHashParam,
+                    relayUrl: relayUrlParam,
+                    rangeStart: rangeStartParam,
+                    rangeEnd: rangeEndParam,
+                  )
+                  ..dbId = const fb.Int64Reader().vTableGet(
+                    buffer,
+                    rootOffset,
+                    4,
+                    0,
+                  );
+
+            return object;
+          },
+        ),
+    DbNip01Event: obx_int.EntityDefinition<DbNip01Event>(
+      model: _entities[6],
+      toOneRelations: (DbNip01Event object) => [],
+      toManyRelations: (DbNip01Event object) => {},
+      getId: (DbNip01Event object) => object.dbId,
+      setId: (DbNip01Event object, int id) {
+        object.dbId = id;
+      },
+      objectToFB: (DbNip01Event object, fb.Builder fbb) {
+        final nostrIdOffset = fbb.writeString(object.nostrId);
+        final pubKeyOffset = fbb.writeString(object.pubKey);
+        final contentOffset = fbb.writeString(object.content);
+        final sigOffset = object.sig == null
+            ? null
+            : fbb.writeString(object.sig!);
+        final sourcesOffset = fbb.writeList(
+          object.sources.map(fbb.writeString).toList(growable: false),
+        );
+        final tagsPackedOffset = fbb.writeList(
+          object.tagsPacked.map(fbb.writeString).toList(growable: false),
+        );
+        final tagsIndexOffset = fbb.writeList(
+          object.tagsIndex.map(fbb.writeString).toList(growable: false),
+        );
+        fbb.startTable(12);
+        fbb.addInt64(0, object.dbId);
+        fbb.addOffset(1, nostrIdOffset);
+        fbb.addOffset(2, pubKeyOffset);
+        fbb.addInt64(3, object.createdAt);
+        fbb.addInt64(4, object.kind);
+        fbb.addOffset(5, contentOffset);
+        fbb.addOffset(6, sigOffset);
+        fbb.addBool(7, object.validSig);
+        fbb.addOffset(8, sourcesOffset);
+        fbb.addOffset(9, tagsPackedOffset);
+        fbb.addOffset(10, tagsIndexOffset);
+        fbb.finish(fbb.endTable());
+        return object.dbId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final pubKeyParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final kindParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          0,
+        );
+        final contentParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 14, '');
+        final nostrIdParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final createdAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final object =
+            DbNip01Event(
+                pubKey: pubKeyParam,
+                kind: kindParam,
+                content: contentParam,
+                nostrId: nostrIdParam,
+                createdAt: createdAtParam,
+              )
+              ..dbId = const fb.Int64Reader().vTableGet(
+                buffer,
+                rootOffset,
+                4,
+                0,
+              )
+              ..sig = const fb.StringReader(
+                asciiOptimization: true,
+              ).vTableGetNullable(buffer, rootOffset, 16)
+              ..validSig = const fb.BoolReader().vTableGetNullable(
+                buffer,
+                rootOffset,
+                18,
+              )
+              ..sources = const fb.ListReader<String>(
+                fb.StringReader(asciiOptimization: true),
+                lazy: false,
+              ).vTableGet(buffer, rootOffset, 20, [])
+              ..tagsPacked = const fb.ListReader<String>(
+                fb.StringReader(asciiOptimization: true),
+                lazy: false,
+              ).vTableGet(buffer, rootOffset, 22, [])
+              ..tagsIndex = const fb.ListReader<String>(
+                fb.StringReader(asciiOptimization: true),
+                lazy: false,
+              ).vTableGet(buffer, rootOffset, 24, []);
+
+        return object;
+      },
+    ),
+  };
 
   /// See [DbCashuSecretCounter.counter].
   static final counter = obx.QueryIntegerProperty<DbCashuSecretCounter>(
@@ -2257,6 +2529,15 @@ class DbNip01Event_ {
   /// See [DbNip01Event.dbTags].
   static final dbTags = obx.QueryStringVectorProperty<DbNip01Event>(
     _entities[5].properties[9],
+
+  /// See [DbMetadata.tagsJson].
+  static final tagsJson = obx.QueryStringProperty<DbMetadata>(
+    _entities[1].properties[15],
+  );
+
+  /// See [DbMetadata.rawContentJson].
+  static final rawContentJson = obx.QueryStringProperty<DbMetadata>(
+    _entities[1].properties[16],
   );
 }
 
@@ -2357,6 +2638,7 @@ class DbTag_ {
   /// See [DbTag.elements].
   static final elements = obx.QueryStringVectorProperty<DbTag>(
     _entities[8].properties[4],
+    _entities[2].properties[5],
   );
 }
 
@@ -2418,6 +2700,40 @@ class DbWallet_ {
   /// See [DbWallet.metadataJsonString].
   static final metadataJsonString = obx.QueryStringProperty<DbWallet>(
     _entities[10].properties[5],
+    _entities[3].properties[4],
+  );
+}
+
+/// [DbRelaySet] entity fields to define ObjectBox queries.
+class DbRelaySet_ {
+  /// See [DbRelaySet.dbId].
+  static final dbId = obx.QueryIntegerProperty<DbRelaySet>(
+    _entities[4].properties[0],
+  );
+
+  /// See [DbRelaySet.id].
+  static final id = obx.QueryStringProperty<DbRelaySet>(
+    _entities[4].properties[1],
+  );
+
+  /// See [DbRelaySet.name].
+  static final name = obx.QueryStringProperty<DbRelaySet>(
+    _entities[4].properties[2],
+  );
+
+  /// See [DbRelaySet.pubKey].
+  static final pubKey = obx.QueryStringProperty<DbRelaySet>(
+    _entities[4].properties[3],
+  );
+
+  /// See [DbRelaySet.relayMinCountPerPubkey].
+  static final relayMinCountPerPubkey = obx.QueryIntegerProperty<DbRelaySet>(
+    _entities[4].properties[4],
+  );
+
+  /// See [DbRelaySet.direction].
+  static final direction = obx.QueryStringProperty<DbRelaySet>(
+    _entities[4].properties[5],
   );
 }
 
@@ -2431,6 +2747,14 @@ class DbWalletCahsuKeyset_ {
   /// See [DbWalletCahsuKeyset.id].
   static final id = obx.QueryStringProperty<DbWalletCahsuKeyset>(
     _entities[11].properties[1],
+  /// See [DbRelaySet.relaysMapJson].
+  static final relaysMapJson = obx.QueryStringProperty<DbRelaySet>(
+    _entities[4].properties[6],
+  );
+
+  /// See [DbRelaySet.fallbackToBootstrapRelays].
+  static final fallbackToBootstrapRelays = obx.QueryBooleanProperty<DbRelaySet>(
+    _entities[4].properties[7],
   );
 
   /// See [DbWalletCahsuKeyset.mintUrl].
@@ -2513,6 +2837,90 @@ class DbWalletTransaction_ {
   /// See [DbWalletTransaction.walletId].
   static final walletId = obx.QueryStringProperty<DbWalletTransaction>(
     _entities[13].properties[2],
+/// [DbFilterFetchedRangeRecord] entity fields to define ObjectBox queries.
+class DbFilterFetchedRangeRecord_ {
+  /// See [DbFilterFetchedRangeRecord.dbId].
+  static final dbId = obx.QueryIntegerProperty<DbFilterFetchedRangeRecord>(
+    _entities[5].properties[0],
+  );
+
+  /// See [DbFilterFetchedRangeRecord.filterHash].
+  static final filterHash = obx.QueryStringProperty<DbFilterFetchedRangeRecord>(
+    _entities[5].properties[1],
+  );
+
+  /// See [DbFilterFetchedRangeRecord.relayUrl].
+  static final relayUrl = obx.QueryStringProperty<DbFilterFetchedRangeRecord>(
+    _entities[5].properties[2],
+  );
+
+  /// See [DbFilterFetchedRangeRecord.rangeStart].
+  static final rangeStart =
+      obx.QueryIntegerProperty<DbFilterFetchedRangeRecord>(
+        _entities[5].properties[3],
+      );
+
+  /// See [DbFilterFetchedRangeRecord.rangeEnd].
+  static final rangeEnd = obx.QueryIntegerProperty<DbFilterFetchedRangeRecord>(
+    _entities[5].properties[4],
+  );
+}
+
+/// [DbNip01Event] entity fields to define ObjectBox queries.
+class DbNip01Event_ {
+  /// See [DbNip01Event.dbId].
+  static final dbId = obx.QueryIntegerProperty<DbNip01Event>(
+    _entities[6].properties[0],
+  );
+
+  /// See [DbNip01Event.nostrId].
+  static final nostrId = obx.QueryStringProperty<DbNip01Event>(
+    _entities[6].properties[1],
+  );
+
+  /// See [DbNip01Event.pubKey].
+  static final pubKey = obx.QueryStringProperty<DbNip01Event>(
+    _entities[6].properties[2],
+  );
+
+  /// See [DbNip01Event.createdAt].
+  static final createdAt = obx.QueryIntegerProperty<DbNip01Event>(
+    _entities[6].properties[3],
+  );
+
+  /// See [DbNip01Event.kind].
+  static final kind = obx.QueryIntegerProperty<DbNip01Event>(
+    _entities[6].properties[4],
+  );
+
+  /// See [DbNip01Event.content].
+  static final content = obx.QueryStringProperty<DbNip01Event>(
+    _entities[6].properties[5],
+  );
+
+  /// See [DbNip01Event.sig].
+  static final sig = obx.QueryStringProperty<DbNip01Event>(
+    _entities[6].properties[6],
+  );
+
+  /// See [DbNip01Event.validSig].
+  static final validSig = obx.QueryBooleanProperty<DbNip01Event>(
+    _entities[6].properties[7],
+  );
+
+  /// See [DbNip01Event.sources].
+  static final sources = obx.QueryStringVectorProperty<DbNip01Event>(
+    _entities[6].properties[8],
+  );
+
+  /// See [DbNip01Event.tagsPacked].
+  static final tagsPacked = obx.QueryStringVectorProperty<DbNip01Event>(
+    _entities[6].properties[9],
+  );
+
+  /// See [DbNip01Event.tagsIndex].
+  static final tagsIndex = obx.QueryStringVectorProperty<DbNip01Event>(
+    _entities[6].properties[10],
   );
 
   /// See [DbWalletTransaction.changeAmount].

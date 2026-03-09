@@ -56,7 +56,7 @@ class Bunkers {
     );
 
     final request = BunkerRequest(
-      method: BunkerRequestMethods.connect,
+      method: SignerMethod.connect,
       params: [remotePubkey, secret],
     );
 
@@ -75,21 +75,25 @@ class Bunkers {
     );
 
     final signedEvent = await localEventSigner.sign(requestEvent);
-    final broadcastRes =
-        _broadcast.broadcast(nostrEvent: signedEvent, specificRelays: relays);
-    await broadcastRes.broadcastDoneFuture;
 
+    // Subscribe BEFORE broadcasting to avoid missing the response,
+    // since NIP-46 uses ephemeral events (kind 24133)
     final subscription = _requests.subscription(
       explicitRelays: relays,
-      filters: [
-        Filter(
-          authors: [remotePubkey],
-          kinds: [BunkerRequest.kKind],
-          pTags: [localEventSigner.publicKey],
-          since: someTimeAgo(),
-        ),
-      ],
+      filter: Filter(
+        authors: [remotePubkey],
+        kinds: [BunkerRequest.kKind],
+        pTags: [localEventSigner.publicKey],
+        since: someTimeAgo(),
+      ),
     );
+
+    final broadcastRes = _broadcast.broadcast(
+      nostrEvent: signedEvent,
+      specificRelays: relays,
+    );
+    await broadcastRes.broadcastDoneFuture;
+
     BunkerConnection? result;
 
     await for (final event in subscription.stream
@@ -144,13 +148,11 @@ class Bunkers {
 
     final subscription = _requests.subscription(
       explicitRelays: relays,
-      filters: [
-        Filter(
-          kinds: [BunkerRequest.kKind],
-          pTags: [localEventSigner.publicKey],
-          since: someTimeAgo(),
-        ),
-      ],
+      filter: Filter(
+        kinds: [BunkerRequest.kKind],
+        pTags: [localEventSigner.publicKey],
+        since: someTimeAgo(),
+      ),
     );
     BunkerConnection? result;
 

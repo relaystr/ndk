@@ -316,4 +316,22 @@ void main() {
       expect(stopwatch.elapsedMilliseconds, lessThan(timoutMiliseconds));
     });
   });
+
+  test('request fails fast when relay is offline', () async {
+    final ndk = Ndk(
+      NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: MemCacheManager(),
+        bootstrapRelays: [],
+        defaultQueryTimeout: Duration(hours: 1),
+      ),
+    );
+
+    final events = await ndk.requests.query(
+      filter: Filter(kinds: [1]),
+      explicitRelays: ['ws://127.0.0.1:59999'],
+    ).future;
+
+    expect(events, isEmpty);
+  });
 }

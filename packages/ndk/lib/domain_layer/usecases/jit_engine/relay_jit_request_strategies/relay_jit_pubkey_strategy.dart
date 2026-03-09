@@ -217,7 +217,7 @@ class RelayJitPubkeyStrategy with Logger {
           }
 
           if (!success.first) {
-            Logger.log.w(
+            Logger.log.w(() =>
                 "Could not connect to relay: ${relayCandidate.relayUrl} - errorHandling");
             // _connectionErrorHandling(
             //   errorRelay: newRelay,

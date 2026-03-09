@@ -57,7 +57,7 @@ void main() {
       Logger.log.addOutput(testOutput);
       Logger.setLogLevel(LogLevel.debug);
 
-      Logger.log.d('Test message');
+      Logger.log.d(() => 'Test message');
 
       expect(testOutputs.length, 1);
       expect(testOutputs.first.message, 'Test message');
@@ -77,13 +77,13 @@ void main() {
       Logger.setLogLevel(LogLevel.warning);
 
       // These should not be logged
-      Logger.log.t('Trace message');
-      Logger.log.d('Debug message');
-      Logger.log.i('Info message');
+      Logger.log.t(() => 'Trace message');
+      Logger.log.d(() => 'Debug message');
+      Logger.log.i(() => 'Info message');
 
       // These should be logged
-      Logger.log.w('Warning message');
-      Logger.log.e('Error message');
+      Logger.log.w(() => 'Warning message');
+      Logger.log.e(() => 'Error message');
 
       expect(testOutputs.length, 2);
       expect(testOutputs[0].level, LogLevel.warning);
@@ -104,8 +104,8 @@ void main() {
         outputs: [testOutput],
       );
 
-      customLogger.i('Info message');
-      customLogger.d('Debug message'); // Should be filtered out
+      customLogger.i(() => 'Info message');
+      customLogger.d(() => 'Debug message'); // Should be filtered out
 
       expect(testOutputs.length, 1);
       expect(testOutputs.first.message, 'Info message');
@@ -123,7 +123,7 @@ void main() {
       );
 
       // Test fatal message logging
-      customLogger.f('Fatal error occurred');
+      customLogger.f(() => 'Fatal error occurred');
 
       expect(testOutputs1.length, 1);
       expect(testOutputs2.length, 1);
@@ -135,7 +135,7 @@ void main() {
       customLogger.clearOutputs();
 
       // After clearing, logging should not add to outputs
-      customLogger.e('Error after clear');
+      customLogger.e(() => 'Error after clear');
 
       expect(testOutputs1.length, 1); // Should still be 1
       expect(testOutputs2.length, 1); // Should still be 1
@@ -145,14 +145,14 @@ void main() {
       final testOutput3 = _TestLogOutput(testOutputs3);
 
       customLogger.addOutput(testOutput3);
-      customLogger.w('Warning before close');
+      customLogger.w(() => 'Warning before close');
 
       expect(testOutputs3.length, 1);
 
       customLogger.close();
 
       // After close, logging should not work
-      customLogger.i('Info after close');
+      customLogger.i(() => 'Info after close');
 
       expect(testOutputs3.length, 1); // Should still be 1
     });
@@ -168,7 +168,7 @@ void main() {
       );
 
       // Log a message
-      logger.i('Test message');
+      logger.i(() => 'Test message');
 
       // Verify the output received the message
       expect(testOutputs.length, 1);
@@ -181,7 +181,35 @@ void main() {
       );
 
       // Should not throw when logging without outputs
-      expect(() => loggerWithoutOutputs.d('Debug message'), returnsNormally);
+      expect(
+          () => loggerWithoutOutputs.d(() => 'Debug message'), returnsNormally);
+    });
+
+    test('Logger lazy closure is only evaluated when enabled', () {
+      var evaluated = false;
+      final testOutputs = <LogEvent>[];
+      final testOutput = _TestLogOutput(testOutputs);
+      final logger = NdkLogger(
+        level: LogLevel.info,
+        outputs: [testOutput],
+      );
+
+      logger.d(() {
+        evaluated = true;
+        return 'Should not log';
+      });
+      expect(evaluated, false,
+          reason: 'Closure should not be evaluated when level is filtered');
+
+      logger.i(() {
+        evaluated = true;
+        return 'Should log';
+      });
+      expect(evaluated, true,
+          reason: 'Closure should be evaluated when level is enabled');
+      expect(testOutputs.length, 1);
+      expect(testOutputs.first.message, 'Should log');
+      expect(testOutputs.first.level, LogLevel.info);
     });
   });
 }

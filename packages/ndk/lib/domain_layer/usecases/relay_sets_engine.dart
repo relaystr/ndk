@@ -53,8 +53,8 @@ class RelaySetsEngine implements NetworkEngine {
 
   Future<bool> doRelayRequest(String id, RelayRequestState request) async {
     if (_globalState.blockedRelays.contains(request.url)) {
-      Logger.log
-          .w("COULD NOT SEND REQUEST TO ${request.url} since relay is blocked");
+      Logger.log.w(() =>
+          "COULD NOT SEND REQUEST TO ${request.url} since relay is blocked");
       return false;
     }
 
@@ -75,13 +75,14 @@ class RelaySetsEngine implements NetworkEngine {
                 filters: request.filters,
               ));
         } catch (e) {
-          Logger.log.e("COULD NOT SEND REQUEST TO ${request.url}:", error: e);
+          Logger.log
+              .e(() => "COULD NOT SEND REQUEST TO ${request.url}:", error: e);
           return false;
         }
       }
       return true;
     } else {
-      Logger.log.e(
+      Logger.log.e(() =>
           "COULD NOT SEND REQUEST TO ${request.url} since socket seems to be not open");
       return false;
     }
@@ -107,7 +108,7 @@ class RelaySetsEngine implements NetworkEngine {
           connectionSource: ConnectionSource.broadcastSpecific);
     } catch (e) {
       Logger.log.w(
-          "Error during reconnectRelay for $relayUrl in doRelayBroadcast",
+          () => "Error during reconnectRelay for $relayUrl in doRelayBroadcast",
           error: e);
       error = e;
     }
@@ -210,11 +211,15 @@ class RelaySetsEngine implements NetworkEngine {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
           state.requests.remove(entry.value.url);
+          if (state.requests.isEmpty) {
+            state.networkController.close();
+          }
         }
       });
     }
   }
 
+  //! dead code
   Future<NdkResponse> requestRelays(
     String name,
     Iterable<String> urls,
@@ -245,6 +250,11 @@ class RelaySetsEngine implements NetworkEngine {
       doRelayRequest(state.id, entry.value).then((sent) {
         if (!sent) {
           state.requests.remove(entry.value.url);
+          // start fix
+          if (state.requests.isEmpty) {
+            state.networkController.close();
+          }
+          // end fix
         }
       });
     }
@@ -256,16 +266,24 @@ class RelaySetsEngine implements NetworkEngine {
   NdkBroadcastResponse handleEventBroadcast({
     required Nip01Event nostrEvent,
     required EventSigner? signer,
-    required Stream<List<RelayBroadcastResponse>> doneStream,
+    required BroadcastState broadcastState,
     Iterable<String>? specificRelays,
   }) {
+    final doneStream = broadcastState.stateUpdates
+        .map((state) => state.broadcasts.values.toList());
+
     Future<void> asyncStuff() async {
       final Nip01Event workingEvent;
 
-      if (signer != null) {
-        workingEvent = await signer.sign(nostrEvent);
-      } else {
-        workingEvent = nostrEvent;
+      try {
+        if (signer != null) {
+          workingEvent = await signer.sign(nostrEvent);
+        } else {
+          workingEvent = nostrEvent;
+        }
+      } catch (e, stackTrace) {
+        broadcastState.addError(e, stackTrace);
+        return;
       }
 
       // =====================================================================================
@@ -286,14 +304,16 @@ class RelaySetsEngine implements NetworkEngine {
         pubkeys: [workingEvent.pubKey],
         cacheManager: _cacheManager,
       ));
-      var writeRelaysUrls = _relayManager.globalState.relays.keys;
+      // make a copy of the keys since connectRelay may mutate the underlying map
+      List<String> writeRelaysUrls =
+          _relayManager.globalState.relays.keys.toList();
       if (nip65List.isNotEmpty) {
         writeRelaysUrls = nip65List.first.relays.entries
             .where((element) => element.value.isWrite)
             .map((e) => e.key)
             .toList();
       } else {
-        Logger.log.w(
+        Logger.log.w(() =>
             "could not find user relay list from nip65, using default bootstrap relays");
       }
 
@@ -313,7 +333,7 @@ class RelaySetsEngine implements NetworkEngine {
       for (final relayUrl in writeRelaysUrls) {
         final relay = _globalState.relays[relayUrl];
         if (relay == null) {
-          Logger.log.w("relay $relayUrl not found");
+          Logger.log.w(() => "relay $relayUrl not found");
           continue;
         }
 
@@ -371,7 +391,7 @@ class RelaySetsEngine implements NetworkEngine {
           final relay = _globalState.relays[relayUrl];
 
           if (relay == null) {
-            Logger.log.w("relay $relayUrl not found");
+            Logger.log.w(() => "relay $relayUrl not found");
             continue;
           }
 

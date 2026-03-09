@@ -37,6 +37,11 @@ export 'domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
+export 'domain_layer/entities/blossom_strategies.dart';
+export 'domain_layer/entities/blob_upload_progress.dart';
+export 'domain_layer/entities/file_hash_progress.dart';
+export '';
+
 export 'domain_layer/entities/account.dart';
 
 /**
@@ -49,6 +54,9 @@ export 'domain_layer/repositories/event_verifier.dart';
 export 'domain_layer/repositories/event_signer.dart';
 export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
 export 'data_layer/repositories/signers/bip340_event_signer.dart';
+export 'domain_layer/entities/pending_signer_request.dart';
+export 'domain_layer/entities/signer_request_cancelled_exception.dart';
+export 'domain_layer/entities/signer_request_rejected_exception.dart';
 
 /// cache
 export 'domain_layer/repositories/cache_manager.dart';

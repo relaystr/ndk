@@ -19,10 +19,10 @@ The logger is already configured and ready to use:
 import 'package:ndk/ndk.dart';
 
 // Use the static logger instance
-Logger.log.d('Debug message');
-Logger.log.i('Info message');
-Logger.log.w('Warning message');
-Logger.log.e('Error message');
+Logger.log.d(() => 'Debug message');
+Logger.log.i(() => 'Info message');
+Logger.log.w(() => 'Warning message');
+Logger.log.e(() => 'Error message');
 ```
 
 ### Setting Log Level

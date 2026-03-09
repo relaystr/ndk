@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import '../shared/net/user_agent.dart';
 import '../data_layer/data_sources/http_request.dart';
+import '../data_layer/io/file_io_platform.dart';
 import '../data_layer/repositories/blossom/blossom_impl.dart';
 import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
@@ -37,7 +38,7 @@ import '../domain_layer/usecases/jit_engine/jit_engine.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/lnurl/lnurl.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
-import '../domain_layer/usecases/nip05/verify_nip_05.dart';
+import '../domain_layer/usecases/nip05/nip_05.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
@@ -95,7 +96,7 @@ class Initialization {
   late FetchedRanges fetchedRanges;
   late ProofOfWork proofOfWork;
 
-  late VerifyNip05 verifyNip05;
+  late Nip05Usecase nip05;
 
   late final NetworkEngine engine;
 
@@ -118,6 +119,8 @@ class Initialization {
           accounts: accounts,
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
+          eagerAuth: _ndkConfig.eagerAuth,
+          authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
 
         engine = RelaySetsEngine(
@@ -134,6 +137,8 @@ class Initialization {
           nostrTransportFactory: _webSocketNostrTransportFactory,
           bootstrapRelays: _ndkConfig.bootstrapRelays,
           engineAdditionalDataFactory: JitEngineRelayConnectivityDataFactory(),
+          eagerAuth: _ndkConfig.eagerAuth,
+          authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
 
         engine = JitEngine(
@@ -152,6 +157,7 @@ class Initialization {
 
     final BlossomRepository blossomRepository = BlossomRepositoryImpl(
       client: _httpRequestDS,
+      fileIO: createFileIO(),
     );
 
     final CashuRepo cashuRepo = CashuRepoImpl(
@@ -225,7 +231,7 @@ class Initialization {
       blockedRelays: _globalState.blockedRelays,
     );
 
-    verifyNip05 = VerifyNip05(
+    nip05 = Nip05Usecase(
       database: _ndkConfig.cache,
       nip05Repository: nip05repository,
     );

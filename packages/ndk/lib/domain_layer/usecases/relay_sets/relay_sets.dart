@@ -92,7 +92,7 @@ class RelaySets {
     Map<String, Set<String>> minimumRelaysCoverageByPubkey = {};
     Map<String, List<PubkeyMapping>> bestRelays = {};
     if (onProgress != null) {
-      Logger.log.d("Calculating best relays...");
+      Logger.log.d(() => "Calculating best relays...");
       onProgress.call("Calculating best relays",
           minimumRelaysCoverageByPubkey.length, pubKeysByRelayUrl.length);
     }
@@ -115,7 +115,7 @@ class RelaySets {
         connectionSource: ConnectionSource.connectionProbe,
       ))
           .first;
-      Logger.log.d("tried to reconnect to $url = $connectable");
+      Logger.log.d(() => "tried to reconnect to $url = $connectable");
       if (!connectable) {
         continue;
       }
@@ -188,7 +188,7 @@ class RelaySets {
             refreshedTimestamp: now));
       }
     }
-    Logger.log.d(
+    Logger.log.d(() =>
         "Have lists of relays for $foundCount/${pubKeys.length} pubKeys ${foundCount < pubKeys.length ? "(missing ${pubKeys.length - foundCount})" : ""}");
 
     /// sort by pubKeys count for each relay descending

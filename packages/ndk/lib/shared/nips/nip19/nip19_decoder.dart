@@ -35,7 +35,7 @@ class Nip19Decoder {
         return hex.encode(data);
       }
     } catch (e) {
-      Logger.log.e("Nip19 decode error ${e.toString()}");
+      Logger.log.e(() => "Nip19 decode error ${e.toString()}");
       return "";
     }
   }

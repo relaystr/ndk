@@ -1,3 +1,91 @@
+## 1.0.8-dev.0
+
+ - Update a dependency to the latest release.
+
+## 1.0.7
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 1.0.7-dev.20
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: sembast missing import.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+## 1.0.7-dev.19
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.18
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.17
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.16
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.15
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.14
+
+ - **PERF**(sembast): optimize batch operations and queries.
+
+## 1.0.7-dev.13
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.12
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
+## 1.0.7-dev.11
+
+ - **FIX**(sembast): clearAll only deletes cache manager stores.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
+## 1.0.7-dev.10
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.9
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.8
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.7
+
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+## 1.0.7-dev.6
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.5
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.4
+
+ - Update a dependency to the latest release.
+
+## 1.0.7-dev.3
+
+ - Update a dependency to the latest release.
+
 ## 1.0.7-dev.2
 
  - Update a dependency to the latest release.

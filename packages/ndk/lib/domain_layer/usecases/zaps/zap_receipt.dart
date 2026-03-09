@@ -69,7 +69,7 @@ class ZapReceipt {
               amountSats = (amount / 1000).round();
             }
           } catch (e) {
-            Logger.log.w(e);
+            Logger.log.w(() => e);
           }
         }
       }

@@ -23,3 +23,15 @@ jobs:
         with:
           files: coverage.lcov
           verbose: true # optional (default = false)
+
+  nip07-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/nip07_event_signer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+      - run: dart analyze --no-fatal-warnings
+      - run: dart test -p chrome

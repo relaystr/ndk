@@ -1,5 +1,8 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
+import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
@@ -7,14 +10,13 @@ import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/blossom_page.dart';
 import 'package:ndk_demo/demo_app_config.dart';
 import 'package:ndk_demo/nwc_page.dart';
-import 'package:ndk_demo/query_performance.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_demo/wallets.dart';
 import 'package:ndk_demo/verifiers_performance.dart';
-import 'package:ndk_demo/zaps_page.dart';
+import 'package:ndk_demo/widgets_demo_page.dart';
+import 'package:ndk_demo/pending_requests_page.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
-import 'amber_page.dart';
 
 bool amberAvailable = false;
 
@@ -28,6 +30,8 @@ final ndk = Ndk(
     ),
   ),
 );
+
+final ndkFlutter = NdkFlutter(ndk: ndk);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,13 +89,23 @@ class MyApp extends StatelessWidget {
     // );
 
     return MaterialApp(
-      title: DemoAppConfig.appName,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      title: 'Nostr Developer Kit Demo',
+      localizationsDelegates: const [
+        ndk_flutter.AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: ndk_flutter.AppLocalizations.supportedLocales,
+      home: Stack(
+        children: [
+          SafeArea(
+            top: false,
+            child: MyHomePage(key: _homePageKey),
+          ),
+          NPendingRequests(ndkFlutter: ndkFlutter),
+        ],
       ),
-      home: SafeArea(
-          top: false,
-          child: MyHomePage(key: _homePageKey)), // Pass the instance key
     );
   }
 }
@@ -149,6 +163,8 @@ class _MyHomePageState extends State<MyHomePage>
       // For a fixed length of 6, ensure this list matches.
       // Example: if Amber is the 6th tab:
       // const Tab(text: 'Amber'),
+      const Tab(text: 'Widgets'),
+      const Tab(text: 'Pending'),
     ];
     // If amberAvailable leads to a 6th tab, it should be consistently defined.
     // Let's assume 5 base tabs and Amber is conditional, making length 5 or 6.
@@ -170,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage>
     _tabController = TabController(
         length: _tabs.length,
         vsync:
-            this); // Fixed length to 5 (Accounts, Metadata, Relays, NWC, Blossom)
+            this); // Fixed length to 8 (Accounts, Metadata, Relays, NWC, Blossom, Verifiers, Widgets)
     _tabController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -260,10 +276,12 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: "Wallets"),
       //const Tab(text: 'Query Performance'),
       // Amber tab removed
+      const Tab(text: 'Widgets'),
+      const Tab(text: 'Pending'),
     ];
 
     _tabPages = <Widget>[
-      AccountsPage(onAccountChanged: _handleAccountChange), // Pass the callback
+      AccountsPage(onAccountChanged: _handleAccountChange),
       metadata(ndk, context),
       const RelaysPage(),
       const NwcPage(),
@@ -275,6 +293,8 @@ class _MyHomePageState extends State<MyHomePage>
       ),
       //QueryPerformancePage(ndk: ndk),
       // AmberPage removed
+      WidgetsDemoPage(onAccountChanged: _handleAccountChange),
+      const PendingRequestsPage(),
     ];
 
     // Ensure TabController length matches dynamic _tabs list if it changed since initState

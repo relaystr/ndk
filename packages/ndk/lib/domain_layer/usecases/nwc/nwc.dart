@@ -124,7 +124,7 @@ class Nwc {
             onError?.call("timeout get_info");
           }
         }
-        Logger.log.i("NWC ${connection.uri} connected");
+        Logger.log.i(() => "NWC ${connection.uri} connected");
         _connections.add(connection);
         completer.complete(connection);
       }
@@ -212,7 +212,7 @@ class Nwc {
         response = NwcResponse(resultType: data['result_type']);
       }
       if (response != null) {
-        Logger.log.i("nwc response $data");
+        Logger.log.i(() => "nwc response $data");
         response.deserializeError(data);
         connection.responseStream.add(response);
         var eId = event.getEId();
@@ -347,7 +347,7 @@ class Nwc {
         if (connection.useETagForEachRequest && dedicatedResponse != null) {
           await _requests.closeSubscription(dedicatedResponse.requestId);
         }
-        Logger.log.w(error);
+        Logger.log.w(() => error);
       }
     });
 
@@ -478,10 +478,10 @@ class Nwc {
   /// i.e.: closes response & notification subscription and streams
   Future<void> disconnect(NwcConnection connection) async {
     if (connection.subscription != null) {
-      Logger.log.d("closing nwc subscription $connection....");
+      Logger.log.d(() => "closing nwc subscription $connection....");
       await _requests.closeSubscription(connection.subscription!.requestId);
     }
-    Logger.log.d("closing nwc streams $connection....");
+    Logger.log.d(() => "closing nwc streams $connection....");
     await connection.close();
     _connections.remove(connection);
   }

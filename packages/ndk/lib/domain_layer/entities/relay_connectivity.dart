@@ -41,7 +41,7 @@ class RelayConnectivity<T> {
     if (relayTransport != null) {
       await relayTransport!.close().timeout(const Duration(seconds: 3),
           onTimeout: () {
-        Logger.log.w("timeout while trying to close socket $url");
+        Logger.log.w(() => "timeout while trying to close socket $url");
       });
     }
   }

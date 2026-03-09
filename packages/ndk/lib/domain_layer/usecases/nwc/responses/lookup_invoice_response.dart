@@ -10,6 +10,9 @@ class LookupInvoiceResponse extends NwcResponse {
   /// The bolt11 invoice.
   final String invoice;
 
+  /// The state of the payment, can be "pending", "settled", "expired" (for invoices) or "failed" (for payments), optional
+  final String? state;
+
   /// The description of the invoice.
   final String description;
 
@@ -48,6 +51,7 @@ class LookupInvoiceResponse extends NwcResponse {
     required this.feesPaid,
     required this.createdAt,
     required this.expiresAt,
+    this.state,
     this.settledAt,
     required super.resultType,
   });
@@ -71,11 +75,12 @@ class LookupInvoiceResponse extends NwcResponse {
       createdAt: result['created_at'] as int,
       expiresAt: result['expires_at'] as int,
       settledAt: result['settled_at'] as int?, // optional
+      state: result['state'] as String?, // optional
       resultType: input['result_type'] as String,
     );
   }
   @override
   String toString() {
-    return 'LookupInvoiceResponse(type: $type, invoice: $invoice, description: $description, descriptionHash: $descriptionHash, preimage: $preimage, paymentHash: $paymentHash, amount: $amount, feesPaid: $feesPaid, createdAt: $createdAt, expiresAt: $expiresAt, settledAt: $settledAt, resultType: $resultType)';
+    return 'LookupInvoiceResponse(type: $type, state: $state invoice: $invoice, description: $description, descriptionHash: $descriptionHash, preimage: $preimage, paymentHash: $paymentHash, amount: $amount, feesPaid: $feesPaid, createdAt: $createdAt, expiresAt: $expiresAt, settledAt: $settledAt, resultType: $resultType)';
   }
 }

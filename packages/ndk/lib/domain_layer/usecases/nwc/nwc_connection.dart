@@ -43,8 +43,8 @@ class NwcConnection {
     if (subscription != null) {
       _streamSubscription = subscription!.stream.listen(onData);
     } else {
-      Logger.log
-          .e("NwcConnection: Attempted to listen on a null subscription.");
+      Logger.log.e(
+          () => "NwcConnection: Attempted to listen on a null subscription.");
     }
   }
 

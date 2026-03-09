@@ -65,9 +65,15 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - **Comprehensive logging** with configurable log levels and outputs
 - **Clean architecture** for maintainability and extensibility
 
+### Performance & Optimization
+
+- **Local caching** of events to minimize network requests and improve responsiveness
+- **Efficient event verification** Rust-based verifier available for high throughput
+- **Optimized relay selection** using inbox/outbox model to reduce latency and improve reliability
+- **Threading support** for offloading heavy operations like json encoding, compute to separate threads (isolate pool).
+
 ## not Included
 
 - ready to use feeds, you have to build them on your own (🚫 not planned)
 - create && manage keypairs. You have to provide them (🚫 not planned)
-- threading, you can do this on your own if you move ndk or only the event_verifier into its own thread (🔜 planned)
 - support for request overrides (you have to close and reopen requests) (🚫 not planned)

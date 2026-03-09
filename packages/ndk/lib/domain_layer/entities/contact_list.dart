@@ -100,10 +100,10 @@ class ContactList {
                 }
                 continue;
               } catch (e) {
-                Logger.log.d(
+                Logger.log.d(() =>
                     "Could not parse relay ${entry.key} , entry : ${entry.value}");
               }
-              Logger.log.d(
+              Logger.log.d(() =>
                   "Could not parse relay ${entry.key} , content : ${event.content}");
             }
           }

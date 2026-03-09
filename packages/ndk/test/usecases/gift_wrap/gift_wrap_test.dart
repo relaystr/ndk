@@ -11,6 +11,7 @@ void main() {
   // Test keys
   final key1 = Bip340.generatePrivateKey();
   final key2 = Bip340.generatePrivateKey();
+  final key3 = Bip340.generatePrivateKey(); // For custom signer tests
 
   setUp(() {
     ndk = Ndk(
@@ -110,6 +111,74 @@ void main() {
           giftWrap.tags
               .any((tag) => tag[0] == 'client' && tag[1] == 'test_client'),
           isTrue);
+    });
+
+    test(
+        'Can use custom signer instead of logged-in account for wrap and unwrap',
+        () async {
+      // Create a custom signer with key3 (different from logged-in key1)
+      final customSigner = Bip340EventSigner(
+        privateKey: key3.privateKey,
+        publicKey: key3.publicKey,
+      );
+
+      // Create a rumor with custom pubkey matching the custom signer
+      final originalRumor = await giftWrapService.createRumor(
+        customPubkey: key3.publicKey,
+        content: 'Test message with custom signer',
+        kind: 1,
+        tags: [],
+      );
+
+      // Wrap the rumor using the custom signer (not the logged-in account)
+      final giftWrap = await giftWrapService.toGiftWrap(
+        rumor: originalRumor,
+        recipientPubkey: key2.publicKey,
+        customSigner: customSigner,
+      );
+
+      // Create a signer for the recipient to unwrap
+      final recipientSigner = Bip340EventSigner(
+        privateKey: key2.privateKey,
+        publicKey: key2.publicKey,
+      );
+
+      // Unwrap using the custom signer (without switching logged-in account)
+      final unwrappedRumor = await giftWrapService.fromGiftWrap(
+        giftWrap: giftWrap,
+        customSigner: recipientSigner,
+      );
+
+      // Verify the unwrapped rumor matches the original
+      expect(unwrappedRumor.content, equals(originalRumor.content));
+      expect(unwrappedRumor.kind, equals(originalRumor.kind));
+      expect(unwrappedRumor.pubKey, equals(key3.publicKey));
+    });
+
+    test('Custom signer seal uses correct pubkey', () async {
+      // Create a custom signer
+      final customSigner = Bip340EventSigner(
+        privateKey: key3.privateKey,
+        publicKey: key3.publicKey,
+      );
+
+      // Create a rumor
+      final rumor = await giftWrapService.createRumor(
+        customPubkey: key3.publicKey,
+        content: 'Test seal pubkey',
+        kind: 1,
+        tags: [],
+      );
+
+      // Seal using the custom signer
+      final seal = await giftWrapService.sealRumor(
+        rumor: rumor,
+        recipientPubkey: key2.publicKey,
+        customSigner: customSigner,
+      );
+
+      // Verify the seal uses the custom signer's pubkey
+      expect(seal.pubKey, equals(key3.publicKey));
     });
   });
 }

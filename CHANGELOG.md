@@ -3,6 +3,1134 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-03-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.2-dev.0`](#ndk---v072-dev0)
+ - [`ndk_amber` - `v0.4.1-dev.0+1`](#ndk_amber---v041-dev01)
+ - [`ndk_objectbox` - `v0.2.8-dev.0+1`](#ndk_objectbox---v028-dev01)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.0+1`](#ndk_rust_verifier---v050-dev01)
+ - [`nip07_event_signer` - `v1.0.7-dev.0`](#nip07_event_signer---v107-dev0)
+ - [`sembast_cache_manager` - `v1.0.8-dev.0`](#sembast_cache_manager---v108-dev0)
+ - [`drift_cache_manager` - `v0.0.2-dev.0+1`](#drift_cache_manager---v002-dev01)
+ - [`ndk_flutter` - `v0.0.2-dev.0+1`](#ndk_flutter---v002-dev01)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.1-dev.0+1`
+ - `ndk_objectbox` - `v0.2.8-dev.0+1`
+ - `ndk_rust_verifier` - `v0.5.0-dev.0+1`
+ - `nip07_event_signer` - `v1.0.7-dev.0`
+ - `sembast_cache_manager` - `v1.0.8-dev.0`
+ - `drift_cache_manager` - `v0.0.2-dev.0+1`
+ - `ndk_flutter` - `v0.0.2-dev.0+1`
+
+---
+
+#### `ndk` - `v0.7.2-dev.0`
+
+ - **FEAT**: paginated requests.
+
+
+## 2026-03-05
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.7.1`](#ndk---v071)
+ - [`ndk_amber` - `v0.4.1`](#ndk_amber---v041)
+ - [`ndk_objectbox` - `v0.2.8`](#ndk_objectbox---v028)
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2`](#drift_cache_manager---v002)
+ - [`ndk_flutter` - `v0.0.2`](#ndk_flutter---v002)
+ - [`ndk_rust_verifier` - `v0.5.0`](#ndk_rust_verifier---v050)
+ - [`nip07_event_signer` - `v1.0.6`](#nip07_event_signer---v106)
+ - [`sembast_cache_manager` - `v1.0.7`](#sembast_cache_manager---v107)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `drift_cache_manager` - `v0.0.2`
+ - `ndk` - `v0.7.1`
+ - `ndk_amber` - `v0.4.1`
+ - `ndk_flutter` - `v0.0.2`
+ - `ndk_objectbox` - `v0.2.8`
+ - `ndk_rust_verifier` - `v0.5.0`
+ - `nip07_event_signer` - `v1.0.6`
+ - `sembast_cache_manager` - `v1.0.7`
+
+---
+
+#### `ndk` - `v0.7.1`
+
+#### `ndk_amber` - `v0.4.1`
+
+#### `ndk_objectbox` - `v0.2.8`
+
+#### `drift_cache_manager` - `v0.0.2`
+
+#### `ndk_flutter` - `v0.0.2`
+
+#### `ndk_rust_verifier` - `v0.5.0`
+
+#### `nip07_event_signer` - `v1.0.6`
+
+#### `sembast_cache_manager` - `v1.0.7`
+
+
+## 2026-03-05
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2-dev.6`](#drift_cache_manager---v002-dev6)
+ - [`ndk` - `v0.7.1-dev.20`](#ndk---v071-dev20)
+ - [`ndk_objectbox` - `v0.2.8-dev.21`](#ndk_objectbox---v028-dev21)
+ - [`sembast_cache_manager` - `v1.0.7-dev.20`](#sembast_cache_manager---v107-dev20)
+ - [`ndk_amber` - `v0.4.1-dev.20`](#ndk_amber---v041-dev20)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.20`](#ndk_rust_verifier---v050-dev20)
+ - [`nip07_event_signer` - `v1.0.6-dev.21`](#nip07_event_signer---v106-dev21)
+ - [`ndk_flutter` - `v0.0.2-dev.16`](#ndk_flutter---v002-dev16)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.1-dev.20`
+ - `ndk_rust_verifier` - `v0.5.0-dev.20`
+ - `nip07_event_signer` - `v1.0.6-dev.21`
+ - `ndk_flutter` - `v0.0.2-dev.16`
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.6`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `ndk` - `v0.7.1-dev.20`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: concurent list modification.
+ - **FIX**: allow blossom uploadBlob without login via temporary/custom signer.
+ - **FIX**: tests passes.
+ - **FIX**: toJson and fromJson.
+ - **FIX**: meme cache mock.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: mem cache manager mock.
+ - **FIX**: preserve tags and custom fields in metadata.
+ - **FEAT**: cache known properties.
+
+#### `ndk_objectbox` - `v0.2.8-dev.21`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `sembast_cache_manager` - `v1.0.7-dev.20`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: sembast missing import.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+
+## 2026-03-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.15`](#ndk_flutter---v002-dev15)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.15`
+
+ - **FIX**: wasm compatible conditional import.
+
+
+## 2026-02-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.14`](#ndk_flutter---v002-dev14)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.14`
+
+ - **FIX**: wasm compatible conditional import.
+
+
+## 2026-02-25
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.19`](#ndk---v071-dev19)
+ - [`ndk_amber` - `v0.4.1-dev.19`](#ndk_amber---v041-dev19)
+ - [`ndk_objectbox` - `v0.2.8-dev.20`](#ndk_objectbox---v028-dev20)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.19`](#ndk_rust_verifier---v050-dev19)
+ - [`nip07_event_signer` - `v1.0.6-dev.20`](#nip07_event_signer---v106-dev20)
+ - [`sembast_cache_manager` - `v1.0.7-dev.19`](#sembast_cache_manager---v107-dev19)
+ - [`drift_cache_manager` - `v0.0.2-dev.5`](#drift_cache_manager---v002-dev5)
+ - [`ndk_flutter` - `v0.0.2-dev.13`](#ndk_flutter---v002-dev13)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.1-dev.19`
+ - `ndk_objectbox` - `v0.2.8-dev.20`
+ - `ndk_rust_verifier` - `v0.5.0-dev.19`
+ - `nip07_event_signer` - `v1.0.6-dev.20`
+ - `sembast_cache_manager` - `v1.0.7-dev.19`
+ - `drift_cache_manager` - `v0.0.2-dev.5`
+ - `ndk_flutter` - `v0.0.2-dev.13`
+
+---
+
+#### `ndk` - `v0.7.1-dev.19`
+
+ - **FIX**: propagate signer exceptions through broadcast.
+
+
+## 2026-02-25
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.18`](#ndk---v071-dev18)
+ - [`ndk_amber` - `v0.4.1-dev.18`](#ndk_amber---v041-dev18)
+ - [`ndk_objectbox` - `v0.2.8-dev.19`](#ndk_objectbox---v028-dev19)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.18`](#ndk_rust_verifier---v050-dev18)
+ - [`nip07_event_signer` - `v1.0.6-dev.19`](#nip07_event_signer---v106-dev19)
+ - [`sembast_cache_manager` - `v1.0.7-dev.18`](#sembast_cache_manager---v107-dev18)
+ - [`drift_cache_manager` - `v0.0.2-dev.4`](#drift_cache_manager---v002-dev4)
+ - [`ndk_flutter` - `v0.0.2-dev.12`](#ndk_flutter---v002-dev12)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.1-dev.18`
+ - `ndk_objectbox` - `v0.2.8-dev.19`
+ - `ndk_rust_verifier` - `v0.5.0-dev.18`
+ - `nip07_event_signer` - `v1.0.6-dev.19`
+ - `sembast_cache_manager` - `v1.0.7-dev.18`
+ - `drift_cache_manager` - `v0.0.2-dev.4`
+ - `ndk_flutter` - `v0.0.2-dev.12`
+
+---
+
+#### `ndk` - `v0.7.1-dev.18`
+
+ - **FIX**: getPublicList() reduce db calls by saving last event.
+ - **FIX**: getPublicList add limit.
+ - **FIX**: getPublicList only save latest event.
+ - **FEAT**: add missing getPublicList.
+
+
+## 2026-02-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_amber` - `v0.4.1-dev.17`](#ndk_amber---v041-dev17)
+
+---
+
+#### `ndk_amber` - `v0.4.1-dev.17`
+
+ - chore: version bump
+
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## 2026-02-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.17`](#ndk---v071-dev17)
+ - [`ndk_amber` - `v0.4.0-dev.18`](#ndk_amber---v040-dev18)
+ - [`ndk_objectbox` - `v0.2.8-dev.18`](#ndk_objectbox---v028-dev18)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.17`](#ndk_rust_verifier---v050-dev17)
+ - [`nip07_event_signer` - `v1.0.6-dev.18`](#nip07_event_signer---v106-dev18)
+ - [`sembast_cache_manager` - `v1.0.7-dev.17`](#sembast_cache_manager---v107-dev17)
+ - [`drift_cache_manager` - `v0.0.2-dev.3`](#drift_cache_manager---v002-dev3)
+ - [`ndk_flutter` - `v0.0.2-dev.11`](#ndk_flutter---v002-dev11)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.18`
+ - `ndk_objectbox` - `v0.2.8-dev.18`
+ - `ndk_rust_verifier` - `v0.5.0-dev.17`
+ - `nip07_event_signer` - `v1.0.6-dev.18`
+ - `sembast_cache_manager` - `v1.0.7-dev.17`
+ - `drift_cache_manager` - `v0.0.2-dev.3`
+ - `ndk_flutter` - `v0.0.2-dev.11`
+
+---
+
+#### `ndk` - `v0.7.1-dev.17`
+
+ - **FIX**(broadcast): return immediately when all relays have responded.
+
+
+## 2026-02-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.16`](#ndk---v071-dev16)
+ - [`ndk_amber` - `v0.4.0-dev.17`](#ndk_amber---v040-dev17)
+ - [`ndk_objectbox` - `v0.2.8-dev.17`](#ndk_objectbox---v028-dev17)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.16`](#ndk_rust_verifier---v050-dev16)
+ - [`nip07_event_signer` - `v1.0.6-dev.17`](#nip07_event_signer---v106-dev17)
+ - [`sembast_cache_manager` - `v1.0.7-dev.16`](#sembast_cache_manager---v107-dev16)
+ - [`drift_cache_manager` - `v0.0.2-dev.2`](#drift_cache_manager---v002-dev2)
+ - [`ndk_flutter` - `v0.0.2-dev.10`](#ndk_flutter---v002-dev10)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.17`
+ - `ndk_objectbox` - `v0.2.8-dev.17`
+ - `ndk_rust_verifier` - `v0.5.0-dev.16`
+ - `nip07_event_signer` - `v1.0.6-dev.17`
+ - `sembast_cache_manager` - `v1.0.7-dev.16`
+ - `drift_cache_manager` - `v0.0.2-dev.2`
+ - `ndk_flutter` - `v0.0.2-dev.10`
+
+---
+
+#### `ndk` - `v0.7.1-dev.16`
+
+ - **REFACTOR**: uploadBlob use dataStreamFactory.
+ - **FIX**: web init.
+ - **FIX**: use isolate manager for native hash calc.
+ - **FIX**: get file hash for uploadBlobFromFile().
+ - **FIX**: flanky blossom test depending on order.
+ - **FEAT**: isolate manager with stream response.
+ - **FEAT**: improved upload progress report.
+ - **FEAT**: blossom mirrorToServers().
+ - **FEAT**: files api uploadFromFile(), downloadToFile().
+ - **FEAT**: blossom file stream.
+
+
+## 2026-02-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_objectbox` - `v0.2.8-dev.16`](#ndk_objectbox---v028-dev16)
+
+---
+
+#### `ndk_objectbox` - `v0.2.8-dev.16`
+
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+
+
+## 2026-02-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.15`](#ndk---v071-dev15)
+ - [`ndk_amber` - `v0.4.0-dev.16`](#ndk_amber---v040-dev16)
+ - [`ndk_objectbox` - `v0.2.8-dev.15`](#ndk_objectbox---v028-dev15)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.15`](#ndk_rust_verifier---v050-dev15)
+ - [`nip07_event_signer` - `v1.0.6-dev.16`](#nip07_event_signer---v106-dev16)
+ - [`sembast_cache_manager` - `v1.0.7-dev.15`](#sembast_cache_manager---v107-dev15)
+ - [`drift_cache_manager` - `v0.0.2-dev.1`](#drift_cache_manager---v002-dev1)
+ - [`ndk_flutter` - `v0.0.2-dev.9`](#ndk_flutter---v002-dev9)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.16`
+ - `ndk_objectbox` - `v0.2.8-dev.15`
+ - `ndk_rust_verifier` - `v0.5.0-dev.15`
+ - `nip07_event_signer` - `v1.0.6-dev.16`
+ - `sembast_cache_manager` - `v1.0.7-dev.15`
+ - `drift_cache_manager` - `v0.0.2-dev.1`
+ - `ndk_flutter` - `v0.0.2-dev.9`
+
+---
+
+#### `ndk` - `v0.7.1-dev.15`
+
+ - **FIX**(perf): lazy log.
+
+
+## 2026-02-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.8`](#ndk_flutter---v002-dev8)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.8`
+
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+
+## 2026-02-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2-dev.0`](#drift_cache_manager---v002-dev0)
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.0`
+
+ - **FEAT**: implement removeEvents and clearAll methods.
+ - **FEAT**: use separate database names for debug and release modes.
+ - **FEAT**: drift cache manager.
+ - **FEAT**: create package.
+ - **DOCS**: prepare drift_cache_manager for pub.dev publication.
+
+
+## 2026-02-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_amber` - `v0.4.0-dev.15`](#ndk_amber---v040-dev15)
+ - [`nip07_event_signer` - `v1.0.6-dev.15`](#nip07_event_signer---v106-dev15)
+ - [`ndk_flutter` - `v0.0.2-dev.7`](#ndk_flutter---v002-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.0.2-dev.7`
+
+---
+
+#### `ndk_amber` - `v0.4.0-dev.15`
+
+ - **FIX**(amber): use completer.future for cancelRequest to work.
+
+#### `nip07_event_signer` - `v1.0.6-dev.15`
+
+ - **FIX**: use completer.future for cancelRequest to work.
+
+
+## 2026-02-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.14`](#ndk---v071-dev14)
+ - [`ndk_objectbox` - `v0.2.8-dev.14`](#ndk_objectbox---v028-dev14)
+ - [`nip07_event_signer` - `v1.0.6-dev.14`](#nip07_event_signer---v106-dev14)
+ - [`sembast_cache_manager` - `v1.0.7-dev.14`](#sembast_cache_manager---v107-dev14)
+ - [`ndk_amber` - `v0.4.0-dev.14`](#ndk_amber---v040-dev14)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.14`](#ndk_rust_verifier---v050-dev14)
+ - [`ndk_flutter` - `v0.0.2-dev.6`](#ndk_flutter---v002-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.14`
+ - `ndk_rust_verifier` - `v0.5.0-dev.14`
+ - `ndk_flutter` - `v0.0.2-dev.6`
+
+---
+
+#### `ndk` - `v0.7.1-dev.14`
+
+ - **REFACTOR**: extract URL normalization to separate file.
+ - **FIX**: remove all event versions from cache on NIP-09 deletion.
+ - **FIX**: flanky test.
+ - **FEAT**(broadcast): add NIP-09 compliant deletion with e, k, and a tags.
+ - **FEAT**: implement RFC 3986 compliant relay URL normalization.
+
+#### `ndk_objectbox` - `v0.2.8-dev.14`
+
+ - **FIX**: objectbox nullable sig.
+
+#### `nip07_event_signer` - `v1.0.6-dev.14`
+
+ - **FIX**(nip07): use nostr-tools for proper NIP-04/NIP-44 test mock.
+
+#### `sembast_cache_manager` - `v1.0.7-dev.14`
+
+ - **PERF**(sembast): optimize batch operations and queries.
+
+
+## 2026-02-17
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.13`](#ndk---v071-dev13)
+ - [`ndk_amber` - `v0.4.0-dev.13`](#ndk_amber---v040-dev13)
+ - [`nip07_event_signer` - `v1.0.6-dev.13`](#nip07_event_signer---v106-dev13)
+ - [`ndk_objectbox` - `v0.2.8-dev.13`](#ndk_objectbox---v028-dev13)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.13`](#ndk_rust_verifier---v050-dev13)
+ - [`sembast_cache_manager` - `v1.0.7-dev.13`](#sembast_cache_manager---v107-dev13)
+ - [`ndk_flutter` - `v0.0.2-dev.5`](#ndk_flutter---v002-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.8-dev.13`
+ - `ndk_rust_verifier` - `v0.5.0-dev.13`
+ - `sembast_cache_manager` - `v1.0.7-dev.13`
+ - `ndk_flutter` - `v0.0.2-dev.5`
+
+---
+
+#### `ndk` - `v0.7.1-dev.13`
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: expose signer API on Account entity.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add nip46 pending requests integration test.
+ - **FEAT**: add unified pending requests API.
+
+#### `ndk_amber` - `v0.4.0-dev.13`
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add unified pending requests API.
+
+#### `nip07_event_signer` - `v1.0.6-dev.13`
+
+ - **REFACTOR**: make dispose() async.
+ - **FEAT**: add SignerRequestRejectedException for remote signer rejections.
+ - **FEAT**: add unified pending requests API.
+
+
+## 2026-02-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.4`](#ndk_flutter---v002-dev4)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.4`
+
+ - **FIX**(ndk_flutter): suppress experimental_member_use warning.
+ - **FIX**(ndk_flutter): pass cachedPublicKey to signers during session restore.
+
+
+## 2026-02-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.12`](#ndk---v071-dev12)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.12`](#ndk_cache_manager_test_suite---v101-dev12)
+ - [`ndk_objectbox` - `v0.2.8-dev.12`](#ndk_objectbox---v028-dev12)
+ - [`sembast_cache_manager` - `v1.0.7-dev.12`](#sembast_cache_manager---v107-dev12)
+ - [`ndk_amber` - `v0.4.0-dev.12`](#ndk_amber---v040-dev12)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.12`](#ndk_rust_verifier---v050-dev12)
+ - [`nip07_event_signer` - `v1.0.6-dev.12`](#nip07_event_signer---v106-dev12)
+ - [`ndk_flutter` - `v0.0.2-dev.3`](#ndk_flutter---v002-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.12`
+ - `ndk_rust_verifier` - `v0.5.0-dev.12`
+ - `nip07_event_signer` - `v1.0.6-dev.12`
+ - `ndk_flutter` - `v0.0.2-dev.3`
+
+---
+
+#### `ndk` - `v0.7.1-dev.12`
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **DOCS**: add safety note to removeEvents documentation.
+
+#### `ndk_cache_manager_test_suite` - `v1.0.1-dev.12`
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+
+#### `ndk_objectbox` - `v0.2.8-dev.12`
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
+#### `sembast_cache_manager` - `v1.0.7-dev.12`
+
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+
+
+## 2026-02-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.11`](#ndk---v071-dev11)
+ - [`ndk_objectbox` - `v0.2.8-dev.11`](#ndk_objectbox---v028-dev11)
+ - [`sembast_cache_manager` - `v1.0.7-dev.11`](#sembast_cache_manager---v107-dev11)
+ - [`ndk_amber` - `v0.4.0-dev.11`](#ndk_amber---v040-dev11)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.11`](#ndk_rust_verifier---v050-dev11)
+ - [`nip07_event_signer` - `v1.0.6-dev.11`](#nip07_event_signer---v106-dev11)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.11`](#ndk_cache_manager_test_suite---v101-dev11)
+ - [`ndk_flutter` - `v0.0.2-dev.2`](#ndk_flutter---v002-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.11`
+ - `ndk_rust_verifier` - `v0.5.0-dev.11`
+ - `nip07_event_signer` - `v1.0.6-dev.11`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.11`
+ - `ndk_flutter` - `v0.0.2-dev.2`
+
+---
+
+#### `ndk` - `v0.7.1-dev.11`
+
+ - **FIX**: close duplicate request when original completes.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **DOCS**: add DANGER warning to clearAll() method.
+
+#### `ndk_objectbox` - `v0.2.8-dev.11`
+
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
+#### `sembast_cache_manager` - `v1.0.7-dev.11`
+
+ - **FIX**(sembast): clearAll only deletes cache manager stores.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+
+
+## 2026-02-06
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.10`](#ndk---v071-dev10)
+ - [`ndk_amber` - `v0.4.0-dev.10`](#ndk_amber---v040-dev10)
+ - [`ndk_objectbox` - `v0.2.8-dev.10`](#ndk_objectbox---v028-dev10)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.10`](#ndk_rust_verifier---v050-dev10)
+ - [`nip07_event_signer` - `v1.0.6-dev.10`](#nip07_event_signer---v106-dev10)
+ - [`sembast_cache_manager` - `v1.0.7-dev.10`](#sembast_cache_manager---v107-dev10)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.10`](#ndk_cache_manager_test_suite---v101-dev10)
+ - [`ndk_flutter` - `v0.0.2-dev.1`](#ndk_flutter---v002-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.10`
+ - `ndk_objectbox` - `v0.2.8-dev.10`
+ - `ndk_rust_verifier` - `v0.5.0-dev.10`
+ - `nip07_event_signer` - `v1.0.6-dev.10`
+ - `sembast_cache_manager` - `v1.0.7-dev.10`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.10`
+ - `ndk_flutter` - `v0.0.2-dev.1`
+
+---
+
+#### `ndk` - `v0.7.1-dev.10`
+
+ - **REFACTOR**: remove unused requestRelays method".
+ - **REFACTOR**: remove unused requestRelays method.
+ - **FIX**: fail fast when all relays are offline.
+
+
+## 2026-02-05
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.0`](#ndk_flutter---v002-dev0)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.0`
+
+ - **REFACTOR**: migrate widgets to use NdkFlutter instead of Ndk.
+ - **REFACTOR**: centralize npub formatting in NdkFlutter.
+ - **FIX**: add intl dependency.
+ - **FIX**: remove defensive empty pubkey check in getColorFromPubkey.
+ - **FIX**: remove nip19 package.
+ - **FEAT**: add widgets demo page for ndk_flutter in sample-app.
+ - **FEAT**: add web verifier.
+
+
+## 2026-02-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.9`](#ndk---v071-dev9)
+ - [`ndk_amber` - `v0.4.0-dev.9`](#ndk_amber---v040-dev9)
+ - [`ndk_objectbox` - `v0.2.8-dev.9`](#ndk_objectbox---v028-dev9)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.9`](#ndk_rust_verifier---v050-dev9)
+ - [`nip07_event_signer` - `v1.0.6-dev.9`](#nip07_event_signer---v106-dev9)
+ - [`sembast_cache_manager` - `v1.0.7-dev.9`](#sembast_cache_manager---v107-dev9)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.9`](#ndk_cache_manager_test_suite---v101-dev9)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.9`
+ - `ndk_objectbox` - `v0.2.8-dev.9`
+ - `ndk_rust_verifier` - `v0.5.0-dev.9`
+ - `nip07_event_signer` - `v1.0.6-dev.9`
+ - `sembast_cache_manager` - `v1.0.7-dev.9`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.9`
+
+---
+
+#### `ndk` - `v0.7.1-dev.9`
+
+ - **FIX**: complete request when auth-required received without challenge.
+ - **FIX**: complete request when relay requires auth but client cannot sign.
+
+
+## 2026-02-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.8`](#ndk---v071-dev8)
+ - [`ndk_amber` - `v0.4.0-dev.8`](#ndk_amber---v040-dev8)
+ - [`ndk_objectbox` - `v0.2.8-dev.8`](#ndk_objectbox---v028-dev8)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.8`](#ndk_rust_verifier---v050-dev8)
+ - [`nip07_event_signer` - `v1.0.6-dev.8`](#nip07_event_signer---v106-dev8)
+ - [`sembast_cache_manager` - `v1.0.7-dev.8`](#sembast_cache_manager---v107-dev8)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.8`](#ndk_cache_manager_test_suite---v101-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.8`
+ - `ndk_objectbox` - `v0.2.8-dev.8`
+ - `ndk_rust_verifier` - `v0.5.0-dev.8`
+ - `nip07_event_signer` - `v1.0.6-dev.8`
+ - `sembast_cache_manager` - `v1.0.7-dev.8`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.8`
+
+---
+
+#### `ndk` - `v0.7.1-dev.8`
+
+ - **FIX**: distinguish CLOSED from EOSE in relay request state.
+
+
+## 2026-02-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.7`](#ndk---v071-dev7)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.7`](#ndk_cache_manager_test_suite---v101-dev7)
+ - [`ndk_objectbox` - `v0.2.8-dev.7`](#ndk_objectbox---v028-dev7)
+ - [`sembast_cache_manager` - `v1.0.7-dev.7`](#sembast_cache_manager---v107-dev7)
+ - [`ndk_amber` - `v0.4.0-dev.7`](#ndk_amber---v040-dev7)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.7`](#ndk_rust_verifier---v050-dev7)
+ - [`nip07_event_signer` - `v1.0.6-dev.7`](#nip07_event_signer---v106-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.7`
+ - `ndk_rust_verifier` - `v0.5.0-dev.7`
+ - `nip07_event_signer` - `v1.0.6-dev.7`
+
+---
+
+#### `ndk` - `v0.7.1-dev.7`
+
+ - **REFACTOR**: rename nip05.fetch() to nip05.resolve().
+ - **REFACTOR**: nip05 usecase.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve()  with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add of() method to fetch NIP-05 data without pubkey.
+
+#### `ndk_cache_manager_test_suite` - `v1.0.1-dev.7`
+
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+#### `ndk_objectbox` - `v0.2.8-dev.7`
+
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+#### `sembast_cache_manager` - `v1.0.7-dev.7`
+
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+
+## 2026-02-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.6`](#ndk---v071-dev6)
+ - [`ndk_amber` - `v0.4.0-dev.6`](#ndk_amber---v040-dev6)
+ - [`ndk_objectbox` - `v0.2.8-dev.6`](#ndk_objectbox---v028-dev6)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.6`](#ndk_rust_verifier---v050-dev6)
+ - [`nip07_event_signer` - `v1.0.6-dev.6`](#nip07_event_signer---v106-dev6)
+ - [`sembast_cache_manager` - `v1.0.7-dev.6`](#sembast_cache_manager---v107-dev6)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.6`](#ndk_cache_manager_test_suite---v101-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.6`
+ - `ndk_objectbox` - `v0.2.8-dev.6`
+ - `ndk_rust_verifier` - `v0.5.0-dev.6`
+ - `nip07_event_signer` - `v1.0.6-dev.6`
+ - `sembast_cache_manager` - `v1.0.7-dev.6`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.6`
+
+---
+
+#### `ndk` - `v0.7.1-dev.6`
+
+ - **FIX**: add destroy in tear down.
+ - **FIX**: ensure NIP-46 subscription is ready before sending remote requests.
+ - **FIX**: subscribe before broadcast in connectWithBunkerUrl to avoid missing NIP-46 responses.
+
+
+## 2026-02-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.5`](#ndk---v071-dev5)
+ - [`ndk_amber` - `v0.4.0-dev.5`](#ndk_amber---v040-dev5)
+ - [`ndk_objectbox` - `v0.2.8-dev.5`](#ndk_objectbox---v028-dev5)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.5`](#ndk_rust_verifier---v050-dev5)
+ - [`nip07_event_signer` - `v1.0.6-dev.5`](#nip07_event_signer---v106-dev5)
+ - [`sembast_cache_manager` - `v1.0.7-dev.5`](#sembast_cache_manager---v107-dev5)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.5`](#ndk_cache_manager_test_suite---v101-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.5`
+ - `ndk_objectbox` - `v0.2.8-dev.5`
+ - `ndk_rust_verifier` - `v0.5.0-dev.5`
+ - `nip07_event_signer` - `v1.0.6-dev.5`
+ - `sembast_cache_manager` - `v1.0.7-dev.5`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.5`
+
+---
+
+#### `ndk` - `v0.7.1-dev.5`
+
+ - **FEAT**: add missing state field in lookup_invoice_response.dart.
+
+
+## 2026-02-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.4`](#ndk---v071-dev4)
+ - [`ndk_amber` - `v0.4.0-dev.4`](#ndk_amber---v040-dev4)
+ - [`ndk_objectbox` - `v0.2.8-dev.4`](#ndk_objectbox---v028-dev4)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.4`](#ndk_rust_verifier---v050-dev4)
+ - [`nip07_event_signer` - `v1.0.6-dev.4`](#nip07_event_signer---v106-dev4)
+ - [`sembast_cache_manager` - `v1.0.7-dev.4`](#sembast_cache_manager---v107-dev4)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.4`](#ndk_cache_manager_test_suite---v101-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.4`
+ - `ndk_objectbox` - `v0.2.8-dev.4`
+ - `ndk_rust_verifier` - `v0.5.0-dev.4`
+ - `nip07_event_signer` - `v1.0.6-dev.4`
+ - `sembast_cache_manager` - `v1.0.7-dev.4`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.4`
+
+---
+
+#### `ndk` - `v0.7.1-dev.4`
+
+ - **FIX**: move authCallbackTimeout to NdkConfig.
+ - **FIX**: add timeout for pending AUTH callbacks.
+ - **FIX**: authenticate all accounts in authenticateAs for lazy auth mode.
+ - **FIX**: handle NIP-42 auth-required by re-sending REQ/EVENT after AUTH.
+ - **FEAT**: add eagerAuth in NDK config.
+
+
+## 2026-01-31
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.1-dev.3`](#ndk---v071-dev3)
+ - [`ndk_amber` - `v0.4.0-dev.3`](#ndk_amber---v040-dev3)
+ - [`ndk_objectbox` - `v0.2.8-dev.3`](#ndk_objectbox---v028-dev3)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.3`](#ndk_rust_verifier---v050-dev3)
+ - [`nip07_event_signer` - `v1.0.6-dev.3`](#nip07_event_signer---v106-dev3)
+ - [`sembast_cache_manager` - `v1.0.7-dev.3`](#sembast_cache_manager---v107-dev3)
+ - [`ndk_cache_manager_test_suite` - `v1.0.1-dev.3`](#ndk_cache_manager_test_suite---v101-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.0-dev.3`
+ - `ndk_objectbox` - `v0.2.8-dev.3`
+ - `ndk_rust_verifier` - `v0.5.0-dev.3`
+ - `nip07_event_signer` - `v1.0.6-dev.3`
+ - `sembast_cache_manager` - `v1.0.7-dev.3`
+ - `ndk_cache_manager_test_suite` - `v1.0.1-dev.3`
+
+---
+
+#### `ndk` - `v0.7.1-dev.3`
+
+ - **FIX**: rename stateChanges to authStateChanges.
+ - **FEAT**: gift wrap add custom signer parameter.
+
+
 ## 2026-01-27
 
 ### Changes
