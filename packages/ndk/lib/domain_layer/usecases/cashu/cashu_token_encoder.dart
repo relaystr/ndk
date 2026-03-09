@@ -23,14 +23,14 @@ class CashuTokenEncoder {
     try {
       // remove prefix before decoding
       if (!token.startsWith(v4Prefix)) {
-        Logger.log.f('Invalid token format: missing prefix');
+        Logger.log.f(() => 'Invalid token format: missing prefix');
         return null;
       }
 
       String tokenWithoutPrefix = token.substring(v4Prefix.length);
       obj = _decodeBase64ToMapByCBOR<Map>(tokenWithoutPrefix);
     } catch (e) {
-      Logger.log.f('Error decoding token: $e');
+      Logger.log.f(() => 'Error decoding token: $e');
     }
 
     if (obj == null) return null;

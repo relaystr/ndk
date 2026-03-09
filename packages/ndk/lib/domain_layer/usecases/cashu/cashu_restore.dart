@@ -56,8 +56,8 @@ class CashuRestore {
     int consecutiveEmptyBatches = 0;
     int lastUsedCounter = startCounter - 1;
 
-    Logger.log
-        .i('Starting restore for keyset $keysetId from counter $startCounter');
+    Logger.log.i(() =>
+        'Starting restore for keyset $keysetId from counter $startCounter');
 
     while (consecutiveEmptyBatches < gapLimit) {
       // Generate blinded messages for this batch
@@ -82,7 +82,7 @@ class CashuRestore {
           final (B_, rActual) = CashuBdhke.blindMessage(secret, r: r);
 
           if (B_.isEmpty) {
-            Logger.log.w('Empty blinded message for counter $counter');
+            Logger.log.w(() => 'Empty blinded message for counter $counter');
             continue;
           }
 
@@ -101,13 +101,13 @@ class CashuRestore {
             amount: 0,
           ));
         } catch (e) {
-          Logger.log
-              .w('Error creating blinded message for counter $counter: $e');
+          Logger.log.w(
+              () => 'Error creating blinded message for counter $counter: $e');
         }
       }
 
       if (blindedMessageItems.isEmpty) {
-        Logger.log.w(
+        Logger.log.w(() =>
             'No valid blinded messages created for batch starting at $currentCounter');
         consecutiveEmptyBatches++;
         currentCounter += batchSize;
@@ -126,14 +126,14 @@ class CashuRestore {
 
         if (signatures.isEmpty) {
           // No signatures returned for this batch
-          Logger.log.d(
+          Logger.log.d(() =>
               'No signatures returned for batch starting at $currentCounter');
           consecutiveEmptyBatches++;
         } else {
           // Found some proofs! Reset empty batch counter
           consecutiveEmptyBatches = 0;
 
-          Logger.log.i(
+          Logger.log.i(() =>
               'Found ${signatures.length} signatures in batch starting at $currentCounter');
 
           // Unblind the signatures to get proofs
@@ -150,7 +150,7 @@ class CashuRestore {
           lastUsedCounter = currentCounter + batchSize - 1;
         }
       } catch (e) {
-        Logger.log.e(
+        Logger.log.e(() =>
             'Error calling restore endpoint for batch starting at $currentCounter: $e');
         // On error, we consider this batch as empty and continue
         consecutiveEmptyBatches++;
@@ -159,7 +159,7 @@ class CashuRestore {
       currentCounter += batchSize;
     }
 
-    Logger.log.i('Restore completed for keyset $keysetId. '
+    Logger.log.i(() => 'Restore completed for keyset $keysetId. '
         'Found ${allRestoredProofs.length} proofs. '
         'Last used counter: $lastUsedCounter');
 
@@ -208,14 +208,15 @@ class CashuRestore {
         // Find the corresponding blinded message item by B_ value
         final blindedItem = messageMap[output.blindedMessage];
         if (blindedItem == null) {
-          Logger.log.w(
+          Logger.log.w(() =>
               'Could not find blinded message item for B_: ${output.blindedMessage}');
           continue;
         }
 
         final mintPubKey = keysByAmount[signature.amount];
         if (mintPubKey == null) {
-          Logger.log.w('No mint public key for amount ${signature.amount}');
+          Logger.log
+              .w(() => 'No mint public key for amount ${signature.amount}');
           continue;
         }
 
@@ -228,7 +229,7 @@ class CashuRestore {
           );
 
           if (unblindedSig == null) {
-            Logger.log.w(
+            Logger.log.w(() =>
                 'Failed to unblind signature for amount ${signature.amount}');
             continue;
           }
@@ -243,12 +244,12 @@ class CashuRestore {
 
           proofs.add(proof);
         } catch (e) {
-          Logger.log.e('Error unblinding signature: $e');
+          Logger.log.e(() => 'Error unblinding signature: $e');
         }
       }
     } else {
       // Fallback: try to match by attempting unblinding with each blinded message
-      Logger.log.w(
+      Logger.log.w(() =>
           'No outputs in restore response or length mismatch, using fallback matching');
 
       final Set<String> usedBlindedMessages = {};
@@ -256,7 +257,8 @@ class CashuRestore {
       for (final signature in signatures) {
         final mintPubKey = keysByAmount[signature.amount];
         if (mintPubKey == null) {
-          Logger.log.w('No mint public key for amount ${signature.amount}');
+          Logger.log
+              .w(() => 'No mint public key for amount ${signature.amount}');
           continue;
         }
 
@@ -296,7 +298,7 @@ class CashuRestore {
         }
 
         if (!matched) {
-          Logger.log.w(
+          Logger.log.w(() =>
               'Could not find matching blinded message for signature with amount ${signature.amount}');
         }
       }
@@ -355,7 +357,7 @@ class CashuRestore {
           totalProofsRestored: totalProofs,
         );
       } catch (e) {
-        Logger.log.e('Error restoring keyset ${keyset.id}: $e');
+        Logger.log.e(() => 'Error restoring keyset ${keyset.id}: $e');
       }
     }
   }

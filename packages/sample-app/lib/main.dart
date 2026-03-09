@@ -17,7 +17,6 @@ import 'package:ndk_demo/widgets_demo_page.dart';
 import 'package:ndk_demo/pending_requests_page.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
-
 bool amberAvailable = false;
 
 final ndk = Ndk(
@@ -156,7 +155,6 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
-      const Tab(text: 'Query Performance'),
       const Tab(text: "Wallets"),
       //const Tab(text: 'Query Performance'),
       // Conditionally add Amber tab if it's part of the design
@@ -272,7 +270,6 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
-      const Tab(text: 'Query Performance'),
       const Tab(text: "Wallets"),
       //const Tab(text: 'Query Performance'),
       // Amber tab removed
@@ -287,7 +284,7 @@ class _MyHomePageState extends State<MyHomePage>
       const NwcPage(),
       BlossomMediaPage(ndk: ndk),
       VerifiersPerformancePage(ndk: ndk),
-      QueryPerformancePage(ndk: ndk),
+      // QueryPerformancePage removed - file does not exist
       WalletsPage(
         ndk: ndk,
       ),

@@ -164,8 +164,6 @@ class Initialization {
       client: _httpRequestDS,
     );
 
-    final WalletsOperationsRepo walletsOperationsRepo = WalletsOperationsImpl();
-
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
     cacheRead = CacheRead(_ndkConfig.cache);
@@ -189,6 +187,21 @@ class Initialization {
       considerDonePercent: _ndkConfig.defaultBroadcastConsiderDonePercent,
       timeout: _ndkConfig.defaultBroadcastTimeout,
       saveToCache: _ndkConfig.defaultBroadcastSaveToCache,
+    );
+
+    // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
+    nwc = Nwc(requests: requests, broadcast: broadcast);
+
+    cashu = Cashu(
+      cashuRepo: cashuRepo,
+      cacheManager: _ndkConfig.cache,
+      cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
+      cashuKeyDerivation: DartCashuKeyDerivation(),
+    );
+
+    final WalletsOperationsRepo walletsOperationsRepo = WalletsOperationsImpl(
+      cashuUseCase: cashu,
+      nwcUseCase: nwc,
     );
 
     bunkers = Bunkers(
@@ -236,8 +249,6 @@ class Initialization {
       nip05Repository: nip05repository,
     );
 
-    nwc = Nwc(requests: requests, broadcast: broadcast);
-
     final LnurlTransport lnurlTransport =
         LnurlTransportHttpImpl(_httpRequestDS);
 
@@ -279,13 +290,6 @@ class Initialization {
     giftWrap = GiftWrap(accounts: accounts);
 
     connectivity = Connectivy(relayManager);
-
-    cashu = Cashu(
-      cashuRepo: cashuRepo,
-      cacheManager: _ndkConfig.cache,
-      cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
-      cashuKeyDerivation: DartCashuKeyDerivation(),
-    );
 
     final WalletsRepo walletsRepo = WalletsRepoImpl(
       cashuUseCase: cashu,

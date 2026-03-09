@@ -63,7 +63,7 @@ class Cashu {
       userSeedPhrase: cashuUserSeedphrase,
     );
     if (cashuUserSeedphrase == null) {
-      Logger.log.w(
+      Logger.log.w(() =>
           'Cashu initialized without user seed phrase, cashu features will not work \nSet the seed phrase using NdkConfig or Cashu.setCashuSeedPhrase()');
     }
   }
@@ -118,7 +118,7 @@ class Cashu {
     int batchSize = 100,
     int gapLimit = 2,
   }) async* {
-    Logger.log.i('Starting restore from $mintUrl');
+    Logger.log.i(() => 'Starting restore from $mintUrl');
 
     // Get keysets for this mint and unit
     final allKeysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
@@ -128,7 +128,7 @@ class Cashu {
       throw Exception('No keysets found for mint $mintUrl with unit $unit');
     }
 
-    Logger.log.i('Found ${keysets.length} keysets for unit $unit');
+    Logger.log.i(() => 'Found ${keysets.length} keysets for unit $unit');
 
     // Create restore instance
     final cashuRestore = CashuRestore(
@@ -173,23 +173,23 @@ class Cashu {
               proofs: unspentProofs,
               mintUrl: mintUrl,
             );
-            Logger.log.i(
+            Logger.log.i(() =>
                 'Saved ${unspentProofs.length} unspent proofs to cache (filtered out ${newProofs.length - unspentProofs.length} spent proofs)');
 
             // Update balance stream
             await _updateBalances();
           } else {
-            Logger.log.i(
+            Logger.log.i(() =>
                 'All ${newProofs.length} restored proofs were already spent, skipping save');
           }
         } catch (e) {
-          Logger.log.e('Error checking proof states during restore: $e');
+          Logger.log.e(() => 'Error checking proof states during restore: $e');
           // If we can't check state, save the proofs anyway (better to have duplicates than lose proofs)
           await _cacheManagerCashu.saveProofs(
             proofs: newProofs,
             mintUrl: mintUrl,
           );
-          Logger.log.w(
+          Logger.log.w(() =>
               'Saved ${newProofs.length} proofs without state check due to error');
 
           // Update balance stream
@@ -201,7 +201,7 @@ class Cashu {
       yield result;
     }
 
-    Logger.log.i('Restore completed');
+    Logger.log.i(() => 'Restore completed');
   }
 
   Future<int> getBalanceMintUnit({
@@ -549,7 +549,7 @@ class Cashu {
         _removePendingTransaction(expiredTransaction);
         await _addAndSaveLatestTransaction(expiredTransaction);
 
-        Logger.log.w('Quote expired before payment was received');
+        Logger.log.w(() => 'Quote expired before payment was received');
         yield expiredTransaction;
         return;
       }
@@ -975,7 +975,7 @@ class Cashu {
           throw Exception('Not enough funds to spend the requested amount');
         }
 
-        Logger.log.d(
+        Logger.log.d(() =>
             'Selected ${selectionResult.selectedProofs.length} proofs for spending, total: ${selectionResult.totalSelected} $unit');
 
         // mark proofs as pending
@@ -1007,14 +1007,14 @@ class Cashu {
     // add to pending transactions
     await _addAndSavePendingTransaction(pendingTransaction);
 
-    Logger.log.d(
+    Logger.log.d(() =>
         'Initiated spend for $amount $unit from mint $mintUrl, using ${selectionResult.selectedProofs.length} proofs');
 
     final List<CashuProof> proofsToReturn;
 
     // split so we get exact change
     if (selectionResult.needsSplit) {
-      Logger.log.d(
+      Logger.log.d(() =>
           'Need to split ${selectionResult.splitAmount} $unit from ${selectionResult.totalSelected} total');
 
       final SplitResult splitResult;
@@ -1050,7 +1050,7 @@ class Cashu {
         );
         await _addAndSaveLatestTransaction(completedTransaction);
 
-        Logger.log.e('Error during spend initiation: $e');
+        Logger.log.e(() => 'Error during spend initiation: $e');
         throw Exception('Spend initiation failed: $e');
       }
 
@@ -1063,7 +1063,7 @@ class Cashu {
       proofsToReturn = splitResult.exactProofs;
     } else {
       proofsToReturn = selectionResult.selectedProofs;
-      Logger.log.d('No split needed, using selected proofs directly');
+      Logger.log.d(() => 'No split needed, using selected proofs directly');
     }
 
     /// mark proofs as spent
@@ -1126,8 +1126,8 @@ class Cashu {
 
         /// check that all proofs are spent
         if (checkResult.every((e) => e.state == CashuProofState.spend)) {
-          Logger.log
-              .d('All proofs are spent for transaction ${transaction.id}');
+          Logger.log.d(
+              () => 'All proofs are spent for transaction ${transaction.id}');
           final completedTransaction = transaction.copyWith(
             state: WalletTransactionState.completed,
             transactionDate: DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -1161,7 +1161,7 @@ class Cashu {
         await Future.delayed(CashuConfig.SPEND_CHECK_INTERVAL);
       }
     } catch (e) {
-      Logger.log.e(
+      Logger.log.e(() =>
           'Error checking spending state for transaction ${transaction.id}: $e');
       // Mark transaction as failed
       final failedTransaction = transaction.copyWith(

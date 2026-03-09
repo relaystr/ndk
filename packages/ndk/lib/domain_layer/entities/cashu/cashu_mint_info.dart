@@ -65,7 +65,7 @@ class CashuMintInfo {
         try {
           if (v is List) {
             // skip  (non-spec compliant)
-            Logger.log.w(
+            Logger.log.w(() => 
                 'Warning: Skipping nut $key - received List instead of Map (non-spec compliant)');
             return;
           }
@@ -73,7 +73,7 @@ class CashuMintInfo {
           parsedNuts[key] =
               CashuMintNut.fromJson((v ?? {}) as Map<String, dynamic>);
         } catch (e) {
-          Logger.log.w('Warning: Skipping nut $key due to parsing error: $e');
+          Logger.log.w(() => 'Warning: Skipping nut $key due to parsing error: $e');
         }
       }
     });

@@ -23,7 +23,8 @@ class WalletsRepoImpl implements WalletsRepo {
     required Cashu cashuUseCase,
     required Nwc nwcUseCase,
     required CacheManager cacheManager,
-  })  : _cashuUseCase = cashuUseCase,
+  })
+      : _cashuUseCase = cashuUseCase,
         _nwcUseCase = nwcUseCase,
         _cacheManger = cacheManager;
 
@@ -79,13 +80,15 @@ class WalletsRepoImpl implements WalletsRepo {
     if (useCase is Cashu) {
       // transform to WalletBalance
       yield* useCase.balances
-          .map((balances) => balances.where((b) => b.mintUrl == id).expand((b) {
-                return b.balances.entries.map((entry) => WalletBalance(
-                      unit: entry.key,
-                      amount: entry.value,
-                      walletId: b.mintUrl,
-                    ));
-              }).toList());
+          .map((balances) =>
+          balances.where((b) => b.mintUrl == id).expand((b) {
+            return b.balances.entries.map((entry) =>
+                WalletBalance(
+                  unit: entry.key,
+                  amount: entry.value,
+                  walletId: b.mintUrl,
+                ));
+          }).toList());
     } else if (useCase is Nwc) {
       NwcWallet wallet = (await getWallet(id)) as NwcWallet;
       if (!wallet.isConnected()) {
@@ -108,7 +111,7 @@ class WalletsRepoImpl implements WalletsRepo {
     wallet.connection ??= await _nwcUseCase.connect(wallet.metadata["nwcUrl"],
         doGetInfoMethod:
             true // TODO getInfo or not should be ndk config somehow
-        );
+    );
 
     wallet.connection!.notificationStream.stream.listen((notification) async {
       if (!notification.isPaymentReceived && !notification.isPaymentSent) {
@@ -116,7 +119,7 @@ class WalletsRepoImpl implements WalletsRepo {
       }
       if (wallet.balanceSubject != null && notification.state == "settled") {
         final balanceResponse =
-            await _nwcUseCase.getBalance(wallet.connection!);
+        await _nwcUseCase.getBalance(wallet.connection!);
         wallet.balanceSubject!.add([
           WalletBalance(
               walletId: wallet.id,
@@ -137,8 +140,8 @@ class WalletsRepoImpl implements WalletsRepo {
           state: notification.isSettled
               ? WalletTransactionState.completed
               : (notification.isPending
-                  ? WalletTransactionState.pending
-                  : WalletTransactionState.failed),
+              ? WalletTransactionState.pending
+              : WalletTransactionState.failed),
           metadata: notification.metadata ?? {},
           transactionDate: notification.settledAt ?? notification.createdAt,
           initiatedDate: notification.createdAt,
@@ -159,29 +162,29 @@ class WalletsRepoImpl implements WalletsRepo {
   Stream<List<Wallet>> walletsUsecaseStream() {
     return _cashuUseCase.knownMints.map((mints) {
       return mints
-          .map((mint) => CashuWallet(
-                id: mint.urls.first,
-                mintUrl: mint.urls.first,
-                type: WalletType.CASHU,
-                name: mint.name ?? mint.urls.first,
-                supportedUnits: mint.supportedUnits,
-                mintInfo: mint,
-              ))
+          .map((mint) =>
+          CashuWallet(
+            id: mint.urls.first,
+            mintUrl: mint.urls.first,
+            type: WalletType.CASHU,
+            name: mint.name ?? mint.urls.first,
+            supportedUnits: mint.supportedUnits,
+            mintInfo: mint,
+          ))
           .toList();
     });
   }
 
   @override
-  Stream<List<WalletTransaction>> getPendingTransactionsStream(
-    String id,
-  ) async* {
+  Stream<List<WalletTransaction>> getPendingTransactionsStream(String id,) async* {
     final useCase = await _getWalletUseCase(id);
     if (useCase is Cashu) {
       /// filter transaction stream by id
       yield* useCase.pendingTransactions.map(
-        (transactions) => transactions
-            .where((transaction) => transaction.walletId == id)
-            .toList(),
+            (transactions) =>
+            transactions
+                .where((transaction) => transaction.walletId == id)
+                .toList(),
       );
     } else if (useCase is Nwc) {
       NwcWallet wallet = (await getWallet(id)) as NwcWallet;
@@ -191,22 +194,23 @@ class WalletsRepoImpl implements WalletsRepo {
       wallet.pendingTransactionsSubject ??=
           BehaviorSubject<List<WalletTransaction>>();
       final transactions =
-          await _nwcUseCase.listTransactions(wallet.connection!, unpaid: true);
+      await _nwcUseCase.listTransactions(wallet.connection!, unpaid: true);
       wallet.pendingTransactionsSubject!.add(transactions.transactions.reversed
           .where((e) => e.state != null && e.state == "pending")
-          .map((e) => NwcWalletTransaction(
-                id: e.paymentHash,
-                walletId: wallet.id,
-                changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
-                unit: "sats",
-                walletType: WalletType.NWC,
-                state: e.state != null && e.state == "settled"
-                    ? WalletTransactionState.completed
-                    : WalletTransactionState.pending,
-                metadata: e.metadata ?? {},
-                transactionDate: e.settledAt ?? e.createdAt,
-                initiatedDate: e.createdAt,
-              ))
+          .map((e) =>
+          NwcWalletTransaction(
+            id: e.paymentHash,
+            walletId: wallet.id,
+            changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
+            unit: "sats",
+            walletType: WalletType.NWC,
+            state: e.state != null && e.state == "settled"
+                ? WalletTransactionState.completed
+                : WalletTransactionState.pending,
+            metadata: e.metadata ?? {},
+            transactionDate: e.settledAt ?? e.createdAt,
+            initiatedDate: e.createdAt,
+          ))
           .toList());
       yield* wallet.pendingTransactionsSubject!.stream;
     } else {
@@ -216,16 +220,15 @@ class WalletsRepoImpl implements WalletsRepo {
   }
 
   @override
-  Stream<List<WalletTransaction>> getRecentTransactionsStream(
-    String id,
-  ) async* {
+  Stream<List<WalletTransaction>> getRecentTransactionsStream(String id,) async* {
     final useCase = await _getWalletUseCase(id);
     if (useCase is Cashu) {
       /// filter transaction stream by id
       yield* useCase.latestTransactions.map(
-        (transactions) => transactions
-            .where((transaction) => transaction.walletId == id)
-            .toList(),
+            (transactions) =>
+            transactions
+                .where((transaction) => transaction.walletId == id)
+                .toList(),
       );
     } else if (useCase is Nwc) {
       NwcWallet wallet = (await getWallet(id)) as NwcWallet;
@@ -234,22 +237,23 @@ class WalletsRepoImpl implements WalletsRepo {
       }
       wallet.transactionsSubject ??= BehaviorSubject<List<WalletTransaction>>();
       final transactions =
-          await _nwcUseCase.listTransactions(wallet.connection!, unpaid: false);
+      await _nwcUseCase.listTransactions(wallet.connection!, unpaid: false);
       wallet.transactionsSubject!.add(transactions.transactions.reversed
           .where((e) => e.state != null && e.state == "settled")
-          .map((e) => NwcWalletTransaction(
-                id: e.paymentHash,
-                walletId: wallet.id,
-                changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
-                unit: "sats",
-                walletType: WalletType.NWC,
-                state: e.state != null && e.state == "settled"
-                    ? WalletTransactionState.completed
-                    : WalletTransactionState.pending,
-                metadata: e.metadata ?? {},
-                transactionDate: e.settledAt ?? e.createdAt,
-                initiatedDate: e.createdAt,
-              ))
+          .map((e) =>
+          NwcWalletTransaction(
+            id: e.paymentHash,
+            walletId: wallet.id,
+            changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
+            unit: "sats",
+            walletType: WalletType.NWC,
+            state: e.state != null && e.state == "settled"
+                ? WalletTransactionState.completed
+                : WalletTransactionState.pending,
+            metadata: e.metadata ?? {},
+            transactionDate: e.settledAt ?? e.createdAt,
+            initiatedDate: e.createdAt,
+          ))
           .toList());
       yield* wallet.transactionsSubject!.stream;
     } else {

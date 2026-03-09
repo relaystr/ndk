@@ -69,7 +69,7 @@ class CashuBdhke {
         ));
       } catch (e) {
         Logger.log.w(
-          'Error creating blinded message for amount $amount: $e',
+          () => 'Error creating blinded message for amount $amount: $e',
           error: e,
         );
       }
