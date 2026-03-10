@@ -30,7 +30,7 @@ class CashuTokenUrEncoder {
       final ur = UR(urType, cborBytes);
       return UREncoder.encode(ur);
     } catch (e) {
-      Logger.log.f('Error encoding token to UR: $e');
+      Logger.log.f(() => 'Error encoding token to UR: $e');
       rethrow;
     }
   }
@@ -43,7 +43,7 @@ class CashuTokenUrEncoder {
       final ur = URDecoder.decode(urString);
 
       if (ur.type != urType) {
-        Logger.log.f('Invalid UR type: expected $urType, got ${ur.type}');
+        Logger.log.f(() => 'Invalid UR type: expected $urType, got ${ur.type}');
         return null;
       }
 
@@ -52,7 +52,7 @@ class CashuTokenUrEncoder {
 
       return CashuToken.fromV4Json(json);
     } catch (e) {
-      Logger.log.f('Error decoding UR to token: $e');
+      Logger.log.f(() => 'Error decoding UR to token: $e');
       return null;
     }
   }
@@ -83,7 +83,7 @@ class CashuTokenUrEncoder {
         minFragmentLen: minFragmentLen,
       );
     } catch (e) {
-      Logger.log.f('Error creating multi-part UR encoder: $e');
+      Logger.log.f(() => 'Error creating multi-part UR encoder: $e');
       rethrow;
     }
   }
@@ -103,19 +103,19 @@ class CashuTokenUrEncoder {
   static CashuToken? decodeFromMultiPartDecoder(URDecoder decoder) {
     try {
       if (!decoder.isComplete()) {
-        Logger.log.f('Decoder is not complete yet');
+        Logger.log.f(() => 'Decoder is not complete yet');
         return null;
       }
 
       final result = decoder.resultMessage();
       if (result == null || result is! UR) {
-        Logger.log.f('Invalid decoder result');
+        Logger.log.f(() => 'Invalid decoder result');
         return null;
       }
 
       final ur = result as UR;
       if (ur.type != urType) {
-        Logger.log.f('Invalid UR type: expected $urType, got ${ur.type}');
+        Logger.log.f(() => 'Invalid UR type: expected $urType, got ${ur.type}');
         return null;
       }
 
@@ -124,7 +124,7 @@ class CashuTokenUrEncoder {
 
       return CashuToken.fromV4Json(json);
     } catch (e) {
-      Logger.log.f('Error decoding multi-part UR to token: $e');
+      Logger.log.f(() => 'Error decoding multi-part UR to token: $e');
       return null;
     }
   }
