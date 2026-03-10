@@ -693,15 +693,6 @@ class MockMetadata extends _i1.Mock implements _i4.Metadata {
       );
 
   @override
-  set sources(List<String>? value) => super.noSuchMethod(
-        Invocation.setter(
-          #sources,
-          value,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   set tags(List<List<String>>? value) => super.noSuchMethod(
         Invocation.setter(
           #tags,
