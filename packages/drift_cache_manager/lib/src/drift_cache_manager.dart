@@ -1,10 +1,18 @@
-import 'dart:convert';
+ddrimport 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_keyset.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_mint_info.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/ndk.dart';
 
 import 'database/database.dart';
@@ -35,18 +43,18 @@ class DriftCacheManager extends CacheManager {
     await _db
         .into(_db.events)
         .insertOnConflictUpdate(
-          EventsCompanion.insert(
-            id: event.id,
-            pubKey: event.pubKey,
-            kind: event.kind,
-            createdAt: event.createdAt,
-            content: event.content,
-            sig: Value(event.sig),
-            validSig: Value(event.validSig),
-            tagsJson: jsonEncode(event.tags),
-            sourcesJson: jsonEncode(event.sources),
-          ),
-        );
+      EventsCompanion.insert(
+        id: event.id,
+        pubKey: event.pubKey,
+        kind: event.kind,
+        createdAt: event.createdAt,
+        content: event.content,
+        sig: Value(event.sig),
+        validSig: Value(event.validSig),
+        tagsJson: jsonEncode(event.tags),
+        sourcesJson: jsonEncode(event.sources),
+      ),
+    );
   }
 
   @override
@@ -57,17 +65,17 @@ class DriftCacheManager extends CacheManager {
         events
             .map(
               (event) => EventsCompanion.insert(
-                id: event.id,
-                pubKey: event.pubKey,
-                kind: event.kind,
-                createdAt: event.createdAt,
-                content: event.content,
-                sig: Value(event.sig),
-                validSig: Value(event.validSig),
-                tagsJson: jsonEncode(event.tags),
-                sourcesJson: jsonEncode(event.sources),
-              ),
-            )
+            id: event.id,
+            pubKey: event.pubKey,
+            kind: event.kind,
+            createdAt: event.createdAt,
+            content: event.content,
+            sig: Value(event.sig),
+            validSig: Value(event.validSig),
+            tagsJson: jsonEncode(event.tags),
+            sourcesJson: jsonEncode(event.sources),
+          ),
+        )
             .toList(),
       );
     });
@@ -159,7 +167,7 @@ class DriftCacheManager extends CacheManager {
           }
 
           return tagValues.any(
-            (value) => eventTags.contains(value.toLowerCase()),
+                (value) => eventTags.contains(value.toLowerCase()),
           );
         });
       }).toList();
@@ -192,12 +200,13 @@ class DriftCacheManager extends CacheManager {
     int? since,
     int? until,
   }) async {
-    final hasNoFilters = (ids == null || ids.isEmpty) &&
-        (pubKeys == null || pubKeys.isEmpty) &&
-        (kinds == null || kinds.isEmpty) &&
-        (tags == null || tags.isEmpty) &&
-        since == null &&
-        until == null;
+    final hasNoFilters =
+        (ids == null || ids.isEmpty) &&
+            (pubKeys == null || pubKeys.isEmpty) &&
+            (kinds == null || kinds.isEmpty) &&
+            (tags == null || tags.isEmpty) &&
+            since == null &&
+            until == null;
 
     if (hasNoFilters) return;
 
@@ -240,7 +249,8 @@ class DriftCacheManager extends CacheManager {
       }
 
       return conditions.reduce((a, b) => a & b);
-    })).go();
+    }))
+        .go();
   }
 
   Nip01Event _eventFromRow(DbEvent row) {
@@ -273,7 +283,36 @@ class DriftCacheManager extends CacheManager {
     await _db
         .into(_db.metadatas)
         .insertOnConflictUpdate(
-          MetadatasCompanion.insert(
+      MetadatasCompanion.insert(
+        pubKey: metadata.pubKey,
+        name: Value(metadata.name),
+        displayName: Value(metadata.displayName),
+        picture: Value(metadata.picture),
+        banner: Value(metadata.banner),
+        website: Value(metadata.website),
+        about: Value(metadata.about),
+        nip05: Value(metadata.nip05),
+        lud16: Value(metadata.lud16),
+        lud06: Value(metadata.lud06),
+        updatedAt: Value(metadata.updatedAt),
+        refreshedTimestamp: Value(metadata.refreshedTimestamp),
+        sourcesJson: jsonEncode(metadata.sources),
+        tagsJson: Value(jsonEncode(metadata.tags)),
+        rawContentJson: Value(
+          metadata.content.isNotEmpty ? jsonEncode(metadata.content) : null,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> saveMetadatas(List<Metadata> metadatas) async {
+    await _db.batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        _db.metadatas,
+        metadatas
+            .map(
+              (metadata) => MetadatasCompanion.insert(
             pubKey: metadata.pubKey,
             name: Value(metadata.name),
             displayName: Value(metadata.displayName),
@@ -288,40 +327,13 @@ class DriftCacheManager extends CacheManager {
             refreshedTimestamp: Value(metadata.refreshedTimestamp),
             sourcesJson: jsonEncode(metadata.sources),
             tagsJson: Value(jsonEncode(metadata.tags)),
-            rawContentJson: Value(metadata.content.isNotEmpty
-                ? jsonEncode(metadata.content)
-                : null),
+            rawContentJson: Value(
+              metadata.content.isNotEmpty
+                  ? jsonEncode(metadata.content)
+                  : null,
+            ),
           ),
-        );
-  }
-
-  @override
-  Future<void> saveMetadatas(List<Metadata> metadatas) async {
-    await _db.batch((batch) {
-      batch.insertAllOnConflictUpdate(
-        _db.metadatas,
-        metadatas
-            .map(
-              (metadata) => MetadatasCompanion.insert(
-                pubKey: metadata.pubKey,
-                name: Value(metadata.name),
-                displayName: Value(metadata.displayName),
-                picture: Value(metadata.picture),
-                banner: Value(metadata.banner),
-                website: Value(metadata.website),
-                about: Value(metadata.about),
-                nip05: Value(metadata.nip05),
-                lud16: Value(metadata.lud16),
-                lud06: Value(metadata.lud06),
-                updatedAt: Value(metadata.updatedAt),
-                refreshedTimestamp: Value(metadata.refreshedTimestamp),
-                sourcesJson: jsonEncode(metadata.sources),
-                tagsJson: Value(jsonEncode(metadata.tags)),
-                rawContentJson: Value(metadata.content.isNotEmpty
-                    ? jsonEncode(metadata.content)
-                    : null),
-              ),
-            )
+        )
             .toList(),
       );
     });
@@ -349,10 +361,10 @@ class DriftCacheManager extends CacheManager {
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     final rows =
-        await (_db.select(_db.metadatas)
-              ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)])
-              ..limit(limit))
-            .get();
+    await (_db.select(_db.metadatas)
+      ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)])
+      ..limit(limit))
+        .get();
 
     final metadatas = rows.map(_metadataFromRow).toList();
 
@@ -420,7 +432,31 @@ class DriftCacheManager extends CacheManager {
     await _db
         .into(_db.contactLists)
         .insertOnConflictUpdate(
-          ContactListsCompanion.insert(
+      ContactListsCompanion.insert(
+        pubKey: contactList.pubKey,
+        contactsJson: jsonEncode(contactList.contacts),
+        contactRelaysJson: jsonEncode(contactList.contactRelays),
+        petnamesJson: jsonEncode(contactList.petnames),
+        followedTagsJson: jsonEncode(contactList.followedTags),
+        followedCommunitiesJson: jsonEncode(
+          contactList.followedCommunities,
+        ),
+        followedEventsJson: jsonEncode(contactList.followedEvents),
+        createdAt: contactList.createdAt,
+        loadedTimestamp: Value(contactList.loadedTimestamp),
+        sourcesJson: jsonEncode(contactList.sources),
+      ),
+    );
+  }
+
+  @override
+  Future<void> saveContactLists(List<ContactList> contactLists) async {
+    await _db.batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        _db.contactLists,
+        contactLists
+            .map(
+              (contactList) => ContactListsCompanion.insert(
             pubKey: contactList.pubKey,
             contactsJson: jsonEncode(contactList.contacts),
             contactRelaysJson: jsonEncode(contactList.contactRelays),
@@ -434,31 +470,7 @@ class DriftCacheManager extends CacheManager {
             loadedTimestamp: Value(contactList.loadedTimestamp),
             sourcesJson: jsonEncode(contactList.sources),
           ),
-        );
-  }
-
-  @override
-  Future<void> saveContactLists(List<ContactList> contactLists) async {
-    await _db.batch((batch) {
-      batch.insertAllOnConflictUpdate(
-        _db.contactLists,
-        contactLists
-            .map(
-              (contactList) => ContactListsCompanion.insert(
-                pubKey: contactList.pubKey,
-                contactsJson: jsonEncode(contactList.contacts),
-                contactRelaysJson: jsonEncode(contactList.contactRelays),
-                petnamesJson: jsonEncode(contactList.petnames),
-                followedTagsJson: jsonEncode(contactList.followedTags),
-                followedCommunitiesJson: jsonEncode(
-                  contactList.followedCommunities,
-                ),
-                followedEventsJson: jsonEncode(contactList.followedEvents),
-                createdAt: contactList.createdAt,
-                loadedTimestamp: Value(contactList.loadedTimestamp),
-                sourcesJson: jsonEncode(contactList.sources),
-              ),
-            )
+        )
             .toList(),
       );
     });
@@ -525,13 +537,13 @@ class DriftCacheManager extends CacheManager {
     await _db
         .into(_db.userRelayLists)
         .insertOnConflictUpdate(
-          UserRelayListsCompanion.insert(
-            pubKey: userRelayList.pubKey,
-            createdAt: userRelayList.createdAt,
-            refreshedTimestamp: userRelayList.refreshedTimestamp,
-            relaysJson: jsonEncode(_encodeRelaysMap(userRelayList.relays)),
-          ),
-        );
+      UserRelayListsCompanion.insert(
+        pubKey: userRelayList.pubKey,
+        createdAt: userRelayList.createdAt,
+        refreshedTimestamp: userRelayList.refreshedTimestamp,
+        relaysJson: jsonEncode(_encodeRelaysMap(userRelayList.relays)),
+      ),
+    );
   }
 
   @override
@@ -542,12 +554,12 @@ class DriftCacheManager extends CacheManager {
         userRelayLists
             .map(
               (userRelayList) => UserRelayListsCompanion.insert(
-                pubKey: userRelayList.pubKey,
-                createdAt: userRelayList.createdAt,
-                refreshedTimestamp: userRelayList.refreshedTimestamp,
-                relaysJson: jsonEncode(_encodeRelaysMap(userRelayList.relays)),
-              ),
-            )
+            pubKey: userRelayList.pubKey,
+            createdAt: userRelayList.createdAt,
+            refreshedTimestamp: userRelayList.refreshedTimestamp,
+            relaysJson: jsonEncode(_encodeRelaysMap(userRelayList.relays)),
+          ),
+        )
             .toList(),
       );
     });
@@ -575,10 +587,10 @@ class DriftCacheManager extends CacheManager {
   }
 
   Map<String, Map<String, bool>> _encodeRelaysMap(
-    Map<String, ReadWriteMarker> relays,
-  ) {
+      Map<String, ReadWriteMarker> relays,
+      ) {
     return relays.map(
-      (key, value) =>
+          (key, value) =>
           MapEntry(key, {'read': value.isRead, 'write': value.isWrite}),
     );
   }
@@ -615,21 +627,21 @@ class DriftCacheManager extends CacheManager {
     await _db
         .into(_db.relaySets)
         .insertOnConflictUpdate(
-          RelaySetsCompanion.insert(
-            id: relaySet.id,
-            name: relaySet.name,
-            pubKey: relaySet.pubKey,
-            relayMinCountPerPubkey: relaySet.relayMinCountPerPubkey,
-            direction: relaySet.direction.index,
-            relaysMapJson: jsonEncode(
-              _encodeRelaysMapWithMappings(relaySet.relaysMap),
-            ),
-            fallbackToBootstrapRelays: relaySet.fallbackToBootstrapRelays,
-            notCoveredPubkeysJson: jsonEncode(
-              _encodeNotCoveredPubkeys(relaySet.notCoveredPubkeys),
-            ),
-          ),
-        );
+      RelaySetsCompanion.insert(
+        id: relaySet.id,
+        name: relaySet.name,
+        pubKey: relaySet.pubKey,
+        relayMinCountPerPubkey: relaySet.relayMinCountPerPubkey,
+        direction: relaySet.direction.index,
+        relaysMapJson: jsonEncode(
+          _encodeRelaysMapWithMappings(relaySet.relaysMap),
+        ),
+        fallbackToBootstrapRelays: relaySet.fallbackToBootstrapRelays,
+        notCoveredPubkeysJson: jsonEncode(
+          _encodeNotCoveredPubkeys(relaySet.notCoveredPubkeys),
+        ),
+      ),
+    );
   }
 
   @override
@@ -654,29 +666,29 @@ class DriftCacheManager extends CacheManager {
   }
 
   List<Map<String, dynamic>> _encodeNotCoveredPubkeys(
-    List<NotCoveredPubKey> notCoveredPubkeys,
-  ) {
+      List<NotCoveredPubKey> notCoveredPubkeys,
+      ) {
     return notCoveredPubkeys
         .map((pk) => {'pubKey': pk.pubKey, 'coverage': pk.coverage})
         .toList();
   }
 
   Map<String, List<Map<String, dynamic>>> _encodeRelaysMapWithMappings(
-    Map<String, List<PubkeyMapping>> relaysMap,
-  ) {
+      Map<String, List<PubkeyMapping>> relaysMap,
+      ) {
     return relaysMap.map(
-      (key, value) => MapEntry(
+          (key, value) => MapEntry(
         key,
         value
             .map(
               (mapping) => {
-                'pubKey': mapping.pubKey,
-                'rwMarker': {
-                  'read': mapping.rwMarker.isRead,
-                  'write': mapping.rwMarker.isWrite,
-                },
-              },
-            )
+            'pubKey': mapping.pubKey,
+            'rwMarker': {
+              'read': mapping.rwMarker.isRead,
+              'write': mapping.rwMarker.isWrite,
+            },
+          },
+        )
             .toList(),
       ),
     );
@@ -704,10 +716,10 @@ class DriftCacheManager extends CacheManager {
     final notCoveredPubkeys = notCoveredJson
         .map(
           (item) => NotCoveredPubKey(
-            (item as Map<String, dynamic>)['pubKey'] as String,
-            item['coverage'] as int,
-          ),
-        )
+        (item as Map<String, dynamic>)['pubKey'] as String,
+        item['coverage'] as int,
+      ),
+    )
         .toList();
 
     return RelaySet(
@@ -730,14 +742,14 @@ class DriftCacheManager extends CacheManager {
     await _db
         .into(_db.nip05s)
         .insertOnConflictUpdate(
-          Nip05sCompanion.insert(
-            pubKey: nip05.pubKey,
-            nip05: nip05.nip05,
-            valid: nip05.valid,
-            networkFetchTime: Value(nip05.networkFetchTime),
-            relaysJson: jsonEncode(nip05.relays ?? []),
-          ),
-        );
+      Nip05sCompanion.insert(
+        pubKey: nip05.pubKey,
+        nip05: nip05.nip05,
+        valid: nip05.valid,
+        networkFetchTime: Value(nip05.networkFetchTime),
+        relaysJson: jsonEncode(nip05.relays ?? []),
+      ),
+    );
   }
 
   @override
@@ -748,13 +760,13 @@ class DriftCacheManager extends CacheManager {
         nip05s
             .map(
               (nip05) => Nip05sCompanion.insert(
-                pubKey: nip05.pubKey,
-                nip05: nip05.nip05,
-                valid: nip05.valid,
-                networkFetchTime: Value(nip05.networkFetchTime),
-                relaysJson: jsonEncode(nip05.relays ?? []),
-              ),
-            )
+            pubKey: nip05.pubKey,
+            nip05: nip05.nip05,
+            valid: nip05.valid,
+            networkFetchTime: Value(nip05.networkFetchTime),
+            relaysJson: jsonEncode(nip05.relays ?? []),
+          ),
+        )
             .toList(),
       );
     });
@@ -817,38 +829,38 @@ class DriftCacheManager extends CacheManager {
 
   @override
   Future<void> saveFilterFetchedRangeRecord(
-    FilterFetchedRangeRecord record,
-  ) async {
+      FilterFetchedRangeRecord record,
+      ) async {
     await _db
         .into(_db.filterFetchedRangeRecords)
         .insertOnConflictUpdate(
-          FilterFetchedRangeRecordsCompanion.insert(
-            key: record.key,
-            filterHash: record.filterHash,
-            relayUrl: record.relayUrl,
-            rangeStart: record.rangeStart,
-            rangeEnd: record.rangeEnd,
-          ),
-        );
+      FilterFetchedRangeRecordsCompanion.insert(
+        key: record.key,
+        filterHash: record.filterHash,
+        relayUrl: record.relayUrl,
+        rangeStart: record.rangeStart,
+        rangeEnd: record.rangeEnd,
+      ),
+    );
   }
 
   @override
   Future<void> saveFilterFetchedRangeRecords(
-    List<FilterFetchedRangeRecord> records,
-  ) async {
+      List<FilterFetchedRangeRecord> records,
+      ) async {
     await _db.batch((batch) {
       batch.insertAllOnConflictUpdate(
         _db.filterFetchedRangeRecords,
         records
             .map(
               (record) => FilterFetchedRangeRecordsCompanion.insert(
-                key: record.key,
-                filterHash: record.filterHash,
-                relayUrl: record.relayUrl,
-                rangeStart: record.rangeStart,
-                rangeEnd: record.rangeEnd,
-              ),
-            )
+            key: record.key,
+            filterHash: record.filterHash,
+            relayUrl: record.relayUrl,
+            rangeStart: record.rangeStart,
+            rangeEnd: record.rangeEnd,
+          ),
+        )
             .toList(),
       );
     });
@@ -856,8 +868,8 @@ class DriftCacheManager extends CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecords(
-    String filterHash,
-  ) async {
+      String filterHash,
+      ) async {
     final rows = await (_db.select(
       _db.filterFetchedRangeRecords,
     )..where((t) => t.filterHash.equals(filterHash))).get();
@@ -866,15 +878,15 @@ class DriftCacheManager extends CacheManager {
 
   @override
   Future<List<FilterFetchedRangeRecord>> loadFilterFetchedRangeRecordsByRelay(
-    String filterHash,
-    String relayUrl,
-  ) async {
+      String filterHash,
+      String relayUrl,
+      ) async {
     final rows =
-        await (_db.select(_db.filterFetchedRangeRecords)..where(
-              (t) =>
-                  t.filterHash.equals(filterHash) & t.relayUrl.equals(relayUrl),
-            ))
-            .get();
+    await (_db.select(_db.filterFetchedRangeRecords)..where(
+          (t) =>
+      t.filterHash.equals(filterHash) & t.relayUrl.equals(relayUrl),
+    ))
+        .get();
     return rows.map(_filterFetchedRangeRecordFromRow).toList();
   }
 
@@ -896,12 +908,12 @@ class DriftCacheManager extends CacheManager {
 
   @override
   Future<void> removeFilterFetchedRangeRecordsByFilterAndRelay(
-    String filterHash,
-    String relayUrl,
-  ) async {
+      String filterHash,
+      String relayUrl,
+      ) async {
     await (_db.delete(_db.filterFetchedRangeRecords)..where(
           (t) => t.filterHash.equals(filterHash) & t.relayUrl.equals(relayUrl),
-        ))
+    ))
         .go();
   }
 
@@ -918,8 +930,8 @@ class DriftCacheManager extends CacheManager {
   }
 
   FilterFetchedRangeRecord _filterFetchedRangeRecordFromRow(
-    DbFilterFetchedRangeRecord row,
-  ) {
+      DbFilterFetchedRangeRecord row,
+      ) {
     return FilterFetchedRangeRecord(
       filterHash: row.filterHash,
       relayUrl: row.relayUrl,
@@ -956,6 +968,361 @@ class DriftCacheManager extends CacheManager {
     );
   }
 
+  // =====================
+  // Cashu Methods
+  // =====================
+
+  @override
+  Future<void> saveKeyset(CahsuKeyset keyset) async {
+    await _db
+        .into(_db.cashuKeysets)
+        .insertOnConflictUpdate(
+      CashuKeysetsCompanion.insert(
+        id: keyset.id,
+        mintUrl: keyset.mintUrl,
+        unit: keyset.unit,
+        active: keyset.active,
+        inputFeePPK: keyset.inputFeePPK,
+        mintKeyPairsJson: jsonEncode(
+          keyset.mintKeyPairs
+              .map((pair) => {'amount': pair.amount, 'pubkey': pair.pubkey})
+              .toList(),
+        ),
+        fetchedAt: Value(keyset.fetchedAt),
+      ),
+    );
+  }
+
+  @override
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) async {
+    var query = _db.select(_db.cashuKeysets);
+    if (mintUrl != null) {
+      query = query..where((k) => k.mintUrl.equals(mintUrl));
+    }
+    final rows = await query.get();
+    return rows.map(_keysetFromRow).toList();
+  }
+
+  CahsuKeyset _keysetFromRow(DbCashuKeyset row) {
+    final keyPairs = (jsonDecode(row.mintKeyPairsJson) as List)
+        .map(
+          (e) => CahsuMintKeyPair(
+        amount: e['amount'] as int,
+        pubkey: e['pubkey'] as String,
+      ),
+    )
+        .toSet();
+    return CahsuKeyset(
+      id: row.id,
+      mintUrl: row.mintUrl,
+      unit: row.unit,
+      active: row.active,
+      inputFeePPK: row.inputFeePPK,
+      mintKeyPairs: keyPairs,
+      fetchedAt: row.fetchedAt,
+    );
+  }
+
+  @override
+  Future<void> saveProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    await _db.batch((batch) {
+      for (final proof in proofs) {
+        batch.insert(
+          _db.cashuProofs,
+          CashuProofsCompanion.insert(
+            Y: proof.Y,
+            keysetId: proof.keysetId,
+            amount: proof.amount,
+            secret: proof.secret,
+            unblindedSig: proof.unblindedSig,
+            state: proof.state.value,
+            mintUrl: mintUrl,
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  @override
+  Future<List<CashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
+  }) async {
+    var query = _db.select(_db.cashuProofs)
+      ..where((p) => p.state.equals(state.value));
+
+    if (mintUrl != null) {
+      query = query..where((p) => p.mintUrl.equals(mintUrl));
+    }
+    if (keysetId != null) {
+      query = query..where((p) => p.keysetId.equals(keysetId));
+    }
+
+    final rows = await query.get();
+    return rows.map(_proofFromRow).toList();
+  }
+
+  CashuProof _proofFromRow(DbCashuProof row) {
+    return CashuProof(
+      keysetId: row.keysetId,
+      amount: row.amount,
+      secret: row.secret,
+      unblindedSig: row.unblindedSig,
+      state: CashuProofState.fromValue(row.state),
+    );
+  }
+
+  @override
+  Future<void> removeProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    final yValues = proofs.map((p) => p.Y).toList();
+    await (_db.delete(
+      _db.cashuProofs,
+    )..where((p) => p.mintUrl.equals(mintUrl) & p.Y.isIn(yValues))).go();
+  }
+
+  @override
+  Future<void> saveMintInfo({required CashuMintInfo mintInfo}) async {
+    final id = mintInfo.urls.isNotEmpty ? mintInfo.urls.first : '';
+    await _db
+        .into(_db.cashuMintInfos)
+        .insertOnConflictUpdate(
+      CashuMintInfosCompanion.insert(
+        id: id,
+        urlsJson: jsonEncode(mintInfo.urls),
+        name: Value(mintInfo.name),
+        pubkey: Value(mintInfo.pubkey),
+        version: Value(mintInfo.version),
+        description: Value(mintInfo.description),
+        descriptionLong: Value(mintInfo.descriptionLong),
+        contactJson: jsonEncode(
+          mintInfo.contact.map((c) => c.toJson()).toList(),
+        ),
+        motd: Value(mintInfo.motd),
+        iconUrl: Value(mintInfo.iconUrl),
+        time: Value(mintInfo.time),
+        tosUrl: Value(mintInfo.tosUrl),
+        nutsJson: jsonEncode(
+          mintInfo.nuts.map((k, v) => MapEntry(k.toString(), v.toJson())),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
+    var query = _db.select(_db.cashuMintInfos);
+    if (mintUrls != null && mintUrls.isNotEmpty) {
+      // This is a simplification - ideally we'd parse the JSON array
+      query = query..where((m) => m.id.isIn(mintUrls));
+    }
+    final rows = await query.get();
+    if (rows.isEmpty) return null;
+    return rows.map(_mintInfoFromRow).toList();
+  }
+
+  CashuMintInfo _mintInfoFromRow(DbCashuMintInfo row) {
+    return CashuMintInfo.fromJson({
+      'name': row.name,
+      'pubkey': row.pubkey,
+      'version': row.version,
+      'description': row.description,
+      'description_long': row.descriptionLong,
+      'contact': jsonDecode(row.contactJson),
+      'motd': row.motd,
+      'icon_url': row.iconUrl,
+      'urls': jsonDecode(row.urlsJson),
+      'time': row.time,
+      'tos_url': row.tosUrl,
+      'nuts': jsonDecode(row.nutsJson),
+    }, mintUrl: row.id);
+  }
+
+  @override
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  }) async {
+    final id = '$mintUrl|$keysetId';
+    final row = await (_db.select(
+      _db.cashuSecretCounters,
+    )..where((c) => c.id.equals(id))).getSingleOrNull();
+    return row?.counter ?? 0;
+  }
+
+  @override
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  }) async {
+    final id = '$mintUrl|$keysetId';
+    await _db
+        .into(_db.cashuSecretCounters)
+        .insertOnConflictUpdate(
+      CashuSecretCountersCompanion.insert(
+        id: id,
+        mintUrl: mintUrl,
+        keysetId: keysetId,
+        counter: counter,
+      ),
+    );
+  }
+
+  // =====================
+  // Wallet Methods
+  // =====================
+
+  @override
+  Future<void> saveWallet(Wallet wallet) async {
+    await _db
+        .into(_db.wallets)
+        .insertOnConflictUpdate(
+      WalletsCompanion.insert(
+        id: wallet.id,
+        name: wallet.name,
+        type: wallet.type.name,
+        supportedUnitsJson: jsonEncode(wallet.supportedUnits.toList()),
+        metadataJson: jsonEncode(wallet.toMetadata()),
+      ),
+    );
+  }
+
+  @override
+  Future<void> removeWallet(String id) async {
+    await (_db.delete(_db.wallets)..where((w) => w.id.equals(id))).go();
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
+    var query = _db.select(_db.wallets);
+    if (ids != null && ids.isNotEmpty) {
+      query = query..where((w) => w.id.isIn(ids));
+    }
+    final rows = await query.get();
+    if (rows.isEmpty && ids != null) return null;
+    return rows.map(_walletFromRow).toList();
+  }
+
+  Wallet _walletFromRow(DbWallet row) {
+    final metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+    final type = WalletType.values.firstWhere(
+          (t) => t.name == row.type,
+      orElse: () => WalletType.CASHU,
+    );
+    final supportedUnits = (jsonDecode(row.supportedUnitsJson) as List)
+        .map((e) => e.toString())
+        .toSet();
+
+    switch (type) {
+      case WalletType.CASHU:
+        return CashuWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          mintUrl: metadata['mintUrl'] as String,
+          mintInfo: CashuMintInfo.fromJson(
+            metadata['mintInfo'] as Map<String, dynamic>,
+            mintUrl: metadata['mintUrl'] as String,
+          ),
+        );
+      case WalletType.NWC:
+        return NwcWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          nwcUrl: metadata['nwcUrl'] as String,
+        );
+    }
+  }
+
+  @override
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  }) async {
+    await _db.batch((batch) {
+      for (final transaction in transactions) {
+        batch.insert(
+          _db.walletTransactions,
+          WalletTransactionsCompanion.insert(
+            id: transaction.id,
+            walletId: transaction.walletId,
+            changeAmount: transaction.changeAmount,
+            unit: transaction.unit,
+            type: transaction.walletType.name,
+            state: transaction.state.value,
+            completionMsg: Value(transaction.completionMsg),
+            transactionDate: Value(transaction.transactionDate),
+            initiatedDate: Value(transaction.initiatedDate),
+            metadataJson: jsonEncode(transaction.metadata),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  @override
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) async {
+    var query = _db.select(_db.walletTransactions);
+
+    if (walletId != null) {
+      query = query..where((t) => t.walletId.equals(walletId));
+    }
+    if (unit != null) {
+      query = query..where((t) => t.unit.equals(unit));
+    }
+    if (walletType != null) {
+      query = query..where((t) => t.type.equals(walletType.name));
+    }
+
+    query = query..orderBy([(t) => OrderingTerm.desc(t.initiatedDate)]);
+
+    if (offset != null && offset > 0) {
+      query = query..offset(offset);
+    }
+    if (limit != null && limit > 0) {
+      query = query..limit(limit);
+    }
+
+    final rows = await query.get();
+    return rows.map(_transactionFromRow).toList();
+  }
+
+  WalletTransaction _transactionFromRow(DbWalletTransaction row) {
+    final type = WalletType.values.firstWhere(
+          (t) => t.name == row.type,
+      orElse: () => WalletType.CASHU,
+    );
+    final metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+
+    return WalletTransaction.toTransactionType(
+      id: row.id,
+      walletId: row.walletId,
+      changeAmount: row.changeAmount,
+      unit: row.unit,
+      walletType: type,
+      state: WalletTransactionState.fromValue(row.state),
+      metadata: metadata,
+      completionMsg: row.completionMsg,
+      transactionDate: row.transactionDate,
+      initiatedDate: row.initiatedDate,
+    );
+  }
+
   @override
   Future<void> clearAll() async {
     await Future.wait([
@@ -966,6 +1333,13 @@ class DriftCacheManager extends CacheManager {
       _db.delete(_db.relaySets).go(),
       _db.delete(_db.nip05s).go(),
       _db.delete(_db.filterFetchedRangeRecords).go(),
+      // Cashu tables
+      _db.delete(_db.cashuProofs).go(),
+      _db.delete(_db.cashuKeysets).go(),
+      _db.delete(_db.cashuMintInfos).go(),
+      _db.delete(_db.cashuSecretCounters).go(),
+      _db.delete(_db.wallets).go(),
+      _db.delete(_db.walletTransactions).go(),
     ]);
   }
 }
