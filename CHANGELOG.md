@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-03-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.1`](#ndk_flutter---v002-dev1)
+ - [`nip07_event_signer` - `v1.0.7-dev.1`](#nip07_event_signer---v107-dev1)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.1`
+
+ - **FIX**: conditional web import to support wasm.
+
+#### `nip07_event_signer` - `v1.0.7-dev.1`
+
+ - **FIX**: conditional web import to support wasm.
+
+
 ## 2026-03-08
 
 ### Changes
