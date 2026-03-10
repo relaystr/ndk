@@ -64,8 +64,6 @@ dev_dependencies:
 dependency_overrides:
   ndk:
     path: ../ndk
-  ndk_rust_verifier:
-    path: ../rust_verifier
   ndk_amber:
     path: ../amber
   ndk_flutter:
