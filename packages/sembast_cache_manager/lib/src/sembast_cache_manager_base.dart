@@ -640,11 +640,13 @@ class SembastCacheManager extends CacheManager {
     if (mintUrl != null && mintUrl.isNotEmpty) {
       // Get all keysets for the mintUrl
       final keysets = await getKeysets(mintUrl: mintUrl);
-      if (keysets.isEmpty) {
-        return [];
+      if (keysets.isNotEmpty) {
+        // Only filter if keysets exist
+        final keysetIds = keysets.map((k) => k.id).toList();
+        filters.add(sembast.Filter.inList('keysetId', keysetIds));
       }
-      final keysetIds = keysets.map((k) => k.id).toList();
-      filters.add(sembast.Filter.inList('keysetId', keysetIds));
+      // If no keysets found, continue without this filter
+      // This allows getting proofs even if keyset isn't stored yet
     }
 
     final finder = sembast.Finder(
@@ -867,6 +869,12 @@ class SembastCacheManager extends CacheManager {
       _nip05Store.delete(_database),
       _relaySetStore.delete(_database),
       _filterFetchedRangeStore.delete(_database),
+      _keysetStore.delete(_database),
+      _proofStore.delete(_database),
+      _transactionStore.delete(_database),
+      _walletStore.delete(_database),
+      _mintInfoStore.delete(_database),
+      _secretCounterStore.delete(_database),
     ]);
   }
 }
