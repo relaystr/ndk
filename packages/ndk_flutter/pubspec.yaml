@@ -1,6 +1,6 @@
 name: ndk_flutter
 description: "A Flutter UI package providing ready-to-use widgets."
-version: 0.0.2-dev.0+1
+version: 0.0.2-dev.2
 repository: https://github.com/relaystr/ndk
 topics:
   - ndk
@@ -31,7 +31,7 @@ dependencies:
   intl: ^0.20.2
   ndk: ^0.7.2-dev.0
   ndk_amber: ^0.4.1-dev.0+1
-  nip07_event_signer: ^1.0.7-dev.0
+  nip07_event_signer: ^1.0.7-dev.1
   pretty_qr_code: ">=3.0.0 <4.0.0"
   toastification: ">=3.0.0 <4.0.0"
   url_launcher: ">=6.0.0 <7.0.0"

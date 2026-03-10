@@ -36,3 +36,4 @@ build/
 /packages/ndk/coverage/*
 /packages/ndk/coverage.lcov
 pubspec_overrides.yaml
+/packages/ndk/rust/target/

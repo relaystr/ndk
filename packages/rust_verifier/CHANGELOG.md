@@ -1,3 +1,7 @@
+## 0.5.0-dev.1
+
+ - **PERF**: use secp256k1.
+
 ## 0.5.0
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
