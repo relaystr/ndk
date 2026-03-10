@@ -304,7 +304,9 @@ class RelaySetsEngine implements NetworkEngine {
         pubkeys: [workingEvent.pubKey],
         cacheManager: _cacheManager,
       ));
-      var writeRelaysUrls = _relayManager.globalState.relays.keys;
+      // make a copy of the keys since connectRelay may mutate the underlying map
+      List<String> writeRelaysUrls =
+          _relayManager.globalState.relays.keys.toList();
       if (nip65List.isNotEmpty) {
         writeRelaysUrls = nip65List.first.relays.entries
             .where((element) => element.value.isWrite)

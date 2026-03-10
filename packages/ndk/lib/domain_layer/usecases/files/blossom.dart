@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../../../config/blossom_config.dart';
+import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../../shared/nips/nip01/bip340.dart';
 import '../../entities/blob_upload_progress.dart';
 import '../../entities/blossom_blobs.dart';
 import '../../entities/blossom_strategies.dart';
@@ -39,20 +41,28 @@ class Blossom {
         _userServerList = blossomUserServerList,
         _blossomImpl = blossomRepository;
 
-  void _checkSigner() {
-    if (!_accounts.canSign) {
-      throw "Not logged in";
-    }
-  }
+  /// Gets the signer to use for blossom operations
+  /// Priority: customSigner > logged in account signer > temporary signer
+  EventSigner _getSigner(EventSigner? customSigner) {
+    if (customSigner != null) return customSigner;
 
-  EventSigner get _signer {
-    return _accounts.getLoggedAccount()!.signer;
+    if (_accounts.canSign) {
+      return _accounts.getLoggedAccount()!.signer;
+    }
+
+    // Create a temporary signer if no account is logged in
+    final keyPair = Bip340.generatePrivateKey();
+    return Bip340EventSigner(
+      privateKey: keyPair.privateKey,
+      publicKey: keyPair.publicKey,
+    );
   }
 
   /// upload a blob to the server
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error \
-  /// the current signer is used to sign the request \
+  /// the current signer is used to sign the request, or [customSigner] if provided \
+  /// if no signer is available, a temporary signer is created \
   /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
   /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
   Future<List<BlobUploadResult>> uploadBlob({
@@ -61,17 +71,18 @@ class Blossom {
     String? contentType,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool serverMediaOptimisation = false,
+    EventSigner? customSigner,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     /// sha256 of the data
     final dataSha256 = sha256.convert(data);
 
-    _checkSigner();
+    final signer = _getSigner(customSigner);
 
     final Nip01Event myAuthorization = Nip01Event(
       content: "upload",
-      pubKey: _signer.getPublicKey(),
+      pubKey: signer.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
@@ -81,10 +92,10 @@ class Blossom {
       ],
     );
 
-    final signedAuthorization = await _signer.sign(myAuthorization);
+    final signedAuthorization = await signer.sign(myAuthorization);
 
     serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [_signer.getPublicKey()]);
+        .getUserServerList(pubkeys: [signer.getPublicKey()]);
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -111,7 +122,8 @@ class Blossom {
   ///
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pubkey has no UserServerList (kind: 10063), throws an error \
-  /// the current signer is used to sign the request \
+  /// the current signer is used to sign the request, or [customSigner] if provided \
+  /// if no signer is available, a temporary signer is created \
   /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
   /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different
   Stream<BlobUploadProgress> uploadBlobFromFile({
@@ -120,10 +132,11 @@ class Blossom {
     String? contentType,
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool serverMediaOptimisation = false,
+    EventSigner? customSigner,
   }) async* {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    _checkSigner();
+    final signer = _getSigner(customSigner);
 
     // Compute file hash without loading entire file into memory
     String? fileHash;
@@ -149,7 +162,7 @@ class Blossom {
     // Create authorization event with file hash
     final Nip01Event myAuthorization = Nip01Utils.createEventCalculateId(
       content: "upload",
-      pubKey: _signer.getPublicKey(),
+      pubKey: signer.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
@@ -159,10 +172,10 @@ class Blossom {
       ],
     );
 
-    final signedAuthorization = await _signer.sign(myAuthorization);
+    final signedAuthorization = await signer.sign(myAuthorization);
 
     serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [_signer.getPublicKey()]);
+        .getUserServerList(pubkeys: [signer.getPublicKey()]);
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -183,14 +196,16 @@ class Blossom {
   /// [blossomUrl] is the source URL of the blob to mirror (e.g., https://cdn.example.com/[sha256].jpg)
   ///   The URL must contain a 64-character SHA256 hash
   /// [targetServerUrls] is the list of servers to mirror the blob to
-  /// the current signer is used to sign the mirror request
+  /// the current signer is used to sign the mirror request, or [customSigner] if provided \
+  /// if no signer is available, a temporary signer is created
   ///
   /// Throws an [Exception] if no SHA256 hash is detected in the URL
   Future<List<BlobUploadResult>> mirrorToServers({
     required Uri blossomUrl,
     required List<String> targetServerUrls,
+    EventSigner? customSigner,
   }) async {
-    _checkSigner();
+    final signer = _getSigner(customSigner);
 
     // Extract sha256 from the URL
     final sha256Match = sha256Regex.firstMatch(blossomUrl.toString());
@@ -206,7 +221,7 @@ class Blossom {
     // Create authorization event for mirroring
     final Nip01Event myAuthorization = Nip01Utils.createEventCalculateId(
       content: "upload",
-      pubKey: _signer.getPublicKey(),
+      pubKey: signer.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
@@ -216,7 +231,7 @@ class Blossom {
       ],
     );
 
-    final signedAuthorization = await _signer.sign(myAuthorization);
+    final signedAuthorization = await signer.sign(myAuthorization);
 
     // Mirror to all target servers
     final results = await Future.wait(
@@ -241,17 +256,18 @@ class Blossom {
     bool useAuth = false,
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
+    EventSigner? customSigner,
   }) async {
     Nip01Event? myAuthorization;
     Nip01Event? signedAuthorization;
 
     if (useAuth) {
-      _checkSigner();
+      final signer = _getSigner(customSigner);
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: _signer.getPublicKey(),
+        pubKey: signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -261,7 +277,7 @@ class Blossom {
         ],
       );
 
-      signedAuthorization = await _signer.sign(myAuthorization);
+      signedAuthorization = await signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -297,17 +313,18 @@ class Blossom {
     bool useAuth = false,
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
+    EventSigner? customSigner,
   }) async {
     Nip01Event? myAuthorization;
     Nip01Event? signedAuthorization;
 
     if (useAuth) {
-      _checkSigner();
+      final signer = _getSigner(customSigner);
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Utils.createEventCalculateId(
         content: "get",
-        pubKey: _signer.getPublicKey(),
+        pubKey: signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -317,7 +334,7 @@ class Blossom {
         ],
       );
 
-      signedAuthorization = await _signer.sign(myAuthorization);
+      signedAuthorization = await signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -353,17 +370,18 @@ class Blossom {
     bool useAuth = false,
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
+    EventSigner? customSigner,
   }) async {
     Nip01Event? myAuthorization;
     Nip01Event? signedAuthorization;
 
     if (useAuth) {
-      _checkSigner();
+      final signer = _getSigner(customSigner);
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: _signer.getPublicKey(),
+        pubKey: signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -373,7 +391,7 @@ class Blossom {
         ],
       );
 
-      signedAuthorization = await _signer.sign(myAuthorization);
+      signedAuthorization = await signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -406,17 +424,18 @@ class Blossom {
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
     int chunkSize = 1024 * 1024, // 1MB chunks,
+    EventSigner? customSigner,
   }) async {
     Nip01Event? myAuthorization;
     Nip01Event? signedAuthorization;
 
     if (useAuth) {
-      _checkSigner();
+      final signer = _getSigner(customSigner);
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "get",
-        pubKey: _signer.getPublicKey(),
+        pubKey: signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -426,7 +445,7 @@ class Blossom {
         ],
       );
 
-      signedAuthorization = await _signer.sign(myAuthorization);
+      signedAuthorization = await signer.sign(myAuthorization);
     }
 
     if (serverUrls == null) {
@@ -460,17 +479,18 @@ class Blossom {
     bool useAuth = true,
     DateTime? since,
     DateTime? until,
+    EventSigner? customSigner,
   }) async {
     Nip01Event? myAuthorization;
     Nip01Event? signedAuthorization;
 
     if (useAuth) {
-      _checkSigner();
+      final signer = _getSigner(customSigner);
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       myAuthorization = Nip01Event(
         content: "List Blobs",
-        pubKey: _signer.getPublicKey(),
+        pubKey: signer.getPublicKey(),
         kind: kBlossom,
         createdAt: now,
         tags: [
@@ -479,7 +499,7 @@ class Blossom {
         ],
       );
 
-      signedAuthorization = await _signer.sign(myAuthorization);
+      signedAuthorization = await signer.sign(myAuthorization);
     }
 
     /// fetch user server list from nostr
@@ -501,18 +521,20 @@ class Blossom {
   /// delete a blob
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error \
-  /// the current signer is used to sign the request
+  /// the current signer is used to sign the request, or [customSigner] if provided \
+  /// if no signer is available, a temporary signer is created
   Future<List<BlobDeleteResult>> deleteBlob({
     required String sha256,
     List<String>? serverUrls,
+    EventSigner? customSigner,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    _checkSigner();
+    final signer = _getSigner(customSigner);
 
     final Nip01Event myAuthorization = Nip01Event(
       content: "delete",
-      pubKey: _signer.getPublicKey(),
+      pubKey: signer.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
@@ -522,11 +544,11 @@ class Blossom {
       ],
     );
 
-    final signedAuthorization = await _signer.sign(myAuthorization);
+    final signedAuthorization = await signer.sign(myAuthorization);
 
     /// fetch user server list from nostr
     serverUrls ??= await _userServerList
-        .getUserServerList(pubkeys: [_signer.getPublicKey()]);
+        .getUserServerList(pubkeys: [signer.getPublicKey()]);
 
     if (serverUrls == null) {
       throw Exception("User has no server list");
@@ -559,6 +581,7 @@ class Blossom {
   /// [reportType] is the type of report, e.g. malware @see nip56
   /// [reportMsg] is the message to send to the server
   /// [serverUrl] server url to report to
+  /// [customSigner] optional custom signer to use for signing the report, if not provided uses the current logged in signer or creates a temporary one
   ///
   /// returns the http status code of the rcv server
   Future<int> report({
@@ -567,14 +590,15 @@ class Blossom {
     required String reportType,
     required String reportMsg,
     required String serverUrl,
+    EventSigner? customSigner,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    _checkSigner();
+    final signer = _getSigner(customSigner);
 
     final Nip01Event reportEvent = Nip01Event(
       content: reportMsg,
-      pubKey: _signer.getPublicKey(),
+      pubKey: signer.getPublicKey(),
       kind: kReport,
       createdAt: now,
       tags: [
@@ -584,7 +608,7 @@ class Blossom {
       ],
     );
 
-    final signedReport = await _signer.sign(reportEvent);
+    final signedReport = await signer.sign(reportEvent);
 
     return _blossomImpl.report(
       sha256: sha256,

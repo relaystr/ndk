@@ -1,3 +1,92 @@
+## 0.7.2-dev.0
+
+ - **FEAT**: paginated requests.
+
+## 0.7.1
+
+ - FEAT: cache known properties.
+ - FEAT: isolate manager with stream response.
+ - FEAT: improved upload progress report.
+ - FEAT: blossom mirrorToServers().
+ - FEAT: files api uploadFromFile(), downloadToFile().
+ - FEAT: blossom file stream.
+ - FEAT(broadcast): add NIP-09 compliant deletion with e, k, and a tags.
+ - FEAT: implement RFC 3986 compliant relay URL normalization.
+ - FEAT: expose signer API on Account entity.
+ - FEAT: add SignerRequestRejectedException for remote signer rejections.
+ - FEAT: add nip46 pending requests integration test.
+ - FEAT: add unified pending requests API.
+ - FEAT(cache): add removeEvents method for bulk event deletion.
+ - FEAT(cache): add clearAll() method to CacheManager.
+ - FEAT: add caching support for nip05.resolve() with identifier lookup.
+ - FEAT: add caching support for nip05.resolve() with identifier lookup.
+ - FEAT: add caching support for nip05.resolve() with identifier lookup.
+ - FEAT: add of() method to fetch NIP-05 data without pubkey.
+ - FEAT: add missing state field in lookup_invoice_response.dart.
+ - FEAT: add missing getPublicList.
+ - FEAT: change removeEvents to support flexible filtering.
+ - FEAT: gift wrap add custom signer parameter.
+ - FEAT: add saveToCache option for broadcast.
+ - FEAT: nip42 multi auth.
+ - REFACTOR: rename rawContent to content.
+ - REFACTOR: uploadBlob use dataStreamFactory.
+ - REFACTOR: extract URL normalization to separate file.
+ - REFACTOR: make dispose() async.
+ - REFACTOR: remove unused requestRelays method.
+ - REFACTOR: rename nip05.fetch() to nip05.resolve().
+ - REFACTOR: nip05 usecase.
+ - FIX: concurent list modification.
+ - FIX: allow blossom uploadBlob without login via temporary/custom signer.
+ - FIX: tests passes.
+ - FIX: toJson and fromJson.
+ - FIX: meme cache mock.
+ - FIX: tests.
+ - FIX: use setter for known properties + content never null.
+ - FIX: mem cache manager mock.
+ - FIX: preserve tags and custom fields in metadata.
+ - FIX: propagate signer exceptions through broadcast.
+ - FIX: getPublicList() reduce db calls by saving last event.
+ - FIX: getPublicList add limit.
+ - FIX: getPublicList only save latest event.
+ - FIX(broadcast): return immediately when all relays have responded.
+ - FIX: web init.
+ - FIX: use isolate manager for native hash calc.
+ - FIX: get file hash for uploadBlobFromFile().
+ - FIX: flanky blossom test depending on order.
+ - FIX(perf): lazy log.
+ - FIX: remove all event versions from cache on NIP-09 deletion.
+ - FIX: flanky test.
+ - FIX: close duplicate request when original completes.
+ - FIX: fail fast when all relays are offline.
+ - FIX: complete request when auth-required received without challenge.
+ - FIX: complete request when relay requires auth but client cannot sign.
+ - FIX: distinguish CLOSED from EOSE in relay request state.
+ - FIX: add destroy in tear down.
+ - FIX: ensure NIP-46 subscription is ready before sending remote requests.
+ - FIX: subscribe before broadcast in connectWithBunkerUrl to avoid missing NIP-46 responses.
+ - FIX: move authCallbackTimeout to NdkConfig.
+ - FIX: add timeout for pending AUTH callbacks.
+ - FIX: authenticate all accounts in authenticateAs for lazy auth mode.
+ - FIX: handle NIP-42 auth-required by re-sending REQ/EVENT after AUTH.
+ - FIX: rename stateChanges to authStateChanges.
+ - FIX: minIsolatePoolSize.
+ - FIX: use Accounts instead of pubkeys to authenticate.
+
+
+## 0.7.1-dev.20
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: concurent list modification.
+ - **FIX**: allow blossom uploadBlob without login via temporary/custom signer.
+ - **FIX**: tests passes.
+ - **FIX**: toJson and fromJson.
+ - **FIX**: meme cache mock.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: mem cache manager mock.
+ - **FIX**: preserve tags and custom fields in metadata.
+ - **FEAT**: cache known properties.
+
 ## 0.7.1-dev.19
 
  - **FIX**: propagate signer exceptions through broadcast.

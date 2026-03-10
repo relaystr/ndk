@@ -1,3 +1,17 @@
+## 0.2.8-dev.0+1
+
+ - Update a dependency to the latest release.
+
+## 0.2.8
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.2.8-dev.21
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
 ## 0.2.8-dev.20
 
  - Update a dependency to the latest release.

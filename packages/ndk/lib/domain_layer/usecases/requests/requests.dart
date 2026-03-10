@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:rxdart/rxdart.dart';
+
 import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
@@ -22,6 +24,13 @@ import '../relay_manager.dart';
 import '../stream_response_cleaner/stream_response_cleaner.dart';
 import 'concurrency_check.dart';
 import 'verify_event_stream.dart';
+
+/// Internal state for tracking pagination progress on a single relay
+class _RelayPaginationState {
+  int? oldestTimestamp;
+  int? currentUntil;
+  bool exhausted = false;
+}
 
 /// A class that handles low-level Nostr network requests and subscriptions.
 class Requests {
@@ -78,6 +87,7 @@ class Requests {
   /// [timeoutCallbackUserFacing] A user facing timeout callback, this callback should be given to the lib user \
   /// [timeoutCallback] An internal timeout callback, this callback should be used for internal error handling \
   /// [authenticateAs] List of accounts to authenticate with on relays (NIP-42) \
+  /// [paginate] If true, automatically paginates backwards through time to fetch all events in the range \
   ///
   /// Returns an [NdkResponse] containing the query result stream, future
   NdkResponse query({
@@ -95,12 +105,29 @@ class Requests {
     Iterable<String>? explicitRelays,
     int? desiredCoverage,
     List<Account>? authenticateAs,
+    bool paginate = false,
   }) {
     if (filter == null && (filters == null || filters.isEmpty)) {
       throw ArgumentError('Either filter or filters must be provided');
     }
     final effectiveFilters = filter != null ? [filter] : filters!;
     timeout ??= _defaultQueryTimeout;
+
+    if (paginate) {
+      return _paginatedQuery(
+        filter: effectiveFilters.first,
+        name: name,
+        relaySet: relaySet,
+        cacheRead: cacheRead,
+        cacheWrite: cacheWrite,
+        timeout: timeout,
+        timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+        timeoutCallback: timeoutCallback,
+        explicitRelays: explicitRelays,
+        desiredCoverage: desiredCoverage,
+        authenticateAs: authenticateAs,
+      );
+    }
 
     return requestNostrEvent(NdkRequest.query(
       '$name-${Helpers.getRandomString(10)}',
@@ -297,6 +324,164 @@ class Requests {
 
     // Return the response immediately
     return response;
+  }
+
+  /// Performs a paginated query that fetches all events in a time range
+  /// by making multiple requests per relay, each time adjusting the `until` parameter
+  /// to fetch older events until `since` is reached or no more events are returned.
+  /// Pagination is done independently per relay to avoid skipping events.
+  NdkResponse _paginatedQuery({
+    required Filter filter,
+    String name = '',
+    RelaySet? relaySet,
+    bool cacheRead = true,
+    bool cacheWrite = true,
+    Duration? timeout,
+    Function()? timeoutCallbackUserFacing,
+    Function()? timeoutCallback,
+    Iterable<String>? explicitRelays,
+    int? desiredCoverage,
+    List<Account>? authenticateAs,
+  }) {
+    final requestId = '$name-paginated-${Helpers.getRandomString(10)}';
+    final aggregatedController = ReplaySubject<Nip01Event>();
+    final seenEventIds = <String>{};
+
+    Future<void> paginate() async {
+      final since = filter.since;
+
+      // First request to discover relays and get initial events
+      final initialResponse = requestNostrEvent(NdkRequest.query(
+        '$name-page-initial-${Helpers.getRandomString(5)}',
+        name: name,
+        filters: [filter.clone()],
+        relaySet: relaySet,
+        cacheRead: cacheRead,
+        cacheWrite: cacheWrite,
+        timeoutDuration: timeout,
+        timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+        timeoutCallback: timeoutCallback,
+        explicitRelays: explicitRelays,
+        desiredCoverage:
+            desiredCoverage ?? RequestDefaults.DEFAULT_BEST_RELAYS_MIN_COUNT,
+        authenticateAs: authenticateAs,
+      ));
+
+      final initialEvents = await initialResponse.future;
+
+      // Emit initial events and discover relays
+      final relayState = <String, _RelayPaginationState>{};
+
+      for (final event in initialEvents) {
+        if (!seenEventIds.contains(event.id)) {
+          seenEventIds.add(event.id);
+          aggregatedController.add(event);
+        }
+
+        // Track oldest timestamp per relay
+        for (final relay in event.sources) {
+          final state = relayState.putIfAbsent(
+            relay,
+            () => _RelayPaginationState(),
+          );
+          if (state.oldestTimestamp == null ||
+              event.createdAt < state.oldestTimestamp!) {
+            state.oldestTimestamp = event.createdAt;
+          }
+        }
+      }
+
+      // If no events or no relays discovered, we're done
+      if (initialEvents.isEmpty || relayState.isEmpty) {
+        await aggregatedController.close();
+        return;
+      }
+
+      // Initialize relay states
+      for (final entry in relayState.entries) {
+        final state = entry.value;
+        if (state.oldestTimestamp != null) {
+          state.currentUntil = state.oldestTimestamp! - 1;
+          // Check if already reached since
+          if (since != null && state.oldestTimestamp! <= since) {
+            state.exhausted = true;
+          }
+        } else {
+          state.exhausted = true;
+        }
+      }
+
+      // Paginate each relay independently
+      while (relayState.values.any((s) => !s.exhausted)) {
+        // Get active relays
+        final activeRelays = relayState.entries
+            .where((e) => !e.value.exhausted)
+            .map((e) => e.key)
+            .toList();
+
+        // Make parallel requests to all active relays
+        final futures = activeRelays.map((relay) async {
+          final state = relayState[relay]!;
+          final pageFilter = filter.clone();
+          pageFilter.until = state.currentUntil;
+
+          final response = requestNostrEvent(NdkRequest.query(
+            '$name-page-${Helpers.getRandomString(5)}',
+            name: name,
+            filters: [pageFilter],
+            relaySet: relaySet,
+            cacheRead: false, // Don't read from cache for subsequent pages
+            cacheWrite: cacheWrite,
+            timeoutDuration: timeout,
+            timeoutCallbackUserFacing: timeoutCallbackUserFacing,
+            timeoutCallback: timeoutCallback,
+            explicitRelays: [relay],
+            desiredCoverage: 1,
+            authenticateAs: authenticateAs,
+          ));
+
+          return MapEntry(relay, await response.future);
+        });
+
+        final results = await Future.wait(futures);
+
+        // Process results
+        for (final result in results) {
+          final relay = result.key;
+          final pageEvents = result.value;
+          final state = relayState[relay]!;
+
+          int? oldestTimestamp;
+          for (final event in pageEvents) {
+            if (!seenEventIds.contains(event.id)) {
+              seenEventIds.add(event.id);
+              aggregatedController.add(event);
+            }
+            // Track oldest timestamp for this relay
+            if (oldestTimestamp == null || event.createdAt < oldestTimestamp) {
+              oldestTimestamp = event.createdAt;
+            }
+          }
+
+          if (pageEvents.isEmpty || oldestTimestamp == null) {
+            state.exhausted = true;
+          } else {
+            state.currentUntil = oldestTimestamp - 1;
+            // Check if reached since
+            if (since != null && oldestTimestamp <= since) {
+              state.exhausted = true;
+            }
+          }
+        }
+      }
+
+      await aggregatedController.close();
+    }
+
+    // Start pagination asynchronously
+    paginate();
+
+    return NdkResponse(requestId, aggregatedController.stream);
   }
 
   /// Records fetched ranges for each relay that received EOSE

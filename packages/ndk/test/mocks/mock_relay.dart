@@ -33,6 +33,7 @@ class MockRelay {
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
+  int? maxEventsPerRequest;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -57,6 +58,7 @@ class MockRelay {
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
+    this.maxEventsPerRequest,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -282,7 +284,8 @@ class MockRelay {
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
         eventsForThisFilter.addAll(_contactLists.values
-            .where((e) => filter.authors!.contains(e.pubKey))
+            .where((e) => filter.authors!.contains(e.pubKey) &&
+                _matchesTimeFilter(e, filter))
             .toList());
       }
       // Match against metadatas
@@ -291,7 +294,8 @@ class MockRelay {
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
         eventsForThisFilter.addAll(_metadatas.values
-            .where((e) => filter.authors!.contains(e.pubKey))
+            .where((e) => filter.authors!.contains(e.pubKey) &&
+                _matchesTimeFilter(e, filter))
             .toList());
       }
       // Match against NIP-85 assertions (kinds 30382-30385)
@@ -317,8 +321,8 @@ class MockRelay {
               filter.authors == null || filter.authors!.contains(event.pubKey);
           bool idsMatches =
               filter.ids == null || filter.ids!.contains(event.id);
-          // Add other tag-based filtering if necessary, e.g., #e, #p tags
-          return kindMatches && authorMatches && idsMatches;
+          bool timeMatches = _matchesTimeFilter(event, filter);
+          return kindMatches && authorMatches && idsMatches && timeMatches;
         }).toList());
 
         if (textNotes != null) {
@@ -329,8 +333,8 @@ class MockRelay {
                 filter.authors!.contains(event.pubKey);
             bool idsMatches =
                 filter.ids == null || filter.ids!.contains(event.id);
-            // Add other tag-based filtering if necessary
-            return kindMatches && authorMatches && idsMatches;
+            bool timeMatches = _matchesTimeFilter(event, filter);
+            return kindMatches && authorMatches && idsMatches && timeMatches;
           }).toList());
         }
       }
@@ -343,6 +347,7 @@ class MockRelay {
               (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
             Nip01Event eventToAdd =
                 entry.value.toEvent(); // Creates a new event instance
+            if (!_matchesTimeFilter(eventToAdd, filter)) continue;
             final Nip01Event? eventToAddSigned;
             if (signEvents && entry.key.privateKey != null) {
               // Sign the new instance, not the one in _nip65s
@@ -373,8 +378,9 @@ class MockRelay {
               (filter.kinds!.any((k) =>
                   Nip51List.kPossibleKinds.contains(k) &&
                   Nip51List.kPossibleKinds.contains(entry.value.kind)));
+          bool timeMatches = _matchesTimeFilter(entry.value, filter);
 
-          if (authorsMatch && kindsMatch) {
+          if (authorsMatch && kindsMatch && timeMatches) {
             // Clone the event from the map before signing to avoid mutating the stored original
             Nip01Event eventToAdd = entry.value.copyWith();
             Nip01Event? eventToAddSigned;
@@ -388,15 +394,40 @@ class MockRelay {
           }
         }
       }
+
+      // Apply limit per filter - sort by created_at desc and take limit
+      if (filter.limit != null && eventsForThisFilter.length > filter.limit!) {
+        eventsForThisFilter.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        eventsForThisFilter = eventsForThisFilter.take(filter.limit!).toList();
+      }
+
       allMatchingEvents.addAll(eventsForThisFilter);
     }
 
-    for (final event in allMatchingEvents) {
+    // Apply global relay limit if configured
+    List<Nip01Event> eventsToSend = allMatchingEvents.toList();
+    if (maxEventsPerRequest != null && eventsToSend.length > maxEventsPerRequest!) {
+      eventsToSend.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      eventsToSend = eventsToSend.take(maxEventsPerRequest!).toList();
+    }
+
+    for (final event in eventsToSend) {
       webSocket.add(jsonEncode(
           ["EVENT", requestId, Nip01EventModel.fromEntity(event).toJson()]));
     }
 
     webSocket.add(jsonEncode(["EOSE", requestId]));
+  }
+
+  /// Check if event matches since/until time filters
+  bool _matchesTimeFilter(Nip01Event event, Filter filter) {
+    if (filter.since != null && event.createdAt < filter.since!) {
+      return false;
+    }
+    if (filter.until != null && event.createdAt > filter.until!) {
+      return false;
+    }
+    return true;
   }
 
   /// Sends event to all connected clients
@@ -476,6 +507,16 @@ class MockRelay {
 
     // Check ids filter
     if (filter.ids != null && !filter.ids!.contains(event.id)) {
+      return false;
+    }
+
+    // Check since filter
+    if (filter.since != null && event.createdAt < filter.since!) {
+      return false;
+    }
+
+    // Check until filter
+    if (filter.until != null && event.createdAt > filter.until!) {
       return false;
     }
 
