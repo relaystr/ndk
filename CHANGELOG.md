@@ -15,6 +15,44 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_flutter` - `v0.0.2-dev.2`](#ndk_flutter---v002-dev2)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.1`](#ndk_rust_verifier---v050-dev1)
+ - [`rust_lib_ndk` - `v0.1.7-dev.0+2`](#rust_lib_ndk---v017-dev02)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.2`
+
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FIX**(ndk_flutter): suppress experimental_member_use warning.
+ - **FIX**(ndk_flutter): pass cachedPublicKey to signers during session restore.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.1`
+
+ - **PERF**: use secp256k1.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.0+2`
+
+ - **PERF**: use secp256k1.
+
+
+## 2026-03-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk_flutter` - `v0.0.2-dev.1`](#ndk_flutter---v002-dev1)
  - [`nip07_event_signer` - `v1.0.7-dev.1`](#nip07_event_signer---v107-dev1)
 
