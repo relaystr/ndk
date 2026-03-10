@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:ndk/domain_layer/entities/nip_05.dart';
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
@@ -857,6 +855,8 @@ class SembastCacheManager extends CacheManager {
       'keysetId': keysetId,
       'counter': counter,
     });
+  }
+
   @override
   Future<void> clearAll() async {
     await Future.wait([
