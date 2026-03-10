@@ -1,3 +1,14 @@
+## 0.0.2-dev.2
+
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FIX**(ndk_flutter): suppress experimental_member_use warning.
+ - **FIX**(ndk_flutter): pass cachedPublicKey to signers during session restore.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
 ## 0.0.2-dev.1
 
  - **FIX**: conditional web import to support wasm.

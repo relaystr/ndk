@@ -1,3 +1,7 @@
+## 0.1.7-dev.0+2
+
+ - **PERF**: use secp256k1.
+
 ## 0.1.7+1
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
