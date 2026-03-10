@@ -33,6 +33,7 @@ export 'domain_layer/entities/blossom_strategies.dart';
 export 'domain_layer/entities/blob_upload_progress.dart';
 export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/account.dart';
+export 'domain_layer/entities/nip_85.dart';
 
 /// models
 export 'data_layer/models/nip_01_event_model.dart';
