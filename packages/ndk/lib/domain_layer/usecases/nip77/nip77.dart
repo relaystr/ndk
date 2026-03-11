@@ -197,8 +197,8 @@ class Nip77Internal {
 
       // Create initial message (hex encoded per NIP-77)
       final initialMessage =
-          neg.Negentropy.createInitialMessage(localItems, neg.Negentropy.idSize);
-      final initialPayload = neg.Negentropy.bytesToHex(initialMessage);
+          neg.NegentropyEncoder.createInitialMessage(localItems, neg.NegentropyEncoder.idSize);
+      final initialPayload = neg.NegentropyEncoder.bytesToHex(initialMessage);
 
       // Send NEG-OPEN
       final negOpen = ['NEG-OPEN', subscriptionId, filter.toMap(), initialPayload];
@@ -259,7 +259,7 @@ class Nip77Internal {
     }
 
     try {
-      final messageBytes = neg.Negentropy.hexToBytes(payload);
+      final messageBytes = neg.NegentropyEncoder.hexToBytes(payload);
       final response = state.processMessage(messageBytes);
 
       if (response == null) {
@@ -271,7 +271,7 @@ class Nip77Internal {
             'NEG reconciliation complete: need=${state.needIds.length}, have=${state.haveIds.length}');
       } else {
         // Send response (hex encoded)
-        final responsePayload = neg.Negentropy.bytesToHex(response);
+        final responsePayload = neg.NegentropyEncoder.bytesToHex(response);
         final negMsg = ['NEG-MSG', subscriptionId, responsePayload];
         _relayManager
             .getRelayConnectivity(relayUrl)

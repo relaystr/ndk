@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
-/// Negentropy protocol implementation for NIP-77
+/// Negentropy protocol encoder implementation for NIP-77
 /// Handles varint encoding, fingerprints, bounds, and message framing
-class Negentropy {
+class NegentropyEncoder {
   /// Protocol version byte
   static const int protocolVersion = 0x61;
 
@@ -358,7 +358,7 @@ class NegentropyItem {
   factory NegentropyItem.fromHex({required int timestamp, required String idHex}) {
     return NegentropyItem(
       timestamp: timestamp,
-      id: Negentropy.hexToBytes(idHex),
+      id: NegentropyEncoder.hexToBytes(idHex),
     );
   }
 }

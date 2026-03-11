@@ -60,7 +60,7 @@ class Nip77State {
   Uint8List? processMessage(Uint8List messageBytes) {
     try {
       final (response, newNeedIds, newHaveIds) =
-          Negentropy.reconcile(messageBytes, localItems);
+          NegentropyEncoder.reconcile(messageBytes, localItems);
 
       // Add newly discovered IDs
       for (final id in newNeedIds) {
