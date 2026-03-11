@@ -90,14 +90,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
-  build_cli_annotations:
-    dependency: transitive
-    description:
-      name: build_cli_annotations
-      sha256: b59d2769769efd6c9ff6d4c4cede0be115a566afc591705c2040b707534b1172
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   cbor:
     dependency: transitive
     description:
@@ -214,10 +206,10 @@ packages:
     dependency: transitive
     description:
       name: ffi
-      sha256: "289279317b4b16eb2bb7e271abccd4bf84ec9bdcbe999e278a94b804f5630418"
+      sha256: "6d7fd89431262d8f3125e81b50d3847a091d846eafcd4fdb88dd06f36d705a45"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.4"
+    version: "2.2.0"
   file:
     dependency: transitive
     description:
@@ -276,14 +268,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
-  flutter_rust_bridge:
-    dependency: transitive
-    description:
-      name: flutter_rust_bridge
-      sha256: "37ef40bc6f863652e865f0b2563ea07f0d3c58d8efad803cc01933a4b2ee067e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.11.1"
   flutter_secure_storage:
     dependency: transitive
     description:
@@ -619,14 +603,6 @@ packages:
       relative: true
     source: path
     version: "0.0.2-dev.2"
-  ndk_rust_verifier:
-    dependency: "direct main"
-    description:
-      name: ndk_rust_verifier
-      sha256: d45eff27d79dbd37104bf8c5a197f4bed0a4d50698355fb2e6c9c0aaf59407f8
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.0"
   nested:
     dependency: transitive
     description:
@@ -866,14 +842,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
-  rust_lib_ndk:
-    dependency: transitive
-    description:
-      name: rust_lib_ndk
-      sha256: "26df8806fe09800a7430549d2372c6a89c290962900029afca9b2db1fdb19aea"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.7+1"
   rxdart:
     dependency: transitive
     description:
