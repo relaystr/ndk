@@ -9,15 +9,15 @@ import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
-import '../data_layer/repositories/wallets/wallets_operations_impl.dart';
 import '../data_layer/repositories/wallets/wallets_repo_impl.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
+import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
 import '../domain_layer/repositories/nip_05_repo.dart';
-import '../domain_layer/repositories/wallets_operations_repo.dart';
 import '../domain_layer/repositories/wallets_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
@@ -199,10 +199,9 @@ class Initialization {
       cashuKeyDerivation: DartCashuKeyDerivation(),
     );
 
-    final WalletsOperationsRepo walletsOperationsRepo = WalletsOperationsImpl(
-      cashuUseCase: cashu,
-      nwcUseCase: nwc,
-    );
+    // Create wallet providers
+    final cashuProvider = CashuWalletProvider(cashu);
+    final nwcProvider = NwcWalletProvider(nwc);
 
     bunkers = Bunkers(
       broadcast: broadcast,
@@ -292,14 +291,12 @@ class Initialization {
     connectivity = Connectivy(relayManager);
 
     final WalletsRepo walletsRepo = WalletsRepoImpl(
-      cashuUseCase: cashu,
-      nwcUseCase: nwc,
       cacheManager: _ndkConfig.cache,
     );
 
     wallets = Wallets(
-      walletsRepository: walletsRepo,
-      walletsOperationsRepository: walletsOperationsRepo,
+      providers: [cashuProvider, nwcProvider],
+      repository: walletsRepo,
     );
     proofOfWork = ProofOfWork();
 

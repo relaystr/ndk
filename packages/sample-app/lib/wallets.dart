@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
 import 'package:ndk/presentation_layer/ndk.dart';
 
 const String defaultMintUrl = "https://dev.mint.camelus.app";

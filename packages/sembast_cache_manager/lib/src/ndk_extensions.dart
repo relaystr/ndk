@@ -108,7 +108,8 @@ extension MetadataExtension on Metadata {
     // Create a mutable copy of content if it exists
     Map<String, dynamic>? contentCopy;
     if (json['content'] != null) {
-      contentCopy = Map<String, dynamic>.from(json['content'] as Map<String, dynamic>);
+      contentCopy =
+          Map<String, dynamic>.from(json['content'] as Map<String, dynamic>);
     }
 
     final metadata = Metadata(
@@ -391,7 +392,7 @@ extension WalletExtension on Wallet {
   }
 
   static Wallet fromJsonStorage(Map<String, Object?> json) {
-    return Wallet.toWalletType(
+    return WalletFactory.fromStorage(
       id: json['id'] as String,
       name: json['name'] as String,
       type: WalletType.values.firstWhere(

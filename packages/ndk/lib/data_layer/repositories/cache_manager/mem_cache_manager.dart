@@ -575,6 +575,8 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> saveWallet(Wallet wallet) {
+    // Remove existing wallet with same ID to prevent duplicates
+    wallets.removeWhere((w) => w.id == wallet.id);
     wallets.add(wallet);
     return Future.value();
   }

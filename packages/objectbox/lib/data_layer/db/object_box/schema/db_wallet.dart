@@ -44,7 +44,7 @@ class DbWallet {
   }
 
   ndk_entities.Wallet toNdk() {
-    final ndkM = ndk_entities.Wallet.toWalletType(
+    final ndkM = ndk_entities.WalletFactory.fromStorage(
       id: id,
       name: name,
       type: ndk_entities.WalletType.fromValue(type),

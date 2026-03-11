@@ -490,10 +490,10 @@ packages:
     dependency: transitive
     description:
       name: matcher
-      sha256: "12956d0ad8390bbcc63ca2e1469c0619946ccb52809807067a7020d57e647aa6"
+      sha256: dc0b7dc7651697ea4ff3e69ef44b0407ea32c487a39fff6a4004fa585e901861
       url: "https://pub.dev"
     source: hosted
-    version: "0.12.18"
+    version: "0.12.19"
   material_color_utilities:
     dependency: transitive
     description:
@@ -590,6 +590,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.17.4"
+  native_toolchain_rust:
+    dependency: transitive
+    description:
+      name: native_toolchain_rust
+      sha256: e53ef1025e2c190333ec61f638513c890c1becf11222e27b115b03bac369c6be
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   ndk:
     dependency: "direct main"
     description:
@@ -610,14 +618,15 @@ packages:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.0.2-dev.0+1"
+    version: "0.0.2-dev.2"
   ndk_rust_verifier:
     dependency: "direct main"
     description:
-      path: "../rust_verifier"
-      relative: true
-    source: path
-    version: "0.5.0-dev.2"
+      name: ndk_rust_verifier
+      sha256: d45eff27d79dbd37104bf8c5a197f4bed0a4d50698355fb2e6c9c0aaf59407f8
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.0"
   nested:
     dependency: transitive
     description:
@@ -632,7 +641,7 @@ packages:
       path: "../nip07_event_signer"
       relative: true
     source: path
-    version: "1.0.7-dev.0"
+    version: "1.0.7-dev.1"
   objective_c:
     dependency: transitive
     description:
@@ -725,10 +734,10 @@ packages:
     dependency: transitive
     description:
       name: petitparser
-      sha256: "1a97266a94f7350d30ae522c0af07890c70b8e62c71e8e3920d1db4d23c057d1"
+      sha256: "91bd59303e9f769f108f8df05e371341b15d59e995e6806aefab827b58336675"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.0"
+    version: "7.0.2"
   platform:
     dependency: transitive
     description:
@@ -1058,10 +1067,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: "93167629bfc610f71560ab9312acdda4959de4df6fac7492c89ff0d3886f6636"
+      sha256: "8161c84903fd860b26bfdefb7963b3f0b68fee7adea0f59ef805ecca346f0c7a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.9"
+    version: "0.7.10"
   toastification:
     dependency: transitive
     description:
@@ -1070,6 +1079,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  toml:
+    dependency: transitive
+    description:
+      name: toml
+      sha256: "35a35f782228656a2af31e8c73d1353cc4ef3d683fd68af1111b44631879c05e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.18.0"
   typed_data:
     dependency: transitive
     description:
