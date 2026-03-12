@@ -254,6 +254,7 @@ class _MyHomePageState extends State<MyHomePage>
         ],
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           tabs: _tabs,
         ),
       ),

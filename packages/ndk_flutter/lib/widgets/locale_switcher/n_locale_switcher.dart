@@ -52,6 +52,7 @@ class NLocaleSwitcher extends StatelessWidget {
     'en': 'English',
     'es': 'Español',
     'fr': 'Français',
+    'it': 'Italiano',     
     'ja': '日本語',
     'pl': 'Polski',
     'ru': 'Русский',
@@ -71,11 +72,11 @@ class NLocaleSwitcher extends StatelessWidget {
       case 'fr':
         return '🇫🇷';
       case 'it':
-        return 'it';
+        return '🇮🇹';
       case 'ja':
         return '🇯🇵';
       case 'pl':
-        return'🇵🇱';
+        return '🇵🇱';
       case 'ru':
         return '🇷🇺';
       case 'zh':
@@ -176,6 +177,7 @@ class NLocaleSwitcherDropdown extends StatelessWidget {
     'en': 'English',
     'es': 'Español',
     'fr': 'Français',
+    'it': 'Italiano',
     'ja': '日本語',
     'ru': 'Русский',
     'zh': '中文',
@@ -193,6 +195,8 @@ class NLocaleSwitcherDropdown extends StatelessWidget {
         return '🇪🇸';
       case 'fr':
         return '🇫🇷';
+      case 'it':
+        return '🇮🇹';
       case 'ja':
         return '🇯🇵';
       case 'ru':
