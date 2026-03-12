@@ -15,7 +15,6 @@ import 'schema/db_contact_list.dart';
 import 'schema/db_filter_fetched_range_record.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
-import 'schema/db_nip_05.dart';
 import 'schema/db_relay_set.dart';
 import 'schema/db_user_relay_list.dart';
 import 'schema/db_wallet.dart';

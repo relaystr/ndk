@@ -1,9 +1,4 @@
-import 'package:ndk/domain_layer/entities/nip_05.dart';
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/ndk.dart';
 
 // Extension for Nip01Event to add JSON serialization support
 extension Nip01EventExtension on Nip01Event {
