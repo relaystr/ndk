@@ -373,18 +373,20 @@ class _NWalletCardState extends State<NWalletCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: Colors.white.withAlpha(200),
-                          fontSize: 12,
+                      if (!isNwc) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(200),
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      ],
                       SizedBox(
-                        height: isNwc && _budgetResponse != null ? 8 : 16,
+                        height: isNwc && _budgetResponse != null ? 4 : 16,
                       ),
                       isLnurl
                           ? _buildLnurlInfo(
@@ -741,6 +743,9 @@ class _NWalletCardState extends State<NWalletCard> {
 
   Widget _buildBalance(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isCompactNwc = widget.wallet is NwcWallet && _budgetResponse != null;
+    final balanceFontSize = isCompactNwc ? 24.0 : 28.0;
+    final unitFontSize = isCompactNwc ? 12.0 : 14.0;
     return StreamBuilder<List<WalletBalance>>(
       stream: widget.ndkFlutter.ndk.wallets.getBalancesStream(widget.wallet.id),
       builder: (context, snapshot) {
@@ -760,9 +765,9 @@ class _NWalletCardState extends State<NWalletCard> {
           children: [
             Text(
               '$satBalance',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 28,
+                fontSize: balanceFontSize,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -771,7 +776,7 @@ class _NWalletCardState extends State<NWalletCard> {
               l10n.sats,
               style: TextStyle(
                 color: Colors.white.withAlpha(200),
-                fontSize: 14,
+                fontSize: unitFontSize,
               ),
             ),
           ],
@@ -842,19 +847,24 @@ class _NWalletCardState extends State<NWalletCard> {
             minHeight: 3,
           ),
         ),
+        const SizedBox(height: 2),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               l10n.budgetUsedOf(usedSats, totalSats),
               style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
-            ),
-            Text(
-              renewalText,
-              style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
+        // Text(
+        //   renewalText,
+        //   style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
+        //   maxLines: 1,
+        //   overflow: TextOverflow.ellipsis,
+        // ),
       ],
     );
   }

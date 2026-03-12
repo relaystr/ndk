@@ -999,7 +999,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    return 'Utilisé: $used / $total sats';
+    return 'Budget: $used / $total sats';
   }
 
   @override

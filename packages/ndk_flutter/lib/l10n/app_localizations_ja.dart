@@ -992,7 +992,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    return '使用: $used / $total sats';
+    return 'Budget: $used / $total sats';
   }
 
   @override
