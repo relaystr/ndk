@@ -296,5 +296,29 @@
   "receiveRange": "Recevoir : {min} - {max} sats",
   "limitsUnavailable": "Limites non disponibles",
   "nwcWalletSubtitle": "Portefeuille NWC",
-  "tokenCopied": "Token copié"
+  "tokenCopied": "Token copié",
+  "deleteWalletConfirmation": "Supprimer le Portefeuille?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "Êtes-vous sûr de vouloir supprimer ce portefeuille? Cette action ne peut pas être annulée.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "Ajouter un Portefeuille",
+  "chooseWalletType": "Choisir le type de portefeuille",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "Connecter NWC",
+  "chooseNwcMethod": "Choisir la méthode de connexion",
+  "albyGoOption": "Alby Go",
+  "manualOption": "Manuel",
+  "faucetOption": "Faucet",
+  "invalidNwcQrCode": "Code QR NWC invalide",
+  "scanNwcQrCodeTitle": "Scanner le code QR NWC",
+  "cameraNotAvailable": "Caméra non disponible",
+  "scanNwcInstructions": "Scannez le code QR de votre application de portefeuille NWC",
+  "invalidNwcUri": "URI NWC invalide",
+  "paste": "Coller"
 }

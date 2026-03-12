@@ -907,4 +907,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tokenCopied => 'Token 已复制';
+
+  @override
+  String get deleteWalletConfirmation => '删除钱包?';
+
+  @override
+  String get deleteWalletConfirmationMessage => '您确定要删除此钱包吗? 此操作无法撤销。';
+
+  @override
+  String get addWalletTitle => '添加钱包';
+
+  @override
+  String get chooseWalletType => '选择钱包类型';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get connectNwcTitle => '连接 NWC';
+
+  @override
+  String get chooseNwcMethod => '选择连接方式';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get manualOption => '手动';
+
+  @override
+  String get faucetOption => '水龙头';
+
+  @override
+  String get invalidNwcQrCode => 'Invalid NWC QR code';
+
+  @override
+  String get scanNwcQrCodeTitle => 'Scan NWC QR Code';
+
+  @override
+  String get cameraNotAvailable => 'Camera not available';
+
+  @override
+  String get scanNwcInstructions => 'Scan the QR code from your NWC wallet app';
+
+  @override
+  String get invalidNwcUri => 'Invalid NWC URI';
+
+  @override
+  String get paste => 'Paste';
 }

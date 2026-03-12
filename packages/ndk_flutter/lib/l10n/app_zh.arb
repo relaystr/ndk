@@ -296,5 +296,29 @@
   "receiveRange": "接收：{min} - {max} sats",
   "limitsUnavailable": "限制不可用",
   "nwcWalletSubtitle": "NWC 钱包",
-  "tokenCopied": "Token 已复制"
+  "tokenCopied": "Token 已复制",
+  "deleteWalletConfirmation": "删除钱包?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "您确定要删除此钱包吗? 此操作无法撤销。",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "添加钱包",
+  "chooseWalletType": "选择钱包类型",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "连接 NWC",
+  "chooseNwcMethod": "选择连接方式",
+  "albyGoOption": "Alby Go",
+  "manualOption": "手动",
+  "faucetOption": "水龙头",
+  "invalidNwcQrCode": "无效的NWC二维码",
+  "scanNwcQrCodeTitle": "扫描NWC二维码",
+  "cameraNotAvailable": "相机不可用",
+  "scanNwcInstructions": "从您的NWC钱包应用扫描二维码",
+  "invalidNwcUri": "无效的NWC URI",
+  "paste": "粘贴"
 }

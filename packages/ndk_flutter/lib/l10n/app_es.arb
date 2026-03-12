@@ -296,5 +296,29 @@
   "receiveRange": "Recibir: {min} - {max} sats",
   "limitsUnavailable": "Límites no disponibles",
   "nwcWalletSubtitle": "Cartera NWC",
-  "tokenCopied": "Token copiado"
+  "tokenCopied": "Token copiado",
+  "deleteWalletConfirmation": "¿Eliminar Cartera?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "¿Está seguro de que desea eliminar esta cartera? Esta acción no se puede deshacer.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "Añadir Cartera",
+  "chooseWalletType": "Elegir tipo de cartera",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "Conectar NWC",
+  "chooseNwcMethod": "Elegir método de conexión",
+  "albyGoOption": "Alby Go",
+  "manualOption": "Manual",
+  "faucetOption": "Faucet",
+  "invalidNwcQrCode": "Código QR NWC inválido",
+  "scanNwcQrCodeTitle": "Escanear código QR NWC",
+  "cameraNotAvailable": "Cámara no disponible",
+  "scanNwcInstructions": "Escanee el código QR de su aplicación de billetera NWC",
+  "invalidNwcUri": "URI NWC inválida",
+  "paste": "Pegar"
 }

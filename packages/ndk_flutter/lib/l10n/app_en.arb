@@ -1237,5 +1237,77 @@
   "tokenCopied": "Token copied",
   "@tokenCopied": {
     "description": "Message shown when token is copied"
+  },
+  "deleteWalletConfirmation": "Delete Wallet?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "Are you sure you want to delete this wallet? This action cannot be undone.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "Add Wallet",
+  "@addWalletTitle": {
+    "description": "Title for add wallet dialog"
+  },
+  "chooseWalletType": "Choose wallet type",
+  "@chooseWalletType": {
+    "description": "Prompt to choose wallet type"
+  },
+  "cashuOption": "Cashu",
+  "@cashuOption": {
+    "description": "Label for Cashu wallet option"
+  },
+  "nwcOption": "NWC",
+  "@nwcOption": {
+    "description": "Label for NWC wallet option"
+  },
+  "lnurlOption": "LNURL",
+  "@lnurlOption": {
+    "description": "Label for LNURL wallet option"
+  },
+  "connectNwcTitle": "Connect NWC",
+  "@connectNwcTitle": {
+    "description": "Title for NWC connection dialog"
+  },
+  "chooseNwcMethod": "Choose connection method",
+  "@chooseNwcMethod": {
+    "description": "Prompt to choose NWC connection method"
+  },
+  "albyGoOption": "Alby Go",
+  "@albyGoOption": {
+    "description": "Label for Alby Go option"
+  },
+  "manualOption": "Manual",
+  "@manualOption": {
+    "description": "Label for manual connection option"
+  },
+  "faucetOption": "Faucet",
+  "@faucetOption": {
+    "description": "Label for faucet option"
+  },
+  "invalidNwcQrCode": "Invalid NWC QR code",
+  "@invalidNwcQrCode": {
+    "description": "Error message for invalid NWC QR code"
+  },
+  "scanNwcQrCodeTitle": "Scan NWC QR Code",
+  "@scanNwcQrCodeTitle": {
+    "description": "Title for scanning NWC QR code"
+  },
+  "cameraNotAvailable": "Camera not available",
+  "@cameraNotAvailable": {
+    "description": "Message shown when camera is not available"
+  },
+  "scanNwcInstructions": "Scan the QR code from your NWC wallet app",
+  "@scanNwcInstructions": {
+    "description": "Instructions for scanning NWC QR code"
+  },
+  "invalidNwcUri": "Invalid NWC URI",
+  "@invalidNwcUri": {
+    "description": "Error message for invalid NWC URI"
+  },
+  "paste": "Paste",
+  "@paste": {
+    "description": "Label for paste action"
   }
 }

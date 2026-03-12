@@ -1,7 +1,14 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
+
+import '../../l10n/app_localizations.dart';
 
 const String _defaultMintUrl = 'https://dev.mint.camelus.app';
 
@@ -13,24 +20,25 @@ Future<CashuWallet?> showAddCashuWalletDialog(
   Ndk ndk, {
   String defaultMintUrl = _defaultMintUrl,
 }) async {
+  final l10n = AppLocalizations.of(context)!;
   final mintUrlController = TextEditingController(text: defaultMintUrl);
 
   return showDialog<CashuWallet?>(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Add Cashu Wallet'),
+        title: Text(l10n.addCashuWalletTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Enter the mint URL:'),
+            Text(l10n.enterMintUrl),
             const SizedBox(height: 16),
             TextField(
               controller: mintUrlController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Mint URL',
-                hintText: 'https://mint.example.com',
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.mintUrl,
+                hintText: l10n.mintUrlHint,
               ),
             ),
           ],
@@ -38,7 +46,7 @@ Future<CashuWallet?> showAddCashuWalletDialog(
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -46,7 +54,7 @@ Future<CashuWallet?> showAddCashuWalletDialog(
               if (mintUrl.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Please enter a mint URL'),
+                    content: Text(l10n.pleaseEnterMintUrl),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -76,20 +84,20 @@ Future<CashuWallet?> showAddCashuWalletDialog(
                 }
                 scaffoldMessenger.showSnackBar(
                   SnackBar(
-                    content: Text('Cashu wallet added!'),
+                    content: Text(l10n.cashuWalletAdded),
                     backgroundColor: Colors.green,
                   ),
                 );
               } catch (e) {
                 scaffoldMessenger.showSnackBar(
                   SnackBar(
-                    content: Text('Failed to add mint: $e'),
+                    content: Text('${l10n.failedToAddMint}: $e'),
                     backgroundColor: Colors.red,
                   ),
                 );
               }
             },
-            child: const Text('Add'),
+            child: Text(l10n.add),
           ),
         ],
       );
@@ -148,8 +156,9 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Add NWC Wallet'),
+      title: Text(l10n.addNwcWalletTitle),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
@@ -157,9 +166,9 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
           children: [
             TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Faucet'),
-                Tab(text: 'Manual'),
+              tabs: [
+                Tab(text: l10n.faucet),
+                Tab(text: l10n.manual),
               ],
             ),
             SizedBox(
@@ -172,18 +181,18 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        const Text(
-                          'Create a test wallet via NWC Faucet',
-                          style: TextStyle(fontSize: 12),
+                        Text(
+                          l10n.nwcFaucetDescription,
+                          style: const TextStyle(fontSize: 12),
                         ),
                         const SizedBox(height: 8),
                         TextField(
                           controller: balanceController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Starting Balance (sats)',
-                            hintText: '10000',
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: '${l10n.startingBalance} (sats)',
+                            hintText: l10n.startingBalanceHint,
                           ),
                         ),
                       ],
@@ -192,13 +201,53 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                   // Manual Tab
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: TextField(
-                      controller: nwcUriController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'NWC Connection URI',
-                        hintText: 'nostr+walletconnect://...',
-                      ),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: nwcUriController,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: l10n.nwcConnectionUri,
+                            hintText: l10n.nwcConnectionUriHint,
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () async {
+                                    final clipboardData =
+                                        await Clipboard.getData(
+                                          Clipboard.kTextPlain,
+                                        );
+                                    if (clipboardData?.text != null) {
+                                      nwcUriController.text =
+                                          clipboardData!.text!;
+                                    }
+                                  },
+                                  icon: const Icon(Icons.paste),
+                                  tooltip: l10n.copy,
+                                ),
+                                if (!kIsWeb &&
+                                    (Platform.isAndroid || Platform.isIOS))
+                                  IconButton(
+                                    onPressed: () async {
+                                      final scannedUri =
+                                          await showDialog<String>(
+                                            context: context,
+                                            builder: (context) =>
+                                                const _NwcQrScannerDialog(),
+                                          );
+                                      if (scannedUri != null) {
+                                        nwcUriController.text = scannedUri;
+                                      }
+                                    },
+                                    icon: const Icon(Icons.qr_code_scanner),
+                                    tooltip: l10n.copy,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -210,7 +259,7 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: isLoading
@@ -250,16 +299,14 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                           navigator.pop(nwcWallet);
                           scaffoldMessenger.showSnackBar(
                             SnackBar(
-                              content: Text(
-                                'NWC faucet wallet added with $balance sats!',
-                              ),
+                              content: Text(l10n.nwcFaucetWalletAdded(balance)),
                               backgroundColor: Colors.green,
                             ),
                           );
                         } else {
                           scaffoldMessenger.showSnackBar(
                             SnackBar(
-                              content: Text('Invalid response from faucet'),
+                              content: Text(l10n.invalidFaucetResponse),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -268,7 +315,7 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Failed to create wallet: ${response.statusCode}',
+                              '${l10n.errorCreatingWallet}: ${response.statusCode}',
                             ),
                             backgroundColor: Colors.red,
                           ),
@@ -277,7 +324,7 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                     } catch (e) {
                       scaffoldMessenger.showSnackBar(
                         SnackBar(
-                          content: Text('Error creating wallet: $e'),
+                          content: Text('${l10n.errorCreatingWallet}: $e'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -293,8 +340,7 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                           .toString();
                       final nwcWallet = NwcWallet(
                         id: walletId,
-                        name:
-                            'NWC ${DateTime.now().toString().split(' ')[1].substring(0, 5)}',
+                        name: 'NWC',
                         supportedUnits: {'sat'},
                         nwcUrl: nwcUriController.text,
                       );
@@ -304,7 +350,7 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                       navigator.pop(nwcWallet);
                       scaffoldMessenger.showSnackBar(
                         SnackBar(
-                          content: Text('NWC wallet added!'),
+                          content: Text(l10n.nwcWalletAdded),
                           backgroundColor: Colors.green,
                         ),
                       );
@@ -324,7 +370,7 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Add'),
+              : Text(l10n.add),
         ),
       ],
     );
@@ -335,24 +381,25 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
 ///
 /// Returns the created [Wallet] if successful, or null if cancelled.
 Future<Wallet?> showAddLnurlWalletDialog(BuildContext context, Ndk ndk) async {
+  final l10n = AppLocalizations.of(context)!;
   final identifierController = TextEditingController();
 
   return showDialog<Wallet?>(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Add LNURL Wallet'),
+        title: Text(l10n.addLnurlWalletTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Enter your LNURL identifier:'),
+            Text(l10n.enterLnurlIdentifier),
             const SizedBox(height: 16),
             TextField(
               controller: identifierController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'user@domain.com',
-                hintText: 'user@domain.com',
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.lnurlIdentifierHint,
+                hintText: l10n.lnurlIdentifierHint,
               ),
             ),
           ],
@@ -360,7 +407,7 @@ Future<Wallet?> showAddLnurlWalletDialog(BuildContext context, Ndk ndk) async {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -368,9 +415,7 @@ Future<Wallet?> showAddLnurlWalletDialog(BuildContext context, Ndk ndk) async {
               if (identifier.isEmpty || !identifier.contains('@')) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      'Please enter a valid identifier (user@domain.com)',
-                    ),
+                    content: Text(l10n.pleaseEnterValidIdentifier),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -396,7 +441,7 @@ Future<Wallet?> showAddLnurlWalletDialog(BuildContext context, Ndk ndk) async {
                 }
                 scaffoldMessenger.showSnackBar(
                   SnackBar(
-                    content: Text('LNURL wallet added!'),
+                    content: Text(l10n.lnurlWalletAdded),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -409,7 +454,755 @@ Future<Wallet?> showAddLnurlWalletDialog(BuildContext context, Ndk ndk) async {
                 );
               }
             },
-            child: const Text('Add'),
+            child: Text(l10n.add),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// Shows a dialog to choose wallet type (Cashu, NWC, or LNURL).
+///
+/// Returns true if a wallet type was selected, false if cancelled.
+Future<bool> showAddWalletTypeDialog(BuildContext context, Ndk ndk) async {
+  final l10n = AppLocalizations.of(context)!;
+
+  return await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Text(
+                        l10n.addWalletTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.of(dialogContext).pop(false),
+                      child: const Icon(Icons.close, size: 24),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.chooseWalletType,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                // Grid of wallet type options
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    // Cashu option
+                    _WalletTypeOptionButton(
+                      imageAsset: 'assets/images/cashu.png',
+                      label: l10n.cashuOption,
+                      onTap: () async {
+                        Navigator.of(dialogContext).pop(true);
+                        await showAddCashuWalletDialog(context, ndk);
+                      },
+                    ),
+                    // NWC option
+                    _WalletTypeOptionButton(
+                      imageAsset: 'assets/images/nwc.png',
+                      label: l10n.nwcOption,
+                      onTap: () async {
+                        Navigator.of(dialogContext).pop(true);
+                        await showNwcConnectionOptionsDialog(context, ndk);
+                      },
+                    ),
+                    // LNURL option
+                    _WalletTypeOptionButton(
+                      icon: Icons.bolt,
+                      label: l10n.lnurlOption,
+                      onTap: () async {
+                        Navigator.of(dialogContext).pop(true);
+                        await showAddLnurlWalletDialog(context, ndk);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ) ??
+      false;
+}
+
+/// Shows a dialog to choose NWC connection method.
+///
+/// Returns true if a connection method was selected, false if cancelled.
+Future<bool> showNwcConnectionOptionsDialog(
+  BuildContext context,
+  Ndk ndk,
+) async {
+  final l10n = AppLocalizations.of(context)!;
+
+  return await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Text(
+                        l10n.connectNwcTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.of(dialogContext).pop(false),
+                      child: const Icon(Icons.close, size: 24),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.chooseNwcMethod,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                // Grid of connection options
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    // Alby Go button (only on Android, not web)
+                    if (!kIsWeb && Platform.isAndroid)
+                      _WalletTypeOptionButton(
+                        imageAsset: 'assets/images/albygo.png',
+                        label: l10n.albyGoOption,
+                        onTap: () async {
+                          Navigator.of(dialogContext).pop(true);
+                          await _connectAlbyGo(context);
+                        },
+                      ),
+                    // Manual connection button (goes directly to QR scanner)
+                    _WalletTypeOptionButton(
+                      icon: Icons.qr_code_scanner,
+                      label: l10n.manualOption,
+                      onTap: () async {
+                        Navigator.of(dialogContext).pop(true);
+                        await _showNwcScannerAndAddWallet(context, ndk);
+                      },
+                    ),
+                    // Faucet button (only in debug mode)
+                    if (kDebugMode)
+                      _WalletTypeOptionButton(
+                        icon: Icons.water_drop,
+                        label: l10n.faucetOption,
+                        onTap: () async {
+                          Navigator.of(dialogContext).pop(true);
+                          await _showNwcFaucetDialog(context, ndk);
+                        },
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ) ??
+      false;
+}
+
+/// A styled button for wallet type options
+class _WalletTypeOptionButton extends StatelessWidget {
+  final IconData? icon;
+  final String? imageAsset;
+  final String label;
+  final VoidCallback onTap;
+  final double iconSize;
+
+  const _WalletTypeOptionButton({
+    this.icon,
+    this.imageAsset,
+    required this.label,
+    required this.onTap,
+    this.iconSize = 40,
+  }) : assert(
+         icon != null || imageAsset != null,
+         'Either icon or imageAsset must be provided',
+       );
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: imageAsset != null
+                ? Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Image.asset(
+                      imageAsset!,
+                      package: 'ndk_flutter',
+                      fit: BoxFit.contain,
+                    ),
+                  )
+                : Icon(
+                    icon!,
+                    size: iconSize,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Launches the Alby Go app via Android intent
+Future<void> _connectAlbyGo(BuildContext context) async {
+  // TODO: Implement Alby Go connection using android_intent_plus
+  // For now, show a snackbar indicating this feature is coming
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Alby Go connection coming soon'),
+      backgroundColor: Colors.orange,
+    ),
+  );
+}
+
+/// Shows QR scanner dialog and then adds the wallet directly
+Future<void> _showNwcScannerAndAddWallet(BuildContext context, Ndk ndk) async {
+  final l10n = AppLocalizations.of(context)!;
+  final result = await showDialog<String?>(
+    context: context,
+    builder: (context) => _NwcQrScannerDialogWithPaste(),
+  );
+
+  if (result == null || result.isEmpty || !context.mounted) return;
+
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+
+  try {
+    final walletId = DateTime.now().millisecondsSinceEpoch.toString();
+    final nwcWallet = NwcWallet(
+      id: walletId,
+      name: 'NWC',
+      supportedUnits: {'sat'},
+      nwcUrl: result,
+    );
+    await ndk.wallets.addWallet(nwcWallet);
+
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.nwcWalletAdded),
+        backgroundColor: Colors.green,
+      ),
+    );
+  } catch (e) {
+    scaffoldMessenger.showSnackBar(
+      SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+    );
+  }
+}
+
+/// A dialog for scanning NWC QR codes.
+class _NwcQrScannerDialog extends StatefulWidget {
+  const _NwcQrScannerDialog();
+
+  @override
+  State<_NwcQrScannerDialog> createState() => _NwcQrScannerDialogState();
+}
+
+class _NwcQrScannerDialogState extends State<_NwcQrScannerDialog> {
+  MobileScannerController? _scannerController;
+  bool _hasScanned = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb) {
+      _scannerController = MobileScannerController(
+        detectionSpeed: DetectionSpeed.normal,
+        facing: CameraFacing.back,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scannerController?.dispose();
+    super.dispose();
+  }
+
+  void _onBarcodeDetected(BarcodeCapture capture) {
+    if (_hasScanned) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    final barcodes = capture.barcodes;
+    for (final barcode in barcodes) {
+      final rawValue = barcode.rawValue;
+      if (rawValue != null && rawValue.startsWith('nostr+walletconnect://')) {
+        setState(() => _hasScanned = true);
+        Navigator.of(context).pop(rawValue);
+        return;
+      } else if (rawValue != null) {
+        setState(() {
+          _errorMessage = l10n.invalidNwcQrCode;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Dialog(
+      backgroundColor: Colors.black,
+      child: SizedBox(
+        width: 400,
+        height: 500,
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.scanNwcQrCodeTitle,
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+
+            // Scanner
+            Expanded(
+              child: Stack(
+                children: [
+                  if (_scannerController != null)
+                    MobileScanner(
+                      controller: _scannerController!,
+                      onDetect: _onBarcodeDetected,
+                    )
+                  else
+                    Center(
+                      child: Text(
+                        l10n.cameraNotAvailable,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+
+                  // Scan overlay
+                  if (_scannerController != null)
+                    Center(
+                      child: Container(
+                        width: 250,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
+                  // Error message
+                  if (_errorMessage != null)
+                    Positioned(
+                      top: 20,
+                      left: 20,
+                      right: 20,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+
+                  // Scanning indicator
+                  if (_hasScanned)
+                    Container(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      child: const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // Instructions
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                l10n.scanNwcInstructions,
+                style: const TextStyle(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A dialog for scanning NWC QR codes with paste from clipboard option.
+class _NwcQrScannerDialogWithPaste extends StatefulWidget {
+  const _NwcQrScannerDialogWithPaste();
+
+  @override
+  State<_NwcQrScannerDialogWithPaste> createState() =>
+      _NwcQrScannerDialogWithPasteState();
+}
+
+class _NwcQrScannerDialogWithPasteState
+    extends State<_NwcQrScannerDialogWithPaste> {
+  MobileScannerController? _scannerController;
+  bool _hasScanned = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      _scannerController = MobileScannerController(
+        detectionSpeed: DetectionSpeed.normal,
+        facing: CameraFacing.back,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scannerController?.dispose();
+    super.dispose();
+  }
+
+  void _onBarcodeDetected(BarcodeCapture capture) {
+    if (_hasScanned) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    final barcodes = capture.barcodes;
+    for (final barcode in barcodes) {
+      final rawValue = barcode.rawValue;
+      if (rawValue != null && rawValue.startsWith('nostr+walletconnect://')) {
+        setState(() => _hasScanned = true);
+        Navigator.of(context).pop(rawValue);
+        return;
+      } else if (rawValue != null) {
+        setState(() {
+          _errorMessage = l10n.invalidNwcQrCode;
+        });
+      }
+    }
+  }
+
+  Future<void> _pasteFromClipboard() async {
+    final l10n = AppLocalizations.of(context)!;
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = clipboardData?.text?.trim();
+
+    if (text != null && text.startsWith('nostr+walletconnect://')) {
+      if (mounted) {
+        Navigator.of(context).pop(text);
+      }
+    } else {
+      setState(() {
+        _errorMessage = l10n.invalidNwcUri;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final bool hasCamera = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+    return Dialog(
+      backgroundColor: Colors.black,
+      child: SizedBox(
+        width: 400,
+        height: hasCamera ? 560 : 200,
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.scanNwcQrCodeTitle,
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+
+            // Scanner (only on mobile)
+            if (hasCamera)
+              Expanded(
+                child: Stack(
+                  children: [
+                    MobileScanner(
+                      controller: _scannerController!,
+                      onDetect: _onBarcodeDetected,
+                    ),
+
+                    // Scan overlay
+                    Center(
+                      child: Container(
+                        width: 250,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
+                    // Error message
+                    if (_errorMessage != null)
+                      Positioned(
+                        top: 20,
+                        left: 20,
+                        right: 20,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+
+                    // Scanning indicator
+                    if (_hasScanned)
+                      Container(
+                        color: Colors.black.withValues(alpha: 0.7),
+                        child: const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
+                      ),
+                  ],
+                ),
+              )
+            else
+              Expanded(
+                child: Center(
+                  child: Text(
+                    l10n.cameraNotAvailable,
+                    style: const TextStyle(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+
+            // Instructions or paste button area
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (hasCamera)
+                    Text(
+                      l10n.scanNwcInstructions,
+                      style: const TextStyle(color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+                  if (hasCamera) const SizedBox(height: 12),
+                  // Paste from clipboard button
+                  ElevatedButton.icon(
+                    onPressed: _pasteFromClipboard,
+                    icon: const Icon(Icons.paste),
+                    label: Text(l10n.paste),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 48),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shows a dialog to add an NWC wallet via faucet.
+Future<void> _showNwcFaucetDialog(BuildContext context, Ndk ndk) async {
+  final l10n = AppLocalizations.of(context)!;
+  final balanceController = TextEditingController(text: '10000');
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(l10n.faucetOption),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.nwcFaucetDescription),
+            const SizedBox(height: 16),
+            TextField(
+              controller: balanceController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.startingBalance,
+                hintText: l10n.startingBalanceHint,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final navigator = Navigator.of(context);
+
+              try {
+                final balance = int.tryParse(balanceController.text) ?? 10000;
+                final response = await http.post(
+                  Uri.parse('https://faucet.nwc.dev?balance=$balance'),
+                );
+
+                if (response.statusCode == 200) {
+                  final nwcUri = response.body.trim();
+
+                  if (nwcUri.isNotEmpty) {
+                    final walletId = DateTime.now().millisecondsSinceEpoch
+                        .toString();
+                    final nwcWallet = NwcWallet(
+                      id: walletId,
+                      name: 'NWC Faucet',
+                      supportedUnits: {'sat'},
+                      nwcUrl: nwcUri,
+                    );
+                    await ndk.wallets.addWallet(nwcWallet);
+
+                    if (context.mounted) {
+                      navigator.pop();
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.nwcFaucetWalletAdded(balance)),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } else {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.invalidFaucetResponse),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } else {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Failed to create wallet: ${response.statusCode}',
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('${l10n.errorCreatingWallet}: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: Text(l10n.add),
           ),
         ],
       );

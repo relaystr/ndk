@@ -296,5 +296,29 @@
   "receiveRange": "Получить: {min} - {max} сат",
   "limitsUnavailable": "Лимиты недоступны",
   "nwcWalletSubtitle": "Кошелёк NWC",
-  "tokenCopied": "Токен скопирован"
+  "tokenCopied": "Токен скопирован",
+  "deleteWalletConfirmation": "Удалить Кошелёк?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "Вы уверены, что хотите удалить этот кошелёк? Это действие нельзя отменить.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "Добавить Кошелёк",
+  "chooseWalletType": "Выберите тип кошелька",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "Подключить NWC",
+  "chooseNwcMethod": "Выберите способ подключения",
+  "albyGoOption": "Alby Go",
+  "manualOption": "Вручную",
+  "faucetOption": "Кран",
+  "invalidNwcQrCode": "Неверный QR-код NWC",
+  "scanNwcQrCodeTitle": "Сканировать QR-код NWC",
+  "cameraNotAvailable": "Камера недоступна",
+  "scanNwcInstructions": "Отсканируйте QR-код из приложения кошелька NWC",
+  "invalidNwcUri": "Неверный URI NWC",
+  "paste": "Вставить"
 }

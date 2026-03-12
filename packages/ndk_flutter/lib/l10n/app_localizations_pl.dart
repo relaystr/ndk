@@ -726,7 +726,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get send => 'Wyślij';
 
   @override
-  String get receive => 'Odbierz';
+  String get receive => 'Otrzymaj';
 
   @override
   String get sendOptionsTitle => 'Opcje wysyłania';
@@ -767,19 +767,19 @@ class AppLocalizationsPl extends AppLocalizations {
   String get receiveOptionsTitle => 'Opcje odbierania';
 
   @override
-  String get receiveByToken => 'Odbierz tokenem';
+  String get receiveByToken => 'Otrzymaj tokenem';
 
   @override
-  String get receiveByTokenDescription => 'Odbierz token Cashu';
+  String get receiveByTokenDescription => 'Otrzymaj token Cashu';
 
   @override
-  String get receiveByLightning => 'Odbierz przez Lightning';
+  String get receiveByLightning => 'Otrzymaj przez Lightning';
 
   @override
   String get receiveByLightningDescription => 'Utwórz fakturę Lightning';
 
   @override
-  String get receiveByTokenTitle => 'Odbierz tokenem';
+  String get receiveByTokenTitle => 'Otrzymaj tokenem';
 
   @override
   String get token => 'Token';
@@ -907,4 +907,58 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get tokenCopied => 'Token skopiowany';
+
+  @override
+  String get deleteWalletConfirmation => 'Usunąć Portfel?';
+
+  @override
+  String get deleteWalletConfirmationMessage => 'Czy na pewno chcesz usunąć ten portfel? Tej operacji nie można cofnąć.';
+
+  @override
+  String get addWalletTitle => 'Dodaj portfel';
+
+  @override
+  String get chooseWalletType => 'Wybierz typ portfela';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get connectNwcTitle => 'Połącz NWC';
+
+  @override
+  String get chooseNwcMethod => 'Wybierz metodę połączenia';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get manualOption => 'Ręcznie';
+
+  @override
+  String get faucetOption => 'Kran';
+
+  @override
+  String get invalidNwcQrCode => 'Invalid NWC QR code';
+
+  @override
+  String get scanNwcQrCodeTitle => 'Scan NWC QR Code';
+
+  @override
+  String get cameraNotAvailable => 'Camera not available';
+
+  @override
+  String get scanNwcInstructions => 'Scan the QR code from your NWC wallet app';
+
+  @override
+  String get invalidNwcUri => 'Invalid NWC URI';
+
+  @override
+  String get paste => 'Paste';
 }

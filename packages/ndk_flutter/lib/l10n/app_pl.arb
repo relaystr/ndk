@@ -968,7 +968,7 @@
   "@send": {
     "description": "Label for send action"
   },
-  "receive": "Odbierz",
+  "receive": "Otrzymaj",
   "@receive": {
     "description": "Label for receive action"
   },
@@ -1026,15 +1026,15 @@
   "@receiveOptionsTitle": {
     "description": "Title for receive options sheet"
   },
-  "receiveByToken": "Odbierz tokenem",
+  "receiveByToken": "Otrzymaj tokenem",
   "@receiveByToken": {
     "description": "Option for receiving by token"
   },
-  "receiveByTokenDescription": "Odbierz token Cashu",
+  "receiveByTokenDescription": "Otrzymaj token Cashu",
   "@receiveByTokenDescription": {
     "description": "Description for receive by token option"
   },
-  "receiveByLightning": "Odbierz przez Lightning",
+  "receiveByLightning": "Otrzymaj przez Lightning",
   "@receiveByLightning": {
     "description": "Option for receiving by Lightning"
   },
@@ -1042,7 +1042,7 @@
   "@receiveByLightningDescription": {
     "description": "Description for receive by Lightning option"
   },
-  "receiveByTokenTitle": "Odbierz tokenem",
+  "receiveByTokenTitle": "Otrzymaj tokenem",
   "@receiveByTokenTitle": {
     "description": "Title for receive by token dialog"
   },
@@ -1223,7 +1223,79 @@
     "description": "Message shown when limits are unavailable"
   },
   "tokenCopied": "Token skopiowany",
+  "deleteWalletConfirmation": "Usunąć Portfel?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "Czy na pewno chcesz usunąć ten portfel? Tej operacji nie można cofnąć.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
   "@tokenCopied": {
     "description": "Message shown when token is copied"
+  },
+  "addWalletTitle": "Dodaj portfel",
+  "@addWalletTitle": {
+    "description": "Title for add wallet dialog"
+  },
+  "chooseWalletType": "Wybierz typ portfela",
+  "@chooseWalletType": {
+    "description": "Prompt to choose wallet type"
+  },
+  "cashuOption": "Cashu",
+  "@cashuOption": {
+    "description": "Label for Cashu wallet option"
+  },
+  "nwcOption": "NWC",
+  "@nwcOption": {
+    "description": "Label for NWC wallet option"
+  },
+  "lnurlOption": "LNURL",
+  "@lnurlOption": {
+    "description": "Label for LNURL wallet option"
+  },
+  "connectNwcTitle": "Połącz NWC",
+  "@connectNwcTitle": {
+    "description": "Title for NWC connection dialog"
+  },
+  "chooseNwcMethod": "Wybierz metodę połączenia",
+  "@chooseNwcMethod": {
+    "description": "Prompt to choose NWC connection method"
+  },
+  "albyGoOption": "Alby Go",
+  "@albyGoOption": {
+    "description": "Label for Alby Go option"
+  },
+  "manualOption": "Ręcznie",
+  "@manualOption": {
+    "description": "Label for manual connection option"
+  },
+  "faucetOption": "Kran",
+  "@faucetOption": {
+    "description": "Label for faucet option"
+  },
+  "invalidNwcQrCode": "Nieprawidłowy kod QR NWC",
+  "@invalidNwcQrCode": {
+    "description": "Error message for invalid NWC QR code"
+  },
+  "scanNwcQrCodeTitle": "Skanuj kod QR NWC",
+  "@scanNwcQrCodeTitle": {
+    "description": "Title for scanning NWC QR code"
+  },
+  "cameraNotAvailable": "Kamera niedostępna",
+  "@cameraNotAvailable": {
+    "description": "Message shown when camera is not available"
+  },
+  "scanNwcInstructions": "Zeskanuj kod QR z aplikacji portfela NWC",
+  "@scanNwcInstructions": {
+    "description": "Instructions for scanning NWC QR code"
+  },
+  "invalidNwcUri": "Nieprawidłowy URI NWC",
+  "@invalidNwcUri": {
+    "description": "Error message for invalid NWC URI"
+  },
+  "paste": "Wklej",
+  "@paste": {
+    "description": "Label for paste action"
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../../l10n/app_localizations.dart';
 
@@ -64,18 +65,31 @@ class _NWalletActionsState extends State<NWalletActions> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      isCashu
-                          ? Icons.account_balance_wallet
-                          : isNwc
-                          ? Icons.cloud
-                          : Icons.bolt,
-                      color: isCashu
-                          ? Colors.orange
-                          : isNwc
-                          ? Colors.blue
-                          : Colors.purple,
-                    ),
+                    if (isCashu)
+                      Image.asset(
+                        'assets/images/cashu.png',
+                        package: 'ndk_flutter',
+                        width: 24,
+                        height: 24,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.account_balance_wallet,
+                            color: Colors.orange,
+                          );
+                        },
+                      )
+                    else if (isNwc)
+                      Image.asset(
+                        'assets/images/nwc.png',
+                        package: 'ndk_flutter',
+                        width: 24,
+                        height: 24,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.cloud, color: Colors.blue);
+                        },
+                      )
+                    else
+                      const Icon(Icons.bolt, color: Colors.purple),
                     const SizedBox(width: 8),
                     Text(
                       isCashu
@@ -122,9 +136,17 @@ class _NWalletActionsState extends State<NWalletActions> {
                     ],
                   )
                 else
-                  Text(
-                    l10n.receiveOnlyWallet,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () =>
+                          _showCreateInvoiceDialog(context, wallet),
+                      icon: const Icon(Icons.download),
+                      label: Text(l10n.receive),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -515,13 +537,13 @@ class _NWalletActionsState extends State<NWalletActions> {
 
                       if (!mounted) return;
                       navigator.pop();
-                      _showInvoiceTrackingDialog(
+                      _showCashuInvoiceTrackingDialog(
                         invoice,
                         draftTransaction,
                         scaffoldMessenger,
                       );
                     }
-                  } else if (wallet is NwcWallet) {
+                  } else if (wallet is NwcWallet || wallet is LnurlWallet) {
                     final invoice = await widget.ndk.wallets.receive(
                       wallet.id,
                       amount,
@@ -529,11 +551,9 @@ class _NWalletActionsState extends State<NWalletActions> {
                     await Clipboard.setData(ClipboardData(text: invoice));
                     if (!mounted) return;
                     navigator.pop();
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.invoiceCreatedAndCopied),
-                        backgroundColor: Colors.green,
-                      ),
+                    _showGenericInvoiceTrackingDialog(
+                      invoice,
+                      scaffoldMessenger,
                     );
                   }
                 } catch (e) {
@@ -548,7 +568,7 @@ class _NWalletActionsState extends State<NWalletActions> {
     );
   }
 
-  void _showInvoiceTrackingDialog(
+  void _showCashuInvoiceTrackingDialog(
     String invoice,
     CashuWalletTransaction draftTransaction,
     ScaffoldMessengerState scaffoldMessenger,
@@ -568,6 +588,19 @@ class _NWalletActionsState extends State<NWalletActions> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(l10n.invoiceCreatedMessage),
+              const SizedBox(height: 12),
+              PrettyQrView.data(
+                data: invoice.toUpperCase(),
+                errorCorrectLevel: QrErrorCorrectLevel.M,
+                decoration: const PrettyQrDecoration(
+                  quietZone: PrettyQrQuietZone.standart,
+                  background: Colors.white,
+                  shape: PrettyQrSmoothSymbol(
+                    color: Colors.black,
+                    roundFactor: 0.3,
+                  ),
+                ),
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(8),
@@ -630,6 +663,87 @@ class _NWalletActionsState extends State<NWalletActions> {
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.close),
+            ),
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: invoice));
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.copied),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              child: Text(l10n.copyAgain),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showGenericInvoiceTrackingDialog(
+    String invoice,
+    ScaffoldMessengerState scaffoldMessenger,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.invoiceTrackingTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.invoiceCreatedMessage),
+              const SizedBox(height: 12),
+              PrettyQrView.data(
+                data: invoice.toUpperCase(),
+                errorCorrectLevel: QrErrorCorrectLevel.M,
+                decoration: const PrettyQrDecoration(
+                  quietZone: PrettyQrQuietZone.standart,
+                  background: Colors.white,
+                  shape: PrettyQrSmoothSymbol(
+                    color: Colors.black,
+                    roundFactor: 0.3,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SelectableText(
+                  invoice,
+                  style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      l10n.waitingForPayment,
+                      style: const TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),

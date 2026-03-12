@@ -296,5 +296,29 @@
   "receiveRange": "受信：{min} - {max} sats",
   "limitsUnavailable": "制限情報は利用できません",
   "nwcWalletSubtitle": "NWCウォレット",
-  "tokenCopied": "トークンをコピーしました"
+  "tokenCopied": "トークンをコピーしました",
+  "deleteWalletConfirmation": "ウォレットを削除しますか?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "このウォレットを削除してもよろしいですか? この操作は元に戻せません。",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "ウォレットを追加",
+  "chooseWalletType": "ウォレットタイプを選択",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "NWCを接続",
+  "chooseNwcMethod": "接続方法を選択",
+  "albyGoOption": "Alby Go",
+  "manualOption": "手動",
+  "faucetOption": "Faucet",
+  "invalidNwcQrCode": "無効なNWC QRコード",
+  "scanNwcQrCodeTitle": "NWC QRコードをスキャン",
+  "cameraNotAvailable": "カメラが利用できません",
+  "scanNwcInstructions": "NWCウォレットアプリからQRコードをスキャンしてください",
+  "invalidNwcUri": "無効なNWC URI",
+  "paste": "貼り付け"
 }

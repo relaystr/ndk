@@ -47,14 +47,16 @@ class NLocaleSwitcher extends StatelessWidget {
     this.localeDisplayNames,
   });
 
+
   /// Returns a map of locale codes to their display names
   Map<String, String> get _defaultDisplayNames => {
     'en': 'English',
     'es': 'Español',
     'fr': 'Français',
-    'it': 'Italiano',     
-    'ja': '日本語',
+    'it': 'Italiano',
+    'de': "Deutsch",
     'pl': 'Polski',
+    'ja': '日本語',
     'ru': 'Русский',
     'zh': '中文',
   };
@@ -73,6 +75,8 @@ class NLocaleSwitcher extends StatelessWidget {
         return '🇫🇷';
       case 'it':
         return '🇮🇹';
+      case 'de':
+        return '🇩🇪';
       case 'ja':
         return '🇯🇵';
       case 'pl':
@@ -102,6 +106,16 @@ class NLocaleSwitcher extends StatelessWidget {
   }
 
   void _showLocaleDialog(BuildContext context) {
+    // Build locales in the order defined in _displayNames map
+    final orderedLocales = _displayNames.entries.map((entry) {
+      final languageCode = entry.key;
+      // Find the matching locale from supportedLocales
+      return AppLocalizations.supportedLocales.firstWhere(
+        (l) => l.languageCode == languageCode,
+        orElse: () => Locale(languageCode),
+      );
+    }).toList();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -111,9 +125,9 @@ class NLocaleSwitcher extends StatelessWidget {
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: AppLocalizations.supportedLocales.length,
+              itemCount: orderedLocales.length,
               itemBuilder: (context, index) {
-                final locale = AppLocalizations.supportedLocales[index];
+                final locale = orderedLocales[index];
                 final isSelected =
                     locale.languageCode == currentLocale.languageCode;
                 final displayName =
@@ -178,7 +192,9 @@ class NLocaleSwitcherDropdown extends StatelessWidget {
     'es': 'Español',
     'fr': 'Français',
     'it': 'Italiano',
+    'de': 'Deutsch',
     'ja': '日本語',
+    'pl': 'Polski',
     'ru': 'Русский',
     'zh': '中文',
   };
@@ -197,8 +213,12 @@ class NLocaleSwitcherDropdown extends StatelessWidget {
         return '🇫🇷';
       case 'it':
         return '🇮🇹';
+      case 'de':
+        return '🇩🇪';
       case 'ja':
         return '🇯🇵';
+      case 'pl':
+        return '🇵🇱';
       case 'ru':
         return '🇷🇺';
       case 'zh':
@@ -210,29 +230,37 @@ class NLocaleSwitcherDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Build items in the order defined in _displayNames map
+    final dropdownItems = _displayNames.entries.map((entry) {
+      final languageCode = entry.key;
+      final displayName = entry.value;
+      final flag = _getFlagEmoji(languageCode);
+
+      // Find the matching locale from supportedLocales
+      final locale = AppLocalizations.supportedLocales.firstWhere(
+        (l) => l.languageCode == languageCode,
+        orElse: () => Locale(languageCode),
+      );
+
+      return DropdownMenuItem<Locale>(
+        value: locale,
+        child: Row(
+          children: [
+            Text(flag, style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Text(displayName),
+          ],
+        ),
+      );
+    }).toList();
+
     return DropdownButton<Locale>(
       value: currentLocale,
       hint: hint != null ? Text(hint!) : null,
       isExpanded: true,
       underline: const SizedBox(),
       icon: const Icon(Icons.arrow_drop_down),
-      items: AppLocalizations.supportedLocales.map((Locale locale) {
-        final displayName =
-            _displayNames[locale.languageCode] ??
-            locale.languageCode.toUpperCase();
-        final flag = _getFlagEmoji(locale.languageCode);
-
-        return DropdownMenuItem<Locale>(
-          value: locale,
-          child: Row(
-            children: [
-              Text(flag, style: const TextStyle(fontSize: 20)),
-              const SizedBox(width: 8),
-              Text(displayName),
-            ],
-          ),
-        );
-      }).toList(),
+      items: dropdownItems,
       onChanged: (Locale? locale) {
         if (locale != null) {
           onLocaleChanged(locale);

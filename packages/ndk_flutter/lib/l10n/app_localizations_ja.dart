@@ -907,4 +907,58 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tokenCopied => 'トークンをコピーしました';
+
+  @override
+  String get deleteWalletConfirmation => 'ウォレットを削除しますか?';
+
+  @override
+  String get deleteWalletConfirmationMessage => 'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
+
+  @override
+  String get addWalletTitle => 'ウォレットを追加';
+
+  @override
+  String get chooseWalletType => 'ウォレットタイプを選択';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get connectNwcTitle => 'NWCを接続';
+
+  @override
+  String get chooseNwcMethod => '接続方法を選択';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get manualOption => '手動';
+
+  @override
+  String get faucetOption => 'Faucet';
+
+  @override
+  String get invalidNwcQrCode => 'Invalid NWC QR code';
+
+  @override
+  String get scanNwcQrCodeTitle => 'Scan NWC QR Code';
+
+  @override
+  String get cameraNotAvailable => 'Camera not available';
+
+  @override
+  String get scanNwcInstructions => 'Scan the QR code from your NWC wallet app';
+
+  @override
+  String get invalidNwcUri => 'Invalid NWC URI';
+
+  @override
+  String get paste => 'Paste';
 }

@@ -172,70 +172,14 @@ class _NWalletsState extends State<NWallets> {
   }
 
   Widget _buildDefaultActions(BuildContext context, AppLocalizations l10n) {
-    return Row(
-      children: [
-        IconButton(
-          onPressed: widget.onAddCashu ?? () => _showAddCashuDialog(context),
-          icon: _buildAddButtonIcon(
-            widget.cashuIcon,
-            'cashu.png',
-            Icons.add_card,
-          ),
-          tooltip: l10n.addCashuTooltip,
-        ),
-        IconButton(
-          onPressed: widget.onAddNwc ?? () => _showAddNwcDialog(context),
-          icon: _buildAddButtonIcon(
-            widget.nwcIcon,
-            'nwc.png',
-            Icons.cloud_upload,
-          ),
-          tooltip: l10n.addNwcTooltip,
-        ),
-        IconButton(
-          onPressed: widget.onAddLnurl ?? () => _showAddLnurlDialog(context),
-          icon: _buildAddButtonIcon(widget.lnurlIcon, null, Icons.bolt),
-          tooltip: l10n.addLnurlTooltip,
-        ),
-      ],
+    return IconButton(
+      onPressed: () => _showAddWalletDialog(context),
+      icon: const Icon(Icons.add),
+      tooltip: 'Add Wallet',
     );
   }
 
-  Widget _buildAddButtonIcon(
-    WalletIconConfig? iconConfig,
-    String? assetName,
-    IconData fallbackIcon,
-  ) {
-    final double size = 24.0;
-
-    if (iconConfig?.iconWidget != null) {
-      return SizedBox(width: size, height: size, child: iconConfig!.iconWidget);
-    }
-
-    if (assetName != null) {
-      return Image.asset(
-        'assets/images/$assetName',
-        package: 'ndk_flutter',
-        width: size,
-        height: size,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(fallbackIcon, size: size);
-        },
-      );
-    }
-
-    return Icon(fallbackIcon, size: size);
-  }
-
-  void _showAddCashuDialog(BuildContext context) {
-    showAddCashuWalletDialog(context, widget.ndk);
-  }
-
-  void _showAddNwcDialog(BuildContext context) {
-    showAddNwcWalletDialog(context, widget.ndk);
-  }
-
-  void _showAddLnurlDialog(BuildContext context) {
-    showAddLnurlWalletDialog(context, widget.ndk);
+  void _showAddWalletDialog(BuildContext context) {
+    showAddWalletTypeDialog(context, widget.ndk);
   }
 }

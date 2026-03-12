@@ -907,4 +907,58 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tokenCopied => 'Token copiado';
+
+  @override
+  String get deleteWalletConfirmation => '¿Eliminar Cartera?';
+
+  @override
+  String get deleteWalletConfirmationMessage => '¿Está seguro de que desea eliminar esta cartera? Esta acción no se puede deshacer.';
+
+  @override
+  String get addWalletTitle => 'Añadir Cartera';
+
+  @override
+  String get chooseWalletType => 'Elegir tipo de cartera';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get connectNwcTitle => 'Conectar NWC';
+
+  @override
+  String get chooseNwcMethod => 'Elegir método de conexión';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get manualOption => 'Manual';
+
+  @override
+  String get faucetOption => 'Faucet';
+
+  @override
+  String get invalidNwcQrCode => 'Invalid NWC QR code';
+
+  @override
+  String get scanNwcQrCodeTitle => 'Scan NWC QR Code';
+
+  @override
+  String get cameraNotAvailable => 'Camera not available';
+
+  @override
+  String get scanNwcInstructions => 'Scan the QR code from your NWC wallet app';
+
+  @override
+  String get invalidNwcUri => 'Invalid NWC URI';
+
+  @override
+  String get paste => 'Paste';
 }

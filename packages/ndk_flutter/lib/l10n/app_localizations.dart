@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
 import 'app_localizations_fr.dart';
@@ -97,6 +98,7 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('de'),
     Locale('en'),
     Locale('es'),
     Locale('fr'),
@@ -1882,6 +1884,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Token copied'**
   String get tokenCopied;
+
+  /// Title for delete wallet confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Wallet?'**
+  String get deleteWalletConfirmation;
+
+  /// Message for delete wallet confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this wallet? This action cannot be undone.'**
+  String get deleteWalletConfirmationMessage;
+
+  /// Title for add wallet dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Add Wallet'**
+  String get addWalletTitle;
+
+  /// Prompt to choose wallet type
+  ///
+  /// In en, this message translates to:
+  /// **'Choose wallet type'**
+  String get chooseWalletType;
+
+  /// Label for Cashu wallet option
+  ///
+  /// In en, this message translates to:
+  /// **'Cashu'**
+  String get cashuOption;
+
+  /// Label for NWC wallet option
+  ///
+  /// In en, this message translates to:
+  /// **'NWC'**
+  String get nwcOption;
+
+  /// Label for LNURL wallet option
+  ///
+  /// In en, this message translates to:
+  /// **'LNURL'**
+  String get lnurlOption;
+
+  /// Title for NWC connection dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Connect NWC'**
+  String get connectNwcTitle;
+
+  /// Prompt to choose NWC connection method
+  ///
+  /// In en, this message translates to:
+  /// **'Choose connection method'**
+  String get chooseNwcMethod;
+
+  /// Label for Alby Go option
+  ///
+  /// In en, this message translates to:
+  /// **'Alby Go'**
+  String get albyGoOption;
+
+  /// Label for manual connection option
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get manualOption;
+
+  /// Label for faucet option
+  ///
+  /// In en, this message translates to:
+  /// **'Faucet'**
+  String get faucetOption;
+
+  /// Error message for invalid NWC QR code
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid NWC QR code'**
+  String get invalidNwcQrCode;
+
+  /// Title for scanning NWC QR code
+  ///
+  /// In en, this message translates to:
+  /// **'Scan NWC QR Code'**
+  String get scanNwcQrCodeTitle;
+
+  /// Message shown when camera is not available
+  ///
+  /// In en, this message translates to:
+  /// **'Camera not available'**
+  String get cameraNotAvailable;
+
+  /// Instructions for scanning NWC QR code
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the QR code from your NWC wallet app'**
+  String get scanNwcInstructions;
+
+  /// Error message for invalid NWC URI
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid NWC URI'**
+  String get invalidNwcUri;
+
+  /// Label for paste action
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get paste;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -1893,7 +2003,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'es', 'fr', 'it', 'ja', 'pl', 'ru', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'en', 'es', 'fr', 'it', 'ja', 'pl', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1904,6 +2014,7 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'de': return AppLocalizationsDe();
     case 'en': return AppLocalizationsEn();
     case 'es': return AppLocalizationsEs();
     case 'fr': return AppLocalizationsFr();
