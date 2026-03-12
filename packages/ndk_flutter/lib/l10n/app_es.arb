@@ -320,5 +320,7 @@
   "cameraNotAvailable": "Cámara no disponible",
   "scanNwcInstructions": "Escanee el código QR de su aplicación de billetera NWC",
   "invalidNwcUri": "URI NWC inválida",
-  "paste": "Pegar"
+  "paste": "Pegar",
+  "fromYourProfile": "De tu perfil",
+  "orEnterManually": "O ingresa manualmente:"
 }

@@ -320,5 +320,7 @@
   "cameraNotAvailable": "Камера недоступна",
   "scanNwcInstructions": "Отсканируйте QR-код из приложения кошелька NWC",
   "invalidNwcUri": "Неверный URI NWC",
-  "paste": "Вставить"
+  "paste": "Вставить",
+  "fromYourProfile": "Из вашего профиля",
+  "orEnterManually": "Или введите вручную:"
 }

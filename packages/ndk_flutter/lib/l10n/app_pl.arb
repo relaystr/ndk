@@ -1297,5 +1297,13 @@
   "paste": "Wklej",
   "@paste": {
     "description": "Label for paste action"
+  },
+  "fromYourProfile": "Z twojego profilu",
+  "@fromYourProfile": {
+    "description": "Label indicating a value comes from user's profile"
+  },
+  "orEnterManually": "Lub wprowadź ręcznie:",
+  "@orEnterManually": {
+    "description": "Label for manual entry option"
   }
 }

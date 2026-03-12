@@ -320,5 +320,7 @@
   "cameraNotAvailable": "カメラが利用できません",
   "scanNwcInstructions": "NWCウォレットアプリからQRコードをスキャンしてください",
   "invalidNwcUri": "無効なNWC URI",
-  "paste": "貼り付け"
+  "paste": "貼り付け",
+  "fromYourProfile": "プロフィールから",
+  "orEnterManually": "または手動で入力:"
 }

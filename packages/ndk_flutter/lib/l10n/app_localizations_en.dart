@@ -961,4 +961,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paste => 'Paste';
+
+  @override
+  String get fromYourProfile => 'From your profile';
+
+  @override
+  String get orEnterManually => 'Or enter manually:';
 }

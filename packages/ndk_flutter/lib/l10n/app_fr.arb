@@ -320,5 +320,7 @@
   "cameraNotAvailable": "Caméra non disponible",
   "scanNwcInstructions": "Scannez le code QR de votre application de portefeuille NWC",
   "invalidNwcUri": "URI NWC invalide",
-  "paste": "Coller"
+  "paste": "Coller",
+  "fromYourProfile": "De votre profil",
+  "orEnterManually": "Ou saisissez manuellement:"
 }

@@ -1992,6 +1992,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paste'**
   String get paste;
+
+  /// Label indicating a value comes from user's profile
+  ///
+  /// In en, this message translates to:
+  /// **'From your profile'**
+  String get fromYourProfile;
+
+  /// Label for manual entry option
+  ///
+  /// In en, this message translates to:
+  /// **'Or enter manually:'**
+  String get orEnterManually;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

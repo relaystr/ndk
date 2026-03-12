@@ -1297,5 +1297,13 @@
   "paste": "Einfügen",
   "@paste": {
     "description": "Label for paste action"
+  },
+  "fromYourProfile": "Aus deinem Profil",
+  "@fromYourProfile": {
+    "description": "Label indicating a value comes from user's profile"
+  },
+  "orEnterManually": "Oder manuell eingeben:",
+  "@orEnterManually": {
+    "description": "Label for manual entry option"
   }
 }

@@ -384,82 +384,151 @@ Future<Wallet?> showAddLnurlWalletDialog(BuildContext context, Ndk ndk) async {
   final l10n = AppLocalizations.of(context)!;
   final identifierController = TextEditingController();
 
+  // Check if user is logged in and has lud16 in their profile
+  String? profileLud16;
+  if (ndk.accounts.isLoggedIn) {
+    final pubkey = ndk.accounts.getPublicKey();
+    if (pubkey != null) {
+      try {
+        final metadata = await ndk.metadata.loadMetadata(pubkey);
+        profileLud16 = metadata?.lud16;
+      } catch (e) {
+        // Ignore errors loading metadata
+      }
+    }
+  }
+
+  if (!context.mounted) return null;
+
   return showDialog<Wallet?>(
     context: context,
     builder: (context) {
-      return AlertDialog(
-        title: Text(l10n.addLnurlWalletTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(l10n.enterLnurlIdentifier),
-            const SizedBox(height: 16),
-            TextField(
-              controller: identifierController,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: l10n.lnurlIdentifierHint,
-                hintText: l10n.lnurlIdentifierHint,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              final identifier = identifierController.text.trim();
-              if (identifier.isEmpty || !identifier.contains('@')) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.pleaseEnterValidIdentifier),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                return;
-              }
-
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-              try {
-                final walletId = DateTime.now().millisecondsSinceEpoch
-                    .toString();
-                final wallet = ndk.wallets.createWallet(
-                  type: WalletType.LNURL,
-                  id: walletId,
-                  name: 'LNURL',
-                  supportedUnits: {'sat'},
-                  metadata: {'identifier': identifier},
-                );
-                await ndk.wallets.addWallet(wallet);
-
-                if (context.mounted) {
-                  Navigator.of(context).pop(wallet);
-                }
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.lnurlWalletAdded),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } catch (e) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(e.toString()),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            child: Text(l10n.add),
-          ),
-        ],
+      return _AddLnurlWalletDialog(
+        l10n: l10n,
+        identifierController: identifierController,
+        profileLud16: profileLud16,
+        ndk: ndk,
       );
     },
   );
+}
+
+class _AddLnurlWalletDialog extends StatefulWidget {
+  final AppLocalizations l10n;
+  final TextEditingController identifierController;
+  final String? profileLud16;
+  final Ndk ndk;
+
+  const _AddLnurlWalletDialog({
+    required this.l10n,
+    required this.identifierController,
+    required this.profileLud16,
+    required this.ndk,
+  });
+
+  @override
+  State<_AddLnurlWalletDialog> createState() => _AddLnurlWalletDialogState();
+}
+
+class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
+  void _useProfileLud16() {
+    if (widget.profileLud16 != null) {
+      widget.identifierController.text = widget.profileLud16!;
+    }
+  }
+
+  Future<void> _addWallet() async {
+    final identifier = widget.identifierController.text.trim();
+    if (identifier.isEmpty || !identifier.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(widget.l10n.pleaseEnterValidIdentifier),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    try {
+      final walletId = DateTime.now().millisecondsSinceEpoch.toString();
+      final wallet = widget.ndk.wallets.createWallet(
+        type: WalletType.LNURL,
+        id: walletId,
+        name: 'LNURL',
+        supportedUnits: {'sat'},
+        metadata: {'identifier': identifier},
+      );
+      await widget.ndk.wallets.addWallet(wallet);
+
+      if (!mounted) return;
+      Navigator.of(context).pop(wallet);
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(widget.l10n.lnurlWalletAdded),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.l10n.addLnurlWalletTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.l10n.enterLnurlIdentifier),
+          const SizedBox(height: 16),
+          // Show profile lud16 option if available
+          if (widget.profileLud16 != null &&
+              widget.profileLud16!.isNotEmpty) ...[
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.bolt, color: Colors.orange),
+                title: Text(widget.profileLud16!),
+                subtitle: Text(widget.l10n.fromYourProfile),
+                trailing: TextButton(
+                  onPressed: _useProfileLud16,
+                  child: Text(widget.l10n.add),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              widget.l10n.orEnterManually,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+          ],
+          TextField(
+            controller: widget.identifierController,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: widget.l10n.lnurlIdentifierHint,
+              hintText: widget.l10n.lnurlIdentifierHint,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(widget.l10n.cancel),
+        ),
+        TextButton(onPressed: _addWallet, child: Text(widget.l10n.add)),
+      ],
+    );
+  }
 }
 
 /// Shows a dialog to choose wallet type (Cashu, NWC, or LNURL).
@@ -735,7 +804,6 @@ Future<void> _showNwcScannerAndAddWallet(BuildContext context, Ndk ndk) async {
   if (result == null || result.isEmpty || !context.mounted) return;
 
   final scaffoldMessenger = ScaffoldMessenger.of(context);
-
 
   try {
     final walletId = DateTime.now().millisecondsSinceEpoch.toString();

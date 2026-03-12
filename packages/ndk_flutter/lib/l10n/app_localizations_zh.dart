@@ -945,20 +945,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get faucetOption => '水龙头';
 
   @override
-  String get invalidNwcQrCode => 'Invalid NWC QR code';
+  String get invalidNwcQrCode => '无效的NWC二维码';
 
   @override
-  String get scanNwcQrCodeTitle => 'Scan NWC QR Code';
+  String get scanNwcQrCodeTitle => '扫描NWC二维码';
 
   @override
-  String get cameraNotAvailable => 'Camera not available';
+  String get cameraNotAvailable => '相机不可用';
 
   @override
-  String get scanNwcInstructions => 'Scan the QR code from your NWC wallet app';
+  String get scanNwcInstructions => '从您的NWC钱包应用扫描二维码';
 
   @override
-  String get invalidNwcUri => 'Invalid NWC URI';
+  String get invalidNwcUri => '无效的NWC URI';
 
   @override
-  String get paste => 'Paste';
+  String get paste => '粘贴';
+
+  @override
+  String get fromYourProfile => '来自您的个人资料';
+
+  @override
+  String get orEnterManually => '或手动输入:';
 }

@@ -1,4 +1,6 @@
 import 'package:amberflutter/amberflutter.dart';
+import 'package:drift_cache_manager/drift_cache_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
@@ -15,21 +17,13 @@ import 'package:ndk_demo/wallets.dart';
 import 'package:ndk_demo/verifiers_performance.dart';
 import 'package:ndk_demo/widgets_demo_page.dart';
 import 'package:ndk_demo/pending_requests_page.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
+import 'package:sembast_cache_manager/sembast_cache_manager.dart';
 
 bool amberAvailable = false;
 
-final ndk = Ndk(
-  NdkConfig(
-    eventVerifier: Bip340EventVerifier(),
-    cache: MemCacheManager(),
-    logLevel: Logger.logLevels.trace,
-    cashuUserSeedphrase: CashuUserSeedphrase(
-      seedPhrase: DemoAppConfig.cashuSeedPhrase,
-    ),
-  ),
-);
-
+late Ndk ndk;
 final ndkFlutter = NdkFlutter(ndk: ndk);
 
 Future<void> main() async {
@@ -45,8 +39,24 @@ Future<void> main() async {
     final amber = Amberflutter();
     amberAvailable = await amber.isAppInstalled();
   } catch (e) {
-    // not on android or amber not installed
+// not on android or amber not installed
   }
+
+  final cacheManager = kIsWeb
+      ? await DriftCacheManager.create()
+      : await SembastCacheManager.create(databasePath: (await getApplicationDocumentsDirectory()).path);
+
+  final eventVerifier = kIsWeb ? WebEventVerifier() : RustEventVerifier();
+  ndk = Ndk(
+    NdkConfig(
+      eventVerifier: Bip340EventVerifier(),
+      cache: MemCacheManager(),
+      logLevel: Logger.logLevels.trace,
+      cashuUserSeedphrase: CashuUserSeedphrase(
+        seedPhrase: DemoAppConfig.cashuSeedPhrase,
+      ),
+    ),
+  );
 
   runApp(const MyApp());
 }
@@ -109,22 +119,21 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
-    with TickerProviderStateMixin, ProtocolListener {
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin, ProtocolListener {
   late TabController _tabController;
   late List<Tab> _tabs;
   late List<Widget> _tabPages;
 
-  // Define a constant for the NWC tab name to avoid magic strings
+// Define a constant for the NWC tab name to avoid magic strings
   static const String nwcTabName = 'NWC';
 
-  // Callback method to be passed to AccountsPage
+// Callback method to be passed to AccountsPage
   void _handleAccountChange() {
     if (mounted) {
       setState(() {
-        // This will trigger a rebuild of _MyHomePageState,
-        // which in turn rebuilds its children, including the TabBarView
-        // and the metadata widget with the new account context.
+// This will trigger a rebuild of _MyHomePageState,
+// which in turn rebuilds its children, including the TabBarView
+// and the metadata widget with the new account context.
       });
     }
   }
@@ -170,8 +179,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   void _processUri(Uri uri) {
     if (uri.scheme == 'ndk' && uri.host == 'nwc') {
-      print(
-          "_MyHomePageState: ndk://nwc URI received, switching to NwcPage tab.");
+      print("_MyHomePageState: ndk://nwc URI received, switching to NwcPage tab.");
       switchToNwcTab();
     }
   }
@@ -212,8 +220,7 @@ class _MyHomePageState extends State<MyHomePage>
         print("_MyHomePageState: Already on NWC tab (index $nwcPageIndex).");
       }
     } else {
-      print(
-          "_MyHomePageState: NWC tab not found by name '$nwcTabName'. Cannot switch.");
+      print("_MyHomePageState: NWC tab not found by name '$nwcTabName'. Cannot switch.");
     }
   }
 
@@ -277,8 +284,7 @@ Widget metadata(Ndk ndk, BuildContext context) {
     return const Center(
         child: Padding(
       padding: EdgeInsets.all(16.0),
-      child: Text('Please log in via the "Accounts" tab to view your metadata.',
-          textAlign: TextAlign.center),
+      child: Text('Please log in via the "Accounts" tab to view your metadata.', textAlign: TextAlign.center),
     ));
   }
 
@@ -290,8 +296,7 @@ Widget metadata(Ndk ndk, BuildContext context) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator());
       } else if (snapshot.hasError) {
-        return Center(
-            child: Text('Error fetching metadata: ${snapshot.error}'));
+        return Center(child: Text('Error fetching metadata: ${snapshot.error}'));
       } else if (snapshot.hasData && snapshot.data != null) {
         final metadata = snapshot.data!;
         return SingleChildScrollView(
@@ -318,8 +323,7 @@ Widget metadata(Ndk ndk, BuildContext context) {
                     child: Icon(Icons.person, size: 50),
                   ),
                 const SizedBox(height: 16),
-                Text('Name: ${metadata.name ?? 'N/A'}',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text('Name: ${metadata.name ?? 'N/A'}', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 Text('Display Name: ${metadata.displayName ?? 'N/A'}'),
                 Text('NIP-05: ${metadata.nip05 ?? 'N/A'}'),
@@ -336,8 +340,7 @@ Widget metadata(Ndk ndk, BuildContext context) {
         );
       } else {
         return const Center(
-            child: Text(
-                'Metadata not found for this account. You might need to set it in a Nostr client.'));
+            child: Text('Metadata not found for this account. You might need to set it in a Nostr client.'));
       }
     },
   );

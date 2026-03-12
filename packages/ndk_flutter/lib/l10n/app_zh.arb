@@ -320,5 +320,7 @@
   "cameraNotAvailable": "相机不可用",
   "scanNwcInstructions": "从您的NWC钱包应用扫描二维码",
   "invalidNwcUri": "无效的NWC URI",
-  "paste": "粘贴"
+  "paste": "粘贴",
+  "fromYourProfile": "来自您的个人资料",
+  "orEnterManually": "或手动输入:"
 }

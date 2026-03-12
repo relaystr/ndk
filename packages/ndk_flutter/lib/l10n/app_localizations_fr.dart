@@ -945,20 +945,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String get faucetOption => 'Faucet';
 
   @override
-  String get invalidNwcQrCode => 'Invalid NWC QR code';
+  String get invalidNwcQrCode => 'Code QR NWC invalide';
 
   @override
-  String get scanNwcQrCodeTitle => 'Scan NWC QR Code';
+  String get scanNwcQrCodeTitle => 'Scanner le code QR NWC';
 
   @override
-  String get cameraNotAvailable => 'Camera not available';
+  String get cameraNotAvailable => 'Caméra non disponible';
 
   @override
-  String get scanNwcInstructions => 'Scan the QR code from your NWC wallet app';
+  String get scanNwcInstructions => 'Scannez le code QR de votre application de portefeuille NWC';
 
   @override
-  String get invalidNwcUri => 'Invalid NWC URI';
+  String get invalidNwcUri => 'URI NWC invalide';
 
   @override
-  String get paste => 'Paste';
+  String get paste => 'Coller';
+
+  @override
+  String get fromYourProfile => 'De votre profil';
+
+  @override
+  String get orEnterManually => 'Ou saisissez manuellement:';
 }

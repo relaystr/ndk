@@ -1297,5 +1297,13 @@
   "paste": "Incolla",
   "@paste": {
     "description": "Label for paste action"
+  },
+  "fromYourProfile": "Dal tuo profilo",
+  "@fromYourProfile": {
+    "description": "Label indicating a value comes from user's profile"
+  },
+  "orEnterManually": "Oppure inserisci manualmente:",
+  "@orEnterManually": {
+    "description": "Label for manual entry option"
   }
 }
