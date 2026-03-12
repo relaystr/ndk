@@ -995,4 +995,29 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get walletRenamed => 'Cartera renombrada';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    return 'Usado: $used / $total sats';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return 'Se renueva en $days días';
+  }
+
+  @override
+  String get budgetDaily => 'Diario';
+
+  @override
+  String get budgetWeekly => 'Semanal';
+
+  @override
+  String get budgetMonthly => 'Mensual';
+
+  @override
+  String get budgetYearly => 'Anual';
+
+  @override
+  String get budgetNever => 'Nunca';
 }

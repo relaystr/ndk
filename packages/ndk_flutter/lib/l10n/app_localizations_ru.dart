@@ -995,4 +995,29 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get walletRenamed => 'Кошелёк переименован';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    return 'Использовано: $used / $total сат';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return 'Обновление через $days дн.';
+  }
+
+  @override
+  String get budgetDaily => 'Ежедневно';
+
+  @override
+  String get budgetWeekly => 'Еженедельно';
+
+  @override
+  String get budgetMonthly => 'Ежемесячно';
+
+  @override
+  String get budgetYearly => 'Ежегодно';
+
+  @override
+  String get budgetNever => 'Никогда';
 }

@@ -997,4 +997,29 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get walletRenamed => 'Portafoglio rinominato';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    return 'Usato: $used / $total sats';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return 'Si rinnova in $days giorni';
+  }
+
+  @override
+  String get budgetDaily => 'Giornaliero';
+
+  @override
+  String get budgetWeekly => 'Settimanale';
+
+  @override
+  String get budgetMonthly => 'Mensile';
+
+  @override
+  String get budgetYearly => 'Annuale';
+
+  @override
+  String get budgetNever => 'Mai';
 }

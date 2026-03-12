@@ -993,4 +993,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get walletRenamed => 'Wallet renamed';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    return 'Used: $used / $total sats';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return 'Renews in $days days';
+  }
+
+  @override
+  String get budgetDaily => 'Daily';
+
+  @override
+  String get budgetWeekly => 'Weekly';
+
+  @override
+  String get budgetMonthly => 'Monthly';
+
+  @override
+  String get budgetYearly => 'Yearly';
+
+  @override
+  String get budgetNever => 'Never';
 }

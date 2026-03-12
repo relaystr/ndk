@@ -988,4 +988,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get walletRenamed => '钱包已重命名';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    return '已用: $used / $total sats';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return '$days 天后更新';
+  }
+
+  @override
+  String get budgetDaily => '每日';
+
+  @override
+  String get budgetWeekly => '每周';
+
+  @override
+  String get budgetMonthly => '每月';
+
+  @override
+  String get budgetYearly => '每年';
+
+  @override
+  String get budgetNever => '从不';
 }

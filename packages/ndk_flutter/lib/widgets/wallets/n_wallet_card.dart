@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -70,11 +71,78 @@ class NWalletCard extends StatefulWidget {
 
 class _NWalletCardState extends State<NWalletCard> {
   List<Color>? _customGradientColors;
+  GetBudgetResponse? _budgetResponse;
+  bool _isLoadingBudget = false;
 
   @override
   void initState() {
     super.initState();
     _loadCustomColor();
+    _fetchBudgetIfNeeded();
+  }
+
+  void _fetchBudgetIfNeeded() {
+    if (widget.wallet is NwcWallet) {
+      _fetchBudgetWhenReady();
+    }
+  }
+
+  Future<void> _fetchBudgetWhenReady() async {
+    if (!(widget.wallet is NwcWallet)) return;
+
+    final nwcWallet = widget.wallet as NwcWallet;
+
+    setState(() {
+      _isLoadingBudget = true;
+    });
+
+    try {
+      // Use the balance stream to detect when wallet is fully initialized
+      // The wallets system initializes the wallet when getting balances
+      await for (final _
+          in widget.ndkFlutter.ndk.wallets
+              .getBalancesStream(nwcWallet.id)
+              .take(1)
+              .timeout(const Duration(seconds: 10))) {
+        // Got balance data - wallet is connected
+        break;
+      }
+
+      final connection = nwcWallet.connection;
+      if (connection == null || connection.permissions.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _isLoadingBudget = false;
+          });
+        }
+        return;
+      }
+
+      // Check if get_budget permission is available
+      if (!connection.permissions.contains(NwcMethod.GET_BUDGET.name)) {
+        if (mounted) {
+          setState(() {
+            _isLoadingBudget = false;
+          });
+        }
+        return;
+      }
+
+      final budget = await widget.ndkFlutter.ndk.nwc.getBudget(connection);
+
+      if (mounted) {
+        setState(() {
+          _budgetResponse = budget;
+          _isLoadingBudget = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingBudget = false;
+        });
+      }
+    }
   }
 
   void _loadCustomColor() {
@@ -101,6 +169,10 @@ class _NWalletCardState extends State<NWalletCard> {
       setState(() {
         _loadCustomColor();
       });
+    }
+    // Refresh budget when switching to a different NWC wallet
+    if (oldWidget.wallet.id != widget.wallet.id && widget.wallet is NwcWallet) {
+      _fetchBudgetWhenReady();
     }
   }
 
@@ -266,25 +338,26 @@ class _NWalletCardState extends State<NWalletCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       mainIcon,
-                      if (widget.isSelected)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(200),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            l10n.selected,
-                            style: const TextStyle(
-                              color: Colors.black87,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                      // if (widget.isSelected)
+                      //   Container(
+                      //     margin: const EdgeInsets.only(right: 32),
+                      //     padding: const EdgeInsets.symmetric(
+                      //       horizontal: 8,
+                      //       vertical: 4,
+                      //     ),
+                      //     decoration: BoxDecoration(
+                      //       color: Colors.white.withAlpha(200),
+                      //       borderRadius: BorderRadius.circular(12),
+                      //     ),
+                      //     child: Text(
+                      //       l10n.selected,
+                      //       style: const TextStyle(
+                      //         color: Colors.black87,
+                      //         fontSize: 10,
+                      //         fontWeight: FontWeight.bold,
+                      //       ),
+                      //     ),
+                      //   ),
                     ],
                   ),
                   Column(
@@ -310,13 +383,17 @@ class _NWalletCardState extends State<NWalletCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: isNwc && _budgetResponse != null ? 8 : 16,
+                      ),
                       isLnurl
                           ? _buildLnurlInfo(
                               context,
                               widget.wallet as LnurlWallet,
                             )
                           : _buildBalance(context),
+                      if (isNwc && _budgetResponse != null)
+                        _buildBudgetInfo(context),
                     ],
                   ),
                 ],
@@ -324,7 +401,7 @@ class _NWalletCardState extends State<NWalletCard> {
             ),
             Positioned(
               right: 4,
-              bottom: 4,
+              top: 4,
               child: PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.white70),
                 itemBuilder: (context) => [
@@ -700,6 +777,85 @@ class _NWalletCardState extends State<NWalletCard> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildBudgetInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final budget = _budgetResponse!;
+
+    final usedSats = budget.usedBudget ~/ 1000;
+    final totalSats = budget.totalBudget ~/ 1000;
+    final progress = totalSats > 0 ? usedSats / totalSats : 0.0;
+
+    String renewalText;
+    if (budget.renewalPeriod == BudgetRenewalPeriod.never) {
+      renewalText = l10n.budgetNever;
+    } else {
+      String periodText;
+      switch (budget.renewalPeriod) {
+        case BudgetRenewalPeriod.daily:
+          periodText = l10n.budgetDaily;
+          break;
+        case BudgetRenewalPeriod.weekly:
+          periodText = l10n.budgetWeekly;
+          break;
+        case BudgetRenewalPeriod.monthly:
+          periodText = l10n.budgetMonthly;
+          break;
+        case BudgetRenewalPeriod.yearly:
+          periodText = l10n.budgetYearly;
+          break;
+        default:
+          periodText = l10n.budgetNever;
+      }
+
+      if (budget.renewsAt != null) {
+        final renewsAt = DateTime.fromMillisecondsSinceEpoch(
+          budget.renewsAt! * 1000,
+        );
+        final now = DateTime.now();
+        final daysUntilRenewal = renewsAt.difference(now).inDays;
+
+        if (daysUntilRenewal > 0) {
+          renewalText =
+              '${l10n.budgetRenewsIn(daysUntilRenewal)} ($periodText)';
+        } else {
+          renewalText = periodText;
+        }
+      } else {
+        renewalText = periodText;
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(1.5),
+          child: LinearProgressIndicator(
+            value: progress.clamp(0.0, 1.0),
+            backgroundColor: Colors.white.withAlpha(50),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              progress > 0.9 ? Colors.red[300]! : Colors.white.withAlpha(200),
+            ),
+            minHeight: 3,
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l10n.budgetUsedOf(usedSats, totalSats),
+              style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
+            ),
+            Text(
+              renewalText,
+              style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

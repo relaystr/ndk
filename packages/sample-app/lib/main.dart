@@ -51,7 +51,7 @@ Future<void> main() async {
     NdkConfig(
       eventVerifier: eventVerifier,
       cache: cacheManager,
-      logLevel: Logger.logLevels.trace,
+      logLevel: Logger.logLevels.info,
       cashuUserSeedphrase: CashuUserSeedphrase(
         seedPhrase: DemoAppConfig.cashuSeedPhrase,
       ),

@@ -989,4 +989,29 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get walletRenamed => 'ウォレット名を変更しました';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    return '使用: $used / $total sats';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return '$days 日後に更新';
+  }
+
+  @override
+  String get budgetDaily => '毎日';
+
+  @override
+  String get budgetWeekly => '毎週';
+
+  @override
+  String get budgetMonthly => '毎月';
+
+  @override
+  String get budgetYearly => '毎年';
+
+  @override
+  String get budgetNever => 'なし';
 }

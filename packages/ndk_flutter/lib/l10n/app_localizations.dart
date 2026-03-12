@@ -2049,6 +2049,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wallet renamed'**
   String get walletRenamed;
+
+  /// Budget information showing used and total amount
+  ///
+  /// In en, this message translates to:
+  /// **'Used: {used} / {total} sats'**
+  String budgetUsedOf(int used, int total);
+
+  /// Budget renewal information showing days until renewal
+  ///
+  /// In en, this message translates to:
+  /// **'Renews in {days} days'**
+  String budgetRenewsIn(int days);
+
+  /// Daily budget renewal period
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get budgetDaily;
+
+  /// Weekly budget renewal period
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get budgetWeekly;
+
+  /// Monthly budget renewal period
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get budgetMonthly;
+
+  /// Yearly budget renewal period
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get budgetYearly;
+
+  /// Budget never renews
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get budgetNever;
 }
 
 class _AppLocalizationsDelegate

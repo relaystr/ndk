@@ -30,12 +30,16 @@ export 'domain_layer/entities/metadata.dart';
 export 'domain_layer/entities/event_filter.dart';
 
 export 'domain_layer/usecases/nwc/responses/get_balance_response.dart';
+export 'domain_layer/usecases/nwc/responses/get_budget_response.dart';
 export 'domain_layer/usecases/nwc/responses/get_info_response.dart';
 export 'domain_layer/usecases/nwc/responses/make_invoice_response.dart';
 export 'domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
 export 'domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
+export 'domain_layer/usecases/nwc/nostr_wallet_connect_uri.dart';
+export 'domain_layer/usecases/nwc/consts/nwc_method.dart';
+export 'domain_layer/usecases/nwc/consts/budget_renewal_period.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/blossom_strategies.dart';
 export 'domain_layer/entities/blob_upload_progress.dart';
