@@ -1209,12 +1209,41 @@ class WalletCard extends StatelessWidget {
                       const SizedBox(height: 16),
                       // Balance display
                       isLnurl
-                          ? Text(
-                              'Receive-only wallet',
-                              style: TextStyle(
-                                color: Colors.white.withAlpha(200),
-                                fontSize: 14,
-                              ),
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Receive-only wallet',
+                                  style: TextStyle(
+                                    color: Colors.white.withAlpha(200),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Builder(
+                                  builder: (context) {
+                                    final lnWallet = wallet as LnurlWallet;
+                                    if (lnWallet.minSendable != null &&
+                                        lnWallet.maxSendable != null) {
+                                      return Text(
+                                        'Receive: ${lnWallet.minSendable! ~/ 1000} - ${lnWallet.maxSendable! ~/ 1000} sats',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                    }
+                                    return Text(
+                                      'Limits unavailable',
+                                      style: TextStyle(
+                                        color: Colors.white.withAlpha(200),
+                                        fontSize: 12,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             )
                           : StreamBuilder<List<WalletBalance>>(
                               stream: ndk.wallets.getBalancesStream(wallet.id),

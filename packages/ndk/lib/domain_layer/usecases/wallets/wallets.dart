@@ -97,7 +97,15 @@ class Wallets {
       // Initialize wallet with its provider
       final provider = _providers[wallet.type];
       if (provider != null) {
-        await provider.initialize(wallet);
+        final updatedWallet = await provider.initialize(wallet);
+        if (updatedWallet != null) {
+          // Replace old wallet with updated one
+          _wallets.remove(wallet);
+          _wallets.add(updatedWallet);
+          _walletsSubject.add(_wallets.toList());
+          // Also update in repository (addWallet handles updates too)
+          await _repository.addWallet(updatedWallet);
+        }
       }
     }
 
@@ -181,7 +189,15 @@ class Wallets {
     // Initialize with provider
     final provider = _providers[wallet.type];
     if (provider != null) {
-      await provider.initialize(wallet);
+      final updatedWallet = await provider.initialize(wallet);
+      if (updatedWallet != null) {
+        // Replace old wallet with updated one
+        _wallets.remove(wallet);
+        _wallets.add(updatedWallet);
+        _walletsSubject.add(_wallets.toList());
+        // Also update in repository (addWallet handles updates too)
+        await _repository.addWallet(updatedWallet);
+      }
     }
 
     _updateCombinedStreams();

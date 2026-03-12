@@ -48,13 +48,14 @@ class CashuWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<void> initialize(Wallet wallet) async {
+  Future<Wallet?> initialize(Wallet wallet) async {
     // Cashu wallets don't need connection initialization
     // They're stateless and use HTTP requests
     // Mint info is already loaded in the wallet
     final cashuWallet = wallet as CashuWallet;
     // Ensure mint info is cached
     await _cashuUseCase.getMintInfoNetwork(mintUrl: cashuWallet.mintUrl);
+    return null; // No wallet update needed
   }
 
   @override
@@ -130,8 +131,6 @@ class CashuWalletProvider implements WalletProvider {
 
     throw Exception('Cashu payment did not complete');
   }
-
-
 
   @override
   Stream<List<Wallet>> get discoveredWallets {

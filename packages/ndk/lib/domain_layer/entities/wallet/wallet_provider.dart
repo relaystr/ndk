@@ -24,7 +24,8 @@ abstract class WalletProvider {
 
   /// Initializes the wallet (e.g., establishes connections)
   /// Called when wallet is first loaded or activated
-  Future<void> initialize(Wallet wallet);
+  /// Returns an updated wallet if initialization resulted in changes, null otherwise
+  Future<Wallet?> initialize(Wallet wallet);
 
   /// Disposes of the wallet (e.g., closes connections, streams)
   /// Called before wallet is removed or app shuts down

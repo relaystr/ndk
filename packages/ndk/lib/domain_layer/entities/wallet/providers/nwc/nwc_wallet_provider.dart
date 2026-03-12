@@ -45,7 +45,7 @@ class NwcWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<void> initialize(Wallet wallet) async {
+  Future<Wallet?> initialize(Wallet wallet) async {
     final nwcWallet = wallet as NwcWallet;
     // NWC wallets connect on-demand, but we can pre-connect here
     if (!nwcWallet.isConnected()) {
@@ -56,6 +56,7 @@ class NwcWalletProvider implements WalletProvider {
     }
 
     _ensureNotificationSubscription(nwcWallet);
+    return null; // No wallet update needed
   }
 
   @override
