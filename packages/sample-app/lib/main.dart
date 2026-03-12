@@ -49,14 +49,16 @@ Future<void> main() async {
   final eventVerifier = kIsWeb ? WebEventVerifier() : RustEventVerifier();
   ndk = Ndk(
     NdkConfig(
-      eventVerifier: Bip340EventVerifier(),
-      cache: MemCacheManager(),
+      eventVerifier: eventVerifier,
+      cache: cacheManager,
       logLevel: Logger.logLevels.trace,
       cashuUserSeedphrase: CashuUserSeedphrase(
         seedPhrase: DemoAppConfig.cashuSeedPhrase,
       ),
     ),
   );
+
+  await ndkFlutter.restoreAccountsState();
 
   runApp(const MyApp());
 }
@@ -245,7 +247,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin, 
       const NwcPage(),
       BlossomMediaPage(ndk: ndk),
       VerifiersPerformancePage(ndk: ndk),
-      WalletsPage(ndk: ndk),
+      const WalletsPage(),
       WidgetsDemoPage(onAccountChanged: _handleAccountChange),
       const PendingRequestsPage(),
     ];

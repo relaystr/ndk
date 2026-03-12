@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 
@@ -17,7 +17,7 @@ const String _defaultMintUrl = 'https://dev.mint.camelus.app';
 /// Returns the created [CashuWallet] if successful, or null if cancelled.
 Future<CashuWallet?> showAddCashuWalletDialog(
   BuildContext context,
-  Ndk ndk, {
+  NdkFlutter ndkFlutter, {
   String defaultMintUrl = _defaultMintUrl,
 }) async {
   final l10n = AppLocalizations.of(context)!;
@@ -64,8 +64,10 @@ Future<CashuWallet?> showAddCashuWalletDialog(
               final scaffoldMessenger = ScaffoldMessenger.of(context);
 
               try {
-                await ndk.cashu.addMintToKnownMints(mintUrl: mintUrl);
-                final mintInfo = await ndk.cashu.getMintInfoNetwork(
+                await ndkFlutter.ndk.cashu.addMintToKnownMints(
+                  mintUrl: mintUrl,
+                );
+                final mintInfo = await ndkFlutter.ndk.cashu.getMintInfoNetwork(
                   mintUrl: mintUrl,
                 );
 
@@ -77,7 +79,7 @@ Future<CashuWallet?> showAddCashuWalletDialog(
                   supportedUnits: mintInfo.supportedUnits,
                 );
 
-                await ndk.wallets.addWallet(cashuWallet);
+                await ndkFlutter.ndk.wallets.addWallet(cashuWallet);
 
                 if (context.mounted) {
                   Navigator.of(context).pop(cashuWallet);
@@ -110,22 +112,28 @@ Future<CashuWallet?> showAddCashuWalletDialog(
 /// Returns the created [NwcWallet] if successful, or null if cancelled.
 Future<NwcWallet?> showAddNwcWalletDialog(
   BuildContext context,
-  Ndk ndk, {
+  NdkFlutter ndkFlutter, {
   int defaultBalance = 10000,
 }) async {
   return showDialog<NwcWallet?>(
     context: context,
     builder: (context) {
-      return _AddNwcWalletDialog(ndk: ndk, defaultBalance: defaultBalance);
+      return _AddNwcWalletDialog(
+        ndkFlutter: ndkFlutter,
+        defaultBalance: defaultBalance,
+      );
     },
   );
 }
 
 class _AddNwcWalletDialog extends StatefulWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final int defaultBalance;
 
-  const _AddNwcWalletDialog({required this.ndk, required this.defaultBalance});
+  const _AddNwcWalletDialog({
+    required this.ndkFlutter,
+    required this.defaultBalance,
+  });
 
   @override
   State<_AddNwcWalletDialog> createState() => _AddNwcWalletDialogState();
@@ -293,7 +301,9 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                             supportedUnits: {'sat'},
                             nwcUrl: nwcUri,
                           );
-                          await widget.ndk.wallets.addWallet(nwcWallet);
+                          await widget.ndkFlutter.ndk.wallets.addWallet(
+                            nwcWallet,
+                          );
 
                           if (!mounted) return;
                           navigator.pop(nwcWallet);
@@ -344,7 +354,7 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                         supportedUnits: {'sat'},
                         nwcUrl: nwcUriController.text,
                       );
-                      await widget.ndk.wallets.addWallet(nwcWallet);
+                      await widget.ndkFlutter.ndk.wallets.addWallet(nwcWallet);
 
                       if (!mounted) return;
                       navigator.pop(nwcWallet);
@@ -380,17 +390,20 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
 /// Shows a dialog to add an LNURL wallet.
 ///
 /// Returns the created [Wallet] if successful, or null if cancelled.
-Future<Wallet?> showAddLnurlWalletDialog(BuildContext context, Ndk ndk) async {
+Future<Wallet?> showAddLnurlWalletDialog(
+  BuildContext context,
+  NdkFlutter ndkFlutter,
+) async {
   final l10n = AppLocalizations.of(context)!;
   final identifierController = TextEditingController();
 
   // Check if user is logged in and has lud16 in their profile
   String? profileLud16;
-  if (ndk.accounts.isLoggedIn) {
-    final pubkey = ndk.accounts.getPublicKey();
+  if (ndkFlutter.ndk.accounts.isLoggedIn) {
+    final pubkey = ndkFlutter.ndk.accounts.getPublicKey();
     if (pubkey != null) {
       try {
-        final metadata = await ndk.metadata.loadMetadata(pubkey);
+        final metadata = await ndkFlutter.ndk.metadata.loadMetadata(pubkey);
         profileLud16 = metadata?.lud16;
       } catch (e) {
         // Ignore errors loading metadata
@@ -407,7 +420,7 @@ Future<Wallet?> showAddLnurlWalletDialog(BuildContext context, Ndk ndk) async {
         l10n: l10n,
         identifierController: identifierController,
         profileLud16: profileLud16,
-        ndk: ndk,
+        ndkFlutter: ndkFlutter,
       );
     },
   );
@@ -417,13 +430,13 @@ class _AddLnurlWalletDialog extends StatefulWidget {
   final AppLocalizations l10n;
   final TextEditingController identifierController;
   final String? profileLud16;
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
 
   const _AddLnurlWalletDialog({
     required this.l10n,
     required this.identifierController,
     required this.profileLud16,
-    required this.ndk,
+    required this.ndkFlutter,
   });
 
   @override
@@ -431,14 +444,7 @@ class _AddLnurlWalletDialog extends StatefulWidget {
 }
 
 class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
-  void _useProfileLud16() {
-    if (widget.profileLud16 != null) {
-      widget.identifierController.text = widget.profileLud16!;
-    }
-  }
-
-  Future<void> _addWallet() async {
-    final identifier = widget.identifierController.text.trim();
+  Future<void> _addWalletWithIdentifier(String identifier) async {
     if (identifier.isEmpty || !identifier.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -453,14 +459,14 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
 
     try {
       final walletId = DateTime.now().millisecondsSinceEpoch.toString();
-      final wallet = widget.ndk.wallets.createWallet(
+      final wallet = widget.ndkFlutter.ndk.wallets.createWallet(
         type: WalletType.LNURL,
         id: walletId,
         name: 'LNURL',
         supportedUnits: {'sat'},
         metadata: {'identifier': identifier},
       );
-      await widget.ndk.wallets.addWallet(wallet);
+      await widget.ndkFlutter.ndk.wallets.addWallet(wallet);
 
       if (!mounted) return;
       Navigator.of(context).pop(wallet);
@@ -475,6 +481,11 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
         SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
       );
     }
+  }
+
+  Future<void> _addManualWallet() async {
+    final identifier = widget.identifierController.text.trim();
+    await _addWalletWithIdentifier(identifier);
   }
 
   @override
@@ -492,11 +503,15 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
               widget.profileLud16!.isNotEmpty) ...[
             Card(
               child: ListTile(
-                leading: const Icon(Icons.bolt, color: Colors.orange),
+                leading: NPicture(
+                  ndkFlutter: widget.ndkFlutter,
+                  circleAvatarRadius: 20,
+                ),
                 title: Text(widget.profileLud16!),
                 subtitle: Text(widget.l10n.fromYourProfile),
                 trailing: TextButton(
-                  onPressed: _useProfileLud16,
+                  onPressed: () =>
+                      _addWalletWithIdentifier(widget.profileLud16!),
                   child: Text(widget.l10n.add),
                 ),
               ),
@@ -525,7 +540,7 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(widget.l10n.cancel),
         ),
-        TextButton(onPressed: _addWallet, child: Text(widget.l10n.add)),
+        TextButton(onPressed: _addManualWallet, child: Text(widget.l10n.add)),
       ],
     );
   }
@@ -534,7 +549,10 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
 /// Shows a dialog to choose wallet type (Cashu, NWC, or LNURL).
 ///
 /// Returns true if a wallet type was selected, false if cancelled.
-Future<bool> showAddWalletTypeDialog(BuildContext context, Ndk ndk) async {
+Future<bool> showAddWalletTypeDialog(
+  BuildContext context,
+  NdkFlutter ndkFlutter,
+) async {
   final l10n = AppLocalizations.of(context)!;
 
   return await showDialog<bool>(
@@ -587,7 +605,7 @@ Future<bool> showAddWalletTypeDialog(BuildContext context, Ndk ndk) async {
                       label: l10n.cashuOption,
                       onTap: () async {
                         Navigator.of(dialogContext).pop(true);
-                        await showAddCashuWalletDialog(context, ndk);
+                        await showAddCashuWalletDialog(context, ndkFlutter);
                       },
                     ),
                     // NWC option
@@ -596,7 +614,10 @@ Future<bool> showAddWalletTypeDialog(BuildContext context, Ndk ndk) async {
                       label: l10n.nwcOption,
                       onTap: () async {
                         Navigator.of(dialogContext).pop(true);
-                        await showNwcConnectionOptionsDialog(context, ndk);
+                        await showNwcConnectionOptionsDialog(
+                          context,
+                          ndkFlutter,
+                        );
                       },
                     ),
                     // LNURL option
@@ -605,7 +626,7 @@ Future<bool> showAddWalletTypeDialog(BuildContext context, Ndk ndk) async {
                       label: l10n.lnurlOption,
                       onTap: () async {
                         Navigator.of(dialogContext).pop(true);
-                        await showAddLnurlWalletDialog(context, ndk);
+                        await showAddLnurlWalletDialog(context, ndkFlutter);
                       },
                     ),
                   ],
@@ -623,7 +644,7 @@ Future<bool> showAddWalletTypeDialog(BuildContext context, Ndk ndk) async {
 /// Returns true if a connection method was selected, false if cancelled.
 Future<bool> showNwcConnectionOptionsDialog(
   BuildContext context,
-  Ndk ndk,
+  NdkFlutter ndkFlutter,
 ) async {
   final l10n = AppLocalizations.of(context)!;
 
@@ -687,7 +708,7 @@ Future<bool> showNwcConnectionOptionsDialog(
                       label: l10n.manualOption,
                       onTap: () async {
                         Navigator.of(dialogContext).pop(true);
-                        await _showNwcScannerAndAddWallet(context, ndk);
+                        await _showNwcScannerAndAddWallet(context, ndkFlutter);
                       },
                     ),
                     // Faucet button (only in debug mode)
@@ -697,7 +718,7 @@ Future<bool> showNwcConnectionOptionsDialog(
                         label: l10n.faucetOption,
                         onTap: () async {
                           Navigator.of(dialogContext).pop(true);
-                          await _showNwcFaucetDialog(context, ndk);
+                          await _showNwcFaucetDialog(context, ndkFlutter);
                         },
                       ),
                   ],
@@ -794,7 +815,10 @@ Future<void> _connectAlbyGo(BuildContext context) async {
 }
 
 /// Shows QR scanner dialog and then adds the wallet directly
-Future<void> _showNwcScannerAndAddWallet(BuildContext context, Ndk ndk) async {
+Future<void> _showNwcScannerAndAddWallet(
+  BuildContext context,
+  NdkFlutter ndkFlutter,
+) async {
   final l10n = AppLocalizations.of(context)!;
   final result = await showDialog<String?>(
     context: context,
@@ -813,7 +837,7 @@ Future<void> _showNwcScannerAndAddWallet(BuildContext context, Ndk ndk) async {
       supportedUnits: {'sat'},
       nwcUrl: result,
     );
-    await ndk.wallets.addWallet(nwcWallet);
+    await ndkFlutter.ndk.wallets.addWallet(nwcWallet);
 
     scaffoldMessenger.showSnackBar(
       SnackBar(
@@ -1179,7 +1203,10 @@ class _NwcQrScannerDialogWithPasteState
 }
 
 /// Shows a dialog to add an NWC wallet via faucet.
-Future<void> _showNwcFaucetDialog(BuildContext context, Ndk ndk) async {
+Future<void> _showNwcFaucetDialog(
+  BuildContext context,
+  NdkFlutter ndkFlutter,
+) async {
   final l10n = AppLocalizations.of(context)!;
   final balanceController = TextEditingController(text: '10000');
 
@@ -1232,7 +1259,7 @@ Future<void> _showNwcFaucetDialog(BuildContext context, Ndk ndk) async {
                       supportedUnits: {'sat'},
                       nwcUrl: nwcUri,
                     );
-                    await ndk.wallets.addWallet(nwcWallet);
+                    await ndkFlutter.ndk.wallets.addWallet(nwcWallet);
 
                     if (context.mounted) {
                       navigator.pop();

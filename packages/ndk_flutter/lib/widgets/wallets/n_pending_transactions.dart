@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 
 /// Horizontal list of pending wallet transactions combined across wallets.
 class NPendingTransactions extends StatelessWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
 
-  /// Optional localized title; defaults to English \"Pending\".
+  /// Optional localized title; defaults to English "Pending".
   final String? title;
 
   /// Height of the horizontal list.
@@ -16,7 +16,7 @@ class NPendingTransactions extends StatelessWidget {
 
   const NPendingTransactions({
     super.key,
-    required this.ndk,
+    required this.ndkFlutter,
     this.title,
     this.height = 100,
   });
@@ -25,7 +25,7 @@ class NPendingTransactions extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<WalletTransaction>>(
-      stream: ndk.wallets.combinedPendingTransactions,
+      stream: ndkFlutter.ndk.wallets.combinedPendingTransactions,
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const SizedBox.shrink();

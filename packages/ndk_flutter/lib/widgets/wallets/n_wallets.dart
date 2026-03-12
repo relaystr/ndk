@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'n_add_wallet_dialogs.dart';
@@ -14,7 +14,7 @@ import 'n_recent_transactions.dart';
 /// This keeps built-in English defaults for labels but allows host applications
 /// to pass in localized strings (e.g. from AppLocalizations).
 class NWallets extends StatefulWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
 
   /// Section title above the wallet cards.
   final String? title;
@@ -69,7 +69,7 @@ class NWallets extends StatefulWidget {
 
   const NWallets({
     super.key,
-    required this.ndk,
+    required this.ndkFlutter,
     this.title,
     this.recentActivityTitle,
     this.showPendingTransactions = true,
@@ -111,7 +111,7 @@ class _NWalletsState extends State<NWallets> {
             SizedBox(
               height: widget.walletCardsHeight,
               child: NWalletCardList(
-                ndk: widget.ndk,
+                ndkFlutter: widget.ndkFlutter,
                 selectedWalletId: _selectedWalletId,
                 onWalletSelected: (walletId) {
                   setState(() {
@@ -127,7 +127,7 @@ class _NWalletsState extends State<NWallets> {
             const SizedBox(height: 24),
             if (_selectedWalletId != null)
               NWalletActions(
-                ndk: widget.ndk,
+                ndkFlutter: widget.ndkFlutter,
                 selectedWalletId: _selectedWalletId!,
                 onClearSelection: () {
                   setState(() {
@@ -137,7 +137,7 @@ class _NWalletsState extends State<NWallets> {
               ),
             const SizedBox(height: 24),
             if (widget.showPendingTransactions)
-              NPendingTransactions(ndk: widget.ndk),
+              NPendingTransactions(ndkFlutter: widget.ndkFlutter),
             if (widget.showRecentTransactions) ...[
               Text(
                 widget.recentActivityTitle ?? l10n.recentActivityTitle,
@@ -146,7 +146,7 @@ class _NWalletsState extends State<NWallets> {
               const SizedBox(height: 8),
               SizedBox(
                 height: widget.recentTransactionsHeight,
-                child: NRecentTransactions(ndk: widget.ndk),
+                child: NRecentTransactions(ndkFlutter: widget.ndkFlutter),
               ),
             ],
           ],
@@ -180,6 +180,6 @@ class _NWalletsState extends State<NWallets> {
   }
 
   void _showAddWalletDialog(BuildContext context) {
-    showAddWalletTypeDialog(context, widget.ndk);
+    showAddWalletTypeDialog(context, widget.ndkFlutter);
   }
 }

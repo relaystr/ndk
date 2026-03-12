@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_demo/main.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 class WalletsPage extends StatelessWidget {
-  final Ndk ndk;
 
-  const WalletsPage({super.key, required this.ndk});
+  const WalletsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NWallets(ndk: ndk),
+      body: NWallets(ndkFlutter: ndkFlutter),
     );
   }
 }

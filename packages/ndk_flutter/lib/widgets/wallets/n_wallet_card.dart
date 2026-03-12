@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 
@@ -34,7 +34,7 @@ class WalletIconConfig {
 /// Individual wallet card widget used by the wallets UI.
 class NWalletCard extends StatelessWidget {
   final Wallet wallet;
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final bool isSelected;
   final VoidCallback onTap;
   final Future<void> Function(BuildContext context, Wallet wallet)? onDelete;
@@ -54,7 +54,7 @@ class NWalletCard extends StatelessWidget {
   const NWalletCard({
     super.key,
     required this.wallet,
-    required this.ndk,
+    required this.ndkFlutter,
     required this.isSelected,
     required this.onTap,
     this.onDelete,
@@ -326,7 +326,7 @@ class NWalletCard extends StatelessWidget {
   Widget _buildBalance(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<WalletBalance>>(
-      stream: ndk.wallets.getBalancesStream(wallet.id),
+      stream: ndkFlutter.ndk.wallets.getBalancesStream(wallet.id),
       builder: (context, snapshot) {
         final balances = snapshot.data ?? [];
         final satBalance = balances
@@ -391,7 +391,7 @@ class NWalletCard extends StatelessWidget {
     if (confirmed != true) return;
 
     try {
-      await ndk.wallets.removeWallet(wallet.id);
+      await ndkFlutter.ndk.wallets.removeWallet(wallet.id);
     } catch (e) {
       scaffoldMessenger.showSnackBar(
         SnackBar(

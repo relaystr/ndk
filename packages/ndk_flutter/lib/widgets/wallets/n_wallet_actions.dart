@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -11,13 +11,13 @@ import '../../l10n/app_localizations.dart';
 /// This widget encapsulates the wallet operation flows that were previously
 /// implemented directly in the sample app.
 class NWalletActions extends StatefulWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final String selectedWalletId;
   final VoidCallback onClearSelection;
 
   const NWalletActions({
     super.key,
-    required this.ndk,
+    required this.ndkFlutter,
     required this.selectedWalletId,
     required this.onClearSelection,
   });
@@ -43,7 +43,7 @@ class _NWalletActionsState extends State<NWalletActions> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<Wallet>>(
-      stream: widget.ndk.wallets.walletsStream,
+      stream: widget.ndkFlutter.ndk.wallets.walletsStream,
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
 
@@ -307,11 +307,12 @@ class _NWalletActionsState extends State<NWalletActions> {
                 }
 
                 try {
-                  final spendingResult = await widget.ndk.cashu.initiateSpend(
-                    mintUrl: wallet.mintUrl,
-                    amount: amount,
-                    unit: 'sat',
-                  );
+                  final spendingResult = await widget.ndkFlutter.ndk.cashu
+                      .initiateSpend(
+                        mintUrl: wallet.mintUrl,
+                        amount: amount,
+                        unit: 'sat',
+                      );
                   final cashuString = spendingResult.token.toV4TokenString();
 
                   await Clipboard.setData(ClipboardData(text: cashuString));
@@ -369,7 +370,7 @@ class _NWalletActionsState extends State<NWalletActions> {
 
                 try {
                   if (wallet is CashuWallet) {
-                    final draftTransaction = await widget.ndk.cashu
+                    final draftTransaction = await widget.ndkFlutter.ndk.cashu
                         .initiateRedeem(
                           mintUrl: wallet.mintUrl,
                           request: invoice,
@@ -377,9 +378,10 @@ class _NWalletActionsState extends State<NWalletActions> {
                           method: 'bolt11',
                         );
 
-                    await for (final transaction in widget.ndk.cashu.redeem(
-                      draftRedeemTransaction: draftTransaction,
-                    )) {
+                    await for (final transaction
+                        in widget.ndkFlutter.ndk.cashu.redeem(
+                          draftRedeemTransaction: draftTransaction,
+                        )) {
                       if (transaction.state ==
                           WalletTransactionState.completed) {
                         if (!mounted) return;
@@ -400,10 +402,8 @@ class _NWalletActionsState extends State<NWalletActions> {
                       }
                     }
                   } else if (wallet is NwcWallet) {
-                    final response = await widget.ndk.wallets.payInvoice(
-                      wallet.id,
-                      invoice,
-                    );
+                    final response = await widget.ndkFlutter.ndk.wallets
+                        .payInvoice(wallet.id, invoice);
                     if (response.errorCode == null &&
                         response.preimage != null) {
                       if (!mounted) return;
@@ -467,7 +467,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                 }
 
                 try {
-                  final rcvStream = widget.ndk.cashu.receive(token);
+                  final rcvStream = widget.ndkFlutter.ndk.cashu.receive(token);
                   await rcvStream.last;
                   if (!mounted) return;
                   navigator.pop();
@@ -523,7 +523,7 @@ class _NWalletActionsState extends State<NWalletActions> {
 
                 try {
                   if (wallet is CashuWallet) {
-                    final draftTransaction = await widget.ndk.cashu
+                    final draftTransaction = await widget.ndkFlutter.ndk.cashu
                         .initiateFund(
                           mintUrl: wallet.mintUrl,
                           amount: amount,
@@ -544,7 +544,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                       );
                     }
                   } else if (wallet is NwcWallet || wallet is LnurlWallet) {
-                    final invoice = await widget.ndk.wallets.receive(
+                    final invoice = await widget.ndkFlutter.ndk.wallets.receive(
                       wallet.id,
                       amount,
                     );
@@ -574,7 +574,7 @@ class _NWalletActionsState extends State<NWalletActions> {
     ScaffoldMessengerState scaffoldMessenger,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final stream = widget.ndk.cashu.retrieveFunds(
+    final stream = widget.ndkFlutter.ndk.cashu.retrieveFunds(
       draftTransaction: draftTransaction,
     );
 
@@ -589,6 +589,7 @@ class _NWalletActionsState extends State<NWalletActions> {
             children: [
               Text(l10n.invoiceCreatedMessage),
               const SizedBox(height: 12),
+              Container(width: 200, child:
               PrettyQrView.data(
                 data: invoice.toUpperCase(),
                 errorCorrectLevel: QrErrorCorrectLevel.M,
@@ -600,7 +601,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                     roundFactor: 0.3,
                   ),
                 ),
-              ),
+              )),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(8),
@@ -703,6 +704,7 @@ class _NWalletActionsState extends State<NWalletActions> {
             children: [
               Text(l10n.invoiceCreatedMessage),
               const SizedBox(height: 12),
+              Container(width: 200, child:
               PrettyQrView.data(
                 data: invoice.toUpperCase(),
                 errorCorrectLevel: QrErrorCorrectLevel.M,
@@ -714,7 +716,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                     roundFactor: 0.3,
                   ),
                 ),
-              ),
+              )),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(8),

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'n_wallet_card.dart';
 
 /// Horizontal list of wallet cards backed by `ndk.wallets.walletsStream`.
 class NWalletCardList extends StatelessWidget {
-  final Ndk ndk;
+  final NdkFlutter ndkFlutter;
   final String? selectedWalletId;
   final ValueChanged<String> onWalletSelected;
 
@@ -28,7 +28,7 @@ class NWalletCardList extends StatelessWidget {
 
   const NWalletCardList({
     super.key,
-    required this.ndk,
+    required this.ndkFlutter,
     this.selectedWalletId,
     required this.onWalletSelected,
     this.emptyTitleText,
@@ -42,7 +42,7 @@ class NWalletCardList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<Wallet>>(
-      stream: ndk.wallets.walletsStream,
+      stream: ndkFlutter.ndk.wallets.walletsStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('${l10n.error}: ${snapshot.error}'));
@@ -75,7 +75,7 @@ class NWalletCardList extends StatelessWidget {
             final wallet = wallets[index];
             return NWalletCard(
               wallet: wallet,
-              ndk: ndk,
+              ndkFlutter: ndkFlutter,
               isSelected: wallet.id == selectedWalletId,
               onTap: () => onWalletSelected(wallet.id),
               cashuIcon: cashuIcon,
