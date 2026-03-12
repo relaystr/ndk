@@ -967,4 +967,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get orEnterManually => '或手动输入:';
+
+  @override
+  String get renameWallet => '重命名';
+
+  @override
+  String get pickColor => '选择颜色';
+
+  @override
+  String get deleteWallet => '删除';
+
+  @override
+  String get walletName => '钱包名称';
+
+  @override
+  String get walletNameHint => '输入钱包名称';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get walletRenamed => '钱包已重命名';
 }

@@ -661,7 +661,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cashuWalletAdded => 'Cashu wallet added successfully!';
 
   @override
-  String get failedToAddMint => 'Failed to add mint. Please check the URL and try again.';
+  String get failedToAddMint =>
+      'Failed to add mint. Please check the URL and try again.';
 
   @override
   String get addNwcWalletTitle => 'Add NWC Wallet';
@@ -673,7 +674,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manual => 'Manual';
 
   @override
-  String get nwcFaucetDescription => 'Create a test wallet with sats from the NWC faucet.';
+  String get nwcFaucetDescription =>
+      'Create a test wallet with sats from the NWC faucet.';
 
   @override
   String get startingBalance => 'Starting Balance';
@@ -705,13 +707,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addLnurlWalletTitle => 'Add LNURL Wallet';
 
   @override
-  String get enterLnurlIdentifier => 'Enter your LNURL identifier (user@domain.com).';
+  String get enterLnurlIdentifier =>
+      'Enter your LNURL identifier (user@domain.com).';
 
   @override
   String get lnurlIdentifierHint => 'user@example.com';
 
   @override
-  String get pleaseEnterValidIdentifier => 'Please enter a valid identifier (user@domain.com)';
+  String get pleaseEnterValidIdentifier =>
+      'Please enter a valid identifier (user@domain.com)';
 
   @override
   String get lnurlWalletAdded => 'LNURL wallet added successfully!';
@@ -912,7 +916,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteWalletConfirmation => 'Delete Wallet?';
 
   @override
-  String get deleteWalletConfirmationMessage => 'Are you sure you want to delete this wallet? This action cannot be undone.';
+  String get deleteWalletConfirmationMessage =>
+      'Are you sure you want to delete this wallet? This action cannot be undone.';
 
   @override
   String get addWalletTitle => 'Add Wallet';
@@ -967,4 +972,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orEnterManually => 'Or enter manually:';
+
+  @override
+  String get renameWallet => 'Rename';
+
+  @override
+  String get pickColor => 'Pick Color';
+
+  @override
+  String get deleteWallet => 'Delete';
+
+  @override
+  String get walletName => 'Wallet Name';
+
+  @override
+  String get walletNameHint => 'Enter wallet name';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get walletRenamed => 'Wallet renamed';
 }

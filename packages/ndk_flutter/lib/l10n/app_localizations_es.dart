@@ -646,7 +646,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addCashuWalletTitle => 'Agregar Cartera Cashu';
 
   @override
-  String get enterMintUrl => 'Ingrese la URL del mint para agregar una cartera Cashu.';
+  String get enterMintUrl =>
+      'Ingrese la URL del mint para agregar una cartera Cashu.';
 
   @override
   String get mintUrl => 'URL del Mint';
@@ -661,7 +662,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cashuWalletAdded => '¡Cartera Cashu agregada exitosamente!';
 
   @override
-  String get failedToAddMint => 'Error al agregar el mint. Por favor verifique la URL e intente de nuevo.';
+  String get failedToAddMint =>
+      'Error al agregar el mint. Por favor verifique la URL e intente de nuevo.';
 
   @override
   String get addNwcWalletTitle => 'Agregar Cartera NWC';
@@ -673,7 +675,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get manual => 'Manual';
 
   @override
-  String get nwcFaucetDescription => 'Cree una cartera de prueba con sats del grifo NWC.';
+  String get nwcFaucetDescription =>
+      'Cree una cartera de prueba con sats del grifo NWC.';
 
   @override
   String get startingBalance => 'Saldo Inicial';
@@ -705,13 +708,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addLnurlWalletTitle => 'Agregar Cartera LNURL';
 
   @override
-  String get enterLnurlIdentifier => 'Ingrese su identificador LNURL (usuario@dominio.com).';
+  String get enterLnurlIdentifier =>
+      'Ingrese su identificador LNURL (usuario@dominio.com).';
 
   @override
   String get lnurlIdentifierHint => 'usuario@ejemplo.com';
 
   @override
-  String get pleaseEnterValidIdentifier => 'Por favor ingrese un identificador válido (usuario@dominio.com)';
+  String get pleaseEnterValidIdentifier =>
+      'Por favor ingrese un identificador válido (usuario@dominio.com)';
 
   @override
   String get lnurlWalletAdded => '¡Cartera LNURL agregada exitosamente!';
@@ -912,7 +917,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deleteWalletConfirmation => '¿Eliminar Cartera?';
 
   @override
-  String get deleteWalletConfirmationMessage => '¿Está seguro de que desea eliminar esta cartera? Esta acción no se puede deshacer.';
+  String get deleteWalletConfirmationMessage =>
+      '¿Está seguro de que desea eliminar esta cartera? Esta acción no se puede deshacer.';
 
   @override
   String get addWalletTitle => 'Añadir Cartera';
@@ -954,7 +960,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cameraNotAvailable => 'Cámara no disponible';
 
   @override
-  String get scanNwcInstructions => 'Escanee el código QR de su aplicación de billetera NWC';
+  String get scanNwcInstructions =>
+      'Escanee el código QR de su aplicación de billetera NWC';
 
   @override
   String get invalidNwcUri => 'URI NWC inválida';
@@ -967,4 +974,25 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get orEnterManually => 'O ingresa manualmente:';
+
+  @override
+  String get renameWallet => 'Renombrar';
+
+  @override
+  String get pickColor => 'Elegir Color';
+
+  @override
+  String get deleteWallet => 'Eliminar';
+
+  @override
+  String get walletName => 'Nombre de Cartera';
+
+  @override
+  String get walletNameHint => 'Ingrese nombre de cartera';
+
+  @override
+  String get save => 'Guardar';
+
+  @override
+  String get walletRenamed => 'Cartera renombrada';
 }

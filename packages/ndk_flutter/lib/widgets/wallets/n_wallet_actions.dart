@@ -125,7 +125,13 @@ class _NWalletActionsState extends State<NWalletActions> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () => _showReceiveDialog(context, wallet),
+                          onPressed: () {
+                            if (isNwc) {
+                              _showCreateInvoiceDialog(context, wallet);
+                            } else {
+                              _showReceiveDialog(context, wallet);
+                            }
+                          },
                           icon: const Icon(Icons.download),
                           label: Text(l10n.receive),
                           style: ElevatedButton.styleFrom(
@@ -589,19 +595,21 @@ class _NWalletActionsState extends State<NWalletActions> {
             children: [
               Text(l10n.invoiceCreatedMessage),
               const SizedBox(height: 12),
-              Container(width: 200, child:
-              PrettyQrView.data(
-                data: invoice.toUpperCase(),
-                errorCorrectLevel: QrErrorCorrectLevel.M,
-                decoration: const PrettyQrDecoration(
-                  quietZone: PrettyQrQuietZone.standart,
-                  background: Colors.white,
-                  shape: PrettyQrSmoothSymbol(
-                    color: Colors.black,
-                    roundFactor: 0.3,
+              Container(
+                width: 200,
+                child: PrettyQrView.data(
+                  data: invoice.toUpperCase(),
+                  errorCorrectLevel: QrErrorCorrectLevel.M,
+                  decoration: const PrettyQrDecoration(
+                    quietZone: PrettyQrQuietZone.standart,
+                    background: Colors.white,
+                    shape: PrettyQrSmoothSymbol(
+                      color: Colors.black,
+                      roundFactor: 0.3,
+                    ),
                   ),
                 ),
-              )),
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(8),
@@ -704,19 +712,21 @@ class _NWalletActionsState extends State<NWalletActions> {
             children: [
               Text(l10n.invoiceCreatedMessage),
               const SizedBox(height: 12),
-              Container(width: 200, child:
-              PrettyQrView.data(
-                data: invoice.toUpperCase(),
-                errorCorrectLevel: QrErrorCorrectLevel.M,
-                decoration: const PrettyQrDecoration(
-                  quietZone: PrettyQrQuietZone.standart,
-                  background: Colors.white,
-                  shape: PrettyQrSmoothSymbol(
-                    color: Colors.black,
-                    roundFactor: 0.3,
+              Container(
+                width: 200,
+                child: PrettyQrView.data(
+                  data: invoice.toUpperCase(),
+                  errorCorrectLevel: QrErrorCorrectLevel.M,
+                  decoration: const PrettyQrDecoration(
+                    quietZone: PrettyQrQuietZone.standart,
+                    background: Colors.white,
+                    shape: PrettyQrSmoothSymbol(
+                      color: Colors.black,
+                      roundFactor: 0.3,
+                    ),
                   ),
                 ),
-              )),
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(8),

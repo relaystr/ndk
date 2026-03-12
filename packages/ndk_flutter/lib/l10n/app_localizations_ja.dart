@@ -912,7 +912,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get deleteWalletConfirmation => 'ウォレットを削除しますか?';
 
   @override
-  String get deleteWalletConfirmationMessage => 'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
+  String get deleteWalletConfirmationMessage =>
+      'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
 
   @override
   String get addWalletTitle => 'ウォレットを追加';
@@ -967,4 +968,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get orEnterManually => 'または手動で入力:';
+
+  @override
+  String get renameWallet => '名前を変更';
+
+  @override
+  String get pickColor => '色を選択';
+
+  @override
+  String get deleteWallet => '削除';
+
+  @override
+  String get walletName => 'ウォレット名';
+
+  @override
+  String get walletNameHint => 'ウォレット名を入力';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get walletRenamed => 'ウォレット名を変更しました';
 }

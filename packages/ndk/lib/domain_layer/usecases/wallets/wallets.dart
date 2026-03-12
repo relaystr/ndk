@@ -99,10 +99,15 @@ class Wallets {
       if (provider != null) {
         final updatedWallet = await provider.initialize(wallet);
         if (updatedWallet != null) {
-          // Replace old wallet with updated one
-          _wallets.remove(wallet);
-          _wallets.add(updatedWallet);
-          _walletsSubject.add(_wallets.toList());
+          // Replace old wallet with updated one while preserving order
+          final list = _wallets.toList();
+          final existingIndex = list.indexWhere((w) => w.id == wallet.id);
+          if (existingIndex >= 0) {
+            list[existingIndex] = updatedWallet;
+            _wallets.clear();
+            _wallets.addAll(list);
+            _walletsSubject.add(list);
+          }
           // Also update in repository (addWallet handles updates too)
           await _repository.addWallet(updatedWallet);
         }
@@ -143,9 +148,17 @@ class Wallets {
   }
 
   Future<void> _addWalletToMemory(Wallet wallet) async {
-    // store wallet in memory
-    _wallets.add(wallet);
-    _walletsSubject.add(_wallets.toList());
+    // store wallet in memory while preserving order
+    final list = _wallets.toList();
+    final existingIndex = list.indexWhere((w) => w.id == wallet.id);
+    if (existingIndex >= 0) {
+      list[existingIndex] = wallet;
+    } else {
+      list.add(wallet);
+    }
+    _wallets.clear();
+    _wallets.addAll(list);
+    _walletsSubject.add(list);
 
     // initialize empty data collections
     _walletsBalances[wallet.id] = [];
@@ -191,10 +204,15 @@ class Wallets {
     if (provider != null) {
       final updatedWallet = await provider.initialize(wallet);
       if (updatedWallet != null) {
-        // Replace old wallet with updated one
-        _wallets.remove(wallet);
-        _wallets.add(updatedWallet);
-        _walletsSubject.add(_wallets.toList());
+        // Replace old wallet with updated one while preserving order
+        final list = _wallets.toList();
+        final existingIndex = list.indexWhere((w) => w.id == wallet.id);
+        if (existingIndex >= 0) {
+          list[existingIndex] = updatedWallet;
+          _wallets.clear();
+          _wallets.addAll(list);
+          _walletsSubject.add(list);
+        }
         // Also update in repository (addWallet handles updates too)
         await _repository.addWallet(updatedWallet);
       }

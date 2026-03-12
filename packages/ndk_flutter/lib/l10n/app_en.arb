@@ -1317,5 +1317,33 @@
   "orEnterManually": "Or enter manually:",
   "@orEnterManually": {
     "description": "Label for manual entry option"
+  },
+  "renameWallet": "Rename",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Pick Color",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Delete",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Wallet Name",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Enter wallet name",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Wallet renamed",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
   }
 }

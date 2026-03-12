@@ -32,7 +32,7 @@ class WalletIconConfig {
 }
 
 /// Individual wallet card widget used by the wallets UI.
-class NWalletCard extends StatelessWidget {
+class NWalletCard extends StatefulWidget {
   final Wallet wallet;
   final NdkFlutter ndkFlutter;
   final bool isSelected;
@@ -65,67 +65,114 @@ class NWalletCard extends StatelessWidget {
   });
 
   @override
+  State<NWalletCard> createState() => _NWalletCardState();
+}
+
+class _NWalletCardState extends State<NWalletCard> {
+  List<Color>? _customGradientColors;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomColor();
+  }
+
+  void _loadCustomColor() {
+    final customColorValue = widget.wallet.metadata['cardColor'] as int?;
+    if (customColorValue != null) {
+      final color = Color(customColorValue);
+      final hsl = HSLColor.fromColor(color);
+      final lighterColor = hsl
+          .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
+          .toColor();
+      _customGradientColors = [color, lighterColor];
+    } else {
+      _customGradientColors = null;
+    }
+  }
+
+  @override
+  void didUpdateWidget(NWalletCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload color when wallet changes or is updated
+    if (oldWidget.wallet.id != widget.wallet.id ||
+        oldWidget.wallet.metadata['cardColor'] !=
+            widget.wallet.metadata['cardColor']) {
+      setState(() {
+        _loadCustomColor();
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final bool isCashu = wallet is CashuWallet;
-    final bool isNwc = wallet is NwcWallet;
-    final bool isLnurl = wallet is LnurlWallet;
+    final bool isCashu = widget.wallet is CashuWallet;
+    final bool isNwc = widget.wallet is NwcWallet;
+    final bool isLnurl = widget.wallet is LnurlWallet;
 
     final String walletName;
     if (isCashu) {
-      walletName = (wallet as CashuWallet).mintInfo.name ?? l10n.cashuWallet;
+      final cashuWallet = widget.wallet as CashuWallet;
+      // Use custom wallet.name if set, otherwise fall back to mint name
+      walletName = cashuWallet.name.isNotEmpty
+          ? cashuWallet.name
+          : (cashuWallet.mintInfo.name ?? l10n.cashuWallet);
     } else if (isNwc) {
-      walletName = (wallet as NwcWallet).name;
+      walletName = (widget.wallet as NwcWallet).name;
     } else if (isLnurl) {
-      walletName = (wallet as LnurlWallet).name;
+      walletName = (widget.wallet as LnurlWallet).name;
     } else {
       walletName = l10n.unknownWalletType;
     }
 
     final String subtitle;
     if (isCashu) {
-      subtitle = (wallet as CashuWallet).mintUrl.replaceAll('https://', '');
+      subtitle = (widget.wallet as CashuWallet).mintUrl.replaceAll(
+        'https://',
+        '',
+      );
     } else if (isNwc) {
       subtitle = l10n.nwcWalletSubtitle;
     } else if (isLnurl) {
-      subtitle = (wallet as LnurlWallet).identifier;
+      subtitle = (widget.wallet as LnurlWallet).identifier;
     } else {
       subtitle = '';
     }
 
+    // Use custom gradient if set (immediate UI update), otherwise load from metadata
     final List<Color> gradientColors;
-    final Color shadowColor;
-    if (isCashu) {
-      gradientColors = [const Color(0xFF7F38CA), const Color(0xFF9B5AD8)];
-      shadowColor = const Color(0xFF7F38CA);
-    } else if (isNwc) {
-      gradientColors = [
-        const Color.fromRGBO(137, 127, 255, 1.0),
-        const Color.fromRGBO(160, 153, 255, 1.0),
-      ];
-      shadowColor = const Color.fromRGBO(137, 127, 255, 1.0);
-    } else if (isLnurl) {
-      gradientColors = [const Color(0xFFFFB300), const Color(0xFFFFC107)];
-      shadowColor = const Color(0xFFFFB300);
+    if (_customGradientColors != null) {
+      gradientColors = _customGradientColors!;
     } else {
-      gradientColors = [Colors.grey[700]!, Colors.grey[400]!];
-      shadowColor = Colors.grey;
+      final customColorValue = widget.wallet.metadata['cardColor'] as int?;
+      if (customColorValue != null) {
+        final color = Color(customColorValue);
+        final hsl = HSLColor.fromColor(color);
+        final lighterColor = hsl
+            .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
+            .toColor();
+        gradientColors = [color, lighterColor];
+      } else {
+        gradientColors = _getDefaultGradientColors(isCashu, isNwc, isLnurl);
+      }
     }
+    final Color shadowColor = gradientColors[0];
 
     // Determine icon configuration based on wallet type
     final WalletIconConfig iconConfig;
     final String? defaultAssetName;
     final IconData fallbackIcon;
     if (isCashu) {
-      iconConfig = cashuIcon ?? const WalletIconConfig();
+      iconConfig = widget.cashuIcon ?? const WalletIconConfig();
       defaultAssetName = 'cashu.png';
       fallbackIcon = Icons.account_balance_wallet;
     } else if (isNwc) {
-      iconConfig = nwcIcon ?? const WalletIconConfig();
+      iconConfig = widget.nwcIcon ?? const WalletIconConfig();
       defaultAssetName = 'nwc.png';
       fallbackIcon = Icons.cloud;
     } else if (isLnurl) {
-      iconConfig = lnurlIcon ?? const WalletIconConfig();
+      iconConfig = widget.lnurlIcon ?? const WalletIconConfig();
       defaultAssetName = null; // LNURL uses bolt icon, not PNG
       fallbackIcon = Icons.bolt;
     } else {
@@ -184,9 +231,9 @@ class NWalletCard extends StatelessWidget {
               ));
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Container(
-        width: width,
+        width: widget.width,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -202,7 +249,9 @@ class NWalletCard extends StatelessWidget {
               offset: const Offset(0, 4),
             ),
           ],
-          border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
+          border: widget.isSelected
+              ? Border.all(color: Colors.white, width: 3)
+              : null,
         ),
         child: Stack(
           children: [
@@ -217,7 +266,7 @@ class NWalletCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       mainIcon,
-                      if (isSelected)
+                      if (widget.isSelected)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -263,7 +312,10 @@ class NWalletCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       isLnurl
-                          ? _buildLnurlInfo(context, wallet as LnurlWallet)
+                          ? _buildLnurlInfo(
+                              context,
+                              widget.wallet as LnurlWallet,
+                            )
                           : _buildBalance(context),
                     ],
                   ),
@@ -271,16 +323,68 @@ class NWalletCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              right: 8,
-              bottom: 8,
-              child: IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.white70),
-                onPressed: () async {
-                  final handler = onDelete;
-                  if (handler != null) {
-                    await handler(context, wallet);
-                  } else {
-                    await _defaultDeleteHandler(context);
+              right: 4,
+              bottom: 4,
+              child: PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.white70),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'rename',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.edit, size: 20),
+                        const SizedBox(width: 8),
+                        Text(l10n.renameWallet),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'color',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.palette, size: 20),
+                        const SizedBox(width: 8),
+                        Text(l10n.pickColor),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.deleteWallet,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                onSelected: (value) async {
+                  switch (value) {
+                    case 'rename':
+                      await _showRenameDialog(context);
+                      break;
+                    case 'color':
+                      await _showColorPickerDialog(context);
+                      break;
+                    case 'delete':
+                      final handler = widget.onDelete;
+                      if (handler != null) {
+                        await handler(context, widget.wallet);
+                      } else {
+                        await _defaultDeleteHandler(context);
+                      }
+                      break;
                   }
                 },
               ),
@@ -289,6 +393,241 @@ class NWalletCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  List<Color> _getDefaultGradientColors(
+    bool isCashu,
+    bool isNwc,
+    bool isLnurl,
+  ) {
+    if (isCashu) {
+      return [const Color(0xFF7F38CA), const Color(0xFF9B5AD8)];
+    } else if (isNwc) {
+      return [
+        const Color.fromRGBO(137, 127, 255, 1.0),
+        const Color.fromRGBO(160, 153, 255, 1.0),
+      ];
+    } else if (isLnurl) {
+      return [const Color(0xFFFFB300), const Color(0xFFFFC107)];
+    } else {
+      return [Colors.grey[700]!, Colors.grey[400]!];
+    }
+  }
+
+  Future<void> _showRenameDialog(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final nameController = TextEditingController(text: widget.wallet.name);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    final String? newName = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.renameWallet),
+          content: TextField(
+            controller: nameController,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: l10n.walletName,
+              hintText: l10n.walletNameHint,
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(context, nameController.text.trim()),
+              child: Text(l10n.save),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (newName != null &&
+        newName.isNotEmpty &&
+        newName != widget.wallet.name) {
+      try {
+        setState(() {
+          widget.wallet.name = newName;
+        });
+        await widget.ndkFlutter.ndk.wallets.addWallet(widget.wallet);
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.walletRenamed),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.error(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showColorPickerDialog(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final List<Color> presetColors = [
+      const Color(0xFF7F38CA), // Cashu purple
+      const Color(0xFF9B5AD8), // Light purple
+      const Color.fromRGBO(137, 127, 255, 1.0), // NWC blue
+      const Color.fromRGBO(160, 153, 255, 1.0), // Light blue
+      const Color(0xFFFFB300), // LNURL amber
+      const Color(0xFFFFC107), // Amber light
+      Colors.red,
+      Colors.pink,
+      Colors.purple,
+      Colors.deepPurple,
+      Colors.indigo,
+      Colors.blue,
+      Colors.lightBlue,
+      Colors.cyan,
+      Colors.teal,
+      Colors.green,
+      Colors.lightGreen,
+      Colors.lime,
+      Colors.yellow,
+      Colors.orange,
+      Colors.deepOrange,
+      Colors.brown,
+      Colors.grey,
+      Colors.blueGrey,
+    ];
+
+    Color selectedColor = presetColors[0];
+
+    final Color? result = await showDialog<Color>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(l10n.pickColor),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: presetColors.map((color) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedColor = color;
+                        });
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(20),
+                          border: selectedColor == color
+                              ? Border.all(color: Colors.white, width: 3)
+                              : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(50),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, selectedColor),
+                  child: Text(l10n.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        // Create a gradient from the selected color to a lighter version
+        final hsl = HSLColor.fromColor(result);
+        final lighterColor = hsl
+            .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
+            .toColor();
+        _customGradientColors = [result, lighterColor];
+      });
+
+      // Save color to wallet metadata by creating updated wallet
+      try {
+        final updatedMetadata = Map<String, dynamic>.from(
+          widget.wallet.metadata,
+        );
+        updatedMetadata['cardColor'] = result.value;
+
+        Wallet updatedWallet;
+        if (widget.wallet is CashuWallet) {
+          final w = widget.wallet as CashuWallet;
+          updatedWallet = CashuWallet(
+            id: w.id,
+            name: w.name,
+            supportedUnits: w.supportedUnits,
+            mintUrl: w.mintUrl,
+            mintInfo: w.mintInfo,
+            metadata: updatedMetadata,
+          );
+        } else if (widget.wallet is NwcWallet) {
+          final w = widget.wallet as NwcWallet;
+          updatedWallet = NwcWallet(
+            id: w.id,
+            name: w.name,
+            supportedUnits: w.supportedUnits,
+            nwcUrl: w.nwcUrl,
+            metadata: updatedMetadata,
+          );
+        } else if (widget.wallet is LnurlWallet) {
+          final w = widget.wallet as LnurlWallet;
+          updatedWallet = LnurlWallet(
+            id: w.id,
+            name: w.name,
+            supportedUnits: w.supportedUnits,
+            identifier: w.identifier,
+            lnurlPayUrl: w.lnurlPayUrl,
+            minSendable: w.minSendable,
+            maxSendable: w.maxSendable,
+            metadataFetchedAt: w.metadataFetchedAt,
+            metadata: updatedMetadata,
+          );
+        } else {
+          throw UnsupportedError('Unknown wallet type');
+        }
+
+        await widget.ndkFlutter.ndk.wallets.addWallet(updatedWallet);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to save color: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildLnurlInfo(BuildContext context, LnurlWallet lnWallet) {
@@ -326,14 +665,17 @@ class NWalletCard extends StatelessWidget {
   Widget _buildBalance(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<WalletBalance>>(
-      stream: ndkFlutter.ndk.wallets.getBalancesStream(wallet.id),
+      stream: widget.ndkFlutter.ndk.wallets.getBalancesStream(widget.wallet.id),
       builder: (context, snapshot) {
         final balances = snapshot.data ?? [];
         final satBalance = balances
             .firstWhere(
               (b) => b.unit == 'sat',
-              orElse: () =>
-                  WalletBalance(walletId: wallet.id, unit: 'sat', amount: 0),
+              orElse: () => WalletBalance(
+                walletId: widget.wallet.id,
+                unit: 'sat',
+                amount: 0,
+              ),
             )
             .amount;
 
@@ -391,7 +733,7 @@ class NWalletCard extends StatelessWidget {
     if (confirmed != true) return;
 
     try {
-      await ndkFlutter.ndk.wallets.removeWallet(wallet.id);
+      await widget.ndkFlutter.ndk.wallets.removeWallet(widget.wallet.id);
     } catch (e) {
       scaffoldMessenger.showSnackBar(
         SnackBar(
