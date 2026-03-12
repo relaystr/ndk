@@ -322,5 +322,77 @@
   "invalidNwcUri": "URI NWC invalide",
   "paste": "Coller",
   "fromYourProfile": "De votre profil",
-  "orEnterManually": "Ou saisissez manuellement:"
+  "orEnterManually": "Ou saisissez manuellement:",
+  "budgetUsedOf": "Budget : {used} / {total} sats",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Renouvelle dans {days} jours",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Quotidien",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Hebdomadaire",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Mensuel",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Annuel",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Jamais",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Renommer",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Choisir une couleur",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Supprimer",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Nom du portefeuille",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Saisir le nom du portefeuille",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Enregistrer",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Portefeuille renommé",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

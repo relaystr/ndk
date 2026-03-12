@@ -646,8 +646,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get addCashuWalletTitle => 'Cashu-Wallet hinzufügen';
 
   @override
-  String get enterMintUrl =>
-      'Mint-URL eingeben, um ein Cashu-Wallet hinzuzufügen.';
+  String get enterMintUrl => 'Mint-URL eingeben, um ein Cashu-Wallet hinzuzufügen.';
 
   @override
   String get mintUrl => 'Mint-URL';
@@ -662,8 +661,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cashuWalletAdded => 'Cashu-Wallet erfolgreich hinzugefügt!';
 
   @override
-  String get failedToAddMint =>
-      'Mint konnte nicht hinzugefügt werden. Bitte URL prüfen und erneut versuchen.';
+  String get failedToAddMint => 'Mint konnte nicht hinzugefügt werden. Bitte URL prüfen und erneut versuchen.';
 
   @override
   String get addNwcWalletTitle => 'NWC-Wallet hinzufügen';
@@ -675,8 +673,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get manual => 'Manuell';
 
   @override
-  String get nwcFaucetDescription =>
-      'Test-Wallet mit Sats vom NWC-Faucet erstellen.';
+  String get nwcFaucetDescription => 'Test-Wallet mit Sats vom NWC-Faucet erstellen.';
 
   @override
   String get startingBalance => 'Startguthaben';
@@ -708,15 +705,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get addLnurlWalletTitle => 'LNURL-Wallet hinzufügen';
 
   @override
-  String get enterLnurlIdentifier =>
-      'LNURL-Kennung eingeben (benutzer@domain.com).';
+  String get enterLnurlIdentifier => 'LNURL-Kennung eingeben (benutzer@domain.com).';
 
   @override
   String get lnurlIdentifierHint => 'user@example.com';
 
   @override
-  String get pleaseEnterValidIdentifier =>
-      'Bitte eine gültige Kennung eingeben (benutzer@domain.com)';
+  String get pleaseEnterValidIdentifier => 'Bitte eine gültige Kennung eingeben (benutzer@domain.com)';
 
   @override
   String get lnurlWalletAdded => 'LNURL-Wallet erfolgreich hinzugefügt!';
@@ -917,8 +912,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get deleteWalletConfirmation => 'Wallet löschen?';
 
   @override
-  String get deleteWalletConfirmationMessage =>
-      'Sind Sie sicher, dass Sie dieses Wallet löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.';
+  String get deleteWalletConfirmationMessage => 'Sind Sie sicher, dass Sie dieses Wallet löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.';
 
   @override
   String get addWalletTitle => 'Wallet hinzufügen';
@@ -960,8 +954,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cameraNotAvailable => 'Kamera nicht verfügbar';
 
   @override
-  String get scanNwcInstructions =>
-      'Scannen Sie den QR-Code aus Ihrer NWC-Wallet-App';
+  String get scanNwcInstructions => 'Scannen Sie den QR-Code aus Ihrer NWC-Wallet-App';
 
   @override
   String get invalidNwcUri => 'Ungültige NWC-URI';
@@ -979,7 +972,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get renameWallet => 'Umbenennen';
 
   @override
-  String get pickColor => 'Farbe wählen';
+  String get pickColor => 'Farbe auswählen';
 
   @override
   String get deleteWallet => 'Löschen';
@@ -988,7 +981,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get walletName => 'Wallet-Name';
 
   @override
-  String get walletNameHint => 'Wallet-Name eingeben';
+  String get walletNameHint => 'Wallet-Namen eingeben';
 
   @override
   String get save => 'Speichern';

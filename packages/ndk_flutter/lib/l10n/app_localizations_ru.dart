@@ -661,8 +661,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cashuWalletAdded => 'Кошелёк Cashu успешно добавлен!';
 
   @override
-  String get failedToAddMint =>
-      'Не удалось добавить минт. Пожалуйста, проверьте URL и попробуйте снова.';
+  String get failedToAddMint => 'Не удалось добавить минт. Пожалуйста, проверьте URL и попробуйте снова.';
 
   @override
   String get addNwcWalletTitle => 'Добавить Кошелёк NWC';
@@ -674,8 +673,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get manual => 'Вручную';
 
   @override
-  String get nwcFaucetDescription =>
-      'Создайте тестовый кошелёк с сатами из крана NWC.';
+  String get nwcFaucetDescription => 'Создайте тестовый кошелёк с сатами из крана NWC.';
 
   @override
   String get startingBalance => 'Начальный Баланс';
@@ -707,15 +705,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addLnurlWalletTitle => 'Добавить Кошелёк LNURL';
 
   @override
-  String get enterLnurlIdentifier =>
-      'Введите ваш LNURL идентификатор (user@domain.com).';
+  String get enterLnurlIdentifier => 'Введите ваш LNURL идентификатор (user@domain.com).';
 
   @override
   String get lnurlIdentifierHint => 'user@example.com';
 
   @override
-  String get pleaseEnterValidIdentifier =>
-      'Пожалуйста, введите действительный идентификатор (user@domain.com)';
+  String get pleaseEnterValidIdentifier => 'Пожалуйста, введите действительный идентификатор (user@domain.com)';
 
   @override
   String get lnurlWalletAdded => 'Кошелёк LNURL успешно добавлен!';
@@ -807,8 +803,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get amountHint => '100';
 
   @override
-  String get pleaseEnterValidAmount =>
-      'Пожалуйста, введите действительную сумму';
+  String get pleaseEnterValidAmount => 'Пожалуйста, введите действительную сумму';
 
   @override
   String get tokenCopiedToClipboard => 'Токен скопирован в буфер обмена!';
@@ -917,8 +912,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get deleteWalletConfirmation => 'Удалить Кошелёк?';
 
   @override
-  String get deleteWalletConfirmationMessage =>
-      'Вы уверены, что хотите удалить этот кошелёк? Это действие нельзя отменить.';
+  String get deleteWalletConfirmationMessage => 'Вы уверены, что хотите удалить этот кошелёк? Это действие нельзя отменить.';
 
   @override
   String get addWalletTitle => 'Добавить Кошелёк';
@@ -960,8 +954,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cameraNotAvailable => 'Камера недоступна';
 
   @override
-  String get scanNwcInstructions =>
-      'Отсканируйте QR-код из приложения кошелька NWC';
+  String get scanNwcInstructions => 'Отсканируйте QR-код из приложения кошелька NWC';
 
   @override
   String get invalidNwcUri => 'Неверный URI NWC';
@@ -994,11 +987,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get save => 'Сохранить';
 
   @override
-  String get walletRenamed => 'Кошелёк переименован';
+  String get walletRenamed => 'Кошелек переименован';
 
   @override
   String budgetUsedOf(int used, int total) {
-    return 'Budget: $used / $total sats';
+    return 'Бюджет: $used / $total sats';
   }
 
   @override

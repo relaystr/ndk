@@ -322,5 +322,77 @@
   "invalidNwcUri": "URI NWC inválida",
   "paste": "Pegar",
   "fromYourProfile": "De tu perfil",
-  "orEnterManually": "O ingresa manualmente:"
+  "orEnterManually": "O ingresa manualmente:",
+  "budgetUsedOf": "Presupuesto: {used} / {total} sats",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Se renueva en {days} días",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Diario",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Semanal",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Mensual",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Anual",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Nunca",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Renombrar",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Elegir color",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Eliminar",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Nombre de la cartera",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Ingrese el nombre de la cartera",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Guardar",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Cartera renombrada",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

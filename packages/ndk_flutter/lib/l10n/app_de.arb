@@ -1194,7 +1194,7 @@
   },
   "sats": "Sats",
   "@sats": {
-    "description": "Label for satoshis"
+    "description": "Label for sats"
   },
   "selected": "AUSGEWÄHLT",
   "@selected": {
@@ -1305,5 +1305,77 @@
   "orEnterManually": "Oder manuell eingeben:",
   "@orEnterManually": {
     "description": "Label for manual entry option"
+  },
+  "budgetUsedOf": "Budget: {used} / {total} sats",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Erneuert in {days} Tagen",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Täglich",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Wöchentlich",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Monatlich",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Jährlich",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Nie",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Umbenennen",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Farbe auswählen",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Löschen",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Wallet-Name",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Wallet-Namen eingeben",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Speichern",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Wallet umbenannt",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
   }
 }

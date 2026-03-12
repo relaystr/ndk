@@ -322,5 +322,77 @@
   "invalidNwcUri": "无效的NWC URI",
   "paste": "粘贴",
   "fromYourProfile": "来自您的个人资料",
-  "orEnterManually": "或手动输入:"
+  "orEnterManually": "或手动输入:",
+  "budgetUsedOf": "预算：{used} / {total} sats",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "{days} 天后更新",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "每日",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "每周",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "每月",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "每年",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "从不",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "重命名",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "选择颜色",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "删除",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "钱包名称",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "输入钱包名称",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "保存",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "钱包已重命名",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

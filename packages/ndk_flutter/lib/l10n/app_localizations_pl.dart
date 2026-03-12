@@ -425,8 +425,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get nostrConnectEvent => 'Nostr Connect';
 
   @override
-  String get blobsStoredOnMediaservers =>
-      'Bloby przechowywane na serwerach mediów';
+  String get blobsStoredOnMediaservers => 'Bloby przechowywane na serwerach mediów';
 
   @override
   String get httpAuth => 'Uwierzytelnianie HTTP';
@@ -486,8 +485,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get curatedPublicationItem => 'Wyselekcjonowany element publikacji';
 
   @override
-  String get curatedPublicationDraft =>
-      'Wersja robocza wyselekcjonowanej publikacji';
+  String get curatedPublicationDraft => 'Wersja robocza wyselekcjonowanej publikacji';
 
   @override
   String get releaseArtifactSets => 'Zestawy artefaktów wydania';
@@ -514,8 +512,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get classifiedListing => 'Ogłoszenie klasyfikowane';
 
   @override
-  String get draftClassifiedListing =>
-      'Wersja robocza ogłoszenia klasyfikowanego';
+  String get draftClassifiedListing => 'Wersja robocza ogłoszenia klasyfikowanego';
 
   @override
   String get repositoryAnnouncement => 'Ogłoszenie repozytorium';
@@ -649,8 +646,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get addCashuWalletTitle => 'Dodaj portfel Cashu';
 
   @override
-  String get enterMintUrl =>
-      'Wprowadź adres URL mennicy, aby dodać portfel Cashu.';
+  String get enterMintUrl => 'Wprowadź adres URL mennicy, aby dodać portfel Cashu.';
 
   @override
   String get mintUrl => 'URL mennicy';
@@ -665,8 +661,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get cashuWalletAdded => 'Portfel Cashu dodany pomyślnie!';
 
   @override
-  String get failedToAddMint =>
-      'Nie udało się dodać mennicy. Sprawdź adres URL i spróbuj ponownie.';
+  String get failedToAddMint => 'Nie udało się dodać mennicy. Sprawdź adres URL i spróbuj ponownie.';
 
   @override
   String get addNwcWalletTitle => 'Dodaj portfel NWC';
@@ -678,8 +673,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get manual => 'Ręcznie';
 
   @override
-  String get nwcFaucetDescription =>
-      'Utwórz testowy portfel z satoshi z kranu NWC.';
+  String get nwcFaucetDescription => 'Utwórz testowy portfel z sats z kranu NWC.';
 
   @override
   String get startingBalance => 'Saldo początkowe';
@@ -698,7 +692,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String nwcFaucetWalletAdded(int balance) {
-    return 'Portfel NWC dodany z saldem $balance satoshi!';
+    return 'Portfel NWC dodany z saldem $balance sats!';
   }
 
   @override
@@ -711,15 +705,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String get addLnurlWalletTitle => 'Dodaj portfel LNURL';
 
   @override
-  String get enterLnurlIdentifier =>
-      'Wprowadź swój identyfikator LNURL (użytkownik@domena.com).';
+  String get enterLnurlIdentifier => 'Wprowadź swój identyfikator LNURL (użytkownik@domena.com).';
 
   @override
   String get lnurlIdentifierHint => 'user@example.com';
 
   @override
-  String get pleaseEnterValidIdentifier =>
-      'Proszę wprowadzić prawidłowy identyfikator (użytkownik@domena.com)';
+  String get pleaseEnterValidIdentifier => 'Proszę wprowadzić prawidłowy identyfikator (użytkownik@domena.com)';
 
   @override
   String get lnurlWalletAdded => 'Portfel LNURL dodany pomyślnie!';
@@ -897,7 +889,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get balance => 'Saldo';
 
   @override
-  String get sats => 'satoshi';
+  String get sats => 'sats';
 
   @override
   String get selected => 'WYBRANY';
@@ -907,7 +899,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String receiveRange(int min, int max) {
-    return 'Odbiór: $min - $max satoshi';
+    return 'Odbiór: $min - $max sats';
   }
 
   @override
@@ -920,8 +912,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get deleteWalletConfirmation => 'Usunąć Portfel?';
 
   @override
-  String get deleteWalletConfirmationMessage =>
-      'Czy na pewno chcesz usunąć ten portfel? Tej operacji nie można cofnąć.';
+  String get deleteWalletConfirmationMessage => 'Czy na pewno chcesz usunąć ten portfel? Tej operacji nie można cofnąć.';
 
   @override
   String get addWalletTitle => 'Dodaj portfel';
@@ -1000,7 +991,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    return 'Budget: $used / $total sats';
+    return 'Budżet: $used / $total sats';
   }
 
   @override

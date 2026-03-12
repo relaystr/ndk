@@ -1202,7 +1202,7 @@
   },
   "sats": "sats",
   "@sats": {
-    "description": "Label for satoshis"
+    "description": "Label for sats"
   },
   "selected": "SELECTED",
   "@selected": {
@@ -1345,5 +1345,49 @@
   "walletRenamed": "Wallet renamed",
   "@walletRenamed": {
     "description": "Message shown when wallet is renamed"
+  },
+  "budgetUsedOf": "Budget: {used} / {total} sats",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Renews in {days} days",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Daily",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Weekly",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Monthly",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Yearly",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Never",
+  "@budgetNever": {
+    "description": "Never renews budget"
   }
 }

@@ -991,7 +991,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    return 'Budget: $used / $total sats';
+    return '预算：$used / $total sats';
   }
 
   @override

@@ -322,5 +322,77 @@
   "invalidNwcUri": "Неверный URI NWC",
   "paste": "Вставить",
   "fromYourProfile": "Из вашего профиля",
-  "orEnterManually": "Или введите вручную:"
+  "orEnterManually": "Или введите вручную:",
+  "budgetUsedOf": "Бюджет: {used} / {total} sats",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Обновление через {days} дн.",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Ежедневно",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Еженедельно",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Ежемесячно",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Ежегодно",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Никогда",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Переименовать",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Выбрать цвет",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Удалить",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Название кошелька",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Введите название кошелька",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Сохранить",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Кошелек переименован",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

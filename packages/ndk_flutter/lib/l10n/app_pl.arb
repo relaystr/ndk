@@ -894,7 +894,7 @@
   "@manual": {
     "description": "Tab label for manual option"
   },
-  "nwcFaucetDescription": "Utwórz testowy portfel z satoshi z kranu NWC.",
+  "nwcFaucetDescription": "Utwórz testowy portfel z sats z kranu NWC.",
   "@nwcFaucetDescription": {
     "description": "Description for NWC faucet"
   },
@@ -918,7 +918,7 @@
   "@nwcWalletAdded": {
     "description": "Success message when NWC wallet is added"
   },
-  "nwcFaucetWalletAdded": "Portfel NWC dodany z saldem {balance} satoshi!",
+  "nwcFaucetWalletAdded": "Portfel NWC dodany z saldem {balance} sats!",
   "@nwcFaucetWalletAdded": {
     "description": "Success message when NWC faucet wallet is added",
     "placeholders": {
@@ -1192,9 +1192,9 @@
   "@balance": {
     "description": "Label for balance display"
   },
-  "sats": "satoshi",
+  "sats": "sats",
   "@sats": {
-    "description": "Label for satoshis"
+    "description": "Label for sats"
   },
   "selected": "WYBRANY",
   "@selected": {
@@ -1204,7 +1204,7 @@
   "@receiveOnlyWallet": {
     "description": "Label for receive-only wallet"
   },
-  "receiveRange": "Odbiór: {min} - {max} satoshi",
+  "receiveRange": "Odbiór: {min} - {max} sats",
   "@receiveRange": {
     "description": "Label showing receive range for LNURL wallet",
     "placeholders": {
@@ -1305,5 +1305,77 @@
   "orEnterManually": "Lub wprowadź ręcznie:",
   "@orEnterManually": {
     "description": "Label for manual entry option"
+  },
+  "budgetUsedOf": "Budżet: {used} / {total} sats",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Odnowienie za {days} dni",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Codziennie",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Tygodniowo",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Miesięcznie",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Rocznie",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Nigdy",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Zmień nazwę",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Wybierz kolor",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Usuń",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Nazwa portfela",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Wprowadź nazwę portfela",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Zapisz",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Zmieniono nazwę portfela",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
   }
 }
