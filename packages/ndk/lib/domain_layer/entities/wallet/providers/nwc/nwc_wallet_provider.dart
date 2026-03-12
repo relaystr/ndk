@@ -178,4 +178,20 @@ class NwcWalletProvider implements WalletProvider {
     // Wallets must be explicitly connected via URI
     return Stream.value([]);
   }
+
+  @override
+  Future<String> receive(Wallet wallet, int amountSats) async {
+    final nwcWallet = wallet as NwcWallet;
+
+    if (!nwcWallet.isConnected()) {
+      await initialize(wallet);
+    }
+
+    final response = await _nwcUseCase.makeInvoice(
+      nwcWallet.connection!,
+      amountSats: amountSats
+    );
+
+    return response.invoice;
+  }
 }

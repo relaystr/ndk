@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:ndk/entities.dart';
 import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
 import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
 import 'package:ndk/presentation_layer/ndk.dart';
 
@@ -64,6 +68,11 @@ class _WalletsPageState extends State<WalletsPage> {
                         icon: const Icon(Icons.cloud_upload),
                         tooltip: "Add NWC",
                       ),
+                      IconButton(
+                        icon: const Icon(Icons.bolt),
+                        tooltip: "Add LNURL",
+                        onPressed: () => _showAddLnurlWalletDialog(context),
+                      ),
                     ],
                   ),
                 ],
@@ -121,6 +130,8 @@ class _WalletsPageState extends State<WalletsPage> {
         );
 
         final bool isCashu = wallet is CashuWallet;
+        final bool isNwc = wallet is NwcWallet;
+        final bool isLnurl = wallet is LnurlWallet;
 
         return Card(
           elevation: 4,
@@ -132,12 +143,24 @@ class _WalletsPageState extends State<WalletsPage> {
                 Row(
                   children: [
                     Icon(
-                      isCashu ? Icons.account_balance_wallet : Icons.cloud,
-                      color: isCashu ? Colors.orange : Colors.blue,
+                      isCashu
+                          ? Icons.account_balance_wallet
+                          : isNwc
+                              ? Icons.cloud
+                              : Icons.bolt,
+                      color: isCashu
+                          ? Colors.orange
+                          : isNwc
+                              ? Colors.blue
+                              : Colors.purple,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      isCashu ? "Cashu Wallet" : "NWC Wallet",
+                      isCashu
+                          ? "Cashu Wallet"
+                          : isNwc
+                              ? "NWC Wallet"
+                              : "LNURL Wallet",
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const Spacer(),
@@ -694,18 +717,206 @@ class _WalletsPageState extends State<WalletsPage> {
 
   void _showAddNwcWalletDialog(BuildContext context) {
     final nwcUriController = TextEditingController();
+    final balanceController = TextEditingController(text: '10000');
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return DefaultTabController(
+          length: 2,
+          child: AlertDialog(
+            title: const Text('Add NWC Wallet'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const TabBar(
+                    tabs: [
+                      Tab(text: 'Faucet'),
+                      Tab(text: 'Manual'),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 150,
+                    child: TabBarView(
+                      children: [
+                        // Faucet Tab
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Create a test wallet via NWC Faucet',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: balanceController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Starting Balance (sats)',
+                                  hintText: '10000',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Manual Tab
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: TextField(
+                            controller: nwcUriController,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'NWC Connection URI',
+                              hintText: 'nostr+walletconnect://...',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              StatefulBuilder(
+                builder: (context, setState) {
+                  return TextButton(
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            final tabController =
+                                DefaultTabController.of(context);
+                            final currentTab = tabController.index;
+
+                            if (currentTab == 0) {
+                              // Faucet tab
+                              setState(() {
+                                isLoading = true;
+                              });
+
+                              try {
+                                final balance =
+                                    int.tryParse(balanceController.text) ??
+                                        10000;
+                                final response = await http.post(
+                                  Uri.parse(
+                                      'https://faucet.nwc.dev?balance=$balance'),
+                                );
+
+                                if (response.statusCode == 200) {
+                                  final nwcUri = response.body.trim();
+
+                                  if (nwcUri != null && nwcUri.isNotEmpty) {
+                                    final walletId = DateTime.now()
+                                        .millisecondsSinceEpoch
+                                        .toString();
+                                    final nwcWallet = NwcWallet(
+                                      id: walletId,
+                                      name:
+                                          "NWC Faucet",
+                                      supportedUnits: {'sat'},
+                                      nwcUrl: nwcUri,
+                                    );
+                                    await widget.ndk.wallets
+                                        .addWallet(nwcWallet);
+
+                                    if (mounted) {
+                                      Navigator.of(context).pop();
+                                      displaySuccess(
+                                          "NWC faucet wallet added with $balance sats!");
+                                      this.setState(() {
+                                        _selectedWalletId = nwcWallet.id;
+                                      });
+                                    }
+                                  } else {
+                                    displayError(
+                                        "Invalid response from faucet");
+                                  }
+                                } else {
+                                  displayError(
+                                      "Failed to create wallet: ${response.statusCode}");
+                                }
+                              } catch (e) {
+                                displayError("Error creating wallet: $e");
+                              } finally {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
+                            } else {
+                              // Manual tab
+                              try {
+                                final walletId = DateTime.now()
+                                    .millisecondsSinceEpoch
+                                    .toString();
+                                final nwcWallet = NwcWallet(
+                                  id: walletId,
+                                  name:
+                                      "NWC ${DateTime.now().toString().split(' ')[1].substring(0, 5)}",
+                                  supportedUnits: {'sat'},
+                                  nwcUrl: nwcUriController.text,
+                                );
+                                await widget.ndk.wallets.addWallet(nwcWallet);
+
+                                if (mounted) {
+                                  Navigator.of(context).pop();
+                                  displaySuccess("NWC wallet added!");
+                                  this.setState(() {
+                                    _selectedWalletId = nwcWallet.id;
+                                  });
+                                }
+                              } catch (e) {
+                                displayError(e.toString());
+                              }
+                            }
+                          },
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Add'),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddLnurlWalletDialog(BuildContext context) {
+    final identifierController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Add NWC Wallet'),
-          content: TextField(
-            controller: nwcUriController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'NWC Connection URI',
-              hintText: 'nostr+walletconnect://...',
-            ),
+          title: const Text('Add LNURL Wallet'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Enter your LNURL identifier:'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: identifierController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'user@domain.com',
+                  hintText: 'user@domain.com',
+                ),
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -714,23 +925,30 @@ class _WalletsPageState extends State<WalletsPage> {
             ),
             TextButton(
               onPressed: () async {
+                final identifier = identifierController.text.trim();
+                if (identifier.isEmpty || !identifier.contains('@')) {
+                  displayError(
+                      "Please enter a valid identifier (user@domain.com)");
+                  return;
+                }
+
                 try {
                   final walletId =
                       DateTime.now().millisecondsSinceEpoch.toString();
-                  final nwcWallet = NwcWallet(
+                  final wallet = widget.ndk.wallets.createWallet(
+                    type: WalletType.LNURL,
                     id: walletId,
-                    name:
-                        "NWC ${DateTime.now().toString().split(' ')[1].substring(0, 5)}",
+                    name: "LNURL",
                     supportedUnits: {'sat'},
-                    nwcUrl: nwcUriController.text,
+                    metadata: {'identifier': identifier},
                   );
-                  await widget.ndk.wallets.addWallet(nwcWallet);
+                  await widget.ndk.wallets.addWallet(wallet);
 
                   if (mounted) {
                     Navigator.of(context).pop();
-                    displaySuccess("NWC wallet added!");
+                    displaySuccess("LNURL wallet added!");
                     setState(() {
-                      _selectedWalletId = nwcWallet.id;
+                      _selectedWalletId = wallet.id;
                     });
                   }
                 } catch (e) {
@@ -824,12 +1042,61 @@ class WalletCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isCashu = wallet is CashuWallet;
-    final String walletName = isCashu
-        ? (wallet as CashuWallet).mintInfo.name ?? 'Cashu'
-        : (wallet as NwcWallet).name;
-    final String subtitle = isCashu
-        ? (wallet as CashuWallet).mintUrl.replaceAll('https://', '')
-        : 'NWC Wallet';
+    final bool isNwc = wallet is NwcWallet;
+    final bool isLnurl = wallet is LnurlWallet;
+
+    // Determine wallet name based on type
+    final String walletName;
+    if (isCashu) {
+      walletName = (wallet as CashuWallet).mintInfo.name ?? 'Cashu';
+    } else if (isNwc) {
+      walletName = (wallet as NwcWallet).name;
+    } else if (isLnurl) {
+      walletName = (wallet as LnurlWallet).name;
+    } else {
+      walletName = 'Unknown';
+    }
+
+    // Determine subtitle based on type
+    final String subtitle;
+    if (isCashu) {
+      subtitle = (wallet as CashuWallet).mintUrl.replaceAll('https://', '');
+    } else if (isNwc) {
+      subtitle = 'NWC Wallet';
+    } else if (isLnurl) {
+      subtitle = (wallet as LnurlWallet).identifier;
+    } else {
+      subtitle = '';
+    }
+
+    // Determine gradient colors based on type
+    final List<Color> gradientColors;
+    final Color shadowColor;
+    if (isCashu) {
+      gradientColors = [Colors.orange[700]!, Colors.orange[400]!];
+      shadowColor = Colors.orange;
+    } else if (isNwc) {
+      gradientColors = [Colors.blue[700]!, Colors.blue[400]!];
+      shadowColor = Colors.blue;
+    } else if (isLnurl) {
+      gradientColors = [Colors.purple[700]!, Colors.purple[400]!];
+      shadowColor = Colors.purple;
+    } else {
+      gradientColors = [Colors.grey[700]!, Colors.grey[400]!];
+      shadowColor = Colors.grey;
+    }
+
+    // Determine icon based on type
+    final IconData walletIcon;
+    if (isCashu) {
+      walletIcon = Icons.account_balance_wallet;
+    } else if (isNwc) {
+      walletIcon = Icons.cloud;
+    } else if (isLnurl) {
+      walletIcon = Icons.bolt;
+    } else {
+      walletIcon = Icons.wallet;
+    }
 
     return GestureDetector(
       onTap: onTap,
@@ -841,13 +1108,11 @@ class WalletCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isCashu
-                ? [Colors.orange[700]!, Colors.orange[400]!]
-                : [Colors.blue[700]!, Colors.blue[400]!],
+            colors: gradientColors,
           ),
           boxShadow: [
             BoxShadow(
-              color: (isCashu ? Colors.orange : Colors.blue).withAlpha(100),
+              color: shadowColor.withAlpha(100),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -861,7 +1126,7 @@ class WalletCard extends StatelessWidget {
               right: -20,
               top: -20,
               child: Icon(
-                isCashu ? Icons.account_balance_wallet : Icons.cloud,
+                walletIcon,
                 size: 120,
                 color: Colors.white.withAlpha(30),
               ),
@@ -877,7 +1142,7 @@ class WalletCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Icon(
-                        isCashu ? Icons.account_balance_wallet : Icons.cloud,
+                        walletIcon,
                         color: Colors.white,
                         size: 32,
                       ),
@@ -925,43 +1190,51 @@ class WalletCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       // Balance display
-                      StreamBuilder<List<WalletBalance>>(
-                        stream: ndk.wallets.getBalancesStream(wallet.id),
-                        builder: (context, snapshot) {
-                          final balances = snapshot.data ?? [];
-                          final satBalance = balances
-                              .firstWhere(
-                                (b) => b.unit == 'sat',
-                                orElse: () => WalletBalance(
-                                  walletId: wallet.id,
-                                  unit: 'sat',
-                                  amount: 0,
-                                ),
-                              )
-                              .amount;
+                      isLnurl
+                          ? Text(
+                              'Receive-only wallet',
+                              style: TextStyle(
+                                color: Colors.white.withAlpha(200),
+                                fontSize: 14,
+                              ),
+                            )
+                          : StreamBuilder<List<WalletBalance>>(
+                              stream: ndk.wallets.getBalancesStream(wallet.id),
+                              builder: (context, snapshot) {
+                                final balances = snapshot.data ?? [];
+                                final satBalance = balances
+                                    .firstWhere(
+                                      (b) => b.unit == 'sat',
+                                      orElse: () => WalletBalance(
+                                        walletId: wallet.id,
+                                        unit: 'sat',
+                                        amount: 0,
+                                      ),
+                                    )
+                                    .amount;
 
-                          return Row(
-                            children: [
-                              Text(
-                                '$satBalance',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'sats',
-                                style: TextStyle(
-                                  color: Colors.white.withAlpha(200),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
+                                return Row(
+                                  children: [
+                                    Text(
+                                      '$satBalance',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'sats',
+                                      style: TextStyle(
+                                        color: Colors.white.withAlpha(200),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
                     ],
                   ),
                 ],

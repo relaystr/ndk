@@ -99,6 +99,19 @@ abstract class WalletTransaction {
           transactionDate: transactionDate,
           initiatedDate: initiatedDate,
         );
+      case WalletType.LNURL:
+        return LnurlWalletTransaction(
+          id: id,
+          walletId: walletId,
+          changeAmount: changeAmount,
+          unit: unit,
+          walletType: walletType,
+          state: state,
+          metadata: metadata,
+          completionMsg: completionMsg,
+          transactionDate: transactionDate,
+          initiatedDate: initiatedDate,
+        );
     }
   }
 }
@@ -202,6 +215,21 @@ class CashuWalletTransaction extends WalletTransaction {
 
 class NwcWalletTransaction extends WalletTransaction {
   NwcWalletTransaction({
+    required super.id,
+    required super.walletId,
+    required super.changeAmount,
+    required super.unit,
+    required super.walletType,
+    required super.state,
+    required super.metadata,
+    super.completionMsg,
+    super.transactionDate,
+    super.initiatedDate,
+  });
+}
+
+class LnurlWalletTransaction extends WalletTransaction {
+  LnurlWalletTransaction({
     required super.id,
     required super.walletId,
     required super.changeAmount,

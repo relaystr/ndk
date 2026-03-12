@@ -44,6 +44,8 @@ abstract class WalletProvider {
   /// Returns payment result with preimage and fees
   Future<PayInvoiceResponse> payInvoice(Wallet wallet, String invoice);
 
+  Future<String> receive(Wallet wallet, int amountSats);
+
   /// Stream of wallets discovered by this provider
   /// For auto-discovery (e.g., Cashu mints, NWC connections from events)
   Stream<List<Wallet>> get discoveredWallets;

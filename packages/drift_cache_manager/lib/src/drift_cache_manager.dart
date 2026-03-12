@@ -10,6 +10,7 @@ import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
 import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
@@ -1239,6 +1240,17 @@ class DriftCacheManager extends CacheManager {
           name: row.name,
           supportedUnits: supportedUnits,
           nwcUrl: metadata['nwcUrl'] as String,
+        );
+      case WalletType.LNURL:
+        return LnurlWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          identifier: metadata['identifier'] as String,
+          lnurlPayUrl: metadata['lnurlPayUrl'] as String,
+          minSendable: metadata['minSendable'] as int?,
+          maxSendable: metadata['maxSendable'] as int?,
+          metadataFetchedAt: metadata['metadataFetchedAt'] as int?,
         );
     }
   }

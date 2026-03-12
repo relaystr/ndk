@@ -131,6 +131,8 @@ class CashuWalletProvider implements WalletProvider {
     throw Exception('Cashu payment did not complete');
   }
 
+
+
   @override
   Stream<List<Wallet>> get discoveredWallets {
     return _cashuUseCase.knownMints.map((mints) {
@@ -144,5 +146,11 @@ class CashuWalletProvider implements WalletProvider {
               ))
           .toList();
     });
+  }
+
+  @override
+  Future<String> receive(Wallet wallet, int amountSats) async {
+    // TODO: implement receive
+    throw UnimplementedError();
   }
 }

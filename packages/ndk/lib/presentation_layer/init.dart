@@ -14,6 +14,7 @@ import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
+import '../domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
@@ -252,6 +253,10 @@ class Initialization {
         LnurlTransportHttpImpl(_httpRequestDS);
 
     lnurl = Lnurl(transport: lnurlTransport);
+
+    // Create LNURL wallet provider after lnurl is initialized
+    final lnurlProvider = LnurlWalletProvider(lnurl);
+
     zaps = Zaps(
       requests: requests,
       nwc: nwc,
@@ -295,7 +300,7 @@ class Initialization {
     );
 
     wallets = Wallets(
-      providers: [cashuProvider, nwcProvider],
+      providers: [cashuProvider, nwcProvider, lnurlProvider],
       repository: walletsRepo,
     );
     proofOfWork = ProofOfWork();

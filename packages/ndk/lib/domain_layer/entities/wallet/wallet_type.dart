@@ -2,7 +2,9 @@ enum WalletType {
   // ignore: constant_identifier_names
   NWC('nwc'),
   // ignore: constant_identifier_names
-  CASHU('cashu');
+  CASHU('cashu'),
+  // ignore: constant_identifier_names
+  LNURL('lnurl');
 
   final String value;
 
