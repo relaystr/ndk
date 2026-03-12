@@ -48,47 +48,30 @@ Future<void> main() async {
     // not on android or amber not installed
   }
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
-  final GlobalKey<_MyHomePageState> _homePageKey =
-      GlobalKey<_MyHomePageState>();
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
 
-  // final _router = GoRouter(
-  //   routes: [
-  //     GoRoute(
-  //       path: '/',
-  //       builder: (context, state) => const HomePage(),
-  //     ),
-  //   ],
-  // );
+class _MyAppState extends State<MyApp> {
+  Locale _currentLocale = const Locale('en');
+
+  void _handleLocaleChanged(Locale locale) {
+    setState(() {
+      _currentLocale = locale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // return ProviderScope(
-    //   child: HomePage()
-    //   // child: AppBase(
-    //   //   title: 'NDK Demo',
-    //   //   routerConfig: _router,
-    //   //   appLogo: Icon(Icons.add),
-    //   //   // Image.asset(
-    //   //   //   'assets/images/logo.png',
-    //   //   //   fit: BoxFit.contain,
-    //   //   // ),
-    //   //   darkAppLogo: Icon(Icons.add),
-    //   //
-    //   // // Image.asset(
-    //   //   //   'assets/images/logo_dark.png',
-    //   //   //   fit: BoxFit.contain,
-    //   //   // ),
-    //   // ),
-    // );
-
     return MaterialApp(
       title: 'Nostr Developer Kit Demo',
+      locale: _currentLocale,
       localizationsDelegates: const [
         ndk_flutter.AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -100,7 +83,10 @@ class MyApp extends StatelessWidget {
         children: [
           SafeArea(
             top: false,
-            child: MyHomePage(key: _homePageKey),
+            child: MyHomePage(
+              onLocaleChanged: _handleLocaleChanged,
+              currentLocale: _currentLocale,
+            ),
           ),
           NPendingRequests(ndkFlutter: ndkFlutter),
         ],
@@ -110,9 +96,14 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  // Removed static GlobalKey. The key is now passed via constructor by MyApp.
-  // The constructor now implicitly uses super.key for the key passed by MyApp.
-  const MyHomePage({super.key});
+  final ValueChanged<Locale> onLocaleChanged;
+  final Locale currentLocale;
+
+  const MyHomePage({
+    super.key,
+    required this.onLocaleChanged,
+    required this.currentLocale,
+  });
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -142,13 +133,7 @@ class _MyHomePageState extends State<MyHomePage>
   void initState() {
     super.initState();
 
-    // _tabs and _tabPages will be more dynamically defined in the build method
-    // to ensure they use the latest context and state.
-    // Initialize _tabController with a fixed length or a length derived from a preliminary _tabs definition.
-    // For now, assuming a fixed number of tabs (e.g., 6) as per previous structure.
-    // If tab count is dynamic (e.g. with amberAvailable), this needs careful management.
     _tabs = <Tab>[
-      // Define _tabs here for TabController length
       const Tab(text: 'Accounts'),
       const Tab(text: 'Metadata'),
       const Tab(text: 'Relays'),
@@ -156,35 +141,11 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
       const Tab(text: "Wallets"),
-      //const Tab(text: 'Query Performance'),
-      // Conditionally add Amber tab if it's part of the design
-      // For a fixed length of 6, ensure this list matches.
-      // Example: if Amber is the 6th tab:
-      // const Tab(text: 'Amber'),
       const Tab(text: 'Widgets'),
       const Tab(text: 'Pending'),
     ];
-    // If amberAvailable leads to a 6th tab, it should be consistently defined.
-    // Let's assume 5 base tabs and Amber is conditional, making length 5 or 6.
-    // For simplicity with TabController, let's assume a fixed number of main tabs, e.g., 5,
-    // and handle conditional ones by adjusting TabController length or having placeholder.
-    // The original code had 5 non-commented tabs + conditional Amber.
-    // Let's stick to the 5 main tabs for TabController length initially,
-    // and adjust if Amber is included.
-    // The provided code snippet for _tabs has 5 items.
 
-    // Re-evaluating the original _tabs list:
-    // 1. Accounts, 2. Metadata, 3. Relays, 4. NWC, 5. Blossom. That's 5.
-    // If Amber is added, it becomes 6.
-    // The TabController was initialized with _tabs.length.
-
-    // Let's define _tabs consistently for initState and build.
-    // The main change is how _tabPages is constructed in build() to pass the callback.
-
-    _tabController = TabController(
-        length: _tabs.length,
-        vsync:
-            this); // Fixed length to 8 (Accounts, Metadata, Relays, NWC, Blossom, Verifiers, Widgets)
+    _tabController = TabController(length: _tabs.length, vsync: this);
     _tabController.addListener(() {
       if (mounted) {
         setState(() {});
@@ -235,13 +196,9 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void switchToNwcTab() {
-    // Find the index of the NWC tab using the centralized _tabs list.
     int nwcPageIndex = -1;
     for (int i = 0; i < _tabs.length; i++) {
-      // Tab.text can be null if a child widget is used instead.
-      // We are assuming Tab(text: 'NWC') is used.
       if (_tabs[i].text == nwcTabName) {
-        // Use the constant
         nwcPageIndex = i;
         break;
       }
@@ -262,7 +219,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    // Define _tabs and _tabPages here to ensure they are reconstructed with the latest state.
     _tabs = <Tab>[
       const Tab(text: 'Accounts'),
       const Tab(text: 'Metadata'),
@@ -271,8 +227,6 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: "Blossom"),
       const Tab(text: 'Verifiers'),
       const Tab(text: "Wallets"),
-      //const Tab(text: 'Query Performance'),
-      // Amber tab removed
       const Tab(text: 'Widgets'),
       const Tab(text: 'Pending'),
     ];
@@ -284,32 +238,20 @@ class _MyHomePageState extends State<MyHomePage>
       const NwcPage(),
       BlossomMediaPage(ndk: ndk),
       VerifiersPerformancePage(ndk: ndk),
-      // QueryPerformancePage removed - file does not exist
-      WalletsPage(
-        ndk: ndk,
-      ),
-      //QueryPerformancePage(ndk: ndk),
-      // AmberPage removed
+      WalletsPage(ndk: ndk),
       WidgetsDemoPage(onAccountChanged: _handleAccountChange),
       const PendingRequestsPage(),
     ];
 
-    // Ensure TabController length matches dynamic _tabs list if it changed since initState
-    // This can be tricky. If length changes, TabController might need re-initialization.
-    // For this specific fix, the primary goal is updating metadata tab.
-    // A common pattern is to initialize TabController with a fixed max length or update it.
-    // If _tabController.length doesn't match _tabs.length here, it will error.
-    // The TabController was initialized in initState with a potentially dynamic length.
-    // It's safer if TabController's length is determined once or its recreation is handled.
-
-    // Assuming TabController length is correctly managed based on amberAvailable from initState.
-    // If not, _tabController = TabController(length: _tabs.length, vsync: this); would be needed here,
-    // but that re-creates it on every build, losing tab state.
-    // The current initState correctly sets the length based on amberAvailable.
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nostr Development Kit Demo'),
+        actions: [
+          NLocaleSwitcher(
+            currentLocale: widget.currentLocale,
+            onLocaleChanged: widget.onLocaleChanged,
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: _tabs,
@@ -325,7 +267,6 @@ class _MyHomePageState extends State<MyHomePage>
 
 /// how to fetch metadata info
 Widget metadata(Ndk ndk, BuildContext context) {
-  // Added BuildContext for potential theme access
   final loggedInAccount = ndk.accounts.getLoggedAccount();
   final String? pubkey = loggedInAccount?.pubkey;
 
@@ -338,7 +279,6 @@ Widget metadata(Ndk ndk, BuildContext context) {
     ));
   }
 
-  // The Future is created here. If pubkey changes, a new Future will be passed to FutureBuilder.
   final Future<Metadata?> response = ndk.metadata.loadMetadata(pubkey);
 
   return FutureBuilder<Metadata?>(
@@ -352,10 +292,8 @@ Widget metadata(Ndk ndk, BuildContext context) {
       } else if (snapshot.hasData && snapshot.data != null) {
         final metadata = snapshot.data!;
         return SingleChildScrollView(
-          // Added for scrollability if content is long
           padding: const EdgeInsets.all(16.0),
           child: Center(
-            // Center the column content
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -365,18 +303,14 @@ Widget metadata(Ndk ndk, BuildContext context) {
                     radius: 50,
                     backgroundImage: NetworkImage(metadata.picture!),
                     onBackgroundImageError: (exception, stackTrace) {
-                      // This child will be shown if the image fails to load
                       print("Error loading avatar in metadata tab: $exception");
-                      // Optionally, you could set a flag here and display a placeholder Icon instead
                     },
-                    // Fallback child if backgroundImage is null or on error (though onBackgroundImageError is better for errors)
                     child: metadata.picture == null || metadata.picture!.isEmpty
                         ? const Icon(Icons.person, size: 50)
                         : null,
                   )
                 else
                   const CircleAvatar(
-                    // Placeholder if no picture URL
                     radius: 50,
                     child: Icon(Icons.person, size: 50),
                   ),
@@ -393,13 +327,11 @@ Widget metadata(Ndk ndk, BuildContext context) {
                 Text('Website: ${metadata.website ?? 'N/A'}'),
                 Text('Lud06: ${metadata.lud06 ?? 'N/A'}'),
                 Text('Lud16: ${metadata.lud16 ?? 'N/A'}'),
-                // Add more fields as desired
               ],
             ),
           ),
         );
       } else {
-        // No data, but not an error and not waiting -> metadata not found for pubkey
         return Center(
             child: Text(
                 'Metadata not found for this account. You might need to set it in a Nostr client.'));
