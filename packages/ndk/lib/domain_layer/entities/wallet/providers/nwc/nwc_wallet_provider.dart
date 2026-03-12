@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:rxdart/rxdart.dart';
 
 import '../../../../usecases/nwc/nwc.dart';
@@ -13,6 +15,8 @@ import 'nwc_wallet.dart';
 /// Implements factory and operations for Nostr Wallet Connect wallets
 class NwcWalletProvider implements WalletProvider {
   final Nwc _nwcUseCase;
+  final Map<String, StreamSubscription> _notificationSubscriptions = {};
+  final Map<String, bool> _refreshInFlight = {};
 
   NwcWalletProvider(this._nwcUseCase);
 
@@ -50,11 +54,17 @@ class NwcWalletProvider implements WalletProvider {
         doGetInfoMethod: true,
       );
     }
+
+    _ensureNotificationSubscription(nwcWallet);
   }
 
   @override
   Future<void> dispose(Wallet wallet) async {
     final nwcWallet = wallet as NwcWallet;
+    final sub = _notificationSubscriptions.remove(nwcWallet.id);
+    if (sub != null) {
+      await sub.cancel();
+    }
     if (nwcWallet.connection != null) {
       await _nwcUseCase.disconnect(nwcWallet.connection!);
       await nwcWallet.balanceSubject?.close();
@@ -74,14 +84,7 @@ class NwcWalletProvider implements WalletProvider {
 
     nwcWallet.balanceSubject ??= BehaviorSubject<List<WalletBalance>>();
 
-    final balanceResponse = await _nwcUseCase.getBalance(nwcWallet.connection!);
-    nwcWallet.balanceSubject!.add([
-      WalletBalance(
-        walletId: wallet.id,
-        unit: "sat",
-        amount: balanceResponse.balanceSats,
-      ),
-    ]);
+    await _refreshBalance(nwcWallet);
 
     yield* nwcWallet.balanceSubject!.stream;
   }
@@ -97,27 +100,7 @@ class NwcWalletProvider implements WalletProvider {
     nwcWallet.pendingTransactionsSubject ??=
         BehaviorSubject<List<WalletTransaction>>();
 
-    final transactions = await _nwcUseCase.listTransactions(
-      nwcWallet.connection!,
-      unpaid: true,
-    );
-
-    nwcWallet.pendingTransactionsSubject!.add(
-      transactions.transactions.reversed
-          .where((e) => e.state != null && e.state == "pending")
-          .map((e) => NwcWalletTransaction(
-                id: e.paymentHash,
-                walletId: wallet.id,
-                changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
-                unit: "sats",
-                walletType: WalletType.NWC,
-                state: WalletTransactionState.pending,
-                metadata: e.metadata ?? {},
-                transactionDate: e.settledAt ?? e.createdAt,
-                initiatedDate: e.createdAt,
-              ))
-          .toList(),
-    );
+    await _refreshPendingTransactions(nwcWallet);
 
     yield* nwcWallet.pendingTransactionsSubject!.stream;
   }
@@ -133,27 +116,7 @@ class NwcWalletProvider implements WalletProvider {
     nwcWallet.transactionsSubject ??=
         BehaviorSubject<List<WalletTransaction>>();
 
-    final transactions = await _nwcUseCase.listTransactions(
-      nwcWallet.connection!,
-      unpaid: false,
-    );
-
-    nwcWallet.transactionsSubject!.add(
-      transactions.transactions.reversed
-          .where((e) => e.state != null && e.state == "settled")
-          .map((e) => NwcWalletTransaction(
-                id: e.paymentHash,
-                walletId: wallet.id,
-                changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
-                unit: "sats",
-                walletType: WalletType.NWC,
-                state: WalletTransactionState.completed,
-                metadata: e.metadata ?? {},
-                transactionDate: e.settledAt ?? e.createdAt,
-                initiatedDate: e.createdAt,
-              ))
-          .toList(),
-    );
+    await _refreshRecentTransactions(nwcWallet);
 
     yield* nwcWallet.transactionsSubject!.stream;
   }
@@ -166,10 +129,12 @@ class NwcWalletProvider implements WalletProvider {
       await initialize(wallet);
     }
 
-    return _nwcUseCase.payInvoice(
+    final response = await _nwcUseCase.payInvoice(
       nwcWallet.connection!,
       invoice: invoice,
     );
+    await _refreshAll(nwcWallet);
+    return response;
   }
 
   @override
@@ -189,9 +154,127 @@ class NwcWalletProvider implements WalletProvider {
 
     final response = await _nwcUseCase.makeInvoice(
       nwcWallet.connection!,
-      amountSats: amountSats
+      amountSats: amountSats,
     );
 
+    await _refreshAll(nwcWallet);
     return response.invoice;
+  }
+
+  void _ensureNotificationSubscription(NwcWallet wallet) {
+    if (_notificationSubscriptions.containsKey(wallet.id)) {
+      return;
+    }
+    final connection = wallet.connection;
+    if (connection == null) {
+      return;
+    }
+
+    _notificationSubscriptions[wallet.id] =
+        connection.notificationStream.stream.listen((_) async {
+      await _refreshAll(wallet);
+    });
+  }
+
+  Future<void> _refreshAll(NwcWallet wallet) async {
+    if (_refreshInFlight[wallet.id] == true) {
+      return;
+    }
+    _refreshInFlight[wallet.id] = true;
+    try {
+      await Future.wait([
+        _refreshBalance(wallet),
+        _refreshPendingTransactions(wallet),
+        _refreshRecentTransactions(wallet),
+      ]);
+    } finally {
+      _refreshInFlight[wallet.id] = false;
+    }
+  }
+
+  Future<void> _refreshBalance(NwcWallet wallet) async {
+    wallet.balanceSubject ??= BehaviorSubject<List<WalletBalance>>();
+    final balanceResponse = await _nwcUseCase.getBalance(wallet.connection!);
+    wallet.balanceSubject!.add([
+      WalletBalance(
+        walletId: wallet.id,
+        unit: "sat",
+        amount: balanceResponse.balanceSats,
+      ),
+    ]);
+  }
+
+  Future<void> _refreshPendingTransactions(NwcWallet wallet) async {
+    wallet.pendingTransactionsSubject ??=
+        BehaviorSubject<List<WalletTransaction>>();
+    final transactions = await _nwcUseCase.listTransactions(
+      wallet.connection!,
+      unpaid: true,
+    );
+
+    wallet.pendingTransactionsSubject!.add(
+      transactions.transactions.reversed.map((e) {
+        return NwcWalletTransaction(
+          id: e.paymentHash,
+          walletId: wallet.id,
+          changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
+          unit: "sat",
+          walletType: WalletType.NWC,
+          state: _mapState(e.state, defaultPending: true),
+          metadata: e.metadata ?? {},
+          transactionDate: e.settledAt ?? e.createdAt,
+          initiatedDate: e.createdAt,
+        );
+      }).toList(),
+    );
+  }
+
+  Future<void> _refreshRecentTransactions(NwcWallet wallet) async {
+    wallet.transactionsSubject ??= BehaviorSubject<List<WalletTransaction>>();
+    final transactions = await _nwcUseCase.listTransactions(
+      wallet.connection!,
+      unpaid: false,
+    );
+
+    wallet.transactionsSubject!.add(
+      transactions.transactions.reversed.map((e) {
+        return NwcWalletTransaction(
+          id: e.paymentHash,
+          walletId: wallet.id,
+          changeAmount: e.isIncoming ? e.amountSat : -e.amountSat,
+          unit: "sat",
+          walletType: WalletType.NWC,
+          state:
+              _mapState(e.state, defaultPending: false, settledAt: e.settledAt),
+          metadata: e.metadata ?? {},
+          transactionDate: e.settledAt ?? e.createdAt,
+          initiatedDate: e.createdAt,
+        );
+      }).toList(),
+    );
+  }
+
+  WalletTransactionState _mapState(String? state,
+      {required bool defaultPending, int? settledAt}) {
+    if (state == null) {
+      if (settledAt != null) {
+        return WalletTransactionState.completed;
+      }
+      return defaultPending
+          ? WalletTransactionState.pending
+          : WalletTransactionState.completed;
+    }
+    switch (state) {
+      case "pending":
+        return WalletTransactionState.pending;
+      case "settled":
+        return WalletTransactionState.completed;
+      case "failed":
+        return WalletTransactionState.failed;
+      case "expired":
+        return WalletTransactionState.canceled;
+      default:
+        return WalletTransactionState.completed;
+    }
   }
 }

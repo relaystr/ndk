@@ -431,8 +431,20 @@ class _WalletsPageState extends State<WalletsPage> {
                       }
                     }
                   } else if (wallet is NwcWallet) {
-                    // For NWC wallets - would need to implement NWC pay invoice
-                    displayError("NWC payment not yet implemented");
+                    final response = await widget.ndk.wallets.payInvoice(
+                      wallet.id,
+                      invoice,
+                    );
+                    if (response.errorCode == null &&
+                        response.preimage != null) {
+                      if (mounted) {
+                        Navigator.pop(context);
+                        displaySuccess("Invoice paid!");
+                      }
+                    } else {
+                      displayError(
+                          "Payment failed: ${response.errorMessage ?? 'Unknown error'}");
+                    }
                   }
                 } catch (e) {
                   displayError(e.toString());
@@ -543,8 +555,15 @@ class _WalletsPageState extends State<WalletsPage> {
                       }
                     }
                   } else if (wallet is NwcWallet) {
-                    // For NWC wallets
-                    displayError("NWC invoice creation not yet implemented");
+                    final invoice = await widget.ndk.wallets.receive(
+                      wallet.id,
+                      amount,
+                    );
+                    await Clipboard.setData(ClipboardData(text: invoice));
+                    if (mounted) {
+                      Navigator.pop(context);
+                      displaySuccess("Invoice created and copied!");
+                    }
                   }
                 } catch (e) {
                   displayError(e.toString());
@@ -821,8 +840,7 @@ class _WalletsPageState extends State<WalletsPage> {
                                         .toString();
                                     final nwcWallet = NwcWallet(
                                       id: walletId,
-                                      name:
-                                          "NWC Faucet",
+                                      name: "NWC Faucet",
                                       supportedUnits: {'sat'},
                                       nwcUrl: nwcUri,
                                     );

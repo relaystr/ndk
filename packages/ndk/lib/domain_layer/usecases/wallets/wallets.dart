@@ -144,6 +144,10 @@ class Wallets {
     _walletsPendingTransactions[wallet.id] = [];
     _walletsRecentTransactions[wallet.id] = [];
 
+    // Initialize transaction streams so combined feeds stay updated.
+    _initPendingTransactionStream(wallet.id);
+    _initRecentTransactionStream(wallet.id);
+
     if (defaultWallet == null) {
       setDefaultWallet(wallet.id);
     }
@@ -412,6 +416,25 @@ class Wallets {
       throw StateError('No default wallet set');
     }
     return payInvoice(defaultWallet!.id, invoice);
+  }
+
+  /// Create a Lightning invoice to receive funds
+  /// Returns the invoice string
+  Future<String> receive(String walletId, int amountSats) async {
+    final wallet = await _repository.getWallet(walletId);
+    final provider = _providers[wallet.type];
+    if (provider == null) {
+      throw ArgumentError('No provider for wallet type: ${wallet.type}');
+    }
+    return provider.receive(wallet, amountSats);
+  }
+
+  /// Receive with default wallet
+  Future<String> receiveWithDefaultWallet(int amountSats) async {
+    if (defaultWallet == null) {
+      throw StateError('No default wallet set');
+    }
+    return receive(defaultWallet!.id, amountSats);
   }
 
   /// todo: implement zap
