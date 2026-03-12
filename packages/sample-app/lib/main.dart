@@ -257,9 +257,11 @@ class _MyHomePageState extends State<MyHomePage>
           tabs: _tabs,
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: _tabPages,
+      body: SafeArea(
+        child: TabBarView(
+          controller: _tabController,
+          children: _tabPages,
+        ),
       ),
     );
   }
@@ -332,7 +334,7 @@ Widget metadata(Ndk ndk, BuildContext context) {
           ),
         );
       } else {
-        return Center(
+        return const Center(
             child: Text(
                 'Metadata not found for this account. You might need to set it in a Nostr client.'));
       }

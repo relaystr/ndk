@@ -53,6 +53,7 @@ class NLocaleSwitcher extends StatelessWidget {
     'es': 'Español',
     'fr': 'Français',
     'ja': '日本語',
+    'pl': 'Polski',
     'ru': 'Русский',
     'zh': '中文',
   };
@@ -69,8 +70,12 @@ class NLocaleSwitcher extends StatelessWidget {
         return '🇪🇸';
       case 'fr':
         return '🇫🇷';
+      case 'it':
+        return 'it';
       case 'ja':
         return '🇯🇵';
+      case 'pl':
+        return'🇵🇱';
       case 'ru':
         return '🇷🇺';
       case 'zh':

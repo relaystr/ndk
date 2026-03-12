@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:bip39_mnemonic/bip39_mnemonic.dart';
 
 import '../usecases/cashu/cashu_seed.dart';
 

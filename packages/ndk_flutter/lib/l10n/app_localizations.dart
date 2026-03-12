@@ -8,7 +8,9 @@ import 'package:intl/intl.dart' as intl;
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
 import 'app_localizations_fr.dart';
+import 'app_localizations_it.dart';
 import 'app_localizations_ja.dart';
+import 'app_localizations_pl.dart';
 import 'app_localizations_ru.dart';
 import 'app_localizations_zh.dart';
 
@@ -98,7 +100,9 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
+    Locale('it'),
     Locale('ja'),
+    Locale('pl'),
     Locale('ru'),
     Locale('zh')
   ];
@@ -1314,6 +1318,570 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Event Kind {kind}'**
   String unknownEventKind(int kind);
+
+  /// Title for wallets section
+  ///
+  /// In en, this message translates to:
+  /// **'Wallets'**
+  String get walletsTitle;
+
+  /// Title for recent activity section
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activity'**
+  String get recentActivityTitle;
+
+  /// Label for add Cashu wallet button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Cashu Wallet'**
+  String get addCashuWallet;
+
+  /// Label for add NWC wallet button
+  ///
+  /// In en, this message translates to:
+  /// **'Add NWC Wallet'**
+  String get addNwcWallet;
+
+  /// Label for add LNURL wallet button
+  ///
+  /// In en, this message translates to:
+  /// **'Add LNURL Wallet'**
+  String get addLnurlWallet;
+
+  /// Tooltip for add Cashu wallet button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Cashu Wallet'**
+  String get addCashuTooltip;
+
+  /// Tooltip for add NWC wallet button
+  ///
+  /// In en, this message translates to:
+  /// **'Add NWC Wallet'**
+  String get addNwcTooltip;
+
+  /// Tooltip for add LNURL wallet button
+  ///
+  /// In en, this message translates to:
+  /// **'Add LNURL Wallet'**
+  String get addLnurlTooltip;
+
+  /// Title for add Cashu wallet dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Add Cashu Wallet'**
+  String get addCashuWalletTitle;
+
+  /// Prompt for mint URL input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the mint URL to add a Cashu wallet.'**
+  String get enterMintUrl;
+
+  /// Label for mint URL input
+  ///
+  /// In en, this message translates to:
+  /// **'Mint URL'**
+  String get mintUrl;
+
+  /// Hint for mint URL input
+  ///
+  /// In en, this message translates to:
+  /// **'https://mint.example.com'**
+  String get mintUrlHint;
+
+  /// Error message for empty mint URL
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a mint URL'**
+  String get pleaseEnterMintUrl;
+
+  /// Success message when Cashu wallet is added
+  ///
+  /// In en, this message translates to:
+  /// **'Cashu wallet added successfully!'**
+  String get cashuWalletAdded;
+
+  /// Error message when adding Cashu wallet fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add mint. Please check the URL and try again.'**
+  String get failedToAddMint;
+
+  /// Title for add NWC wallet dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Add NWC Wallet'**
+  String get addNwcWalletTitle;
+
+  /// Tab label for faucet option
+  ///
+  /// In en, this message translates to:
+  /// **'Faucet'**
+  String get faucet;
+
+  /// Tab label for manual option
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get manual;
+
+  /// Description for NWC faucet
+  ///
+  /// In en, this message translates to:
+  /// **'Create a test wallet with sats from the NWC faucet.'**
+  String get nwcFaucetDescription;
+
+  /// Label for starting balance input
+  ///
+  /// In en, this message translates to:
+  /// **'Starting Balance'**
+  String get startingBalance;
+
+  /// Hint for starting balance input
+  ///
+  /// In en, this message translates to:
+  /// **'10000'**
+  String get startingBalanceHint;
+
+  /// Label for NWC connection URI input
+  ///
+  /// In en, this message translates to:
+  /// **'NWC Connection URI'**
+  String get nwcConnectionUri;
+
+  /// Hint for NWC connection URI input
+  ///
+  /// In en, this message translates to:
+  /// **'nostr+walletconnect://...'**
+  String get nwcConnectionUriHint;
+
+  /// Success message when NWC wallet is added
+  ///
+  /// In en, this message translates to:
+  /// **'NWC wallet added successfully!'**
+  String get nwcWalletAdded;
+
+  /// Success message when NWC faucet wallet is added
+  ///
+  /// In en, this message translates to:
+  /// **'NWC faucet wallet added with {balance} sats!'**
+  String nwcFaucetWalletAdded(int balance);
+
+  /// Error message for invalid faucet response
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid response from faucet'**
+  String get invalidFaucetResponse;
+
+  /// Error message when creating NWC wallet fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error creating wallet'**
+  String get errorCreatingWallet;
+
+  /// Title for add LNURL wallet dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Add LNURL Wallet'**
+  String get addLnurlWalletTitle;
+
+  /// Prompt for LNURL identifier input
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your LNURL identifier (user@domain.com).'**
+  String get enterLnurlIdentifier;
+
+  /// Hint for LNURL identifier input
+  ///
+  /// In en, this message translates to:
+  /// **'user@example.com'**
+  String get lnurlIdentifierHint;
+
+  /// Error message for invalid LNURL identifier
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid identifier (user@domain.com)'**
+  String get pleaseEnterValidIdentifier;
+
+  /// Success message when LNURL wallet is added
+  ///
+  /// In en, this message translates to:
+  /// **'LNURL wallet added successfully!'**
+  String get lnurlWalletAdded;
+
+  /// Button label for cancel action
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// Button label for add action
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// Label for send action
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// Label for receive action
+  ///
+  /// In en, this message translates to:
+  /// **'Receive'**
+  String get receive;
+
+  /// Title for send options sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Send Options'**
+  String get sendOptionsTitle;
+
+  /// Option for sending by token
+  ///
+  /// In en, this message translates to:
+  /// **'Send by Token'**
+  String get sendByToken;
+
+  /// Description for send by token option
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Cashu token to send'**
+  String get sendByTokenDescription;
+
+  /// Option for sending by Lightning
+  ///
+  /// In en, this message translates to:
+  /// **'Send by Lightning'**
+  String get sendByLightning;
+
+  /// Description for send by Lightning option
+  ///
+  /// In en, this message translates to:
+  /// **'Pay a Lightning invoice'**
+  String get sendByLightningDescription;
+
+  /// Title for pay invoice dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Invoice'**
+  String get payInvoiceTitle;
+
+  /// Label for invoice input
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice'**
+  String get invoice;
+
+  /// Hint for invoice input
+  ///
+  /// In en, this message translates to:
+  /// **'lnbc...'**
+  String get invoiceHint;
+
+  /// Error message for empty invoice
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an invoice'**
+  String get pleaseEnterInvoice;
+
+  /// Success message when invoice is paid
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice paid!'**
+  String get invoicePaid;
+
+  /// Error message when payment fails
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed: {message}'**
+  String paymentFailed(String message);
+
+  /// Title for receive options sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Receive Options'**
+  String get receiveOptionsTitle;
+
+  /// Option for receiving by token
+  ///
+  /// In en, this message translates to:
+  /// **'Receive by Token'**
+  String get receiveByToken;
+
+  /// Description for receive by token option
+  ///
+  /// In en, this message translates to:
+  /// **'Receive a Cashu token'**
+  String get receiveByTokenDescription;
+
+  /// Option for receiving by Lightning
+  ///
+  /// In en, this message translates to:
+  /// **'Receive by Lightning'**
+  String get receiveByLightning;
+
+  /// Description for receive by Lightning option
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Lightning invoice'**
+  String get receiveByLightningDescription;
+
+  /// Title for receive by token dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Receive by Token'**
+  String get receiveByTokenTitle;
+
+  /// Label for token input
+  ///
+  /// In en, this message translates to:
+  /// **'Token'**
+  String get token;
+
+  /// Hint for token input
+  ///
+  /// In en, this message translates to:
+  /// **'Paste token here...'**
+  String get tokenHint;
+
+  /// Error message for empty token
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a token'**
+  String get pleaseEnterToken;
+
+  /// Success message when token is received
+  ///
+  /// In en, this message translates to:
+  /// **'Token received!'**
+  String get tokenReceived;
+
+  /// Title for create invoice dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Create Invoice'**
+  String get createInvoiceTitle;
+
+  /// Label for amount input
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// Hint for amount input
+  ///
+  /// In en, this message translates to:
+  /// **'100'**
+  String get amountHint;
+
+  /// Error message for invalid amount
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get pleaseEnterValidAmount;
+
+  /// Success message when token is copied to clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Token copied to clipboard!'**
+  String get tokenCopiedToClipboard;
+
+  /// Success message when invoice is created and copied
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice created and copied!'**
+  String get invoiceCreatedAndCopied;
+
+  /// Title for invoice tracking dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Lightning Invoice'**
+  String get invoiceTrackingTitle;
+
+  /// Message shown when invoice is created
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice created and copied!'**
+  String get invoiceCreatedMessage;
+
+  /// Label for close button
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// Label for copy again button
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Again'**
+  String get copyAgain;
+
+  /// Message shown when copied
+  ///
+  /// In en, this message translates to:
+  /// **'Copied!'**
+  String get copied;
+
+  /// Message shown when payment is received
+  ///
+  /// In en, this message translates to:
+  /// **'Payment received!'**
+  String get paymentReceived;
+
+  /// Status message while waiting for payment
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for payment...'**
+  String get waitingForPayment;
+
+  /// Status message when payment is complete
+  ///
+  /// In en, this message translates to:
+  /// **'Paid!'**
+  String get paid;
+
+  /// Label for create token button
+  ///
+  /// In en, this message translates to:
+  /// **'Create Token'**
+  String get createToken;
+
+  /// Label for pay button
+  ///
+  /// In en, this message translates to:
+  /// **'Pay'**
+  String get pay;
+
+  /// Label for create button
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// Title for pending transactions section
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pendingTransactions;
+
+  /// Title for recent transactions section
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Transactions'**
+  String get recentTransactions;
+
+  /// Message shown when there are no recent transactions
+  ///
+  /// In en, this message translates to:
+  /// **'No recent transactions'**
+  String get noRecentTransactions;
+
+  /// Message shown when there are no wallets
+  ///
+  /// In en, this message translates to:
+  /// **'No wallets yet'**
+  String get noWalletsYet;
+
+  /// Message shown when no wallets are available
+  ///
+  /// In en, this message translates to:
+  /// **'No wallets available'**
+  String get noWalletsAvailable;
+
+  /// Hint to add a wallet
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to add one'**
+  String get tapToAddWallet;
+
+  /// Label for delete action
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// Error message for general errors
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String error(String message);
+
+  /// Label for unknown wallet type
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknownWalletType;
+
+  /// Label for Cashu wallet type
+  ///
+  /// In en, this message translates to:
+  /// **'Cashu'**
+  String get cashuWallet;
+
+  /// Label for NWC wallet type
+  ///
+  /// In en, this message translates to:
+  /// **'NWC'**
+  String get nwcWallet;
+
+  /// Label for LNURL wallet type
+  ///
+  /// In en, this message translates to:
+  /// **'LNURL'**
+  String get lnurlWallet;
+
+  /// Subtitle for NWC wallet
+  ///
+  /// In en, this message translates to:
+  /// **'NWC Wallet'**
+  String get nwcWalletSubtitle;
+
+  /// Label for balance display
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// Label for satoshis
+  ///
+  /// In en, this message translates to:
+  /// **'sats'**
+  String get sats;
+
+  /// Label shown when a wallet is selected
+  ///
+  /// In en, this message translates to:
+  /// **'SELECTED'**
+  String get selected;
+
+  /// Label for receive-only wallet
+  ///
+  /// In en, this message translates to:
+  /// **'Receive-only wallet'**
+  String get receiveOnlyWallet;
+
+  /// Label showing receive range for LNURL wallet
+  ///
+  /// In en, this message translates to:
+  /// **'Receive: {min} - {max} sats'**
+  String receiveRange(int min, int max);
+
+  /// Message shown when limits are unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'Limits unavailable'**
+  String get limitsUnavailable;
+
+  /// Message shown when token is copied
+  ///
+  /// In en, this message translates to:
+  /// **'Token copied'**
+  String get tokenCopied;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -1325,7 +1893,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'es', 'fr', 'ja', 'ru', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'es', 'fr', 'it', 'ja', 'pl', 'ru', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1339,7 +1907,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
     case 'en': return AppLocalizationsEn();
     case 'es': return AppLocalizationsEs();
     case 'fr': return AppLocalizationsFr();
+    case 'it': return AppLocalizationsIt();
     case 'ja': return AppLocalizationsJa();
+    case 'pl': return AppLocalizationsPl();
     case 'ru': return AppLocalizationsRu();
     case 'zh': return AppLocalizationsZh();
   }

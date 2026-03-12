@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 
+import '../../l10n/app_localizations.dart';
 import 'n_add_wallet_dialogs.dart';
 import 'n_wallet_actions.dart';
+import 'n_wallet_card.dart';
 import 'n_wallet_card_list.dart';
 import 'n_pending_transactions.dart';
 import 'n_recent_transactions.dart';
@@ -56,6 +58,15 @@ class NWallets extends StatefulWidget {
   /// Optional callback when a wallet is selected.
   final ValueChanged<String>? onWalletSelected;
 
+  /// Custom icon configuration for Cashu wallets
+  final WalletIconConfig? cashuIcon;
+
+  /// Custom icon configuration for NWC wallets
+  final WalletIconConfig? nwcIcon;
+
+  /// Custom icon configuration for LNURL wallets
+  final WalletIconConfig? lnurlIcon;
+
   const NWallets({
     super.key,
     required this.ndk,
@@ -73,6 +84,9 @@ class NWallets extends StatefulWidget {
     this.walletCardsHeight = 200,
     this.recentTransactionsHeight = 200,
     this.onWalletSelected,
+    this.cashuIcon,
+    this.nwcIcon,
+    this.lnurlIcon,
   });
 
   @override
@@ -84,13 +98,15 @@ class _NWalletsState extends State<NWallets> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       child: Padding(
         padding: widget.padding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            widget.header ?? _buildHeader(context),
+            widget.header ?? _buildHeader(context, l10n),
             const SizedBox(height: 16),
             SizedBox(
               height: widget.walletCardsHeight,
@@ -103,6 +119,9 @@ class _NWalletsState extends State<NWallets> {
                   });
                   widget.onWalletSelected?.call(walletId);
                 },
+                cashuIcon: widget.cashuIcon,
+                nwcIcon: widget.nwcIcon,
+                lnurlIcon: widget.lnurlIcon,
               ),
             ),
             const SizedBox(height: 24),
@@ -121,7 +140,7 @@ class _NWalletsState extends State<NWallets> {
               NPendingTransactions(ndk: widget.ndk),
             if (widget.showRecentTransactions) ...[
               Text(
-                widget.recentActivityTitle ?? 'Recent Activity',
+                widget.recentActivityTitle ?? l10n.recentActivityTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
@@ -136,42 +155,76 @@ class _NWalletsState extends State<NWallets> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          widget.title ?? 'My Wallets',
+          widget.title ?? l10n.walletsTitle,
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         widget.headerActions ??
             (widget.showAddButtons
-                ? _buildDefaultActions(context)
+                ? _buildDefaultActions(context, l10n)
                 : const SizedBox.shrink()),
       ],
     );
   }
 
-  Widget _buildDefaultActions(BuildContext context) {
+  Widget _buildDefaultActions(BuildContext context, AppLocalizations l10n) {
     return Row(
       children: [
         IconButton(
           onPressed: widget.onAddCashu ?? () => _showAddCashuDialog(context),
-          icon: const Icon(Icons.add_card),
-          tooltip: 'Add Cashu',
+          icon: _buildAddButtonIcon(
+            widget.cashuIcon,
+            'cashu.png',
+            Icons.add_card,
+          ),
+          tooltip: l10n.addCashuTooltip,
         ),
         IconButton(
           onPressed: widget.onAddNwc ?? () => _showAddNwcDialog(context),
-          icon: const Icon(Icons.cloud_upload),
-          tooltip: 'Add NWC',
+          icon: _buildAddButtonIcon(
+            widget.nwcIcon,
+            'nwc.png',
+            Icons.cloud_upload,
+          ),
+          tooltip: l10n.addNwcTooltip,
         ),
         IconButton(
           onPressed: widget.onAddLnurl ?? () => _showAddLnurlDialog(context),
-          icon: const Icon(Icons.bolt),
-          tooltip: 'Add LNURL',
+          icon: _buildAddButtonIcon(widget.lnurlIcon, null, Icons.bolt),
+          tooltip: l10n.addLnurlTooltip,
         ),
       ],
     );
+  }
+
+  Widget _buildAddButtonIcon(
+    WalletIconConfig? iconConfig,
+    String? assetName,
+    IconData fallbackIcon,
+  ) {
+    final double size = 24.0;
+
+    if (iconConfig?.iconWidget != null) {
+      return SizedBox(width: size, height: size, child: iconConfig!.iconWidget);
+    }
+
+    if (assetName != null) {
+      return Image.asset(
+        'assets/images/$assetName',
+        package: 'ndk_flutter',
+        width: size,
+        height: size,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(fallbackIcon, size: size);
+        },
+      );
+    }
+
+    return Icon(fallbackIcon, size: size);
   }
 
   void _showAddCashuDialog(BuildContext context) {

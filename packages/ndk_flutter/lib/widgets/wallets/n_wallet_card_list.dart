@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
+import '../../l10n/app_localizations.dart';
 import 'n_wallet_card.dart';
 
 /// Horizontal list of wallet cards backed by `ndk.wallets.walletsStream`.
@@ -16,6 +17,15 @@ class NWalletCardList extends StatelessWidget {
   final String? emptyTitleText;
   final String? emptySubtitleText;
 
+  /// Custom icon configuration for Cashu wallets
+  final WalletIconConfig? cashuIcon;
+
+  /// Custom icon configuration for NWC wallets
+  final WalletIconConfig? nwcIcon;
+
+  /// Custom icon configuration for LNURL wallets
+  final WalletIconConfig? lnurlIcon;
+
   const NWalletCardList({
     super.key,
     required this.ndk,
@@ -23,15 +33,19 @@ class NWalletCardList extends StatelessWidget {
     required this.onWalletSelected,
     this.emptyTitleText,
     this.emptySubtitleText,
+    this.cashuIcon,
+    this.nwcIcon,
+    this.lnurlIcon,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<Wallet>>(
       stream: ndk.wallets.walletsStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return Center(child: Text('${l10n.error}: ${snapshot.error}'));
         }
 
         final wallets = snapshot.data ?? [];
@@ -44,12 +58,10 @@ class NWalletCardList extends StatelessWidget {
                 Icon(Icons.wallet, size: 48, color: Colors.grey[400]),
                 const SizedBox(height: 8),
                 Text(
-                  emptyTitleText ?? 'No wallets yet',
+                  emptyTitleText ?? l10n.noWalletsYet,
                   style: TextStyle(color: Colors.grey[600]),
                 ),
-                Text(
-                  emptySubtitleText ?? 'Tap + to add one',
-                ),
+                Text(emptySubtitleText ?? l10n.tapToAddWallet),
               ],
             ),
           );
@@ -66,6 +78,9 @@ class NWalletCardList extends StatelessWidget {
               ndk: ndk,
               isSelected: wallet.id == selectedWalletId,
               onTap: () => onWalletSelected(wallet.id),
+              cashuIcon: cashuIcon,
+              nwcIcon: nwcIcon,
+              lnurlIcon: lnurlIcon,
             );
           },
         );
@@ -73,4 +88,3 @@ class NWalletCardList extends StatelessWidget {
     );
   }
 }
-

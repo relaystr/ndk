@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
+import '../../l10n/app_localizations.dart';
+
 /// Vertical list of recent transactions combined across wallets.
 class NRecentTransactions extends StatelessWidget {
   final Ndk ndk;
@@ -10,25 +12,20 @@ class NRecentTransactions extends StatelessWidget {
   /// Optional localized empty-label when there are no transactions.
   final String? emptyLabel;
 
-  const NRecentTransactions({
-    super.key,
-    required this.ndk,
-    this.emptyLabel,
-  });
+  const NRecentTransactions({super.key, required this.ndk, this.emptyLabel});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<WalletTransaction>>(
       stream: ndk.wallets.combinedRecentTransactions,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return Center(child: Text('${l10n.error}: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(
-            child: Text(emptyLabel ?? 'No recent transactions'),
-          );
+          return Center(child: Text(emptyLabel ?? l10n.noRecentTransactions));
         } else {
           final transactions = snapshot.data!;
           return ListView.builder(
@@ -51,7 +48,7 @@ class NRecentTransactions extends StatelessWidget {
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: tx.token!));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Token copied')),
+                            SnackBar(content: Text(l10n.tokenCopied)),
                           );
                         },
                       )
@@ -64,4 +61,3 @@ class NRecentTransactions extends StatelessWidget {
     );
   }
 }
-

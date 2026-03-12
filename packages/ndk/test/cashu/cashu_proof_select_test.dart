@@ -9,7 +9,7 @@ void main() {
   List<CahsuMintKeyPair> generateWalletKeyPairs(int length) {
     return List.generate(length, (index) {
       int amount = 1 << index; // 2^index: 1, 2, 4, 8, 16, 32, etc.
-      return CahsuMintKeyPair(amount: amount, pubkey: "pubkey${amount}");
+      return CahsuMintKeyPair(amount: amount, pubkey: "pubkey$amount");
     });
   }
 

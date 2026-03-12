@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
 import 'package:ndk/ndk.dart';
+
+import '../../l10n/app_localizations.dart';
 
 /// Card with Send/Receive actions and dialogs for a selected wallet.
 ///
@@ -41,6 +40,7 @@ class _NWalletActionsState extends State<NWalletActions> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<Wallet>>(
       stream: widget.ndk.wallets.walletsStream,
       builder: (context, snapshot) {
@@ -79,10 +79,10 @@ class _NWalletActionsState extends State<NWalletActions> {
                     const SizedBox(width: 8),
                     Text(
                       isCashu
-                          ? 'Cashu Wallet'
+                          ? l10n.cashuWallet
                           : isNwc
-                          ? 'NWC Wallet'
-                          : 'LNURL Wallet',
+                          ? l10n.nwcWallet
+                          : l10n.lnurlWallet,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const Spacer(),
@@ -102,7 +102,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                         child: ElevatedButton.icon(
                           onPressed: () => _showSendDialog(context, wallet),
                           icon: const Icon(Icons.send),
-                          label: const Text('Send'),
+                          label: Text(l10n.send),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
@@ -113,7 +113,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                         child: ElevatedButton.icon(
                           onPressed: () => _showReceiveDialog(context, wallet),
                           icon: const Icon(Icons.download),
-                          label: const Text('Receive'),
+                          label: Text(l10n.receive),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
@@ -123,7 +123,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                   )
                 else
                   Text(
-                    'Receive-only wallet',
+                    l10n.receiveOnlyWallet,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
               ],
@@ -135,6 +135,7 @@ class _NWalletActionsState extends State<NWalletActions> {
   }
 
   void _showSendDialog(BuildContext context, Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -150,13 +151,16 @@ class _NWalletActionsState extends State<NWalletActions> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Send', style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                l10n.sendOptionsTitle,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 16),
               if (wallet is CashuWallet) ...[
                 ListTile(
                   leading: const Icon(Icons.receipt),
-                  title: const Text('Send by Token'),
-                  subtitle: const Text('Create an ecash token'),
+                  title: Text(l10n.sendByToken),
+                  subtitle: Text(l10n.sendByTokenDescription),
                   onTap: () {
                     Navigator.pop(context);
                     _showSendTokenDialog(context, wallet);
@@ -164,8 +168,8 @@ class _NWalletActionsState extends State<NWalletActions> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.flash_on),
-                  title: const Text('Send by Lightning'),
-                  subtitle: const Text('Pay a BOLT11 invoice'),
+                  title: Text(l10n.sendByLightning),
+                  subtitle: Text(l10n.sendByLightningDescription),
                   onTap: () {
                     Navigator.pop(context);
                     _showPayInvoiceDialog(context, wallet);
@@ -174,7 +178,7 @@ class _NWalletActionsState extends State<NWalletActions> {
               ] else if (wallet is NwcWallet) ...[
                 ListTile(
                   leading: const Icon(Icons.flash_on),
-                  title: const Text('Pay Lightning Invoice'),
+                  title: Text(l10n.payInvoiceTitle),
                   onTap: () {
                     Navigator.pop(context);
                     _showPayInvoiceDialog(context, wallet);
@@ -190,6 +194,7 @@ class _NWalletActionsState extends State<NWalletActions> {
   }
 
   void _showReceiveDialog(BuildContext context, Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -205,13 +210,16 @@ class _NWalletActionsState extends State<NWalletActions> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Receive', style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                l10n.receiveOptionsTitle,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 16),
               if (wallet is CashuWallet) ...[
                 ListTile(
                   leading: const Icon(Icons.receipt),
-                  title: const Text('Receive by Token'),
-                  subtitle: const Text('Redeem an ecash token'),
+                  title: Text(l10n.receiveByToken),
+                  subtitle: Text(l10n.receiveByTokenDescription),
                   onTap: () {
                     Navigator.pop(context);
                     _showReceiveTokenDialog(context, wallet);
@@ -219,8 +227,8 @@ class _NWalletActionsState extends State<NWalletActions> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.flash_on),
-                  title: const Text('Receive by Lightning'),
-                  subtitle: const Text('Create a BOLT11 invoice'),
+                  title: Text(l10n.receiveByLightning),
+                  subtitle: Text(l10n.receiveByLightningDescription),
                   onTap: () {
                     Navigator.pop(context);
                     _showCreateInvoiceDialog(context, wallet);
@@ -229,7 +237,7 @@ class _NWalletActionsState extends State<NWalletActions> {
               ] else if (wallet is NwcWallet) ...[
                 ListTile(
                   leading: const Icon(Icons.flash_on),
-                  title: const Text('Create Lightning Invoice'),
+                  title: Text(l10n.createInvoiceTitle),
                   onTap: () {
                     Navigator.pop(context);
                     _showCreateInvoiceDialog(context, wallet);
@@ -245,6 +253,7 @@ class _NWalletActionsState extends State<NWalletActions> {
   }
 
   void _showSendTokenDialog(BuildContext context, CashuWallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
     final amountController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -252,26 +261,26 @@ class _NWalletActionsState extends State<NWalletActions> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Send by Token'),
+          title: Text(l10n.sendByToken),
           content: TextField(
             controller: amountController,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Amount (sats)',
-              hintText: '10',
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: l10n.amount,
+              hintText: l10n.amountHint,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () async {
                 final amount = int.tryParse(amountController.text);
                 if (amount == null || amount <= 0) {
-                  displayError('Please enter a valid amount');
+                  displayError(l10n.pleaseEnterValidAmount);
                   return;
                 }
 
@@ -288,7 +297,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                   navigator.pop();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
-                      content: Text('Token copied to clipboard!'),
+                      content: Text(l10n.tokenCopiedToClipboard),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -296,7 +305,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                   displayError(e.toString());
                 }
               },
-              child: const Text('Create Token'),
+              child: Text(l10n.createToken),
             ),
           ],
         );
@@ -305,6 +314,7 @@ class _NWalletActionsState extends State<NWalletActions> {
   }
 
   void _showPayInvoiceDialog(BuildContext context, Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
     final invoiceController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -312,26 +322,26 @@ class _NWalletActionsState extends State<NWalletActions> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Pay Lightning Invoice'),
+          title: Text(l10n.payInvoiceTitle),
           content: TextField(
             controller: invoiceController,
             maxLines: 3,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Invoice (bolt11)',
-              hintText: 'lnbc...',
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: l10n.invoice,
+              hintText: l10n.invoiceHint,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () async {
                 final invoice = invoiceController.text.trim();
                 if (invoice.isEmpty) {
-                  displayError('Please enter an invoice');
+                  displayError(l10n.pleaseEnterInvoice);
                   return;
                 }
 
@@ -354,7 +364,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                         navigator.pop();
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
-                            content: Text('Invoice paid!'),
+                            content: Text(l10n.invoicePaid),
                             backgroundColor: Colors.green,
                           ),
                         );
@@ -362,7 +372,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                       } else if (transaction.state ==
                           WalletTransactionState.failed) {
                         displayError(
-                          'Payment failed: ${transaction.completionMsg}',
+                          l10n.paymentFailed(transaction.completionMsg ?? ''),
                         );
                         break;
                       }
@@ -378,13 +388,15 @@ class _NWalletActionsState extends State<NWalletActions> {
                       navigator.pop();
                       scaffoldMessenger.showSnackBar(
                         SnackBar(
-                          content: Text('Invoice paid!'),
+                          content: Text(l10n.invoicePaid),
                           backgroundColor: Colors.green,
                         ),
                       );
                     } else {
                       displayError(
-                        'Payment failed: ${response.errorMessage ?? 'Unknown error'}',
+                        l10n.paymentFailed(
+                          response.errorMessage ?? l10n.unknownWalletType,
+                        ),
                       );
                     }
                   }
@@ -392,7 +404,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                   displayError(e.toString());
                 }
               },
-              child: const Text('Pay'),
+              child: Text(l10n.pay),
             ),
           ],
         );
@@ -401,6 +413,7 @@ class _NWalletActionsState extends State<NWalletActions> {
   }
 
   void _showReceiveTokenDialog(BuildContext context, CashuWallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
     final tokenController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -408,26 +421,26 @@ class _NWalletActionsState extends State<NWalletActions> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Receive by Token'),
+          title: Text(l10n.receiveByTokenTitle),
           content: TextField(
             controller: tokenController,
             maxLines: 4,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Cashu Token',
-              hintText: 'Paste token here...',
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: l10n.token,
+              hintText: l10n.tokenHint,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () async {
                 final token = tokenController.text.trim();
                 if (token.isEmpty) {
-                  displayError('Please enter a token');
+                  displayError(l10n.pleaseEnterToken);
                   return;
                 }
 
@@ -438,7 +451,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                   navigator.pop();
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
-                      content: Text('Token received!'),
+                      content: Text(l10n.tokenReceived),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -446,7 +459,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                   displayError(e.toString());
                 }
               },
-              child: const Text('Receive'),
+              child: Text(l10n.receive),
             ),
           ],
         );
@@ -455,6 +468,7 @@ class _NWalletActionsState extends State<NWalletActions> {
   }
 
   void _showCreateInvoiceDialog(BuildContext context, Wallet wallet) {
+    final l10n = AppLocalizations.of(context)!;
     final amountController = TextEditingController();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -462,26 +476,26 @@ class _NWalletActionsState extends State<NWalletActions> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Create Invoice'),
+          title: Text(l10n.createInvoiceTitle),
           content: TextField(
             controller: amountController,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Amount (sats)',
-              hintText: '10',
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: l10n.amount,
+              hintText: l10n.amountHint,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () async {
                 final amount = int.tryParse(amountController.text);
                 if (amount == null || amount <= 0) {
-                  displayError('Please enter a valid amount');
+                  displayError(l10n.pleaseEnterValidAmount);
                   return;
                 }
 
@@ -517,7 +531,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                     navigator.pop();
                     scaffoldMessenger.showSnackBar(
                       SnackBar(
-                        content: Text('Invoice created and copied!'),
+                        content: Text(l10n.invoiceCreatedAndCopied),
                         backgroundColor: Colors.green,
                       ),
                     );
@@ -526,7 +540,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                   displayError(e.toString());
                 }
               },
-              child: const Text('Create'),
+              child: Text(l10n.create),
             ),
           ],
         );
@@ -539,6 +553,7 @@ class _NWalletActionsState extends State<NWalletActions> {
     CashuWalletTransaction draftTransaction,
     ScaffoldMessengerState scaffoldMessenger,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final stream = widget.ndk.cashu.retrieveFunds(
       draftTransaction: draftTransaction,
     );
@@ -548,11 +563,11 @@ class _NWalletActionsState extends State<NWalletActions> {
       barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Lightning Invoice'),
+          title: Text(l10n.invoiceTrackingTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Invoice created and copied!'),
+              Text(l10n.invoiceCreatedMessage),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(8),
@@ -576,36 +591,39 @@ class _NWalletActionsState extends State<NWalletActions> {
                         Navigator.of(dialogContext).pop();
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
-                            content: Text('Payment received!'),
+                            content: Text(l10n.paymentReceived),
                             backgroundColor: Colors.green,
                           ),
                         );
                       });
-                      return const Row(
+                      return Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text('Paid!', style: TextStyle(color: Colors.green)),
+                          const Icon(Icons.check_circle, color: Colors.green),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.paid,
+                            style: const TextStyle(color: Colors.green),
+                          ),
                         ],
                       );
                     } else if (tx.state == WalletTransactionState.failed) {
                       return Text(
-                        'Failed: ${tx.completionMsg}',
+                        l10n.paymentFailed(tx.completionMsg ?? ''),
                         style: const TextStyle(color: Colors.red),
                       );
                     }
                   }
-                  return const Row(
+                  return Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
-                      SizedBox(width: 8),
-                      Text('Waiting for payment...'),
+                      const SizedBox(width: 8),
+                      Text(l10n.waitingForPayment),
                     ],
                   );
                 },
@@ -615,19 +633,19 @@ class _NWalletActionsState extends State<NWalletActions> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Close'),
+              child: Text(l10n.close),
             ),
             TextButton(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: invoice));
                 scaffoldMessenger.showSnackBar(
                   SnackBar(
-                    content: Text('Copied!'),
+                    content: Text(l10n.copied),
                     backgroundColor: Colors.green,
                   ),
                 );
               },
-              child: const Text('Copy Again'),
+              child: Text(l10n.copyAgain),
             ),
           ],
         );

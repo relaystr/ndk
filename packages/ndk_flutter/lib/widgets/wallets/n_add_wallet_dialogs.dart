@@ -123,15 +123,24 @@ class _AddNwcWalletDialog extends StatefulWidget {
   State<_AddNwcWalletDialog> createState() => _AddNwcWalletDialogState();
 }
 
-class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog> {
+class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
+    with SingleTickerProviderStateMixin {
   final nwcUriController = TextEditingController();
   late final balanceController = TextEditingController(
     text: widget.defaultBalance.toString(),
   );
+  late TabController _tabController;
   bool isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
   void dispose() {
+    _tabController.dispose();
     nwcUriController.dispose();
     balanceController.dispose();
     super.dispose();
@@ -139,188 +148,185 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: AlertDialog(
-        title: const Text('Add NWC Wallet'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const TabBar(
-                tabs: [
-                  Tab(text: 'Faucet'),
-                  Tab(text: 'Manual'),
+    return AlertDialog(
+      title: const Text('Add NWC Wallet'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Faucet'),
+                Tab(text: 'Manual'),
+              ],
+            ),
+            SizedBox(
+              height: 150,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Faucet Tab
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Create a test wallet via NWC Faucet',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: balanceController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Starting Balance (sats)',
+                            hintText: '10000',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Manual Tab
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextField(
+                      controller: nwcUriController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'NWC Connection URI',
+                        hintText: 'nostr+walletconnect://...',
+                      ),
+                    ),
+                  ),
                 ],
               ),
-              SizedBox(
-                height: 150,
-                child: TabBarView(
-                  children: [
-                    // Faucet Tab
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Create a test wallet via NWC Faucet',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: balanceController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Starting Balance (sats)',
-                              hintText: '10000',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Manual Tab
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: TextField(
-                        controller: nwcUriController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'NWC Connection URI',
-                          hintText: 'nostr+walletconnect://...',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: isLoading
-                ? null
-                : () async {
-                    final tabController = DefaultTabController.of(context);
-                    final currentTab = tabController.index;
-                    final scaffoldMessenger = ScaffoldMessenger.of(context);
-                    final navigator = Navigator.of(context);
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: isLoading
+              ? null
+              : () async {
+                  final currentTab = _tabController.index;
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  final navigator = Navigator.of(context);
 
-                    if (currentTab == 0) {
-                      // Faucet tab
-                      setState(() => isLoading = true);
+                  if (currentTab == 0) {
+                    // Faucet tab
+                    setState(() => isLoading = true);
 
-                      try {
-                        final balance =
-                            int.tryParse(balanceController.text) ??
-                            widget.defaultBalance;
-                        final response = await http.post(
-                          Uri.parse('https://faucet.nwc.dev?balance=$balance'),
-                        );
+                    try {
+                      final balance =
+                          int.tryParse(balanceController.text) ??
+                          widget.defaultBalance;
+                      final response = await http.post(
+                        Uri.parse('https://faucet.nwc.dev?balance=$balance'),
+                      );
 
-                        if (response.statusCode == 200) {
-                          final nwcUri = response.body.trim();
+                      if (response.statusCode == 200) {
+                        final nwcUri = response.body.trim();
 
-                          if (nwcUri.isNotEmpty) {
-                            final walletId = DateTime.now()
-                                .millisecondsSinceEpoch
-                                .toString();
-                            final nwcWallet = NwcWallet(
-                              id: walletId,
-                              name: 'NWC Faucet',
-                              supportedUnits: {'sat'},
-                              nwcUrl: nwcUri,
-                            );
-                            await widget.ndk.wallets.addWallet(nwcWallet);
+                        if (nwcUri.isNotEmpty) {
+                          final walletId = DateTime.now().millisecondsSinceEpoch
+                              .toString();
+                          final nwcWallet = NwcWallet(
+                            id: walletId,
+                            name: 'NWC Faucet',
+                            supportedUnits: {'sat'},
+                            nwcUrl: nwcUri,
+                          );
+                          await widget.ndk.wallets.addWallet(nwcWallet);
 
-                            if (!mounted) return;
-                            navigator.pop(nwcWallet);
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'NWC faucet wallet added with $balance sats!',
-                                ),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          } else {
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content: Text('Invalid response from faucet'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        } else {
+                          if (!mounted) return;
+                          navigator.pop(nwcWallet);
                           scaffoldMessenger.showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Failed to create wallet: ${response.statusCode}',
+                                'NWC faucet wallet added with $balance sats!',
                               ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else {
+                          scaffoldMessenger.showSnackBar(
+                            SnackBar(
+                              content: Text('Invalid response from faucet'),
                               backgroundColor: Colors.red,
                             ),
                           );
                         }
-                      } catch (e) {
+                      } else {
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
-                            content: Text('Error creating wallet: $e'),
+                            content: Text(
+                              'Failed to create wallet: ${response.statusCode}',
+                            ),
                             backgroundColor: Colors.red,
                           ),
                         );
-                      } finally {
-                        if (mounted) {
-                          setState(() => isLoading = false);
-                        }
                       }
-                    } else {
-                      // Manual tab
-                      try {
-                        final walletId = DateTime.now().millisecondsSinceEpoch
-                            .toString();
-                        final nwcWallet = NwcWallet(
-                          id: walletId,
-                          name:
-                              'NWC ${DateTime.now().toString().split(' ')[1].substring(0, 5)}',
-                          supportedUnits: {'sat'},
-                          nwcUrl: nwcUriController.text,
-                        );
-                        await widget.ndk.wallets.addWallet(nwcWallet);
-
-                        if (!mounted) return;
-                        navigator.pop(nwcWallet);
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                            content: Text('NWC wallet added!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      } catch (e) {
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                            content: Text(e.toString()),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                    } catch (e) {
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text('Error creating wallet: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    } finally {
+                      if (mounted) {
+                        setState(() => isLoading = false);
                       }
                     }
-                  },
-            child: isLoading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Add'),
-          ),
-        ],
-      ),
+                  } else {
+                    // Manual tab
+                    try {
+                      final walletId = DateTime.now().millisecondsSinceEpoch
+                          .toString();
+                      final nwcWallet = NwcWallet(
+                        id: walletId,
+                        name:
+                            'NWC ${DateTime.now().toString().split(' ')[1].substring(0, 5)}',
+                        supportedUnits: {'sat'},
+                        nwcUrl: nwcUriController.text,
+                      );
+                      await widget.ndk.wallets.addWallet(nwcWallet);
+
+                      if (!mounted) return;
+                      navigator.pop(nwcWallet);
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text('NWC wallet added!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } catch (e) {
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+          child: isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Add'),
+        ),
+      ],
     );
   }
 }

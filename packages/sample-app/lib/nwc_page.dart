@@ -162,7 +162,7 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
         // Retrieve the discoveryRelay and appPubkey that were set before launching nostr+walletauth
         // These are final and won't change during this try block.
 
-        final String discoveryRelayForQuery = "wss://relay.getalby.com/v1";
+        const String discoveryRelayForQuery = "wss://relay.getalby.com/v1";
         final String appPubkeyForTag = nwcAppKey!.publicKey;
 
         // Clear pending state now that we are processing it.
@@ -199,16 +199,6 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
             .timeout(const Duration(seconds: 15));
 
         Nip01Event? foundWalletAuthEvent = await stream.first;
-        if (foundWalletAuthEvent == null){
-          print(
-              'No NWC Info Event (kind ${NwcKind.INFO.value}) found on $discoveryRelayForQuery tagged for $appPubkeyForTag.');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    'No NWC Info Event found on $discoveryRelayForQuery.')),
-          );
-          return;
-        }
 
         print(
             'Successfully fetched and validated NWC Info Event (Kind ${NwcKind.INFO.value}):');
@@ -238,7 +228,7 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
         // Now connect using the constructed URI
         // As per user feedback, clientKeyPair is not an argument to connect.
         // The nwcAppKey (specifically its private key) was used as the 'secret' in the constructedNwcUri.
-        final NwcConnection? establishedConn = await ndk.nwc.connect(
+        final NwcConnection establishedConn = await ndk.nwc.connect(
           constructedNwcUri,
           // clientKeyPair: nwcAppKey, // Removed as per user feedback
           doGetInfoMethod: true,
@@ -593,12 +583,11 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
                             );
                             setState(() {
                               makeInvoice = response;
-                              if (response.errorCode == null &&
-                                  response.paymentHash != null) {
+                              if (response.errorCode == null) {
                                 regularInvoiceStatusMessage =
                                     "Regular invoice created. Waiting for payment...";
                                 _listenForRegularInvoicePayment(
-                                    response.paymentHash!);
+                                    response.paymentHash);
                               } else if (response.errorCode != null) {
                                 regularInvoiceStatusMessage =
                                     "Error creating regular invoice: ${response.errorMessage}";
@@ -643,7 +632,7 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
                 } else {
                   // Optionally, show a message if no app can handle the URI
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                         content: Text(
                             'Could not launch Lightning invoice. No app found to handle it.')),
                   );
@@ -885,14 +874,6 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
       return;
     }
     final stream = connection!.holdInvoiceStateStream;
-    if (stream == null) {
-      if (mounted) {
-        setState(() {
-          holdInvoiceStatusMessage = "Hold invoice state stream is null.";
-        });
-      }
-      return;
-    }
 
     // Use makeInvoice.expiresAt as it now holds the response for both normal and hold invoices
     final duration = makeInvoice?.expiresAt != null
@@ -950,14 +931,6 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
     }
     // Use the general notificationsStream and filter for payment notifications
     final stream = connection!.paymentsReceivedStream;
-    if (stream == null) {
-      if (mounted) {
-        setState(() {
-          regularInvoiceStatusMessage = "Payment notification stream is null.";
-        });
-      }
-      return;
-    }
 
     final duration = makeInvoice?.expiresAt != null
         ? (makeInvoice!.expiresAt! -

@@ -617,4 +617,294 @@ class AppLocalizationsFr extends AppLocalizations {
   String unknownEventKind(int kind) {
     return 'Type d\'événement $kind';
   }
+
+  @override
+  String get walletsTitle => 'Portefeuilles';
+
+  @override
+  String get recentActivityTitle => 'Activité Récente';
+
+  @override
+  String get addCashuWallet => 'Ajouter un Portefeuille Cashu';
+
+  @override
+  String get addNwcWallet => 'Ajouter un Portefeuille NWC';
+
+  @override
+  String get addLnurlWallet => 'Ajouter un Portefeuille LNURL';
+
+  @override
+  String get addCashuTooltip => 'Ajouter un Portefeuille Cashu';
+
+  @override
+  String get addNwcTooltip => 'Ajouter un Portefeuille NWC';
+
+  @override
+  String get addLnurlTooltip => 'Ajouter un Portefeuille LNURL';
+
+  @override
+  String get addCashuWalletTitle => 'Ajouter un Portefeuille Cashu';
+
+  @override
+  String get enterMintUrl => 'Entrez l\'URL du mint pour ajouter un portefeuille Cashu.';
+
+  @override
+  String get mintUrl => 'URL du Mint';
+
+  @override
+  String get mintUrlHint => 'https://mint.exemple.com';
+
+  @override
+  String get pleaseEnterMintUrl => 'Veuillez entrer une URL du mint';
+
+  @override
+  String get cashuWalletAdded => 'Portefeuille Cashu ajouté avec succès !';
+
+  @override
+  String get failedToAddMint => 'Échec de l\'ajout du mint. Veuillez vérifier l\'URL et réessayer.';
+
+  @override
+  String get addNwcWalletTitle => 'Ajouter un Portefeuille NWC';
+
+  @override
+  String get faucet => 'Robinet';
+
+  @override
+  String get manual => 'Manuel';
+
+  @override
+  String get nwcFaucetDescription => 'Créez un portefeuille de test avec des sats du robinet NWC.';
+
+  @override
+  String get startingBalance => 'Solde de Départ';
+
+  @override
+  String get startingBalanceHint => '10000';
+
+  @override
+  String get nwcConnectionUri => 'URI de Connexion NWC';
+
+  @override
+  String get nwcConnectionUriHint => 'nostr+walletconnect://...';
+
+  @override
+  String get nwcWalletAdded => 'Portefeuille NWC ajouté avec succès !';
+
+  @override
+  String nwcFaucetWalletAdded(int balance) {
+    return 'Portefeuille robinet NWC ajouté avec $balance sats !';
+  }
+
+  @override
+  String get invalidFaucetResponse => 'Réponse invalide du robinet';
+
+  @override
+  String get errorCreatingWallet => 'Erreur lors de la création du portefeuille';
+
+  @override
+  String get addLnurlWalletTitle => 'Ajouter un Portefeuille LNURL';
+
+  @override
+  String get enterLnurlIdentifier => 'Entrez votre identifiant LNURL (utilisateur@domaine.com).';
+
+  @override
+  String get lnurlIdentifierHint => 'utilisateur@exemple.com';
+
+  @override
+  String get pleaseEnterValidIdentifier => 'Veuillez entrer un identifiant valide (utilisateur@domaine.com)';
+
+  @override
+  String get lnurlWalletAdded => 'Portefeuille LNURL ajouté avec succès !';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get add => 'Ajouter';
+
+  @override
+  String get send => 'Envoyer';
+
+  @override
+  String get receive => 'Recevoir';
+
+  @override
+  String get sendOptionsTitle => 'Options d\'Envoi';
+
+  @override
+  String get sendByToken => 'Envoyer par Token';
+
+  @override
+  String get sendByTokenDescription => 'Créer un token Cashu à envoyer';
+
+  @override
+  String get sendByLightning => 'Envoyer par Lightning';
+
+  @override
+  String get sendByLightningDescription => 'Payer une facture Lightning';
+
+  @override
+  String get payInvoiceTitle => 'Payer la Facture';
+
+  @override
+  String get invoice => 'Facture';
+
+  @override
+  String get invoiceHint => 'lnbc...';
+
+  @override
+  String get pleaseEnterInvoice => 'Veuillez entrer une facture';
+
+  @override
+  String get invoicePaid => 'Facture payée !';
+
+  @override
+  String paymentFailed(String message) {
+    return 'Paiement échoué : $message';
+  }
+
+  @override
+  String get receiveOptionsTitle => 'Options de Réception';
+
+  @override
+  String get receiveByToken => 'Recevoir par Token';
+
+  @override
+  String get receiveByTokenDescription => 'Recevoir un token Cashu';
+
+  @override
+  String get receiveByLightning => 'Recevoir par Lightning';
+
+  @override
+  String get receiveByLightningDescription => 'Créer une facture Lightning';
+
+  @override
+  String get receiveByTokenTitle => 'Recevoir par Token';
+
+  @override
+  String get token => 'Token';
+
+  @override
+  String get tokenHint => 'Collez le token ici...';
+
+  @override
+  String get pleaseEnterToken => 'Veuillez entrer un token';
+
+  @override
+  String get tokenReceived => 'Token reçu !';
+
+  @override
+  String get createInvoiceTitle => 'Créer une Facture';
+
+  @override
+  String get amount => 'Montant';
+
+  @override
+  String get amountHint => '100';
+
+  @override
+  String get pleaseEnterValidAmount => 'Veuillez entrer un montant valide';
+
+  @override
+  String get tokenCopiedToClipboard => 'Token copié dans le presse-papiers !';
+
+  @override
+  String get invoiceCreatedAndCopied => 'Facture créée et copiée !';
+
+  @override
+  String get invoiceTrackingTitle => 'Facture Lightning';
+
+  @override
+  String get invoiceCreatedMessage => 'Facture créée et copiée !';
+
+  @override
+  String get close => 'Fermer';
+
+  @override
+  String get copyAgain => 'Copier à Nouveau';
+
+  @override
+  String get copied => 'Copié !';
+
+  @override
+  String get paymentReceived => 'Paiement reçu !';
+
+  @override
+  String get waitingForPayment => 'En attente du paiement...';
+
+  @override
+  String get paid => 'Payé !';
+
+  @override
+  String get createToken => 'Créer un Token';
+
+  @override
+  String get pay => 'Payer';
+
+  @override
+  String get create => 'Créer';
+
+  @override
+  String get pendingTransactions => 'En Attente';
+
+  @override
+  String get recentTransactions => 'Transactions Récentes';
+
+  @override
+  String get noRecentTransactions => 'Aucune transaction récente';
+
+  @override
+  String get noWalletsYet => 'Aucun portefeuille encore';
+
+  @override
+  String get noWalletsAvailable => 'Aucun portefeuille disponible';
+
+  @override
+  String get tapToAddWallet => 'Appuyez sur + pour en ajouter un';
+
+  @override
+  String get delete => 'Supprimer';
+
+  @override
+  String error(String message) {
+    return 'Erreur : $message';
+  }
+
+  @override
+  String get unknownWalletType => 'Inconnu';
+
+  @override
+  String get cashuWallet => 'Cashu';
+
+  @override
+  String get nwcWallet => 'NWC';
+
+  @override
+  String get lnurlWallet => 'LNURL';
+
+  @override
+  String get nwcWalletSubtitle => 'Portefeuille NWC';
+
+  @override
+  String get balance => 'Solde';
+
+  @override
+  String get sats => 'sats';
+
+  @override
+  String get selected => 'SÉLECTIONNÉ';
+
+  @override
+  String get receiveOnlyWallet => 'Portefeuille uniquement pour recevoir';
+
+  @override
+  String receiveRange(int min, int max) {
+    return 'Recevoir : $min - $max sats';
+  }
+
+  @override
+  String get limitsUnavailable => 'Limites non disponibles';
+
+  @override
+  String get tokenCopied => 'Token copié';
 }

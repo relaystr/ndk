@@ -113,7 +113,7 @@ class CashuTokenUrEncoder {
         return null;
       }
 
-      final ur = result as UR;
+      final ur = result;
       if (ur.type != urType) {
         Logger.log.f(() => 'Invalid UR type: expected $urType, got ${ur.type}');
         return null;

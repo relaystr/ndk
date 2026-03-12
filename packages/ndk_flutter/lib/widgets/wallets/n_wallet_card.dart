@@ -1,9 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
 import 'package:ndk/ndk.dart';
+
+import '../../l10n/app_localizations.dart';
+
+/// Configuration for wallet type icons
+class WalletIconConfig {
+  /// Widget to display as the main icon (e.g., in the top left)
+  final Widget? iconWidget;
+
+  /// Widget to display as the background decoration
+  /// If null, the iconWidget will be used with reduced opacity
+  final Widget? backgroundWidget;
+
+  /// Size of the main icon
+  final double iconSize;
+
+  /// Size of the background decoration
+  final double backgroundSize;
+
+  /// Opacity of the background decoration (0.0 - 1.0)
+  final double backgroundOpacity;
+
+  const WalletIconConfig({
+    this.iconWidget,
+    this.backgroundWidget,
+    this.iconSize = 32,
+    this.backgroundSize = 120,
+    this.backgroundOpacity = 0.12,
+  });
+}
 
 /// Individual wallet card widget used by the wallets UI.
 class NWalletCard extends StatelessWidget {
@@ -16,6 +42,15 @@ class NWalletCard extends StatelessWidget {
   /// Width of the card. Defaults to 280.
   final double width;
 
+  /// Custom icon configuration for Cashu wallets
+  final WalletIconConfig? cashuIcon;
+
+  /// Custom icon configuration for NWC wallets
+  final WalletIconConfig? nwcIcon;
+
+  /// Custom icon configuration for LNURL wallets
+  final WalletIconConfig? lnurlIcon;
+
   const NWalletCard({
     super.key,
     required this.wallet,
@@ -24,30 +59,34 @@ class NWalletCard extends StatelessWidget {
     required this.onTap,
     this.onDelete,
     this.width = 280,
+    this.cashuIcon,
+    this.nwcIcon,
+    this.lnurlIcon,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bool isCashu = wallet is CashuWallet;
     final bool isNwc = wallet is NwcWallet;
     final bool isLnurl = wallet is LnurlWallet;
 
     final String walletName;
     if (isCashu) {
-      walletName = (wallet as CashuWallet).mintInfo.name ?? 'Cashu';
+      walletName = (wallet as CashuWallet).mintInfo.name ?? l10n.cashuWallet;
     } else if (isNwc) {
       walletName = (wallet as NwcWallet).name;
     } else if (isLnurl) {
       walletName = (wallet as LnurlWallet).name;
     } else {
-      walletName = 'Unknown';
+      walletName = l10n.unknownWalletType;
     }
 
     final String subtitle;
     if (isCashu) {
       subtitle = (wallet as CashuWallet).mintUrl.replaceAll('https://', '');
     } else if (isNwc) {
-      subtitle = 'NWC Wallet';
+      subtitle = l10n.nwcWalletSubtitle;
     } else if (isLnurl) {
       subtitle = (wallet as LnurlWallet).identifier;
     } else {
@@ -57,29 +96,92 @@ class NWalletCard extends StatelessWidget {
     final List<Color> gradientColors;
     final Color shadowColor;
     if (isCashu) {
-      gradientColors = [Colors.orange[700]!, Colors.orange[400]!];
-      shadowColor = Colors.orange;
+      gradientColors = [const Color(0xFF7F38CA), const Color(0xFF9B5AD8)];
+      shadowColor = const Color(0xFF7F38CA);
     } else if (isNwc) {
-      gradientColors = [Colors.blue[700]!, Colors.blue[400]!];
-      shadowColor = Colors.blue;
+      gradientColors = [
+        const Color.fromRGBO(137, 127, 255, 1.0),
+        const Color.fromRGBO(160, 153, 255, 1.0),
+      ];
+      shadowColor = const Color.fromRGBO(137, 127, 255, 1.0);
     } else if (isLnurl) {
-      gradientColors = [Colors.purple[700]!, Colors.purple[400]!];
-      shadowColor = Colors.purple;
+      gradientColors = [const Color(0xFFFFB300), const Color(0xFFFFC107)];
+      shadowColor = const Color(0xFFFFB300);
     } else {
       gradientColors = [Colors.grey[700]!, Colors.grey[400]!];
       shadowColor = Colors.grey;
     }
 
-    final IconData walletIcon;
+    // Determine icon configuration based on wallet type
+    final WalletIconConfig iconConfig;
+    final String? defaultAssetName;
+    final IconData fallbackIcon;
     if (isCashu) {
-      walletIcon = Icons.account_balance_wallet;
+      iconConfig = cashuIcon ?? const WalletIconConfig();
+      defaultAssetName = 'cashu.png';
+      fallbackIcon = Icons.account_balance_wallet;
     } else if (isNwc) {
-      walletIcon = Icons.cloud;
+      iconConfig = nwcIcon ?? const WalletIconConfig();
+      defaultAssetName = 'nwc.png';
+      fallbackIcon = Icons.cloud;
     } else if (isLnurl) {
-      walletIcon = Icons.bolt;
+      iconConfig = lnurlIcon ?? const WalletIconConfig();
+      defaultAssetName = null; // LNURL uses bolt icon, not PNG
+      fallbackIcon = Icons.bolt;
     } else {
-      walletIcon = Icons.wallet;
+      iconConfig = const WalletIconConfig();
+      defaultAssetName = 'wallet.png';
+      fallbackIcon = Icons.wallet;
     }
+
+    // Build main icon widget (full color, not monochromatic)
+    final Widget mainIcon =
+        iconConfig.iconWidget ??
+        (defaultAssetName != null
+            ? Image.asset(
+                'assets/images/$defaultAssetName',
+                package: 'ndk_flutter',
+                width: iconConfig.iconSize,
+                height: iconConfig.iconSize,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    fallbackIcon,
+                    color: Colors.white,
+                    size: iconConfig.iconSize,
+                  );
+                },
+              )
+            : Icon(
+                fallbackIcon,
+                color: Colors.white,
+                size: iconConfig.iconSize,
+              ));
+
+    // Build background widget
+    final Widget backgroundWidget =
+        iconConfig.backgroundWidget ??
+        (defaultAssetName != null
+            ? Image.asset(
+                'assets/images/$defaultAssetName',
+                package: 'ndk_flutter',
+                width: iconConfig.backgroundSize,
+                height: iconConfig.backgroundSize,
+                color: Colors.white.withAlpha(
+                  (iconConfig.backgroundOpacity * 255).round(),
+                ),
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    fallbackIcon,
+                    size: iconConfig.backgroundSize,
+                    color: Colors.white.withAlpha(30),
+                  );
+                },
+              )
+            : Icon(
+                fallbackIcon,
+                size: iconConfig.backgroundSize,
+                color: Colors.white.withAlpha(30),
+              ));
 
     return GestureDetector(
       onTap: onTap,
@@ -104,15 +206,7 @@ class NWalletCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Icon(
-                walletIcon,
-                size: 120,
-                color: Colors.white.withAlpha(30),
-              ),
-            ),
+            Positioned(right: -20, top: -20, child: backgroundWidget),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -122,7 +216,7 @@ class NWalletCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(walletIcon, color: Colors.white, size: 32),
+                      mainIcon,
                       if (isSelected)
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -133,9 +227,9 @@ class NWalletCard extends StatelessWidget {
                             color: Colors.white.withAlpha(200),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'SELECTED',
-                            style: TextStyle(
+                          child: Text(
+                            l10n.selected,
+                            style: const TextStyle(
                               color: Colors.black87,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -198,17 +292,21 @@ class NWalletCard extends StatelessWidget {
   }
 
   Widget _buildLnurlInfo(BuildContext context, LnurlWallet lnWallet) {
+    final l10n = AppLocalizations.of(context)!;
     if (lnWallet.minSendable != null && lnWallet.maxSendable != null) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Receive-only wallet',
+            l10n.receiveOnlyWallet,
             style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
-            'Receive: ${lnWallet.minSendable! ~/ 1000} - ${lnWallet.maxSendable! ~/ 1000} sats',
+            l10n.receiveRange(
+              lnWallet.minSendable! ~/ 1000,
+              lnWallet.maxSendable! ~/ 1000,
+            ),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
@@ -220,12 +318,13 @@ class NWalletCard extends StatelessWidget {
     }
 
     return Text(
-      'Limits unavailable',
+      l10n.limitsUnavailable,
       style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
     );
   }
 
   Widget _buildBalance(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<WalletBalance>>(
       stream: ndk.wallets.getBalancesStream(wallet.id),
       builder: (context, snapshot) {
@@ -250,7 +349,7 @@ class NWalletCard extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              'sats',
+              l10n.sats,
               style: TextStyle(
                 color: Colors.white.withAlpha(200),
                 fontSize: 14,
@@ -263,12 +362,16 @@ class NWalletCard extends StatelessWidget {
   }
 
   Future<void> _defaultDeleteHandler(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     try {
       await ndk.wallets.removeWallet(wallet.id);
     } catch (e) {
       scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(l10n.error(e.toString())),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

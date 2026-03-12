@@ -1,7 +1,6 @@
 import 'package:meta/meta.dart';
 
 import '../data_layer/repositories/cache_manager/mem_cache_manager.dart';
-import '../data_layer/repositories/cashu_seed_secret_generator/fake_cashu_seed_generator.dart';
 import '../data_layer/repositories/verifiers/bip340_event_verifier.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';

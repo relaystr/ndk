@@ -1,4 +1,3 @@
-import 'package:rxdart/rxdart.dart';
 
 import '../../usecases/nwc/responses/pay_invoice_response.dart';
 import 'wallet.dart';

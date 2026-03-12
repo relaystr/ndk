@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
+import '../../l10n/app_localizations.dart';
+
 /// Horizontal list of pending wallet transactions combined across wallets.
 class NPendingTransactions extends StatelessWidget {
   final Ndk ndk;
@@ -21,6 +23,7 @@ class NPendingTransactions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<WalletTransaction>>(
       stream: ndk.wallets.combinedPendingTransactions,
       builder: (context, snapshot) {
@@ -33,12 +36,12 @@ class NPendingTransactions extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                title ?? 'Pending',
+                title ?? l10n.pendingTransactions,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
               Text(
-                'Error: ${snapshot.error}',
+                '${l10n.error}: ${snapshot.error}',
                 style: const TextStyle(color: Colors.red),
               ),
               const SizedBox(height: 16),
@@ -51,7 +54,7 @@ class NPendingTransactions extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              title ?? 'Pending',
+              title ?? l10n.pendingTransactions,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
@@ -105,7 +108,8 @@ class NPendingTransactions extends StatelessWidget {
                               tx.state.value,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: tx.state == WalletTransactionState.pending
+                                color:
+                                    tx.state == WalletTransactionState.pending
                                     ? Colors.orange
                                     : Colors.grey,
                               ),
@@ -125,4 +129,3 @@ class NPendingTransactions extends StatelessWidget {
     );
   }
 }
-
