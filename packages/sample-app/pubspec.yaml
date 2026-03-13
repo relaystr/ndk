@@ -40,7 +40,7 @@ dependencies:
 
   ndk: 0.7.0
   ndk_amber: 0.4.0
-  ndk_flutter: 0.0.2
+  ndk_flutter: ^0.0.2-dev.2
   drift_cache_manager: ^0.0.2-dev.0+1
   sembast_cache_manager: ^1.0.8-dev.0
 

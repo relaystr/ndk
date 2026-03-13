@@ -10,6 +10,10 @@ class NWalletCardList extends StatelessWidget {
   final NdkFlutter ndkFlutter;
   final String? selectedWalletId;
   final ValueChanged<String> onWalletSelected;
+  final VoidCallback? onAddWallet;
+
+  /// Scroll direction for the wallet cards list.
+  final Axis scrollDirection;
 
   /// Optional text to display when there are no wallets.
   /// Defaults to an English string; host apps should prefer
@@ -26,16 +30,22 @@ class NWalletCardList extends StatelessWidget {
   /// Custom icon configuration for LNURL wallets
   final WalletIconConfig? lnurlIcon;
 
+  /// Whether to show the add-wallet template card.
+  final bool showAddWalletCard;
+
   const NWalletCardList({
     super.key,
     required this.ndkFlutter,
     this.selectedWalletId,
     required this.onWalletSelected,
+    this.onAddWallet,
+    this.scrollDirection = Axis.horizontal,
     this.emptyTitleText,
     this.emptySubtitleText,
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
+    this.showAddWalletCard = true,
   });
 
   @override
@@ -50,7 +60,7 @@ class NWalletCardList extends StatelessWidget {
 
         final wallets = snapshot.data ?? [];
 
-        if (wallets.isEmpty) {
+        if (wallets.isEmpty && !showAddWalletCard) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -67,17 +77,26 @@ class NWalletCardList extends StatelessWidget {
           );
         }
 
+        final int itemCount =
+            wallets.length + (showAddWalletCard ? 1 : 0);
+
         return ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: wallets.length,
+          scrollDirection: scrollDirection,
+          primary: false,
+          itemCount: itemCount,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           itemBuilder: (context, index) {
+            if (showAddWalletCard && index == wallets.length) {
+              return _AddWalletCard(onTap: onAddWallet);
+            }
+
             final wallet = wallets[index];
             return NWalletCard(
               wallet: wallet,
               ndkFlutter: ndkFlutter,
               isSelected: wallet.id == selectedWalletId,
               onTap: () => onWalletSelected(wallet.id),
+              showBudgetRenewalDays: scrollDirection == Axis.vertical,
               cashuIcon: cashuIcon,
               nwcIcon: nwcIcon,
               lnurlIcon: lnurlIcon,
@@ -85,6 +104,63 @@ class NWalletCardList extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _AddWalletCard extends StatelessWidget {
+  final VoidCallback? onTap;
+
+  const _AddWalletCard({this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final Color baseColor = Colors.grey[100]!;
+    final Color accentColor = Colors.grey[200]!;
+    final Color borderColor = Colors.grey[200]!;
+    final Color iconColor = Colors.grey[300]!;
+    final Color textColor = Colors.grey[400]!;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 280,
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: baseColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: accentColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.add, color: iconColor, size: 22),
+            ),
+            const SizedBox(height: 12),
+            Container(width: 140, height: 12, color: accentColor),
+            const SizedBox(height: 8),
+            Container(width: 90, height: 10, color: accentColor),
+            const SizedBox(height: 12),
+            Text(
+              l10n.addWalletTitle,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

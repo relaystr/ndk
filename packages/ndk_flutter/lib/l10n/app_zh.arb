@@ -27,7 +27,6 @@
   "readOnly": "只读",
   "nsec": "Nsec",
   "extension": "扩展",
-
   "userMetadata": "用户元数据",
   "shortTextNote": "短文本笔记",
   "recommendRelay": "推荐中继",
@@ -323,7 +322,7 @@
   "paste": "粘贴",
   "fromYourProfile": "来自您的个人资料",
   "orEnterManually": "或手动输入:",
-  "budgetUsedOf": "预算：{used} / {total} sats",
+  "budgetUsedOf": "预算：{used} / {total}",
   "@budgetUsedOf": {
     "description": "Budget information showing used and total amount",
     "placeholders": {

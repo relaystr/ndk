@@ -114,7 +114,6 @@
   "@extension": {
     "description": "Label for browser extension account type"
   },
-
   "userMetadata": "User Metadata",
   "@userMetadata": {
     "description": "Nostr event kind 0"
@@ -821,7 +820,6 @@
       }
     }
   },
-
   "walletsTitle": "Wallets",
   "@walletsTitle": {
     "description": "Title for wallets section"
@@ -1008,10 +1006,6 @@
   "@pleaseEnterInvoice": {
     "description": "Error message for empty invoice"
   },
-  "pleaseEnterInvoice": "Please enter an invoice",
-  "@pleaseEnterInvoice": {
-    "description": "Error message for empty invoice"
-  },
   "invoicePaid": "Invoice paid!",
   "@invoicePaid": {
     "description": "Success message when invoice is paid"
@@ -1057,10 +1051,6 @@
   "tokenHint": "Paste token here...",
   "@tokenHint": {
     "description": "Hint for token input"
-  },
-  "pleaseEnterToken": "Please enter a token",
-  "@pleaseEnterToken": {
-    "description": "Error message for empty token"
   },
   "pleaseEnterToken": "Please enter a token",
   "@pleaseEnterToken": {
@@ -1230,10 +1220,6 @@
   "@limitsUnavailable": {
     "description": "Message shown when limits are unavailable"
   },
-  "nwcWalletSubtitle": "NWC Wallet",
-  "@nwcWalletSubtitle": {
-    "description": "Subtitle for NWC wallet"
-  },
   "tokenCopied": "Token copied",
   "@tokenCopied": {
     "description": "Message shown when token is copied"
@@ -1346,7 +1332,7 @@
   "@walletRenamed": {
     "description": "Message shown when wallet is renamed"
   },
-  "budgetUsedOf": "Budget: {used} / {total} sats",
+  "budgetUsedOf": "Budget: {used} / {total}",
   "@budgetUsedOf": {
     "description": "Budget information showing used and total amount",
     "placeholders": {

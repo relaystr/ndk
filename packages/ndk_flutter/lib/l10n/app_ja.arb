@@ -27,7 +27,6 @@
   "readOnly": "読み取り専用",
   "nsec": "Nsec",
   "extension": "拡張機能",
-
   "userMetadata": "ユーザーメタデータ",
   "shortTextNote": "短いテキストノート",
   "recommendRelay": "リレー推奨",
@@ -323,7 +322,7 @@
   "paste": "貼り付け",
   "fromYourProfile": "プロフィールから",
   "orEnterManually": "または手動で入力:",
-  "budgetUsedOf": "予算: {used} / {total} sats",
+  "budgetUsedOf": "予算: {used} / {total}",
   "@budgetUsedOf": {
     "description": "Budget information showing used and total amount",
     "placeholders": {

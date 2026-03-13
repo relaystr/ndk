@@ -487,7 +487,7 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
       final wallet = widget.ndkFlutter.ndk.wallets.createWallet(
         type: WalletType.LNURL,
         id: walletId,
-        name: 'LNURL',
+        name: identifier,
         supportedUnits: {'sat'},
         metadata: {'identifier': identifier},
       );

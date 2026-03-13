@@ -5,9 +5,10 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 
-/// Vertical list of recent transactions combined across wallets.
+/// Vertical list of recent transactions for a specific wallet when provided.
 class NRecentTransactions extends StatelessWidget {
   final NdkFlutter ndkFlutter;
+  final String? walletId;
 
   /// Optional localized empty-label when there are no transactions.
   final String? emptyLabel;
@@ -15,14 +16,18 @@ class NRecentTransactions extends StatelessWidget {
   const NRecentTransactions({
     super.key,
     required this.ndkFlutter,
+    this.walletId,
     this.emptyLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final stream = walletId == null
+        ? ndkFlutter.ndk.wallets.combinedRecentTransactions
+        : ndkFlutter.ndk.wallets.getRecentTransactionsStream(walletId!);
     return StreamBuilder<List<WalletTransaction>>(
-      stream: ndkFlutter.ndk.wallets.combinedRecentTransactions,
+      stream: stream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

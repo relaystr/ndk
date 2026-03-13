@@ -2050,7 +2050,7 @@ abstract class AppLocalizations {
   /// Budget information showing used and total amount
   ///
   /// In en, this message translates to:
-  /// **'Budget: {used} / {total} sats'**
+  /// **'Budget: {used} / {total}'**
   String budgetUsedOf(int used, int total);
 
   /// Budget renewal information showing days until renewal

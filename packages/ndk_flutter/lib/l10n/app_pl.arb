@@ -114,7 +114,6 @@
   "@extension": {
     "description": "Label for browser extension account type"
   },
-
   "userMetadata": "Metadane użytkownika",
   "@userMetadata": {
     "description": "Nostr event kind 0"
@@ -821,7 +820,6 @@
       }
     }
   },
-
   "walletsTitle": "Portfele",
   "@walletsTitle": {
     "description": "Title for wallets section"
@@ -1306,7 +1304,7 @@
   "@orEnterManually": {
     "description": "Label for manual entry option"
   },
-  "budgetUsedOf": "Budżet: {used} / {total} sats",
+  "budgetUsedOf": "Budżet: {used} / {total}",
   "@budgetUsedOf": {
     "description": "Budget information showing used and total amount",
     "placeholders": {

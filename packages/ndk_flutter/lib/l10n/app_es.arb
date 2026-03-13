@@ -27,7 +27,6 @@
   "readOnly": "Solo lectura",
   "nsec": "Nsec",
   "extension": "Extensión",
-
   "userMetadata": "Metadatos de usuario",
   "shortTextNote": "Nota corta",
   "recommendRelay": "Recomendar relay",
@@ -323,7 +322,7 @@
   "paste": "Pegar",
   "fromYourProfile": "De tu perfil",
   "orEnterManually": "O ingresa manualmente:",
-  "budgetUsedOf": "Presupuesto: {used} / {total} sats",
+  "budgetUsedOf": "Presupuesto: {used} / {total}",
   "@budgetUsedOf": {
     "description": "Budget information showing used and total amount",
     "placeholders": {

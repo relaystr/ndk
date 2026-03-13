@@ -27,7 +27,6 @@
   "readOnly": "Только чтение",
   "nsec": "Nsec",
   "extension": "Расширение",
-
   "userMetadata": "Метаданные пользователя",
   "shortTextNote": "Короткая заметка",
   "recommendRelay": "Рекомендовать реле",
@@ -323,7 +322,7 @@
   "paste": "Вставить",
   "fromYourProfile": "Из вашего профиля",
   "orEnterManually": "Или введите вручную:",
-  "budgetUsedOf": "Бюджет: {used} / {total} sats",
+  "budgetUsedOf": "Бюджет: {used} / {total}",
   "@budgetUsedOf": {
     "description": "Budget information showing used and total amount",
     "placeholders": {

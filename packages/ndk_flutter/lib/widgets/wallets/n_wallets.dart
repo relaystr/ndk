@@ -31,6 +31,9 @@ class NWallets extends StatefulWidget {
   /// Whether to show the add-wallet buttons in the header.
   final bool showAddButtons;
 
+  /// Whether to show the wallet operations card for the selected wallet.
+  final bool showWalletActions;
+
   /// Optional callback when add-Cashu button is pressed.
   final VoidCallback? onAddCashu;
 
@@ -51,6 +54,9 @@ class NWallets extends StatefulWidget {
 
   /// Height of the wallet cards list.
   final double walletCardsHeight;
+
+  /// Scroll direction for the wallet cards list.
+  final Axis walletCardsScrollDirection;
 
   /// Height of the recent transactions list.
   final double recentTransactionsHeight;
@@ -78,6 +84,7 @@ class NWallets extends StatefulWidget {
     this.showPendingTransactions = true,
     this.showRecentTransactions = true,
     this.showAddButtons = true,
+    this.showWalletActions = true,
     this.onAddCashu,
     this.onAddNwc,
     this.onAddLnurl,
@@ -85,6 +92,7 @@ class NWallets extends StatefulWidget {
     this.headerActions,
     this.padding = const EdgeInsets.all(16.0),
     this.walletCardsHeight = 200,
+    this.walletCardsScrollDirection = Axis.horizontal,
     this.recentTransactionsHeight = 200,
     this.onWalletSelected,
     this.albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
@@ -103,6 +111,51 @@ class _NWalletsState extends State<NWallets> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final bool hasSelectedWallet = _selectedWalletId != null;
+    final bool showActionsSection =
+        widget.showWalletActions && hasSelectedWallet;
+    final bool showPendingSection =
+        widget.showPendingTransactions && hasSelectedWallet;
+    final bool showRecentSection =
+        widget.showRecentTransactions && hasSelectedWallet;
+    final bool useExpandedCardList =
+        widget.walletCardsScrollDirection == Axis.vertical &&
+        !widget.showWalletActions &&
+        !widget.showPendingTransactions &&
+        !widget.showRecentTransactions;
+
+    if (useExpandedCardList) {
+      return Padding(
+        padding: widget.padding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            widget.header ?? _buildHeader(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: NWalletCardList(
+                ndkFlutter: widget.ndkFlutter,
+                selectedWalletId: _selectedWalletId,
+                onWalletSelected: (walletId) {
+                  setState(() {
+                    _selectedWalletId = walletId;
+                  });
+                  widget.onWalletSelected?.call(walletId);
+                },
+                onAddWallet: widget.showAddButtons
+                    ? () => _showAddWalletDialog(context)
+                    : null,
+                scrollDirection: widget.walletCardsScrollDirection,
+                showAddWalletCard: widget.showAddButtons,
+                cashuIcon: widget.cashuIcon,
+                nwcIcon: widget.nwcIcon,
+                lnurlIcon: widget.lnurlIcon,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return SingleChildScrollView(
       child: Padding(
@@ -110,7 +163,7 @@ class _NWalletsState extends State<NWallets> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            widget.header ?? _buildHeader(context, l10n),
+            widget.header ?? _buildHeader(),
             const SizedBox(height: 16),
             SizedBox(
               height: widget.walletCardsHeight,
@@ -123,13 +176,18 @@ class _NWalletsState extends State<NWallets> {
                   });
                   widget.onWalletSelected?.call(walletId);
                 },
+                onAddWallet: widget.showAddButtons
+                    ? () => _showAddWalletDialog(context)
+                    : null,
+                scrollDirection: widget.walletCardsScrollDirection,
+                showAddWalletCard: widget.showAddButtons,
                 cashuIcon: widget.cashuIcon,
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,
               ),
             ),
-            const SizedBox(height: 24),
-            if (_selectedWalletId != null)
+            if (showActionsSection) ...[
+              const SizedBox(height: 24),
               NWalletActions(
                 ndkFlutter: widget.ndkFlutter,
                 selectedWalletId: _selectedWalletId!,
@@ -139,10 +197,16 @@ class _NWalletsState extends State<NWallets> {
                   });
                 },
               ),
-            const SizedBox(height: 24),
-            if (widget.showPendingTransactions)
-              NPendingTransactions(ndkFlutter: widget.ndkFlutter),
-            if (widget.showRecentTransactions) ...[
+              const SizedBox(height: 24),
+            ] else if (showPendingSection || showRecentSection) ...[
+              const SizedBox(height: 24),
+            ],
+            if (showPendingSection)
+              NPendingTransactions(
+                ndkFlutter: widget.ndkFlutter,
+                walletId: _selectedWalletId!,
+              ),
+            if (showRecentSection) ...[
               Text(
                 widget.recentActivityTitle ?? l10n.recentActivityTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
@@ -150,7 +214,10 @@ class _NWalletsState extends State<NWallets> {
               const SizedBox(height: 8),
               SizedBox(
                 height: widget.recentTransactionsHeight,
-                child: NRecentTransactions(ndkFlutter: widget.ndkFlutter),
+                child: NRecentTransactions(
+                  ndkFlutter: widget.ndkFlutter,
+                  walletId: _selectedWalletId!,
+                ),
               ),
             ],
           ],
@@ -159,28 +226,8 @@ class _NWalletsState extends State<NWallets> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          widget.title ?? l10n.walletsTitle,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        widget.headerActions ??
-            (widget.showAddButtons
-                ? _buildDefaultActions(context, l10n)
-                : const SizedBox.shrink()),
-      ],
-    );
-  }
-
-  Widget _buildDefaultActions(BuildContext context, AppLocalizations l10n) {
-    return IconButton(
-      onPressed: () => _showAddWalletDialog(context),
-      icon: const Icon(Icons.add),
-      tooltip: 'Add Wallet',
-    );
+  Widget _buildHeader() {
+    return const SizedBox.shrink();
   }
 
   void _showAddWalletDialog(BuildContext context) {

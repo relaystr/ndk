@@ -39,6 +39,7 @@ class NWalletCard extends StatefulWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final Future<void> Function(BuildContext context, Wallet wallet)? onDelete;
+  final bool showBudgetRenewalDays;
 
   /// Width of the card. Defaults to 280.
   final double width;
@@ -60,6 +61,7 @@ class NWalletCard extends StatefulWidget {
     required this.onTap,
     this.onDelete,
     this.width = 280,
+    this.showBudgetRenewalDays = false,
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
@@ -182,6 +184,7 @@ class _NWalletCardState extends State<NWalletCard> {
     final bool isCashu = widget.wallet is CashuWallet;
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
+    final bool showBudgetInfo = isNwc && _shouldShowBudgetInfo();
 
     final String walletName;
     if (isCashu) {
@@ -207,10 +210,14 @@ class _NWalletCardState extends State<NWalletCard> {
     } else if (isNwc) {
       subtitle = l10n.nwcWalletSubtitle;
     } else if (isLnurl) {
-      subtitle = (widget.wallet as LnurlWallet).identifier;
+      final lnurlWallet = widget.wallet as LnurlWallet;
+      subtitle = lnurlWallet.identifier == lnurlWallet.name
+          ? ''
+          : lnurlWallet.identifier;
     } else {
       subtitle = '';
     }
+    final bool showSubtitle = !isNwc && subtitle.isNotEmpty;
 
     // Use custom gradient if set (immediate UI update), otherwise load from metadata
     final List<Color> gradientColors;
@@ -373,7 +380,7 @@ class _NWalletCardState extends State<NWalletCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (!isNwc) ...[
+                      if (showSubtitle) ...[
                         const SizedBox(height: 4),
                         Text(
                           subtitle,
@@ -385,17 +392,14 @@ class _NWalletCardState extends State<NWalletCard> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                      SizedBox(
-                        height: isNwc && _budgetResponse != null ? 4 : 16,
-                      ),
+                      SizedBox(height: showBudgetInfo ? 4 : 16),
                       isLnurl
                           ? _buildLnurlInfo(
                               context,
                               widget.wallet as LnurlWallet,
                             )
                           : _buildBalance(context),
-                      if (isNwc && _budgetResponse != null)
-                        _buildBudgetInfo(context),
+                      if (showBudgetInfo) _buildBudgetInfo(context),
                     ],
                   ),
                 ],
@@ -743,7 +747,7 @@ class _NWalletCardState extends State<NWalletCard> {
 
   Widget _buildBalance(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isCompactNwc = widget.wallet is NwcWallet && _budgetResponse != null;
+    final isCompactNwc = widget.wallet is NwcWallet && _shouldShowBudgetInfo();
     final balanceFontSize = isCompactNwc ? 24.0 : 28.0;
     final unitFontSize = isCompactNwc ? 12.0 : 14.0;
     return StreamBuilder<List<WalletBalance>>(
@@ -785,6 +789,12 @@ class _NWalletCardState extends State<NWalletCard> {
     );
   }
 
+  bool _shouldShowBudgetInfo() {
+    final budget = _budgetResponse;
+    if (budget == null) return false;
+    return !(budget.usedBudget == 0 && budget.totalBudget == 0);
+  }
+
   Widget _buildBudgetInfo(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final budget = _budgetResponse!;
@@ -795,7 +805,7 @@ class _NWalletCardState extends State<NWalletCard> {
 
     String renewalText;
     if (budget.renewalPeriod == BudgetRenewalPeriod.never) {
-      renewalText = l10n.budgetNever;
+      renewalText = '';
     } else {
       String periodText;
       switch (budget.renewalPeriod) {
@@ -812,10 +822,10 @@ class _NWalletCardState extends State<NWalletCard> {
           periodText = l10n.budgetYearly;
           break;
         default:
-          periodText = l10n.budgetNever;
+          periodText = '';
       }
 
-      if (budget.renewsAt != null) {
+      if (widget.showBudgetRenewalDays && budget.renewsAt != null) {
         final renewsAt = DateTime.fromMillisecondsSinceEpoch(
           budget.renewsAt! * 1000,
         );
@@ -823,8 +833,9 @@ class _NWalletCardState extends State<NWalletCard> {
         final daysUntilRenewal = renewsAt.difference(now).inDays;
 
         if (daysUntilRenewal > 0) {
-          renewalText =
-              '${l10n.budgetRenewsIn(daysUntilRenewal)} ($periodText)';
+          renewalText = periodText.isNotEmpty
+              ? '${l10n.budgetRenewsIn(daysUntilRenewal)} ($periodText)'
+              : '';
         } else {
           renewalText = periodText;
         }
@@ -832,6 +843,7 @@ class _NWalletCardState extends State<NWalletCard> {
         renewalText = periodText;
       }
     }
+    final bool showRenewalText = renewalText.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,12 +863,30 @@ class _NWalletCardState extends State<NWalletCard> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              l10n.budgetUsedOf(usedSats, totalSats),
-              style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            Flexible(
+              child: Text(
+                l10n.budgetUsedOf(usedSats, totalSats),
+                style:
+                    TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            if (showRenewalText) ...[
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  renewalText,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(200),
+                    fontSize: 9,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ],
         ),
         // Text(
