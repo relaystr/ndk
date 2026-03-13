@@ -58,6 +58,9 @@ class NWallets extends StatefulWidget {
   /// Optional callback when a wallet is selected.
   final ValueChanged<String>? onWalletSelected;
 
+  /// Parameters for launching Alby Go NWC connection.
+  final AlbyGoConnectConfig albyGoConnectConfig;
+
   /// Custom icon configuration for Cashu wallets
   final WalletIconConfig? cashuIcon;
 
@@ -84,6 +87,7 @@ class NWallets extends StatefulWidget {
     this.walletCardsHeight = 200,
     this.recentTransactionsHeight = 200,
     this.onWalletSelected,
+    this.albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
@@ -180,6 +184,10 @@ class _NWalletsState extends State<NWallets> {
   }
 
   void _showAddWalletDialog(BuildContext context) {
-    showAddWalletTypeDialog(context, widget.ndkFlutter);
+    showAddWalletTypeDialog(
+      context,
+      widget.ndkFlutter,
+      albyGoConnectConfig: widget.albyGoConnectConfig,
+    );
   }
 }

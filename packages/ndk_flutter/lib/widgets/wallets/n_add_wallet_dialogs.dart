@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,30 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import '../../l10n/app_localizations.dart';
 
 const String _defaultMintUrl = 'https://dev.mint.camelus.app';
+const String _albyGoIntentHost = 'bla';
+
+/// Configuration for launching the Alby Go NWC connection intent.
+///
+/// Provide raw (unencoded) values. They will be encoded for the intent URL.
+class AlbyGoConnectConfig {
+  final String appName;
+  final String appIconUrl;
+  final String callback;
+
+  const AlbyGoConnectConfig({
+    required this.appName,
+    required this.appIconUrl,
+    required this.callback,
+  });
+}
+
+/// Default Alby Go parameters aligned with the sample app's NWC auth flow.
+const AlbyGoConnectConfig kDefaultAlbyGoConnectConfig = AlbyGoConnectConfig(
+  appName: 'NDK Demo',
+  appIconUrl:
+      'https://logowik.com/content/uploads/images/flutter5786.jpg',
+  callback: 'ndk://nwc',
+);
 
 /// Shows a dialog to add a Cashu wallet.
 ///
@@ -549,10 +574,12 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
 /// Shows a dialog to choose wallet type (Cashu, NWC, or LNURL).
 ///
 /// Returns true if a wallet type was selected, false if cancelled.
+/// Use [albyGoConnectConfig] to override Alby Go app metadata.
 Future<bool> showAddWalletTypeDialog(
   BuildContext context,
-  NdkFlutter ndkFlutter,
-) async {
+  NdkFlutter ndkFlutter, {
+  AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
+}) async {
   final l10n = AppLocalizations.of(context)!;
 
   return await showDialog<bool>(
@@ -617,6 +644,7 @@ Future<bool> showAddWalletTypeDialog(
                         await showNwcConnectionOptionsDialog(
                           context,
                           ndkFlutter,
+                          albyGoConnectConfig: albyGoConnectConfig,
                         );
                       },
                     ),
@@ -642,10 +670,12 @@ Future<bool> showAddWalletTypeDialog(
 /// Shows a dialog to choose NWC connection method.
 ///
 /// Returns true if a connection method was selected, false if cancelled.
+/// Use [albyGoConnectConfig] to override Alby Go app metadata.
 Future<bool> showNwcConnectionOptionsDialog(
   BuildContext context,
-  NdkFlutter ndkFlutter,
-) async {
+  NdkFlutter ndkFlutter, {
+  AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
+}) async {
   final l10n = AppLocalizations.of(context)!;
 
   return await showDialog<bool>(
@@ -699,7 +729,10 @@ Future<bool> showNwcConnectionOptionsDialog(
                         label: l10n.albyGoOption,
                         onTap: () async {
                           Navigator.of(dialogContext).pop(true);
-                          await _connectAlbyGo(context);
+                          await _connectAlbyGo(
+                            context,
+                            albyGoConnectConfig,
+                          );
                         },
                       ),
                     // Manual connection button (goes directly to QR scanner)
@@ -803,15 +836,43 @@ class _WalletTypeOptionButton extends StatelessWidget {
 }
 
 /// Launches the Alby Go app via Android intent
-Future<void> _connectAlbyGo(BuildContext context) async {
-  // TODO: Implement Alby Go connection using android_intent_plus
-  // For now, show a snackbar indicating this feature is coming
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Alby Go connection coming soon'),
-      backgroundColor: Colors.orange,
-    ),
-  );
+Future<void> _connectAlbyGo(
+  BuildContext context,
+  AlbyGoConnectConfig config,
+) async {
+  if (kIsWeb || !Platform.isAndroid) return;
+
+  final appName = _encodeComponentIfNeeded(config.appName);
+  final appIcon = _encodeComponentIfNeeded(config.appIconUrl);
+  final callback = _encodeComponentIfNeeded(config.callback);
+  final data =
+      'nostrnwc://$_albyGoIntentHost?appname=$appName&appicon=$appIcon&callback=$callback';
+  final intent = AndroidIntent(action: 'action_view', data: data);
+
+  try {
+    await intent.launch();
+  } catch (e) {
+    if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.error(e.toString())),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+
+String _encodeComponentIfNeeded(String value) {
+  try {
+    final decoded = Uri.decodeComponent(value);
+    if (decoded != value) {
+      return value;
+    }
+  } catch (_) {
+    // If it's not valid percent-encoding, encode it.
+  }
+  return Uri.encodeComponent(value);
 }
 
 /// Shows QR scanner dialog and then adds the wallet directly

@@ -21,6 +21,7 @@ environment:
 
 dependencies:
   amberflutter: ^0.0.9
+  android_intent_plus: ^6.0.0
   crypto: ">=3.0.0 <4.0.0"
   flutter:
     sdk: flutter
