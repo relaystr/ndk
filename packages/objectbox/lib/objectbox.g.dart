@@ -20,6 +20,7 @@ import 'data_layer/db/object_box/schema/db_cashu_proof.dart';
 import 'data_layer/db/object_box/schema/db_cashu_secret_counter.dart';
 import 'data_layer/db/object_box/schema/db_contact_list.dart';
 import 'data_layer/db/object_box/schema/db_filter_fetched_range_record.dart';
+import 'data_layer/db/object_box/schema/db_key_value.dart';
 import 'data_layer/db/object_box/schema/db_metadata.dart';
 import 'data_layer/db/object_box/schema/db_nip_01_event.dart';
 import 'data_layer/db/object_box/schema/db_nip_05.dart';
@@ -826,6 +827,34 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(14, 5469921152275641897),
+    name: 'DbKeyValue',
+    lastPropertyId: const obx_int.IdUid(3, 3297723908516499256),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 8865574119674977230),
+        name: 'dbId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 3996197440231456828),
+        name: 'key',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 3297723908516499256),
+        name: 'value',
+        type: 9,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -871,7 +900,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(13, 8733043912588670395),
+    lastEntityId: const obx_int.IdUid(14, 5469921152275641897),
     lastIndexId: const obx_int.IdUid(5, 8083061451592629115),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -894,12 +923,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.dbId = id;
       },
       objectToFB: (DbCashuMintInfo object, fb.Builder fbb) {
-        final nameOffset = object.name == null
-            ? null
-            : fbb.writeString(object.name!);
-        final versionOffset = object.version == null
-            ? null
-            : fbb.writeString(object.version!);
+        final nameOffset =
+            object.name == null ? null : fbb.writeString(object.name!);
+        final versionOffset =
+            object.version == null ? null : fbb.writeString(object.version!);
         final descriptionOffset = object.description == null
             ? null
             : fbb.writeString(object.description!);
@@ -907,18 +934,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ? null
             : fbb.writeString(object.descriptionLong!);
         final contactJsonOffset = fbb.writeString(object.contactJson);
-        final motdOffset = object.motd == null
-            ? null
-            : fbb.writeString(object.motd!);
-        final iconUrlOffset = object.iconUrl == null
-            ? null
-            : fbb.writeString(object.iconUrl!);
+        final motdOffset =
+            object.motd == null ? null : fbb.writeString(object.motd!);
+        final iconUrlOffset =
+            object.iconUrl == null ? null : fbb.writeString(object.iconUrl!);
         final urlsOffset = fbb.writeList(
           object.urls.map(fbb.writeString).toList(growable: false),
         );
-        final tosUrlOffset = object.tosUrl == null
-            ? null
-            : fbb.writeString(object.tosUrl!);
+        final tosUrlOffset =
+            object.tosUrl == null ? null : fbb.writeString(object.tosUrl!);
         final nutsJsonOffset = fbb.writeString(object.nutsJson);
         fbb.startTable(13);
         fbb.addInt64(0, object.dbId);
@@ -1142,63 +1166,61 @@ obx_int.ModelDefinition getObjectBoxModel() {
     ),
     DbFilterFetchedRangeRecord:
         obx_int.EntityDefinition<DbFilterFetchedRangeRecord>(
-          model: _entities[3],
-          toOneRelations: (DbFilterFetchedRangeRecord object) => [],
-          toManyRelations: (DbFilterFetchedRangeRecord object) => {},
-          getId: (DbFilterFetchedRangeRecord object) => object.dbId,
-          setId: (DbFilterFetchedRangeRecord object, int id) {
-            object.dbId = id;
-          },
-          objectToFB: (DbFilterFetchedRangeRecord object, fb.Builder fbb) {
-            final filterHashOffset = fbb.writeString(object.filterHash);
-            final relayUrlOffset = fbb.writeString(object.relayUrl);
-            fbb.startTable(6);
-            fbb.addInt64(0, object.dbId);
-            fbb.addOffset(1, filterHashOffset);
-            fbb.addOffset(2, relayUrlOffset);
-            fbb.addInt64(3, object.rangeStart);
-            fbb.addInt64(4, object.rangeEnd);
-            fbb.finish(fbb.endTable());
-            return object.dbId;
-          },
-          objectFromFB: (obx.Store store, ByteData fbData) {
-            final buffer = fb.BufferContext(fbData);
-            final rootOffset = buffer.derefObject(0);
-            final filterHashParam = const fb.StringReader(
-              asciiOptimization: true,
-            ).vTableGet(buffer, rootOffset, 6, '');
-            final relayUrlParam = const fb.StringReader(
-              asciiOptimization: true,
-            ).vTableGet(buffer, rootOffset, 8, '');
-            final rangeStartParam = const fb.Int64Reader().vTableGet(
-              buffer,
-              rootOffset,
-              10,
-              0,
-            );
-            final rangeEndParam = const fb.Int64Reader().vTableGet(
-              buffer,
-              rootOffset,
-              12,
-              0,
-            );
-            final object =
-                DbFilterFetchedRangeRecord(
-                    filterHash: filterHashParam,
-                    relayUrl: relayUrlParam,
-                    rangeStart: rangeStartParam,
-                    rangeEnd: rangeEndParam,
-                  )
-                  ..dbId = const fb.Int64Reader().vTableGet(
-                    buffer,
-                    rootOffset,
-                    4,
-                    0,
-                  );
+      model: _entities[3],
+      toOneRelations: (DbFilterFetchedRangeRecord object) => [],
+      toManyRelations: (DbFilterFetchedRangeRecord object) => {},
+      getId: (DbFilterFetchedRangeRecord object) => object.dbId,
+      setId: (DbFilterFetchedRangeRecord object, int id) {
+        object.dbId = id;
+      },
+      objectToFB: (DbFilterFetchedRangeRecord object, fb.Builder fbb) {
+        final filterHashOffset = fbb.writeString(object.filterHash);
+        final relayUrlOffset = fbb.writeString(object.relayUrl);
+        fbb.startTable(6);
+        fbb.addInt64(0, object.dbId);
+        fbb.addOffset(1, filterHashOffset);
+        fbb.addOffset(2, relayUrlOffset);
+        fbb.addInt64(3, object.rangeStart);
+        fbb.addInt64(4, object.rangeEnd);
+        fbb.finish(fbb.endTable());
+        return object.dbId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final filterHashParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final relayUrlParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final rangeStartParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final rangeEndParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          0,
+        );
+        final object = DbFilterFetchedRangeRecord(
+          filterHash: filterHashParam,
+          relayUrl: relayUrlParam,
+          rangeStart: rangeStartParam,
+          rangeEnd: rangeEndParam,
+        )..dbId = const fb.Int64Reader().vTableGet(
+            buffer,
+            rootOffset,
+            4,
+            0,
+          );
 
-            return object;
-          },
-        ),
+        return object;
+      },
+    ),
     DbMetadata: obx_int.EntityDefinition<DbMetadata>(
       model: _entities[4],
       toOneRelations: (DbMetadata object) => [],
@@ -1209,33 +1231,25 @@ obx_int.ModelDefinition getObjectBoxModel() {
       },
       objectToFB: (DbMetadata object, fb.Builder fbb) {
         final pubKeyOffset = fbb.writeString(object.pubKey);
-        final nameOffset = object.name == null
-            ? null
-            : fbb.writeString(object.name!);
+        final nameOffset =
+            object.name == null ? null : fbb.writeString(object.name!);
         final displayNameOffset = object.displayName == null
             ? null
             : fbb.writeString(object.displayName!);
-        final pictureOffset = object.picture == null
-            ? null
-            : fbb.writeString(object.picture!);
-        final bannerOffset = object.banner == null
-            ? null
-            : fbb.writeString(object.banner!);
-        final websiteOffset = object.website == null
-            ? null
-            : fbb.writeString(object.website!);
-        final aboutOffset = object.about == null
-            ? null
-            : fbb.writeString(object.about!);
-        final nip05Offset = object.nip05 == null
-            ? null
-            : fbb.writeString(object.nip05!);
-        final lud16Offset = object.lud16 == null
-            ? null
-            : fbb.writeString(object.lud16!);
-        final lud06Offset = object.lud06 == null
-            ? null
-            : fbb.writeString(object.lud06!);
+        final pictureOffset =
+            object.picture == null ? null : fbb.writeString(object.picture!);
+        final bannerOffset =
+            object.banner == null ? null : fbb.writeString(object.banner!);
+        final websiteOffset =
+            object.website == null ? null : fbb.writeString(object.website!);
+        final aboutOffset =
+            object.about == null ? null : fbb.writeString(object.about!);
+        final nip05Offset =
+            object.nip05 == null ? null : fbb.writeString(object.nip05!);
+        final lud16Offset =
+            object.lud16 == null ? null : fbb.writeString(object.lud16!);
+        final lud06Offset =
+            object.lud06 == null ? null : fbb.writeString(object.lud06!);
         final splitDisplayNameWordsOffset = object.splitDisplayNameWords == null
             ? null
             : fbb.writeList(
@@ -1250,9 +1264,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
                     .map(fbb.writeString)
                     .toList(growable: false),
               );
-        final tagsJsonOffset = object.tagsJson == null
-            ? null
-            : fbb.writeString(object.tagsJson!);
+        final tagsJsonOffset =
+            object.tagsJson == null ? null : fbb.writeString(object.tagsJson!);
         final rawContentJsonOffset = object.rawContentJson == null
             ? null
             : fbb.writeString(object.rawContentJson!);
@@ -1323,8 +1336,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           rootOffset,
           26,
         );
-        final refreshedTimestampParam = const fb.Int64Reader()
-            .vTableGetNullable(buffer, rootOffset, 28);
+        final refreshedTimestampParam =
+            const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 28);
         final tagsJsonParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 34);
@@ -1365,9 +1378,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final nostrIdOffset = fbb.writeString(object.nostrId);
         final pubKeyOffset = fbb.writeString(object.pubKey);
         final contentOffset = fbb.writeString(object.content);
-        final sigOffset = object.sig == null
-            ? null
-            : fbb.writeString(object.sig!);
+        final sigOffset =
+            object.sig == null ? null : fbb.writeString(object.sig!);
         final sourcesOffset = fbb.writeList(
           object.sources.map(fbb.writeString).toList(growable: false),
         );
@@ -1416,40 +1428,39 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
-        final object =
-            DbNip01Event(
-                pubKey: pubKeyParam,
-                kind: kindParam,
-                content: contentParam,
-                nostrId: nostrIdParam,
-                createdAt: createdAtParam,
-              )
-              ..dbId = const fb.Int64Reader().vTableGet(
-                buffer,
-                rootOffset,
-                4,
-                0,
-              )
-              ..sig = const fb.StringReader(
-                asciiOptimization: true,
-              ).vTableGetNullable(buffer, rootOffset, 16)
-              ..validSig = const fb.BoolReader().vTableGetNullable(
-                buffer,
-                rootOffset,
-                18,
-              )
-              ..sources = const fb.ListReader<String>(
-                fb.StringReader(asciiOptimization: true),
-                lazy: false,
-              ).vTableGet(buffer, rootOffset, 20, [])
-              ..tagsPacked = const fb.ListReader<String>(
-                fb.StringReader(asciiOptimization: true),
-                lazy: false,
-              ).vTableGet(buffer, rootOffset, 22, [])
-              ..tagsIndex = const fb.ListReader<String>(
-                fb.StringReader(asciiOptimization: true),
-                lazy: false,
-              ).vTableGet(buffer, rootOffset, 24, []);
+        final object = DbNip01Event(
+          pubKey: pubKeyParam,
+          kind: kindParam,
+          content: contentParam,
+          nostrId: nostrIdParam,
+          createdAt: createdAtParam,
+        )
+          ..dbId = const fb.Int64Reader().vTableGet(
+            buffer,
+            rootOffset,
+            4,
+            0,
+          )
+          ..sig = const fb.StringReader(
+            asciiOptimization: true,
+          ).vTableGetNullable(buffer, rootOffset, 16)
+          ..validSig = const fb.BoolReader().vTableGetNullable(
+            buffer,
+            rootOffset,
+            18,
+          )
+          ..sources = const fb.ListReader<String>(
+            fb.StringReader(asciiOptimization: true),
+            lazy: false,
+          ).vTableGet(buffer, rootOffset, 20, [])
+          ..tagsPacked = const fb.ListReader<String>(
+            fb.StringReader(asciiOptimization: true),
+            lazy: false,
+          ).vTableGet(buffer, rootOffset, 22, [])
+          ..tagsIndex = const fb.ListReader<String>(
+            fb.StringReader(asciiOptimization: true),
+            lazy: false,
+          ).vTableGet(buffer, rootOffset, 24, []);
 
         return object;
       },
@@ -1910,6 +1921,42 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    DbKeyValue: obx_int.EntityDefinition<DbKeyValue>(
+      model: _entities[13],
+      toOneRelations: (DbKeyValue object) => [],
+      toManyRelations: (DbKeyValue object) => {},
+      getId: (DbKeyValue object) => object.dbId,
+      setId: (DbKeyValue object, int id) {
+        object.dbId = id;
+      },
+      objectToFB: (DbKeyValue object, fb.Builder fbb) {
+        final keyOffset = fbb.writeString(object.key);
+        final valueOffset =
+            object.value == null ? null : fbb.writeString(object.value!);
+        fbb.startTable(4);
+        fbb.addInt64(0, object.dbId);
+        fbb.addOffset(1, keyOffset);
+        fbb.addOffset(2, valueOffset);
+        fbb.finish(fbb.endTable());
+        return object.dbId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final keyParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final valueParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 8);
+        final object = DbKeyValue(
+          key: keyParam,
+          value: valueParam,
+        )..dbId = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -2078,8 +2125,8 @@ class DbFilterFetchedRangeRecord_ {
   /// See [DbFilterFetchedRangeRecord.rangeStart].
   static final rangeStart =
       obx.QueryIntegerProperty<DbFilterFetchedRangeRecord>(
-        _entities[3].properties[3],
-      );
+    _entities[3].properties[3],
+  );
 
   /// See [DbFilterFetchedRangeRecord.rangeEnd].
   static final rangeEnd = obx.QueryIntegerProperty<DbFilterFetchedRangeRecord>(
@@ -2404,8 +2451,8 @@ class DbWalletCahsuKeyset_ {
   /// See [DbWalletCahsuKeyset.mintKeyPairs].
   static final mintKeyPairs =
       obx.QueryStringVectorProperty<DbWalletCahsuKeyset>(
-        _entities[10].properties[6],
-      );
+    _entities[10].properties[6],
+  );
 
   /// See [DbWalletCahsuKeyset.fetchedAt].
   static final fetchedAt = obx.QueryIntegerProperty<DbWalletCahsuKeyset>(
@@ -2501,6 +2548,24 @@ class DbWalletTransaction_ {
   /// See [DbWalletTransaction.metadataJsonString].
   static final metadataJsonString =
       obx.QueryStringProperty<DbWalletTransaction>(
-        _entities[12].properties[10],
-      );
+    _entities[12].properties[10],
+  );
+}
+
+/// [DbKeyValue] entity fields to define ObjectBox queries.
+class DbKeyValue_ {
+  /// See [DbKeyValue.dbId].
+  static final dbId = obx.QueryIntegerProperty<DbKeyValue>(
+    _entities[13].properties[0],
+  );
+
+  /// See [DbKeyValue.key].
+  static final key = obx.QueryStringProperty<DbKeyValue>(
+    _entities[13].properties[1],
+  );
+
+  /// See [DbKeyValue.value].
+  static final value = obx.QueryStringProperty<DbKeyValue>(
+    _entities[13].properties[2],
+  );
 }

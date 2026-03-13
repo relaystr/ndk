@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
@@ -13,6 +14,7 @@ import 'schema/db_cashu_proof.dart';
 import 'schema/db_cashu_secret_counter.dart';
 import 'schema/db_contact_list.dart';
 import 'schema/db_filter_fetched_range_record.dart';
+import 'schema/db_key_value.dart';
 import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
 import 'schema/db_relay_set.dart';
@@ -20,7 +22,12 @@ import 'schema/db_user_relay_list.dart';
 import 'schema/db_wallet.dart';
 import 'schema/db_wallet_transaction.dart';
 
-class DbObjectBox implements CacheManager {
+class DbObjectBox extends WalletsRepo implements CacheManager {
+  static const String _defaultWalletForReceivingKey =
+      'default_wallet_for_receiving';
+  static const String _defaultWalletForSendingKey =
+      'default_wallet_for_sending';
+
   final Completer _initCompleter = Completer();
   Future get dbRdy => _initCompleter.future;
   late ObjectBoxInit _objectBox;
@@ -999,9 +1006,7 @@ class DbObjectBox implements CacheManager {
     return results.map((dbTransaction) => dbTransaction.toNdk()).toList();
   }
 
-  Future<void> saveTransactions({
-    required List<WalletTransaction> transactions,
-  }) async {
+  Future<void> saveTransactions(List<WalletTransaction> transactions) async {
     await dbRdy;
 
     final store = _objectBox.store;
@@ -1033,7 +1038,7 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
+  Future<List<Wallet>> getWallets({List<String>? ids}) async {
     await dbRdy;
 
     return Future.value(
@@ -1064,7 +1069,7 @@ class DbObjectBox implements CacheManager {
   }
 
   @override
-  Future<void> saveWallet(Wallet wallet) async {
+  Future<void> storeWallet(Wallet wallet) async {
     await dbRdy;
     await _objectBox.store.box<DbWallet>().put(DbWallet.fromNdk(wallet));
     return Future.value();
@@ -1158,6 +1163,7 @@ class DbObjectBox implements CacheManager {
     ));
     return Future.value();
   }
+
   Future<void> clearAll() async {
     await dbRdy;
     await _objectBox.store.runInTransactionAsync(
@@ -1170,8 +1176,64 @@ class DbObjectBox implements CacheManager {
         store.box<DbMetadata>().removeAll();
         store.box<DbNip05>().removeAll();
         store.box<DbFilterFetchedRangeRecord>().removeAll();
+        store.box<DbKeyValue>().removeAll();
       },
       null,
     );
+  }
+
+  @override
+  String? getDefaultWalletIdForReceiving() {
+    if (!_initCompleter.isCompleted) {
+      return null;
+    }
+    final box = _objectBox.store.box<DbKeyValue>();
+    final existing = _findKeyValue(box, _defaultWalletForReceivingKey);
+    return existing?.value;
+  }
+
+  @override
+  String? getDefaultWalletIdForSending() {
+    if (!_initCompleter.isCompleted) {
+      return null;
+    }
+    final box = _objectBox.store.box<DbKeyValue>();
+    final existing = _findKeyValue(box, _defaultWalletForSendingKey);
+    return existing?.value;
+  }
+
+  @override
+  void setDefaultWalletForReceiving(String? walletId) {
+    if (!_initCompleter.isCompleted) {
+      return;
+    }
+    final box = _objectBox.store.box<DbKeyValue>();
+    final existing = _findKeyValue(box, _defaultWalletForReceivingKey);
+    if (existing != null) {
+      box.remove(existing.dbId);
+    }
+    box.put(DbKeyValue(key: _defaultWalletForReceivingKey, value: walletId));
+  }
+
+  @override
+  void setDefaultWalletForSending(String? walletId) {
+    if (!_initCompleter.isCompleted) {
+      return;
+    }
+    final box = _objectBox.store.box<DbKeyValue>();
+    final existing = _findKeyValue(box, _defaultWalletForSendingKey);
+    if (existing != null) {
+      box.remove(existing.dbId);
+    }
+    box.put(DbKeyValue(key: _defaultWalletForSendingKey, value: walletId));
+  }
+
+  DbKeyValue? _findKeyValue(Box<DbKeyValue> box, String key) {
+    for (final entry in box.getAll()) {
+      if (entry.key == key) {
+        return entry;
+      }
+    }
+    return null;
   }
 }

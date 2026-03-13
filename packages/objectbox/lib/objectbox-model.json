@@ -679,9 +679,33 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "14:5469921152275641897",
+      "lastPropertyId": "3:3297723908516499256",
+      "name": "DbKeyValue",
+      "properties": [
+        {
+          "id": "1:8865574119674977230",
+          "name": "dbId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3996197440231456828",
+          "name": "key",
+          "type": 9
+        },
+        {
+          "id": "3:3297723908516499256",
+          "name": "value",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "13:8733043912588670395",
+  "lastEntityId": "14:5469921152275641897",
   "lastIndexId": "5:8083061451592629115",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
