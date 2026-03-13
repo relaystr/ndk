@@ -5,19 +5,40 @@ import '../entities/wallet/wallet_type.dart';
 /// Repository for wallet storage operations
 /// Thin abstraction over CacheManager for wallet persistence
 abstract class WalletsRepo {
-  /// Get all wallets
-  Future<List<Wallet>> getWallets();
+
+  /// Get wallets by id
+  /// return all if [ids] is null
+  Future<List<Wallet>> getWallets({List<String>? ids});
 
   /// Get a specific wallet by ID
-  Future<Wallet> getWallet(String id);
+  Future<Wallet> getWallet(String id) {
+    return getWallets(ids: [id]).then((wallets) {
+      if (wallets.isEmpty) {
+        throw Exception('Wallet with id $id not found');
+      }
+      return wallets.first;
+    });
+  }
 
-  /// Add or update a wallet
-  Future<void> addWallet(Wallet account);
+  /// Store a wallet
+  Future<void> storeWallet(Wallet account);
 
   /// Remove a wallet by ID
   Future<void> removeWallet(String id);
 
-  /// Get transactions with optional filtering
+  /// Get default wallet for sending funds (e.g. for paying invoices)
+  String? getDefaultWalletIdForReceiving();
+
+  /// Get default wallet for receiving funds (e.g. for generating invoices)
+  String? getDefaultWalletIdForSending();
+
+  /// Set default wallet for receiving funds (e.g. for generating invoices)
+  void setDefaultWalletForReceiving(String? walletId);
+
+  /// Set default wallet for sending funds (e.g. for paying invoices)
+  void setDefaultWalletForSending(String? walletId);
+
+    /// Get transactions with optional filtering
   Future<List<WalletTransaction>> getTransactions({
     int? limit,
     int? offset,
@@ -28,4 +49,29 @@ abstract class WalletsRepo {
 
   /// Save transactions to storage
   Future<void> saveTransactions(List<WalletTransaction> transactions);
+
+
+  // /// wallets methods
+  //
+  // Future<void> saveWallet(Wallet wallet);
+  //
+  // Future<void> removeWallet(String id);
+  //
+  // /// return all if [ids] is null
+  // Future<List<Wallet>?> getWallets({List<String>? ids});
+  //
+  // Future<List<WalletTransaction>> getTransactions({
+  //   int? limit,
+  //   int? offset,
+  //   String? walletId,
+  //   String? unit,
+  //   WalletType? walletType,
+  // });
+  //
+  // /// upserts transactions \
+  // /// if transaction with same id exists, it will be updated
+  // Future<void> saveTransactions({
+  //   required List<WalletTransaction> transactions,
+  // });
+
 }

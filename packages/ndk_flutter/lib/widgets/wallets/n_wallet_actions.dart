@@ -409,7 +409,7 @@ class _NWalletActionsState extends State<NWalletActions> {
                     }
                   } else if (wallet is NwcWallet) {
                     final response = await widget.ndkFlutter.ndk.wallets
-                        .payInvoice(wallet.id, invoice);
+                        .send(walletId: wallet.id, invoice: invoice);
                     if (response.errorCode == null &&
                         response.preimage != null) {
                       if (!mounted) return;
@@ -551,8 +551,8 @@ class _NWalletActionsState extends State<NWalletActions> {
                     }
                   } else if (wallet is NwcWallet || wallet is LnurlWallet) {
                     final invoice = await widget.ndkFlutter.ndk.wallets.receive(
-                      wallet.id,
-                      amount,
+                      walletId: wallet.id,
+                      amountSats: amount,
                     );
                     await Clipboard.setData(ClipboardData(text: invoice));
                     if (!mounted) return;

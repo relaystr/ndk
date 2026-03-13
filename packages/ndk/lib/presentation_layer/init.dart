@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 
 import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import '../shared/net/user_agent.dart';
@@ -9,7 +10,6 @@ import '../data_layer/repositories/cashu/cashu_repo_impl.dart';
 import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
-import '../data_layer/repositories/wallets/wallets_repo_impl.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
@@ -193,8 +193,11 @@ class Initialization {
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
     nwc = Nwc(requests: requests, broadcast: broadcast);
 
+    WalletsRepo walletsRepo = _ndkConfig.walletsRepo ?? MemWalletsRepo();
+
     cashu = Cashu(
       cashuRepo: cashuRepo,
+      walletsRepo: walletsRepo,
       cacheManager: _ndkConfig.cache,
       cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
       cashuKeyDerivation: DartCashuKeyDerivation(),
@@ -294,10 +297,6 @@ class Initialization {
     giftWrap = GiftWrap(accounts: accounts);
 
     connectivity = Connectivy(relayManager);
-
-    final WalletsRepo walletsRepo = WalletsRepoImpl(
-      cacheManager: _ndkConfig.cache,
-    );
 
     wallets = Wallets(
       providers: [cashuProvider, nwcProvider, lnurlProvider],

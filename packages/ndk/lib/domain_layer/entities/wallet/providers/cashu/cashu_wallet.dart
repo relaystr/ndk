@@ -54,4 +54,10 @@ class CashuWallet extends Wallet {
       metadata: metadata,
     );
   }
+
+  @override
+  bool get canReceive => true;
+
+  @override
+  bool get canSend => true;
 }

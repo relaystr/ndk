@@ -2,6 +2,7 @@ import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_balance.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
+import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_connection.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -54,4 +55,10 @@ class NwcWallet extends Wallet {
       metadata: metadata,
     );
   }
+
+  @override
+  bool get canReceive => connection!=null && connection!.permissions.contains(NwcMethod.MAKE_INVOICE.name);
+
+  @override
+  bool get canSend => connection!=null && connection!.permissions.contains(NwcMethod.PAY_INVOICE.name);
 }

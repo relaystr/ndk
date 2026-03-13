@@ -6,15 +6,19 @@ import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/cache_manager.dart';
+import '../../repositories/wallets_repo.dart';
 
 class CashuCacheDecorator implements CacheManager {
   final MutexSimple _mutex;
   final CacheManager _delegate;
+  final WalletsRepo _walletsRepo;
 
   CashuCacheDecorator({
     required CacheManager cacheManager,
+    required WalletsRepo walletRepo,
     MutexSimple? mutex,
   })  : _delegate = cacheManager,
+        _walletsRepo = walletRepo,
         _mutex = mutex ?? MutexSimple();
 
   @override
@@ -77,7 +81,7 @@ class CashuCacheDecorator implements CacheManager {
     WalletType? walletType,
   }) {
     return _mutex.synchronized(() async {
-      return await _delegate.getTransactions(
+      return await _walletsRepo.getTransactions(
         limit: limit,
         offset: offset,
         walletId: walletId,
@@ -92,7 +96,7 @@ class CashuCacheDecorator implements CacheManager {
     required List<WalletTransaction> transactions,
   }) {
     return _mutex.synchronized(() async {
-      await _delegate.saveTransactions(transactions: transactions);
+      await _walletsRepo.saveTransactions(transactions);
     });
   }
 

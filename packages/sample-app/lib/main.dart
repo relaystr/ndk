@@ -51,6 +51,7 @@ Future<void> main() async {
     NdkConfig(
       eventVerifier: eventVerifier,
       cache: cacheManager,
+      walletsRepo: FlutterSecureStorageWalletsRepo(),
       logLevel: Logger.logLevels.info,
       cashuUserSeedphrase: CashuUserSeedphrase(
         seedPhrase: DemoAppConfig.cashuSeedPhrase,

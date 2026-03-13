@@ -18,7 +18,6 @@ class Wallets {
   final WalletsRepo _repository;
 
   int latestTransactionCount;
-  String? defaultWalletId;
 
   StreamSubscription<List<Wallet>>? _walletsUsecaseSubscription;
 
@@ -80,12 +79,22 @@ class Wallets {
   /// stream of all wallets
   Stream<List<Wallet>> get walletsStream => _walletsSubject.stream;
 
-  /// Get default wallet
-  Wallet? get defaultWallet {
-    if (defaultWalletId == null) {
+  /// Get default wallet for receiving
+  Wallet? get defaultWalletForReceiving {
+    final walletId = _repository.getDefaultWalletIdForReceiving();
+    if (walletId == null) {
       return null;
     }
-    return _wallets.firstWhereOrNull((wallet) => wallet.id == defaultWalletId);
+    return _wallets.firstWhereOrNull((wallet) => wallet.id == walletId);
+  }
+
+  /// Get default wallet for sending
+  Wallet? get defaultWalletForSending {
+    final walletId = _repository.getDefaultWalletIdForSending();
+    if (walletId == null) {
+      return null;
+    }
+    return _wallets.firstWhereOrNull((wallet) => wallet.id == walletId);
   }
 
   Future<void> _initialize() async {
@@ -109,7 +118,7 @@ class Wallets {
             _walletsSubject.add(list);
           }
           // Also update in repository (addWallet handles updates too)
-          await _repository.addWallet(updatedWallet);
+          await _repository.storeWallet(updatedWallet);
         }
       }
     }
@@ -168,10 +177,6 @@ class Wallets {
     // Initialize transaction streams so combined feeds stay updated.
     _initPendingTransactionStream(wallet.id);
     _initRecentTransactionStream(wallet.id);
-
-    if (defaultWallet == null) {
-      setDefaultWallet(wallet.id);
-    }
   }
 
   /// Create a new wallet using the appropriate provider
@@ -196,7 +201,7 @@ class Wallets {
 
   /// Add a new wallet to the system
   Future<void> addWallet(Wallet wallet) async {
-    await _repository.addWallet(wallet);
+    await _repository.storeWallet(wallet);
     await _addWalletToMemory(wallet);
 
     // Initialize with provider
@@ -214,8 +219,16 @@ class Wallets {
           _walletsSubject.add(list);
         }
         // Also update in repository (addWallet handles updates too)
-        await _repository.addWallet(updatedWallet);
+        await _repository.storeWallet(updatedWallet);
       }
+    }
+
+    if (wallet.canReceive && _repository.getDefaultWalletIdForReceiving()==null) {
+      _repository.setDefaultWalletForReceiving(wallet.id);
+    }
+
+    if (wallet.canSend && _repository.getDefaultWalletIdForSending()==null) {
+      _repository.setDefaultWalletForSending(wallet.id);
     }
 
     _updateCombinedStreams();
@@ -258,15 +271,43 @@ class Wallets {
 
     _updateCombinedStreams();
 
-    if (walletId == defaultWalletId) {
-      defaultWalletId = _wallets.isNotEmpty ? _wallets.first.id : null;
+    if (walletId == _repository.getDefaultWalletIdForReceiving()) {
+      Wallet? wallet = _wallets.where((w) => w.canReceive).firstOrNull;
+      if (wallet!=null) {
+        _repository.setDefaultWalletForReceiving(wallet.id);
+      }
+    }
+    if (walletId == _repository.getDefaultWalletIdForSending()) {
+      Wallet? wallet = _wallets.where((w) => w.canSend).firstOrNull;
+      if (wallet!=null) {
+        _repository.setDefaultWalletForSending(wallet.id);
+      }
     }
   }
 
   /// Set the default wallet to use by common operations
   void setDefaultWallet(String walletId) {
     if (_wallets.any((wallet) => wallet.id == walletId)) {
-      defaultWalletId = walletId;
+      _repository.setDefaultWalletForReceiving(walletId);
+      _repository.setDefaultWalletForSending(walletId);
+    } else {
+      throw ArgumentError('Wallet with id $walletId does not exist.');
+    }
+  }
+
+  /// Set default wallet for receiving funds (e.g. for generating invoices)
+  void setDefaultWalletForReceiving(String walletId) {
+    if (_wallets.any((wallet) => wallet.id == walletId)) {
+      _repository.setDefaultWalletForReceiving(walletId);
+    } else {
+      throw ArgumentError('Wallet with id $walletId does not exist.');
+    }
+  }
+
+  /// Set default wallet for sending funds (e.g. for paying invoices)
+  void setDefaultWalletForSending(String walletId) {
+    if (_wallets.any((wallet) => wallet.id == walletId)) {
+      _repository.setDefaultWalletForSending(walletId);
     } else {
       throw ArgumentError('Wallet with id $walletId does not exist.');
     }
@@ -431,11 +472,12 @@ class Wallets {
     );
   }
 
-  /// Pay a Lightning invoice using a specific wallet
-  Future<PayInvoiceResponse> payInvoice(
-    String walletId,
-    String invoice,
-  ) async {
+  /// Send payment
+  Future<PayInvoiceResponse> send({String? walletId, required String invoice}) async {
+    walletId ??= _repository.getDefaultWalletIdForSending();
+    if (walletId == null) {
+      throw StateError('No default wallet set');
+    }
     final wallet = await _repository.getWallet(walletId);
     final provider = _providers[wallet.type];
     if (provider == null) {
@@ -444,31 +486,19 @@ class Wallets {
     return provider.payInvoice(wallet, invoice);
   }
 
-  /// Pay with default wallet
-  Future<PayInvoiceResponse> payWithDefaultWallet(String invoice) async {
-    if (defaultWallet == null) {
-      throw StateError('No default wallet set');
-    }
-    return payInvoice(defaultWallet!.id, invoice);
-  }
-
   /// Create a Lightning invoice to receive funds
   /// Returns the invoice string
-  Future<String> receive(String walletId, int amountSats) async {
+  Future<String> receive({String? walletId, required int amountSats}) async {
+    walletId ??= _repository.getDefaultWalletIdForReceiving();
+    if (walletId == null) {
+      throw StateError('No default wallet set');
+    }
     final wallet = await _repository.getWallet(walletId);
     final provider = _providers[wallet.type];
     if (provider == null) {
       throw ArgumentError('No provider for wallet type: ${wallet.type}');
     }
     return provider.receive(wallet, amountSats);
-  }
-
-  /// Receive with default wallet
-  Future<String> receiveWithDefaultWallet(int amountSats) async {
-    if (defaultWallet == null) {
-      throw StateError('No default wallet set');
-    }
-    return receive(defaultWallet!.id, amountSats);
   }
 
   /// todo: implement zap
@@ -527,6 +557,5 @@ class Wallets {
     _walletPendingTransactionStreams.clear();
     _walletRecentTransactionStreams.clear();
     _subscriptions.clear();
-    defaultWalletId = null;
   }
 }

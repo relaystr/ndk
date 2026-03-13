@@ -38,4 +38,10 @@ abstract class Wallet {
 
   @override
   int get hashCode => id.hashCode;
+
+  /// Indicates if the wallet can receive funds
+  bool get canReceive;
+
+  /// Indicates if the wallet can send funds
+  bool get canSend;
 }

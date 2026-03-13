@@ -1357,20 +1357,6 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
     await cacheManager
         .saveProofs(proofs: [proof], mintUrl: 'https://clearall.mint.com');
 
-    final wallet = CashuWallet(
-      id: 'clearall_wallet',
-      name: 'ClearAll Wallet',
-      mintUrl: 'https://clearall.mint.com',
-      supportedUnits: {'sat'},
-      mintInfo: CashuMintInfo(
-        name: 'ClearAll Mint',
-        description: 'Test',
-        version: '1.0',
-        nuts: {},
-      ),
-    );
-    await cacheManager.saveWallet(wallet);
-
     // Verify data exists
     expect(await cacheManager.loadEvent(event.id), isNotNull);
     expect(
@@ -1393,10 +1379,6 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
         (await cacheManager.getProofs(mintUrl: 'https://clearall.mint.com'))
             .length,
         equals(1));
-    expect(
-        (await cacheManager.getWallets())!
-            .any((w) => w.id == 'clearall_wallet'),
-        isTrue);
 
     // Clear all
     await cacheManager.clearAll();
@@ -1422,9 +1404,5 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
         (await cacheManager.getProofs(mintUrl: 'https://clearall.mint.com'))
             .length,
         equals(0));
-    expect(
-        (await cacheManager.getWallets())!
-            .any((w) => w.id == 'clearall_wallet'),
-        isFalse);
   });
 }

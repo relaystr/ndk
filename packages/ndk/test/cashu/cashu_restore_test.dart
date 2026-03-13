@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
+import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
@@ -29,6 +30,7 @@ void main() {
 
       final wallet1 = Cashu(
         cashuRepo: cashuRepo1,
+        walletsRepo: MemWalletsRepo(),
         cacheManager: cacheManager1,
         cashuKeyDerivation: keyDerivation1,
         cashuUserSeedphrase: userSeedPhrase,
@@ -110,6 +112,7 @@ void main() {
 
       final wallet2 = Cashu(
         cashuRepo: cashuRepo2,
+        walletsRepo: MemWalletsRepo(),
         cacheManager: cacheManager2,
         cashuKeyDerivation: keyDerivation2,
         cashuUserSeedphrase: userSeedPhrase, // SAME seed phrase!

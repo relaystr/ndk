@@ -19,6 +19,7 @@ import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_key_derivation.dart';
 import '../../repositories/cashu_repo.dart';
 
+import '../../repositories/wallets_repo.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
@@ -31,6 +32,7 @@ import 'cashu_proof_select.dart';
 
 class Cashu {
   final CashuRepo _cashuRepo;
+  final WalletsRepo _walletsRepo;
   final CacheManager _cacheManager;
   late final CashuCacheDecorator _cacheManagerCashu;
 
@@ -43,10 +45,12 @@ class Cashu {
 
   Cashu({
     required CashuRepo cashuRepo,
+    required WalletsRepo walletsRepo,
     required CacheManager cacheManager,
     required CashuKeyDerivation cashuKeyDerivation,
     CashuUserSeedphrase? cashuUserSeedphrase,
   })  : _cashuRepo = cashuRepo,
+        _walletsRepo = walletsRepo,
         _cacheManager = cacheManager,
         _cashuKeyDerivation = cashuKeyDerivation {
     _cashuKeysets = CashuKeysets(
@@ -57,7 +61,7 @@ class Cashu {
       cashuRepo: _cashuRepo,
       cashuSeedSecretGenerator: _cashuKeyDerivation,
     );
-    _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
+    _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager, walletRepo: _walletsRepo);
 
     _cashuSeed = CashuSeed(
       userSeedPhrase: cashuUserSeedphrase,

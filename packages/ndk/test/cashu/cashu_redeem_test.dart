@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
+import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_quote.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_quote_melt.dart';
 import 'package:ndk/entities.dart';
@@ -95,10 +96,13 @@ void main() {
         mintUrl: 'https://offline.mint.example.com',
       );
 
+      final walletsRepo = MemWalletsRepo();
+
       // Use a Cashu instance with a real HTTP client (not mock) and our custom cache
       // This will attempt real network calls and timeout quickly
       final cashu = Cashu(
         cashuRepo: CashuRepoImpl(client: HttpRequestDS(http.Client())),
+        walletsRepo: walletsRepo,
         cacheManager: cache,
         cashuKeyDerivation: DartCashuKeyDerivation(),
         cashuUserSeedphrase: CashuUserSeedphrase(

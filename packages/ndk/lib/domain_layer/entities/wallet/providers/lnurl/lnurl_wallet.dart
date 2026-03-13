@@ -84,4 +84,10 @@ class LnurlWallet extends Wallet {
         DateTime.now().millisecondsSinceEpoch - (10 * 60 * 1000);
     return metadataFetchedAt! > tenMinutesAgo;
   }
+
+  @override
+  bool get canReceive => true;
+
+  @override
+  bool get canSend => false;
 }
