@@ -5,8 +5,8 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import '../../l10n/app_localizations.dart';
 import 'n_wallet_card.dart';
 
-/// Horizontal list of wallet cards backed by `ndk.wallets.walletsStream`.
-class NWalletCardList extends StatelessWidget {
+/// Reorderable list of wallet cards backed by `ndk.wallets.walletsStream`.
+class NWalletCardList extends StatefulWidget {
   final NdkFlutter ndkFlutter;
   final String? selectedWalletId;
   final ValueChanged<String> onWalletSelected;
@@ -49,18 +49,163 @@ class NWalletCardList extends StatelessWidget {
   });
 
   @override
+  State<NWalletCardList> createState() => _NWalletCardListState();
+}
+
+class _NWalletCardListState extends State<NWalletCardList> {
+  static const String _walletOrderKey = 'walletOrder';
+
+  List<String>? _overrideOrderIds;
+
+  int? _readWalletOrder(Wallet wallet) {
+    final raw = wallet.metadata[_walletOrderKey];
+    if (raw is int) return raw;
+    if (raw is num) return raw.toInt();
+    if (raw is String) return int.tryParse(raw);
+    return null;
+  }
+
+  List<Wallet> _applyOverrideOrder(List<Wallet> wallets) {
+    final override = _overrideOrderIds;
+    if (override == null || override.isEmpty) {
+      return wallets;
+    }
+    final byId = {for (final wallet in wallets) wallet.id: wallet};
+    final ordered = <Wallet>[];
+    for (final id in override) {
+      final wallet = byId.remove(id);
+      if (wallet != null) {
+        ordered.add(wallet);
+      }
+    }
+    ordered.addAll(byId.values);
+    return ordered;
+  }
+
+  List<Wallet> _orderWallets(List<Wallet> wallets) {
+    final override = _applyOverrideOrder(wallets);
+    if (!identical(override, wallets)) {
+      return override;
+    }
+
+    final fallbackOrder = <String, int>{
+      for (var i = 0; i < wallets.length; i++) wallets[i].id: i,
+    };
+    final ordered = List<Wallet>.from(wallets);
+    ordered.sort((a, b) {
+      final orderA = _readWalletOrder(a) ?? fallbackOrder[a.id]!;
+      final orderB = _readWalletOrder(b) ?? fallbackOrder[b.id]!;
+      if (orderA != orderB) {
+        return orderA.compareTo(orderB);
+      }
+      return fallbackOrder[a.id]!.compareTo(fallbackOrder[b.id]!);
+    });
+    return ordered;
+  }
+
+  Wallet _copyWalletWithMetadata(Wallet wallet, Map<String, dynamic> metadata) {
+    if (wallet is CashuWallet) {
+      return CashuWallet(
+        id: wallet.id,
+        name: wallet.name,
+        supportedUnits: wallet.supportedUnits,
+        mintUrl: wallet.mintUrl,
+        mintInfo: wallet.mintInfo,
+        metadata: metadata,
+      );
+    }
+    if (wallet is NwcWallet) {
+      return NwcWallet(
+        id: wallet.id,
+        name: wallet.name,
+        supportedUnits: wallet.supportedUnits,
+        nwcUrl: wallet.nwcUrl,
+        metadata: metadata,
+      );
+    }
+    if (wallet is LnurlWallet) {
+      return LnurlWallet(
+        id: wallet.id,
+        name: wallet.name,
+        supportedUnits: wallet.supportedUnits,
+        identifier: wallet.identifier,
+        lnurlPayUrl: wallet.lnurlPayUrl,
+        minSendable: wallet.minSendable,
+        maxSendable: wallet.maxSendable,
+        metadataFetchedAt: wallet.metadataFetchedAt,
+        metadata: metadata,
+      );
+    }
+    throw UnsupportedError('Unknown wallet type');
+  }
+
+  Future<void> _persistWalletOrder(List<Wallet> orderedWallets) async {
+    final updates = <Future<void>>[];
+    for (var i = 0; i < orderedWallets.length; i++) {
+      final wallet = orderedWallets[i];
+      final currentOrder = _readWalletOrder(wallet);
+      if (currentOrder == i) {
+        continue;
+      }
+      final updatedMetadata = Map<String, dynamic>.from(wallet.metadata);
+      updatedMetadata[_walletOrderKey] = i;
+      final updatedWallet = _copyWalletWithMetadata(wallet, updatedMetadata);
+      updates.add(widget.ndkFlutter.ndk.wallets.addWallet(updatedWallet));
+    }
+    if (updates.isNotEmpty) {
+      await Future.wait(updates);
+    }
+  }
+
+  void _handleReorder(
+    int oldIndex,
+    int newIndex,
+    List<Wallet> orderedWallets,
+  ) {
+    final walletCount = orderedWallets.length;
+    if (walletCount == 0) return;
+    if (widget.showAddWalletCard && oldIndex == walletCount) {
+      return;
+    }
+
+    if (widget.showAddWalletCard && newIndex > walletCount) {
+      newIndex = walletCount;
+    }
+    if (widget.showAddWalletCard && newIndex == walletCount) {
+      newIndex = walletCount - 1;
+    }
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+    if (newIndex < 0 || newIndex >= walletCount || oldIndex == newIndex) {
+      return;
+    }
+
+    final updated = List<Wallet>.from(orderedWallets);
+    final moved = updated.removeAt(oldIndex);
+    updated.insert(newIndex, moved);
+
+    setState(() {
+      _overrideOrderIds = updated.map((wallet) => wallet.id).toList();
+    });
+
+    _persistWalletOrder(updated);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<Wallet>>(
-      stream: ndkFlutter.ndk.wallets.walletsStream,
+      stream: widget.ndkFlutter.ndk.wallets.walletsStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('${l10n.error}: ${snapshot.error}'));
         }
 
         final wallets = snapshot.data ?? [];
+        final orderedWallets = _orderWallets(wallets);
 
-        if (wallets.isEmpty && !showAddWalletCard) {
+        if (orderedWallets.isEmpty && !widget.showAddWalletCard) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -68,38 +213,50 @@ class NWalletCardList extends StatelessWidget {
                 Icon(Icons.wallet, size: 48, color: Colors.grey[400]),
                 const SizedBox(height: 8),
                 Text(
-                  emptyTitleText ?? l10n.noWalletsYet,
+                  widget.emptyTitleText ?? l10n.noWalletsYet,
                   style: TextStyle(color: Colors.grey[600]),
                 ),
-                Text(emptySubtitleText ?? l10n.tapToAddWallet),
+                Text(widget.emptySubtitleText ?? l10n.tapToAddWallet),
               ],
             ),
           );
         }
 
         final int itemCount =
-            wallets.length + (showAddWalletCard ? 1 : 0);
+            orderedWallets.length + (widget.showAddWalletCard ? 1 : 0);
 
-        return ListView.builder(
-          scrollDirection: scrollDirection,
+        return ReorderableListView.builder(
+          scrollDirection: widget.scrollDirection,
           primary: false,
           itemCount: itemCount,
           padding: const EdgeInsets.symmetric(horizontal: 8),
+          buildDefaultDragHandles: false,
+          onReorder: (oldIndex, newIndex) =>
+              _handleReorder(oldIndex, newIndex, orderedWallets),
           itemBuilder: (context, index) {
-            if (showAddWalletCard && index == wallets.length) {
-              return _AddWalletCard(onTap: onAddWallet);
+            if (widget.showAddWalletCard &&
+                index == orderedWallets.length) {
+              return _AddWalletCard(
+                key: const ValueKey('add_wallet_card'),
+                onTap: widget.onAddWallet,
+              );
             }
 
-            final wallet = wallets[index];
-            return NWalletCard(
-              wallet: wallet,
-              ndkFlutter: ndkFlutter,
-              isSelected: wallet.id == selectedWalletId,
-              onTap: () => onWalletSelected(wallet.id),
-              showBudgetRenewalDays: scrollDirection == Axis.vertical,
-              cashuIcon: cashuIcon,
-              nwcIcon: nwcIcon,
-              lnurlIcon: lnurlIcon,
+            final wallet = orderedWallets[index];
+            return ReorderableDelayedDragStartListener(
+              key: ValueKey('wallet-${wallet.id}'),
+              index: index,
+              child: NWalletCard(
+                wallet: wallet,
+                ndkFlutter: widget.ndkFlutter,
+                isSelected: wallet.id == widget.selectedWalletId,
+                onTap: () => widget.onWalletSelected(wallet.id),
+                showBudgetRenewalDays:
+                    widget.scrollDirection == Axis.vertical,
+                cashuIcon: widget.cashuIcon,
+                nwcIcon: widget.nwcIcon,
+                lnurlIcon: widget.lnurlIcon,
+              ),
             );
           },
         );
@@ -111,7 +268,7 @@ class NWalletCardList extends StatelessWidget {
 class _AddWalletCard extends StatelessWidget {
   final VoidCallback? onTap;
 
-  const _AddWalletCard({this.onTap});
+  const _AddWalletCard({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
