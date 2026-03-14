@@ -124,15 +124,15 @@ class Wallets {
     }
 
     // Listen to discovered wallets from all providers
-    _walletsUsecaseSubscription = Rx.merge(
-      _providers.values.map((p) => p.discoveredWallets),
-    ).listen((wallets) {
-      for (final wallet in wallets) {
-        if (!_wallets.any((w) => w.id == wallet.id)) {
-          addWallet(wallet);
-        }
-      }
-    });
+    // _walletsUsecaseSubscription = Rx.merge(
+    //   _providers.values.map((p) => p.discoveredWallets),
+    // ).listen((wallets) {
+    //   for (final wallet in wallets) {
+    //     if (!_wallets.any((w) => w.id == wallet.id)) {
+    //       addWallet(wallet);
+    //     }
+    //   }
+    // });
 
     _updateCombinedStreams();
   }
