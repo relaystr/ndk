@@ -20,9 +20,10 @@ import '../../../domain_layer/repositories/wallets_repo.dart';
 /// benefits: very fast
 /// drawbacks: does not persist
 class MemWalletsRepo extends WalletsRepo {
-
   List<WalletTransaction> transactions = [];
   Set<Wallet> wallets = {};
+  String? _defaultWalletIdForReceiving;
+  String? _defaultWalletIdForSending;
 
   @override
   Future<List<WalletTransaction>> getTransactions({
@@ -100,23 +101,21 @@ class MemWalletsRepo extends WalletsRepo {
 
   @override
   String? getDefaultWalletIdForReceiving() {
-    // TODO: implement getDefaultWalletIdForReceiving
-    throw UnimplementedError();
+    return _defaultWalletIdForReceiving;
   }
 
   @override
   String? getDefaultWalletIdForSending() {
-    // TODO: implement getDefaultWalletIdForSending
-    throw UnimplementedError();
+    return _defaultWalletIdForSending;
   }
 
   @override
   void setDefaultWalletForReceiving(String? walletId) {
-    // TODO: implement setDefaultWalletForReceiving
+    _defaultWalletIdForReceiving = walletId;
   }
 
   @override
   void setDefaultWalletForSending(String? walletId) {
-    // TODO: implement setDefaultWalletForSending
+    _defaultWalletIdForSending = walletId;
   }
 }
