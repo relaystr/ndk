@@ -5,12 +5,10 @@ class DbCashuSecretCounter {
   @Id()
   int dbId = 0;
 
-  @Unique()
   @Index()
   @Property()
   final String mintUrl;
 
-  @Unique()
   @Index()
   @Property()
   final String keysetId;
