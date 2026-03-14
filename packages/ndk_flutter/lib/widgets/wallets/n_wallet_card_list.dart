@@ -157,11 +157,7 @@ class _NWalletCardListState extends State<NWalletCardList> {
     }
   }
 
-  void _handleReorder(
-    int oldIndex,
-    int newIndex,
-    List<Wallet> orderedWallets,
-  ) {
+  void _handleReorder(int oldIndex, int newIndex, List<Wallet> orderedWallets) {
     final walletCount = orderedWallets.length;
     if (walletCount == 0) return;
     if (widget.showAddWalletCard && oldIndex == walletCount) {
@@ -204,6 +200,10 @@ class _NWalletCardListState extends State<NWalletCardList> {
 
         final wallets = snapshot.data ?? [];
         final orderedWallets = _orderWallets(wallets);
+        final defaultWalletIdForReceiving =
+            widget.ndkFlutter.ndk.wallets.defaultWalletForReceiving?.id;
+        final defaultWalletIdForSending =
+            widget.ndkFlutter.ndk.wallets.defaultWalletForSending?.id;
 
         if (orderedWallets.isEmpty && !widget.showAddWalletCard) {
           return Center(
@@ -234,8 +234,7 @@ class _NWalletCardListState extends State<NWalletCardList> {
           onReorder: (oldIndex, newIndex) =>
               _handleReorder(oldIndex, newIndex, orderedWallets),
           itemBuilder: (context, index) {
-            if (widget.showAddWalletCard &&
-                index == orderedWallets.length) {
+            if (widget.showAddWalletCard && index == orderedWallets.length) {
               return _AddWalletCard(
                 key: const ValueKey('add_wallet_card'),
                 onTap: widget.onAddWallet,
@@ -250,9 +249,11 @@ class _NWalletCardListState extends State<NWalletCardList> {
                 wallet: wallet,
                 ndkFlutter: widget.ndkFlutter,
                 isSelected: wallet.id == widget.selectedWalletId,
+                isDefaultForReceiving: wallet.id == defaultWalletIdForReceiving,
+                isDefaultForSending: wallet.id == defaultWalletIdForSending,
                 onTap: () => widget.onWalletSelected(wallet.id),
-                showBudgetRenewalDays:
-                    widget.scrollDirection == Axis.vertical,
+                onDefaultWalletChanged: () => setState(() {}),
+                showBudgetRenewalDays: widget.scrollDirection == Axis.vertical,
                 cashuIcon: widget.cashuIcon,
                 nwcIcon: widget.nwcIcon,
                 lnurlIcon: widget.lnurlIcon,

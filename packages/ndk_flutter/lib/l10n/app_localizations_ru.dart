@@ -729,6 +729,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get receive => 'Получить';
 
   @override
+  String get setAsDefaultForReceiving => 'Сделать по умолчанию для получения';
+
+  @override
+  String get setAsDefaultForSending => 'Сделать по умолчанию для отправки';
+
+  @override
+  String get defaultForReceiving => 'По умолчанию для получения';
+
+  @override
+  String get defaultForSending => 'По умолчанию для отправки';
+
+  @override
+  String get defaultWalletForReceivingTooltip => 'Этот кошелёк используется по умолчанию для получения платежей.';
+
+  @override
+  String get defaultWalletForSendingTooltip => 'Этот кошелёк используется по умолчанию для отправки платежей.';
+
+  @override
   String get sendOptionsTitle => 'Опции Отправки';
 
   @override

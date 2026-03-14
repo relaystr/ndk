@@ -729,6 +729,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get receive => '受信';
 
   @override
+  String get setAsDefaultForReceiving => '受信のデフォルトに設定';
+
+  @override
+  String get setAsDefaultForSending => '送信のデフォルトに設定';
+
+  @override
+  String get defaultForReceiving => '受信のデフォルト';
+
+  @override
+  String get defaultForSending => '送信のデフォルト';
+
+  @override
+  String get defaultWalletForReceivingTooltip => 'このウォレットは受信のデフォルトです。';
+
+  @override
+  String get defaultWalletForSendingTooltip => 'このウォレットは送信のデフォルトです。';
+
+  @override
   String get sendOptionsTitle => '送信オプション';
 
   @override

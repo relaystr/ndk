@@ -970,6 +970,30 @@
   "@receive": {
     "description": "Label for receive action"
   },
+  "setAsDefaultForReceiving": "Ustaw jako domyślny do odbierania",
+  "@setAsDefaultForReceiving": {
+    "description": "Menu option to set wallet as default for receiving"
+  },
+  "setAsDefaultForSending": "Ustaw jako domyślny do wysyłania",
+  "@setAsDefaultForSending": {
+    "description": "Menu option to set wallet as default for sending"
+  },
+  "defaultForReceiving": "Domyślny do odbierania",
+  "@defaultForReceiving": {
+    "description": "Menu label for wallet already default for receiving"
+  },
+  "defaultForSending": "Domyślny do wysyłania",
+  "@defaultForSending": {
+    "description": "Menu label for wallet already default for sending"
+  },
+  "defaultWalletForReceivingTooltip": "Ten portfel jest domyślny do odbierania płatności.",
+  "@defaultWalletForReceivingTooltip": {
+    "description": "Tooltip shown on receiving default ribbon"
+  },
+  "defaultWalletForSendingTooltip": "Ten portfel jest domyślny do wysyłania płatności.",
+  "@defaultWalletForSendingTooltip": {
+    "description": "Tooltip shown on sending default ribbon"
+  },
   "sendOptionsTitle": "Opcje wysyłania",
   "@sendOptionsTitle": {
     "description": "Title for send options sheet"

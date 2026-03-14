@@ -729,6 +729,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receive => 'Receive';
 
   @override
+  String get setAsDefaultForReceiving => 'Set as default for receiving';
+
+  @override
+  String get setAsDefaultForSending => 'Set as default for sending';
+
+  @override
+  String get defaultForReceiving => 'Default for receiving';
+
+  @override
+  String get defaultForSending => 'Default for sending';
+
+  @override
+  String get defaultWalletForReceivingTooltip => 'This wallet is the default one for receiving payments.';
+
+  @override
+  String get defaultWalletForSendingTooltip => 'This wallet is the default one for sending payments.';
+
+  @override
   String get sendOptionsTitle => 'Send Options';
 
   @override

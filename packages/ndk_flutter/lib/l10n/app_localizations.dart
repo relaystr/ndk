@@ -1537,6 +1537,42 @@ abstract class AppLocalizations {
   /// **'Receive'**
   String get receive;
 
+  /// Menu option to set wallet as default for receiving
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default for receiving'**
+  String get setAsDefaultForReceiving;
+
+  /// Menu option to set wallet as default for sending
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default for sending'**
+  String get setAsDefaultForSending;
+
+  /// Menu label for wallet already default for receiving
+  ///
+  /// In en, this message translates to:
+  /// **'Default for receiving'**
+  String get defaultForReceiving;
+
+  /// Menu label for wallet already default for sending
+  ///
+  /// In en, this message translates to:
+  /// **'Default for sending'**
+  String get defaultForSending;
+
+  /// Tooltip shown on receiving default ribbon
+  ///
+  /// In en, this message translates to:
+  /// **'This wallet is the default one for receiving payments.'**
+  String get defaultWalletForReceivingTooltip;
+
+  /// Tooltip shown on sending default ribbon
+  ///
+  /// In en, this message translates to:
+  /// **'This wallet is the default one for sending payments.'**
+  String get defaultWalletForSendingTooltip;
+
   /// Title for send options sheet
   ///
   /// In en, this message translates to:

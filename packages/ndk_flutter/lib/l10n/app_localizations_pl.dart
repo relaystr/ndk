@@ -729,6 +729,24 @@ class AppLocalizationsPl extends AppLocalizations {
   String get receive => 'Otrzymaj';
 
   @override
+  String get setAsDefaultForReceiving => 'Ustaw jako domyślny do odbierania';
+
+  @override
+  String get setAsDefaultForSending => 'Ustaw jako domyślny do wysyłania';
+
+  @override
+  String get defaultForReceiving => 'Domyślny do odbierania';
+
+  @override
+  String get defaultForSending => 'Domyślny do wysyłania';
+
+  @override
+  String get defaultWalletForReceivingTooltip => 'Ten portfel jest domyślny do odbierania płatności.';
+
+  @override
+  String get defaultWalletForSendingTooltip => 'Ten portfel jest domyślny do wysyłania płatności.';
+
+  @override
   String get sendOptionsTitle => 'Opcje wysyłania';
 
   @override

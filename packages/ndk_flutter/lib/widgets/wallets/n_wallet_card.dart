@@ -37,7 +37,10 @@ class NWalletCard extends StatefulWidget {
   final Wallet wallet;
   final NdkFlutter ndkFlutter;
   final bool isSelected;
+  final bool isDefaultForReceiving;
+  final bool isDefaultForSending;
   final VoidCallback onTap;
+  final VoidCallback? onDefaultWalletChanged;
   final Future<void> Function(BuildContext context, Wallet wallet)? onDelete;
   final bool showBudgetRenewalDays;
 
@@ -58,7 +61,10 @@ class NWalletCard extends StatefulWidget {
     required this.wallet,
     required this.ndkFlutter,
     required this.isSelected,
+    this.isDefaultForReceiving = false,
+    this.isDefaultForSending = false,
     required this.onTap,
+    this.onDefaultWalletChanged,
     this.onDelete,
     this.width = 280,
     this.showBudgetRenewalDays = false,
@@ -184,7 +190,15 @@ class _NWalletCardState extends State<NWalletCard> {
     final bool isCashu = widget.wallet is CashuWallet;
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
+    final bool canShowNwcBalance =
+        !isNwc ||
+        ((widget.wallet as NwcWallet).connection?.permissions.contains(
+              NwcMethod.GET_BALANCE.name,
+            ) ??
+            false);
     final bool showBudgetInfo = isNwc && _shouldShowBudgetInfo();
+    final bool isNwcReceiveOnly =
+        isNwc && widget.wallet.canReceive && !widget.wallet.canSend;
 
     final String walletName;
     if (isCashu) {
@@ -392,13 +406,25 @@ class _NWalletCardState extends State<NWalletCard> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
+                      if (isNwcReceiveOnly) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.receiveOnlyWallet,
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(200),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                       SizedBox(height: showBudgetInfo ? 4 : 16),
                       isLnurl
                           ? _buildLnurlInfo(
                               context,
                               widget.wallet as LnurlWallet,
                             )
-                          : _buildBalance(context),
+                          : (canShowNwcBalance
+                                ? _buildBalance(context)
+                                : const SizedBox.shrink()),
                       if (showBudgetInfo) _buildBudgetInfo(context),
                     ],
                   ),
@@ -410,50 +436,116 @@ class _NWalletCardState extends State<NWalletCard> {
               top: 4,
               child: PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.white70),
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'rename',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.edit, size: 20),
-                        const SizedBox(width: 8),
-                        Text(l10n.renameWallet),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'color',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.palette, size: 20),
-                        const SizedBox(width: 8),
-                        Text(l10n.pickColor),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.delete_outline,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.error,
+                itemBuilder: (context) {
+                  final defaultItems = <PopupMenuEntry<String>>[
+                    if (widget.wallet.canReceive)
+                      PopupMenuItem(
+                        value: 'set_default_receive',
+                        enabled: !widget.isDefaultForReceiving,
+                        child: Row(
+                          children: [
+                            Icon(
+                              widget.isDefaultForReceiving
+                                  ? Icons.check_circle
+                                  : Icons.call_received,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              widget.isDefaultForReceiving
+                                  ? l10n.defaultForReceiving
+                                  : l10n.setAsDefaultForReceiving,
+                              style: widget.isDefaultForReceiving
+                                  ? const TextStyle(color: Colors.grey)
+                                  : null,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.deleteWallet,
-                          style: TextStyle(
+                      ),
+                    if (widget.wallet.canSend)
+                      PopupMenuItem(
+                        value: 'set_default_send',
+                        enabled: !widget.isDefaultForSending,
+                        child: Row(
+                          children: [
+                            Icon(
+                              widget.isDefaultForSending
+                                  ? Icons.check_circle
+                                  : Icons.call_made,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              widget.isDefaultForSending
+                                  ? l10n.defaultForSending
+                                  : l10n.setAsDefaultForSending,
+                              style: widget.isDefaultForSending
+                                  ? const TextStyle(color: Colors.grey)
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ];
+
+                  return [
+                    ...defaultItems,
+                    if (defaultItems.isNotEmpty) const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 'rename',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit, size: 20),
+                          const SizedBox(width: 8),
+                          Text(l10n.renameWallet),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'color',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.palette, size: 20),
+                          const SizedBox(width: 8),
+                          Text(l10n.pickColor),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            size: 20,
                             color: Theme.of(context).colorScheme.error,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.deleteWallet,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ];
+                },
                 onSelected: (value) async {
                   switch (value) {
+                    case 'set_default_receive':
+                      widget.ndkFlutter.ndk.wallets
+                          .setDefaultWalletForReceiving(widget.wallet.id);
+                      widget.onDefaultWalletChanged?.call();
+                      break;
+                    case 'set_default_send':
+                      widget.ndkFlutter.ndk.wallets.setDefaultWalletForSending(
+                        widget.wallet.id,
+                      );
+                      widget.onDefaultWalletChanged?.call();
+                      break;
                     case 'rename':
                       await _showRenameDialog(context);
                       break;
@@ -470,6 +562,87 @@ class _NWalletCardState extends State<NWalletCard> {
                       break;
                   }
                 },
+              ),
+            ),
+            if (widget.isDefaultForReceiving || widget.isDefaultForSending)
+              Positioned(right: 50, top: -1, child: _buildDefaultRibbons()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDefaultRibbons() {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (widget.isDefaultForReceiving)
+          _buildDefaultRibbonTag(
+            icon: Icons.call_received,
+            tooltipMessage: l10n.defaultWalletForReceivingTooltip,
+          ),
+        if (widget.isDefaultForReceiving && widget.isDefaultForSending)
+          const SizedBox(width: 6),
+        if (widget.isDefaultForSending)
+          _buildDefaultRibbonTag(
+            icon: Icons.call_made,
+            tooltipMessage: l10n.defaultWalletForSendingTooltip,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDefaultRibbonTag({
+    required IconData icon,
+    required String tooltipMessage,
+  }) {
+    const Color ribbonColor = Color(0xFFcccccc);
+    const Color foldColor = Color(0xFFEDEDED);
+    const Color borderColor = Colors.black;
+    const Color iconColor = Colors.black;
+
+    return Tooltip(
+      message: tooltipMessage,
+      triggerMode: TooltipTriggerMode.tap,
+      waitDuration: const Duration(milliseconds: 200),
+      child: SizedBox(
+        width: 20,
+        height: 48,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              top: 0,
+              left: 2,
+              right: 2,
+              child: Container(
+                height: 6,
+                decoration: BoxDecoration(
+                  color: foldColor,
+                  border: Border.all(color: borderColor, width: 1),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 1,
+              left: 0,
+              right: 0,
+              child: SizedBox(
+                height: 42,
+                child: CustomPaint(
+                  painter: const _RibbonPainter(
+                    fillColor: ribbonColor,
+                    borderColor: borderColor,
+                  ),
+                  child: Align(
+                    alignment: const Alignment(0, -0.08),
+                    child: Icon(icon, size: 12, color: iconColor),
+                  ),
+                ),
               ),
             ),
           ],
@@ -866,8 +1039,10 @@ class _NWalletCardState extends State<NWalletCard> {
             Flexible(
               child: Text(
                 l10n.budgetUsedOf(usedSats, totalSats),
-                style:
-                    TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
+                style: TextStyle(
+                  color: Colors.white.withAlpha(200),
+                  fontSize: 9,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -938,5 +1113,47 @@ class _NWalletCardState extends State<NWalletCard> {
         ),
       );
     }
+  }
+}
+
+class _RibbonPainter extends CustomPainter {
+  final Color fillColor;
+  final Color borderColor;
+
+  const _RibbonPainter({required this.fillColor, required this.borderColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final notchDepth = size.height * 0.2;
+    final notchHalfWidth = size.width * 0.28;
+
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo((size.width / 2) + notchHalfWidth, size.height)
+      ..lineTo(size.width / 2, size.height - notchDepth)
+      ..lineTo((size.width / 2) - notchHalfWidth, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawShadow(path, Colors.black.withAlpha(150), 2.5, false);
+
+    final fillPaint = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, fillPaint);
+
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    canvas.drawPath(path, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _RibbonPainter oldDelegate) {
+    return oldDelegate.fillColor != fillColor ||
+        oldDelegate.borderColor != borderColor;
   }
 }

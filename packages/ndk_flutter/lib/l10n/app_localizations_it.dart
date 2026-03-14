@@ -729,6 +729,24 @@ class AppLocalizationsIt extends AppLocalizations {
   String get receive => 'Ricevi';
 
   @override
+  String get setAsDefaultForReceiving => 'Imposta come predefinito per ricevere';
+
+  @override
+  String get setAsDefaultForSending => 'Imposta come predefinito per inviare';
+
+  @override
+  String get defaultForReceiving => 'Predefinito per ricevere';
+
+  @override
+  String get defaultForSending => 'Predefinito per inviare';
+
+  @override
+  String get defaultWalletForReceivingTooltip => 'Questo portafoglio e il predefinito per ricevere pagamenti.';
+
+  @override
+  String get defaultWalletForSendingTooltip => 'Questo portafoglio e il predefinito per inviare pagamenti.';
+
+  @override
   String get sendOptionsTitle => 'Opzioni di invio';
 
   @override

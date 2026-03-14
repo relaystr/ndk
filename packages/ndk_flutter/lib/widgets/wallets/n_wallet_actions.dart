@@ -55,6 +55,8 @@ class _NWalletActionsState extends State<NWalletActions> {
         final bool isCashu = wallet is CashuWallet;
         final bool isNwc = wallet is NwcWallet;
         final bool isLnurl = wallet is LnurlWallet;
+        final bool canSend = wallet.canSend;
+        final bool canReceive = wallet.canReceive;
 
         return Card(
           elevation: 4,
@@ -108,51 +110,40 @@ class _NWalletActionsState extends State<NWalletActions> {
                 ),
                 const Divider(),
                 const SizedBox(height: 8),
-                if (!isLnurl)
+                if (canSend || canReceive)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showSendDialog(context, wallet),
-                          icon: const Icon(Icons.send),
-                          label: Text(l10n.send),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                      if (canSend)
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showSendDialog(context, wallet),
+                            icon: const Icon(Icons.send),
+                            label: Text(l10n.send),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            if (isNwc) {
-                              _showCreateInvoiceDialog(context, wallet);
-                            } else {
-                              _showReceiveDialog(context, wallet);
-                            }
-                          },
-                          icon: const Icon(Icons.download),
-                          label: Text(l10n.receive),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                      if (canSend && canReceive) const SizedBox(width: 16),
+                      if (canReceive)
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              if (isNwc || isLnurl) {
+                                _showCreateInvoiceDialog(context, wallet);
+                              } else {
+                                _showReceiveDialog(context, wallet);
+                              }
+                            },
+                            icon: const Icon(Icons.download),
+                            label: Text(l10n.receive),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
                           ),
                         ),
-                      ),
                     ],
-                  )
-                else
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () =>
-                          _showCreateInvoiceDialog(context, wallet),
-                      icon: const Icon(Icons.download),
-                      label: Text(l10n.receive),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
                   ),
               ],
             ),
@@ -408,8 +399,10 @@ class _NWalletActionsState extends State<NWalletActions> {
                       }
                     }
                   } else if (wallet is NwcWallet) {
-                    final response = await widget.ndkFlutter.ndk.wallets
-                        .send(walletId: wallet.id, invoice: invoice);
+                    final response = await widget.ndkFlutter.ndk.wallets.send(
+                      walletId: wallet.id,
+                      invoice: invoice,
+                    );
                     if (response.errorCode == null &&
                         response.preimage != null) {
                       if (!mounted) return;

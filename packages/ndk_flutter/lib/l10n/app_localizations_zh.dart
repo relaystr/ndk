@@ -729,6 +729,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get receive => '接收';
 
   @override
+  String get setAsDefaultForReceiving => '设为接收默认钱包';
+
+  @override
+  String get setAsDefaultForSending => '设为发送默认钱包';
+
+  @override
+  String get defaultForReceiving => '接收默认钱包';
+
+  @override
+  String get defaultForSending => '发送默认钱包';
+
+  @override
+  String get defaultWalletForReceivingTooltip => '该钱包是接收付款的默认钱包。';
+
+  @override
+  String get defaultWalletForSendingTooltip => '该钱包是发送付款的默认钱包。';
+
+  @override
   String get sendOptionsTitle => '发送选项';
 
   @override
