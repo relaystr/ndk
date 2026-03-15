@@ -6,6 +6,7 @@ import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
+import '../domain_layer/usecases/cashu/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/files/blossom.dart';
@@ -23,6 +24,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
+import '../domain_layer/usecases/wallets/wallets.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
 import 'init.dart';
 import 'ndk_config.dart';
@@ -150,6 +152,14 @@ class Ndk {
   /// Search
   @experimental
   Search get search => _initialization.search;
+
+  /// Cashu Wallet
+  @experimental // in development
+  Cashu get cashu => _initialization.cashu;
+
+  /// Wallet combining all wallet accounts \
+  @experimental
+  Wallets get wallets => _initialization.wallets;
 
   /// Fetched ranges tracking
   /// Track which time ranges have been fetched from which relays for each filter

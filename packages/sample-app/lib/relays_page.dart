@@ -14,7 +14,7 @@ class RelaysPage extends StatefulWidget {
 class _RelaysPageState extends State<RelaysPage> {
   // final amber = Amberflutter();
   // ignore: unused_field
-  String _text = '';
+  final String _text = '';
   UserRelayList? relays;
 
 
@@ -22,7 +22,7 @@ class _RelaysPageState extends State<RelaysPage> {
   void initState() {
     ndk.connectivity.relayConnectivityChanges.listen((data) {
       setState(() {
-        print("Relay connectivity changed for ${data}");
+        print("Relay connectivity changed for $data");
       });
     });
   }

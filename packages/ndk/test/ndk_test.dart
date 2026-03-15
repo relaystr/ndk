@@ -92,7 +92,7 @@ void main() async {
       await ndk.relays.seedRelaysConnected;
 
       final response = ndk.requests.query(filters: [
-        Filter(ids: [key1TextNotes[key1]!.id!])
+        Filter(ids: [key1TextNotes[key1]!.id])
       ]);
 
       await expectLater(response.stream, emitsInAnyOrder(key1TextNotes.values));
@@ -100,7 +100,7 @@ void main() async {
       await cache.saveEvent(key1TextNotes[key1]!);
 
       final response2 = ndk.requests.query(filters: [
-        Filter(ids: [key1TextNotes[key1]!.id!])
+        Filter(ids: [key1TextNotes[key1]!.id])
       ]);
 
       await expectLater(

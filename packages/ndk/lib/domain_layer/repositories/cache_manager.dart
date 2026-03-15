@@ -1,3 +1,6 @@
+import '../entities/cashu/cashu_keyset.dart';
+import '../entities/cashu/cashu_mint_info.dart';
+import '../entities/cashu/cashu_proof.dart';
 import '../entities/contact_list.dart';
 import '../entities/filter_fetched_ranges.dart';
 import '../entities/nip_01_event.dart';
@@ -112,6 +115,50 @@ abstract class CacheManager {
   Future<void> removeNip05(String pubKey);
   Future<void> removeAllNip05s();
 
+  /// cashu methods
+
+  Future<void> saveKeyset(CahsuKeyset keyset);
+
+  /// get all keysets if no mintUrl is provided \
+  Future<List<CahsuKeyset>> getKeysets({
+    String? mintUrl,
+  });
+
+  Future<void> saveProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  });
+
+  Future<List<CashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
+  });
+
+  Future<void> removeProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  });
+
+  Future<void> saveMintInfo({
+    required CashuMintInfo mintInfo,
+  });
+
+  /// return all if no mintUrls are provided
+  Future<List<CashuMintInfo>?> getMintInfos({
+    List<String>? mintUrls,
+  });
+
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  });
+
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  });
   // =====================
   // Filter Fetched Ranges
   // =====================
