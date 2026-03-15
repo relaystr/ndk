@@ -193,18 +193,18 @@ class Initialization {
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
     nwc = Nwc(requests: requests, broadcast: broadcast);
 
-    final WalletsRepo walletsRepo;
-
-    // auto detect if the provided cache manager has wallets capabilities.
-    if (_ndkConfig.cache is WalletsRepo) {
-      walletsRepo = _ndkConfig.cache as WalletsRepo;
-    } else {
-      walletsRepo = MemWalletsRepo();
+    if (_ndkConfig.walletsRepo == null ) {
+      // auto detect if the provided cache manager has wallets capabilities.
+      if (_ndkConfig.cache is WalletsRepo) {
+        _ndkConfig.walletsRepo = _ndkConfig.cache as WalletsRepo;
+      } else {
+        _ndkConfig.walletsRepo = MemWalletsRepo();
+      }
     }
 
     cashu = Cashu(
       cashuRepo: cashuRepo,
-      walletsRepo: walletsRepo,
+      walletsRepo: _ndkConfig.walletsRepo!,
       cacheManager: _ndkConfig.cache,
       cashuUserSeedphrase: _ndkConfig.cashuUserSeedphrase,
       cashuKeyDerivation: DartCashuKeyDerivation(),
