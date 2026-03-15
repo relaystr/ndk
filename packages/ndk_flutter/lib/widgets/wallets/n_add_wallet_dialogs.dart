@@ -8,11 +8,13 @@ import 'package:http/http.dart' as http;
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 
 const String _defaultMintUrl = 'https://dev.mint.camelus.app';
 const String _albyGoIntentHost = 'bla';
+const String _dialogBackResult = '__back__';
 
 /// Configuration for launching the Alby Go NWC connection intent.
 ///
@@ -32,8 +34,7 @@ class AlbyGoConnectConfig {
 /// Default Alby Go parameters aligned with the sample app's NWC auth flow.
 const AlbyGoConnectConfig kDefaultAlbyGoConnectConfig = AlbyGoConnectConfig(
   appName: 'NDK Demo',
-  appIconUrl:
-      'https://logowik.com/content/uploads/images/flutter5786.jpg',
+  appIconUrl: 'https://logowik.com/content/uploads/images/flutter5786.jpg',
   callback: 'ndk://nwc',
 );
 
@@ -44,15 +45,38 @@ Future<CashuWallet?> showAddCashuWalletDialog(
   BuildContext context,
   NdkFlutter ndkFlutter, {
   String defaultMintUrl = _defaultMintUrl,
+  bool returnToWalletType = false,
+  AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final mintUrlController = TextEditingController(text: defaultMintUrl);
 
   return showDialog<CashuWallet?>(
     context: context,
-    builder: (context) {
+    builder: (dialogContext) {
       return AlertDialog(
-        title: Text(l10n.addCashuWalletTitle),
+        title: Row(
+          children: [
+            IconButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                if (returnToWalletType && context.mounted) {
+                  await showAddWalletTypeDialog(
+                    context,
+                    ndkFlutter,
+                    albyGoConnectConfig: albyGoConnectConfig,
+                  );
+                }
+              },
+              icon: const Icon(Icons.arrow_back),
+            ),
+            Expanded(child: Text(l10n.addCashuWalletTitle)),
+            IconButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -70,7 +94,7 @@ Future<CashuWallet?> showAddCashuWalletDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(l10n.cancel),
           ),
           TextButton(
@@ -191,7 +215,19 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text(l10n.addNwcWalletTitle),
+      title: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.arrow_back),
+          ),
+          Expanded(child: Text(l10n.addNwcWalletTitle)),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
@@ -417,8 +453,10 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
 /// Returns the created [Wallet] if successful, or null if cancelled.
 Future<Wallet?> showAddLnurlWalletDialog(
   BuildContext context,
-  NdkFlutter ndkFlutter,
-) async {
+  NdkFlutter ndkFlutter, {
+  bool returnToWalletType = false,
+  AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
+}) async {
   final l10n = AppLocalizations.of(context)!;
   final identifierController = TextEditingController();
 
@@ -440,12 +478,15 @@ Future<Wallet?> showAddLnurlWalletDialog(
 
   return showDialog<Wallet?>(
     context: context,
-    builder: (context) {
+    builder: (dialogContext) {
       return _AddLnurlWalletDialog(
         l10n: l10n,
         identifierController: identifierController,
         profileLud16: profileLud16,
         ndkFlutter: ndkFlutter,
+        parentContext: context,
+        returnToWalletType: returnToWalletType,
+        albyGoConnectConfig: albyGoConnectConfig,
       );
     },
   );
@@ -456,12 +497,18 @@ class _AddLnurlWalletDialog extends StatefulWidget {
   final TextEditingController identifierController;
   final String? profileLud16;
   final NdkFlutter ndkFlutter;
+  final BuildContext parentContext;
+  final bool returnToWalletType;
+  final AlbyGoConnectConfig albyGoConnectConfig;
 
   const _AddLnurlWalletDialog({
     required this.l10n,
     required this.identifierController,
     required this.profileLud16,
     required this.ndkFlutter,
+    required this.parentContext,
+    required this.returnToWalletType,
+    required this.albyGoConnectConfig,
   });
 
   @override
@@ -516,7 +563,28 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.l10n.addLnurlWalletTitle),
+      title: Row(
+        children: [
+          IconButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              if (widget.returnToWalletType && widget.parentContext.mounted) {
+                await showAddWalletTypeDialog(
+                  widget.parentContext,
+                  widget.ndkFlutter,
+                  albyGoConnectConfig: widget.albyGoConnectConfig,
+                );
+              }
+            },
+            icon: const Icon(Icons.arrow_back),
+          ),
+          Expanded(child: Text(widget.l10n.addLnurlWalletTitle)),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -620,25 +688,14 @@ Future<bool> showAddWalletTypeDialog(
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
-                // Grid of wallet type options
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  alignment: WrapAlignment.center,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Cashu option
-                    _WalletTypeOptionButton(
-                      imageAsset: 'assets/images/cashu.png',
-                      label: l10n.cashuOption,
-                      onTap: () async {
-                        Navigator.of(dialogContext).pop(true);
-                        await showAddCashuWalletDialog(context, ndkFlutter);
-                      },
-                    ),
-                    // NWC option
-                    _WalletTypeOptionButton(
+                    _WalletTypeListOption(
                       imageAsset: 'assets/images/nwc.png',
-                      label: l10n.nwcOption,
+                      title: l10n.nwcWalletTypeTitle,
+                      subtitle: l10n.nwcWalletTypeSubtitle,
+                      infoUrl: 'https://nwc.dev/',
                       onTap: () async {
                         Navigator.of(dialogContext).pop(true);
                         await showNwcConnectionOptionsDialog(
@@ -648,13 +705,36 @@ Future<bool> showAddWalletTypeDialog(
                         );
                       },
                     ),
-                    // LNURL option
-                    _WalletTypeOptionButton(
+                    const SizedBox(height: 12),
+                    _WalletTypeListOption(
                       icon: Icons.bolt,
-                      label: l10n.lnurlOption,
+                      title: l10n.lnurlWalletTypeTitle,
+                      subtitle: l10n.lnurlWalletTypeSubtitle,
+                      infoUrl: 'https://lightningaddress.com/',
                       onTap: () async {
                         Navigator.of(dialogContext).pop(true);
-                        await showAddLnurlWalletDialog(context, ndkFlutter);
+                        await showAddLnurlWalletDialog(
+                          context,
+                          ndkFlutter,
+                          returnToWalletType: true,
+                          albyGoConnectConfig: albyGoConnectConfig,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _WalletTypeListOption(
+                      imageAsset: 'assets/images/cashu.png',
+                      title: l10n.cashuWalletTypeTitle,
+                      subtitle: l10n.cashuWalletTypeSubtitle,
+                      infoUrl: 'https://cashu.space/',
+                      onTap: () async {
+                        Navigator.of(dialogContext).pop(true);
+                        await showAddCashuWalletDialog(
+                          context,
+                          ndkFlutter,
+                          returnToWalletType: true,
+                          albyGoConnectConfig: albyGoConnectConfig,
+                        );
                       },
                     ),
                   ],
@@ -693,7 +773,19 @@ Future<bool> showNwcConnectionOptionsDialog(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(width: 24),
+                    IconButton(
+                      onPressed: () async {
+                        Navigator.of(dialogContext).pop(false);
+                        if (context.mounted) {
+                          await showAddWalletTypeDialog(
+                            context,
+                            ndkFlutter,
+                            albyGoConnectConfig: albyGoConnectConfig,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.arrow_back),
+                    ),
                     Expanded(
                       child: Text(
                         l10n.connectNwcTitle,
@@ -729,10 +821,7 @@ Future<bool> showNwcConnectionOptionsDialog(
                         label: l10n.albyGoOption,
                         onTap: () async {
                           Navigator.of(dialogContext).pop(true);
-                          await _connectAlbyGo(
-                            context,
-                            albyGoConnectConfig,
-                          );
+                          await _connectAlbyGo(context, albyGoConnectConfig);
                         },
                       ),
                     // Manual connection button (goes directly to QR scanner)
@@ -741,7 +830,12 @@ Future<bool> showNwcConnectionOptionsDialog(
                       label: l10n.manualOption,
                       onTap: () async {
                         Navigator.of(dialogContext).pop(true);
-                        await _showNwcScannerAndAddWallet(context, ndkFlutter);
+                        await _showNwcScannerAndAddWallet(
+                          context,
+                          ndkFlutter,
+                          returnToNwcOptions: true,
+                          albyGoConnectConfig: albyGoConnectConfig,
+                        );
                       },
                     ),
                     // Faucet button (only in debug mode)
@@ -751,7 +845,12 @@ Future<bool> showNwcConnectionOptionsDialog(
                         label: l10n.faucetOption,
                         onTap: () async {
                           Navigator.of(dialogContext).pop(true);
-                          await _showNwcFaucetDialog(context, ndkFlutter);
+                          await _showNwcFaucetDialog(
+                            context,
+                            ndkFlutter,
+                            returnToNwcOptions: true,
+                            albyGoConnectConfig: albyGoConnectConfig,
+                          );
                         },
                       ),
                   ],
@@ -770,14 +869,12 @@ class _WalletTypeOptionButton extends StatelessWidget {
   final String? imageAsset;
   final String label;
   final VoidCallback onTap;
-  final double iconSize;
 
   const _WalletTypeOptionButton({
     this.icon,
     this.imageAsset,
     required this.label,
     required this.onTap,
-    this.iconSize = 40,
   }) : assert(
          icon != null || imageAsset != null,
          'Either icon or imageAsset must be provided',
@@ -816,7 +913,7 @@ class _WalletTypeOptionButton extends StatelessWidget {
                   )
                 : Icon(
                     icon!,
-                    size: iconSize,
+                    size: 40,
                     color: Theme.of(context).colorScheme.primary,
                   ),
           ),
@@ -833,6 +930,119 @@ class _WalletTypeOptionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _WalletTypeListOption extends StatelessWidget {
+  final IconData? icon;
+  final String? imageAsset;
+  final String title;
+  final String subtitle;
+  final String infoUrl;
+  final VoidCallback onTap;
+
+  const _WalletTypeListOption({
+    this.icon,
+    this.imageAsset,
+    required this.title,
+    required this.subtitle,
+    required this.infoUrl,
+    required this.onTap,
+  }) : assert(
+         icon != null || imageAsset != null,
+         'Either icon or imageAsset must be provided',
+       );
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: imageAsset != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Image.asset(
+                          imageAsset!,
+                          package: 'ndk_flutter',
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    : Icon(
+                        icon!,
+                        size: 38,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(title, style: Theme.of(context).textTheme.titleSmall),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 2),
+                    InkWell(
+                      onTap: () => _launchExternalLink(context, infoUrl),
+                      child: Text(
+                        infoUrl,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _launchExternalLink(BuildContext context, String url) async {
+  final uri = Uri.tryParse(url);
+  if (uri == null) return;
+
+  final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+  if (launched || !context.mounted) return;
+
+  final l10n = AppLocalizations.of(context)!;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(l10n.error('Could not open $url')),
+      backgroundColor: Colors.red,
+    ),
+  );
 }
 
 /// Launches the Alby Go app via Android intent
@@ -878,13 +1088,26 @@ String _encodeComponentIfNeeded(String value) {
 /// Shows QR scanner dialog and then adds the wallet directly
 Future<void> _showNwcScannerAndAddWallet(
   BuildContext context,
-  NdkFlutter ndkFlutter,
-) async {
+  NdkFlutter ndkFlutter, {
+  bool returnToNwcOptions = false,
+  AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
+}) async {
   final l10n = AppLocalizations.of(context)!;
   final result = await showDialog<String?>(
     context: context,
-    builder: (context) => _NwcQrScannerDialogWithPaste(),
+    builder: (context) => const _NwcQrScannerDialogWithPaste(),
   );
+
+  if (result == _dialogBackResult) {
+    if (returnToNwcOptions && context.mounted) {
+      await showNwcConnectionOptionsDialog(
+        context,
+        ndkFlutter,
+        albyGoConnectConfig: albyGoConnectConfig,
+      );
+    }
+    return;
+  }
 
   if (result == null || result.isEmpty || !context.mounted) return;
 
@@ -978,6 +1201,11 @@ class _NwcQrScannerDialogState extends State<_NwcQrScannerDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  IconButton(
+                    onPressed: () =>
+                        Navigator.of(context).pop(_dialogBackResult),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  ),
                   Text(
                     l10n.scanNwcQrCodeTitle,
                     style: const TextStyle(color: Colors.white, fontSize: 18),
@@ -1153,6 +1381,11 @@ class _NwcQrScannerDialogWithPasteState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  IconButton(
+                    onPressed: () =>
+                        Navigator.of(context).pop(_dialogBackResult),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  ),
                   Text(
                     l10n.scanNwcQrCodeTitle,
                     style: const TextStyle(color: Colors.white, fontSize: 18),
@@ -1266,16 +1499,40 @@ class _NwcQrScannerDialogWithPasteState
 /// Shows a dialog to add an NWC wallet via faucet.
 Future<void> _showNwcFaucetDialog(
   BuildContext context,
-  NdkFlutter ndkFlutter,
-) async {
+  NdkFlutter ndkFlutter, {
+  bool returnToNwcOptions = false,
+  AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
+}) async {
   final l10n = AppLocalizations.of(context)!;
+  final parentContext = context;
   final balanceController = TextEditingController(text: '10000');
 
   await showDialog(
-    context: context,
-    builder: (context) {
+    context: parentContext,
+    builder: (dialogContext) {
       return AlertDialog(
-        title: Text(l10n.faucetOption),
+        title: Row(
+          children: [
+            IconButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                if (returnToNwcOptions && parentContext.mounted) {
+                  await showNwcConnectionOptionsDialog(
+                    parentContext,
+                    ndkFlutter,
+                    albyGoConnectConfig: albyGoConnectConfig,
+                  );
+                }
+              },
+              icon: const Icon(Icons.arrow_back),
+            ),
+            Expanded(child: Text(l10n.faucetOption)),
+            IconButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1294,7 +1551,7 @@ Future<void> _showNwcFaucetDialog(
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(l10n.cancel),
           ),
           TextButton(

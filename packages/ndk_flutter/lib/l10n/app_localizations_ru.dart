@@ -661,7 +661,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cashuWalletAdded => 'Кошелёк Cashu успешно добавлен!';
 
   @override
-  String get failedToAddMint => 'Не удалось добавить минт. Пожалуйста, проверьте URL и попробуйте снова.';
+  String get failedToAddMint =>
+      'Не удалось добавить минт. Пожалуйста, проверьте URL и попробуйте снова.';
 
   @override
   String get addNwcWalletTitle => 'Добавить Кошелёк NWC';
@@ -673,7 +674,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get manual => 'Вручную';
 
   @override
-  String get nwcFaucetDescription => 'Создайте тестовый кошелёк с сатами из крана NWC.';
+  String get nwcFaucetDescription =>
+      'Создайте тестовый кошелёк с сатами из крана NWC.';
 
   @override
   String get startingBalance => 'Начальный Баланс';
@@ -705,13 +707,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addLnurlWalletTitle => 'Добавить Кошелёк LNURL';
 
   @override
-  String get enterLnurlIdentifier => 'Введите ваш LNURL идентификатор (user@domain.com).';
+  String get enterLnurlIdentifier =>
+      'Введите ваш LNURL идентификатор (user@domain.com).';
 
   @override
   String get lnurlIdentifierHint => 'user@example.com';
 
   @override
-  String get pleaseEnterValidIdentifier => 'Пожалуйста, введите действительный идентификатор (user@domain.com)';
+  String get pleaseEnterValidIdentifier =>
+      'Пожалуйста, введите действительный идентификатор (user@domain.com)';
 
   @override
   String get lnurlWalletAdded => 'Кошелёк LNURL успешно добавлен!';
@@ -741,10 +745,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get defaultForSending => 'По умолчанию для отправки';
 
   @override
-  String get defaultWalletForReceivingTooltip => 'Этот кошелёк используется по умолчанию для получения платежей.';
+  String get defaultWalletForReceivingTooltip =>
+      'Этот кошелёк используется по умолчанию для получения платежей.';
 
   @override
-  String get defaultWalletForSendingTooltip => 'Этот кошелёк используется по умолчанию для отправки платежей.';
+  String get defaultWalletForSendingTooltip =>
+      'Этот кошелёк используется по умолчанию для отправки платежей.';
 
   @override
   String get sendOptionsTitle => 'Опции Отправки';
@@ -821,7 +827,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get amountHint => '100';
 
   @override
-  String get pleaseEnterValidAmount => 'Пожалуйста, введите действительную сумму';
+  String get pleaseEnterValidAmount =>
+      'Пожалуйста, введите действительную сумму';
 
   @override
   String get tokenCopiedToClipboard => 'Токен скопирован в буфер обмена!';
@@ -930,7 +937,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get deleteWalletConfirmation => 'Удалить Кошелёк?';
 
   @override
-  String get deleteWalletConfirmationMessage => 'Вы уверены, что хотите удалить этот кошелёк? Это действие нельзя отменить.';
+  String get deleteWalletConfirmationMessage =>
+      'Вы уверены, что хотите удалить этот кошелёк? Это действие нельзя отменить.';
 
   @override
   String get addWalletTitle => 'Добавить Кошелёк';
@@ -946,6 +954,26 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get lnurlOption => 'LNURL';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle =>
+      'Подключение к существующему кошельку через NWC';
+
+  @override
+  String get lnurlWalletTypeTitle => 'Lightning-адрес (LNURL)';
+
+  @override
+  String get lnurlWalletTypeSubtitle => 'Получайте платежи на user@domain.com';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle =>
+      'Ecash-кошелёк на основе mint-узлов Cashu';
 
   @override
   String get connectNwcTitle => 'Подключить NWC';
@@ -972,7 +1000,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cameraNotAvailable => 'Камера недоступна';
 
   @override
-  String get scanNwcInstructions => 'Отсканируйте QR-код из приложения кошелька NWC';
+  String get scanNwcInstructions =>
+      'Отсканируйте QR-код из приложения кошелька NWC';
 
   @override
   String get invalidNwcUri => 'Неверный URI NWC';

@@ -948,6 +948,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lnurlOption => 'LNURL';
 
   @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => '通过 NWC 连接到现有钱包';
+
+  @override
+  String get lnurlWalletTypeTitle => 'Lightning 地址 (LNURL)';
+
+  @override
+  String get lnurlWalletTypeSubtitle => '接收发送到 user@domain.com 的付款';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle => '使用 Cashu mint 的 ecash 钱包';
+
+  @override
   String get connectNwcTitle => '连接 NWC';
 
   @override

@@ -930,7 +930,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get deleteWalletConfirmation => 'ウォレットを削除しますか?';
 
   @override
-  String get deleteWalletConfirmationMessage => 'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
+  String get deleteWalletConfirmationMessage =>
+      'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
 
   @override
   String get addWalletTitle => 'ウォレットを追加';
@@ -946,6 +947,24 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get lnurlOption => 'LNURL';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => 'NWCで既存のウォレットに接続';
+
+  @override
+  String get lnurlWalletTypeTitle => 'Lightning Address (LNURL)';
+
+  @override
+  String get lnurlWalletTypeSubtitle => 'user@domain.com で支払いを受け取る';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle => 'Cashuミントを使うecashウォレット';
 
   @override
   String get connectNwcTitle => 'NWCを接続';
