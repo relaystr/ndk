@@ -1,10 +1,7 @@
-import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
-
 import '../config/bootstrap_relays.dart';
 import '../config/broadcast_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
-import '../data_layer/repositories/wallets/mem_wallets_repo.dart';
 import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
@@ -21,9 +18,6 @@ class NdkConfig {
 
   /// The cache manager (DB) used to store and retrieve Nostr data. E.g MemCacheManager()
   CacheManager cache;
-
-  /// The wallets repository used to manage wallet data. E.g MemWalletsRepo()
-  WalletsRepo? walletsRepo;
 
   /// The engine mode to use for Nostr network operations (inbox/outbox mode).
   ///
@@ -95,7 +89,6 @@ class NdkConfig {
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
-    this.walletsRepo,
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
