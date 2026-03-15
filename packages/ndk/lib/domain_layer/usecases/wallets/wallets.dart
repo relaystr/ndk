@@ -59,7 +59,7 @@ class Wallets {
     required List<WalletProvider> providers,
     required WalletsRepo repository,
     this.latestTransactionCount = 10,
-  })  : _providers = {for (var p in providers) p.type: p},
+  })  : _providers = {for (final p in providers) p.type: p},
         _repository = repository {
     _initialize();
   }
@@ -78,6 +78,22 @@ class Wallets {
 
   /// stream of all wallets
   Stream<List<Wallet>> get walletsStream => _walletsSubject.stream;
+
+  Future<List<WalletTransaction>> combinedTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) {
+    return _repository.getTransactions(
+      limit: limit,
+      offset: offset,
+      walletId: walletId,
+      unit: unit,
+      walletType: walletType,
+    );
+  }
 
   /// Get default wallet for receiving
   Wallet? get defaultWalletForReceiving {
@@ -223,11 +239,12 @@ class Wallets {
       }
     }
 
-    if (wallet.canReceive && _repository.getDefaultWalletIdForReceiving()==null) {
+    if (wallet.canReceive &&
+        _repository.getDefaultWalletIdForReceiving() == null) {
       _repository.setDefaultWalletForReceiving(wallet.id);
     }
 
-    if (wallet.canSend && _repository.getDefaultWalletIdForSending()==null) {
+    if (wallet.canSend && _repository.getDefaultWalletIdForSending() == null) {
       _repository.setDefaultWalletForSending(wallet.id);
     }
 
@@ -273,13 +290,13 @@ class Wallets {
 
     if (walletId == _repository.getDefaultWalletIdForReceiving()) {
       Wallet? wallet = _wallets.where((w) => w.canReceive).firstOrNull;
-      if (wallet!=null) {
+      if (wallet != null) {
         _repository.setDefaultWalletForReceiving(wallet.id);
       }
     }
     if (walletId == _repository.getDefaultWalletIdForSending()) {
       Wallet? wallet = _wallets.where((w) => w.canSend).firstOrNull;
-      if (wallet!=null) {
+      if (wallet != null) {
         _repository.setDefaultWalletForSending(wallet.id);
       }
     }
@@ -473,7 +490,8 @@ class Wallets {
   }
 
   /// Send payment
-  Future<PayInvoiceResponse> send({String? walletId, required String invoice}) async {
+  Future<PayInvoiceResponse> send(
+      {String? walletId, required String invoice}) async {
     walletId ??= _repository.getDefaultWalletIdForSending();
     if (walletId == null) {
       throw StateError('No default wallet set');
