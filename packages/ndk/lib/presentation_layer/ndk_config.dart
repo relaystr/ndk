@@ -6,6 +6,7 @@ import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_verifier.dart';
+import '../domain_layer/repositories/wallets_repo.dart';
 import '../shared/logger/log_level.dart';
 
 /// Configuration class for the Nostr Development Kit (NDK)
@@ -18,6 +19,9 @@ class NdkConfig {
 
   /// The cache manager (DB) used to store and retrieve Nostr data. E.g MemCacheManager()
   CacheManager cache;
+
+  /// The wallets repository used to manage wallet data. E.g MemWalletsRepo()
+  WalletsRepo? walletsRepo;
 
   /// The engine mode to use for Nostr network operations (inbox/outbox mode).
   ///
@@ -89,6 +93,7 @@ class NdkConfig {
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
+    this.walletsRepo,
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
