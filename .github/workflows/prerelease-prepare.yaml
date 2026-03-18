@@ -5,6 +5,7 @@ on:
     branches:
       - master
     # Exclude pushes made by the GitHub Action itself to prevent loops
+    # this has the problem of not allowing simple PR for updating something only in the pubspec.yaml to trigger a pre-release :-/
     paths-ignore:
       - "**/CHANGELOG.md"
       - "**/pubspec.yaml"
