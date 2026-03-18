@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-03-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.2-dev.1`](#ndk---v072-dev1)
+ - [`ndk_flutter` - `v0.0.2-dev.3`](#ndk_flutter---v002-dev3)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.2`](#ndk_rust_verifier---v050-dev2)
+ - [`rust_lib_ndk` - `v0.1.7-dev.1`](#rust_lib_ndk---v017-dev1)
+ - [`ndk_amber` - `v0.4.1-dev.1`](#ndk_amber---v041-dev1)
+ - [`ndk_objectbox` - `v0.2.8-dev.1`](#ndk_objectbox---v028-dev1)
+ - [`nip07_event_signer` - `v1.0.7-dev.2`](#nip07_event_signer---v107-dev2)
+ - [`sembast_cache_manager` - `v1.0.8-dev.1`](#sembast_cache_manager---v108-dev1)
+ - [`drift_cache_manager` - `v0.0.2-dev.1`](#drift_cache_manager---v002-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.1-dev.1`
+ - `ndk_objectbox` - `v0.2.8-dev.1`
+ - `nip07_event_signer` - `v1.0.7-dev.2`
+ - `sembast_cache_manager` - `v1.0.8-dev.1`
+ - `drift_cache_manager` - `v0.0.2-dev.1`
+
+---
+
+#### `ndk` - `v0.7.2-dev.1`
+
+ - **FIX**: cleanup.
+ - **FEAT**: cli.
+
+#### `ndk_flutter` - `v0.0.2-dev.3`
+
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FIX**(ndk_flutter): suppress experimental_member_use warning.
+ - **FIX**(ndk_flutter): pass cachedPublicKey to signers during session restore.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.2`
+
+ - **PERF**: use secp256k1.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.1`
+
+ - **PERF**: use secp256k1.
+ - **FIX**: remove hex package depandance.
+
+
 ## 2026-03-10
 
 ### Changes

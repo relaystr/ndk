@@ -1,3 +1,7 @@
+## 1.0.7-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 1.0.7-dev.1
 
  - **FIX**: conditional web import to support wasm.
