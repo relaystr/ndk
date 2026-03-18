@@ -14,7 +14,6 @@ Future<void> main(List<String> args) async {
 
   final exitCode = await app.run(args);
   if (exitCode != 0) {
-    stderr.writeln('ndk CLI failed with exit code $exitCode');
     exit(exitCode);
   }
 }
