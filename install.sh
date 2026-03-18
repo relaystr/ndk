@@ -301,13 +301,6 @@ main() {
     echo ""
   fi
 
-  if ! echo "${LD_LIBRARY_PATH:-}" | grep -q "$USER_LIB_DIR"; then
-    echo ""
-    echo "  Add this to your shell profile (~/.bashrc / ~/.zshrc):"
-    echo ""
-    echo "    export LD_LIBRARY_PATH=\"${USER_LIB_DIR}:\$LD_LIBRARY_PATH\""
-    echo ""
-  fi
 }
 
 main "$@"
