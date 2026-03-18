@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../../usecases/nwc/nwc.dart';
+import '../../../../usecases/nwc/nwc_connection.dart';
 import '../../../../usecases/nwc/responses/pay_invoice_response.dart';
 import '../../wallet.dart';
 import '../../wallet_balance.dart';
@@ -15,7 +16,6 @@ import 'nwc_wallet.dart';
 /// Implements factory and operations for Nostr Wallet Connect wallets
 class NwcWalletProvider implements WalletProvider {
   final Nwc _nwcUseCase;
-  final Map<String, StreamSubscription> _notificationSubscriptions = {};
   final Map<String, bool> _refreshInFlight = {};
 
   /// Track in-flight connection attempts to prevent concurrent connections for the same wallet
@@ -50,15 +50,6 @@ class NwcWalletProvider implements WalletProvider {
   @override
   Future<void> dispose(Wallet wallet) async {
     final nwcWallet = wallet as NwcWallet;
-    final sub = _notificationSubscriptions.remove(nwcWallet.id);
-    if (sub != null) {
-      await sub.cancel();
-    }
-    // Cancel any in-flight connection attempt
-    final inProgress = _connectionInProgress.remove(nwcWallet.id);
-    if (inProgress != null && !inProgress.isCompleted) {
-      inProgress.completeError(Exception('Wallet disposed during connection'));
-    }
     if (nwcWallet.connection != null) {
       await _nwcUseCase.disconnect(nwcWallet.connection!);
       await nwcWallet.balanceSubject?.close();
@@ -72,32 +63,22 @@ class NwcWalletProvider implements WalletProvider {
   Future<Wallet?> initialize(Wallet wallet) async {
     final nwcWallet = wallet as NwcWallet;
 
-    // Check if already connected
     if (nwcWallet.isConnected()) {
-      _ensureNotificationSubscription(nwcWallet);
       return null;
     }
 
-    // Check if connection is already in progress for this wallet
     final existingCompleter = _connectionInProgress[nwcWallet.id];
     if (existingCompleter != null) {
-      // Wait for the existing connection attempt to complete
+      // Wait for the existing connection attempt to complete.
       await existingCompleter.future;
       return null;
     }
 
-    // Create a new completer to track this connection attempt
     final completer = Completer<void>();
     _connectionInProgress[nwcWallet.id] = completer;
 
     try {
-      // NWC wallets connect on-demand
-      nwcWallet.connection = await _nwcUseCase.connect(
-        nwcWallet.nwcUrl,
-        doGetInfoMethod: true,
-      );
-
-      _ensureNotificationSubscription(nwcWallet);
+      await _connectWallet(nwcWallet);
       completer.complete();
     } catch (e) {
       completer.completeError(e);
@@ -105,15 +86,13 @@ class NwcWalletProvider implements WalletProvider {
     } finally {
       _connectionInProgress.remove(nwcWallet.id);
     }
-
-    return null; // No wallet update needed
+    return null;
   }
 
   @override
   Stream<List<WalletBalance>> getBalances(Wallet wallet) async* {
     final nwcWallet = wallet as NwcWallet;
 
-    // Always call initialize - it handles concurrent calls internally
     await initialize(wallet);
 
     nwcWallet.balanceSubject ??= BehaviorSubject<List<WalletBalance>>();
@@ -127,7 +106,6 @@ class NwcWalletProvider implements WalletProvider {
   Stream<List<WalletTransaction>> getPendingTransactions(Wallet wallet) async* {
     final nwcWallet = wallet as NwcWallet;
 
-    // Always call initialize - it handles concurrent calls internally
     await initialize(wallet);
 
     nwcWallet.pendingTransactionsSubject ??=
@@ -142,7 +120,6 @@ class NwcWalletProvider implements WalletProvider {
   Stream<List<WalletTransaction>> getRecentTransactions(Wallet wallet) async* {
     final nwcWallet = wallet as NwcWallet;
 
-    // Always call initialize - it handles concurrent calls internally
     await initialize(wallet);
 
     nwcWallet.transactionsSubject ??=
@@ -157,11 +134,11 @@ class NwcWalletProvider implements WalletProvider {
   Future<PayInvoiceResponse> payInvoice(Wallet wallet, String invoice) async {
     final nwcWallet = wallet as NwcWallet;
 
-    // Always call initialize - it handles concurrent calls internally
     await initialize(wallet);
+    final connection = _connectionOrThrow(nwcWallet);
 
     final response = await _nwcUseCase.payInvoice(
-      nwcWallet.connection!,
+      connection,
       invoice: invoice,
     );
     await _refreshAll(nwcWallet);
@@ -179,31 +156,16 @@ class NwcWalletProvider implements WalletProvider {
   Future<String> receive(Wallet wallet, int amountSats) async {
     final nwcWallet = wallet as NwcWallet;
 
-    // Always call initialize - it handles concurrent calls internally
     await initialize(wallet);
+    final connection = _connectionOrThrow(nwcWallet);
 
     final response = await _nwcUseCase.makeInvoice(
-      nwcWallet.connection!,
+      connection,
       amountSats: amountSats,
     );
 
-    await _refreshAll(nwcWallet);
+    // await _refreshAll(nwcWallet);
     return response.invoice;
-  }
-
-  void _ensureNotificationSubscription(NwcWallet wallet) {
-    if (_notificationSubscriptions.containsKey(wallet.id)) {
-      return;
-    }
-    final connection = wallet.connection;
-    if (connection == null) {
-      return;
-    }
-
-    _notificationSubscriptions[wallet.id] =
-        connection.notificationStream.stream.listen((_) async {
-      await _refreshAll(wallet);
-    });
   }
 
   Future<void> _refreshAll(NwcWallet wallet) async {
@@ -224,7 +186,8 @@ class NwcWalletProvider implements WalletProvider {
 
   Future<void> _refreshBalance(NwcWallet wallet) async {
     wallet.balanceSubject ??= BehaviorSubject<List<WalletBalance>>();
-    final balanceResponse = await _nwcUseCase.getBalance(wallet.connection!);
+    final connection = _connectionOrThrow(wallet);
+    final balanceResponse = await _nwcUseCase.getBalance(connection);
     wallet.balanceSubject!.add([
       WalletBalance(
         walletId: wallet.id,
@@ -237,8 +200,9 @@ class NwcWalletProvider implements WalletProvider {
   Future<void> _refreshPendingTransactions(NwcWallet wallet) async {
     wallet.pendingTransactionsSubject ??=
         BehaviorSubject<List<WalletTransaction>>();
+    final connection = _connectionOrThrow(wallet);
     final transactions = await _nwcUseCase.listTransactions(
-      wallet.connection!,
+      connection,
       unpaid: true,
     );
 
@@ -261,8 +225,9 @@ class NwcWalletProvider implements WalletProvider {
 
   Future<void> _refreshRecentTransactions(NwcWallet wallet) async {
     wallet.transactionsSubject ??= BehaviorSubject<List<WalletTransaction>>();
+    final connection = _connectionOrThrow(wallet);
     final transactions = await _nwcUseCase.listTransactions(
-      wallet.connection!,
+      connection,
       unpaid: false,
     );
 
@@ -306,5 +271,20 @@ class NwcWalletProvider implements WalletProvider {
       default:
         return WalletTransactionState.completed;
     }
+  }
+
+  NwcConnection _connectionOrThrow(NwcWallet wallet) {
+    final connection = wallet.connection;
+    if (connection == null) {
+      throw StateError('NWC wallet ${wallet.id} is not connected');
+    }
+    return connection;
+  }
+
+  Future<void> _connectWallet(NwcWallet wallet) async {
+    wallet.connection = await _nwcUseCase.connect(
+      wallet.nwcUrl,
+      doGetInfoMethod: true,
+    );
   }
 }
