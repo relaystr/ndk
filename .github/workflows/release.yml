@@ -39,6 +39,7 @@ jobs:
             content_type: application/gzip
     defaults:
       run:
+        shell: bash
         working-directory: ./packages/ndk
     steps:
       - name: Checkout repository
@@ -53,16 +54,9 @@ jobs:
       - name: Build CLI executable
         run: dart build cli
 
-      - name: Build CLI bundle archive name metadata
-        id: meta
-        run: |
-          ref_name="${GITHUB_REF_NAME}"
-          safe_ref_name="${ref_name//\//-}"
-          echo "safe_ref_name=${safe_ref_name}" >> "$GITHUB_OUTPUT"
-
       - name: Package CLI bundle
         run: |
-          tar -czf "build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
+          tar -czf "build/ndk-${{ replace(github.head_ref || github.ref_name, '/', '-') }}-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
 
       - name: Upload CLI executable to release
         uses: actions/upload-release-asset@v1
@@ -70,8 +64,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
-          asset_name: ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
+          asset_path: packages/ndk/build/ndk-${{ replace(github.head_ref || github.ref_name, '/', '-') }}-${{ matrix.platform_name }}.tar.gz
+          asset_name: ndk-${{ replace(github.head_ref || github.ref_name, '/', '-') }}-${{ matrix.platform_name }}.tar.gz
           asset_content_type: ${{ matrix.content_type }}
 
   build_android:
