@@ -85,10 +85,55 @@ class NdkCliApp {
       NdkConfig(
         cache: MemCacheManager(),
         walletsRepo: walletsRepo,
-        eventVerifier: RustEventVerifier(),
+        eventVerifier: _CliEventVerifier(),
         bootstrapRelays: const [],
         logLevel: LogLevel.error,
       ),
+    );
+  }
+}
+
+class _CliEventVerifier implements EventVerifier {
+  final RustEventVerifier _rustVerifier = RustEventVerifier();
+  final Bip340EventVerifier _fallbackVerifier = Bip340EventVerifier();
+  bool _useFallback = false;
+  bool _loggedFallback = false;
+
+  @override
+  Future<bool> verify(Nip01Event event) async {
+    if (_useFallback) {
+      return _fallbackVerifier.verify(event);
+    }
+
+    try {
+      return await _rustVerifier.verify(event);
+    } on UnsupportedError {
+      _enableFallback();
+      return _fallbackVerifier.verify(event);
+    } on ArgumentError catch (error) {
+      if (!_isNativeLibraryLoadError(error)) {
+        rethrow;
+      }
+      _enableFallback();
+      return _fallbackVerifier.verify(event);
+    }
+  }
+
+  bool _isNativeLibraryLoadError(ArgumentError error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('dynamic library') ||
+        message.contains('verify_nostr_event') ||
+        message.contains('failed to load');
+  }
+
+  void _enableFallback() {
+    _useFallback = true;
+    if (_loggedFallback) {
+      return;
+    }
+    _loggedFallback = true;
+    stderr.writeln(
+      'Rust verifier unavailable; falling back to Bip340EventVerifier.',
     );
   }
 }
