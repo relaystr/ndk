@@ -37,7 +37,7 @@ class WalletsCliCommand implements CliCommand {
       }
 
       if (subCommand == 'add') {
-        await _handleAdd(subArgs, walletsRepo, walletsUsecase);
+        await _handleAdd(subArgs, walletsRepo, walletsUsecase, ndk);
         return 0;
       }
 
@@ -87,19 +87,34 @@ class WalletsCliCommand implements CliCommand {
     List<String> args,
     WalletsRepo walletsRepo,
     Wallets walletsUsecase,
+    Ndk ndk,
   ) async {
     if (args.length < 2) {
-      stderr.writeln('Usage: ndk wallets add nwc <NWC_URI> [name]');
+      stderr.writeln('Usage: ndk wallets add <nwc|cashu> <connection> [name]');
       throw ArgumentError('Missing required arguments for wallets add');
     }
 
     final walletType = args[0].toLowerCase();
-    if (walletType != 'nwc') {
-      throw ArgumentError(
-        'Unsupported wallet type: "$walletType" (currently only "nwc")',
-      );
+    if (walletType == 'nwc') {
+      await _handleAddNwc(args, walletsRepo, walletsUsecase);
+      return;
     }
 
+    if (walletType == 'cashu') {
+      await _handleAddCashu(args, walletsRepo, walletsUsecase, ndk);
+      return;
+    }
+
+    throw ArgumentError(
+      'Unsupported wallet type: "$walletType" (supported: "nwc", "cashu")',
+    );
+  }
+
+  Future<void> _handleAddNwc(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+  ) async {
     final nwcUri = args[1];
     NostrWalletConnectUri.parseConnectionUri(nwcUri);
 
@@ -120,6 +135,46 @@ class WalletsCliCommand implements CliCommand {
 
     stdout
         .writeln('Added wallet: id=${wallet.id} name=${wallet.name} type=nwc');
+    final updatedWallets = await walletsRepo.getWallets();
+    _printWallets(updatedWallets, walletsUsecase);
+  }
+
+  Future<void> _handleAddCashu(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+    Ndk ndk,
+  ) async {
+    final mintUrl = args[1].trim();
+    if (mintUrl.isEmpty) {
+      throw ArgumentError('mintUrl must not be empty');
+    }
+
+    final mintInfo = await ndk.cashu.getMintInfoNetwork(mintUrl: mintUrl);
+    final wallets = await walletsRepo.getWallets();
+    final defaultName = 'Cashu ${wallets.length + 1}';
+    final walletName =
+        args.length > 2 ? args.sublist(2).join(' ') : defaultName;
+    final supportedUnits = mintInfo.supportedUnits.isEmpty
+        ? <String>{'sat'}
+        : mintInfo.supportedUnits;
+
+    final wallet = walletsUsecase.createWallet(
+      id: _buildWalletId(),
+      name: walletName,
+      type: WalletType.CASHU,
+      supportedUnits: supportedUnits,
+      metadata: {
+        'mintUrl': mintUrl,
+        'mintInfo': mintInfo.toJson(),
+      },
+    );
+
+    await walletsUsecase.addWallet(wallet);
+
+    stdout.writeln(
+      'Added wallet: id=${wallet.id} name=${wallet.name} type=cashu mint=$mintUrl',
+    );
     final updatedWallets = await walletsRepo.getWallets();
     _printWallets(updatedWallets, walletsUsecase);
   }
@@ -341,6 +396,7 @@ class WalletsCliCommand implements CliCommand {
     out.writeln('Sub-commands:');
     out.writeln('  list');
     out.writeln('  add nwc <NWC_URI> [name]');
+    out.writeln('  add cashu <MINT_URL> [name]');
     out.writeln('  remove <walletId>');
     out.writeln('  receive <amountSats> [walletId]');
     out.writeln('  send <bolt11> [walletId]');
@@ -350,6 +406,7 @@ class WalletsCliCommand implements CliCommand {
     out.writeln('Examples:');
     out.writeln('  ndk wallets list');
     out.writeln('  ndk wallets add nwc "nostr+walletconnect://..."');
+    out.writeln('  ndk wallets add cashu "https://mint.example.com"');
     out.writeln('  ndk wallets remove wallet_123');
     out.writeln('  ndk wallets receive 1000');
     out.writeln('  ndk wallets receive 1000 wallet_123');

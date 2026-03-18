@@ -107,7 +107,7 @@ class LnurlWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> payInvoice(Wallet wallet, String invoice) async {
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice) async {
     // LNURL wallet is receive-only, cannot pay invoices
     throw UnsupportedError(
         'LNURL wallet is receive-only and cannot pay invoices');

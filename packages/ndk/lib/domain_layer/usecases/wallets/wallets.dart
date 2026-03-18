@@ -500,7 +500,7 @@ class Wallets {
     if (provider == null) {
       throw ArgumentError('No provider for wallet type: ${wallet.type}');
     }
-    return provider.payInvoice(wallet, invoice);
+    return provider.send(wallet, invoice);
   }
 
   /// Create a Lightning invoice to receive funds

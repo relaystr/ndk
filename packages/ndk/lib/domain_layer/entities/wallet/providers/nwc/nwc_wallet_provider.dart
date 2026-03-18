@@ -131,7 +131,7 @@ class NwcWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> payInvoice(Wallet wallet, String invoice) async {
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice) async {
     final nwcWallet = wallet as NwcWallet;
 
     await initialize(wallet);

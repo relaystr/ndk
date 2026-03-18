@@ -1,3 +1,4 @@
+import 'dart:async';
 
 import '../../../../usecases/cashu/cashu.dart';
 import '../../../../usecases/nwc/responses/pay_invoice_response.dart';
@@ -97,7 +98,7 @@ class CashuWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> payInvoice(Wallet wallet, String invoice) async {
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice) async {
     final cashuWallet = wallet as CashuWallet;
 
     final draftTransaction = await _cashuUseCase.initiateRedeem(
@@ -148,7 +149,28 @@ class CashuWalletProvider implements WalletProvider {
 
   @override
   Future<String> receive(Wallet wallet, int amountSats) async {
-    // TODO: implement receive
-    throw UnimplementedError();
+    final cashuWallet = wallet as CashuWallet;
+
+    final draftTransaction = await _cashuUseCase.initiateFund(
+      mintUrl: cashuWallet.mintUrl,
+      amount: amountSats,
+      unit: 'sat',
+      method: 'bolt11',
+    );
+
+    final invoice = draftTransaction.qoute?.request;
+    if (invoice == null || invoice.isEmpty) {
+      throw Exception('Cashu receive failed: mint did not return an invoice');
+    }
+
+    unawaited(() async {
+      try {
+        await _cashuUseCase
+            .retrieveFunds(draftTransaction: draftTransaction)
+            .last;
+      } catch (_) {}
+    }());
+
+    return invoice;
   }
 }
