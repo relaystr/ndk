@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 
 import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
+import '../data_layer/repositories/wallets/wallets_repo_stub.dart';
 import '../shared/net/user_agent.dart';
 import '../data_layer/data_sources/http_request.dart';
 import '../data_layer/io/file_io_platform.dart';
@@ -198,7 +199,7 @@ class Initialization {
       if (_ndkConfig.cache is WalletsRepo) {
         _ndkConfig.walletsRepo = _ndkConfig.cache as WalletsRepo;
       } else {
-        _ndkConfig.walletsRepo = MemWalletsRepo();
+        _ndkConfig.walletsRepo = StubWalletsRepo();
       }
     }
 
@@ -307,7 +308,7 @@ class Initialization {
 
     wallets = Wallets(
       providers: [cashuProvider, nwcProvider, lnurlProvider],
-      repository: walletsRepo,
+      repository: _ndkConfig.walletsRepo!,
     );
     proofOfWork = ProofOfWork();
 
