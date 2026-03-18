@@ -608,6 +608,9 @@ class MemCacheManager implements CacheManager {
     contactLists.clear();
     metadatas.clear();
     nip05s.clear();
+    cashuKeysets.clear();
+    cashuProofs.clear();
+    cashuMintInfos.clear();
     nip05sByIdentifier.clear();
     filterFetchedRangeRecords.clear();
   }
