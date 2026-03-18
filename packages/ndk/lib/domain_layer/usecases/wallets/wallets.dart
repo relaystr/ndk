@@ -54,6 +54,8 @@ class Wallets {
 
   /// stream subscriptions for cleanup
   final Map<String, List<StreamSubscription>> _subscriptions = {};
+  late final Future<void> _initializationFuture;
+  bool _isDisposed = false;
 
   Wallets({
     required List<WalletProvider> providers,
@@ -61,7 +63,7 @@ class Wallets {
     this.latestTransactionCount = 10,
   })  : _providers = {for (final p in providers) p.type: p},
         _repository = repository {
-    _initialize();
+    _initializationFuture = _initialize();
   }
 
   /// public-facing stream of combined balances, grouped by currency.
@@ -114,29 +116,15 @@ class Wallets {
   }
 
   Future<void> _initialize() async {
+    if (_isDisposed) {
+      return;
+    }
+
     // Load wallets from repository
     final wallets = await _repository.getWallets();
 
     for (final wallet in wallets) {
       await _addWalletToMemory(wallet);
-      // Initialize wallet with its provider
-      final provider = _providers[wallet.type];
-      if (provider != null) {
-        final updatedWallet = await provider.initialize(wallet);
-        if (updatedWallet != null) {
-          // Replace old wallet with updated one while preserving order
-          final list = _wallets.toList();
-          final existingIndex = list.indexWhere((w) => w.id == wallet.id);
-          if (existingIndex >= 0) {
-            list[existingIndex] = updatedWallet;
-            _wallets.clear();
-            _wallets.addAll(list);
-            _walletsSubject.add(list);
-          }
-          // Also update in repository (addWallet handles updates too)
-          await _repository.storeWallet(updatedWallet);
-        }
-      }
     }
 
     // Listen to discovered wallets from all providers
@@ -150,6 +138,10 @@ class Wallets {
     //   }
     // });
 
+    if (_isDisposed) {
+      return;
+    }
+
     _updateCombinedStreams();
   }
 
@@ -157,19 +149,25 @@ class Wallets {
     // combine all wallet balances
     final allBalances =
         _walletsBalances.values.expand((balances) => balances).toList();
-    _combinedBalancesSubject.add(allBalances);
+    if (!_combinedBalancesSubject.isClosed) {
+      _combinedBalancesSubject.add(allBalances);
+    }
 
     // combine all pending transactions
     final allPending = _walletsPendingTransactions.values
         .expand((transactions) => transactions)
         .toList();
-    _combinedPendingTransactionsSubject.add(allPending);
+    if (!_combinedPendingTransactionsSubject.isClosed) {
+      _combinedPendingTransactionsSubject.add(allPending);
+    }
 
     // combine all recent transactions
     final allRecent = _walletsRecentTransactions.values
         .expand((transactions) => transactions)
         .toList();
-    _combinedRecentTransactionsSubject.add(allRecent);
+    if (!_combinedRecentTransactionsSubject.isClosed) {
+      _combinedRecentTransactionsSubject.add(allRecent);
+    }
   }
 
   Future<void> _addWalletToMemory(Wallet wallet) async {
@@ -183,7 +181,7 @@ class Wallets {
     }
     _wallets.clear();
     _wallets.addAll(list);
-    _walletsSubject.add(list);
+    _safeAddWallets(list);
 
     // initialize empty data collections
     _walletsBalances[wallet.id] = [];
@@ -191,8 +189,8 @@ class Wallets {
     _walletsRecentTransactions[wallet.id] = [];
 
     // Initialize transaction streams so combined feeds stay updated.
-    _initPendingTransactionStream(wallet.id);
-    _initRecentTransactionStream(wallet.id);
+    // _initPendingTransactionStream(wallet.id);
+    // _initRecentTransactionStream(wallet.id);
   }
 
   /// Create a new wallet using the appropriate provider
@@ -232,7 +230,7 @@ class Wallets {
           list[existingIndex] = updatedWallet;
           _wallets.clear();
           _wallets.addAll(list);
-          _walletsSubject.add(list);
+          _safeAddWallets(list);
         }
         // Also update in repository (addWallet handles updates too)
         await _repository.storeWallet(updatedWallet);
@@ -284,7 +282,7 @@ class Wallets {
     _subscriptions.remove(walletId);
 
     // update wallets stream with the new list
-    _walletsSubject.add(_wallets.toList());
+    _safeAddWallets(_wallets.toList());
 
     _updateCombinedStreams();
 
@@ -492,11 +490,12 @@ class Wallets {
   /// Send payment
   Future<PayInvoiceResponse> send(
       {String? walletId, required String invoice}) async {
+    await _initializationFuture;
     walletId ??= _repository.getDefaultWalletIdForSending();
     if (walletId == null) {
       throw StateError('No default wallet set');
     }
-    final wallet = await _repository.getWallet(walletId);
+    final wallet = await _getWalletForOperation(walletId);
     final provider = _providers[wallet.type];
     if (provider == null) {
       throw ArgumentError('No provider for wallet type: ${wallet.type}');
@@ -507,16 +506,29 @@ class Wallets {
   /// Create a Lightning invoice to receive funds
   /// Returns the invoice string
   Future<String> receive({String? walletId, required int amountSats}) async {
+    await _initializationFuture;
     walletId ??= _repository.getDefaultWalletIdForReceiving();
     if (walletId == null) {
       throw StateError('No default wallet set');
     }
-    final wallet = await _repository.getWallet(walletId);
+    final wallet = await _getWalletForOperation(walletId);
     final provider = _providers[wallet.type];
     if (provider == null) {
       throw ArgumentError('No provider for wallet type: ${wallet.type}');
     }
     return provider.receive(wallet, amountSats);
+  }
+
+  Future<Wallet> _getWalletForOperation(String walletId) async {
+    final inMemory =
+        _wallets.firstWhereOrNull((wallet) => wallet.id == walletId);
+    if (inMemory != null) {
+      return inMemory;
+    }
+
+    final stored = await _repository.getWallet(walletId);
+    await _addWalletToMemory(stored);
+    return stored;
   }
 
   /// todo: implement zap
@@ -529,6 +541,14 @@ class Wallets {
   }
 
   Future<void> dispose() async {
+    _isDisposed = true;
+
+    try {
+      await _initializationFuture;
+    } catch (_) {
+      // Ignore initialization errors during dispose.
+    }
+
     final futures = <Future>[];
 
     _walletsUsecaseSubscription?.cancel();
@@ -575,5 +595,12 @@ class Wallets {
     _walletPendingTransactionStreams.clear();
     _walletRecentTransactionStreams.clear();
     _subscriptions.clear();
+  }
+
+  void _safeAddWallets(List<Wallet> wallets) {
+    if (_walletsSubject.isClosed) {
+      return;
+    }
+    _walletsSubject.add(wallets);
   }
 }
