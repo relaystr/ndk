@@ -173,6 +173,7 @@ class Ndk {
       _initialization.requests.closeAllSubscription(),
       _initialization.relayManager.closeAllTransports(),
       _initialization.requests.closeAllSubscription(),
+      wallets.dispose(),
       accounts.dispose(),
     ];
 
