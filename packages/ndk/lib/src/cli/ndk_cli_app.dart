@@ -85,7 +85,7 @@ class NdkCliApp {
       NdkConfig(
         cache: MemCacheManager(),
         walletsRepo: walletsRepo,
-        eventVerifier: Bip340EventVerifier(),
+        eventVerifier: RustEventVerifier(),
         bootstrapRelays: const [],
         logLevel: LogLevel.error,
       ),

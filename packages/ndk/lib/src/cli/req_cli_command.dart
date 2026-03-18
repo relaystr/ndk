@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/helpers/relay_helper.dart';
 
@@ -18,7 +19,7 @@ class ReqCliCommand implements CliCommand {
       'ndk req [-k <kind>] [-l <limit>] [-t <seconds>] <relay1> [relay2 ...]';
 
   @override
-  Future<int> run(List<String> args, Ndk ndk) async {
+  Future<int> run(List<String> args, Ndk ndk, WalletsRepo walletsRepo) async {
     if (_isHelp(args)) {
       _printUsage();
       return 0;
