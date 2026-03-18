@@ -1,3 +1,8 @@
+## 0.7.2-dev.1
+
+ - **FIX**: cleanup.
+ - **FEAT**: cli.
+
 ## 0.7.2-dev.0
 
  - **FEAT**: paginated requests.
