@@ -18,17 +18,15 @@ import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_key_derivation.dart';
 import '../../repositories/cashu_repo.dart';
-
 import '../../repositories/wallets_repo.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
+import 'cashu_proof_select.dart';
 import 'cashu_restore.dart';
-
 import 'cashu_seed.dart';
 import 'cashu_token_encoder.dart';
 import 'cashu_tools.dart';
-import 'cashu_proof_select.dart';
 
 class Cashu {
   final CashuRepo _cashuRepo;
@@ -61,7 +59,7 @@ class Cashu {
       cashuRepo: _cashuRepo,
       cashuSeedSecretGenerator: _cashuKeyDerivation,
     );
-    _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager, walletRepo: _walletsRepo);
+    _cacheManagerCashu = CashuCacheDecorator(cacheManager: _cacheManager);
 
     _cashuSeed = CashuSeed(
       userSeedPhrase: cashuUserSeedphrase,
@@ -356,7 +354,7 @@ class Cashu {
   Future<List<CashuWalletTransaction>> _getLatestTransactionsDb({
     int limit = 50,
   }) async {
-    final transactions = await _cacheManagerCashu.getTransactions(
+    final transactions = await _walletsRepo.getTransactions(
       limit: limit,
     );
 
@@ -370,7 +368,7 @@ class Cashu {
   }
 
   Future<List<CashuWalletTransaction>> _getPendingTransactionsDb() async {
-    final transactions = await _cacheManagerCashu.getTransactions(
+    final transactions = await _walletsRepo.getTransactions(
       limit: 20,
     );
 
@@ -485,7 +483,7 @@ class Cashu {
     await _addAndSavePendingTransaction(draftTransaction);
 
     // save draft transaction to cache
-    await _cacheManagerCashu.saveTransactions(transactions: [draftTransaction]);
+    await _walletsRepo.saveTransactions([draftTransaction]);
 
     return draftTransaction;
   }
@@ -524,8 +522,8 @@ class Cashu {
     await _addAndSavePendingTransaction(pendingTransaction);
 
     // save pending state to cache
-    await _cacheManagerCashu
-        .saveTransactions(transactions: [pendingTransaction]);
+    await _walletsRepo
+        .saveTransactions([pendingTransaction]);
 
     yield pendingTransaction;
 
@@ -635,8 +633,8 @@ class Cashu {
     _removePendingTransaction(completedTransaction);
 
     // save completed transaction
-    await _cacheManagerCashu
-        .saveTransactions(transactions: [completedTransaction]);
+    await _walletsRepo
+        .saveTransactions([completedTransaction]);
 
     // add to latest transactions
     _latestTransactions.add(completedTransaction);
@@ -1340,7 +1338,7 @@ class Cashu {
     _pendingTransactions.add(transaction);
     _pendingTransactionsSubject?.add(_pendingTransactions.toList());
     // save pending transaction to cache
-    await _cacheManagerCashu.saveTransactions(transactions: [transaction]);
+    await _walletsRepo.saveTransactions([transaction]);
   }
 
   void _removePendingTransaction(
@@ -1355,7 +1353,7 @@ class Cashu {
   ) async {
     _latestTransactions.add(transaction);
     _latestTransactionsSubject?.add(_latestTransactions);
-    await _cacheManagerCashu.saveTransactions(transactions: [transaction]);
+    await _walletsRepo.saveTransactions([transaction]);
   }
 }
 

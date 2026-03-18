@@ -5,7 +5,6 @@ import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_quote.dart';
-import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/domain_layer/usecases/cashu/cashu_keypair.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
@@ -372,8 +371,8 @@ void main() {
           .initiateSpend(mintUrl: devMintUrl, amount: 32, unit: "sat");
 
       final spend200Token = spend200.token.toV4TokenString();
-      final spend19Token = spend19.token.toV4TokenString();
-      final spend31Token = spend31.token.toV4TokenString();
+      // final spend19Token = spend19.token.toV4TokenString();
+      // final spend31Token = spend31.token.toV4TokenString();
 
       final allBalancesSpend = await ndk.cashu.getBalances();
       final balanceForMintSpend =

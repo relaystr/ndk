@@ -1,19 +1,8 @@
 import 'dart:core';
 
-import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
-import '../../../domain_layer/entities/cashu/cashu_mint_info.dart';
-import '../../../domain_layer/entities/cashu/cashu_proof.dart';
-import '../../../domain_layer/entities/contact_list.dart';
-import '../../../domain_layer/entities/filter_fetched_ranges.dart';
-import '../../../domain_layer/entities/nip_01_event.dart';
-import '../../../domain_layer/entities/nip_05.dart';
-import '../../../domain_layer/entities/relay_set.dart';
-import '../../../domain_layer/entities/user_relay_list.dart';
-import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/entities/wallet/wallet_transaction.dart';
 import '../../../domain_layer/entities/wallet/wallet_type.dart';
-import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../domain_layer/repositories/wallets_repo.dart';
 
 /// In memory database implementation

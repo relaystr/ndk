@@ -1,5 +1,4 @@
 import 'package:http/http.dart' as http;
-import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
 
 import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import '../data_layer/repositories/wallets/wallets_repo_stub.dart';
