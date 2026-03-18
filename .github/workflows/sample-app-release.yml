@@ -8,10 +8,10 @@ on:
     branches: [ master ]
 
 env:
-  FLUTTER_VERSION: "3.32.0"
+  FLUTTER_VERSION: "3.41.4"
   JAVA_VERSION: "17"
   FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
-  RUST_VERSION: "1.76"
+  RUST_VERSION: "1.93"
 
 jobs:
   build_android:

@@ -1,3 +1,12 @@
+## 0.7.2-dev.2
+
+ - **FIX**: min sdk 3.6 for hooks.
+
+## 0.7.2-dev.1
+
+ - **FIX**: cleanup.
+ - **FEAT**: cli.
+
 ## 0.7.2-dev.0
 
  - **FEAT**: paginated requests.

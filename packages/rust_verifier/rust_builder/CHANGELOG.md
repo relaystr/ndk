@@ -1,3 +1,8 @@
+## 0.1.7-dev.1
+
+ - **PERF**: use secp256k1.
+ - **FIX**: remove hex package depandance.
+
 ## 0.1.7-dev.0+2
 
  - **PERF**: use secp256k1.
