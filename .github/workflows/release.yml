@@ -14,6 +14,51 @@ env:
   RUST_VERSION: "1.93"
 
 jobs:
+  build_cli:
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            binary_name: ndk
+            asset_name: ndk-${{ github.ref_name }}-linux-x64
+            content_type: application/octet-stream
+          - os: macos-latest
+            binary_name: ndk
+            asset_name: ndk-${{ github.ref_name }}-macos-x64
+            content_type: application/octet-stream
+          - os: windows-latest
+            binary_name: ndk.exe
+            asset_name: ndk-${{ github.ref_name }}-windows-x64.exe
+            content_type: application/vnd.microsoft.portable-executable
+    defaults:
+      run:
+        working-directory: ./packages/ndk
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Build CLI executable
+        run: dart build cli
+
+      - name: Upload CLI executable to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: packages/ndk/build/bin/${{ matrix.binary_name }}
+          asset_name: ${{ matrix.asset_name }}
+          asset_content_type: ${{ matrix.content_type }}
+
   build_android:
     needs: release
     runs-on: ubuntu-latest
@@ -229,7 +274,7 @@ jobs:
           prerelease: ${{ contains(github.ref, '-dev') }}
 
   publish-release:
-    needs: [release,build_android]
+    needs: [release,build_android,build_cli]
     runs-on: ubuntu-latest
 
     steps:
