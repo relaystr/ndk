@@ -67,6 +67,26 @@ jobs:
         run: |
           tar -czf "build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
 
+      - name: Build Linux DEB package
+        if: matrix.target == 'linux_x64'
+        run: |
+          deb_root="build/deb-root"
+          rm -rf "$deb_root"
+          mkdir -p "$deb_root/DEBIAN" "$deb_root/usr/lib/ndk" "$deb_root/usr/bin"
+          cp -R "build/cli/${{ matrix.target }}/bundle/." "$deb_root/usr/lib/ndk/"
+          ln -s ../lib/ndk/bin/ndk "$deb_root/usr/bin/ndk"
+          cat > "$deb_root/DEBIAN/control" <<'EOF'
+          Package: ndk
+          Version: 0.0.0~${{ github.run_number }}
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: relaystr <opensource@relaystr.com>
+          Depends: libc6 (>= 2.27)
+          Description: Nostr Development Kit command line interface
+          EOF
+          dpkg-deb --build "$deb_root" "build/ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb"
+
       - name: Upload CLI executable to release
         uses: actions/upload-release-asset@v1
         env:
@@ -76,6 +96,17 @@ jobs:
           asset_path: packages/ndk/build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
           asset_name: ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
           asset_content_type: ${{ matrix.content_type }}
+
+      - name: Upload Linux DEB to release
+        if: matrix.target == 'linux_x64'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: packages/ndk/build/ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb
+          asset_name: ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb
+          asset_content_type: application/vnd.debian.binary-package
 
 #  build_android:
 #    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
