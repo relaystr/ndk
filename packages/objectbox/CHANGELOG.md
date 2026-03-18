@@ -1,3 +1,17 @@
+## 0.2.8-dev.3
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
 ## 0.2.8-dev.2
 
  - **REFACTOR**: rename rawContent to content.

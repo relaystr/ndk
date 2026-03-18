@@ -15,6 +15,60 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`drift_cache_manager` - `v0.0.2-dev.3`](#drift_cache_manager---v002-dev3)
+ - [`ndk_flutter` - `v0.0.2-dev.5`](#ndk_flutter---v002-dev5)
+ - [`ndk_objectbox` - `v0.2.8-dev.3`](#ndk_objectbox---v028-dev3)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.4`](#ndk_rust_verifier---v050-dev4)
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.3`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `ndk_flutter` - `v0.0.2-dev.5`
+
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_objectbox` - `v0.2.8-dev.3`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.4`
+
+ - **PERF**: use secp256k1.
+
+
+## 2026-03-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`drift_cache_manager` - `v0.0.2-dev.2`](#drift_cache_manager---v002-dev2)
  - [`ndk` - `v0.7.2-dev.2`](#ndk---v072-dev2)
  - [`ndk_flutter` - `v0.0.2-dev.4`](#ndk_flutter---v002-dev4)
