@@ -22,14 +22,17 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
+            target: linux_x64
             binary_name: ndk
             asset_name: ndk-${{ github.ref_name }}-linux-x64
             content_type: application/octet-stream
           - os: macos-latest
+            target: macos_x64
             binary_name: ndk
             asset_name: ndk-${{ github.ref_name }}-macos-x64
             content_type: application/octet-stream
           - os: windows-latest
+            target: windows_x64
             binary_name: ndk.exe
             asset_name: ndk-${{ github.ref_name }}-windows-x64.exe
             content_type: application/vnd.microsoft.portable-executable
@@ -55,7 +58,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/bin/${{ matrix.binary_name }}
+          asset_path: packages/ndk/build/cli/${{ matrix.target }}/bundle/bin/${{ matrix.binary_name }}
           asset_name: ${{ matrix.asset_name }}
           asset_content_type: ${{ matrix.content_type }}
 
