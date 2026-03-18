@@ -185,7 +185,7 @@ class JitEngine with Logger implements NetworkEngine {
 
       if (specificRelays != null) {
         final cleanedSpecificRelays = cleanRelayUrls(specificRelays.toList());
-        return RelayJitBroadcastSpecificRelaysStrategy.broadcast(
+        await RelayJitBroadcastSpecificRelaysStrategy.broadcast(
           specificRelays: cleanedSpecificRelays,
           relayManager: relayManagerLight,
           eventToPublish: workingNostrEvent,
@@ -193,10 +193,14 @@ class JitEngine with Logger implements NetworkEngine {
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
         );
+        if (broadcastState.broadcasts.isEmpty) {
+          broadcastState.networkController.close();
+        }
+        return;
       }
 
       // default publish to own outbox
-      RelayJitBroadcastOutboxStrategy.broadcast(
+      await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: workingNostrEvent,
         connectedRelays: relayManagerLight.connectedRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
@@ -209,7 +213,7 @@ class JitEngine with Logger implements NetworkEngine {
       // check if we need to publish to others inboxes
       if (workingNostrEvent.pTags.isNotEmpty &&
           workingNostrEvent.kind != ContactList.kKind) {
-        RelayJitBroadcastOtherReadStrategy.broadcast(
+        await RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: workingNostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
@@ -218,6 +222,9 @@ class JitEngine with Logger implements NetworkEngine {
           relayManager: relayManagerLight,
           pubkeysOfInbox: workingNostrEvent.pTags,
         );
+      }
+      if (broadcastState.broadcasts.isEmpty) {
+        broadcastState.networkController.close();
       }
     }
 

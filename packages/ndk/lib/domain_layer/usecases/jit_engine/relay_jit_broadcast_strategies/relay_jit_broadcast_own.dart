@@ -67,25 +67,22 @@ class RelayJitBroadcastOutboxStrategy {
         );
         continue;
       }
-      relayManager
-          .connectRelay(
+      final success = await relayManager.connectRelay(
         dirtyUrl: relayUrl,
         connectionSource: ConnectionSource.broadcastOwn,
-      )
-          .then((success) {
-        if (!success.first) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "connection failed",
-          );
-          return;
-        }
-        final relay = relayManager.connectedRelays
-            .firstWhere((element) => element.url == relayUrl);
+      );
+      if (!success.first) {
+        relayManager.failBroadcast(
+          eventToPublish.id,
+          relayUrl,
+          "connection failed",
+        );
+        continue;
+      }
+      final relay = relayManager.connectedRelays
+          .firstWhere((element) => element.url == relayUrl);
 
-        sendToRelay(relay: relay);
-      });
+      sendToRelay(relay: relay);
     }
   }
 }

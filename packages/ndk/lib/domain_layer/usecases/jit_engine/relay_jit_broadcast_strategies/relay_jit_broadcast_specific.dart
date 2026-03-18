@@ -49,32 +49,29 @@ class RelayJitBroadcastSpecificRelaysStrategy {
         continue;
       }
 
-      relayManager
-          .reconnectRelay(
+      final success = await relayManager.reconnectRelay(
         relayUrl,
         connectionSource: ConnectionSource.broadcastSpecific,
-      )
-          .then((success) {
-        if (!success) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "connection failed",
-          );
-          return;
-        }
-        try {
-          final relay = relayManager.connectedRelays
-              .firstWhere((element) => element.url == relayUrl);
-          sendToRelay(relay: relay);
-        } catch (e) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "relay not found after connection",
-          );
-        }
-      });
+      );
+      if (!success) {
+        relayManager.failBroadcast(
+          eventToPublish.id,
+          relayUrl,
+          "connection failed",
+        );
+        continue;
+      }
+      try {
+        final relay = relayManager.connectedRelays
+            .firstWhere((element) => element.url == relayUrl);
+        sendToRelay(relay: relay);
+      } catch (e) {
+        relayManager.failBroadcast(
+          eventToPublish.id,
+          relayUrl,
+          "relay not found after connection",
+        );
+      }
     }
   }
 }

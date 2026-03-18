@@ -46,8 +46,8 @@ class BroadcastState {
   Nip01Event? event;
 
   /// stream controller for state updates
-  final BehaviorSubject<BroadcastState> _stateUpdatesController =
-      BehaviorSubject<BroadcastState>();
+  final ReplaySubject<BroadcastState> _stateUpdatesController =
+      ReplaySubject<BroadcastState>(maxSize: 1);
 
   /// [networkController] used by relay manger to write responses
   StreamController<RelayBroadcastResponse> networkController =
@@ -65,11 +65,16 @@ class BroadcastState {
   /// completes when all relays have responded or timed out
   /// first string is the relay url, second is the response
   bool get publishDone {
+    // If no relays were registered and the engine closed the controller, it's done
+    if (broadcasts.isEmpty) {
+      return networkController.isClosed;
+    }
+
     // Check if all relays have responded (success or failure)
     final allResponded = broadcasts.values.every(
       (element) => element.okReceived || element.msg.isNotEmpty,
     );
-    if (allResponded && broadcasts.isNotEmpty) {
+    if (allResponded) {
       return true;
     }
 
@@ -98,6 +103,8 @@ class BroadcastState {
       _stateUpdatesController.add(this);
       // check if all relays responded
       _checkBroadcastDone();
+    }, onDone: () {
+      _checkBroadcastDone();
     });
 
     Future.delayed(timeout, () {
@@ -110,6 +117,7 @@ class BroadcastState {
 
   void _checkBroadcastDone() {
     if (publishDone) {
+      _stateUpdatesController.add(this);
       _dispose();
     }
   }
