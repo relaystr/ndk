@@ -25,10 +25,6 @@ jobs:
             target: linux_x64
             platform_name: linux-x64
             content_type: application/gzip
-          - os: macos-13
-            target: macos_x64
-            platform_name: macos-x64
-            content_type: application/gzip
           - os: macos-latest
             target: macos_arm64
             platform_name: macos-arm64
