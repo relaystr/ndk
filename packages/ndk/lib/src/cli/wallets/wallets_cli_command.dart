@@ -12,10 +12,12 @@ class WalletsCliCommand implements CliCommand {
   String get name => 'wallets';
 
   @override
-  String get description => 'Wallet operations (list, add, remove, receive)';
+  String get description =>
+      'Wallet operations (list, add, remove, receive, send, balance, budget)';
 
   @override
-  String get usage => 'wallets <list|add|remove|receive> [args]';
+  String get usage =>
+      'wallets <list|add|remove|receive|send|balance|budget> [args]';
 
   @override
   Future<int> run(List<String> args, Ndk ndk, WalletsRepo walletsRepo) async {
@@ -46,6 +48,21 @@ class WalletsCliCommand implements CliCommand {
 
       if (subCommand == 'receive') {
         await _handleReceive(subArgs, walletsUsecase);
+        return 0;
+      }
+
+      if (subCommand == 'send') {
+        await _handleSend(subArgs, walletsUsecase);
+        return 0;
+      }
+
+      if (subCommand == 'balance') {
+        await _handleBalance(subArgs, walletsRepo, walletsUsecase);
+        return 0;
+      }
+
+      if (subCommand == 'budget') {
+        await _handleBudget(subArgs, walletsRepo, walletsUsecase, ndk);
         return 0;
       }
 
@@ -155,6 +172,134 @@ class WalletsCliCommand implements CliCommand {
     stdout.writeln(invoice);
   }
 
+  Future<void> _handleSend(
+    List<String> args,
+    Wallets walletsUsecase,
+  ) async {
+    if (args.isEmpty || args.length > 2) {
+      stderr.writeln('Usage: ndk wallets send <bolt11> [walletId]');
+      throw ArgumentError('Invalid arguments for wallets send');
+    }
+
+    final invoice = args[0].trim();
+    if (invoice.isEmpty) {
+      throw ArgumentError('bolt11 invoice must not be empty');
+    }
+
+    final walletId = args.length == 2 ? args[1] : null;
+    final response = await walletsUsecase.send(
+      walletId: walletId,
+      invoice: invoice,
+    );
+
+    stdout.writeln('Payment sent:');
+    stdout.writeln('- preimage: ${response.preimage}');
+    stdout.writeln('- fees paid: ${response.feesPaid} msats');
+    if (response.errorCode != null || response.errorMessage != null) {
+      stdout.writeln('- error code: ${response.errorCode}');
+      stdout.writeln('- error message: ${response.errorMessage}');
+    }
+  }
+
+  Future<void> _handleBalance(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+  ) async {
+    if (args.length > 1) {
+      stderr.writeln('Usage: ndk wallets balance [walletId]');
+      throw ArgumentError('Invalid arguments for wallets balance');
+    }
+
+    final wallets = await walletsRepo.getWallets();
+    if (wallets.isEmpty) {
+      throw StateError('No wallets available');
+    }
+
+    String walletId;
+    if (args.isNotEmpty) {
+      walletId = args[0];
+      final exists = wallets.any((wallet) => wallet.id == walletId);
+      if (!exists) {
+        throw ArgumentError('Wallet not found: $walletId');
+      }
+    } else {
+      walletId =
+          walletsUsecase.defaultWalletForReceiving?.id ?? wallets.first.id;
+    }
+
+    final balances = await walletsUsecase
+        .getBalancesStream(walletId)
+        .first
+        .timeout(const Duration(seconds: 12));
+
+    if (balances.isEmpty) {
+      stdout.writeln('No balances available for wallet: $walletId');
+      return;
+    }
+
+    stdout.writeln('Balances for $walletId:');
+    for (final balance in balances) {
+      stdout.writeln('- ${balance.amount} ${balance.unit}');
+    }
+  }
+
+  Future<void> _handleBudget(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+    Ndk ndk,
+  ) async {
+    if (args.length > 1) {
+      stderr.writeln('Usage: ndk wallets budget [walletId]');
+      throw ArgumentError('Invalid arguments for wallets budget');
+    }
+
+    final wallets = await walletsRepo.getWallets();
+    if (wallets.isEmpty) {
+      throw StateError('No wallets available');
+    }
+
+    final walletId = args.isNotEmpty
+        ? args[0]
+        : (walletsUsecase.defaultWalletForReceiving?.id ?? wallets.first.id);
+
+    final wallet = wallets.firstWhere(
+      (w) => w.id == walletId,
+      orElse: () => throw ArgumentError('Wallet not found: $walletId'),
+    );
+
+    if (wallet.type != WalletType.NWC) {
+      throw ArgumentError(
+        'Budget is only supported for NWC wallets (got ${wallet.type.value})',
+      );
+    }
+
+    final nwcUrl = wallet.metadata['nwcUrl'] as String?;
+    if (nwcUrl == null || nwcUrl.isEmpty) {
+      throw StateError('NWC wallet is missing metadata["nwcUrl"]');
+    }
+
+    final connection = await ndk.nwc.connect(nwcUrl, doGetInfoMethod: false);
+    try {
+      final budget = await ndk.nwc.getBudget(connection);
+      final remainingSats = budget.totalBudgetSats - budget.userBudgetSats;
+
+      stdout.writeln('Budget for ${wallet.id}:');
+      stdout.writeln('- used: ${budget.userBudgetSats} sats');
+      stdout.writeln('- total: ${budget.totalBudgetSats} sats');
+      stdout.writeln('- remaining: $remainingSats sats');
+      stdout.writeln('- renewal period: ${budget.renewalPeriod.plaintext}');
+      if (budget.renewsAt != null) {
+        final renewsAt =
+            DateTime.fromMillisecondsSinceEpoch(budget.renewsAt! * 1000);
+        stdout.writeln('- renews at: ${renewsAt.toIso8601String()}');
+      }
+    } finally {
+      await ndk.nwc.disconnect(connection);
+    }
+  }
+
   void _printWallets(List<Wallet> wallets, Wallets walletsUsecase) {
     stdout.writeln('');
     if (wallets.isEmpty) {
@@ -180,7 +325,9 @@ class WalletsCliCommand implements CliCommand {
       final units = wallet.supportedUnits.join(',');
       stdout.writeln(
         '- id=${wallet.id} name=${wallet.name} type=${wallet.type.value} '
-        'units=$units canSend=${wallet.canSend} canReceive=${wallet.canReceive}$flagsSuffix',
+        'units=$units '
+        // 'canSend=${wallet.canSend} canReceive=${wallet.canReceive}'
+        '$flagsSuffix',
       );
     }
     stdout.writeln('');
@@ -196,6 +343,9 @@ class WalletsCliCommand implements CliCommand {
     out.writeln('  add nwc <NWC_URI> [name]');
     out.writeln('  remove <walletId>');
     out.writeln('  receive <amountSats> [walletId]');
+    out.writeln('  send <bolt11> [walletId]');
+    out.writeln('  balance [walletId]');
+    out.writeln('  budget [walletId]');
     out.writeln('');
     out.writeln('Examples:');
     out.writeln('  ndk wallets list');
@@ -203,6 +353,12 @@ class WalletsCliCommand implements CliCommand {
     out.writeln('  ndk wallets remove wallet_123');
     out.writeln('  ndk wallets receive 1000');
     out.writeln('  ndk wallets receive 1000 wallet_123');
+    out.writeln('  ndk wallets send "lnbc1..."');
+    out.writeln('  ndk wallets send "lnbc1..." wallet_123');
+    out.writeln('  ndk wallets balance');
+    out.writeln('  ndk wallets balance wallet_123');
+    out.writeln('  ndk wallets budget');
+    out.writeln('  ndk wallets budget wallet_123');
   }
 
   bool _isHelp(String value) {
