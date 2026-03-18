@@ -137,7 +137,7 @@ class ReqCliCommand implements CliCommand {
     }
 
     if (relays.isEmpty) {
-      return _ReqArgsParseResult(error: 'At least one relay URL is required');
+      return _ReqArgsParseResult(error: 'At least one relay URL is required.');
     }
 
     return _ReqArgsParseResult(
