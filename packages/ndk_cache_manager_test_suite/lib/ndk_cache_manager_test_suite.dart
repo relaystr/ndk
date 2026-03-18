@@ -22,20 +22,14 @@
 /// ```
 library;
 
+import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
 
-import 'package:ndk/domain_layer/entities/contact_list.dart';
-import 'package:ndk/domain_layer/entities/metadata.dart';
-import 'package:ndk/domain_layer/entities/nip_01_event.dart';
-import 'package:ndk/domain_layer/entities/nip_05.dart';
-import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
-import 'package:ndk/domain_layer/entities/read_write.dart';
-import 'package:ndk/domain_layer/entities/read_write_marker.dart';
-import 'package:ndk/domain_layer/entities/relay_set.dart';
-import 'package:ndk/domain_layer/entities/user_relay_list.dart';
 import 'package:ndk/domain_layer/repositories/cache_manager.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+
+part 'ndk_cache_manger_test_suite_cashu.dart';
 
 /// A factory function that creates a new [CacheManager] instance for testing.
 typedef CacheManagerFactory = Future<CacheManager> Function();
@@ -112,6 +106,10 @@ void runCacheManagerTestSuite({
 
     group('ClearAll Operations', () {
       _runClearAllTests(() => cacheManager);
+    });
+
+    group('Cashu Operations', () {
+      _runCashuTests(() => cacheManager);
     });
   });
 }
@@ -1338,6 +1336,27 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
     );
     await cacheManager.saveRelaySet(relaySet);
 
+    // Save cashu data
+    final keyset = CahsuKeyset(
+      id: 'clearall_keyset',
+      mintUrl: 'https://clearall.mint.com',
+      unit: 'sat',
+      active: true,
+      inputFeePPK: 0,
+      mintKeyPairs: {},
+    );
+    await cacheManager.saveKeyset(keyset);
+
+    final proof = CashuProof(
+      keysetId: 'clearall_keyset',
+      amount: 100,
+      secret: 'clearall_secret',
+      unblindedSig: 'clearall_sig',
+      state: CashuProofState.unspend,
+    );
+    await cacheManager
+        .saveProofs(proofs: [proof], mintUrl: 'https://clearall.mint.com');
+
     // Verify data exists
     expect(await cacheManager.loadEvent(event.id), isNotNull);
     expect(
@@ -1352,6 +1371,14 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
         await cacheManager.loadRelaySet(
             'clearall_set', 'clearall_relayset_pubkey'),
         isNotNull);
+    expect(
+        (await cacheManager.getKeysets(mintUrl: 'https://clearall.mint.com'))
+            .length,
+        equals(1));
+    expect(
+        (await cacheManager.getProofs(mintUrl: 'https://clearall.mint.com'))
+            .length,
+        equals(1));
 
     // Clear all
     await cacheManager.clearAll();
@@ -1369,5 +1396,13 @@ void _runClearAllTests(CacheManager Function() getCacheManager) {
         await cacheManager.loadRelaySet(
             'clearall_set', 'clearall_relayset_pubkey'),
         isNull);
+    expect(
+        (await cacheManager.getKeysets(mintUrl: 'https://clearall.mint.com'))
+            .length,
+        equals(0));
+    expect(
+        (await cacheManager.getProofs(mintUrl: 'https://clearall.mint.com'))
+            .length,
+        equals(0));
   });
 }

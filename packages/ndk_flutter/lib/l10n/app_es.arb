@@ -27,7 +27,6 @@
   "readOnly": "Solo lectura",
   "nsec": "Nsec",
   "extension": "Extensión",
-
   "userMetadata": "Metadatos de usuario",
   "shortTextNote": "Nota corta",
   "recommendRelay": "Recomendar relay",
@@ -202,5 +201,203 @@
   "starterPacks": "Packs de inicio",
   "mediaStarterPacks": "Packs de medios de inicio",
   "webBookmarks": "Marcadores web",
-  "unknownEventKind": "Tipo de evento {kind}"
+  "unknownEventKind": "Tipo de evento {kind}",
+  "walletsTitle": "Carteras",
+  "recentActivityTitle": "Actividad Reciente",
+  "addCashuWallet": "Agregar Cartera Cashu",
+  "addNwcWallet": "Agregar Cartera NWC",
+  "addLnurlWallet": "Agregar Cartera LNURL",
+  "addCashuTooltip": "Agregar Cartera Cashu",
+  "addNwcTooltip": "Agregar Cartera NWC",
+  "addLnurlTooltip": "Agregar Cartera LNURL",
+  "addCashuWalletTitle": "Agregar Cartera Cashu",
+  "enterMintUrl": "Ingrese la URL del mint para agregar una cartera Cashu.",
+  "mintUrl": "URL del Mint",
+  "mintUrlHint": "https://mint.ejemplo.com",
+  "pleaseEnterMintUrl": "Por favor ingrese una URL del mint",
+  "cashuWalletAdded": "¡Cartera Cashu agregada exitosamente!",
+  "failedToAddMint": "Error al agregar el mint. Por favor verifique la URL e intente de nuevo.",
+  "addNwcWalletTitle": "Agregar Cartera NWC",
+  "faucet": "Grifo",
+  "manual": "Manual",
+  "nwcFaucetDescription": "Cree una cartera de prueba con sats del grifo NWC.",
+  "startingBalance": "Saldo Inicial",
+  "startingBalanceHint": "10000",
+  "nwcConnectionUri": "URI de Conexión NWC",
+  "nwcConnectionUriHint": "nostr+walletconnect://...",
+  "nwcWalletAdded": "¡Cartera NWC agregada exitosamente!",
+  "nwcFaucetWalletAdded": "¡Cartera de grifo NWC agregada con {balance} sats!",
+  "invalidFaucetResponse": "Respuesta inválida del grifo",
+  "errorCreatingWallet": "Error al crear la cartera",
+  "addLnurlWalletTitle": "Agregar Cartera LNURL",
+  "enterLnurlIdentifier": "Ingrese su identificador LNURL (usuario@dominio.com).",
+  "lnurlIdentifierHint": "usuario@ejemplo.com",
+  "pleaseEnterValidIdentifier": "Por favor ingrese un identificador válido (usuario@dominio.com)",
+  "lnurlWalletAdded": "¡Cartera LNURL agregada exitosamente!",
+  "cancel": "Cancelar",
+  "add": "Agregar",
+  "send": "Enviar",
+  "receive": "Recibir",
+  "setAsDefaultForReceiving": "Establecer como predeterminada para recibir",
+  "setAsDefaultForSending": "Establecer como predeterminada para enviar",
+  "defaultForReceiving": "Predeterminada para recibir",
+  "defaultForSending": "Predeterminada para enviar",
+  "defaultWalletForReceivingTooltip": "Esta cartera es la predeterminada para recibir pagos.",
+  "defaultWalletForSendingTooltip": "Esta cartera es la predeterminada para enviar pagos.",
+  "sendOptionsTitle": "Opciones de Envío",
+  "sendByToken": "Enviar por Token",
+  "sendByTokenDescription": "Crear un token Cashu para enviar",
+  "sendByLightning": "Enviar por Lightning",
+  "sendByLightningDescription": "Pagar una factura Lightning",
+  "payInvoiceTitle": "Pagar Factura",
+  "invoice": "Factura",
+  "invoiceHint": "lnbc...",
+  "pleaseEnterInvoice": "Por favor ingrese una factura",
+  "invoicePaid": "¡Factura pagada!",
+  "paymentFailed": "Pago fallido: {message}",
+  "receiveOptionsTitle": "Opciones de Recepción",
+  "receiveByToken": "Recibir por Token",
+  "receiveByTokenDescription": "Recibir un token Cashu",
+  "receiveByLightning": "Recibir por Lightning",
+  "receiveByLightningDescription": "Crear una factura Lightning",
+  "receiveByTokenTitle": "Recibir por Token",
+  "token": "Token",
+  "tokenHint": "Pegue el token aquí...",
+  "pleaseEnterToken": "Por favor ingrese un token",
+  "tokenReceived": "¡Token recibido!",
+  "createInvoiceTitle": "Crear Factura",
+  "amount": "Monto",
+  "amountHint": "100",
+  "pleaseEnterValidAmount": "Por favor ingrese un monto válido",
+  "tokenCopiedToClipboard": "¡Token copiado al portapapeles!",
+  "invoiceCreatedAndCopied": "¡Factura creada y copiada!",
+  "invoiceTrackingTitle": "Factura Lightning",
+  "invoiceCreatedMessage": "¡Factura creada y copiada!",
+  "close": "Cerrar",
+  "copyAgain": "Copiar de Nuevo",
+  "copied": "¡Copiado!",
+  "paymentReceived": "¡Pago recibido!",
+  "waitingForPayment": "Esperando el pago...",
+  "paid": "¡Pagado!",
+  "createToken": "Crear Token",
+  "pay": "Pagar",
+  "create": "Crear",
+  "pendingTransactions": "Pendientes",
+  "recentTransactions": "Transacciones Recientes",
+  "noRecentTransactions": "No hay transacciones recientes",
+  "noWalletsYet": "No hay carteras aún",
+  "noWalletsAvailable": "No hay carteras disponibles",
+  "tapToAddWallet": "Toque + para agregar una",
+  "delete": "Eliminar",
+  "error": "Error: {message}",
+  "unknownWalletType": "Desconocido",
+  "cashuWallet": "Cashu",
+  "nwcWallet": "NWC",
+  "lnurlWallet": "LNURL",
+  "balance": "Saldo",
+  "sats": "sats",
+  "selected": "SELECCIONADA",
+  "receiveOnlyWallet": "Cartera solo para recibir",
+  "receiveRange": "Recibir: {min} - {max} sats",
+  "limitsUnavailable": "Límites no disponibles",
+  "nwcWalletSubtitle": "Cartera NWC",
+  "tokenCopied": "Token copiado",
+  "deleteWalletConfirmation": "¿Eliminar Cartera?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "¿Está seguro de que desea eliminar esta cartera? Esta acción no se puede deshacer.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "Añadir Cartera",
+  "chooseWalletType": "Elegir tipo de cartera",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "Conectar NWC",
+  "chooseNwcMethod": "Elegir método de conexión",
+  "albyGoOption": "Alby Go",
+  "manualOption": "Manual",
+  "faucetOption": "Faucet",
+  "invalidNwcQrCode": "Código QR NWC inválido",
+  "scanNwcQrCodeTitle": "Escanear código QR NWC",
+  "cameraNotAvailable": "Cámara no disponible",
+  "scanNwcInstructions": "Escanee el código QR de su aplicación de billetera NWC",
+  "invalidNwcUri": "URI NWC inválida",
+  "paste": "Pegar",
+  "fromYourProfile": "De tu perfil",
+  "orEnterManually": "O ingresa manualmente:",
+  "budgetUsedOf": "Presupuesto: {used} / {total}",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Se renueva en {days} días",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Diario",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Semanal",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Mensual",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Anual",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Nunca",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Renombrar",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Elegir color",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Eliminar",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Nombre de la cartera",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Ingrese el nombre de la cartera",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Guardar",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Cartera renombrada",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

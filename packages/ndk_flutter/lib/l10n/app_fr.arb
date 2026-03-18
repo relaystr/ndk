@@ -27,7 +27,6 @@
   "readOnly": "Lecture seule",
   "nsec": "Nsec",
   "extension": "Extension",
-
   "userMetadata": "Métadonnées utilisateur",
   "shortTextNote": "Note courte",
   "recommendRelay": "Recommander un relais",
@@ -202,5 +201,203 @@
   "starterPacks": "Packs de démarrage",
   "mediaStarterPacks": "Packs médias de démarrage",
   "webBookmarks": "Favoris web",
-  "unknownEventKind": "Type d'événement {kind}"
+  "unknownEventKind": "Type d'événement {kind}",
+  "walletsTitle": "Portefeuilles",
+  "recentActivityTitle": "Activité Récente",
+  "addCashuWallet": "Ajouter un Portefeuille Cashu",
+  "addNwcWallet": "Ajouter un Portefeuille NWC",
+  "addLnurlWallet": "Ajouter un Portefeuille LNURL",
+  "addCashuTooltip": "Ajouter un Portefeuille Cashu",
+  "addNwcTooltip": "Ajouter un Portefeuille NWC",
+  "addLnurlTooltip": "Ajouter un Portefeuille LNURL",
+  "addCashuWalletTitle": "Ajouter un Portefeuille Cashu",
+  "enterMintUrl": "Entrez l'URL du mint pour ajouter un portefeuille Cashu.",
+  "mintUrl": "URL du Mint",
+  "mintUrlHint": "https://mint.exemple.com",
+  "pleaseEnterMintUrl": "Veuillez entrer une URL du mint",
+  "cashuWalletAdded": "Portefeuille Cashu ajouté avec succès !",
+  "failedToAddMint": "Échec de l'ajout du mint. Veuillez vérifier l'URL et réessayer.",
+  "addNwcWalletTitle": "Ajouter un Portefeuille NWC",
+  "faucet": "Robinet",
+  "manual": "Manuel",
+  "nwcFaucetDescription": "Créez un portefeuille de test avec des sats du robinet NWC.",
+  "startingBalance": "Solde de Départ",
+  "startingBalanceHint": "10000",
+  "nwcConnectionUri": "URI de Connexion NWC",
+  "nwcConnectionUriHint": "nostr+walletconnect://...",
+  "nwcWalletAdded": "Portefeuille NWC ajouté avec succès !",
+  "nwcFaucetWalletAdded": "Portefeuille robinet NWC ajouté avec {balance} sats !",
+  "invalidFaucetResponse": "Réponse invalide du robinet",
+  "errorCreatingWallet": "Erreur lors de la création du portefeuille",
+  "addLnurlWalletTitle": "Ajouter un Portefeuille LNURL",
+  "enterLnurlIdentifier": "Entrez votre identifiant LNURL (utilisateur@domaine.com).",
+  "lnurlIdentifierHint": "utilisateur@exemple.com",
+  "pleaseEnterValidIdentifier": "Veuillez entrer un identifiant valide (utilisateur@domaine.com)",
+  "lnurlWalletAdded": "Portefeuille LNURL ajouté avec succès !",
+  "cancel": "Annuler",
+  "add": "Ajouter",
+  "send": "Envoyer",
+  "receive": "Recevoir",
+  "setAsDefaultForReceiving": "Définir par défaut pour la réception",
+  "setAsDefaultForSending": "Définir par défaut pour l'envoi",
+  "defaultForReceiving": "Par défaut pour la réception",
+  "defaultForSending": "Par défaut pour l'envoi",
+  "defaultWalletForReceivingTooltip": "Ce portefeuille est celui par défaut pour recevoir des paiements.",
+  "defaultWalletForSendingTooltip": "Ce portefeuille est celui par défaut pour envoyer des paiements.",
+  "sendOptionsTitle": "Options d'Envoi",
+  "sendByToken": "Envoyer par Token",
+  "sendByTokenDescription": "Créer un token Cashu à envoyer",
+  "sendByLightning": "Envoyer par Lightning",
+  "sendByLightningDescription": "Payer une facture Lightning",
+  "payInvoiceTitle": "Payer la Facture",
+  "invoice": "Facture",
+  "invoiceHint": "lnbc...",
+  "pleaseEnterInvoice": "Veuillez entrer une facture",
+  "invoicePaid": "Facture payée !",
+  "paymentFailed": "Paiement échoué : {message}",
+  "receiveOptionsTitle": "Options de Réception",
+  "receiveByToken": "Recevoir par Token",
+  "receiveByTokenDescription": "Recevoir un token Cashu",
+  "receiveByLightning": "Recevoir par Lightning",
+  "receiveByLightningDescription": "Créer une facture Lightning",
+  "receiveByTokenTitle": "Recevoir par Token",
+  "token": "Token",
+  "tokenHint": "Collez le token ici...",
+  "pleaseEnterToken": "Veuillez entrer un token",
+  "tokenReceived": "Token reçu !",
+  "createInvoiceTitle": "Créer une Facture",
+  "amount": "Montant",
+  "amountHint": "100",
+  "pleaseEnterValidAmount": "Veuillez entrer un montant valide",
+  "tokenCopiedToClipboard": "Token copié dans le presse-papiers !",
+  "invoiceCreatedAndCopied": "Facture créée et copiée !",
+  "invoiceTrackingTitle": "Facture Lightning",
+  "invoiceCreatedMessage": "Facture créée et copiée !",
+  "close": "Fermer",
+  "copyAgain": "Copier à Nouveau",
+  "copied": "Copié !",
+  "paymentReceived": "Paiement reçu !",
+  "waitingForPayment": "En attente du paiement...",
+  "paid": "Payé !",
+  "createToken": "Créer un Token",
+  "pay": "Payer",
+  "create": "Créer",
+  "pendingTransactions": "En Attente",
+  "recentTransactions": "Transactions Récentes",
+  "noRecentTransactions": "Aucune transaction récente",
+  "noWalletsYet": "Aucun portefeuille encore",
+  "noWalletsAvailable": "Aucun portefeuille disponible",
+  "tapToAddWallet": "Appuyez sur + pour en ajouter un",
+  "delete": "Supprimer",
+  "error": "Erreur : {message}",
+  "unknownWalletType": "Inconnu",
+  "cashuWallet": "Cashu",
+  "nwcWallet": "NWC",
+  "lnurlWallet": "LNURL",
+  "balance": "Solde",
+  "sats": "sats",
+  "selected": "SÉLECTIONNÉ",
+  "receiveOnlyWallet": "Portefeuille uniquement pour recevoir",
+  "receiveRange": "Recevoir : {min} - {max} sats",
+  "limitsUnavailable": "Limites non disponibles",
+  "nwcWalletSubtitle": "Portefeuille NWC",
+  "tokenCopied": "Token copié",
+  "deleteWalletConfirmation": "Supprimer le Portefeuille?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "Êtes-vous sûr de vouloir supprimer ce portefeuille? Cette action ne peut pas être annulée.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "Ajouter un Portefeuille",
+  "chooseWalletType": "Choisir le type de portefeuille",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "Connecter NWC",
+  "chooseNwcMethod": "Choisir la méthode de connexion",
+  "albyGoOption": "Alby Go",
+  "manualOption": "Manuel",
+  "faucetOption": "Faucet",
+  "invalidNwcQrCode": "Code QR NWC invalide",
+  "scanNwcQrCodeTitle": "Scanner le code QR NWC",
+  "cameraNotAvailable": "Caméra non disponible",
+  "scanNwcInstructions": "Scannez le code QR de votre application de portefeuille NWC",
+  "invalidNwcUri": "URI NWC invalide",
+  "paste": "Coller",
+  "fromYourProfile": "De votre profil",
+  "orEnterManually": "Ou saisissez manuellement:",
+  "budgetUsedOf": "Budget : {used} / {total}",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Renouvelle dans {days} jours",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Quotidien",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Hebdomadaire",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Mensuel",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Annuel",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Jamais",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Renommer",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Choisir une couleur",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Supprimer",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Nom du portefeuille",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Saisir le nom du portefeuille",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Enregistrer",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Portefeuille renommé",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

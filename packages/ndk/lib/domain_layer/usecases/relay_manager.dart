@@ -887,7 +887,7 @@ class RelayManager<T> {
 
   void _checkNetworkClose(
       RequestState state, RelayConnectivity relayConnectivity) {
-    /// recived everything, close the network controller
+    /// received everything, close the network controller
     if (state.didAllRequestsFinish) {
       state.networkController.close();
       updateRelayConnectivity();

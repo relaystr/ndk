@@ -33,8 +33,10 @@ class Metadatas extends Table {
   IntColumn get updatedAt => integer().nullable()();
   IntColumn get refreshedTimestamp => integer().nullable()();
   TextColumn get sourcesJson => text()(); // JSON encoded sources
-  TextColumn get tagsJson => text().withDefault(const Constant('[]'))(); // JSON encoded tags
-  TextColumn get rawContentJson => text().nullable()(); // JSON encoded rawContent
+  TextColumn get tagsJson =>
+      text().withDefault(const Constant('[]'))(); // JSON encoded tags
+  TextColumn get rawContentJson =>
+      text().nullable()(); // JSON encoded rawContent
 
   @override
   Set<Column> get primaryKey => {pubKey};
@@ -113,4 +115,103 @@ class FilterFetchedRangeRecords extends Table {
 
   @override
   Set<Column> get primaryKey => {key};
+}
+
+// =====================
+// Cashu Tables
+// =====================
+
+/// Table for storing Cashu proofs
+@DataClassName('DbCashuProof')
+class CashuProofs extends Table {
+  TextColumn get Y => text()(); // Derived public key (unique identifier)
+  TextColumn get keysetId => text()();
+  IntColumn get amount => integer()();
+  TextColumn get secret => text()();
+  TextColumn get unblindedSig => text()();
+  TextColumn get state => text()(); // UNSPENT, PENDING, SPENT
+  TextColumn get mintUrl => text()();
+
+  @override
+  Set<Column> get primaryKey => {Y};
+}
+
+/// Table for storing Cashu keysets
+@DataClassName('DbCashuKeyset')
+class CashuKeysets extends Table {
+  TextColumn get id => text()();
+  TextColumn get mintUrl => text()();
+  TextColumn get unit => text()();
+  BoolColumn get active => boolean()();
+  IntColumn get inputFeePPK => integer()();
+  TextColumn get mintKeyPairsJson => text()(); // JSON encoded key pairs
+  IntColumn get fetchedAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id, mintUrl};
+}
+
+/// Table for storing Cashu mint info
+@DataClassName('DbCashuMintInfo')
+class CashuMintInfos extends Table {
+  TextColumn get id => text()(); // Using first URL as ID
+  TextColumn get urlsJson => text()(); // JSON encoded list of URLs
+  TextColumn get name => text().nullable()();
+  TextColumn get pubkey => text().nullable()();
+  TextColumn get version => text().nullable()();
+  TextColumn get description => text().nullable()();
+  TextColumn get descriptionLong => text().nullable()();
+  TextColumn get contactJson => text()(); // JSON encoded contact list
+  TextColumn get motd => text().nullable()();
+  TextColumn get iconUrl => text().nullable()();
+  IntColumn get time => integer().nullable()();
+  TextColumn get tosUrl => text().nullable()();
+  TextColumn get nutsJson => text()(); // JSON encoded nuts map
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Table for storing Cashu secret counters
+@DataClassName('DbCashuSecretCounter')
+class CashuSecretCounters extends Table {
+  TextColumn get id => text()(); // Composite: mintUrl|keysetId
+  TextColumn get mintUrl => text()();
+  TextColumn get keysetId => text()();
+  IntColumn get counter => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Table for storing wallets
+@DataClassName('DbWallet')
+class Wallets extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get type => text()(); // CASHU, NWC, etc.
+  TextColumn get supportedUnitsJson => text()(); // JSON encoded set
+  TextColumn get metadataJson => text()(); // JSON encoded metadata
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Table for storing wallet transactions
+@DataClassName('DbWalletTransaction')
+class WalletTransactions extends Table {
+  TextColumn get id => text()();
+  TextColumn get walletId => text()();
+  IntColumn get changeAmount => integer()();
+  TextColumn get unit => text()();
+  TextColumn get type => text()(); // CASHU, NWC
+  TextColumn get state =>
+      text()(); // draft, pending, completed, canceled, failed
+  TextColumn get completionMsg => text().nullable()();
+  IntColumn get transactionDate => integer().nullable()();
+  IntColumn get initiatedDate => integer().nullable()();
+  TextColumn get metadataJson => text()(); // JSON encoded metadata
+
+  @override
+  Set<Column> get primaryKey => {id, walletId};
 }

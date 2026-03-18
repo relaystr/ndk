@@ -1,11 +1,10 @@
 import 'package:ndk/domain_layer/repositories/lnurl_transport.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl_response.dart';
 
-import '../../domain_layer/repositories/nip_05_repo.dart';
 import '../../shared/logger/logger.dart';
 import '../data_sources/http_request.dart';
 
-/// implementation of the [Nip05Repository] interface with http
+/// implementation of the [LnurlTransport] interface with http
 class LnurlTransportHttpImpl implements LnurlTransport {
   final HttpRequestDS httpDS;
 

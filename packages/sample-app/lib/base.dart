@@ -102,7 +102,7 @@ class BaseTab extends StatelessWidget {
                           onTap: () {},
                         ),
                         AppSelectorButton(
-                          selectedContent: [AppText.med14('Option 2')],
+                          selectedContent: const [AppText.med14('Option 2')],
                           unselectedContent: [
                             AppText.med14(
                               'Option 2',
@@ -113,7 +113,7 @@ class BaseTab extends StatelessWidget {
                           onTap: () {},
                         ),
                         AppSelectorButton(
-                          selectedContent: [AppText.med14('Option 3')],
+                          selectedContent: const [AppText.med14('Option 3')],
                           unselectedContent: [
                             AppText.med14(
                               'Option 3',
@@ -144,7 +144,7 @@ class BaseTab extends StatelessWidget {
                               theme.icons.characters.bell,
                               color: AppColorsData.dark().white,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('21',
                                 color: AppColorsData.dark().white),
                           ],
@@ -155,7 +155,7 @@ class BaseTab extends StatelessWidget {
                               outlineThickness:
                                   LineThicknessData.normal().medium,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('21', color: theme.colors.white33),
                           ],
                           isSelected: true,
@@ -169,7 +169,7 @@ class BaseTab extends StatelessWidget {
                               outlineThickness:
                                   LineThicknessData.normal().medium,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14(
                               '12',
                               color: AppColorsData.dark().white,
@@ -182,7 +182,7 @@ class BaseTab extends StatelessWidget {
                               outlineThickness:
                                   LineThicknessData.normal().medium,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('12', color: theme.colors.white33),
                           ],
                           isSelected: true,
@@ -194,7 +194,7 @@ class BaseTab extends StatelessWidget {
                               theme.icons.characters.zap,
                               color: AppColorsData.dark().white,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('5',
                                 color: AppColorsData.dark().white),
                           ],
@@ -205,7 +205,7 @@ class BaseTab extends StatelessWidget {
                               outlineThickness:
                                   LineThicknessData.normal().medium,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('5', color: theme.colors.white33),
                           ],
                           isSelected: true,
@@ -219,7 +219,7 @@ class BaseTab extends StatelessWidget {
                               outlineThickness:
                                   LineThicknessData.normal().medium,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('2',
                                 color: AppColorsData.dark().white),
                           ],
@@ -230,7 +230,7 @@ class BaseTab extends StatelessWidget {
                               outlineThickness:
                                   LineThicknessData.normal().medium,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('2', color: theme.colors.white33),
                           ],
                           isSelected: true,
@@ -242,7 +242,7 @@ class BaseTab extends StatelessWidget {
                               theme.icons.characters.emojiFill,
                               color: AppColorsData.dark().white,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('2',
                                 color: AppColorsData.dark().white),
                           ],
@@ -253,7 +253,7 @@ class BaseTab extends StatelessWidget {
                               outlineThickness:
                                   LineThicknessData.normal().medium,
                             ),
-                            AppGap.s8(),
+                            const AppGap.s8(),
                             AppText.med14('2', color: theme.colors.white33),
                           ],
                           isSelected: true,
@@ -698,7 +698,7 @@ class BaseTab extends StatelessWidget {
                     description:
                         'This is a code block widget that can be used to display code in a readable format.',
                     children: [
-                      const AppCodeBlock(
+                      AppCodeBlock(
                         code: r'''{     
   kind: 7375,     
   content: "Thanks for the coffee",

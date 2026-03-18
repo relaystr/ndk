@@ -85,6 +85,8 @@ class BroadcastState {
   Future<BroadcastState> get publishDoneFuture => _stateUpdatesController.last;
 
   late final StreamSubscription _networkSubscription;
+  Timer? _timeoutTimer;
+  bool _isDisposed = false;
 
   /// creates a new [BroadcastState] instance
   BroadcastState({
@@ -100,7 +102,7 @@ class BroadcastState {
       _checkBroadcastDone();
     });
 
-    Future.delayed(timeout, () {
+    _timeoutTimer = Timer(timeout, () {
       if (!publishDone) {
         _stateUpdatesController.add(this);
         _dispose();
@@ -116,6 +118,11 @@ class BroadcastState {
 
   /// dispose of the broadcast state => close all streams
   void _dispose() {
+    if (_isDisposed) {
+      return;
+    }
+    _isDisposed = true;
+    _timeoutTimer?.cancel();
     _networkSubscription.cancel();
     _stateUpdatesController.close();
     networkController.close();

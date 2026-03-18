@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:rxdart/rxdart.dart';
@@ -39,7 +38,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       return throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body},Link: $url");
     }
     return jsonDecode(response.body);
   }
@@ -57,12 +56,13 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
 
     return response;
   }
 
+  ///
   /// Upload data using streaming to avoid loading entire file into memory
   /// Returns a stream of [UploadProgress] that emits progress updates and completes when upload is done
   /// Uses BehaviorSubject so new listeners get the latest progress immediately
@@ -143,7 +143,9 @@ class HttpRequestDS {
 
   Future<http.Response> post({
     required Uri url,
-    required Uint8List body,
+
+    /// String, Uint8List
+    required Object body,
     required headers,
   }) async {
     http.Response response = await _client.post(
@@ -154,7 +156,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url,  ");
     }
 
     return response;
@@ -171,7 +173,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
 
     return response;
@@ -188,7 +190,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
 
     return response;
@@ -226,7 +228,7 @@ class HttpRequestDS {
 
     if (response.statusCode != 200) {
       throw Exception(
-          "error fetching STATUS: ${response.statusCode}, Link: $url");
+          "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
 
     return response;

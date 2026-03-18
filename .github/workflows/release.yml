@@ -14,6 +14,94 @@ env:
   RUST_VERSION: "1.93"
 
 jobs:
+  build_cli:
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux_x64
+            platform_name: linux-x64
+            content_type: application/gzip
+          - os: macos-latest
+            target: macos_arm64
+            platform_name: macos-arm64
+            content_type: application/gzip
+          - os: windows-latest
+            target: windows_x64
+            platform_name: windows-x64
+            content_type: application/gzip
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./packages/ndk
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Build CLI executable
+        run: dart build cli
+
+      - name: Build CLI bundle archive name metadata
+        id: meta
+        run: |
+          ref_name="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          safe_ref_name="${ref_name//\//-}"
+          echo "safe_ref_name=${safe_ref_name}" >> "$GITHUB_OUTPUT"
+
+      - name: Package CLI bundle
+        run: |
+          tar -czf "build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
+
+      - name: Build Linux DEB package
+        if: matrix.target == 'linux_x64'
+        run: |
+          deb_root="build/deb-root"
+          rm -rf "$deb_root"
+          mkdir -p "$deb_root/DEBIAN" "$deb_root/usr/lib/ndk" "$deb_root/usr/bin"
+          cp -R "build/cli/${{ matrix.target }}/bundle/." "$deb_root/usr/lib/ndk/"
+          ln -s ../lib/ndk/bin/ndk "$deb_root/usr/bin/ndk"
+          cat > "$deb_root/DEBIAN/control" <<'EOF'
+          Package: ndk
+          Version: 0.0.0~${{ github.run_number }}
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: relaystr <opensource@relaystr.com>
+          Depends: libc6 (>= 2.27)
+          Description: Nostr Development Kit command line interface
+          EOF
+          dpkg-deb --build "$deb_root" "build/ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb"
+
+      - name: Upload CLI executable to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: packages/ndk/build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
+          asset_name: ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
+          asset_content_type: ${{ matrix.content_type }}
+
+      - name: Upload Linux DEB to release
+        if: matrix.target == 'linux_x64'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: packages/ndk/build/ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb
+          asset_name: ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb
+          asset_content_type: application/vnd.debian.binary-package
+
   build_android:
     needs: release
     runs-on: ubuntu-latest
@@ -229,7 +317,7 @@ jobs:
           prerelease: ${{ contains(github.ref, '-dev') }}
 
   publish-release:
-    needs: [release,build_android]
+    needs: [release,build_android,build_cli]
     runs-on: ubuntu-latest
 
     steps:

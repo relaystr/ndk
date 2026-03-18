@@ -1,10 +1,19 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_keyset.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_mint_info.dart';
+import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/ndk.dart';
 
 import 'database/database.dart';
@@ -192,7 +201,8 @@ class DriftCacheManager extends CacheManager {
     int? since,
     int? until,
   }) async {
-    final hasNoFilters = (ids == null || ids.isEmpty) &&
+    final hasNoFilters =
+        (ids == null || ids.isEmpty) &&
         (pubKeys == null || pubKeys.isEmpty) &&
         (kinds == null || kinds.isEmpty) &&
         (tags == null || tags.isEmpty) &&
@@ -221,26 +231,27 @@ class DriftCacheManager extends CacheManager {
 
     // No tags filter, delete directly without loading events
     await (_db.delete(_db.events)..where((t) {
-      final conditions = <Expression<bool>>[];
+          final conditions = <Expression<bool>>[];
 
-      if (ids != null && ids.isNotEmpty) {
-        conditions.add(t.id.isIn(ids));
-      }
-      if (pubKeys != null && pubKeys.isNotEmpty) {
-        conditions.add(t.pubKey.isIn(pubKeys));
-      }
-      if (kinds != null && kinds.isNotEmpty) {
-        conditions.add(t.kind.isIn(kinds));
-      }
-      if (since != null) {
-        conditions.add(t.createdAt.isBiggerOrEqualValue(since));
-      }
-      if (until != null) {
-        conditions.add(t.createdAt.isSmallerOrEqualValue(until));
-      }
+          if (ids != null && ids.isNotEmpty) {
+            conditions.add(t.id.isIn(ids));
+          }
+          if (pubKeys != null && pubKeys.isNotEmpty) {
+            conditions.add(t.pubKey.isIn(pubKeys));
+          }
+          if (kinds != null && kinds.isNotEmpty) {
+            conditions.add(t.kind.isIn(kinds));
+          }
+          if (since != null) {
+            conditions.add(t.createdAt.isBiggerOrEqualValue(since));
+          }
+          if (until != null) {
+            conditions.add(t.createdAt.isSmallerOrEqualValue(until));
+          }
 
-      return conditions.reduce((a, b) => a & b);
-    })).go();
+          return conditions.reduce((a, b) => a & b);
+        }))
+        .go();
   }
 
   Nip01Event _eventFromRow(DbEvent row) {
@@ -288,9 +299,9 @@ class DriftCacheManager extends CacheManager {
             refreshedTimestamp: Value(metadata.refreshedTimestamp),
             sourcesJson: jsonEncode(metadata.sources),
             tagsJson: Value(jsonEncode(metadata.tags)),
-            rawContentJson: Value(metadata.content.isNotEmpty
-                ? jsonEncode(metadata.content)
-                : null),
+            rawContentJson: Value(
+              metadata.content.isNotEmpty ? jsonEncode(metadata.content) : null,
+            ),
           ),
         );
   }
@@ -317,9 +328,11 @@ class DriftCacheManager extends CacheManager {
                 refreshedTimestamp: Value(metadata.refreshedTimestamp),
                 sourcesJson: jsonEncode(metadata.sources),
                 tagsJson: Value(jsonEncode(metadata.tags)),
-                rawContentJson: Value(metadata.content.isNotEmpty
-                    ? jsonEncode(metadata.content)
-                    : null),
+                rawContentJson: Value(
+                  metadata.content.isNotEmpty
+                      ? jsonEncode(metadata.content)
+                      : null,
+                ),
               ),
             )
             .toList(),
@@ -956,6 +969,373 @@ class DriftCacheManager extends CacheManager {
     );
   }
 
+  // =====================
+  // Cashu Methods
+  // =====================
+
+  @override
+  Future<void> saveKeyset(CahsuKeyset keyset) async {
+    await _db
+        .into(_db.cashuKeysets)
+        .insertOnConflictUpdate(
+          CashuKeysetsCompanion.insert(
+            id: keyset.id,
+            mintUrl: keyset.mintUrl,
+            unit: keyset.unit,
+            active: keyset.active,
+            inputFeePPK: keyset.inputFeePPK,
+            mintKeyPairsJson: jsonEncode(
+              keyset.mintKeyPairs
+                  .map((pair) => {'amount': pair.amount, 'pubkey': pair.pubkey})
+                  .toList(),
+            ),
+            fetchedAt: Value(keyset.fetchedAt),
+          ),
+        );
+  }
+
+  @override
+  Future<List<CahsuKeyset>> getKeysets({String? mintUrl}) async {
+    var query = _db.select(_db.cashuKeysets);
+    if (mintUrl != null) {
+      query = query..where((k) => k.mintUrl.equals(mintUrl));
+    }
+    final rows = await query.get();
+    return rows.map(_keysetFromRow).toList();
+  }
+
+  CahsuKeyset _keysetFromRow(DbCashuKeyset row) {
+    final keyPairs = (jsonDecode(row.mintKeyPairsJson) as List)
+        .map(
+          (e) => CahsuMintKeyPair(
+            amount: e['amount'] as int,
+            pubkey: e['pubkey'] as String,
+          ),
+        )
+        .toSet();
+    return CahsuKeyset(
+      id: row.id,
+      mintUrl: row.mintUrl,
+      unit: row.unit,
+      active: row.active,
+      inputFeePPK: row.inputFeePPK,
+      mintKeyPairs: keyPairs,
+      fetchedAt: row.fetchedAt,
+    );
+  }
+
+  @override
+  Future<void> saveProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    await _db.batch((batch) {
+      for (final proof in proofs) {
+        batch.insert(
+          _db.cashuProofs,
+          CashuProofsCompanion.insert(
+            Y: proof.Y,
+            keysetId: proof.keysetId,
+            amount: proof.amount,
+            secret: proof.secret,
+            unblindedSig: proof.unblindedSig,
+            state: proof.state.value,
+            mintUrl: mintUrl,
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  @override
+  Future<List<CashuProof>> getProofs({
+    String? mintUrl,
+    String? keysetId,
+    CashuProofState state = CashuProofState.unspend,
+  }) async {
+    var query = _db.select(_db.cashuProofs)
+      ..where((p) => p.state.equals(state.value));
+
+    if (mintUrl != null) {
+      query = query..where((p) => p.mintUrl.equals(mintUrl));
+    }
+    if (keysetId != null) {
+      query = query..where((p) => p.keysetId.equals(keysetId));
+    }
+
+    final rows = await query.get();
+    return rows.map(_proofFromRow).toList();
+  }
+
+  CashuProof _proofFromRow(DbCashuProof row) {
+    return CashuProof(
+      keysetId: row.keysetId,
+      amount: row.amount,
+      secret: row.secret,
+      unblindedSig: row.unblindedSig,
+      state: CashuProofState.fromValue(row.state),
+    );
+  }
+
+  @override
+  Future<void> removeProofs({
+    required List<CashuProof> proofs,
+    required String mintUrl,
+  }) async {
+    final yValues = proofs.map((p) => p.Y).toList();
+    await (_db.delete(
+      _db.cashuProofs,
+    )..where((p) => p.mintUrl.equals(mintUrl) & p.Y.isIn(yValues))).go();
+  }
+
+  @override
+  Future<void> saveMintInfo({required CashuMintInfo mintInfo}) async {
+    final id = mintInfo.urls.isNotEmpty ? mintInfo.urls.first : '';
+    await _db
+        .into(_db.cashuMintInfos)
+        .insertOnConflictUpdate(
+          CashuMintInfosCompanion.insert(
+            id: id,
+            urlsJson: jsonEncode(mintInfo.urls),
+            name: Value(mintInfo.name),
+            pubkey: Value(mintInfo.pubkey),
+            version: Value(mintInfo.version),
+            description: Value(mintInfo.description),
+            descriptionLong: Value(mintInfo.descriptionLong),
+            contactJson: jsonEncode(
+              mintInfo.contact.map((c) => c.toJson()).toList(),
+            ),
+            motd: Value(mintInfo.motd),
+            iconUrl: Value(mintInfo.iconUrl),
+            time: Value(mintInfo.time),
+            tosUrl: Value(mintInfo.tosUrl),
+            nutsJson: jsonEncode(
+              mintInfo.nuts.map((k, v) => MapEntry(k.toString(), v.toJson())),
+            ),
+          ),
+        );
+  }
+
+  @override
+  Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
+    var query = _db.select(_db.cashuMintInfos);
+    if (mintUrls != null && mintUrls.isNotEmpty) {
+      // This is a simplification - ideally we'd parse the JSON array
+      query = query..where((m) => m.id.isIn(mintUrls));
+    }
+    final rows = await query.get();
+    if (rows.isEmpty) return null;
+    return rows.map(_mintInfoFromRow).toList();
+  }
+
+  CashuMintInfo _mintInfoFromRow(DbCashuMintInfo row) {
+    return CashuMintInfo.fromJson({
+      'name': row.name,
+      'pubkey': row.pubkey,
+      'version': row.version,
+      'description': row.description,
+      'description_long': row.descriptionLong,
+      'contact': jsonDecode(row.contactJson),
+      'motd': row.motd,
+      'icon_url': row.iconUrl,
+      'urls': jsonDecode(row.urlsJson),
+      'time': row.time,
+      'tos_url': row.tosUrl,
+      'nuts': jsonDecode(row.nutsJson),
+    }, mintUrl: row.id);
+  }
+
+  @override
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  }) async {
+    final id = '$mintUrl|$keysetId';
+    final row = await (_db.select(
+      _db.cashuSecretCounters,
+    )..where((c) => c.id.equals(id))).getSingleOrNull();
+    return row?.counter ?? 0;
+  }
+
+  @override
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  }) async {
+    final id = '$mintUrl|$keysetId';
+    await _db
+        .into(_db.cashuSecretCounters)
+        .insertOnConflictUpdate(
+          CashuSecretCountersCompanion.insert(
+            id: id,
+            mintUrl: mintUrl,
+            keysetId: keysetId,
+            counter: counter,
+          ),
+        );
+  }
+
+  // =====================
+  // Wallet Methods
+  // =====================
+
+  @override
+  Future<void> saveWallet(Wallet wallet) async {
+    await _db
+        .into(_db.wallets)
+        .insertOnConflictUpdate(
+          WalletsCompanion.insert(
+            id: wallet.id,
+            name: wallet.name,
+            type: wallet.type.name,
+            supportedUnitsJson: jsonEncode(wallet.supportedUnits.toList()),
+            metadataJson: jsonEncode(wallet.toMetadata()),
+          ),
+        );
+  }
+
+  @override
+  Future<void> removeWallet(String id) async {
+    await (_db.delete(_db.wallets)..where((w) => w.id.equals(id))).go();
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
+    var query = _db.select(_db.wallets);
+    if (ids != null && ids.isNotEmpty) {
+      query = query..where((w) => w.id.isIn(ids));
+    }
+    final rows = await query.get();
+    if (rows.isEmpty && ids != null) return null;
+    return rows.map(_walletFromRow).toList();
+  }
+
+  Wallet _walletFromRow(DbWallet row) {
+    final metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+    final type = WalletType.values.firstWhere(
+      (t) => t.name == row.type,
+      orElse: () => WalletType.CASHU,
+    );
+    final supportedUnits = (jsonDecode(row.supportedUnitsJson) as List)
+        .map((e) => e.toString())
+        .toSet();
+
+    switch (type) {
+      case WalletType.CASHU:
+        return CashuWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          mintUrl: metadata['mintUrl'] as String,
+          mintInfo: CashuMintInfo.fromJson(
+            metadata['mintInfo'] as Map<String, dynamic>,
+            mintUrl: metadata['mintUrl'] as String,
+          ),
+        );
+      case WalletType.NWC:
+        return NwcWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          nwcUrl: metadata['nwcUrl'] as String,
+        );
+      case WalletType.LNURL:
+        return LnurlWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          identifier: metadata['identifier'] as String,
+          lnurlPayUrl: metadata['lnurlPayUrl'] as String,
+          minSendable: metadata['minSendable'] as int?,
+          maxSendable: metadata['maxSendable'] as int?,
+          metadataFetchedAt: metadata['metadataFetchedAt'] as int?,
+        );
+    }
+  }
+
+  @override
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  }) async {
+    await _db.batch((batch) {
+      for (final transaction in transactions) {
+        batch.insert(
+          _db.walletTransactions,
+          WalletTransactionsCompanion.insert(
+            id: transaction.id,
+            walletId: transaction.walletId,
+            changeAmount: transaction.changeAmount,
+            unit: transaction.unit,
+            type: transaction.walletType.name,
+            state: transaction.state.value,
+            completionMsg: Value(transaction.completionMsg),
+            transactionDate: Value(transaction.transactionDate),
+            initiatedDate: Value(transaction.initiatedDate),
+            metadataJson: jsonEncode(transaction.metadata),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  @override
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) async {
+    var query = _db.select(_db.walletTransactions);
+
+    if (walletId != null) {
+      query = query..where((t) => t.walletId.equals(walletId));
+    }
+    if (unit != null) {
+      query = query..where((t) => t.unit.equals(unit));
+    }
+    if (walletType != null) {
+      query = query..where((t) => t.type.equals(walletType.name));
+    }
+
+    query = query..orderBy([(t) => OrderingTerm.desc(t.initiatedDate)]);
+
+    if (limit != null && limit > 0) {
+      if (offset != null && offset > 0) {
+        query = query..limit(limit, offset: offset);
+      } else {
+        query = query..limit(limit);
+      }
+    }
+
+    final rows = await query.get();
+    return rows.map(_transactionFromRow).toList();
+  }
+
+  WalletTransaction _transactionFromRow(DbWalletTransaction row) {
+    final type = WalletType.values.firstWhere(
+      (t) => t.name == row.type,
+      orElse: () => WalletType.CASHU,
+    );
+    final metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+
+    return WalletTransaction.toTransactionType(
+      id: row.id,
+      walletId: row.walletId,
+      changeAmount: row.changeAmount,
+      unit: row.unit,
+      walletType: type,
+      state: WalletTransactionState.fromValue(row.state),
+      metadata: metadata,
+      completionMsg: row.completionMsg,
+      transactionDate: row.transactionDate,
+      initiatedDate: row.initiatedDate,
+    );
+  }
+
   @override
   Future<void> clearAll() async {
     await Future.wait([
@@ -966,6 +1346,13 @@ class DriftCacheManager extends CacheManager {
       _db.delete(_db.relaySets).go(),
       _db.delete(_db.nip05s).go(),
       _db.delete(_db.filterFetchedRangeRecords).go(),
+      // Cashu tables
+      _db.delete(_db.cashuProofs).go(),
+      _db.delete(_db.cashuKeysets).go(),
+      _db.delete(_db.cashuMintInfos).go(),
+      _db.delete(_db.cashuSecretCounters).go(),
+      _db.delete(_db.wallets).go(),
+      _db.delete(_db.walletTransactions).go(),
     ]);
   }
 }

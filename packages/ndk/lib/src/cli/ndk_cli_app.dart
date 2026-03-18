@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
+import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
 
 import 'cli_command.dart';
@@ -35,9 +37,10 @@ class NdkCliApp {
       return 2;
     }
 
-    final ndk = _createNdk();
+    final walletsRepo = await _createWalletsRepo();
+    final ndk = _createNdk(walletsRepo);
     try {
-      return await command.run(args.sublist(1), ndk);
+      return await command.run(args.sublist(1), ndk, walletsRepo);
     } finally {
       await ndk.destroy();
     }
@@ -70,15 +73,67 @@ class NdkCliApp {
     return null;
   }
 
-  Ndk _createNdk() {
+  Future<WalletsRepo> _createWalletsRepo() {
+    return SembastWalletsRepo.create(
+      filename: 'wallets_db.db',
+    );
+  }
+
+  Ndk _createNdk(WalletsRepo walletsRepo) {
     Logger.setLogLevel(LogLevel.error);
     return Ndk(
       NdkConfig(
         cache: MemCacheManager(),
-        eventVerifier: Bip340EventVerifier(),
+        walletsRepo: walletsRepo,
+        eventVerifier: _CliEventVerifier(),
         bootstrapRelays: const [],
         logLevel: LogLevel.error,
       ),
+    );
+  }
+}
+
+class _CliEventVerifier implements EventVerifier {
+  final RustEventVerifier _rustVerifier = RustEventVerifier();
+  final Bip340EventVerifier _fallbackVerifier = Bip340EventVerifier();
+  bool _useFallback = false;
+  bool _loggedFallback = false;
+
+  @override
+  Future<bool> verify(Nip01Event event) async {
+    if (_useFallback) {
+      return _fallbackVerifier.verify(event);
+    }
+
+    try {
+      return await _rustVerifier.verify(event);
+    } on UnsupportedError {
+      _enableFallback();
+      return _fallbackVerifier.verify(event);
+    } on ArgumentError catch (error) {
+      if (!_isNativeLibraryLoadError(error)) {
+        rethrow;
+      }
+      _enableFallback();
+      return _fallbackVerifier.verify(event);
+    }
+  }
+
+  bool _isNativeLibraryLoadError(ArgumentError error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('dynamic library') ||
+        message.contains('verify_nostr_event') ||
+        message.contains('failed to load');
+  }
+
+  void _enableFallback() {
+    _useFallback = true;
+    if (_loggedFallback) {
+      return;
+    }
+    _loggedFallback = true;
+    stderr.writeln(
+      'Rust verifier unavailable; falling back to Bip340EventVerifier.',
     );
   }
 }
