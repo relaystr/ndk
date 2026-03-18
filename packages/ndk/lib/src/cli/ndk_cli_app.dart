@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
-import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
 
 import 'cli_command.dart';
@@ -37,10 +35,9 @@ class NdkCliApp {
       return 2;
     }
 
-    final walletsRepo = await _createWalletsRepo();
-    final ndk = _createNdk(walletsRepo);
+    final ndk = _createNdk();
     try {
-      return await command.run(args.sublist(1), ndk, walletsRepo);
+      return await command.run(args.sublist(1), ndk);
     } finally {
       await ndk.destroy();
     }
@@ -73,18 +70,11 @@ class NdkCliApp {
     return null;
   }
 
-  Future<WalletsRepo> _createWalletsRepo() {
-    return SembastWalletsRepo.create(
-      filename: 'wallets_db.db',
-    );
-  }
-
-  Ndk _createNdk(WalletsRepo walletsRepo) {
+  Ndk _createNdk() {
     Logger.setLogLevel(LogLevel.error);
     return Ndk(
       NdkConfig(
         cache: MemCacheManager(),
-        walletsRepo: walletsRepo,
         eventVerifier: Bip340EventVerifier(),
         bootstrapRelays: const [],
         logLevel: LogLevel.error,
