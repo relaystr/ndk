@@ -42,10 +42,11 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     // if (keysetId.startsWith('00')) {
     //   return _deriveDeprecatedWithSeed(
     //       seed: seedBytes, keysetId: keysetId, counter: counter);
-    // } else if (keysetId.startsWith('01')) {
+    // } else
+    if (keysetId.startsWith('01')) {
       return _deriveModernWithSeed(
           seed: seedBytes, keysetId: keysetId, counter: counter);
-    // }
+    }
 
     throw Exception(
         'Unrecognized keyset ID version ${keysetId.substring(0, 2)}');
@@ -158,17 +159,17 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
   //   );
   // }
 
-  static int _keysetIdToIntStatic(String keysetId) {
-    BigInt number = BigInt.parse(keysetId, radix: 16);
-
-    //BigInt modulus = BigInt.from(2).pow(31) - BigInt.one;
-    /// precalculated for 2^31 - 1
-    BigInt modulus = BigInt.from(2147483647);
-
-    BigInt keysetIdInt = number % modulus;
-
-    return keysetIdInt.toInt();
-  }
+  // static int _keysetIdToIntStatic(String keysetId) {
+  //   BigInt number = BigInt.parse(keysetId, radix: 16);
+  //
+  //   //BigInt modulus = BigInt.from(2).pow(31) - BigInt.one;
+  //   /// precalculated for 2^31 - 1
+  //   BigInt modulus = BigInt.from(2147483647);
+  //
+  //   BigInt keysetIdInt = number % modulus;
+  //
+  //   return keysetIdInt.toInt();
+  // }
 
   /// Convert hex string to bytes
   static Uint8List _hexToBytes(String hexString) {

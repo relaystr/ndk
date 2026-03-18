@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
@@ -34,8 +33,6 @@ class SembastCacheManager extends CacheManager {
 
   late final sembast.StoreRef<String, Map<String, Object?>> _keysetStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _proofStore;
-  late final sembast.StoreRef<String, Map<String, Object?>> _transactionStore;
-  late final sembast.StoreRef<String, Map<String, Object?>> _walletStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _mintInfoStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _secretCounterStore;
 
@@ -48,8 +45,6 @@ class SembastCacheManager extends CacheManager {
     _relaySetStore = sembast.stringMapStoreFactory.store('relay_sets');
     _keysetStore = sembast.stringMapStoreFactory.store('keysets');
     _proofStore = sembast.stringMapStoreFactory.store('proofs');
-    _transactionStore = sembast.stringMapStoreFactory.store('transactions');
-    _walletStore = sembast.stringMapStoreFactory.store('wallets');
     _mintInfoStore = sembast.stringMapStoreFactory.store('mint_infos');
     _secretCounterStore =
         sembast.stringMapStoreFactory.store('secret_counters');
@@ -703,95 +698,6 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
-  Future<List<WalletTransaction>> getTransactions({
-    int? limit,
-    int? offset,
-    String? walletId,
-    String? unit,
-    WalletType? walletType,
-  }) async {
-    final filters = <sembast.Filter>[];
-
-    if (walletId != null && walletId.isNotEmpty) {
-      filters.add(sembast.Filter.equals('walletId', walletId));
-    }
-
-    if (unit != null && unit.isNotEmpty) {
-      filters.add(sembast.Filter.equals('unit', unit));
-    }
-
-    if (walletType != null) {
-      filters.add(sembast.Filter.equals('walletType', walletType.toString()));
-    }
-
-    final finder = sembast.Finder(
-      filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
-      sortOrders: [sembast.SortOrder('transactionDate', false)],
-      limit: limit,
-      offset: offset,
-    );
-
-    final records = await _transactionStore.find(_database, finder: finder);
-    return records
-        .map((record) =>
-            WalletTransactionExtension.fromJsonStorage(record.value))
-        .toList();
-  }
-
-  @override
-  Future<void> saveTransactions({
-    required List<WalletTransaction> transactions,
-  }) async {
-    await _database.transaction((txn) async {
-      // Remove existing transactions by id (upsert logic)
-      final idsToCheck = transactions.map((t) => t.id).toList();
-      final finder = sembast.Finder(
-        filter: sembast.Filter.inList('id', idsToCheck),
-      );
-      await _transactionStore.delete(txn, finder: finder);
-
-      // Insert new transactions
-      for (final transaction in transactions) {
-        await _transactionStore
-            .record(transaction.id)
-            .put(txn, transaction.toJsonForStorage());
-      }
-    });
-  }
-
-  @override
-  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
-    if (ids == null || ids.isEmpty) {
-      // Return all wallets
-      final records = await _walletStore.find(_database);
-      return records
-          .map((record) => WalletExtension.fromJsonStorage(record.value))
-          .toList();
-    }
-
-    final finder = sembast.Finder(
-      filter: sembast.Filter.inList('id', ids),
-    );
-
-    final records = await _walletStore.find(_database, finder: finder);
-    return records
-        .map((record) => WalletExtension.fromJsonStorage(record.value))
-        .toList();
-  }
-
-  @override
-  Future<void> removeWallet(String walletId) async {
-    await _walletStore.record(walletId).delete(_database);
-  }
-
-  @override
-  Future<void> saveWallet(Wallet wallet) async {
-    await _walletStore
-        .record(wallet.id)
-        .put(_database, wallet.toJsonForStorage());
-  }
-
-  @override
   Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
     if (mintUrls == null || mintUrls.isEmpty) {
       // Return all mint infos
@@ -871,8 +777,6 @@ class SembastCacheManager extends CacheManager {
       _filterFetchedRangeStore.delete(_database),
       _keysetStore.delete(_database),
       _proofStore.delete(_database),
-      _transactionStore.delete(_database),
-      _walletStore.delete(_database),
       _mintInfoStore.delete(_database),
       _secretCounterStore.delete(_database),
     ]);
