@@ -1,0 +1,84 @@
+import 'dart:io';
+
+import 'package:ndk/ndk.dart';
+
+import 'cli_command.dart';
+
+class NdkCliApp {
+  final String appName;
+  final String description;
+  final List<CliCommand> commands;
+
+  NdkCliApp({
+    required this.appName,
+    required this.description,
+    required this.commands,
+  });
+
+  Future<int> run(List<String> args) async {
+    if (args.isEmpty) {
+      printHelp();
+      return 0;
+    }
+
+    final commandName = args.first.toLowerCase();
+    if (_isHelp(commandName)) {
+      printHelp();
+      return 0;
+    }
+
+    final command = _findCommand(commandName);
+    if (command == null) {
+      stderr.writeln('Unknown command: "$commandName"');
+      stderr.writeln('');
+      printHelp(stderr);
+      return 2;
+    }
+
+    final ndk = _createNdk();
+    try {
+      return await command.run(args.sublist(1), ndk);
+    } finally {
+      await ndk.destroy();
+    }
+  }
+
+  void printHelp([IOSink? out]) {
+    out ??= stdout;
+    out.writeln('$appName - $description');
+    out.writeln('Usage: ndk <command> [args]');
+    out.writeln('');
+    out.writeln('Commands:');
+    for (final command in commands) {
+      out.writeln('  ${command.name.padRight(12)} ${command.description}');
+    }
+    out.writeln('  help         Show this help');
+    out.writeln('');
+    out.writeln('Use "ndk <command> --help" for command details.');
+  }
+
+  bool _isHelp(String value) {
+    return value == 'help' || value == '--help' || value == '-h';
+  }
+
+  CliCommand? _findCommand(String commandName) {
+    for (final command in commands) {
+      if (command.name == commandName) {
+        return command;
+      }
+    }
+    return null;
+  }
+
+  Ndk _createNdk() {
+    Logger.setLogLevel(LogLevel.error);
+    return Ndk(
+      NdkConfig(
+        cache: MemCacheManager(),
+        eventVerifier: Bip340EventVerifier(),
+        bootstrapRelays: const [],
+        logLevel: LogLevel.error,
+      ),
+    );
+  }
+}

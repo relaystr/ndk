@@ -4,6 +4,9 @@ version: 0.7.2-dev.0
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
+executables:
+  ndk: ndk
+
 topics:
   - nostr
 
@@ -38,6 +41,7 @@ dependencies:
   native_toolchain_rust: ^1.0.1
   ffi: ^2.1.4
   web: ^1.1.1
+
 
 dev_dependencies:
   build_runner: ^2.11.1 
