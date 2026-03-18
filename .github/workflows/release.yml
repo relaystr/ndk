@@ -23,19 +23,20 @@ jobs:
         include:
           - os: ubuntu-latest
             target: linux_x64
-            binary_name: ndk
-            asset_name: ndk-${{ github.ref_name }}-linux-x64
-            content_type: application/octet-stream
-          - os: macos-latest
+            platform_name: linux-x64
+            content_type: application/gzip
+          - os: macos-13
             target: macos_x64
-            binary_name: ndk
-            asset_name: ndk-${{ github.ref_name }}-macos-x64
-            content_type: application/octet-stream
+            platform_name: macos-x64
+            content_type: application/gzip
+          - os: macos-latest
+            target: macos_arm64
+            platform_name: macos-arm64
+            content_type: application/gzip
           - os: windows-latest
             target: windows_x64
-            binary_name: ndk.exe
-            asset_name: ndk-${{ github.ref_name }}-windows-x64.exe
-            content_type: application/vnd.microsoft.portable-executable
+            platform_name: windows-x64
+            content_type: application/gzip
     defaults:
       run:
         working-directory: ./packages/ndk
@@ -52,14 +53,25 @@ jobs:
       - name: Build CLI executable
         run: dart build cli
 
+      - name: Build CLI bundle archive name metadata
+        id: meta
+        run: |
+          ref_name="${GITHUB_REF_NAME}"
+          safe_ref_name="${ref_name//\//-}"
+          echo "safe_ref_name=${safe_ref_name}" >> "$GITHUB_OUTPUT"
+
+      - name: Package CLI bundle
+        run: |
+          tar -czf "build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
+
       - name: Upload CLI executable to release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/cli/${{ matrix.target }}/bundle/bin/${{ matrix.binary_name }}
-          asset_name: ${{ matrix.asset_name }}
+          asset_path: packages/ndk/build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
+          asset_name: ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
           asset_content_type: ${{ matrix.content_type }}
 
   build_android:
