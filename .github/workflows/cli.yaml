@@ -1,0 +1,11 @@
+name: cli
+on: [push, workflow_dispatch]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/ndk
+    steps:
+      - name: Build
+        run: dart build cli
