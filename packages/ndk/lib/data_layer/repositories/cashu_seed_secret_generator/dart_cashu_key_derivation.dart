@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:bip32_keys/bip32_keys.dart';
+// import 'package:bip32_keys/bip32_keys.dart';
 import 'package:convert/convert.dart';
 
 import '../../../domain_layer/repositories/cashu_key_derivation.dart';
@@ -39,13 +39,13 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
     }
 
     // Choose derivation method based on keyset version
-    if (keysetId.startsWith('00')) {
-      return _deriveDeprecatedWithSeed(
-          seed: seedBytes, keysetId: keysetId, counter: counter);
-    } else if (keysetId.startsWith('01')) {
+    // if (keysetId.startsWith('00')) {
+    //   return _deriveDeprecatedWithSeed(
+    //       seed: seedBytes, keysetId: keysetId, counter: counter);
+    // } else if (keysetId.startsWith('01')) {
       return _deriveModernWithSeed(
           seed: seedBytes, keysetId: keysetId, counter: counter);
-    }
+    // }
 
     throw Exception(
         'Unrecognized keyset ID version ${keysetId.substring(0, 2)}');
@@ -131,32 +131,32 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
   }
 
   /// Deprecated BIP32-based derivation with explicit seed parameter
-  static CashuSeedDeriveSecretResult _deriveDeprecatedWithSeed({
-    required Uint8List seed,
-    required String keysetId,
-    required int counter,
-  }) {
-    final masterKey = Bip32Keys.fromSeed(seed);
-
-    final keysetIdInt = _keysetIdToIntStatic(keysetId);
-
-    // Derive shared parent path once
-    final sharedParent = masterKey.derivePath(
-      "m/$derivationPurpose'/$derivationCoinType'/$keysetIdInt'/$counter'",
-    );
-
-    // Then derive final step separately
-    final pathKeySecret = sharedParent.derivePath("0");
-    final pathKeyBlinding = sharedParent.derivePath("1");
-
-    final pathKeySecretHex = hex.encode(pathKeySecret.private!.toList());
-    final pathKeyBlindingHex = hex.encode(pathKeyBlinding.private!.toList());
-
-    return CashuSeedDeriveSecretResult(
-      secretHex: pathKeySecretHex,
-      blindingHex: pathKeyBlindingHex,
-    );
-  }
+  // static CashuSeedDeriveSecretResult _deriveDeprecatedWithSeed({
+  //   required Uint8List seed,
+  //   required String keysetId,
+  //   required int counter,
+  // }) {
+  //   final masterKey = Bip32Keys.fromSeed(seed);
+  //
+  //   final keysetIdInt = _keysetIdToIntStatic(keysetId);
+  //
+  //   // Derive shared parent path once
+  //   final sharedParent = masterKey.derivePath(
+  //     "m/$derivationPurpose'/$derivationCoinType'/$keysetIdInt'/$counter'",
+  //   );
+  //
+  //   // Then derive final step separately
+  //   final pathKeySecret = sharedParent.derivePath("0");
+  //   final pathKeyBlinding = sharedParent.derivePath("1");
+  //
+  //   final pathKeySecretHex = hex.encode(pathKeySecret.private!.toList());
+  //   final pathKeyBlindingHex = hex.encode(pathKeyBlinding.private!.toList());
+  //
+  //   return CashuSeedDeriveSecretResult(
+  //     secretHex: pathKeySecretHex,
+  //     blindingHex: pathKeyBlindingHex,
+  //   );
+  // }
 
   static int _keysetIdToIntStatic(String keysetId) {
     BigInt number = BigInt.parse(keysetId, radix: 16);
