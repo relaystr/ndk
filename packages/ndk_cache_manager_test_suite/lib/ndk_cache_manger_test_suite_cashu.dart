@@ -176,4 +176,34 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
     expect(loadedProofsPending.length, equals(1));
     expect(loadedProofsPending[0].state, equals(CashuProofState.pending));
   });
+
+  test('removeMintInfo deletes mint info', () async {
+    final cacheManager = getCacheManager();
+    final mintInfo = CashuMintInfo(
+      urls: ['https://delete.mint.com'],
+      name: 'Delete Test Mint',
+      description: 'A mint to be deleted',
+      version: '1.0',
+      nuts: {},
+    );
+
+    // Save the mint info
+    await cacheManager.saveMintInfo(mintInfo: mintInfo);
+
+    // Verify it was saved
+    final savedInfos = await cacheManager.getMintInfos(
+      mintUrls: ['https://delete.mint.com'],
+    );
+    expect(savedInfos!.length, equals(1));
+    expect(savedInfos[0].name, equals('Delete Test Mint'));
+
+    // Delete the mint info
+    await cacheManager.removeMintInfo(mintUrl: 'https://delete.mint.com');
+
+    // Verify it was deleted
+    final deletedInfos = await cacheManager.getMintInfos(
+      mintUrls: ['https://delete.mint.com'],
+    );
+    expect(deletedInfos, anyOf(isNull, isEmpty));
+  });
 }

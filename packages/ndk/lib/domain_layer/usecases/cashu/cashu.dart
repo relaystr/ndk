@@ -431,6 +431,22 @@ class Cashu {
     return true;
   }
 
+Future<void> deleteKnownMint({
+  required String mintUrl,
+}) async {
+  // Remove from cache
+  await _cacheManager.removeMintInfo(mintUrl: mintUrl);
+
+  
+  // Remove from in-memory set
+  _knownMints.removeWhere((mint) => mint.urls.contains(mintUrl));
+  
+  // Update the stream
+  _knownMintsSubject?.add(_knownMints);
+  
+  Logger.log.i(() => 'Deleted mint from known mints: $mintUrl');
+}
+
   /// initiate funding e.g. minting tokens \
   /// [mintUrl] - URL of the mint to fund from \
   /// [amount] - amount to fund \

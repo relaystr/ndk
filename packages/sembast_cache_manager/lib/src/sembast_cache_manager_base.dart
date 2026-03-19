@@ -741,6 +741,22 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<void> removeMintInfo({
+    required String mintUrl,
+  }) async {
+    // Find and delete all records that contain this mintUrl
+    final allRecords = await _mintInfoStore.find(_database);
+    for (final record in allRecords) {
+      final existingMintInfo =
+          CashuMintInfoExtension.fromJsonStorage(record.value);
+      if (existingMintInfo.urls
+          .any((url) => existingMintInfo.isMintUrl(mintUrl))) {
+        await _mintInfoStore.record(record.key).delete(_database);
+      }
+    }
+  }
+
+  @override
   Future<int> getCashuSecretCounter({
     required String mintUrl,
     required String keysetId,

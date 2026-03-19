@@ -1118,6 +1118,13 @@ class DriftCacheManager extends CacheManager {
   }
 
   @override
+  Future<void> removeMintInfo({required String mintUrl}) async {
+    await (_db.delete(
+      _db.cashuMintInfos,
+    )..where((tbl) => tbl.id.equals(mintUrl))).go();
+  }
+
+  @override
   Future<List<CashuMintInfo>?> getMintInfos({List<String>? mintUrls}) async {
     var query = _db.select(_db.cashuMintInfos);
     if (mintUrls != null && mintUrls.isNotEmpty) {

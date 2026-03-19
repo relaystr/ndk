@@ -144,6 +144,10 @@ abstract class CacheManager {
     required CashuMintInfo mintInfo,
   });
 
+  Future<void> removeMintInfo({
+    required String mintUrl,
+  });
+
   /// return all if no mintUrls are provided
   Future<List<CashuMintInfo>?> getMintInfos({
     List<String>? mintUrls,

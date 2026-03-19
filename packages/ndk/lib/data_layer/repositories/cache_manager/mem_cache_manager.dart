@@ -532,6 +532,16 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<void> removeMintInfo({
+    required String mintUrl,
+  }) {
+    cashuMintInfos.removeWhere(
+      (info) => info.urls.any((url) => info.isMintUrl(mintUrl)),
+    );
+    return Future.value();
+  }
+
+  @override
   Future<int> getCashuSecretCounter({
     required String mintUrl,
     required String keysetId,

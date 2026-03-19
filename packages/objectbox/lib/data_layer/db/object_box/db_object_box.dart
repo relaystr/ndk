@@ -1121,6 +1121,24 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   }
 
   @override
+  Future<void> removeMintInfo({required String mintUrl}) async {
+    await dbRdy;
+
+    final box = _objectBox.store.box<DbCashuMintInfo>();
+
+    // Find all mint infos that contain this URL
+    final mintInfosToRemove = box
+        .query(DbCashuMintInfo_.urls.containsElement(mintUrl))
+        .build()
+        .find();
+
+    // Remove all matching entries
+    for (final mintInfo in mintInfosToRemove) {
+      box.remove(mintInfo.dbId);
+    }
+  }
+
+  @override
   Future<int> getCashuSecretCounter({
     required String mintUrl,
     required String keysetId,
