@@ -17,13 +17,22 @@ const devMintUrl = 'https://dev.mint.camelus.app';
 const failingMintUrl = 'https://mint.example.com';
 const mockMintUrl = "https://mock.mint";
 
+Ndk _ndk() {
+  return Ndk(NdkConfig(
+    cache: MemCacheManager(),
+    walletsRepo: MemWalletsRepo(),
+    eventVerifier: Bip340EventVerifier(),
+    bootstrapRelays: [],
+  ));
+}
+
 void main() {
   setUp(() {});
 
   group('redeem tests - exceptions ', () {
     test("redeem - offline mint should fail immediately on initiateRedeem",
         () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final ndk = _ndk();
 
       // This should throw an exception quickly (not hang)
       expect(
@@ -149,7 +158,7 @@ void main() {
     });
 
     test("invalid mint url", () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final ndk = _ndk();
 
       expect(
         () async => await ndk.cashu.initiateRedeem(
@@ -163,7 +172,7 @@ void main() {
     });
 
     test("malformed melt quote", () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final ndk = _ndk();
 
       final draftTransaction = CashuWalletTransaction(
         id: "testId",

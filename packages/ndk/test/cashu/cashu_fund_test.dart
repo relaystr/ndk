@@ -37,7 +37,7 @@ void main() {
       );
     });
     test('fund - no keyset throws exception', () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final ndk = _ndk();
 
       expect(
             () async =>
@@ -52,7 +52,7 @@ void main() {
     });
 
     test('fund - retriveFunds no quote throws exception', () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final ndk = _ndk();
 
       final Stream<CashuWalletTransaction> response = ndk.cashu.retrieveFunds(
         draftTransaction: CashuWalletTransaction(
@@ -73,7 +73,7 @@ void main() {
     });
 
     test('fund - retriveFunds exceptions', () async {
-      final ndk = Ndk.emptyBootstrapRelaysConfig();
+      final ndk = _ndk();
 
       final baseDraftTransaction = CashuWalletTransaction(
         id: 'test0',
