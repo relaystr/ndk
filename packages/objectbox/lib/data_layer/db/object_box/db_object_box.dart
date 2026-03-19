@@ -1177,6 +1177,10 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
         store.box<DbNip05>().removeAll();
         store.box<DbFilterFetchedRangeRecord>().removeAll();
         store.box<DbKeyValue>().removeAll();
+        store.box<DbCashuMintInfo>().removeAll();
+        store.box<DbWalletCahsuKeyset>().removeAll();
+        store.box<DbWalletCashuProof>().removeAll();
+        store.box<DbWalletTransaction>().removeAll();
       },
       null,
     );
