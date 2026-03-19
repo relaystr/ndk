@@ -82,7 +82,7 @@ class LnurlWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<void> dispose(Wallet wallet) async {
+  Future<void> removeWallet(Wallet wallet) async {
     final lnurlWallet = wallet as LnurlWallet;
     // Clear metadata cache for this wallet
     _metadataCache.remove(lnurlWallet.identifier);

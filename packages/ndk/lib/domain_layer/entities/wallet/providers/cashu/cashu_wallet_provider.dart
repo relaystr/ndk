@@ -59,7 +59,7 @@ class CashuWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<void> dispose(Wallet wallet) async {
+  Future<void> removeWallet(Wallet wallet) async {
     // Cashu wallets don't have connections to close
     // Streams are managed by the Cashu usecase
     // No cleanup needed per-wallet

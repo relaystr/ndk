@@ -48,7 +48,7 @@ class NwcWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<void> dispose(Wallet wallet) async {
+  Future<void> removeWallet(Wallet wallet) async {
     final nwcWallet = wallet as NwcWallet;
     if (nwcWallet.connection != null) {
       await _nwcUseCase.disconnect(nwcWallet.connection!);

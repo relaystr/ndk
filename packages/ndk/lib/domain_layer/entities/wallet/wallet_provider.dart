@@ -26,9 +26,9 @@ abstract class WalletProvider {
   /// Returns an updated wallet if initialization resulted in changes, null otherwise
   Future<Wallet?> initialize(Wallet wallet);
 
-  /// Disposes of the wallet (e.g., closes connections, streams)
-  /// Called before wallet is removed or app shuts down
-  Future<void> dispose(Wallet wallet);
+  /// removes the wallet (e.g., closes connections, streams)
+  Future<void> removeWallet(Wallet wallet);
+
 
   /// Returns a stream of wallet balances
   /// Stream emits whenever balance changes

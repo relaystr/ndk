@@ -128,15 +128,15 @@ class Wallets {
     }
 
     // Listen to discovered wallets from all providers
-    // _walletsUsecaseSubscription = Rx.merge(
-    //   _providers.values.map((p) => p.discoveredWallets),
-    // ).listen((wallets) {
-    //   for (final wallet in wallets) {
-    //     if (!_wallets.any((w) => w.id == wallet.id)) {
-    //       addWallet(wallet);
-    //     }
-    //   }
-    // });
+    _walletsUsecaseSubscription = Rx.merge(
+      _providers.values.map((p) => p.discoveredWallets),
+    ).listen((wallets) {
+      for (final wallet in wallets) {
+        if (!_wallets.any((w) => w.id == wallet.id)) {
+          addWallet(wallet);
+        }
+      }
+    });
 
     if (_isDisposed) {
       return;
@@ -256,7 +256,7 @@ class Wallets {
       // Dispose with provider
       final provider = _providers[wallet.type];
       if (provider != null) {
-        await provider.dispose(wallet);
+        await provider.removeWallet(wallet);
       }
     }
 
@@ -557,7 +557,7 @@ class Wallets {
     for (final wallet in _wallets) {
       final provider = _providers[wallet.type];
       if (provider != null) {
-        futures.add(provider.dispose(wallet));
+        futures.add(provider.removeWallet(wallet));
       }
     }
 
