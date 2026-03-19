@@ -61,6 +61,16 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
       state: CashuProofState.unspend,
     );
 
+    final cashuKeyset = CahsuKeyset(
+      id: 'test_keyset',
+      active: true,
+      inputFeePPK: 0,
+      mintKeyPairs: {},
+      mintUrl: 'https://test.mint.com',
+      unit: 'sat',
+    );
+    await cacheManager.saveKeyset(cashuKeyset);
+
     await cacheManager
         .saveProofs(proofs: [proof], mintUrl: 'https://test.mint.com');
     final loadedProofs = await cacheManager.getProofs(
@@ -89,6 +99,16 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
       unblindedSig: 'sig2',
       state: CashuProofState.spend,
     );
+
+    final cashuKeyset = CahsuKeyset(
+      id: 'keyset1',
+      active: true,
+      inputFeePPK: 0,
+      mintKeyPairs: {},
+      mintUrl: 'https://mint.com',
+      unit: 'sat',
+    );
+    await cacheManager.saveKeyset(cashuKeyset);
 
     await cacheManager
         .saveProofs(proofs: [proof1, proof2], mintUrl: 'https://mint.com');
@@ -158,6 +178,16 @@ void _runCashuTests(CacheManager Function() getCacheManager) {
       unblindedSig: 'upsert_sig',
       state: CashuProofState.unspend,
     );
+
+    final cashuKeyset = CahsuKeyset(
+      id: 'upsert_keyset',
+      active: true,
+      inputFeePPK: 0,
+      mintKeyPairs: {},
+      mintUrl: 'https://upsert.mint.com',
+      unit: 'sat',
+    );
+    await cacheManager.saveKeyset(cashuKeyset);
 
     await cacheManager
         .saveProofs(proofs: [proof], mintUrl: 'https://upsert.mint.com');
