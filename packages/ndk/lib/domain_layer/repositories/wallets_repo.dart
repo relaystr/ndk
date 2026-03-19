@@ -50,28 +50,4 @@ abstract class WalletsRepo {
   /// Save transactions to storage
   Future<void> saveTransactions(List<WalletTransaction> transactions);
 
-
-  // /// wallets methods
-  //
-  // Future<void> saveWallet(Wallet wallet);
-  //
-  // Future<void> removeWallet(String id);
-  //
-  // /// return all if [ids] is null
-  // Future<List<Wallet>?> getWallets({List<String>? ids});
-  //
-  // Future<List<WalletTransaction>> getTransactions({
-  //   int? limit,
-  //   int? offset,
-  //   String? walletId,
-  //   String? unit,
-  //   WalletType? walletType,
-  // });
-  //
-  // /// upserts transactions \
-  // /// if transaction with same id exists, it will be updated
-  // Future<void> saveTransactions({
-  //   required List<WalletTransaction> transactions,
-  // });
-
 }
