@@ -617,6 +617,10 @@ class Wallets {
 
     await Future.wait(futures);
 
+    _balancesActivated = false;
+    _pendingActivated = false;
+    _recentActivated = false;
+
     _wallets.clear();
     _walletsBalances.clear();
     _walletsPendingTransactions.clear();
