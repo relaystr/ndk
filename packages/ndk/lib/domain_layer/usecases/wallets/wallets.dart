@@ -66,17 +66,45 @@ class Wallets {
     _initializationFuture = _initialize();
   }
 
+  bool _balancesActivated = false;
+  bool _pendingActivated = false;
+  bool _recentActivated = false;
+
   /// public-facing stream of combined balances, grouped by currency.
-  Stream<List<WalletBalance>> get combinedBalances =>
-      _combinedBalancesSubject.stream;
+  late final Stream<List<WalletBalance>> combinedBalances =
+      _combinedBalancesSubject.stream.doOnListen(_activateBalances);
 
   /// public-facing stream of combined pending transactions.
-  Stream<List<WalletTransaction>> get combinedPendingTransactions =>
-      _combinedPendingTransactionsSubject.stream;
+  late final Stream<List<WalletTransaction>> combinedPendingTransactions =
+      _combinedPendingTransactionsSubject.stream.doOnListen(_activatePending);
 
   /// public-facing stream of combined recent transactions.
-  Stream<List<WalletTransaction>> get combinedRecentTransactions =>
-      _combinedRecentTransactionsSubject.stream;
+  late final Stream<List<WalletTransaction>> combinedRecentTransactions =
+      _combinedRecentTransactionsSubject.stream.doOnListen(_activateRecent);
+
+  void _activateBalances() {
+    if (_balancesActivated) return;
+    _balancesActivated = true;
+    for (final wallet in _wallets) {
+      _initBalanceStream(wallet.id);
+    }
+  }
+
+  void _activatePending() {
+    if (_pendingActivated) return;
+    _pendingActivated = true;
+    for (final wallet in _wallets) {
+      _initPendingTransactionStream(wallet.id);
+    }
+  }
+
+  void _activateRecent() {
+    if (_recentActivated) return;
+    _recentActivated = true;
+    for (final wallet in _wallets) {
+      _initRecentTransactionStream(wallet.id);
+    }
+  }
 
   /// stream of all wallets
   Stream<List<Wallet>> get walletsStream => _walletsSubject.stream;
@@ -189,8 +217,10 @@ class Wallets {
     _walletsRecentTransactions[wallet.id] = [];
 
     // Initialize transaction streams so combined feeds stay updated.
-    // _initPendingTransactionStream(wallet.id);
-    // _initRecentTransactionStream(wallet.id);
+    // Only subscribe if someone is already listening
+    if (_balancesActivated) _initBalanceStream(wallet.id);
+    if (_pendingActivated) _initPendingTransactionStream(wallet.id);
+    if (_recentActivated) _initRecentTransactionStream(wallet.id);
   }
 
   /// Create a new wallet using the appropriate provider
