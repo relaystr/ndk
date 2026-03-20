@@ -45,8 +45,6 @@ class MemCacheManager implements CacheManager {
   /// String for mint Url
   Map<String, Set<CashuProof>> cashuProofs = {};
 
-  List<WalletTransaction> transactions = [];
-
   Set<Wallet> wallets = {};
 
   Set<CashuMintInfo> cashuMintInfos = {};
