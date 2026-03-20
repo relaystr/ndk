@@ -200,7 +200,7 @@ packages:
       path: "../drift_cache_manager"
       relative: true
     source: path
-    version: "0.0.2-dev.0+1"
+    version: "0.0.2-dev.2"
   drift_flutter:
     dependency: transitive
     description:
@@ -627,21 +627,21 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.7.2-dev.0"
+    version: "0.7.2-dev.2"
   ndk_amber:
     dependency: "direct main"
     description:
       path: "../amber"
       relative: true
     source: path
-    version: "0.4.1-dev.0+1"
+    version: "0.4.1-dev.2"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.0.2-dev.2"
+    version: "0.0.2-dev.4"
   nested:
     dependency: transitive
     description:
@@ -656,7 +656,7 @@ packages:
       path: "../nip07_event_signer"
       relative: true
     source: path
-    version: "1.0.7-dev.1"
+    version: "1.0.7-dev.3"
   objective_c:
     dependency: transitive
     description:
@@ -999,7 +999,7 @@ packages:
       path: "../sembast_cache_manager"
       relative: true
     source: path
-    version: "1.0.8-dev.0"
+    version: "1.0.8-dev.2"
   sky_engine:
     dependency: transitive
     description: flutter
