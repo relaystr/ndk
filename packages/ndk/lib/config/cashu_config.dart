@@ -5,8 +5,8 @@ class CashuConfig {
   static const String DOMAIN_SEPARATOR_HashToCurve =
       'Secp256k1_HashToCurve_Cashu_';
 
-  static const Duration FUNDING_CHECK_INTERVAL = Duration(seconds: 2);
-  static const Duration SPEND_CHECK_INTERVAL = Duration(seconds: 5);
+  static const Duration FUNDING_CHECK_INTERVAL = Duration(seconds: 10);
+  static const Duration SPEND_CHECK_INTERVAL = Duration(seconds: 15);
 
   /// Timeout for network requests to mint - fails fast if mint is offline
   static const Duration NETWORK_TIMEOUT = Duration(seconds: 10);
