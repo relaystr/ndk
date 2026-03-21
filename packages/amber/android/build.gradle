@@ -1,4 +1,4 @@
-group ='com.sebdeveloper6952.amberflutter.amberflutter'
+group = 'com.sebdeveloper6952.amberflutter.amberflutter'
 version = '1.0-SNAPSHOT'
 
 buildscript {
@@ -70,7 +70,7 @@ android {
 subprojects {
     afterEvaluate { project ->
         if (project.extensions.findByName("android") != null) {
-            // Raise any plugin still stuck on old compileSdk values to at least 33
+            // Raise any plugin still stuck on old compileSdk values to 36
             Integer pluginCompileSdk = project.android.compileSdk
             if (pluginCompileSdk != null && pluginCompileSdk < 33) {
                 project.logger.warn(
