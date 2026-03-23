@@ -1,3 +1,9 @@
+## 1.0.8-dev.4
+
+ - **FIX**: db coupeling cashu proof, keyset sembast.
+ - **FIX**: sembast merge err.
+ - **FEAT**: cashu remove mint info.
+
 ## 1.0.8-dev.3
 
  - **FIX**: db coupeling cashu proof, keyset sembast.
