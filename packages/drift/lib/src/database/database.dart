@@ -21,6 +21,7 @@ part 'database.g.dart';
     CashuKeysets,
     CashuMintInfos,
     CashuSecretCounters,
+    KeyValues,
     Wallets,
     WalletTransactions,
   ],
@@ -36,7 +37,7 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -58,6 +59,10 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
           await m.createTable(cashuSecretCounters);
           await m.createTable(wallets);
           await m.createTable(walletTransactions);
+        }
+        if (from < 4) {
+          // Add key-value table for settings
+          await m.createTable(keyValues);
         }
       },
     );

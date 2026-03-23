@@ -184,6 +184,16 @@ class CashuSecretCounters extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Table for storing key-value settings
+@DataClassName('DbKeyValue')
+class KeyValues extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
 /// Table for storing wallets
 @DataClassName('DbWallet')
 class Wallets extends Table {

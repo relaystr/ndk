@@ -5738,6 +5738,223 @@ class CashuSecretCountersCompanion
   }
 }
 
+class $KeyValuesTable extends KeyValues
+    with TableInfo<$KeyValuesTable, DbKeyValue> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KeyValuesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'key_values';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DbKeyValue> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  DbKeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DbKeyValue(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      ),
+    );
+  }
+
+  @override
+  $KeyValuesTable createAlias(String alias) {
+    return $KeyValuesTable(attachedDatabase, alias);
+  }
+}
+
+class DbKeyValue extends DataClass implements Insertable<DbKeyValue> {
+  final String key;
+  final String? value;
+  const DbKeyValue({required this.key, this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    if (!nullToAbsent || value != null) {
+      map['value'] = Variable<String>(value);
+    }
+    return map;
+  }
+
+  KeyValuesCompanion toCompanion(bool nullToAbsent) {
+    return KeyValuesCompanion(
+      key: Value(key),
+      value: value == null && nullToAbsent
+          ? const Value.absent()
+          : Value(value),
+    );
+  }
+
+  factory DbKeyValue.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DbKeyValue(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String?>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String?>(value),
+    };
+  }
+
+  DbKeyValue copyWith({
+    String? key,
+    Value<String?> value = const Value.absent(),
+  }) => DbKeyValue(
+    key: key ?? this.key,
+    value: value.present ? value.value : this.value,
+  );
+  DbKeyValue copyWithCompanion(KeyValuesCompanion data) {
+    return DbKeyValue(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DbKeyValue(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DbKeyValue &&
+          other.key == this.key &&
+          other.value == this.value);
+}
+
+class KeyValuesCompanion extends UpdateCompanion<DbKeyValue> {
+  final Value<String> key;
+  final Value<String?> value;
+  final Value<int> rowid;
+  const KeyValuesCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  KeyValuesCompanion.insert({
+    required String key,
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : key = Value(key);
+  static Insertable<DbKeyValue> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  KeyValuesCompanion copyWith({
+    Value<String>? key,
+    Value<String?>? value,
+    Value<int>? rowid,
+  }) {
+    return KeyValuesCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KeyValuesCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $WalletsTable extends Wallets with TableInfo<$WalletsTable, DbWallet> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -6762,6 +6979,7 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
   late final $CashuMintInfosTable cashuMintInfos = $CashuMintInfosTable(this);
   late final $CashuSecretCountersTable cashuSecretCounters =
       $CashuSecretCountersTable(this);
+  late final $KeyValuesTable keyValues = $KeyValuesTable(this);
   late final $WalletsTable wallets = $WalletsTable(this);
   late final $WalletTransactionsTable walletTransactions =
       $WalletTransactionsTable(this);
@@ -6781,6 +6999,7 @@ abstract class _$NdkCacheDatabase extends GeneratedDatabase {
     cashuKeysets,
     cashuMintInfos,
     cashuSecretCounters,
+    keyValues,
     wallets,
     walletTransactions,
   ];
@@ -9707,6 +9926,145 @@ typedef $$CashuSecretCountersTableProcessedTableManager =
       DbCashuSecretCounter,
       PrefetchHooks Function()
     >;
+typedef $$KeyValuesTableCreateCompanionBuilder =
+    KeyValuesCompanion Function({
+      required String key,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+typedef $$KeyValuesTableUpdateCompanionBuilder =
+    KeyValuesCompanion Function({
+      Value<String> key,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+
+class $$KeyValuesTableFilterComposer
+    extends Composer<_$NdkCacheDatabase, $KeyValuesTable> {
+  $$KeyValuesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$KeyValuesTableOrderingComposer
+    extends Composer<_$NdkCacheDatabase, $KeyValuesTable> {
+  $$KeyValuesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$KeyValuesTableAnnotationComposer
+    extends Composer<_$NdkCacheDatabase, $KeyValuesTable> {
+  $$KeyValuesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $$KeyValuesTableTableManager
+    extends
+        RootTableManager<
+          _$NdkCacheDatabase,
+          $KeyValuesTable,
+          DbKeyValue,
+          $$KeyValuesTableFilterComposer,
+          $$KeyValuesTableOrderingComposer,
+          $$KeyValuesTableAnnotationComposer,
+          $$KeyValuesTableCreateCompanionBuilder,
+          $$KeyValuesTableUpdateCompanionBuilder,
+          (
+            DbKeyValue,
+            BaseReferences<_$NdkCacheDatabase, $KeyValuesTable, DbKeyValue>,
+          ),
+          DbKeyValue,
+          PrefetchHooks Function()
+        > {
+  $$KeyValuesTableTableManager(_$NdkCacheDatabase db, $KeyValuesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$KeyValuesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$KeyValuesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$KeyValuesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> key = const Value.absent(),
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => KeyValuesCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback:
+              ({
+                required String key,
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => KeyValuesCompanion.insert(
+                key: key,
+                value: value,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$KeyValuesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$NdkCacheDatabase,
+      $KeyValuesTable,
+      DbKeyValue,
+      $$KeyValuesTableFilterComposer,
+      $$KeyValuesTableOrderingComposer,
+      $$KeyValuesTableAnnotationComposer,
+      $$KeyValuesTableCreateCompanionBuilder,
+      $$KeyValuesTableUpdateCompanionBuilder,
+      (
+        DbKeyValue,
+        BaseReferences<_$NdkCacheDatabase, $KeyValuesTable, DbKeyValue>,
+      ),
+      DbKeyValue,
+      PrefetchHooks Function()
+    >;
 typedef $$WalletsTableCreateCompanionBuilder =
     WalletsCompanion Function({
       required String id,
@@ -10255,6 +10613,8 @@ class $NdkCacheDatabaseManager {
       $$CashuMintInfosTableTableManager(_db, _db.cashuMintInfos);
   $$CashuSecretCountersTableTableManager get cashuSecretCounters =>
       $$CashuSecretCountersTableTableManager(_db, _db.cashuSecretCounters);
+  $$KeyValuesTableTableManager get keyValues =>
+      $$KeyValuesTableTableManager(_db, _db.keyValues);
   $$WalletsTableTableManager get wallets =>
       $$WalletsTableTableManager(_db, _db.wallets);
   $$WalletTransactionsTableTableManager get walletTransactions =>

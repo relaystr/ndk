@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
@@ -14,15 +15,25 @@ import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.da
 import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
+import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
 
 import 'database/database.dart';
 
 /// A Drift-based implementation of the CacheManager for NDK.
-class DriftCacheManager extends CacheManager {
-  final NdkCacheDatabase _db;
+class DriftCacheManager extends WalletsRepo implements CacheManager {
+  static const String _defaultWalletForReceivingKey =
+      'default_wallet_for_receiving';
+  static const String _defaultWalletForSendingKey =
+      'default_wallet_for_sending';
 
-  DriftCacheManager(this._db);
+  final NdkCacheDatabase _db;
+  String? _defaultWalletIdForReceiving;
+  String? _defaultWalletIdForSending;
+
+  DriftCacheManager(this._db) {
+    unawaited(_initializeWalletDefaults());
+  }
 
   /// Creates a DriftCacheManager with a default database name.
   static Future<DriftCacheManager> create({String? dbName}) async {
@@ -1189,7 +1200,7 @@ class DriftCacheManager extends CacheManager {
   // =====================
 
   @override
-  Future<void> saveWallet(Wallet wallet) async {
+  Future<void> storeWallet(Wallet wallet) async {
     await _db
         .into(_db.wallets)
         .insertOnConflictUpdate(
@@ -1206,17 +1217,74 @@ class DriftCacheManager extends CacheManager {
   @override
   Future<void> removeWallet(String id) async {
     await (_db.delete(_db.wallets)..where((w) => w.id.equals(id))).go();
+
+    if (getDefaultWalletIdForReceiving() == id) {
+      setDefaultWalletForReceiving(null);
+    }
+    if (getDefaultWalletIdForSending() == id) {
+      setDefaultWalletForSending(null);
+    }
   }
 
   @override
-  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
+  Future<List<Wallet>> getWallets({List<String>? ids}) async {
     var query = _db.select(_db.wallets);
     if (ids != null && ids.isNotEmpty) {
       query = query..where((w) => w.id.isIn(ids));
     }
     final rows = await query.get();
-    if (rows.isEmpty && ids != null) return null;
+    if (rows.isEmpty && ids != null) return [];
     return rows.map(_walletFromRow).toList();
+  }
+
+  Future<String?> _getKeyValue(String key) async {
+    final row = await (_db.select(
+      _db.keyValues,
+    )..where((kv) => kv.key.equals(key))).getSingleOrNull();
+    return row?.value;
+  }
+
+  Future<void> _storeKeyValue({required String key, required String? value}) {
+    return _db
+        .into(_db.keyValues)
+        .insertOnConflictUpdate(
+          KeyValuesCompanion.insert(key: key, value: Value(value)),
+        );
+  }
+
+  @override
+  String? getDefaultWalletIdForReceiving() {
+    return _defaultWalletIdForReceiving;
+  }
+
+  @override
+  String? getDefaultWalletIdForSending() {
+    return _defaultWalletIdForSending;
+  }
+
+  @override
+  void setDefaultWalletForReceiving(String? walletId) {
+    _defaultWalletIdForReceiving = walletId;
+    unawaited(
+      _storeKeyValue(key: _defaultWalletForReceivingKey, value: walletId),
+    );
+  }
+
+  @override
+  void setDefaultWalletForSending(String? walletId) {
+    _defaultWalletIdForSending = walletId;
+    unawaited(
+      _storeKeyValue(key: _defaultWalletForSendingKey, value: walletId),
+    );
+  }
+
+  Future<void> _initializeWalletDefaults() async {
+    _defaultWalletIdForReceiving = await _getKeyValue(
+      _defaultWalletForReceivingKey,
+    );
+    _defaultWalletIdForSending = await _getKeyValue(
+      _defaultWalletForSendingKey,
+    );
   }
 
   Wallet _walletFromRow(DbWallet row) {
@@ -1263,9 +1331,7 @@ class DriftCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> saveTransactions({
-    required List<WalletTransaction> transactions,
-  }) async {
+  Future<void> saveTransactions(List<WalletTransaction> transactions) async {
     await _db.batch((batch) {
       for (final transaction in transactions) {
         batch.insert(
@@ -1358,8 +1424,11 @@ class DriftCacheManager extends CacheManager {
       _db.delete(_db.cashuKeysets).go(),
       _db.delete(_db.cashuMintInfos).go(),
       _db.delete(_db.cashuSecretCounters).go(),
+      _db.delete(_db.keyValues).go(),
       _db.delete(_db.wallets).go(),
       _db.delete(_db.walletTransactions).go(),
     ]);
+    _defaultWalletIdForReceiving = null;
+    _defaultWalletIdForSending = null;
   }
 }
