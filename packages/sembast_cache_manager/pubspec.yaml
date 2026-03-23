@@ -19,7 +19,7 @@ platforms:
   windows:
 
 dependencies:
-  ndk: ^0.7.2-dev.3
+  ndk: ^0.8.0-dev.1
   path: ^1.9.1
   sembast: ^3.8.6
 

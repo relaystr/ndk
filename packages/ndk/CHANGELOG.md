@@ -1,4 +1,4 @@
-## 0.7.2-dev.3
+## 0.8.0-dev.1
 
  - **REFACTOR**: filter keyset by active and unit.
  - **REFACTOR**: remove wallet prefix from cashu.

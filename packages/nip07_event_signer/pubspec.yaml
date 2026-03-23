@@ -10,7 +10,7 @@ environment:
   sdk: ^3.8.1
 
 dependencies:
-  ndk: ^0.7.2-dev.3
+  ndk: ^0.8.0-dev.1
   rxdart: ^0.28.0
 
 dev_dependencies:

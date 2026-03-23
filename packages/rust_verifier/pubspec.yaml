@@ -24,7 +24,7 @@ dependencies:
   flutter_rust_bridge: ^2.11.1
   bip39_mnemonic: ^4.0.1
   rust_lib_ndk: ^0.1.7-dev.2
-  ndk: ^0.7.2-dev.3
+  ndk: ^0.8.0-dev.1
 
 dependency_overrides:
 #  rust_lib_ndk:
