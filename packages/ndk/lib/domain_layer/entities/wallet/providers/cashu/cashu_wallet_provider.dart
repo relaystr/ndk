@@ -49,12 +49,12 @@ class CashuWalletProvider implements WalletProvider {
 
   @override
   Future<Wallet?> initialize(Wallet wallet) async {
-    // Cashu wallets don't need connection initialization
-    // They're stateless and use HTTP requests
-    // Mint info is already loaded in the wallet
-    final cashuWallet = wallet as CashuWallet;
+    if (wallet is! CashuWallet) {
+      throw ArgumentError('Expected a CashuWallet');
+    }
+
     // Ensure mint info is cached
-    await _cashuUseCase.getMintInfoNetwork(mintUrl: cashuWallet.mintUrl);
+    await _cashuUseCase.getMintInfoNetwork(mintUrl: wallet.mintUrl);
     return null; // No wallet update needed
   }
 
@@ -64,22 +64,21 @@ class CashuWalletProvider implements WalletProvider {
       throw ArgumentError('Expected a CashuWallet');
     }
 
-    final cashuWallet = wallet;
-
-    _cashuUseCase.deleteKnownMint(mintUrl: cashuWallet.mintUrl);
+    _cashuUseCase.deleteKnownMint(mintUrl: wallet.mintUrl);
   }
 
   @override
   Stream<List<WalletBalance>> getBalances(Wallet wallet) {
-    final cashuWallet = wallet as CashuWallet;
+    if (wallet is! CashuWallet) {
+      throw ArgumentError('Expected a CashuWallet');
+    }
+
     return _cashuUseCase.balances.map((balances) {
-      return balances
-          .where((b) => b.mintUrl == cashuWallet.mintUrl)
-          .expand((b) {
+      return balances.where((b) => b.mintUrl == wallet.mintUrl).expand((b) {
         return b.balances.entries.map((entry) => WalletBalance(
               unit: entry.key,
               amount: entry.value,
-              walletId: cashuWallet.id,
+              walletId: wallet.id,
             ));
       }).toList();
     });
@@ -87,26 +86,33 @@ class CashuWalletProvider implements WalletProvider {
 
   @override
   Stream<List<WalletTransaction>> getPendingTransactions(Wallet wallet) {
-    final cashuWallet = wallet as CashuWallet;
+    if (wallet is! CashuWallet) {
+      throw ArgumentError('Expected a CashuWallet');
+    }
     return _cashuUseCase.pendingTransactions.map((transactions) {
-      return transactions.where((tx) => tx.walletId == cashuWallet.id).toList();
+      return transactions.where((tx) => tx.walletId == wallet.id).toList();
     });
   }
 
   @override
   Stream<List<WalletTransaction>> getRecentTransactions(Wallet wallet) {
-    final cashuWallet = wallet as CashuWallet;
+    if (wallet is! CashuWallet) {
+      throw ArgumentError('Expected a CashuWallet');
+    }
+
     return _cashuUseCase.latestTransactions.map((transactions) {
-      return transactions.where((tx) => tx.walletId == cashuWallet.id).toList();
+      return transactions.where((tx) => tx.walletId == wallet.id).toList();
     });
   }
 
   @override
   Future<PayInvoiceResponse> send(Wallet wallet, String invoice) async {
-    final cashuWallet = wallet as CashuWallet;
+    if (wallet is! CashuWallet) {
+      throw ArgumentError('Expected a CashuWallet');
+    }
 
     final draftTransaction = await _cashuUseCase.initiateRedeem(
-      mintUrl: cashuWallet.mintUrl,
+      mintUrl: wallet.mintUrl,
       request: invoice,
       unit: 'sat',
       method: 'bolt11',
@@ -153,10 +159,12 @@ class CashuWalletProvider implements WalletProvider {
 
   @override
   Future<String> receive(Wallet wallet, int amountSats) async {
-    final cashuWallet = wallet as CashuWallet;
+    if (wallet is! CashuWallet) {
+      throw ArgumentError('Expected a CashuWallet');
+    }
 
     final draftTransaction = await _cashuUseCase.initiateFund(
-      mintUrl: cashuWallet.mintUrl,
+      mintUrl: wallet.mintUrl,
       amount: amountSats,
       unit: 'sat',
       method: 'bolt11',
