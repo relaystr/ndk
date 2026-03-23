@@ -1,3 +1,7 @@
+## 0.5.0-dev.4
+
+ - **PERF**: use secp256k1.
+
 ## 0.5.0-dev.3
 
  - **PERF**: use secp256k1.
