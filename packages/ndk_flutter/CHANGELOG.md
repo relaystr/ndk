@@ -1,3 +1,14 @@
+## 0.0.2-dev.7
+
+ - **FIX**: better wallet type choosing dialog.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
 ## 0.0.2-dev.6
 
  - **FIX**: better wallet type choosing dialog.
