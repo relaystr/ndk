@@ -1,3 +1,7 @@
+## 0.0.2-dev.7
+
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+
 ## 0.0.2-dev.6
 
  - **REFACTOR**: rename rawContent to content.
