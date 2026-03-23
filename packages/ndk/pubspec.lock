@@ -447,7 +447,7 @@ packages:
       path: "../bip32_keys"
       relative: true
     source: path
-    version: "0.1.0-dev.0+1"
+    version: "0.1.0-dev.1"
   ndk_cache_manager_test_suite:
     dependency: "direct dev"
     description:
