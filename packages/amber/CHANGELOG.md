@@ -1,3 +1,8 @@
+## 0.4.1-dev.4
+
+ - **REFACTOR**: rename removeWallet.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+
 ## 0.4.1-dev.3
 
  - **FEAT**: export amberflutter in ndk_amber package.

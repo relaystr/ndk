@@ -1,3 +1,8 @@
+## 0.1.7-dev.2
+
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
 ## 0.1.7-dev.1
 
  - **PERF**: use secp256k1.

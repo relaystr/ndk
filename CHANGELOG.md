@@ -15,6 +15,174 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`drift_cache_manager` - `v0.0.2-dev.4`](#drift_cache_manager---v002-dev4)
+ - [`ndk` - `v0.7.2-dev.3`](#ndk---v072-dev3)
+ - [`ndk_amber` - `v0.4.1-dev.4`](#ndk_amber---v041-dev4)
+ - [`ndk_bip32_keys` - `v0.1.0-dev.0+1`](#ndk_bip32_keys---v010-dev01)
+ - [`ndk_flutter` - `v0.0.2-dev.6`](#ndk_flutter---v002-dev6)
+ - [`ndk_objectbox` - `v0.2.8-dev.4`](#ndk_objectbox---v028-dev4)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.5`](#ndk_rust_verifier---v050-dev5)
+ - [`rust_lib_ndk` - `v0.1.7-dev.2`](#rust_lib_ndk---v017-dev2)
+ - [`sembast_cache_manager` - `v1.0.8-dev.3`](#sembast_cache_manager---v108-dev3)
+ - [`nip07_event_signer` - `v1.0.7-dev.4`](#nip07_event_signer---v107-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.7-dev.4`
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.4`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `ndk` - `v0.7.2-dev.3`
+
+ - **REFACTOR**: filter keyset by active and unit.
+ - **REFACTOR**: remove wallet prefix from cashu.
+ - **REFACTOR**: rename removeWallet.
+ - **REFACTOR**: remove acc prefix, clear seperation wallet.
+ - **FIX**: log body http request.
+ - **FIX**: cashu tests needed a wallet.
+ - **FIX**: missing wallets.dispose in ndk.destroy.
+ - **FIX**: initialization.
+ - **FIX**: nwc connection.
+ - **FIX**: broadcast state timeout.
+ - **FIX**: rollback removal of walletsRepo from ndkConfig.
+ - **FIX**: rollback removal of walletsRepo from ndkConfig.
+ - **FIX**: removed feat combinedTransactions.
+ - **FIX**: dispose combined balances activated.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: usecase name.
+ - **FIX**: restore save only unspend tokens.
+ - **FIX**: type parsing.
+ - **FIX**: spend, redeem exception handeling.
+ - **FIX**: cashu redeem failed transaction state.
+ - **FIX**: hook up deleteKnownMint to removeWallet.
+ - **FIX**: add keysets to decorator.
+ - **FIX**: store keysets from network.
+ - **FIX**: null err.
+ - **FIX**: cashu usecase naming.
+ - **FIX**: wallet transaction state storage.
+ - **FIX**: cleanup on ndk destroy.
+ - **FIX**: melt map output blanks to change.
+ - **FIX**: melt change parsing.
+ - **FIX**: allow fee reserve 0.
+ - **FIX**: swap split change, exact amount.
+ - **FIX**: mintUrl in CashuMintBalance.
+ - **FIX**: typo.
+ - **FIX**: check completion when transcation rcv.
+ - **FIX**: test secret comparison.
+ - **FIX**: dismiss large keyset amounts.
+ - **FIX**: sort swap outputs.
+ - **FIX**: correct balance with inactive keysets.
+ - **FIX**: getProofs mem cache manager.
+ - **FIX**: identify cashu proof by pubKey.
+ - **FIX**: dont add total balance.
+ - **FIX**: filter keyset for unit.
+ - **FIX**: cashuMintInfo fromJson add mintUrl.
+ - **FIX**: wallet filter balances by mint.
+ - **FIX**: save transaction to db.
+ - **FIX**: cashu balances grouping.
+ - **FEAT**: spending with state.
+ - **FEAT**: cashu mnemonic.
+ - **FEAT**: nut13 deterministic secrets.
+ - **FEAT**: rust deriveSecret.
+ - **FEAT**: seed phrase user api.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: fast key derivation.
+ - **FEAT**: fast multiply blind msg.
+ - **FEAT**: optimized proof select.
+ - **FEAT**: cashu restore.
+ - **FEAT**: save pending transactions.
+ - **FEAT**: auto detect wallet cache manager.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: init combined streams lazy.
+ - **FEAT**: dynamically create wallets based on usecase data.
+
+#### `ndk_amber` - `v0.4.1-dev.4`
+
+ - **REFACTOR**: rename removeWallet.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+
+#### `ndk_bip32_keys` - `v0.1.0-dev.0+1`
+
+ - **FIX**: add missing CHANGELOG & LICENCE for bip32_keys.
+
+#### `ndk_flutter` - `v0.0.2-dev.6`
+
+ - **FIX**: better wallet type choosing dialog.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_objectbox` - `v0.2.8-dev.4`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **REFACTOR**: remove acc prefix, clear seperation wallet.
+ - **REFACTOR**: remove wallet prefix from cashu.
+ - **FIX**: missing clear cashu/wallet stuff on clearAll.
+ - **FIX**: remove unique for cashu counter.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FIX**: getProofs mem cache manager.
+ - **FIX**: objectbox mintInfo parsing.
+ - **FIX**: objectbox transaction not async.
+ - **FIX**: type parsing.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: spending with state.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.5`
+
+ - **REFACTOR**: rename removeWallet.
+ - **PERF**: use secp256k1.
+ - **FEAT**: fast multiply blind msg.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.2`
+
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
+#### `sembast_cache_manager` - `v1.0.8-dev.3`
+
+ - **FIX**: db coupeling cashu proof, keyset sembast.
+ - **FIX**: sembast merge err.
+ - **FEAT**: cashu remove mint info.
+
+
+## 2026-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`drift_cache_manager` - `v0.0.2-dev.3`](#drift_cache_manager---v002-dev3)
  - [`ndk_amber` - `v0.4.1-dev.3`](#ndk_amber---v041-dev3)
  - [`ndk_flutter` - `v0.0.2-dev.5`](#ndk_flutter---v002-dev5)

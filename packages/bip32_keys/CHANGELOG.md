@@ -1,3 +1,7 @@
+## 0.1.0-dev.0+1
+
+ - **FIX**: add missing CHANGELOG & LICENCE for bip32_keys.
+
 # Changelog
 
 ## 0.1.0
