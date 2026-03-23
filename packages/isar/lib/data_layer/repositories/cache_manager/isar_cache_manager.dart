@@ -36,7 +36,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED UserRelayList ${userRelayList.pubKey} took ${duration.inMilliseconds} ms");
   }
 
@@ -58,7 +58,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED relaySet ${relaySet.name}+${relaySet.pubKey} took ${duration.inMilliseconds} ms");
   }
 
@@ -74,7 +74,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED ${userRelayLists.length} UserRelayLists took ${duration.inMilliseconds} ms");
   }
 
@@ -91,7 +91,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED ${contactList.pubKey} ContacList took ${duration.inMilliseconds} ms");
   }
 
@@ -104,7 +104,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED ${contactLists.length} ContactLists took ${duration.inMilliseconds} ms");
   }
 
@@ -167,7 +167,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t("SAVED Metadata took ${duration.inMilliseconds} ms");
+    Logger.log.t(() =>"SAVED Metadata took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -180,7 +180,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED ${metadatas.length} UserMetadatas took ${duration.inMilliseconds} ms");
   }
 
@@ -229,7 +229,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t("SAVED Nip05 took ${duration.inMilliseconds} ms");
+    Logger.log.t(() =>"SAVED Nip05 took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -241,7 +241,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED ${nip05s.length} UserNip05s took ${duration.inMilliseconds} ms");
   }
 
@@ -251,8 +251,8 @@ class IsarCacheManager extends CacheManager {
   }
 
   @override
-  Future<Nip05?> loadNip05(String pubKey) async {
-    return isar_ds.isar.dbNip05s.get(pubKey);
+  Future<Nip05?> loadNip05({String? pubKey, String? identifier}) async {
+    return isar_ds.isar.dbNip05s.get(pubKey!);
   }
 
   @override
@@ -279,7 +279,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t("SAVED Event took ${duration.inMilliseconds} ms");
+    Logger.log.t(() =>"SAVED Event took ${duration.inMilliseconds} ms");
   }
 
   @override
@@ -292,7 +292,7 @@ class IsarCacheManager extends CacheManager {
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     Logger.log
-        .t("SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
+        .t(() =>"SAVED ${events.length} Events took ${duration.inMilliseconds} ms");
   }
 
   // @override
@@ -447,7 +447,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED FilterFetchedRangeRecord took ${duration.inMilliseconds} ms");
   }
 
@@ -462,7 +462,7 @@ class IsarCacheManager extends CacheManager {
     });
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
-    Logger.log.t(
+    Logger.log.t(() =>
         "SAVED ${records.length} FilterFetchedRangeRecords took ${duration.inMilliseconds} ms");
   }
 
@@ -540,4 +540,7 @@ class IsarCacheManager extends CacheManager {
       isar.dbFilterFetchedRangeRecords.clear();
     });
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

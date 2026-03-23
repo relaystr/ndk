@@ -1,9 +1,7 @@
-import 'dart:async';
-
 import 'package:ndk/ndk.dart';
 
 import '../../../rust_bridge/api/event_verifier.dart';
-import '../../../rust_bridge/frb_generated.dart';
+import '../rust_lib_initializer.dart';
 
 /// An implementation of [EventVerifier] that uses Rust for event verification.
 ///
@@ -11,29 +9,10 @@ import '../../../rust_bridge/frb_generated.dart';
 /// verification of Nostr events using Rust's performance capabilities.
 /// The rust code runs in a separate isolate further increasing the the smoothness of the main thread.
 class RustEventVerifier implements EventVerifier {
-  /// A completer that tracks the initialization status of the Rust library
-  final Completer<bool> _isInitialized = Completer<bool>();
-  static bool calledInit = false;
+  final RustLibInitializer _initializer = RustLibInitializer();
 
-  /// Creates a new instance of [RustEventVerifier] and initializes the Rust library
-  RustEventVerifier() {
-    if (!calledInit) {
-      _init();
-      calledInit = true;
-    }
-  }
-
-  /// Initializes the Rust library.
-  ///
-  /// This method is called in the constructor and sets up the Rust environment
-  /// for event verification.
-  ///
-  /// Returns a [Future<bool>] that completes when initialization is done.
-  Future<bool> _init() async {
-    await RustLib.init();
-    _isInitialized.complete(true);
-    return true;
-  }
+  /// Creates a new instance of [RustEventVerifier]
+  RustEventVerifier();
 
   /// Verifies a Nostr event using the Rust implementation.
   ///
@@ -47,7 +26,7 @@ class RustEventVerifier implements EventVerifier {
 
   @override
   Future<bool> verify(Nip01Event event) async {
-    await _isInitialized.future;
+    await _initializer.ensureInitialized();
     if (event.sig == null) {
       return false;
     }

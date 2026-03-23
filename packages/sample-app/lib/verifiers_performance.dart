@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
 class MyVerifiers {

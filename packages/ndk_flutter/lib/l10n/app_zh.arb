@@ -27,7 +27,6 @@
   "readOnly": "只读",
   "nsec": "Nsec",
   "extension": "扩展",
-
   "userMetadata": "用户元数据",
   "shortTextNote": "短文本笔记",
   "recommendRelay": "推荐中继",
@@ -202,5 +201,203 @@
   "starterPacks": "新手包",
   "mediaStarterPacks": "媒体新手包",
   "webBookmarks": "网页书签",
-  "unknownEventKind": "事件类型 {kind}"
+  "unknownEventKind": "事件类型 {kind}",
+  "walletsTitle": "钱包",
+  "recentActivityTitle": "最近活动",
+  "addCashuWallet": "添加 Cashu 钱包",
+  "addNwcWallet": "添加 NWC 钱包",
+  "addLnurlWallet": "添加 LNURL 钱包",
+  "addCashuTooltip": "添加 Cashu 钱包",
+  "addNwcTooltip": "添加 NWC 钱包",
+  "addLnurlTooltip": "添加 LNURL 钱包",
+  "addCashuWalletTitle": "添加 Cashu 钱包",
+  "enterMintUrl": "输入 mint URL 以添加 Cashu 钱包。",
+  "mintUrl": "Mint URL",
+  "mintUrlHint": "https://mint.example.com",
+  "pleaseEnterMintUrl": "请输入 mint URL",
+  "cashuWalletAdded": "Cashu 钱包添加成功！",
+  "failedToAddMint": "添加 mint 失败。请检查 URL 后重试。",
+  "addNwcWalletTitle": "添加 NWC 钱包",
+  "faucet": "水龙头",
+  "manual": "手动",
+  "nwcFaucetDescription": "使用 NWC 水龙头的 sats 创建测试钱包。",
+  "startingBalance": "起始余额",
+  "startingBalanceHint": "10000",
+  "nwcConnectionUri": "NWC 连接 URI",
+  "nwcConnectionUriHint": "nostr+walletconnect://...",
+  "nwcWalletAdded": "NWC 钱包添加成功！",
+  "nwcFaucetWalletAdded": "已添加 {balance} sats 的 NWC 水龙头钱包！",
+  "invalidFaucetResponse": "水龙头响应无效",
+  "errorCreatingWallet": "创建钱包时出错",
+  "addLnurlWalletTitle": "添加 LNURL 钱包",
+  "enterLnurlIdentifier": "输入您的 LNURL 标识符 (user@domain.com)。",
+  "lnurlIdentifierHint": "user@example.com",
+  "pleaseEnterValidIdentifier": "请输入有效的标识符 (user@domain.com)",
+  "lnurlWalletAdded": "LNURL 钱包添加成功！",
+  "cancel": "取消",
+  "add": "添加",
+  "send": "发送",
+  "receive": "接收",
+  "setAsDefaultForReceiving": "设为接收默认钱包",
+  "setAsDefaultForSending": "设为发送默认钱包",
+  "defaultForReceiving": "接收默认钱包",
+  "defaultForSending": "发送默认钱包",
+  "defaultWalletForReceivingTooltip": "该钱包是接收付款的默认钱包。",
+  "defaultWalletForSendingTooltip": "该钱包是发送付款的默认钱包。",
+  "sendOptionsTitle": "发送选项",
+  "sendByToken": "通过 Token 发送",
+  "sendByTokenDescription": "创建要发送的 Cashu token",
+  "sendByLightning": "通过 Lightning 发送",
+  "sendByLightningDescription": "支付 Lightning 发票",
+  "payInvoiceTitle": "支付发票",
+  "invoice": "发票",
+  "invoiceHint": "lnbc...",
+  "pleaseEnterInvoice": "请输入发票",
+  "invoicePaid": "发票已支付！",
+  "paymentFailed": "支付失败：{message}",
+  "receiveOptionsTitle": "接收选项",
+  "receiveByToken": "通过 Token 接收",
+  "receiveByTokenDescription": "接收 Cashu token",
+  "receiveByLightning": "通过 Lightning 接收",
+  "receiveByLightningDescription": "创建 Lightning 发票",
+  "receiveByTokenTitle": "通过 Token 接收",
+  "token": "Token",
+  "tokenHint": "在此处粘贴 token...",
+  "pleaseEnterToken": "请输入 token",
+  "tokenReceived": "Token 已接收！",
+  "createInvoiceTitle": "创建发票",
+  "amount": "金额",
+  "amountHint": "100",
+  "pleaseEnterValidAmount": "请输入有效金额",
+  "tokenCopiedToClipboard": "Token 已复制到剪贴板！",
+  "invoiceCreatedAndCopied": "发票已创建并复制！",
+  "invoiceTrackingTitle": "Lightning 发票",
+  "invoiceCreatedMessage": "发票已创建并复制！",
+  "close": "关闭",
+  "copyAgain": "再次复制",
+  "copied": "已复制！",
+  "paymentReceived": "付款已接收！",
+  "waitingForPayment": "等待付款...",
+  "paid": "已支付！",
+  "createToken": "创建 Token",
+  "pay": "支付",
+  "create": "创建",
+  "pendingTransactions": "待处理",
+  "recentTransactions": "最近交易",
+  "noRecentTransactions": "无最近交易",
+  "noWalletsYet": "尚无钱包",
+  "noWalletsAvailable": "无可用钱包",
+  "tapToAddWallet": "点击 + 添加",
+  "delete": "删除",
+  "error": "错误：{message}",
+  "unknownWalletType": "未知",
+  "cashuWallet": "Cashu",
+  "nwcWallet": "NWC",
+  "lnurlWallet": "LNURL",
+  "balance": "余额",
+  "sats": "sats",
+  "selected": "已选择",
+  "receiveOnlyWallet": "仅接收钱包",
+  "receiveRange": "接收：{min} - {max} sats",
+  "limitsUnavailable": "限制不可用",
+  "nwcWalletSubtitle": "NWC 钱包",
+  "tokenCopied": "Token 已复制",
+  "deleteWalletConfirmation": "删除钱包?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "您确定要删除此钱包吗? 此操作无法撤销。",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "添加钱包",
+  "chooseWalletType": "选择钱包类型",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "连接 NWC",
+  "chooseNwcMethod": "选择连接方式",
+  "albyGoOption": "Alby Go",
+  "manualOption": "手动",
+  "faucetOption": "水龙头",
+  "invalidNwcQrCode": "无效的NWC二维码",
+  "scanNwcQrCodeTitle": "扫描NWC二维码",
+  "cameraNotAvailable": "相机不可用",
+  "scanNwcInstructions": "从您的NWC钱包应用扫描二维码",
+  "invalidNwcUri": "无效的NWC URI",
+  "paste": "粘贴",
+  "fromYourProfile": "来自您的个人资料",
+  "orEnterManually": "或手动输入:",
+  "budgetUsedOf": "预算：{used} / {total}",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "{days} 天后更新",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "每日",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "每周",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "每月",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "每年",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "从不",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "重命名",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "选择颜色",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "删除",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "钱包名称",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "输入钱包名称",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "保存",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "钱包已重命名",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

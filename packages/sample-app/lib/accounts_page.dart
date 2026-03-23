@@ -30,7 +30,7 @@ class _AccountsPageState extends State<AccountsPage> {
       []; // This would ideally be managed by NDK's account manager
   bool _isAddingAccount =
       false; // To toggle account addition form when logged in
-  Map<String, Metadata> _userMetadataCache = {}; // Cache for user metadata
+  final Map<String, Metadata> _userMetadataCache = {}; // Cache for user metadata
 
   late Amberflutter _amberService; // Amberflutter instance
   bool _amberIsAvailable = false;
@@ -107,7 +107,7 @@ class _AccountsPageState extends State<AccountsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('New Account Created'),
+          title: const Text('New Account Created'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -121,12 +121,12 @@ class _AccountsPageState extends State<AccountsPage> {
                     color: Colors.orange[800],
                   ),
                 ),
-                SizedBox(height: 16),
-                Text('Private Key (nsec):',
+                const SizedBox(height: 16),
+                const Text('Private Key (nsec):',
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Container(
-                  padding: EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(4),
@@ -138,16 +138,16 @@ class _AccountsPageState extends State<AccountsPage> {
                         child: SelectableText(
                           keyPair.privateKeyBech32 ?? '',
                           style:
-                              TextStyle(fontFamily: 'monospace', fontSize: 12),
+                              const TextStyle(fontFamily: 'monospace', fontSize: 12),
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.copy),
+                        icon: const Icon(Icons.copy),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(
                               text: keyPair.privateKeyBech32 ?? ''));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                                 content:
                                     Text('Private key copied to clipboard!')),
                           );
@@ -156,12 +156,12 @@ class _AccountsPageState extends State<AccountsPage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 16),
-                Text('Public Key (npub):',
+                const SizedBox(height: 16),
+                const Text('Public Key (npub):',
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Container(
-                  padding: EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(4),
@@ -172,16 +172,16 @@ class _AccountsPageState extends State<AccountsPage> {
                         child: SelectableText(
                           keyPair.publicKeyBech32 ?? '',
                           style:
-                              TextStyle(fontFamily: 'monospace', fontSize: 12),
+                              const TextStyle(fontFamily: 'monospace', fontSize: 12),
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.copy),
+                        icon: const Icon(Icons.copy),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(
                               text: keyPair.publicKeyBech32 ?? ''));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                                 content:
                                     Text('Public key copied to clipboard!')),
                           );
@@ -198,7 +198,7 @@ class _AccountsPageState extends State<AccountsPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('I have saved my keys'),
+              child: const Text('I have saved my keys'),
             ),
           ],
         );
@@ -219,7 +219,7 @@ class _AccountsPageState extends State<AccountsPage> {
         if (!nip19_decoder.Nip19.isPrivateKey(privateKey)) {
           // Use isPrivateKey for validation
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
                 content: Text('Invalid private key format, expected nsec.')),
           );
           return;
@@ -229,7 +229,7 @@ class _AccountsPageState extends State<AccountsPage> {
         if (hexPrivkey.isEmpty) {
           // Check if decoding failed
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to decode private key.')),
+            const SnackBar(content: Text('Failed to decode private key.')),
           );
           return;
         }
@@ -244,7 +244,7 @@ class _AccountsPageState extends State<AccountsPage> {
         _loadAccounts();
         widget.onAccountChanged?.call(); // Notify listener
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Logged in with private key!')),
+          const SnackBar(content: Text('Logged in with private key!')),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -268,7 +268,7 @@ class _AccountsPageState extends State<AccountsPage> {
           if (hexPubkey.isEmpty) {
             // Check if decoding failed
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to decode public key.')),
+              const SnackBar(content: Text('Failed to decode public key.')),
             );
             return;
           }
@@ -276,7 +276,7 @@ class _AccountsPageState extends State<AccountsPage> {
           // This case handles strings that start with "npub" but might not be valid
           // according to the more specific nip19_decoder.Nip19.isPubkey check.
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid npub public key format.')),
+            const SnackBar(content: Text('Invalid npub public key format.')),
           );
           return;
         }
@@ -288,7 +288,7 @@ class _AccountsPageState extends State<AccountsPage> {
         _loadAccounts();
         widget.onAccountChanged?.call(); // Notify listener
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Logged in with public key (read-only)!')),
+          const SnackBar(content: Text('Logged in with public key (read-only)!')),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -301,7 +301,7 @@ class _AccountsPageState extends State<AccountsPage> {
   Future<void> _loginWithAmber() async {
     if (!_amberIsAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Amber is not available on this device.')),
+        const SnackBar(content: Text('Amber is not available on this device.')),
       );
       return;
     }
@@ -326,7 +326,7 @@ class _AccountsPageState extends State<AccountsPage> {
           if (hexPubkey.isEmpty) {
             // Check if decoding failed
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                   content: Text('Failed to decode public key from Amber.')),
             );
             return;
@@ -335,7 +335,7 @@ class _AccountsPageState extends State<AccountsPage> {
           // This case handles strings that start with "npub" but might not be valid
           // according to the more specific nip19_decoder.Nip19.isPubkey check.
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
                 content: Text('Invalid npub public key format from Amber.')),
           );
           return;
@@ -354,7 +354,7 @@ class _AccountsPageState extends State<AccountsPage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
               content:
                   Text('Failed to get public key from Amber or key is empty.')),
         );
@@ -375,8 +375,8 @@ class _AccountsPageState extends State<AccountsPage> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Bunker Login'),
-            content: Column(
+            title: const Text('Bunker Login'),
+            content: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircularProgressIndicator(),
@@ -398,7 +398,7 @@ class _AccountsPageState extends State<AccountsPage> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
             ],
           );
@@ -422,7 +422,7 @@ class _AccountsPageState extends State<AccountsPage> {
           _loadAccounts();
           widget.onAccountChanged?.call();
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Logged in with bunker URL!')),
+            const SnackBar(content: Text('Logged in with bunker URL!')),
           );
         }
       } catch (e) {
@@ -451,25 +451,25 @@ class _AccountsPageState extends State<AccountsPage> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Nostr Connect'),
+            title: const Text('Nostr Connect'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                     'Paste this URL in your nsecbunker to authorize the connection:'),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Container(
-                  padding: EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: SelectableText(
                     nostrConnect.nostrConnectURL,
-                    style: TextStyle(fontFamily: 'monospace', fontSize: 12),
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -478,16 +478,16 @@ class _AccountsPageState extends State<AccountsPage> {
                           Clipboard.setData(ClipboardData(
                               text: nostrConnect.nostrConnectURL));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('URL copied to clipboard!')),
+                            const SnackBar(content: Text('URL copied to clipboard!')),
                           );
                         },
-                        child: Text('Copy URL'),
+                        child: const Text('Copy URL'),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   'Waiting for authorization...',
                   style: TextStyle(fontStyle: FontStyle.italic),
                 ),
@@ -498,7 +498,7 @@ class _AccountsPageState extends State<AccountsPage> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
             ],
           );
@@ -522,7 +522,7 @@ class _AccountsPageState extends State<AccountsPage> {
         _loadAccounts();
         widget.onAccountChanged?.call();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Logged in with Nostr Connect!')),
+          const SnackBar(content: Text('Logged in with Nostr Connect!')),
         );
       }
     } catch (e) {
@@ -543,7 +543,7 @@ class _AccountsPageState extends State<AccountsPage> {
       // Check if NIP-07 extension is available
       if (!nip07Signer.canSign()) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text(
                 'NIP-07 extension not detected. Please install a Nostr extension like nos2x, Alby, or Flamingo.'),
             duration: Duration(seconds: 5),
@@ -563,7 +563,7 @@ class _AccountsPageState extends State<AccountsPage> {
       widget.onAccountChanged?.call();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Logged in with NIP-07 extension!')),
+        const SnackBar(content: Text('Logged in with NIP-07 extension!')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -614,7 +614,7 @@ class _AccountsPageState extends State<AccountsPage> {
         if (hexPubkey.isEmpty) {
           // Check if decoding failed
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
                 content: Text('Failed to decode public key for switching.')),
           );
           return;
@@ -623,7 +623,7 @@ class _AccountsPageState extends State<AccountsPage> {
         // This case handles strings that start with "npub" but might not be valid
         // according to the more specific nip19_decoder.Nip19.isPubkey check.
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
               content: Text('Invalid npub public key format for switching.')),
         );
         return;
@@ -650,7 +650,7 @@ class _AccountsPageState extends State<AccountsPage> {
     _loadAccounts(); // This will now reflect that no user is active
     widget.onAccountChanged?.call(); // Notify listener
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Logged out')),
+      const SnackBar(content: Text('Logged out')),
     );
   }
 
@@ -663,17 +663,17 @@ class _AccountsPageState extends State<AccountsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Authorization Required'),
+          title: const Text('Authorization Required'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Please complete the authorization process using the URL below:',
                 style: TextStyle(fontSize: 16),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
                   borderRadius: BorderRadius.circular(8),
@@ -688,7 +688,7 @@ class _AccountsPageState extends State<AccountsPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -696,15 +696,15 @@ class _AccountsPageState extends State<AccountsPage> {
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: authUrl));
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('URL copied to clipboard!')),
+                          const SnackBar(content: Text('URL copied to clipboard!')),
                         );
                       },
-                      icon: Icon(Icons.copy),
-                      label: Text('Copy URL'),
+                      icon: const Icon(Icons.copy),
+                      label: const Text('Copy URL'),
                     ),
                   ),
                   if (isHttpsUrl) ...[
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () async {
@@ -714,12 +714,12 @@ class _AccountsPageState extends State<AccountsPage> {
                                 mode: LaunchMode.externalApplication);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Could not open URL')),
+                              const SnackBar(content: Text('Could not open URL')),
                             );
                           }
                         },
-                        icon: Icon(Icons.open_in_browser),
-                        label: Text('Open URL'),
+                        icon: const Icon(Icons.open_in_browser),
+                        label: const Text('Open URL'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
@@ -736,7 +736,7 @@ class _AccountsPageState extends State<AccountsPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: const Text('Close'),
             ),
           ],
         );
@@ -770,9 +770,9 @@ class _AccountsPageState extends State<AccountsPage> {
                         _isAddingAccount = false;
                       });
                     },
-                    child: const Text('Cancel Adding Account'),
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange),
+                    child: const Text('Cancel Adding Account'),
                   ),
                 ),
               Row(
@@ -912,9 +912,9 @@ class _AccountsPageState extends State<AccountsPage> {
                 children: [
                   ElevatedButton(
                     onPressed: _logout,
-                    child: const Text('Logout'),
                     style:
                         ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: const Text('Logout'),
                   ),
                   ElevatedButton(
                     onPressed: () {

@@ -16,6 +16,13 @@ part 'database.g.dart';
     RelaySets,
     Nip05s,
     FilterFetchedRangeRecords,
+    // Cashu tables
+    CashuProofs,
+    CashuKeysets,
+    CashuMintInfos,
+    CashuSecretCounters,
+    Wallets,
+    WalletTransactions,
   ],
 )
 class NdkCacheDatabase extends _$NdkCacheDatabase {
@@ -29,7 +36,7 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -42,6 +49,15 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
           // Add new columns for metadata tags and rawContent
           await m.addColumn(metadatas, metadatas.tagsJson);
           await m.addColumn(metadatas, metadatas.rawContentJson);
+        }
+        if (from < 3) {
+          // Add Cashu tables
+          await m.createTable(cashuProofs);
+          await m.createTable(cashuKeysets);
+          await m.createTable(cashuMintInfos);
+          await m.createTable(cashuSecretCounters);
+          await m.createTable(wallets);
+          await m.createTable(walletTransactions);
         }
       },
     );

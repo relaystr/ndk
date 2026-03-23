@@ -70,7 +70,7 @@ void main() async {
         valid: true);
     await cacheManager.saveNip05s([nip05]);
 
-    DbNip05? loadedNip05 = await cacheManager.loadNip05(pubKey1) as DbNip05?;
+    DbNip05? loadedNip05 = await cacheManager.loadNip05(pubKey: pubKey1) as DbNip05?;
     expect(loadedNip05!.id, nip05.id);
     expect(loadedNip05.nip05, nip05.nip05);
     expect(loadedNip05.networkFetchTime, nip05.networkFetchTime);

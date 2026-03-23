@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip19/nip19.dart';
 
 class AmberPage extends StatefulWidget {
   const AmberPage({super.key});

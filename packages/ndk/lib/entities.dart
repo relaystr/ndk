@@ -34,6 +34,29 @@ export 'domain_layer/entities/blob_upload_progress.dart';
 export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/account.dart';
 
+/// Cashu entities
+export 'domain_layer/entities/cashu/cashu_keyset.dart';
+export 'domain_layer/entities/cashu/cashu_proof.dart';
+export 'domain_layer/entities/cashu/cashu_mint_info.dart';
+export 'domain_layer/entities/cashu/cashu_token.dart';
+export 'domain_layer/entities/cashu/cashu_user_seedphrase.dart';
+export 'domain_layer/entities/cashu/cashu_blinded_message.dart';
+export 'domain_layer/entities/cashu/cashu_blinded_signature.dart';
+export 'domain_layer/entities/cashu/cashu_restore_result.dart';
+
+/// Wallet entities
+export 'domain_layer/entities/wallet/wallet.dart';
+export 'domain_layer/entities/wallet/wallet_transaction.dart';
+export 'domain_layer/entities/wallet/wallet_type.dart';
+export 'domain_layer/entities/wallet/wallet_balance.dart';
+export 'domain_layer/entities/wallet/wallet_factory.dart';
+export 'domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
+export 'domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
+export 'domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
+
+// testing
+export 'domain_layer/usecases/wallets/wallets.dart';
+
 /// models
 export 'data_layer/models/nip_01_event_model.dart';
 export 'domain_layer/entities/ndk_file.dart';

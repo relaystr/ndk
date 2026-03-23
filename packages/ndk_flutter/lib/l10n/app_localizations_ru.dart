@@ -617,4 +617,447 @@ class AppLocalizationsRu extends AppLocalizations {
   String unknownEventKind(int kind) {
     return 'Тип события $kind';
   }
+
+  @override
+  String get walletsTitle => 'Кошельки';
+
+  @override
+  String get recentActivityTitle => 'Недавняя Активность';
+
+  @override
+  String get addCashuWallet => 'Добавить Кошелёк Cashu';
+
+  @override
+  String get addNwcWallet => 'Добавить Кошелёк NWC';
+
+  @override
+  String get addLnurlWallet => 'Добавить Кошелёк LNURL';
+
+  @override
+  String get addCashuTooltip => 'Добавить Кошелёк Cashu';
+
+  @override
+  String get addNwcTooltip => 'Добавить Кошелёк NWC';
+
+  @override
+  String get addLnurlTooltip => 'Добавить Кошелёк LNURL';
+
+  @override
+  String get addCashuWalletTitle => 'Добавить Кошелёк Cashu';
+
+  @override
+  String get enterMintUrl => 'Введите URL минта для добавления кошелька Cashu.';
+
+  @override
+  String get mintUrl => 'URL Минта';
+
+  @override
+  String get mintUrlHint => 'https://mint.example.com';
+
+  @override
+  String get pleaseEnterMintUrl => 'Пожалуйста, введите URL минта';
+
+  @override
+  String get cashuWalletAdded => 'Кошелёк Cashu успешно добавлен!';
+
+  @override
+  String get failedToAddMint =>
+      'Не удалось добавить минт. Пожалуйста, проверьте URL и попробуйте снова.';
+
+  @override
+  String get addNwcWalletTitle => 'Добавить Кошелёк NWC';
+
+  @override
+  String get faucet => 'Кран';
+
+  @override
+  String get manual => 'Вручную';
+
+  @override
+  String get nwcFaucetDescription =>
+      'Создайте тестовый кошелёк с сатами из крана NWC.';
+
+  @override
+  String get startingBalance => 'Начальный Баланс';
+
+  @override
+  String get startingBalanceHint => '10000';
+
+  @override
+  String get nwcConnectionUri => 'URI Подключения NWC';
+
+  @override
+  String get nwcConnectionUriHint => 'nostr+walletconnect://...';
+
+  @override
+  String get nwcWalletAdded => 'Кошелёк NWC успешно добавлен!';
+
+  @override
+  String nwcFaucetWalletAdded(int balance) {
+    return 'Кошелёк крана NWC добавлен с $balance сатами!';
+  }
+
+  @override
+  String get invalidFaucetResponse => 'Неверный ответ от крана';
+
+  @override
+  String get errorCreatingWallet => 'Ошибка создания кошелька';
+
+  @override
+  String get addLnurlWalletTitle => 'Добавить Кошелёк LNURL';
+
+  @override
+  String get enterLnurlIdentifier =>
+      'Введите ваш LNURL идентификатор (user@domain.com).';
+
+  @override
+  String get lnurlIdentifierHint => 'user@example.com';
+
+  @override
+  String get pleaseEnterValidIdentifier =>
+      'Пожалуйста, введите действительный идентификатор (user@domain.com)';
+
+  @override
+  String get lnurlWalletAdded => 'Кошелёк LNURL успешно добавлен!';
+
+  @override
+  String get cancel => 'Отмена';
+
+  @override
+  String get add => 'Добавить';
+
+  @override
+  String get send => 'Отправить';
+
+  @override
+  String get receive => 'Получить';
+
+  @override
+  String get setAsDefaultForReceiving => 'Сделать по умолчанию для получения';
+
+  @override
+  String get setAsDefaultForSending => 'Сделать по умолчанию для отправки';
+
+  @override
+  String get defaultForReceiving => 'По умолчанию для получения';
+
+  @override
+  String get defaultForSending => 'По умолчанию для отправки';
+
+  @override
+  String get defaultWalletForReceivingTooltip =>
+      'Этот кошелёк используется по умолчанию для получения платежей.';
+
+  @override
+  String get defaultWalletForSendingTooltip =>
+      'Этот кошелёк используется по умолчанию для отправки платежей.';
+
+  @override
+  String get sendOptionsTitle => 'Опции Отправки';
+
+  @override
+  String get sendByToken => 'Отправить Токеном';
+
+  @override
+  String get sendByTokenDescription => 'Создать токен Cashu для отправки';
+
+  @override
+  String get sendByLightning => 'Отправить через Lightning';
+
+  @override
+  String get sendByLightningDescription => 'Оплатить Lightning-счёт';
+
+  @override
+  String get payInvoiceTitle => 'Оплатить Счёт';
+
+  @override
+  String get invoice => 'Счёт';
+
+  @override
+  String get invoiceHint => 'lnbc...';
+
+  @override
+  String get pleaseEnterInvoice => 'Пожалуйста, введите счёт';
+
+  @override
+  String get invoicePaid => 'Счёт оплачен!';
+
+  @override
+  String paymentFailed(String message) {
+    return 'Оплата не удалась: $message';
+  }
+
+  @override
+  String get receiveOptionsTitle => 'Опции Получения';
+
+  @override
+  String get receiveByToken => 'Получить Токеном';
+
+  @override
+  String get receiveByTokenDescription => 'Получить токен Cashu';
+
+  @override
+  String get receiveByLightning => 'Получить через Lightning';
+
+  @override
+  String get receiveByLightningDescription => 'Создать Lightning-счёт';
+
+  @override
+  String get receiveByTokenTitle => 'Получить Токеном';
+
+  @override
+  String get token => 'Токен';
+
+  @override
+  String get tokenHint => 'Вставьте токен здесь...';
+
+  @override
+  String get pleaseEnterToken => 'Пожалуйста, введите токен';
+
+  @override
+  String get tokenReceived => 'Токен получен!';
+
+  @override
+  String get createInvoiceTitle => 'Создать Счёт';
+
+  @override
+  String get amount => 'Сумма';
+
+  @override
+  String get amountHint => '100';
+
+  @override
+  String get pleaseEnterValidAmount =>
+      'Пожалуйста, введите действительную сумму';
+
+  @override
+  String get tokenCopiedToClipboard => 'Токен скопирован в буфер обмена!';
+
+  @override
+  String get invoiceCreatedAndCopied => 'Счёт создан и скопирован!';
+
+  @override
+  String get invoiceTrackingTitle => 'Lightning Счёт';
+
+  @override
+  String get invoiceCreatedMessage => 'Счёт создан и скопирован!';
+
+  @override
+  String get close => 'Закрыть';
+
+  @override
+  String get copyAgain => 'Копировать Снова';
+
+  @override
+  String get copied => 'Скопировано!';
+
+  @override
+  String get paymentReceived => 'Платёж получен!';
+
+  @override
+  String get waitingForPayment => 'Ожидание платежа...';
+
+  @override
+  String get paid => 'Оплачено!';
+
+  @override
+  String get createToken => 'Создать Токен';
+
+  @override
+  String get pay => 'Оплатить';
+
+  @override
+  String get create => 'Создать';
+
+  @override
+  String get pendingTransactions => 'В Ожидании';
+
+  @override
+  String get recentTransactions => 'Недавние Транзакции';
+
+  @override
+  String get noRecentTransactions => 'Нет недавних транзакций';
+
+  @override
+  String get noWalletsYet => 'Пока нет кошельков';
+
+  @override
+  String get noWalletsAvailable => 'Нет доступных кошельков';
+
+  @override
+  String get tapToAddWallet => 'Нажмите + чтобы добавить';
+
+  @override
+  String get delete => 'Удалить';
+
+  @override
+  String error(String message) {
+    return 'Ошибка: $message';
+  }
+
+  @override
+  String get unknownWalletType => 'Неизвестно';
+
+  @override
+  String get cashuWallet => 'Cashu';
+
+  @override
+  String get nwcWallet => 'NWC';
+
+  @override
+  String get lnurlWallet => 'LNURL';
+
+  @override
+  String get nwcWalletSubtitle => 'Кошелёк NWC';
+
+  @override
+  String get balance => 'Баланс';
+
+  @override
+  String get sats => 'саты';
+
+  @override
+  String get selected => 'ВЫБРАНО';
+
+  @override
+  String get receiveOnlyWallet => 'Кошелёк только для получения';
+
+  @override
+  String receiveRange(int min, int max) {
+    return 'Получить: $min - $max сат';
+  }
+
+  @override
+  String get limitsUnavailable => 'Лимиты недоступны';
+
+  @override
+  String get tokenCopied => 'Токен скопирован';
+
+  @override
+  String get deleteWalletConfirmation => 'Удалить Кошелёк?';
+
+  @override
+  String get deleteWalletConfirmationMessage =>
+      'Вы уверены, что хотите удалить этот кошелёк? Это действие нельзя отменить.';
+
+  @override
+  String get addWalletTitle => 'Добавить Кошелёк';
+
+  @override
+  String get chooseWalletType => 'Выберите тип кошелька';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle =>
+      'Подключение к существующему кошельку через NWC';
+
+  @override
+  String get lnurlWalletTypeTitle => 'Lightning-адрес (LNURL)';
+
+  @override
+  String get lnurlWalletTypeSubtitle => 'Получайте платежи на user@domain.com';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle =>
+      'Ecash-кошелёк на основе mint-узлов Cashu';
+
+  @override
+  String get connectNwcTitle => 'Подключить NWC';
+
+  @override
+  String get chooseNwcMethod => 'Выберите способ подключения';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get manualOption => 'Вручную';
+
+  @override
+  String get faucetOption => 'Кран';
+
+  @override
+  String get invalidNwcQrCode => 'Неверный QR-код NWC';
+
+  @override
+  String get scanNwcQrCodeTitle => 'Сканировать QR-код NWC';
+
+  @override
+  String get cameraNotAvailable => 'Камера недоступна';
+
+  @override
+  String get scanNwcInstructions =>
+      'Отсканируйте QR-код из приложения кошелька NWC';
+
+  @override
+  String get invalidNwcUri => 'Неверный URI NWC';
+
+  @override
+  String get paste => 'Вставить';
+
+  @override
+  String get fromYourProfile => 'Из вашего профиля';
+
+  @override
+  String get orEnterManually => 'Или введите вручную:';
+
+  @override
+  String get renameWallet => 'Переименовать';
+
+  @override
+  String get pickColor => 'Выбрать цвет';
+
+  @override
+  String get deleteWallet => 'Удалить';
+
+  @override
+  String get walletName => 'Название кошелька';
+
+  @override
+  String get walletNameHint => 'Введите название кошелька';
+
+  @override
+  String get save => 'Сохранить';
+
+  @override
+  String get walletRenamed => 'Кошелек переименован';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    return 'Бюджет: $used / $total';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return 'Обновление через $days дн.';
+  }
+
+  @override
+  String get budgetDaily => 'Ежедневно';
+
+  @override
+  String get budgetWeekly => 'Еженедельно';
+
+  @override
+  String get budgetMonthly => 'Ежемесячно';
+
+  @override
+  String get budgetYearly => 'Ежегодно';
+
+  @override
+  String get budgetNever => 'Никогда';
 }
