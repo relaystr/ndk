@@ -2,6 +2,10 @@
 
  - **FIX**: rename drift_cache_manager to ndk_drift. ([484faef2](https://github.com/relaystr/ndk/commit/484faef2e15beac36c654a44547e21e9cd4f2d08))
 
+## 0.1.0-dev.1
+
+ - **FIX**: rename drift_cache_manager to ndk_drift. ([484faef2](https://github.com/relaystr/ndk/commit/484faef2e15beac36c654a44547e21e9cd4f2d08))
+
 ## 0.0.2-dev.6
 
  - **REFACTOR**: rename rawContent to content.

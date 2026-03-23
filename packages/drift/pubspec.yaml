@@ -1,6 +1,6 @@
 name: ndk_drift
 description: A Drift-based cache manager for the NDK (Nostr Development Kit) library, providing persistent SQLite storage for Nostr protocol data.
-version: 0.0.2-dev.7
+version: 0.1.0-dev.1
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
