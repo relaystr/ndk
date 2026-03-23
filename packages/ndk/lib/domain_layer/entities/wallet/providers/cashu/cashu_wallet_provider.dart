@@ -60,9 +60,13 @@ class CashuWalletProvider implements WalletProvider {
 
   @override
   Future<void> removeWallet(Wallet wallet) async {
-    // Cashu wallets don't have connections to close
-    // Streams are managed by the Cashu usecase
-    // No cleanup needed per-wallet
+    if (wallet is! CashuWallet) {
+      throw ArgumentError('Expected a CashuWallet');
+    }
+
+    final cashuWallet = wallet;
+
+    _cashuUseCase.deleteKnownMint(mintUrl: cashuWallet.mintUrl);
   }
 
   @override
