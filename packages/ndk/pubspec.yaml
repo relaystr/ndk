@@ -22,6 +22,7 @@ platforms:
   windows:
 
 dependencies:
+  ndk_bip32_keys: ^0.1.0
   http: ^1.6.0
   bip340: ">=0.3.0 <0.4.0"
   bech32: ^0.2.2
@@ -45,7 +46,6 @@ dependencies:
   ffi: ^2.1.4
   web: ^1.1.1
   sembast: ">=3.8.6 <4.0.0"
-  bs58check: ^1.0.2
 
 
 

@@ -473,6 +473,13 @@ packages:
       relative: true
     source: path
     version: "0.7.2-dev.2"
+  ndk_bip32_keys:
+    dependency: "direct overridden"
+    description:
+      path: "../bip32_keys"
+      relative: true
+    source: path
+    version: "0.1.0"
   package_config:
     dependency: transitive
     description:

@@ -100,7 +100,7 @@ enum Slip132 {
   static Slip132? tryParse(String input) {
     try {
       return parsePublicKey(input);
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
