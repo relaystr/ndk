@@ -1,3 +1,7 @@
+## 0.4.1-dev.3
+
+ - **FEAT**: export amberflutter in ndk_amber package.
+
 ## 0.4.1-dev.2
 
  - Update a dependency to the latest release.
