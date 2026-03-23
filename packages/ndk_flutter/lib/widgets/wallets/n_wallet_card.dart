@@ -80,7 +80,6 @@ class NWalletCard extends StatefulWidget {
 class _NWalletCardState extends State<NWalletCard> {
   List<Color>? _customGradientColors;
   GetBudgetResponse? _budgetResponse;
-  bool _isLoadingBudget = false;
 
   @override
   void initState() {
@@ -100,56 +99,30 @@ class _NWalletCardState extends State<NWalletCard> {
 
     final nwcWallet = widget.wallet as NwcWallet;
 
-    setState(() {
-      _isLoadingBudget = true;
-    });
+    // Use the balance stream to detect when wallet is fully initialized
+    // The wallets system initializes the wallet when getting balances
+    await for (final _
+        in widget.ndkFlutter.ndk.wallets.getBalancesStream(nwcWallet.id).take(1).timeout(const Duration(seconds: 10))) {
+      // Got balance data - wallet is connected
+      break;
+    }
 
-    try {
-      // Use the balance stream to detect when wallet is fully initialized
-      // The wallets system initializes the wallet when getting balances
-      await for (final _
-          in widget.ndkFlutter.ndk.wallets
-              .getBalancesStream(nwcWallet.id)
-              .take(1)
-              .timeout(const Duration(seconds: 10))) {
-        // Got balance data - wallet is connected
-        break;
-      }
+    final connection = nwcWallet.connection;
+    if (connection == null || connection.permissions.isEmpty) {
+      return;
+    }
 
-      final connection = nwcWallet.connection;
-      if (connection == null || connection.permissions.isEmpty) {
-        if (mounted) {
-          setState(() {
-            _isLoadingBudget = false;
-          });
-        }
-        return;
-      }
+    // Check if get_budget permission is available
+    if (!connection.permissions.contains(NwcMethod.GET_BUDGET.name)) {
+      return;
+    }
 
-      // Check if get_budget permission is available
-      if (!connection.permissions.contains(NwcMethod.GET_BUDGET.name)) {
-        if (mounted) {
-          setState(() {
-            _isLoadingBudget = false;
-          });
-        }
-        return;
-      }
+    final budget = await widget.ndkFlutter.ndk.nwc.getBudget(connection);
 
-      final budget = await widget.ndkFlutter.ndk.nwc.getBudget(connection);
-
-      if (mounted) {
-        setState(() {
-          _budgetResponse = budget;
-          _isLoadingBudget = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoadingBudget = false;
-        });
-      }
+    if (mounted) {
+      setState(() {
+        _budgetResponse = budget;
+      });
     }
   }
 
@@ -158,9 +131,7 @@ class _NWalletCardState extends State<NWalletCard> {
     if (customColorValue != null) {
       final color = Color(customColorValue);
       final hsl = HSLColor.fromColor(color);
-      final lighterColor = hsl
-          .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
-          .toColor();
+      final lighterColor = hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
       _customGradientColors = [color, lighterColor];
     } else {
       _customGradientColors = null;
@@ -172,8 +143,7 @@ class _NWalletCardState extends State<NWalletCard> {
     super.didUpdateWidget(oldWidget);
     // Reload color when wallet changes or is updated
     if (oldWidget.wallet.id != widget.wallet.id ||
-        oldWidget.wallet.metadata['cardColor'] !=
-            widget.wallet.metadata['cardColor']) {
+        oldWidget.wallet.metadata['cardColor'] != widget.wallet.metadata['cardColor']) {
       setState(() {
         _loadCustomColor();
       });
@@ -191,22 +161,15 @@ class _NWalletCardState extends State<NWalletCard> {
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
     final bool canShowNwcBalance =
-        !isNwc ||
-        ((widget.wallet as NwcWallet).connection?.permissions.contains(
-              NwcMethod.GET_BALANCE.name,
-            ) ??
-            false);
+        !isNwc || ((widget.wallet as NwcWallet).connection?.permissions.contains(NwcMethod.GET_BALANCE.name) ?? false);
     final bool showBudgetInfo = isNwc && _shouldShowBudgetInfo();
-    final bool isNwcReceiveOnly =
-        isNwc && widget.wallet.canReceive && !widget.wallet.canSend;
+    final bool isNwcReceiveOnly = isNwc && widget.wallet.canReceive && !widget.wallet.canSend;
 
     final String walletName;
     if (isCashu) {
       final cashuWallet = widget.wallet as CashuWallet;
       // Use custom wallet.name if set, otherwise fall back to mint name
-      walletName = cashuWallet.name.isNotEmpty
-          ? cashuWallet.name
-          : (cashuWallet.mintInfo.name ?? l10n.cashuWallet);
+      walletName = cashuWallet.name.isNotEmpty ? cashuWallet.name : (cashuWallet.mintInfo.name ?? l10n.cashuWallet);
     } else if (isNwc) {
       walletName = (widget.wallet as NwcWallet).name;
     } else if (isLnurl) {
@@ -217,17 +180,12 @@ class _NWalletCardState extends State<NWalletCard> {
 
     final String subtitle;
     if (isCashu) {
-      subtitle = (widget.wallet as CashuWallet).mintUrl.replaceAll(
-        'https://',
-        '',
-      );
+      subtitle = (widget.wallet as CashuWallet).mintUrl.replaceAll('https://', '');
     } else if (isNwc) {
       subtitle = l10n.nwcWalletSubtitle;
     } else if (isLnurl) {
       final lnurlWallet = widget.wallet as LnurlWallet;
-      subtitle = lnurlWallet.identifier == lnurlWallet.name
-          ? ''
-          : lnurlWallet.identifier;
+      subtitle = lnurlWallet.identifier == lnurlWallet.name ? '' : lnurlWallet.identifier;
     } else {
       subtitle = '';
     }
@@ -242,9 +200,7 @@ class _NWalletCardState extends State<NWalletCard> {
       if (customColorValue != null) {
         final color = Color(customColorValue);
         final hsl = HSLColor.fromColor(color);
-        final lighterColor = hsl
-            .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
-            .toColor();
+        final lighterColor = hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
         gradientColors = [color, lighterColor];
       } else {
         gradientColors = _getDefaultGradientColors(isCashu, isNwc, isLnurl);
@@ -284,18 +240,10 @@ class _NWalletCardState extends State<NWalletCard> {
                 width: iconConfig.iconSize,
                 height: iconConfig.iconSize,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(
-                    fallbackIcon,
-                    color: Colors.white,
-                    size: iconConfig.iconSize,
-                  );
+                  return Icon(fallbackIcon, color: Colors.white, size: iconConfig.iconSize);
                 },
               )
-            : Icon(
-                fallbackIcon,
-                color: Colors.white,
-                size: iconConfig.iconSize,
-              ));
+            : Icon(fallbackIcon, color: Colors.white, size: iconConfig.iconSize));
 
     // Build background widget
     final Widget backgroundWidget =
@@ -306,22 +254,12 @@ class _NWalletCardState extends State<NWalletCard> {
                 package: 'ndk_flutter',
                 width: iconConfig.backgroundSize,
                 height: iconConfig.backgroundSize,
-                color: Colors.white.withAlpha(
-                  (iconConfig.backgroundOpacity * 255).round(),
-                ),
+                color: Colors.white.withAlpha((iconConfig.backgroundOpacity * 255).round()),
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(
-                    fallbackIcon,
-                    size: iconConfig.backgroundSize,
-                    color: Colors.white.withAlpha(30),
-                  );
+                  return Icon(fallbackIcon, size: iconConfig.backgroundSize, color: Colors.white.withAlpha(30));
                 },
               )
-            : Icon(
-                fallbackIcon,
-                size: iconConfig.backgroundSize,
-                color: Colors.white.withAlpha(30),
-              ));
+            : Icon(fallbackIcon, size: iconConfig.backgroundSize, color: Colors.white.withAlpha(30)));
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -330,21 +268,9 @@ class _NWalletCardState extends State<NWalletCard> {
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: gradientColors,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: shadowColor.withAlpha(100),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: widget.isSelected
-              ? Border.all(color: Colors.white, width: 3)
-              : null,
+          gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradientColors),
+          boxShadow: [BoxShadow(color: shadowColor.withAlpha(100), blurRadius: 8, offset: const Offset(0, 4))],
+          border: widget.isSelected ? Border.all(color: Colors.white, width: 3) : null,
         ),
         child: Stack(
           children: [
@@ -386,11 +312,7 @@ class _NWalletCardState extends State<NWalletCard> {
                     children: [
                       Text(
                         walletName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -398,10 +320,7 @@ class _NWalletCardState extends State<NWalletCard> {
                         const SizedBox(height: 4),
                         Text(
                           subtitle,
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(200),
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -410,21 +329,13 @@ class _NWalletCardState extends State<NWalletCard> {
                         const SizedBox(height: 4),
                         Text(
                           l10n.receiveOnlyWallet,
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(200),
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
                         ),
                       ],
                       SizedBox(height: showBudgetInfo ? 4 : 16),
                       isLnurl
-                          ? _buildLnurlInfo(
-                              context,
-                              widget.wallet as LnurlWallet,
-                            )
-                          : (canShowNwcBalance
-                                ? _buildBalance(context)
-                                : const SizedBox.shrink()),
+                          ? _buildLnurlInfo(context, widget.wallet as LnurlWallet)
+                          : (canShowNwcBalance ? _buildBalance(context) : const SizedBox.shrink()),
                       if (showBudgetInfo) _buildBudgetInfo(context),
                     ],
                   ),
@@ -444,20 +355,11 @@ class _NWalletCardState extends State<NWalletCard> {
                         enabled: !widget.isDefaultForReceiving,
                         child: Row(
                           children: [
-                            Icon(
-                              widget.isDefaultForReceiving
-                                  ? Icons.check_circle
-                                  : Icons.call_received,
-                              size: 20,
-                            ),
+                            Icon(widget.isDefaultForReceiving ? Icons.check_circle : Icons.call_received, size: 20),
                             const SizedBox(width: 8),
                             Text(
-                              widget.isDefaultForReceiving
-                                  ? l10n.defaultForReceiving
-                                  : l10n.setAsDefaultForReceiving,
-                              style: widget.isDefaultForReceiving
-                                  ? const TextStyle(color: Colors.grey)
-                                  : null,
+                              widget.isDefaultForReceiving ? l10n.defaultForReceiving : l10n.setAsDefaultForReceiving,
+                              style: widget.isDefaultForReceiving ? const TextStyle(color: Colors.grey) : null,
                             ),
                           ],
                         ),
@@ -468,20 +370,11 @@ class _NWalletCardState extends State<NWalletCard> {
                         enabled: !widget.isDefaultForSending,
                         child: Row(
                           children: [
-                            Icon(
-                              widget.isDefaultForSending
-                                  ? Icons.check_circle
-                                  : Icons.call_made,
-                              size: 20,
-                            ),
+                            Icon(widget.isDefaultForSending ? Icons.check_circle : Icons.call_made, size: 20),
                             const SizedBox(width: 8),
                             Text(
-                              widget.isDefaultForSending
-                                  ? l10n.defaultForSending
-                                  : l10n.setAsDefaultForSending,
-                              style: widget.isDefaultForSending
-                                  ? const TextStyle(color: Colors.grey)
-                                  : null,
+                              widget.isDefaultForSending ? l10n.defaultForSending : l10n.setAsDefaultForSending,
+                              style: widget.isDefaultForSending ? const TextStyle(color: Colors.grey) : null,
                             ),
                           ],
                         ),
@@ -494,21 +387,13 @@ class _NWalletCardState extends State<NWalletCard> {
                     PopupMenuItem(
                       value: 'rename',
                       child: Row(
-                        children: [
-                          const Icon(Icons.edit, size: 20),
-                          const SizedBox(width: 8),
-                          Text(l10n.renameWallet),
-                        ],
+                        children: [const Icon(Icons.edit, size: 20), const SizedBox(width: 8), Text(l10n.renameWallet)],
                       ),
                     ),
                     PopupMenuItem(
                       value: 'color',
                       child: Row(
-                        children: [
-                          const Icon(Icons.palette, size: 20),
-                          const SizedBox(width: 8),
-                          Text(l10n.pickColor),
-                        ],
+                        children: [const Icon(Icons.palette, size: 20), const SizedBox(width: 8), Text(l10n.pickColor)],
                       ),
                     ),
                     const PopupMenuDivider(),
@@ -516,18 +401,9 @@ class _NWalletCardState extends State<NWalletCard> {
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.delete_outline,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                          Icon(Icons.delete_outline, size: 20, color: Theme.of(context).colorScheme.error),
                           const SizedBox(width: 8),
-                          Text(
-                            l10n.deleteWallet,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
+                          Text(l10n.deleteWallet, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                         ],
                       ),
                     ),
@@ -536,14 +412,11 @@ class _NWalletCardState extends State<NWalletCard> {
                 onSelected: (value) async {
                   switch (value) {
                     case 'set_default_receive':
-                      widget.ndkFlutter.ndk.wallets
-                          .setDefaultWalletForReceiving(widget.wallet.id);
+                      widget.ndkFlutter.ndk.wallets.setDefaultWalletForReceiving(widget.wallet.id);
                       widget.onDefaultWalletChanged?.call();
                       break;
                     case 'set_default_send':
-                      widget.ndkFlutter.ndk.wallets.setDefaultWalletForSending(
-                        widget.wallet.id,
-                      );
+                      widget.ndkFlutter.ndk.wallets.setDefaultWalletForSending(widget.wallet.id);
                       widget.onDefaultWalletChanged?.call();
                       break;
                     case 'rename':
@@ -578,25 +451,15 @@ class _NWalletCardState extends State<NWalletCard> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.isDefaultForReceiving)
-          _buildDefaultRibbonTag(
-            icon: Icons.call_received,
-            tooltipMessage: l10n.defaultWalletForReceivingTooltip,
-          ),
-        if (widget.isDefaultForReceiving && widget.isDefaultForSending)
-          const SizedBox(width: 6),
+          _buildDefaultRibbonTag(icon: Icons.call_received, tooltipMessage: l10n.defaultWalletForReceivingTooltip),
+        if (widget.isDefaultForReceiving && widget.isDefaultForSending) const SizedBox(width: 6),
         if (widget.isDefaultForSending)
-          _buildDefaultRibbonTag(
-            icon: Icons.call_made,
-            tooltipMessage: l10n.defaultWalletForSendingTooltip,
-          ),
+          _buildDefaultRibbonTag(icon: Icons.call_made, tooltipMessage: l10n.defaultWalletForSendingTooltip),
       ],
     );
   }
 
-  Widget _buildDefaultRibbonTag({
-    required IconData icon,
-    required String tooltipMessage,
-  }) {
+  Widget _buildDefaultRibbonTag({required IconData icon, required String tooltipMessage}) {
     const Color ribbonColor = Color(0xFFcccccc);
     const Color foldColor = Color(0xFFEDEDED);
     const Color borderColor = Colors.black;
@@ -621,9 +484,7 @@ class _NWalletCardState extends State<NWalletCard> {
                 decoration: BoxDecoration(
                   color: foldColor,
                   border: Border.all(color: borderColor, width: 1),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(2),
-                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
                 ),
               ),
             ),
@@ -634,10 +495,7 @@ class _NWalletCardState extends State<NWalletCard> {
               child: SizedBox(
                 height: 42,
                 child: CustomPaint(
-                  painter: const _RibbonPainter(
-                    fillColor: ribbonColor,
-                    borderColor: borderColor,
-                  ),
+                  painter: const _RibbonPainter(fillColor: ribbonColor, borderColor: borderColor),
                   child: Align(
                     alignment: const Alignment(0, -0.08),
                     child: Icon(icon, size: 12, color: iconColor),
@@ -651,18 +509,11 @@ class _NWalletCardState extends State<NWalletCard> {
     );
   }
 
-  List<Color> _getDefaultGradientColors(
-    bool isCashu,
-    bool isNwc,
-    bool isLnurl,
-  ) {
+  List<Color> _getDefaultGradientColors(bool isCashu, bool isNwc, bool isLnurl) {
     if (isCashu) {
       return [const Color(0xFF7F38CA), const Color(0xFF9B5AD8)];
     } else if (isNwc) {
-      return [
-        const Color.fromRGBO(137, 127, 255, 1.0),
-        const Color.fromRGBO(160, 153, 255, 1.0),
-      ];
+      return [const Color.fromRGBO(137, 127, 255, 1.0), const Color.fromRGBO(160, 153, 255, 1.0)];
     } else if (isLnurl) {
       return [const Color(0xFFFFB300), const Color(0xFFFFC107)];
     } else {
@@ -690,41 +541,22 @@ class _NWalletCardState extends State<NWalletCard> {
             autofocus: true,
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.cancel),
-            ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(context, nameController.text.trim()),
-              child: Text(l10n.save),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+            TextButton(onPressed: () => Navigator.pop(context, nameController.text.trim()), child: Text(l10n.save)),
           ],
         );
       },
     );
 
-    if (newName != null &&
-        newName.isNotEmpty &&
-        newName != widget.wallet.name) {
+    if (newName != null && newName.isNotEmpty && newName != widget.wallet.name) {
       try {
         setState(() {
           widget.wallet.name = newName;
         });
         await widget.ndkFlutter.ndk.wallets.addWallet(widget.wallet);
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.walletRenamed),
-            backgroundColor: Colors.green,
-          ),
-        );
+        scaffoldMessenger.showSnackBar(SnackBar(content: Text(l10n.walletRenamed), backgroundColor: Colors.green));
       } catch (e) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.error(e.toString())),
-            backgroundColor: Colors.red,
-          ),
-        );
+        scaffoldMessenger.showSnackBar(SnackBar(content: Text(l10n.error(e.toString())), backgroundColor: Colors.red));
       }
     }
   }
@@ -786,15 +618,9 @@ class _NWalletCardState extends State<NWalletCard> {
                         decoration: BoxDecoration(
                           color: color,
                           borderRadius: BorderRadius.circular(20),
-                          border: selectedColor == color
-                              ? Border.all(color: Colors.white, width: 3)
-                              : null,
+                          border: selectedColor == color ? Border.all(color: Colors.white, width: 3) : null,
                           boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(50),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
+                            BoxShadow(color: Colors.black.withAlpha(50), blurRadius: 4, offset: const Offset(0, 2)),
                           ],
                         ),
                       ),
@@ -803,14 +629,8 @@ class _NWalletCardState extends State<NWalletCard> {
                 ),
               ),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(l10n.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, selectedColor),
-                  child: Text(l10n.save),
-                ),
+                TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+                TextButton(onPressed: () => Navigator.pop(context, selectedColor), child: Text(l10n.save)),
               ],
             );
           },
@@ -822,17 +642,13 @@ class _NWalletCardState extends State<NWalletCard> {
       setState(() {
         // Create a gradient from the selected color to a lighter version
         final hsl = HSLColor.fromColor(result);
-        final lighterColor = hsl
-            .withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0))
-            .toColor();
+        final lighterColor = hsl.withLightness((hsl.lightness + 0.2).clamp(0.0, 1.0)).toColor();
         _customGradientColors = [result, lighterColor];
       });
 
       // Save color to wallet metadata by creating updated wallet
       try {
-        final updatedMetadata = Map<String, dynamic>.from(
-          widget.wallet.metadata,
-        );
+        final updatedMetadata = Map<String, dynamic>.from(widget.wallet.metadata);
         updatedMetadata['cardColor'] = result.value;
 
         Wallet updatedWallet;
@@ -875,12 +691,9 @@ class _NWalletCardState extends State<NWalletCard> {
         await widget.ndkFlutter.ndk.wallets.addWallet(updatedWallet);
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to save color: ${e.toString()}'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to save color: ${e.toString()}'), backgroundColor: Colors.red));
         }
       }
     }
@@ -892,30 +705,17 @@ class _NWalletCardState extends State<NWalletCard> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.receiveOnlyWallet,
-            style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
-          ),
+          Text(l10n.receiveOnlyWallet, style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12)),
           const SizedBox(height: 4),
           Text(
-            l10n.receiveRange(
-              lnWallet.minSendable! ~/ 1000,
-              lnWallet.maxSendable! ~/ 1000,
-            ),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            l10n.receiveRange(lnWallet.minSendable! ~/ 1000, lnWallet.maxSendable! ~/ 1000),
+            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
           ),
         ],
       );
     }
 
-    return Text(
-      l10n.limitsUnavailable,
-      style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
-    );
+    return Text(l10n.limitsUnavailable, style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12));
   }
 
   Widget _buildBalance(BuildContext context) {
@@ -930,11 +730,7 @@ class _NWalletCardState extends State<NWalletCard> {
         final satBalance = balances
             .firstWhere(
               (b) => b.unit == 'sat',
-              orElse: () => WalletBalance(
-                walletId: widget.wallet.id,
-                unit: 'sat',
-                amount: 0,
-              ),
+              orElse: () => WalletBalance(walletId: widget.wallet.id, unit: 'sat', amount: 0),
             )
             .amount;
 
@@ -942,19 +738,12 @@ class _NWalletCardState extends State<NWalletCard> {
           children: [
             Text(
               '$satBalance',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: balanceFontSize,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: balanceFontSize, fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: 4),
             Text(
               l10n.sats,
-              style: TextStyle(
-                color: Colors.white.withAlpha(200),
-                fontSize: unitFontSize,
-              ),
+              style: TextStyle(color: Colors.white.withAlpha(200), fontSize: unitFontSize),
             ),
           ],
         );
@@ -999,16 +788,12 @@ class _NWalletCardState extends State<NWalletCard> {
       }
 
       if (widget.showBudgetRenewalDays && budget.renewsAt != null) {
-        final renewsAt = DateTime.fromMillisecondsSinceEpoch(
-          budget.renewsAt! * 1000,
-        );
+        final renewsAt = DateTime.fromMillisecondsSinceEpoch(budget.renewsAt! * 1000);
         final now = DateTime.now();
         final daysUntilRenewal = renewsAt.difference(now).inDays;
 
         if (daysUntilRenewal > 0) {
-          renewalText = periodText.isNotEmpty
-              ? '${l10n.budgetRenewsIn(daysUntilRenewal)} ($periodText)'
-              : '';
+          renewalText = periodText.isNotEmpty ? '${l10n.budgetRenewsIn(daysUntilRenewal)} ($periodText)' : '';
         } else {
           renewalText = periodText;
         }
@@ -1026,9 +811,7 @@ class _NWalletCardState extends State<NWalletCard> {
           child: LinearProgressIndicator(
             value: progress.clamp(0.0, 1.0),
             backgroundColor: Colors.white.withAlpha(50),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              progress > 0.9 ? Colors.red[300]! : Colors.white.withAlpha(200),
-            ),
+            valueColor: AlwaysStoppedAnimation<Color>(progress > 0.9 ? Colors.red[300]! : Colors.white.withAlpha(200)),
             minHeight: 3,
           ),
         ),
@@ -1039,10 +822,7 @@ class _NWalletCardState extends State<NWalletCard> {
             Flexible(
               child: Text(
                 l10n.budgetUsedOf(usedSats, totalSats),
-                style: TextStyle(
-                  color: Colors.white.withAlpha(200),
-                  fontSize: 9,
-                ),
+                style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1053,10 +833,7 @@ class _NWalletCardState extends State<NWalletCard> {
                 child: Text(
                   renewalText,
                   textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(200),
-                    fontSize: 9,
-                  ),
+                  style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 9),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1085,15 +862,10 @@ class _NWalletCardState extends State<NWalletCard> {
           title: Text(l10n.deleteWalletConfirmation),
           content: Text(l10n.deleteWalletConfirmationMessage),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.cancel),
-            ),
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancel)),
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.error,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
               child: Text(l10n.delete),
             ),
           ],
@@ -1106,12 +878,7 @@ class _NWalletCardState extends State<NWalletCard> {
     try {
       await widget.ndkFlutter.ndk.wallets.removeWallet(widget.wallet.id);
     } catch (e) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.error(e.toString())),
-          backgroundColor: Colors.red,
-        ),
-      );
+      scaffoldMessenger.showSnackBar(SnackBar(content: Text(l10n.error(e.toString())), backgroundColor: Colors.red));
     }
   }
 }
@@ -1153,7 +920,6 @@ class _RibbonPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RibbonPainter oldDelegate) {
-    return oldDelegate.fillColor != fillColor ||
-        oldDelegate.borderColor != borderColor;
+    return oldDelegate.fillColor != fillColor || oldDelegate.borderColor != borderColor;
   }
 }
