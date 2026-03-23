@@ -8,6 +8,12 @@ import 'package:ndk/domain_layer/entities/nip_05.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/cashu/cashu_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/nwc/nwc_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/providers/lnurl/lnurl_wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
+import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/ndk.dart';
 
 import 'database/database.dart';
@@ -1176,6 +1182,165 @@ class DriftCacheManager extends CacheManager {
             counter: counter,
           ),
         );
+  }
+
+  // =====================
+  // Wallet Methods
+  // =====================
+
+  @override
+  Future<void> saveWallet(Wallet wallet) async {
+    await _db
+        .into(_db.wallets)
+        .insertOnConflictUpdate(
+          WalletsCompanion.insert(
+            id: wallet.id,
+            name: wallet.name,
+            type: wallet.type.name,
+            supportedUnitsJson: jsonEncode(wallet.supportedUnits.toList()),
+            metadataJson: jsonEncode(wallet.toMetadata()),
+          ),
+        );
+  }
+
+  @override
+  Future<void> removeWallet(String id) async {
+    await (_db.delete(_db.wallets)..where((w) => w.id.equals(id))).go();
+  }
+
+  @override
+  Future<List<Wallet>?> getWallets({List<String>? ids}) async {
+    var query = _db.select(_db.wallets);
+    if (ids != null && ids.isNotEmpty) {
+      query = query..where((w) => w.id.isIn(ids));
+    }
+    final rows = await query.get();
+    if (rows.isEmpty && ids != null) return null;
+    return rows.map(_walletFromRow).toList();
+  }
+
+  Wallet _walletFromRow(DbWallet row) {
+    final metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+    final type = WalletType.values.firstWhere(
+      (t) => t.name == row.type,
+      orElse: () => WalletType.CASHU,
+    );
+    final supportedUnits = (jsonDecode(row.supportedUnitsJson) as List)
+        .map((e) => e.toString())
+        .toSet();
+
+    switch (type) {
+      case WalletType.CASHU:
+        return CashuWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          mintUrl: metadata['mintUrl'] as String,
+          mintInfo: CashuMintInfo.fromJson(
+            metadata['mintInfo'] as Map<String, dynamic>,
+            mintUrl: metadata['mintUrl'] as String,
+          ),
+        );
+      case WalletType.NWC:
+        return NwcWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          nwcUrl: metadata['nwcUrl'] as String,
+        );
+      case WalletType.LNURL:
+        return LnurlWallet(
+          id: row.id,
+          name: row.name,
+          supportedUnits: supportedUnits,
+          identifier: metadata['identifier'] as String,
+          lnurlPayUrl: metadata['lnurlPayUrl'] as String,
+          minSendable: metadata['minSendable'] as int?,
+          maxSendable: metadata['maxSendable'] as int?,
+          metadataFetchedAt: metadata['metadataFetchedAt'] as int?,
+        );
+    }
+  }
+
+  @override
+  Future<void> saveTransactions({
+    required List<WalletTransaction> transactions,
+  }) async {
+    await _db.batch((batch) {
+      for (final transaction in transactions) {
+        batch.insert(
+          _db.walletTransactions,
+          WalletTransactionsCompanion.insert(
+            id: transaction.id,
+            walletId: transaction.walletId,
+            changeAmount: transaction.changeAmount,
+            unit: transaction.unit,
+            type: transaction.walletType.name,
+            state: transaction.state.value,
+            completionMsg: Value(transaction.completionMsg),
+            transactionDate: Value(transaction.transactionDate),
+            initiatedDate: Value(transaction.initiatedDate),
+            metadataJson: jsonEncode(transaction.metadata),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  @override
+  Future<List<WalletTransaction>> getTransactions({
+    int? limit,
+    int? offset,
+    String? walletId,
+    String? unit,
+    WalletType? walletType,
+  }) async {
+    var query = _db.select(_db.walletTransactions);
+
+    if (walletId != null) {
+      query = query..where((t) => t.walletId.equals(walletId));
+    }
+    if (unit != null) {
+      query = query..where((t) => t.unit.equals(unit));
+    }
+    if (walletType != null) {
+      query = query..where((t) => t.type.equals(walletType.name));
+    }
+
+    query = query..orderBy([(t) => OrderingTerm.desc(t.initiatedDate)]);
+
+    if (limit != null && limit > 0) {
+      if (offset != null && offset > 0) {
+        query = query..limit(limit, offset: offset);
+      } else {
+        query = query..limit(limit);
+      }
+    }
+
+    final rows = await query.get();
+    return rows.map(_transactionFromRow).toList();
+  }
+
+  WalletTransaction _transactionFromRow(DbWalletTransaction row) {
+    final type = WalletType.values.firstWhere(
+      (t) => t.name == row.type,
+      orElse: () => WalletType.CASHU,
+    );
+    final metadata = jsonDecode(row.metadataJson) as Map<String, dynamic>;
+
+    return WalletTransaction.toTransactionType(
+      id: row.id,
+      walletId: row.walletId,
+      changeAmount: row.changeAmount,
+      unit: row.unit,
+      walletType: type,
+      state: WalletTransactionState.fromValue(row.state),
+      metadata: metadata,
+      completionMsg: row.completionMsg,
+      transactionDate: row.transactionDate,
+      initiatedDate: row.initiatedDate,
+    );
   }
 
   @override
