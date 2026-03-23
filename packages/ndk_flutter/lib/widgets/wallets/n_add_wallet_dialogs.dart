@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 
-const String _defaultMintUrl = 'https://dev.mint.camelus.app';
+const String _defaultMintUrl = 'https://mint.minibits.cash/Bitcoin';
 const String _albyGoIntentHost = 'bla';
 const String _dialogBackResult = '__back__';
 
