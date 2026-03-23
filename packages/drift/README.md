@@ -24,7 +24,7 @@ A Drift-based cache manager for the NDK (Nostr Development Kit) library, providi
 ## Getting Started
 
 ```bash
-flutter pub add drift_cache_manager
+flutter pub add drift
 ```
 
 ### Web Setup
@@ -40,7 +40,7 @@ See [Drift web prerequisites](https://drift.simonbinder.eu/platforms/web/#prereq
 ### Basic Setup
 
 ```dart
-import 'package:drift_cache_manager/drift_cache_manager.dart';
+import 'package:ndk_drift/ndk_drift.dart';
 import 'package:ndk/ndk.dart';
 
 // Create cache manager (uses 'ndk_cache_debug' in debug, 'ndk_cache' in release)

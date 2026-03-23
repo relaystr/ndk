@@ -41,7 +41,7 @@ dependencies:
   ndk: 0.7.0
   ndk_amber: 0.4.0
   ndk_flutter: ^0.0.2-dev.2
-  drift_cache_manager: ^0.0.2-dev.0+1
+  ndk_drift: ^0.0.2-dev.0+1
   sembast_cache_manager: ^1.0.8-dev.0
 
   cupertino_icons: ^1.0.8
@@ -72,8 +72,8 @@ dependency_overrides:
     path: ../ndk_flutter
   nip07_event_signer:
     path: ../nip07_event_signer
-  drift_cache_manager:
-    path: ../drift_cache_manager
+  ndk_drift:
+    path: ../drift
   sembast_cache_manager:
     path: ../sembast_cache_manager
   # The "flutter_lints" package below contains a set of recommended lints to

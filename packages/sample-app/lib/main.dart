@@ -1,5 +1,5 @@
 import 'package:amberflutter/amberflutter.dart';
-import 'package:drift_cache_manager/drift_cache_manager.dart';
+import 'package:ndk_drift/ndk_drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';

@@ -1,4 +1,4 @@
-import 'package:drift_cache_manager/drift_cache_manager.dart';
+import 'package:ndk_drift/ndk_drift.dart';
 import 'package:ndk/ndk.dart';
 
 /// Example demonstrating how to use DriftCacheManager with NDK.
