@@ -1,4 +1,4 @@
-## 0.0.2-dev.9
+## 0.1.0-dev.1
 
  - **FIX**: better wallet type choosing dialog. ([75eefe1d](https://github.com/relaystr/ndk/commit/75eefe1da7d36263ed1988bd1a65c1a946a4c850))
  - **FIX**: separate wallets storage operations from cache manager. ([92bb9a22](https://github.com/relaystr/ndk/commit/92bb9a22d6a0f22169ced6741ddf9aaa77db00b5))
