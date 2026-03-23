@@ -1,11 +1,12 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:bip32_keys/bip32_keys.dart';
+
 import 'package:convert/convert.dart';
 
 import '../../../domain_layer/repositories/cashu_key_derivation.dart';
 import '../../../domain_layer/usecases/cashu/cashu_seed.dart';
+import '../../../shared/bip32_keys/bip32_keys_base.dart';
 
 enum DerivationType {
   secret(0),
@@ -41,12 +42,15 @@ class DartCashuKeyDerivation implements CashuKeyDerivation {
 
     // Choose derivation method based on keyset version
     if (keysetId.startsWith('00')) {
-      return _deriveDeprecatedWithSeed(seed: seedBytes, keysetId: keysetId, counter: counter);
+      return _deriveDeprecatedWithSeed(
+          seed: seedBytes, keysetId: keysetId, counter: counter);
     } else if (keysetId.startsWith('01')) {
-      return _deriveModernWithSeed(seed: seedBytes, keysetId: keysetId, counter: counter);
+      return _deriveModernWithSeed(
+          seed: seedBytes, keysetId: keysetId, counter: counter);
     }
 
-    throw Exception('Unrecognized keyset ID version ${keysetId.substring(0, 2)}');
+    throw Exception(
+        'Unrecognized keyset ID version ${keysetId.substring(0, 2)}');
   }
 
   /// Modern derivation method with explicit seed parameter
