@@ -1,3 +1,11 @@
+## 0.5.0-dev.5
+
+ - **REFACTOR**: rename removeWallet.
+ - **PERF**: use secp256k1.
+ - **FEAT**: fast multiply blind msg.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
 ## 0.5.0-dev.4
 
  - **PERF**: use secp256k1.

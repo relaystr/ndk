@@ -1,3 +1,28 @@
+## 0.2.8-dev.4
+
+ - **REFACTOR**: rename rawContent to content.
+ - **REFACTOR**: remove acc prefix, clear seperation wallet.
+ - **REFACTOR**: remove wallet prefix from cashu.
+ - **FIX**: missing clear cashu/wallet stuff on clearAll.
+ - **FIX**: remove unique for cashu counter.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FIX**: getProofs mem cache manager.
+ - **FIX**: objectbox mintInfo parsing.
+ - **FIX**: objectbox transaction not async.
+ - **FIX**: type parsing.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: spending with state.
+
 ## 0.2.8-dev.3
 
  - **REFACTOR**: rename rawContent to content.

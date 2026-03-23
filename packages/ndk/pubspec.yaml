@@ -1,6 +1,6 @@
 name: ndk
 description: Nostr Development Kit - the most performant lib for all your nostr usecases
-version: 0.7.2-dev.2
+version: 0.8.0-dev.1
 homepage: https://github.com/relaystr/ndk
 repository: https://github.com/relaystr/ndk
 
@@ -22,7 +22,7 @@ platforms:
   windows:
 
 dependencies:
-  ndk_bip32_keys: ^0.1.0
+  ndk_bip32_keys: ^0.1.0-dev.0+1
   http: ^1.6.0
   bip340: ">=0.3.0 <0.4.0"
   bech32: ^0.2.2

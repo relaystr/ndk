@@ -472,14 +472,14 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.7.2-dev.2"
+    version: "0.7.2-dev.3"
   ndk_bip32_keys:
     dependency: "direct overridden"
     description:
       path: "../bip32_keys"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.1.0-dev.0+1"
   package_config:
     dependency: transitive
     description:
@@ -574,7 +574,7 @@ packages:
       path: rust_builder
       relative: true
     source: path
-    version: "0.1.7-dev.1"
+    version: "0.1.7-dev.2"
   rxdart:
     dependency: transitive
     description:
