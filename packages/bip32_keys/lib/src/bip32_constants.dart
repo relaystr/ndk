@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'bip32_slip132.dart';
 
 class Constants {

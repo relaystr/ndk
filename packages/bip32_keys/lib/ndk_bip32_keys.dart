@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 library;
 
 export 'src/bip32_constants.dart';

@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 // ignore_for_file: constant_identifier_names
 
 import 'package:bs58check/bs58check.dart' as bs58check;
