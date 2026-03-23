@@ -1,3 +1,10 @@
+## 0.1.0-dev.2
+
+ - **FIX**: 0.1.0-dev.1. ([5e7c16ba](https://github.com/relaystr/ndk/commit/5e7c16ba548b47b727fae46caef5b2e5860179dd))
+ - **FIX**: better wallet type choosing dialog. ([75eefe1d](https://github.com/relaystr/ndk/commit/75eefe1da7d36263ed1988bd1a65c1a946a4c850))
+ - **FIX**: separate wallets storage operations from cache manager. ([92bb9a22](https://github.com/relaystr/ndk/commit/92bb9a22d6a0f22169ced6741ddf9aaa77db00b5))
+ - **FIX**: conditional web import to support wasm. ([33b3ccdd](https://github.com/relaystr/ndk/commit/33b3ccddd2e4bdd61bb45dee1741767b294f759d))
+
 ## 0.1.0-dev.1
 
  - **FIX**: better wallet type choosing dialog. ([75eefe1d](https://github.com/relaystr/ndk/commit/75eefe1da7d36263ed1988bd1a65c1a946a4c850))
