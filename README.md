@@ -41,10 +41,6 @@ Isar database implementation.
 
 Sembast database implementation.
 
-### [🔗 rust verifier](./packages/rust_verifier/)
-
-Event verifier written in Rust.
-
 ### [🔗 sample app](./packages/sample-app/)
 
 example app using the NDK.
