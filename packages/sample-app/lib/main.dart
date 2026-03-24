@@ -19,7 +19,6 @@ import 'package:ndk_demo/widgets_demo_page.dart';
 import 'package:ndk_demo/pending_requests_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
-import 'package:sembast_cache_manager/sembast_cache_manager.dart';
 
 bool amberAvailable = false;
 
