@@ -1,7 +1,6 @@
 import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk_amber/ndk_amber.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:ndk_flutter/widgets/login/nostr_connect_dialog_view.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart';
