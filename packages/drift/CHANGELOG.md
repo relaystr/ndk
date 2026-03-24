@@ -1,3 +1,7 @@
+## 0.1.0-dev.2
+
+ - **FIX**: add back wallets methods and make it extend WalletsRepo. ([8e997d35](https://github.com/relaystr/ndk/commit/8e997d35e1aff3c7d9d0faa6a387e34a2d2ae12e))
+
 ## 0.0.2-dev.7
 
  - **FIX**: rename drift_cache_manager to ndk_drift. ([484faef2](https://github.com/relaystr/ndk/commit/484faef2e15beac36c654a44547e21e9cd4f2d08))

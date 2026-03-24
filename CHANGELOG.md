@@ -15,6 +15,69 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_drift` - `v0.1.0-dev.2`](#ndk_drift---v010-dev2)
+ - [`ndk_flutter` - `v0.1.0-dev.2`](#ndk_flutter---v010-dev2)
+ - [`ndk_objectbox` - `v0.2.8-dev.8`](#ndk_objectbox---v028-dev8)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.9`](#ndk_rust_verifier---v050-dev9)
+
+---
+
+#### `ndk_drift` - `v0.1.0-dev.2`
+
+ - **FIX**: add back wallets methods and make it extend WalletsRepo. ([8e997d35](https://github.com/relaystr/ndk/commit/8e997d35e1aff3c7d9d0faa6a387e34a2d2ae12e))
+
+#### `ndk_flutter` - `v0.1.0-dev.2`
+
+ - **FIX**: 0.1.0-dev.1. ([5e7c16ba](https://github.com/relaystr/ndk/commit/5e7c16ba548b47b727fae46caef5b2e5860179dd))
+ - **FIX**: better wallet type choosing dialog. ([75eefe1d](https://github.com/relaystr/ndk/commit/75eefe1da7d36263ed1988bd1a65c1a946a4c850))
+ - **FIX**: separate wallets storage operations from cache manager. ([92bb9a22](https://github.com/relaystr/ndk/commit/92bb9a22d6a0f22169ced6741ddf9aaa77db00b5))
+ - **FIX**: conditional web import to support wasm. ([33b3ccdd](https://github.com/relaystr/ndk/commit/33b3ccddd2e4bdd61bb45dee1741767b294f759d))
+
+#### `ndk_objectbox` - `v0.2.8-dev.8`
+
+ - **REFACTOR**: rename rawContent to content. ([22da4a00](https://github.com/relaystr/ndk/commit/22da4a00f128fda01718a50cf0a65ae3e867c91d))
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: use setter for known properties + content never null. ([a1b469f7](https://github.com/relaystr/ndk/commit/a1b469f7431f418ab4421cf0e7f3327166899169))
+ - **FIX**(perf): improved tag storage. ([db4fcf11](https://github.com/relaystr/ndk/commit/db4fcf116715bffe935c3bbab4c338685f630452))
+ - **FIX**(perf): removing json methods. ([337cb5e0](https://github.com/relaystr/ndk/commit/337cb5e0922ad494cc70336f5128bdbdeae1998e))
+ - **FIX**(perf): remove calcId from db obj. ([892dcc9c](https://github.com/relaystr/ndk/commit/892dcc9c93b48698aaeb59a5d1c457b57ede3b61))
+ - **FIX**: objectbox nullable sig. ([fdd70d1d](https://github.com/relaystr/ndk/commit/fdd70d1db6bb2e6d12d9e60a8e8cbb4dc0fd396d))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields. ([f1c8ca50](https://github.com/relaystr/ndk/commit/f1c8ca505f083fc83565fa135c1be15a4ed8520c))
+ - **FEAT**: change removeEvents to support flexible filtering. ([c378887e](https://github.com/relaystr/ndk/commit/c378887e990b967069179a1ff84e1f81a7587ae4))
+ - **FEAT**(cache): add removeEvents method for bulk event deletion. ([2d8a3f5e](https://github.com/relaystr/ndk/commit/2d8a3f5e61922e11ab7895b97838fb47c0b5b213))
+ - **FEAT**(cache): add clearAll() method to CacheManager. ([b94a1d4b](https://github.com/relaystr/ndk/commit/b94a1d4b0f92c2c5b48da1ef7b21f937cc257976))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.9`
+
+ - **REFACTOR**: rename removeWallet. ([377cee0b](https://github.com/relaystr/ndk/commit/377cee0bd0f5e0216ece0143134045357d1b3989))
+ - **PERF**: use secp256k1. ([247a294f](https://github.com/relaystr/ndk/commit/247a294fd8ce36de824dfc52215173674e7126b9))
+ - **FEAT**: fast multiply blind msg. ([7cc51929](https://github.com/relaystr/ndk/commit/7cc51929239a10e5bd352e21db12f67c7d8a1e03))
+ - **FEAT**: CashuKeyDerivation support keysets v2. ([bf057bbc](https://github.com/relaystr/ndk/commit/bf057bbc7a0d9382f1f4d758abf0b9b8c932d409))
+ - **FEAT**: rust deriveSecret. ([bdd88cba](https://github.com/relaystr/ndk/commit/bdd88cba527ec61afeec70738051379cf7ca3c95))
+
+
+## 2026-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk_drift` - `v0.0.2-dev.7`](#ndk_drift---v002-dev7)
  - [`ndk_flutter` - `v0.0.2-dev.9`](#ndk_flutter---v002-dev9)
  - [`ndk_objectbox` - `v0.2.8-dev.7`](#ndk_objectbox---v028-dev7)

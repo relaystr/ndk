@@ -1,4 +1,4 @@
-## 0.2.8-dev.7
+## 0.2.8-dev.8
 
  - **REFACTOR**: rename rawContent to content. ([22da4a00](https://github.com/relaystr/ndk/commit/22da4a00f128fda01718a50cf0a65ae3e867c91d))
  - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))

@@ -1,4 +1,4 @@
-## 0.5.0-dev.8
+## 0.5.0-dev.9
 
  - **REFACTOR**: rename removeWallet. ([377cee0b](https://github.com/relaystr/ndk/commit/377cee0bd0f5e0216ece0143134045357d1b3989))
  - **PERF**: use secp256k1. ([247a294f](https://github.com/relaystr/ndk/commit/247a294fd8ce36de824dfc52215173674e7126b9))
