@@ -50,10 +50,6 @@ jobs:
       - name: Install dependencies
         run: dart pub get
 
-      - name: Build CLI executable
-        if: matrix.target != 'macos_x86'
-        run: dart build cli
-
       - name: Install Rosetta
         if: matrix.target == 'macos_x86'
         run: softwareupdate --install-rosetta --agree-to-license
