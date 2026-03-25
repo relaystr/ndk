@@ -29,8 +29,8 @@ jobs:
             platform_name: macos-arm64
             content_type: application/gzip
           - os: macos-latest
-            target: macos_x86
-            platform_name: macos-x86
+            target: macos_x64
+            platform_name: macos-x64
             content_type: application/gzip
           - os: windows-latest
             target: windows_x64
@@ -45,11 +45,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Dart
-        if: matrix.target != 'macos_x86'
+        if: matrix.target != 'macos_x64'
         uses: dart-lang/setup-dart@v1
 
       - name: Set up Dart (x86_64 SDK)
-        if: matrix.target == 'macos_x86'
+        if: matrix.target == 'macos_x64'
         run: |
           curl -fsSL "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-x64-release.zip" -o dart-sdk.zip
           unzip -q dart-sdk.zip
@@ -59,12 +59,12 @@ jobs:
         run: dart pub get
 
       - name: Install Rosetta
-        if: matrix.target == 'macos_x86'
+        if: matrix.target == 'macos_x64'
         run: softwareupdate --install-rosetta --agree-to-license
 
-      - name: Build CLI executable (x86 via Rosetta)
+      - name: Build CLI executable (x64 via Rosetta)
         run: |
-          if [ "${{ matrix.target }}" = "macos_x86" ]; then
+          if [ "${{ matrix.target }}" = "macos_x64" ]; then
             arch -x86_64 dart build cli
           else
             dart build cli
