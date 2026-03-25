@@ -633,14 +633,14 @@ packages:
       path: "../drift"
       relative: true
     source: path
-    version: "0.0.2-dev.6"
+    version: "0.1.0-dev.2"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.0.2-dev.8"
+    version: "0.1.0-dev.2"
   nested:
     dependency: transitive
     description:
