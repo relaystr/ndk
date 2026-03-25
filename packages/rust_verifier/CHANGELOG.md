@@ -1,3 +1,12 @@
+## 0.5.0-dev.11
+
+ - **REFACTOR**: rename removeWallet. ([377cee0b](https://github.com/relaystr/ndk/commit/377cee0bd0f5e0216ece0143134045357d1b3989))
+ - **PERF**: use secp256k1. ([247a294f](https://github.com/relaystr/ndk/commit/247a294fd8ce36de824dfc52215173674e7126b9))
+ - **FIX**: remove duplicated. ([8fa8db2e](https://github.com/relaystr/ndk/commit/8fa8db2e8e378004c2e24ffc8bcd02948c4336bc))
+ - **FEAT**: fast multiply blind msg. ([7cc51929](https://github.com/relaystr/ndk/commit/7cc51929239a10e5bd352e21db12f67c7d8a1e03))
+ - **FEAT**: CashuKeyDerivation support keysets v2. ([bf057bbc](https://github.com/relaystr/ndk/commit/bf057bbc7a0d9382f1f4d758abf0b9b8c932d409))
+ - **FEAT**: rust deriveSecret. ([bdd88cba](https://github.com/relaystr/ndk/commit/bdd88cba527ec61afeec70738051379cf7ca3c95))
+
 ## 0.5.0-dev.10
 
  - **REFACTOR**: rename removeWallet. ([377cee0b](https://github.com/relaystr/ndk/commit/377cee0bd0f5e0216ece0143134045357d1b3989))
