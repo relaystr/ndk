@@ -28,7 +28,7 @@ jobs:
             target: macos_arm64
             platform_name: macos-arm64
             content_type: application/gzip
-          - os: macos-13
+          - os: macos-latest
             target: macos_x86
             platform_name: macos-x86
             content_type: application/gzip
@@ -51,8 +51,20 @@ jobs:
         run: dart pub get
 
       - name: Build CLI executable
+        if: matrix.target != 'macos_x86'
         run: dart build cli
 
+      - name: Install Rosetta
+        if: matrix.target == 'macos_x86'
+        run: softwareupdate --install-rosetta --agree-to-license
+
+      - name: Build CLI executable (x86 via Rosetta)
+        run: |
+          if [ "${{ matrix.target }}" = "macos_x86" ]; then
+            arch -x86_64 dart build cli
+          else
+            dart build cli
+          fi
       - name: Build CLI bundle archive name metadata
         id: meta
         run: |
