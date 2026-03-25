@@ -69,9 +69,9 @@ resolve_tag() {
               BEGIN { tag=""; draft=0; found="" }
               /"tag_name":/ {
                 if (tag == "") {
-                  if (match($0, /"tag_name":[[:space:]]*"([^"]+)"/, m)) {
-                    tag=m[1]
-                  }
+                  tag = $0
+                  sub(/^.*"tag_name":[[:space:]]*"/, "", tag)
+                  sub(/".*$/, "", tag)
                 }
               }
               /"draft":/ {
@@ -136,15 +136,20 @@ resolve_release_asset() {
   printf "%s\n" "$release_json" | awk -v target="$target" '
     BEGIN { name="" }
     /"name":/ {
-      if (name == "" && match($0, /"name":[[:space:]]*"([^"]+)"/, m)) {
-        name = m[1]
+      if (name == "") {
+        name = $0
+        sub(/^.*"name":[[:space:]]*"/, "", name)
+        sub(/".*$/, "", name)
       }
       next
     }
     /"browser_download_url":/ {
-      if (name != "" && match($0, /"browser_download_url":[[:space:]]*"([^"]+)"/, u)) {
+      if (name != "") {
+        url = $0
+        sub(/^.*"browser_download_url":[[:space:]]*"/, "", url)
+        sub(/".*$/, "", url)
         if (name ~ ("-" target "\\.(tar\\.gz|tgz)$")) {
-          print name "\t" u[1]
+          print name "\t" url
           exit
         }
       }
