@@ -612,13 +612,6 @@ packages:
       relative: true
     source: path
     version: "0.8.0-dev.2"
-  ndk_amber:
-    dependency: "direct main"
-    description:
-      path: "../amber"
-      relative: true
-    source: path
-    version: "0.4.1-dev.5"
   ndk_bip32_keys:
     dependency: transitive
     description:

@@ -1,6 +1,8 @@
 export 'main/config.dart';
 export 'main/ndk_flutter.dart';
 export 'repositories/flutter_secure_storage_wallets_repo.dart';
+export 'data_layer/repositories/signers/amber_event_signer.dart';
+export 'data_layer/data_sources/amber_flutter.dart';
 export 'widgets/widgets.dart';
 export 'verifiers/web_event_verifier.dart';
 export 'utils/nostr_kinds.dart';
