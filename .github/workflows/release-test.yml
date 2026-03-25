@@ -45,7 +45,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Dart
+        if: matrix.target != 'macos_x86'
         uses: dart-lang/setup-dart@v1
+
+      - name: Set up Dart (x86_64 SDK)
+        if: matrix.target == 'macos_x86'
+        run: |
+          curl -fsSL "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-x64-release.zip" -o dart-sdk.zip
+          unzip -q dart-sdk.zip
+          echo "$PWD/dart-sdk/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: dart pub get
