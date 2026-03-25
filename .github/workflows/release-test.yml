@@ -28,6 +28,10 @@ jobs:
             target: macos_arm64
             platform_name: macos-arm64
             content_type: application/gzip
+          - os: macos-13
+            target: macos_x86
+            platform_name: macos-x86
+            content_type: application/gzip
           - os: windows-latest
             target: windows_x64
             platform_name: windows-x64
