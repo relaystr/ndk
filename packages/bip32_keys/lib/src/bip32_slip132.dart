@@ -3,7 +3,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:bs58check/bs58check.dart' as bs58check;
-import 'package:hex/hex.dart';
+import 'package:convert/convert.dart';
 
 class Bip32Version {
   final int public;
@@ -88,7 +88,7 @@ enum Slip132 {
   static Slip132 parsePublicKey(String input) {
     input = input.trim();
     final bytes = bs58check.decode(input);
-    final version = HEX.encode(bytes.sublist(0, 4));
+    final version = hex.encode(bytes.sublist(0, 4));
 
     for (final slip132 in Slip132.values) {
       if (slip132.network.version.public == int.parse(version, radix: 16)) {
