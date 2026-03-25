@@ -6,7 +6,7 @@ import '../../entities/nip_01_event.dart';
 /// given a stream  with Nip01 events it tracks the id and adds the one to the provided stream controller \
 /// tracking of the happens in the tracking list
 class StreamResponseCleaner {
-  final Set<String> _trackingSet;
+  final Map<String, Set<String>> _trackingMap; // event_id -> set of sources
   final List<Stream<Nip01Event>> _inputStreams;
   final StreamController<Nip01Event> _outController;
   final List<EventFilter> _eventOutFilters;
@@ -24,7 +24,7 @@ class StreamResponseCleaner {
     required List<Stream<Nip01Event>> inputStreams,
     required StreamController<Nip01Event> outController,
     required List<EventFilter> eventOutFilters,
-  })  : _trackingSet = trackingSet,
+  })  : _trackingMap = {for (var id in trackingSet) id: {}},
         _outController = outController,
         _inputStreams = inputStreams,
         _eventOutFilters = eventOutFilters;
@@ -37,16 +37,28 @@ class StreamResponseCleaner {
 
   void _addStreamListener(Stream<Nip01Event> stream) {
     stream.listen((event) {
-      // check if event id is in the set
-      if (_trackingSet.contains(event.id)) {
-        return;
-      }
-
       if (_outController.isClosed) {
         return;
       }
 
-      _trackingSet.add(event.id);
+      // check if event id is already seen
+      final existingSources = _trackingMap[event.id];
+      if (existingSources != null) {
+        // Event already seen - merge sources if this event has new sources
+        if (event.sources.isNotEmpty) {
+          final newSources = Set<String>.from(existingSources)..addAll(event.sources);
+          // Only emit if we have new sources to add
+          if (newSources.length > existingSources.length) {
+            _trackingMap[event.id] = newSources;
+            final mergedEvent = event.copyWith(sources: newSources.toList());
+            _outController.add(mergedEvent);
+          }
+        }
+        return;
+      }
+
+      // First time seeing this event
+      _trackingMap[event.id] = event.sources.toSet();
 
       // check against filters
       for (final filter in _eventOutFilters) {

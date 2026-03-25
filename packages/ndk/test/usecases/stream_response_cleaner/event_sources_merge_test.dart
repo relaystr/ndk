@@ -43,7 +43,8 @@ void main() async {
     final query = ndk.requests.query(filter: Filter(ids: [event.id]));
     final events = await query.future;
 
-    expect(events.first.sources.length, equals(2));
+    // The last event should have all merged sources
+    expect(events.last.sources.length, equals(2));
 
     await ndk.destroy();
     await relay1.stopServer();
