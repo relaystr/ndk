@@ -1,3 +1,7 @@
+## 0.1.0-dev.3
+
+ - **FIX**: move amber into ndk_flutter. ([c70df0ec](https://github.com/relaystr/ndk/commit/c70df0ec27d4638697f478dcd1ed3048166145f2))
+
 ## 0.1.0-dev.2
 
  - **FIX**: better wallet type choosing dialog. ([75eefe1d](https://github.com/relaystr/ndk/commit/75eefe1da7d36263ed1988bd1a65c1a946a4c850))
