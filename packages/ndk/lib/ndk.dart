@@ -7,6 +7,7 @@ library;
 
 export 'presentation_layer/ndk.dart';
 export 'presentation_layer/ndk_config.dart';
+export 'src/version.dart';
 export 'domain_layer/entities/ndk_request.dart';
 export 'domain_layer/entities/request_response.dart';
 export 'domain_layer/entities/broadcast_response.dart';
