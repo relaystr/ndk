@@ -1,7 +1,36 @@
 name: Deploy sample-app web to GitHub Pages
 
 on:
+  workflow_call:
+    inputs:
+      deploy_ref:
+        description: Git ref to build and deploy from
+        required: false
+        type: string
+      base_href:
+        description: Base href for Flutter web build
+        required: false
+        type: string
+        default: /app/
+      destination_dir:
+        description: Destination directory on gh-pages branch
+        required: false
+        type: string
+        default: app
   workflow_dispatch:
+    inputs:
+      deploy_ref:
+        description: Git ref to build and deploy from
+        required: false
+        default: ''
+      base_href:
+        description: Base href for Flutter web build
+        required: false
+        default: /app/
+      destination_dir:
+        description: Destination directory on gh-pages branch
+        required: false
+        default: app
 
 permissions:
   contents: write
@@ -15,7 +44,7 @@ env:
 
 jobs:
   deploy:
-    if: github.ref_name == 'master'
+    if: github.event_name == 'workflow_call' || github.ref_name == 'master'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -23,6 +52,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.deploy_ref || github.ref }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -38,7 +69,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web app
-        run: flutter build web --release --base-href "/app/"
+        run: flutter build web --release --base-href "${{ inputs.base_href || github.event.inputs.base_href || '/app/' }}"
 
       - name: Copy wasm/js runtime assets
         run: |
@@ -51,5 +82,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./packages/sample-app/build/web
-          destination_dir: app
+          destination_dir: ${{ inputs.destination_dir || github.event.inputs.destination_dir || 'app' }}
           keep_files: true
