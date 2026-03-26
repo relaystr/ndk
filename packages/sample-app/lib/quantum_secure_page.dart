@@ -199,6 +199,23 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Information text
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'This is an experiment to test the feasibility of Dilithium in Nostr.\n\n'
+                    'Please note that the ID is still generated the conventional way.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[700],
+                          height: 1.5,
+                        ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
               // Configuration Section
               Card(
                 child: Padding(
