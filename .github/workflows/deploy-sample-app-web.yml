@@ -38,7 +38,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web app
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/app/"
+        run: flutter build web --release --base-href "/app/"
 
       - name: Deploy app into gh-pages /app
         uses: peaceiris/actions-gh-pages@v4
