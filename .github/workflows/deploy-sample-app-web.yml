@@ -4,19 +4,18 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: "pages"
+  group: "gh-pages-app"
   cancel-in-progress: true
 
 env:
   FLUTTER_VERSION: "3.41.4"
 
 jobs:
-  build:
+  deploy:
+    if: github.ref_name == 'master'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -39,23 +38,12 @@ jobs:
         run: flutter pub get
 
       - name: Build web app
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/app/"
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy app into gh-pages /app
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: packages/sample-app/build/web
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./packages/sample-app/build/web
+          destination_dir: app
+          keep_files: true
