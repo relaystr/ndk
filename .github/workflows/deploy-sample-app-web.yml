@@ -40,20 +40,11 @@ jobs:
       - name: Build web app
         run: flutter build web --release --base-href "/app/"
 
-      - name: Prepare Drift web runtime assets
-        run: |
-          set -euo pipefail
-
-          set -- "$HOME"/.pub-cache/hosted/pub.dev/drift-*/
-          DRIFT_PKG_DIR="${!#}"
-
-          cp "$DRIFT_PKG_DIR/extension/devtools/build/sqlite3.wasm" build/web/sqlite3.wasm
-          dart compile js "$DRIFT_PKG_DIR/web/drift_worker.dart" -o build/web/drift_worker.js
-
       - name: Copy wasm/js runtime assets
         run: |
           mkdir -p build/web/pkg
           cp -R web/pkg/. build/web/pkg/
+          cp web/drift_worker.js build/web/drift_worker.js
 
       - name: Deploy app into gh-pages /app
         uses: peaceiris/actions-gh-pages@v4
