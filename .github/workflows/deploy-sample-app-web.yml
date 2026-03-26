@@ -44,7 +44,7 @@ jobs:
         run: |
           mkdir -p build/web/pkg
           cp -R web/pkg/. build/web/pkg/
-          cp web/drift_worker.js build/web/drift_worker.js
+          cp web/drift_worker.dart.js build/web/drift_worker.js
 
       - name: Deploy app into gh-pages /app
         uses: peaceiris/actions-gh-pages@v4
