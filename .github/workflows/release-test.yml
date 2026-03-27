@@ -28,6 +28,10 @@ jobs:
             target: macos_arm64
             platform_name: macos-arm64
             content_type: application/gzip
+          - os: macos-latest
+            target: macos_x64
+            platform_name: macos-x64
+            content_type: application/gzip
           - os: windows-latest
             target: windows_x64
             platform_name: windows-x64
@@ -41,14 +45,30 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Dart
+        if: matrix.target != 'macos_x64'
         uses: dart-lang/setup-dart@v1
+
+      - name: Set up Dart (x86_64 SDK)
+        if: matrix.target == 'macos_x64'
+        run: |
+          curl -fsSL "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-macos-x64-release.zip" -o dart-sdk.zip
+          unzip -q dart-sdk.zip
+          echo "$PWD/dart-sdk/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: dart pub get
 
-      - name: Build CLI executable
-        run: dart build cli
+      - name: Install Rosetta
+        if: matrix.target == 'macos_x64'
+        run: softwareupdate --install-rosetta --agree-to-license
 
+      - name: Build CLI executable (x64 via Rosetta)
+        run: |
+          if [ "${{ matrix.target }}" = "macos_x64" ]; then
+            arch -x86_64 dart build cli
+          else
+            dart build cli
+          fi
       - name: Build CLI bundle archive name metadata
         id: meta
         run: |
@@ -58,7 +78,7 @@ jobs:
 
       - name: Package CLI bundle
         run: |
-          tar -czf "build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
+          tar -czf "build/ndk-cli-${{ matrix.platform_name }}.tar.gz" -C "build/cli/${{ matrix.target }}/bundle" .
 
       - name: Build Linux DEB package
         if: matrix.target == 'linux_x64'
@@ -78,7 +98,7 @@ jobs:
           Depends: libc6 (>= 2.27)
           Description: Nostr Development Kit command line interface
           EOF
-          dpkg-deb --build "$deb_root" "build/ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb"
+          dpkg-deb --build "$deb_root" "build/ndk-cli-linux-x64.deb"
 
       - name: Upload CLI executable to release
         uses: actions/upload-release-asset@v1
@@ -86,8 +106,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
-          asset_name: ndk-${{ steps.meta.outputs.safe_ref_name }}-${{ matrix.platform_name }}.tar.gz
+          asset_path: packages/ndk/build/ndk-cli-${{ matrix.platform_name }}.tar.gz
+          asset_name: ndk-cli-${{ matrix.platform_name }}.tar.gz
           asset_content_type: ${{ matrix.content_type }}
 
       - name: Upload Linux DEB to release
@@ -97,8 +117,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/ndk/build/ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb
-          asset_name: ndk-${{ steps.meta.outputs.safe_ref_name }}-linux-x64.deb
+          asset_path: packages/ndk/build/ndk-cli-linux-x64.deb
+          asset_name: ndk-cli-linux-x64.deb
           asset_content_type: application/vnd.debian.binary-package
 
   build_android:
@@ -153,21 +173,6 @@ jobs:
           cd packages/sample-app
           flutter build apk --split-per-abi
 
-      - name: build apk
-        run: |
-          cd packages/sample-app
-          flutter build apk
-
-      - name: Upload universal APK to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: packages/sample-app/build/app/outputs/flutter-apk/app-release.apk
-          asset_name: ndk_demo-${{ github.ref_name }}-android-universal.apk
-          asset_content_type: application/zip
-
       - name: Upload arm64 APK to release
         uses: actions/upload-release-asset@v1
         env:
@@ -175,7 +180,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: packages/sample-app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          asset_name: ndk_demo-${{ github.ref_name }}-android-arm64-v8a.apk
+          asset_name: ndk-demo-app-android-arm64-v8a.apk
           asset_content_type: application/zip
 
       - name: Upload armeabi-v7a APK to release
@@ -185,7 +190,7 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: packages/sample-app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-          asset_name: ndk_demo-${{ github.ref_name }}-android-armeabi-v7a.apk
+          asset_name: ndk-demo-app-android-armeabi-v7a.apk
           asset_content_type: application/zip
 
       - name: Upload x86_64 APK to release
@@ -195,8 +200,16 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: packages/sample-app/build/app/outputs/flutter-apk/app-x86_64-release.apk
-          asset_name: ndk_demo-${{ github.ref_name }}-android-x86_64.apk
+          asset_name: ndk-demo-app-android-x86_64.apk
           asset_content_type: application/zip
+
+  call-build:
+    needs: [build_cli, build_android]
+    uses: ./.github/workflows/deploy-sample-app-web.yml
+    with:
+      deploy_ref: ${{ github.ref }}
+      base_href: /app/test/
+      destination_dir: app/test
 
   release:
     runs-on: ubuntu-latest

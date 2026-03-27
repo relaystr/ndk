@@ -1,3 +1,5 @@
+package android
+
 group = 'com.sebdeveloper6952.amberflutter.amberflutter'
 version = '1.0-SNAPSHOT'
 

@@ -9,6 +9,7 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/src/version.dart';
 import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/blossom_page.dart';
 import 'package:ndk_demo/demo_app_config.dart';
@@ -44,7 +45,8 @@ Future<void> main() async {
 
   final cacheManager = kIsWeb
       ? await DriftCacheManager.create()
-      : await SembastCacheManager.create(databasePath: (await getApplicationDocumentsDirectory()).path);
+      : await SembastCacheManager.create(
+          databasePath: (await getApplicationDocumentsDirectory()).path);
 
   final eventVerifier = kIsWeb ? WebEventVerifier() : RustEventVerifier();
   ndk = Ndk(
@@ -122,7 +124,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin, ProtocolListener {
+class _MyHomePageState extends State<MyHomePage>
+    with TickerProviderStateMixin, ProtocolListener {
   late TabController _tabController;
   late List<Tab> _tabs;
   late List<Widget> _tabPages;
@@ -182,7 +185,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin, 
 
   void _processUri(Uri uri) {
     if (uri.scheme == 'ndk' && uri.host == 'nwc') {
-      print("_MyHomePageState: ndk://nwc URI received, switching to NwcPage tab.");
+      print(
+          "_MyHomePageState: ndk://nwc URI received, switching to NwcPage tab.");
       switchToNwcTab();
     }
   }
@@ -223,7 +227,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin, 
         print("_MyHomePageState: Already on NWC tab (index $nwcPageIndex).");
       }
     } else {
-      print("_MyHomePageState: NWC tab not found by name '$nwcTabName'. Cannot switch.");
+      print(
+          "_MyHomePageState: NWC tab not found by name '$nwcTabName'. Cannot switch.");
     }
   }
 
@@ -255,7 +260,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin, 
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nostr Development Kit Demo'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Nostr Development Kit Demo'),
+            const SizedBox(width: 8),
+            Text(
+              'v$packageVersion',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
         actions: [
           NLocaleSwitcher(
             currentLocale: widget.currentLocale,
@@ -287,7 +302,8 @@ Widget metadata(Ndk ndk, BuildContext context) {
     return const Center(
         child: Padding(
       padding: EdgeInsets.all(16.0),
-      child: Text('Please log in via the "Accounts" tab to view your metadata.', textAlign: TextAlign.center),
+      child: Text('Please log in via the "Accounts" tab to view your metadata.',
+          textAlign: TextAlign.center),
     ));
   }
 
@@ -299,7 +315,8 @@ Widget metadata(Ndk ndk, BuildContext context) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator());
       } else if (snapshot.hasError) {
-        return Center(child: Text('Error fetching metadata: ${snapshot.error}'));
+        return Center(
+            child: Text('Error fetching metadata: ${snapshot.error}'));
       } else if (snapshot.hasData && snapshot.data != null) {
         final metadata = snapshot.data!;
         return SingleChildScrollView(
@@ -326,7 +343,8 @@ Widget metadata(Ndk ndk, BuildContext context) {
                     child: Icon(Icons.person, size: 50),
                   ),
                 const SizedBox(height: 16),
-                Text('Name: ${metadata.name ?? 'N/A'}', style: Theme.of(context).textTheme.titleLarge),
+                Text('Name: ${metadata.name ?? 'N/A'}',
+                    style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 Text('Display Name: ${metadata.displayName ?? 'N/A'}'),
                 Text('NIP-05: ${metadata.nip05 ?? 'N/A'}'),
@@ -343,7 +361,8 @@ Widget metadata(Ndk ndk, BuildContext context) {
         );
       } else {
         return const Center(
-            child: Text('Metadata not found for this account. You might need to set it in a Nostr client.'));
+            child: Text(
+                'Metadata not found for this account. You might need to set it in a Nostr client.'));
       }
     },
   );

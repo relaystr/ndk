@@ -39,7 +39,6 @@ dependencies:
   path_provider: ^2.1.5
 
   ndk: 0.7.0
-  ndk_amber: 0.4.0
   ndk_flutter: ^0.0.2-dev.2
   ndk_drift: ^0.0.2-dev.0+1
 
@@ -65,8 +64,6 @@ dev_dependencies:
 dependency_overrides:
   ndk:
     path: ../ndk
-  ndk_amber:
-    path: ../amber
   ndk_flutter:
     path: ../ndk_flutter
   nip07_event_signer:
