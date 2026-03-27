@@ -985,13 +985,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.8.6"
-  sembast_cache_manager:
-    dependency: "direct main"
-    description:
-      path: "../sembast_cache_manager"
-      relative: true
-    source: path
-    version: "1.0.8-dev.4"
   sky_engine:
     dependency: transitive
     description: flutter
