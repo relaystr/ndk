@@ -351,9 +351,7 @@ class RelaySetsEngine implements NetworkEngine {
               doRelayBroadcast(relayUrl, workingEvent)));
         }
       }
-      if (broadcastState.broadcasts.isEmpty) {
-        broadcastState.networkController.close();
-      }
+      broadcastState.closeIfNoRelays();
     }
 
     asyncStuff();

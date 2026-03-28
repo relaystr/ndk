@@ -48,6 +48,9 @@ class RelayJitBroadcastOtherReadStrategy {
       myWriteRelayUrls.addAll(maxList);
     }
 
+    // Deduplicate relay URLs
+    final uniqueRelayUrls = myWriteRelayUrls.toSet().toList();
+
     // function to send message to relay
     void sendToRelay({
       required RelayConnectivity relay,
@@ -59,39 +62,66 @@ class RelayJitBroadcastOtherReadStrategy {
       relayManager.send(relay, myClientMsg);
     }
 
-    for (final relayUrl in myWriteRelayUrls) {
+    // Function to handle broadcasting to a single relay
+    Future<void> sendToUrl(String relayUrl) async {
       // register relay broadcast
       relayManager.registerRelayBroadcast(
         eventToPublish: eventToPublish,
         relayUrl: relayUrl,
       );
 
-      final isConnected = relayManager.isRelayConnected(relayUrl);
-      if (isConnected) {
-        sendToRelay(
-          relay: connectedRelays.firstWhere(
-            (element) => element.url == relayUrl,
-          ),
-        );
-        continue;
-      }
+      try {
+        final isConnected = relayManager.isRelayConnected(relayUrl);
+        if (isConnected) {
+          try {
+            final relay = connectedRelays.firstWhere(
+              (element) => element.url == relayUrl,
+            );
+            sendToRelay(relay: relay);
+          } catch (e) {
+            relayManager.failBroadcast(
+              eventToPublish.id,
+              relayUrl,
+              "relay not found in connected list",
+            );
+          }
+          return;
+        }
 
-      final success = await relayManager.connectRelay(
-        dirtyUrl: relayUrl,
-        connectionSource: ConnectionSource.broadcastOther,
-      );
-      if (!success.first) {
+        final success = await relayManager.connectRelay(
+          dirtyUrl: relayUrl,
+          connectionSource: ConnectionSource.broadcastOther,
+        );
+        if (!success.first) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "connection failed",
+          );
+          return;
+        }
+
+        try {
+          final relay = relayManager.connectedRelays
+              .firstWhere((element) => element.url == relayUrl);
+          sendToRelay(relay: relay);
+        } catch (e) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "relay not found after connection",
+          );
+        }
+      } catch (e) {
         relayManager.failBroadcast(
           eventToPublish.id,
           relayUrl,
-          "connection failed",
+          "broadcast error: $e",
         );
-        continue;
       }
-      final relay = relayManager.connectedRelays
-          .firstWhere((element) => element.url == relayUrl);
-
-      sendToRelay(relay: relay);
     }
+
+    // Broadcast to all relays in parallel
+    await Future.wait(uniqueRelayUrls.map(sendToUrl), eagerError: false);
   }
 }

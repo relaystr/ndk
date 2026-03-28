@@ -193,9 +193,7 @@ class JitEngine with Logger implements NetworkEngine {
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
         );
-        if (broadcastState.broadcasts.isEmpty) {
-          broadcastState.networkController.close();
-        }
+        broadcastState.closeIfNoRelays();
         return;
       }
 
@@ -223,9 +221,7 @@ class JitEngine with Logger implements NetworkEngine {
           pubkeysOfInbox: workingNostrEvent.pTags,
         );
       }
-      if (broadcastState.broadcasts.isEmpty) {
-        broadcastState.networkController.close();
-      }
+      broadcastState.closeIfNoRelays();
     }
 
     asyncStuff();

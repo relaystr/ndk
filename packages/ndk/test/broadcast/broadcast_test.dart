@@ -13,6 +13,8 @@ void main() {
           bootstrapRelays: ["ws://localhost:25565"],
         ),
       );
+      
+      addTearDown(() async => ndk.destroy());
 
       final keyPair = Bip340.generatePrivateKey();
       ndk.accounts.loginPrivateKey(
@@ -38,8 +40,6 @@ void main() {
         stopwatch.elapsedMilliseconds,
         lessThan(5000),
       );
-
-      await ndk.destroy();
     },
   );
 
@@ -47,6 +47,7 @@ void main() {
     'broadcast to 0 relay should not time out',
     () async {
       final ndk = Ndk.emptyBootstrapRelaysConfig();
+      addTearDown(() async => ndk.destroy());
 
       final keyPair = Bip340.generatePrivateKey();
       ndk.accounts.loginPrivateKey(
@@ -75,8 +76,6 @@ void main() {
         stopwatch.elapsedMilliseconds,
         lessThan(5000),
       );
-
-      await ndk.destroy();
     },
   );
 }

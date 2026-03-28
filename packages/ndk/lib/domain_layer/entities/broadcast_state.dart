@@ -46,8 +46,8 @@ class BroadcastState {
   Nip01Event? event;
 
   /// stream controller for state updates
-  final ReplaySubject<BroadcastState> _stateUpdatesController =
-      ReplaySubject<BroadcastState>(maxSize: 1);
+  final BehaviorSubject<BroadcastState> _stateUpdatesController =
+      BehaviorSubject<BroadcastState>();
 
   /// [networkController] used by relay manger to write responses
   StreamController<RelayBroadcastResponse> networkController =
@@ -133,5 +133,13 @@ class BroadcastState {
   void addError(Object error, [StackTrace? stackTrace]) {
     _stateUpdatesController.addError(error, stackTrace);
     _dispose();
+  }
+
+  /// Close the network controller if no relays were registered.
+  /// This should be called after broadcast strategies complete
+  /// to signal that the broadcast is done when there were no relays to broadcast to.
+  void closeIfNoRelays() {
+    if (broadcasts.isNotEmpty || networkController.isClosed) return;
+    networkController.close();
   }
 }
