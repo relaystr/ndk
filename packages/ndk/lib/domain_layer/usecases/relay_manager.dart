@@ -433,6 +433,9 @@ class RelayManager<T> {
 
   Future<void> _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) async {
+    // On web, WebSocket messages may arrive as JS objects (LegacyJavaScriptObject)
+    // rather than Dart Strings. Ensure proper conversion before decoding.
+    final String msgStr = message is String ? message : message.toString();
     final previousMessage = _lastMessageCompleter;
 
     final myCompleter = Completer<void>();
@@ -443,11 +446,11 @@ class RelayManager<T> {
       nostrMsg = await IsolateManager.instance
           .runInEncodingIsolate<String, NostrMessageRaw>(
         decodeNostrMsg,
-        message,
+        msgStr,
       );
     } catch (e) {
       // Isolates not available on web
-      nostrMsg = decodeNostrMsg(message);
+      nostrMsg = decodeNostrMsg(msgStr);
     }
 
     if (previousMessage != null) {
@@ -456,7 +459,7 @@ class RelayManager<T> {
 
     myCompleter.complete();
 
-    _processDecodedMessage(nostrMsg, relayConnectivity, message);
+    _processDecodedMessage(nostrMsg, relayConnectivity, msgStr);
   }
 
   void _processDecodedMessage(NostrMessageRaw nostrMsg,
