@@ -23,7 +23,6 @@ import '../entities/relay_connectivity.dart';
 import '../entities/relay_info.dart';
 import '../entities/request_state.dart';
 import '../entities/tuple.dart';
-import '../repositories/cache_manager.dart';
 import '../repositories/nostr_transport.dart';
 import 'accounts/accounts.dart';
 import 'engines/network_engine.dart';
@@ -75,9 +74,6 @@ class RelayManager<T> {
   /// AUTH strategy: eager (on challenge) or lazy (on auth-required)
   final bool eagerAuth;
 
-  /// cache manager for updating event sources
-  final CacheManager? cacheManager;
-
   /// Creates a new relay manager.
   RelayManager({
     required this.globalState,
@@ -88,7 +84,6 @@ class RelayManager<T> {
     allowReconnect = true,
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
-    this.cacheManager,
   }) : _accounts = accounts {
     allowReconnectRelays = allowReconnect;
     _connectSeedRelays(urls: bootstrapRelays ?? DEFAULT_BOOTSTRAP_RELAYS);
@@ -507,25 +502,18 @@ class RelayManager<T> {
           !globalState
               .inFlightBroadcasts[eventId]!.networkController.isClosed) {
         // Update cache with source if broadcast was successful
-        if (success && cacheManager != null) {
+        if (success) {
           final broadcastState = globalState.inFlightBroadcasts[eventId];
           final event = broadcastState?.event;
           if (event != null) {
-            // Only update cache if event was already saved (saveToCache was true)
-            // Check if event exists in cache before updating sources
-            cacheManager!.loadEvent(eventId).then((cachedEvent) {
-              if (cachedEvent != null) {
-                // Merge existing sources with new relay URL, avoiding duplicates
-                final updatedSources = {
-                  ...event.sources,
-                  relayConnectivity.url
-                }.toList();
-                final updatedEvent = event.copyWith(sources: updatedSources);
-                cacheManager!.saveEvent(updatedEvent);
-                // Update the event in broadcast state
-                broadcastState!.event = updatedEvent;
-              }
-            });
+            // Merge existing sources with new relay URL, avoiding duplicates
+            final updatedSources = {
+              ...event.sources,
+              relayConnectivity.url
+            }.toList();
+            final updatedEvent = event.copyWith(sources: updatedSources);
+            // Update the event in broadcast state
+            broadcastState!.event = updatedEvent;
           }
         }
         

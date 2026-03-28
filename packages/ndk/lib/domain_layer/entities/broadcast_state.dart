@@ -51,7 +51,7 @@ class BroadcastState {
 
   /// [networkController] used by relay manger to write responses
   StreamController<RelayBroadcastResponse> networkController =
-      StreamController<RelayBroadcastResponse>();
+      StreamController<RelayBroadcastResponse>.broadcast();
 
   /// stream of state updates \
   /// updates are sent when a relay responds, the whole state is sent \
