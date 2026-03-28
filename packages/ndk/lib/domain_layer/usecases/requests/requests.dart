@@ -275,6 +275,7 @@ class Requests {
       trackingSet: state.returnedIds,
       outController: state.controller,
       eventOutFilters: _eventOutFilters,
+      cacheManager: _cacheWrite.cacheManager,
     )();
 
     // Record fetched ranges when network requests complete (EOSE received)

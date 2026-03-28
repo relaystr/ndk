@@ -6,16 +6,18 @@ import '../mocks/mock_event_verifier.dart';
 import '../mocks/mock_relay.dart';
 
 void main() async {
-  test("braodcast should update source", () async {
+  test("broadcast should update source", () async {
     final relay = MockRelay(name: "relay");
 
     await relay.startServer();
+    addTearDown(() => relay.stopServer());
 
     final ndk = Ndk(NdkConfig(
       eventVerifier: MockEventVerifier(),
       cache: MemCacheManager(),
       bootstrapRelays: [relay.url],
     ));
+    addTearDown(() => ndk.destroy());
 
     final keypair = Bip340.generatePrivateKey();
     final signer = Bip340EventSigner(
@@ -37,8 +39,5 @@ void main() async {
 
     expect(localEvent, isNotNull);
     expect(localEvent!.sources, isNotEmpty);
-
-    await ndk.destroy();
-    await relay.stopServer();
   });
 }

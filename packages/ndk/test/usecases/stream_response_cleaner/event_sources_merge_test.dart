@@ -11,17 +11,25 @@ void main() async {
 
     final relay1 = MockRelay(name: "relay 1");
     final relay2 = MockRelay(name: "relay 2");
-    final relay3 = MockRelay(name: "relay 2", bannedWord: bannedWord);
+    final relay3 = MockRelay(name: "relay 3", bannedWord: bannedWord);
 
     await relay1.startServer();
     await relay2.startServer();
     await relay3.startServer();
+
+    addTearDown(() async {
+      await relay1.stopServer();
+      await relay2.stopServer();
+      await relay3.stopServer();
+    });
 
     final ndk = Ndk(NdkConfig(
       eventVerifier: MockEventVerifier(),
       cache: MemCacheManager(),
       bootstrapRelays: [relay1.url, relay2.url, relay3.url],
     ));
+    
+    addTearDown(() => ndk.destroy());
 
     final keypair = Bip340.generatePrivateKey();
     final signer = Bip340EventSigner(
@@ -46,9 +54,9 @@ void main() async {
     // The last event should have all merged sources
     expect(events.last.sources.length, equals(2));
 
-    await ndk.destroy();
-    await relay1.stopServer();
-    await relay2.stopServer();
-    await relay3.stopServer();
+    final localEvent = await ndk.config.cache.loadEvent(event.id);
+
+    expect(localEvent, isNotNull);
+    expect(localEvent!.sources.length, equals(2));
   });
 }
