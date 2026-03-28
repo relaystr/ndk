@@ -88,6 +88,8 @@ class BroadcastState {
   Timer? _timeoutTimer;
   bool _isDisposed = false;
 
+  bool _timeoutStarted = false;
+
   /// creates a new [BroadcastState] instance
   BroadcastState({
     required this.timeout,
@@ -101,7 +103,12 @@ class BroadcastState {
       // check if all relays responded
       _checkBroadcastDone();
     });
+  }
 
+  /// Starts the timeout timer. Call this after signing is complete.
+  void startTimeout() {
+    if (_timeoutStarted) return;
+    _timeoutStarted = true;
     _timeoutTimer = Timer(timeout, () {
       if (!publishDone) {
         _stateUpdatesController.add(this);
