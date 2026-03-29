@@ -531,7 +531,16 @@ class RelayManager<T> {
       _logActiveRequests();
 
       // Check if this is a negentropy-related error
-      if (noticeMsg.toLowerCase().contains('negentropy')) {
+      // Look for various patterns relays might use to reject NEG commands
+      final noticeLower = noticeMsg.toLowerCase();
+      final isNegentropyError = noticeLower.contains('negentropy') ||
+          noticeLower.contains('neg-') ||
+          noticeLower.contains('unsupported') ||
+          noticeLower.contains('unknown command') ||
+          noticeLower.contains('not implemented') ||
+          noticeLower.contains('nip-77');
+
+      if (isNegentropyError) {
         // Fail all in-flight negotiations for this relay
         final relayUrl = relayConnectivity.url;
         final toRemove = <String>[];
