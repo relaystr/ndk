@@ -258,6 +258,13 @@ class Nip77Internal {
       return;
     }
 
+    // Verify relay origin to avoid cross-relay session contamination
+    final cleanUrl = cleanRelayUrl(relayUrl);
+    if (cleanUrl == null || state.relayUrl != cleanUrl) {
+      Logger.log.w(() => 'Received NEG-MSG from mismatched relay: expected ${state.relayUrl}, got $relayUrl');
+      return;
+    }
+
     try {
       final messageBytes = neg.NegentropyEncoder.hexToBytes(payload);
       final response = state.processMessage(messageBytes);
@@ -294,10 +301,17 @@ class Nip77Internal {
       return;
     }
 
-    Logger.log.e(() => 'NEG-ERR from $relayUrl: $errorMsg');
+    // Verify relay origin to avoid cross-relay session contamination
+    final cleanUrl = cleanRelayUrl(relayUrl);
+    if (cleanUrl == null || state.relayUrl != cleanUrl) {
+      Logger.log.w(() => 'Received NEG-ERR from mismatched relay: expected ${state.relayUrl}, got $relayUrl');
+      return;
+    }
+
+    Logger.log.e(() => 'NEG-ERR from $cleanUrl: $errorMsg');
 
     if (errorMsg.contains('CLOSED') || errorMsg.contains('auth-required')) {
-      state.completeWithError(Nip77NotSupportedException(relayUrl, errorMsg));
+      state.completeWithError(Nip77NotSupportedException(cleanUrl, errorMsg));
     } else {
       state.completeWithError(Exception(errorMsg));
     }
