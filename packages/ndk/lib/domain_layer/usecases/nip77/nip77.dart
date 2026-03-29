@@ -236,10 +236,14 @@ class Nip77Internal {
 
   Future<List<neg.NegentropyItem>> _buildItemsFromFilter(Filter filter) async {
     final events = await _cacheManager.loadEvents(
+      ids: filter.ids,
       pubKeys: filter.authors,
       kinds: filter.kinds,
+      tags: filter.tags,
       since: filter.since,
       until: filter.until,
+      search: filter.search,
+      limit: filter.limit,
     );
 
     return events
