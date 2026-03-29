@@ -259,11 +259,11 @@ void main() {
       ];
 
       final relayMsg = NegentropyEncoder.createInitialMessage(relayItems, NegentropyEncoder.idSize);
-      final (_, needIds, haveIds) = NegentropyEncoder.reconcile(relayMsg, localItems);
+      NegentropyEncoder.reconcile(relayMsg, localItems);
 
       // Fingerprints won't match, but full reconciliation needs multiple rounds
       // Initial message just sends fingerprint, doesn't reveal individual IDs yet
-      expect(needIds.length + haveIds.length, greaterThanOrEqualTo(0));
+      expect(true, isTrue);
     });
 
     test('reconcile with empty local items', () {
