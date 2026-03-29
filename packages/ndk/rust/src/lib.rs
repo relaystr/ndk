@@ -2,8 +2,7 @@ use std::ffi::{c_char, CStr};
 use std::slice;
 
 use hex::decode;
-use k256::schnorr::{Signature, VerifyingKey};
-use serde_json::json;
+use secp256k1::{schnorr::Signature, XOnlyPublicKey, SECP256K1};
 use sha2::{Digest, Sha256};
 
 /// Verifies a Nostr event signature.
@@ -137,17 +136,26 @@ fn verify_schnorr_signature_internal(
         return false;
     }
 
-    let verifying_key = match VerifyingKey::from_bytes(&pub_key_bytes) {
+    let pub_key_array: [u8; 32] = match pub_key_bytes.try_into() {
+        Ok(arr) => arr,
+        Err(_) => return false,
+    };
+
+    let signature_array: [u8; 64] = match signature_bytes.try_into() {
+        Ok(arr) => arr,
+        Err(_) => return false,
+    };
+
+    let pubkey = match XOnlyPublicKey::from_byte_array(pub_key_array) {
         Ok(key) => key,
         Err(_) => return false,
     };
 
-    let signature = match Signature::try_from(signature_bytes.as_slice()) {
-        Ok(sig) => sig,
-        Err(_) => return false,
-    };
+    let signature = Signature::from_byte_array(signature_array);
 
-    verifying_key.verify_raw(&event_id_bytes, &signature).is_ok()
+    SECP256K1
+        .verify_schnorr(&signature, &event_id_bytes, &pubkey)
+        .is_ok()
 }
 
 fn hash_event_data_internal(
@@ -157,8 +165,52 @@ fn hash_event_data_internal(
     tags: &[Vec<String>],
     content: &str,
 ) -> String {
-    let event = json!([0, pubkey, created_at, kind, tags, content]);
-    let serialized_event = serde_json::to_string(&event).expect("Serialization error");
+    let mut serialized_event = String::with_capacity(256);
+    serialized_event.push_str("[0,\"");
+    serialized_event.push_str(pubkey);
+    serialized_event.push_str("\",");
+    serialized_event.push_str(&created_at.to_string());
+    serialized_event.push(',');
+    serialized_event.push_str(&kind.to_string());
+    serialized_event.push_str(",[");
+
+    for (i, tag) in tags.iter().enumerate() {
+        if i > 0 {
+            serialized_event.push(',');
+        }
+        serialized_event.push('[');
+        for (j, item) in tag.iter().enumerate() {
+            if j > 0 {
+                serialized_event.push(',');
+            }
+            serialized_event.push('"');
+            for c in item.chars() {
+                match c {
+                    '"' => serialized_event.push_str("\\\""),
+                    '\\' => serialized_event.push_str("\\\\"),
+                    '\n' => serialized_event.push_str("\\n"),
+                    '\r' => serialized_event.push_str("\\r"),
+                    '\t' => serialized_event.push_str("\\t"),
+                    _ => serialized_event.push(c),
+                }
+            }
+            serialized_event.push('"');
+        }
+        serialized_event.push(']');
+    }
+
+    serialized_event.push_str("],\"");
+    for c in content.chars() {
+        match c {
+            '"' => serialized_event.push_str("\\\""),
+            '\\' => serialized_event.push_str("\\\\"),
+            '\n' => serialized_event.push_str("\\n"),
+            '\r' => serialized_event.push_str("\\r"),
+            '\t' => serialized_event.push_str("\\t"),
+            _ => serialized_event.push(c),
+        }
+    }
+    serialized_event.push_str("\"]");
 
     let mut hasher = Sha256::new();
     hasher.update(serialized_event.as_bytes());
@@ -177,8 +229,7 @@ mod tests {
         let event_id = "a47c525970d21575c67e6f1e47674f1b82fc7edabb098fac4be21bb05425b389";
         let signature_hex = "b03ddc4930776698d39caa3df0cd887558ceea281eb9e2524daaba324906b2e3efc06f2f65a7fbba95c0b3ce9817df81f53d2d8da0124028446b0cc3a59ae6d9";
 
-        let result = verify_schnorr_signature_internal(pub_key_hex, event_id, signature_hex);
-        assert!(result);
+        assert!(verify_schnorr_signature_internal(pub_key_hex, event_id, signature_hex));
     }
 
     #[test]
@@ -187,8 +238,7 @@ mod tests {
         let event_id = "a47c525970d21575c67e6f1e47674f1b82fc7edabb098fac4be21bb05425b389";
         let signature_hex = "a03ddc4930776698d39caa3df0cd887558ceea281eb9e2524daaba324906b2e3efc06f2f65a7fbba95c0b3ce9817df81f53d2d8da0124028446b0cc3a59ae6d9";
 
-        let result = verify_schnorr_signature_internal(pub_key_hex, event_id, signature_hex);
-        assert!(!result);
+        assert!(!verify_schnorr_signature_internal(pub_key_hex, event_id, signature_hex));
     }
 
     #[test]
@@ -200,8 +250,7 @@ mod tests {
         let tags: Vec<Vec<String>> = vec![];
         let content = "hello world";
 
-        let result = hash_event_data_internal(pubkey, created_at, kind, &tags, content);
-        assert_eq!(result, valid_id);
+        assert_eq!(hash_event_data_internal(pubkey, created_at, kind, &tags, content), valid_id);
     }
 
     #[test]
@@ -213,7 +262,6 @@ mod tests {
         let tags: Vec<Vec<String>> = vec![];
         let content = "invalid";
 
-        let result = hash_event_data_internal(pubkey, created_at, kind, &tags, content);
-        assert_ne!(result, valid_id);
+        assert_ne!(hash_event_data_internal(pubkey, created_at, kind, &tags, content), valid_id);
     }
 }
