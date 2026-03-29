@@ -2,8 +2,6 @@
 icon: sync
 ---
 
-## Basic reconciliation
-
 [!badge variant="primary" text="low level"]
 
 ## Basic reconciliation
@@ -37,7 +35,7 @@ try {
 } on Nip77NotSupportedException catch (e) {
   print('Relay does not support NIP-77: ${e.message}');
   // Fall back to traditional query with paginate true
-  final events = await ndk.query(filter: filter, paginate: true);
+  ndk.requests.query(filter: filter, paginate: true);
 } on Nip77TimeoutException catch (e) {
   print('Reconciliation timed out: ${e.timeout}');
 }
@@ -52,4 +50,4 @@ try {
 - Discovering events you missed
 
 ❌ **Use other methods for:**
-- Small queries → use `ndk.query()`
+- Small queries → use `ndk.requests.query()`
