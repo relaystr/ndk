@@ -282,4 +282,9 @@ class Initialization {
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
   }
+
+  /// Close all active NIP-77 negotiations
+  void closeAllNip77Negotiations() {
+    _nip77Internal.closeAll();
+  }
 }
