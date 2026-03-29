@@ -68,6 +68,12 @@ class NegentropyEncoder {
       }
     }
 
+    // Check if we reached end of data with continuation bit still set
+    final lastByte = data[offset + bytesConsumed - 1];
+    if ((lastByte & 0x80) != 0) {
+      throw ArgumentError('Truncated varint: data ends with continuation bit set');
+    }
+
     return (value, bytesConsumed);
   }
 
