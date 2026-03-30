@@ -6,7 +6,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
@@ -29,7 +29,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="ndk" />
             </intent-filter>
-            <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
             <meta-data
                     android:name="flutterEmbedding"
                     android:value="2" />
@@ -58,5 +58,4 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
 </manifest>
-
 

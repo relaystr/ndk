@@ -4,7 +4,9 @@ import 'package:ndk/ndk.dart';
 import 'main.dart';
 
 class PendingRequestsPage extends StatefulWidget {
-  const PendingRequestsPage({super.key});
+  final bool embedded;
+
+  const PendingRequestsPage({super.key, this.embedded = false});
 
   @override
   State<PendingRequestsPage> createState() => _PendingRequestsPageState();
@@ -85,17 +87,70 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Text(
-            'Please log in via the "Accounts" tab to see pending requests.\n\n'
-            'This demo works best with external signers (Bunker, NIP-07, Amber) '
-            'that require user approval.',
+            'Please log in to see pending requests.',
             textAlign: TextAlign.center,
           ),
         ),
       );
     }
 
+    final pendingRequestsList = StreamBuilder<List<PendingSignerRequest>>(
+      stream: signer.pendingRequestsStream,
+      initialData: signer.pendingRequests,
+      builder: (context, snapshot) {
+        final requests = snapshot.data ?? [];
+
+        if (requests.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 64,
+                  color: Colors.green,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No pending requests',
+                  style: TextStyle(fontSize: 18),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Use the buttons above to trigger requests.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: requests.length,
+          itemBuilder: (context, index) {
+            final request = requests[index];
+            return _PendingRequestCard(
+              request: request,
+              onCancel: () {
+                final cancelled = signer.cancelRequest(request.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      cancelled
+                          ? 'Request cancelled'
+                          : 'Failed to cancel request',
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(widget.embedded ? 0 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -170,63 +225,15 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
           ),
           const SizedBox(height: 16),
 
-          // Pending requests list
-          Expanded(
-            child: StreamBuilder<List<PendingSignerRequest>>(
-              stream: signer.pendingRequestsStream,
-              initialData: signer.pendingRequests,
-              builder: (context, snapshot) {
-                final requests = snapshot.data ?? [];
-
-                if (requests.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.check_circle_outline,
-                          size: 64,
-                          color: Colors.green,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'No pending requests',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Use the buttons above to trigger requests.',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  itemCount: requests.length,
-                  itemBuilder: (context, index) {
-                    final request = requests[index];
-                    return _PendingRequestCard(
-                      request: request,
-                      onCancel: () {
-                        final cancelled = signer.cancelRequest(request.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              cancelled
-                                  ? 'Request cancelled'
-                                  : 'Failed to cancel request',
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
+          if (widget.embedded)
+            SizedBox(
+              height: 360,
+              child: pendingRequestsList,
+            )
+          else
+            Expanded(
+              child: pendingRequestsList,
             ),
-          ),
         ],
       ),
     );
