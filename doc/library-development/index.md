@@ -9,7 +9,7 @@ icon: repo-clone
 
 ## Setup
 
-Install [prerequisites](#prerequisites)
+Install [prerequisites](#setup)
 
 run `melos bootstrap` to install all dependencies.
 

@@ -43,3 +43,7 @@ await for (final event in response.stream) {
   print(event);
 }
 ```
+
+## Wallet examples
+
+Wallet examples live in [example/wallets](./wallets/README.md).
