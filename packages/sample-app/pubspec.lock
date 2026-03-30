@@ -612,13 +612,6 @@ packages:
       relative: true
     source: path
     version: "0.8.0-dev.2"
-  ndk_amber:
-    dependency: "direct main"
-    description:
-      path: "../amber"
-      relative: true
-    source: path
-    version: "0.4.1-dev.5"
   ndk_bip32_keys:
     dependency: transitive
     description:
@@ -633,14 +626,14 @@ packages:
       path: "../drift"
       relative: true
     source: path
-    version: "0.0.2-dev.6"
+    version: "0.1.0-dev.2"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.0.2-dev.8"
+    version: "0.1.0-dev.3"
   nested:
     dependency: transitive
     description:
@@ -992,13 +985,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.8.6"
-  sembast_cache_manager:
-    dependency: "direct main"
-    description:
-      path: "../sembast_cache_manager"
-      relative: true
-    source: path
-    version: "1.0.8-dev.4"
   sky_engine:
     dependency: transitive
     description: flutter

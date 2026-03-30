@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
 class MyVerifiers {
   static final bip340Verifier = Bip340EventVerifier();
@@ -21,9 +23,11 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
   double _eventCount = 100;
   String _bip340Time = '';
   String _rustTime = '';
+  String _webTime = '';
   bool _isGenerating = false;
   bool _isVerifyingBip340 = false;
   bool _isVerifyingRust = false;
+  bool _isVerifyingWeb = false;
 
   Future<List<Nip01Event>> _generateEvents(int count) async {
     final String? pubkey = widget.ndk.accounts.getPublicKey();
@@ -67,6 +71,7 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
       _isGenerating = true;
       _bip340Time = '';
       _rustTime = '';
+      _webTime = '';
     });
     try {
       final events = await _generateEvents(_eventCount.toInt());
@@ -115,6 +120,25 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
     } finally {
       setState(() {
         _isVerifyingRust = false;
+      });
+    }
+  }
+
+  Future<void> _handleWebVerify() async {
+    if (_events.isEmpty) return;
+    setState(() {
+      _isVerifyingWeb = true;
+    });
+    try {
+      final stopwatch = Stopwatch()..start();
+      await _verifyEventsParallel(verifier: WebEventVerifier());
+      stopwatch.stop();
+      setState(() {
+        _webTime = '${stopwatch.elapsedMilliseconds}ms';
+      });
+    } finally {
+      setState(() {
+        _isVerifyingWeb = false;
       });
     }
   }
@@ -203,21 +227,37 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _events.isNotEmpty && !_isVerifyingRust
-                  ? _handleRustVerify
-                  : null,
-              child: _isVerifyingRust
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Verify with Rust'),
-            ),
+            if (kIsWeb)
+              ElevatedButton(
+                onPressed: _events.isNotEmpty && !_isVerifyingWeb
+                    ? _handleWebVerify
+                    : null,
+                child: _isVerifyingWeb
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Verify with WebEventVerifier (JS)'),
+              ),
+            if (!kIsWeb)
+              ElevatedButton(
+                onPressed: _events.isNotEmpty && !_isVerifyingRust
+                    ? _handleRustVerify
+                    : null,
+                child: _isVerifyingRust
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Verify with Rust'),
+              ),
             const SizedBox(height: 8),
             Text(
-              _rustTime.isEmpty ? 'Not tested yet' : 'Time: $_rustTime',
+              kIsWeb
+                  ? (_webTime.isEmpty ? 'Not tested yet' : 'Time: $_webTime')
+                  : (_rustTime.isEmpty ? 'Not tested yet' : 'Time: $_rustTime'),
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),

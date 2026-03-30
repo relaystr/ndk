@@ -594,6 +594,14 @@ class RelayManager<T> {
     String challenge,
     Set<Account> accounts,
   ) {
+    // Pause timeout for all requests on this relay during AUTH signing
+    final requestsOnRelay = globalState.inFlightRequests.values
+        .where((state) => state.requests.keys.contains(relayConnectivity.url))
+        .toList();
+    for (final state in requestsOnRelay) {
+      state.pauseTimeout();
+    }
+
     int authCount = 0;
     for (final account in accounts) {
       if (account.signer.canSign()) {
@@ -602,6 +610,10 @@ class RelayManager<T> {
           ["challenge", challenge]
         ]);
         account.signer.sign(auth).then((signedAuth) {
+          // Resume timeout for requests after signing completes
+          for (final state in requestsOnRelay) {
+            state.resumeTimeout();
+          }
           send(relayConnectivity,
               ClientMsg(ClientMsgType.kAuth, event: signedAuth));
           Logger.log.d(() =>
@@ -612,6 +624,10 @@ class RelayManager<T> {
     }
 
     if (authCount == 0) {
+      // No signing will happen, resume timeouts immediately
+      for (final state in requestsOnRelay) {
+        state.resumeTimeout();
+      }
       Logger.log.w(() => "Received an AUTH challenge but no account can sign");
     }
   }
@@ -772,8 +788,12 @@ class RelayManager<T> {
     Logger.log.d(() =>
         "AUTH required for REQ $reqId on ${relayConnectivity.url}, authenticating ${signableAccounts.length} account(s)...");
 
+    // Pause timeout during AUTH signing
+    state.pauseTimeout();
+
     // Track how many AUTH OKs we need before re-sending REQ
     int pendingAuthCount = signableAccounts.length;
+    int pendingSignCount = signableAccounts.length;
 
     for (final account in signableAccounts) {
       final auth = AuthEvent(pubKey: account.pubkey, tags: [
@@ -782,6 +802,12 @@ class RelayManager<T> {
       ]);
 
       account.signer.sign(auth).then((signedAuth) {
+        // Resume timeout after all signings complete
+        pendingSignCount--;
+        if (pendingSignCount == 0) {
+          state.resumeTimeout();
+        }
+
         // Store callback - only re-send REQ after last AUTH OK
         _pendingAuthCallbacks[signedAuth.id] = () {
           pendingAuthCount--;

@@ -182,6 +182,7 @@ class JitEngine with Logger implements NetworkEngine {
         broadcastState.addError(e, stackTrace);
         return;
       }
+      broadcastState.startTimeout();
 
       if (specificRelays != null) {
         final cleanedSpecificRelays = cleanRelayUrls(specificRelays.toList());
@@ -224,7 +225,8 @@ class JitEngine with Logger implements NetworkEngine {
     asyncStuff();
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: doneStream,
+      broadcastDoneStream: broadcastState.stateUpdates
+          .map((state) => state.broadcasts.values.toList()),
     );
   }
 

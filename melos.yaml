@@ -3,7 +3,6 @@ name: ndk
 repository: https://github.com/relaystr/ndk
 
 packages:
-  - packages/amber
   - packages/bip32_keys
   - packages/ndk
   - packages/objectbox

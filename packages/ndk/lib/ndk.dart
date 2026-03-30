@@ -7,6 +7,7 @@ library;
 
 export 'presentation_layer/ndk.dart';
 export 'presentation_layer/ndk_config.dart';
+export 'src/version.dart';
 export 'domain_layer/entities/ndk_request.dart';
 export 'domain_layer/entities/request_response.dart';
 export 'domain_layer/entities/broadcast_response.dart';
@@ -66,7 +67,8 @@ export 'domain_layer/entities/signer_request_rejected_exception.dart';
 /// cache
 export 'domain_layer/repositories/cache_manager.dart';
 export 'data_layer/repositories/cache_manager/mem_cache_manager.dart';
-// export 'data_layer/repositories/cache_manager/db_cache_manager.dart';
+export 'data_layer/repositories/cache_manager/sembast_cache_manager.dart'
+    if (dart.library.io) 'data_layer/repositories/cache_manager/sembast_cache_manager.dart';
 
 /**
  * common usecases
