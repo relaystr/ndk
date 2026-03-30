@@ -10,8 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   ndk: ^0.5.0
-  nip07_event_signer:
-    path: ../../../nip07_event_signer
+  ndk_flutter:
+    path: ../../../ndk_flutter
 
 dev_dependencies:
   flutter_test:

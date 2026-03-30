@@ -19,6 +19,7 @@ extension type Nip04._(JSObject _) implements JSObject {
     JSString recipientPubKey,
     JSString plaintext,
   );
+
   external JSPromise<JSString> decrypt(
     JSString senderPubKey,
     JSString ciphertext,
@@ -32,6 +33,7 @@ extension type Nip44._(JSObject _) implements JSObject {
     JSString recipientPubKey,
     JSString plaintext,
   );
+
   external JSPromise<JSString> decrypt(
     JSString senderPubKey,
     JSString ciphertext,
@@ -64,14 +66,4 @@ extension type NostrEvent._(JSObject _) implements JSObject {
 
   external String get content;
   external set content(String value);
-}
-
-extension NostrEventExtension on NostrEvent {
-  List<List<String>> get tagsList {
-    final jsTags = tags.toDart;
-    return jsTags.map((jsTag) {
-      final tag = jsTag.toDart;
-      return tag.map((item) => item.toDart).toList();
-    }).toList();
-  }
 }

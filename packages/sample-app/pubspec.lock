@@ -642,13 +642,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-  nip07_event_signer:
-    dependency: "direct overridden"
-    description:
-      path: "../nip07_event_signer"
-      relative: true
-    source: path
-    version: "1.0.7-dev.5"
   objective_c:
     dependency: transitive
     description:

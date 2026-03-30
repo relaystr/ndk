@@ -54,7 +54,6 @@ class Nip07EventSigner implements EventSigner {
     throw UnsupportedError('NIP-07 is not available on this platform');
   }
 
-  // Stub implementation - always returns empty since NIP-07 is not available
   @override
   Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
       _pendingRequestsController.stream;

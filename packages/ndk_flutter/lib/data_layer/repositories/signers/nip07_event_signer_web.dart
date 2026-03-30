@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:js_interop';
+
 import 'package:ndk/ndk.dart';
 import 'package:rxdart/rxdart.dart';
-import 'js_interop.dart' as js;
 
-/// Internal class to track a pending request with its completer
+import 'nip07_js_interop.dart' as js;
+
 class _PendingRequestEntry {
   final Completer<dynamic> completer;
   final PendingSignerRequest request;
+
   _PendingRequestEntry(this.completer, this.request);
 }
 
@@ -28,11 +30,10 @@ class Nip07EventSigner implements EventSigner {
 
   void _notifyPendingRequestsChange() {
     _pendingRequestsController.add(
-      _pendingRequests.values.map((e) => e.request).toList(),
+      _pendingRequests.values.map((entry) => entry.request).toList(),
     );
   }
 
-  /// Wraps an async operation to track it as a pending request
   Future<T> _trackRequest<T>(
     SignerMethod method,
     Future<T> Function() operation, {
@@ -60,20 +61,20 @@ class Nip07EventSigner implements EventSigner {
     );
     _notifyPendingRequestsChange();
 
-    // Run operation and complete the completer when done
     operation()
         .then((result) {
           if (!completer.isCompleted) {
             completer.complete(result);
           }
         })
-        .catchError((e) {
+        .catchError((error) {
           if (!completer.isCompleted) {
-            final error = SignerRequestRejectedException(
-              requestId: requestId,
-              originalMessage: e.toString(),
+            completer.completeError(
+              SignerRequestRejectedException(
+                requestId: requestId,
+                originalMessage: error.toString(),
+              ),
             );
-            completer.completeError(error);
           }
         })
         .whenComplete(() {
@@ -173,13 +174,15 @@ class Nip07EventSigner implements EventSigner {
 
   @override
   String getPublicKey() {
-    if (cachedPublicKey != null) return cachedPublicKey!;
+    if (cachedPublicKey != null) {
+      return cachedPublicKey!;
+    }
 
     js.nostr!.getPublicKey().toDart.then((pubkey) {
       cachedPublicKey = pubkey.toDart;
     });
 
-    throw Exception("Use getPublicKeyAsync with Nip07EventSigner");
+    throw Exception('Use getPublicKeyAsync with Nip07EventSigner');
   }
 
   Future<String> getPublicKeyAsync() async {
@@ -207,9 +210,7 @@ class Nip07EventSigner implements EventSigner {
             .toList()
             .toJS;
 
-      // Sign the event using NIP-07
       final signedEvent = await js.nostr!.signEvent(jsEvent).toDart;
-
       return event.copyWith(id: signedEvent.id!, sig: signedEvent.sig!);
     }, event: event);
   }
@@ -220,17 +221,18 @@ class Nip07EventSigner implements EventSigner {
 
   @override
   List<PendingSignerRequest> get pendingRequests =>
-      _pendingRequests.values.map((e) => e.request).toList();
+      _pendingRequests.values.map((entry) => entry.request).toList();
 
   @override
   bool cancelRequest(String requestId) {
     final entry = _pendingRequests.remove(requestId);
-    if (entry != null) {
-      entry.completer.completeError(SignerRequestCancelledException(requestId));
-      _notifyPendingRequestsChange();
-      return true;
+    if (entry == null) {
+      return false;
     }
-    return false;
+
+    entry.completer.completeError(SignerRequestCancelledException(requestId));
+    _notifyPendingRequestsChange();
+    return true;
   }
 
   @override

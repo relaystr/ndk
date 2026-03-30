@@ -222,7 +222,6 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                             setState(() => _showLogin = false);
                             widget.onAccountChanged?.call();
                           },
-                          enableNip07Login: false,
                           enableAmberLogin: false,
                         ),
                       ],

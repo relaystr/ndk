@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
-import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/data_layer/repositories/signers/nip07_event_signer.dart';
 
 void test() async {
   final nip07Signer = Nip07EventSigner();

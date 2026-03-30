@@ -66,8 +66,6 @@ dependency_overrides:
     path: ../ndk
   ndk_flutter:
     path: ../ndk_flutter
-  nip07_event_signer:
-    path: ../nip07_event_signer
   ndk_drift:
     path: ../drift
   # The "flutter_lints" package below contains a set of recommended lints to
