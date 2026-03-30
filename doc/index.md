@@ -14,7 +14,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 ## Apps using NDK
 
-- [sample app](https://github.com/relaystr/ndk/releases)
+- [sample app](https://dart-nostr.com/app/)
 - [yana](https://github.com/frnandu/yana)
 - [camelus](https://github.com/leo-lox/camelus)
 - [zap.stream](https://github.com/nostrlabs-io/zap-stream-flutter)
