@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'login_popup.dart';
@@ -16,10 +17,13 @@ class AccountsPage extends StatefulWidget {
 
 class _AccountsPageState extends State<AccountsPage> {
   Future<void> _openLoginPopup() async {
+    final l10n = context.l10n;
     await showNLoginPopup(
       context: context,
       ndkFlutter: ndkFlutter,
-      title: ndk.accounts.getPublicKey() == null ? 'Log in' : 'Add account',
+      title: ndk.accounts.getPublicKey() == null
+          ? l10n.loginDialogDefaultTitle
+          : l10n.loginDialogAddAccountTitle,
       onLoggedIn: () {
         if (!mounted) return;
         setState(() {});
@@ -30,6 +34,7 @@ class _AccountsPageState extends State<AccountsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final isLoggedIn = ndk.accounts.getPublicKey() != null;
 
     return SingleChildScrollView(
@@ -38,12 +43,12 @@ class _AccountsPageState extends State<AccountsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Accounts',
+            l10n.accountsHeading,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Manage your logged accounts and add new ones.',
+            l10n.accountsDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey,
                 ),
@@ -73,7 +78,9 @@ class _AccountsPageState extends State<AccountsPage> {
               child: FilledButton.icon(
                 onPressed: _openLoginPopup,
                 icon: const Icon(Icons.person_add),
-                label: Text(isLoggedIn ? 'Add Another Account' : 'Log In'),
+                label: Text(
+                  isLoggedIn ? l10n.addAnotherAccount : l10n.logIn,
+                ),
               ),
             ),
           ),

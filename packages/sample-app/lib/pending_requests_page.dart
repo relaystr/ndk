@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
 
 import 'main.dart';
 
@@ -32,6 +33,7 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
   }
 
   Future<void> _signEvent(EventSigner signer) async {
+    final l10n = context.l10n;
     try {
       final event = Nip01Event(
         pubKey: signer.getPublicKey(),
@@ -40,13 +42,14 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
         content: 'Test event from pending requests demo - ${DateTime.now()}',
       );
       final signed = await signer.sign(event);
-      _showResult('Signed! ID: ${signed.id.substring(0, 16)}...');
+      _showResult(l10n.pendingSignedResult('${signed.id.substring(0, 16)}...'));
     } catch (e) {
-      _showError('Sign failed: $e');
+      _showError(l10n.pendingSignFailed(e.toString()));
     }
   }
 
   Future<void> _encryptNip44(EventSigner signer) async {
+    final l10n = context.l10n;
     try {
       final pubkey = signer.getPublicKey();
       final result = await signer.encryptNip44(
@@ -54,15 +57,17 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
         recipientPubKey: pubkey,
       );
       _ciphertext = result;
-      _showResult('Encrypted: ${result?.substring(0, 30)}...');
+      _showResult(
+          l10n.pendingEncryptedResult('${result?.substring(0, 30)}...'));
     } catch (e) {
-      _showError('Encrypt failed: $e');
+      _showError(l10n.pendingEncryptFailed(e.toString()));
     }
   }
 
   Future<void> _decryptNip44(EventSigner signer) async {
+    final l10n = context.l10n;
     if (_ciphertext == null) {
-      _showError('Encrypt first to get ciphertext');
+      _showError(l10n.pendingEncryptFirst);
       return;
     }
     try {
@@ -71,23 +76,24 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
         ciphertext: _ciphertext!,
         senderPubKey: pubkey,
       );
-      _showResult('Decrypted: $result');
+      _showResult(l10n.pendingDecryptedResult(result ?? ''));
     } catch (e) {
-      _showError('Decrypt failed: $e');
+      _showError(l10n.pendingDecryptFailed(e.toString()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final loggedInAccount = ndk.accounts.getLoggedAccount();
     final signer = loggedInAccount?.signer;
 
     if (signer == null) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Text(
-            'Please log in to see pending requests.',
+            l10n.pendingRequestsLoginRequired,
             textAlign: TextAlign.center,
           ),
         ),
@@ -101,24 +107,24 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
         final requests = snapshot.data ?? [];
 
         if (requests.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.check_circle_outline,
                   size: 64,
                   color: Colors.green,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
-                  'No pending requests',
-                  style: TextStyle(fontSize: 18),
+                  l10n.pendingNoRequests,
+                  style: const TextStyle(fontSize: 18),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  'Use the buttons above to trigger requests.',
-                  style: TextStyle(color: Colors.grey),
+                  l10n.pendingUseButtons,
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -137,8 +143,8 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
                   SnackBar(
                     content: Text(
                       cancelled
-                          ? 'Request cancelled'
-                          : 'Failed to cancel request',
+                          ? l10n.pendingRequestCancelled
+                          : l10n.pendingRequestCancelFailed,
                     ),
                   ),
                 );
@@ -155,12 +161,12 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Pending Signer Requests',
+            l10n.pendingHeading,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Requests waiting for approval from your signer.',
+            l10n.pendingDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey,
                 ),
@@ -174,9 +180,9 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Trigger Requests',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  Text(
+                    l10n.pendingTriggerRequests,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -186,17 +192,17 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
                       FilledButton.icon(
                         onPressed: () => _signEvent(signer),
                         icon: const Icon(Icons.edit, size: 18),
-                        label: const Text('Sign Event'),
+                        label: Text(l10n.signEvent),
                       ),
                       FilledButton.icon(
                         onPressed: () => _encryptNip44(signer),
                         icon: const Icon(Icons.lock, size: 18),
-                        label: const Text('Encrypt'),
+                        label: Text(l10n.encrypt),
                       ),
                       FilledButton.icon(
                         onPressed: () => _decryptNip44(signer),
                         icon: const Icon(Icons.lock_open, size: 18),
-                        label: const Text('Decrypt'),
+                        label: Text(l10n.decrypt),
                       ),
                     ],
                   ),
@@ -287,34 +293,36 @@ class _PendingRequestCard extends StatelessWidget {
     }
   }
 
-  String _getMethodDisplayName(SignerMethod method) {
+  String _getMethodDisplayName(BuildContext context, SignerMethod method) {
+    final l10n = context.l10n;
     switch (method) {
       case SignerMethod.signEvent:
-        return 'Sign Event';
+        return l10n.pendingMethodSignEvent;
       case SignerMethod.getPublicKey:
-        return 'Get Public Key';
+        return l10n.pendingMethodGetPublicKey;
       case SignerMethod.nip04Encrypt:
-        return 'NIP-04 Encrypt';
+        return l10n.pendingMethodNip04Encrypt;
       case SignerMethod.nip04Decrypt:
-        return 'NIP-04 Decrypt';
+        return l10n.pendingMethodNip04Decrypt;
       case SignerMethod.nip44Encrypt:
-        return 'NIP-44 Encrypt';
+        return l10n.pendingMethodNip44Encrypt;
       case SignerMethod.nip44Decrypt:
-        return 'NIP-44 Decrypt';
+        return l10n.pendingMethodNip44Decrypt;
       case SignerMethod.ping:
-        return 'Ping';
+        return l10n.pendingMethodPing;
       case SignerMethod.connect:
-        return 'Connect';
+        return l10n.pendingMethodConnect;
     }
   }
 
-  String _formatDuration(Duration duration) {
+  String _formatDuration(BuildContext context, Duration duration) {
+    final l10n = context.l10n;
     if (duration.inSeconds < 60) {
-      return '${duration.inSeconds}s ago';
+      return l10n.pendingSecondsAgo(duration.inSeconds);
     } else if (duration.inMinutes < 60) {
-      return '${duration.inMinutes}m ago';
+      return l10n.pendingMinutesAgo(duration.inMinutes);
     } else {
-      return '${duration.inHours}h ago';
+      return l10n.pendingHoursAgo(duration.inHours);
     }
   }
 
@@ -346,14 +354,14 @@ class _PendingRequestCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getMethodDisplayName(method),
+                        _getMethodDisplayName(context, method),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       Text(
-                        _formatDuration(duration),
+                        _formatDuration(context, duration),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12,
@@ -365,7 +373,7 @@ class _PendingRequestCard extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onCancel,
                   icon: const Icon(Icons.cancel, size: 18),
-                  label: const Text('Cancel'),
+                  label: Text(context.l10n.cancel),
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.red,
                   ),
@@ -384,12 +392,15 @@ class _PendingRequestCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Event Kind: ${request.event!.kind}',
+                      context.l10n
+                          .pendingEventKind(request.event!.kind.toString()),
                       style: const TextStyle(fontFamily: 'monospace'),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Content: ${_truncate(request.event!.content, 100)}',
+                      context.l10n.pendingContent(
+                        _truncate(request.event!.content, 100),
+                      ),
                       style: const TextStyle(fontFamily: 'monospace'),
                     ),
                   ],
@@ -409,14 +420,20 @@ class _PendingRequestCard extends StatelessWidget {
                   children: [
                     if (request.counterpartyPubkey != null)
                       Text(
-                        'Counterparty: ${_truncate(request.counterpartyPubkey!, 20)}...',
+                        context.l10n.pendingCounterparty(
+                          _truncate(request.counterpartyPubkey!, 20),
+                        ),
                         style: const TextStyle(fontFamily: 'monospace'),
                       ),
                     const SizedBox(height: 4),
                     Text(
                       request.plaintext != null
-                          ? 'Plaintext: ${_truncate(request.content!, 100)}'
-                          : 'Ciphertext: ${_truncate(request.content!, 50)}...',
+                          ? context.l10n.pendingPlaintext(
+                              _truncate(request.content!, 100),
+                            )
+                          : context.l10n.pendingCiphertext(
+                              _truncate(request.content!, 50),
+                            ),
                       style: const TextStyle(fontFamily: 'monospace'),
                     ),
                   ],
@@ -425,7 +442,7 @@ class _PendingRequestCard extends StatelessWidget {
             ],
             const SizedBox(height: 8),
             Text(
-              'ID: ${request.id}',
+              context.l10n.pendingId(request.id),
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: 10,

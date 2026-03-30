@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
 
 class BlossomMediaPage extends StatefulWidget {
   final Ndk ndk;
@@ -188,7 +189,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
   Future<void> _downloadFile() async {
     if (_uploadedUrl == null && _uploadedSha256 == null) {
       setState(() {
-        _downloadError = 'No file uploaded yet to download';
+        _downloadError = context.l10n.blossomNoUploadedFileToDownload;
       });
       return;
     }
@@ -221,7 +222,8 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
       );
 
       setState(() {
-        _downloadedFilePath = kIsWeb ? 'Downloaded to browser' : outputPath;
+        _downloadedFilePath =
+            kIsWeb ? context.l10n.blossomDownloadedToBrowser : outputPath;
       });
     } catch (e) {
       setState(() {
@@ -236,9 +238,10 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Blossom Media & File Operations'),
+        title: Text(l10n.blossomPageTitle),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -252,13 +255,13 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      Text('Image Demo (getBlob)',
+                      Text(l10n.blossomImageDemoTitle,
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(height: 16),
                       if (_isLoadingImage)
                         const Center(child: CircularProgressIndicator())
                       else if (_imageError.isNotEmpty)
-                        Text('Error: $_imageError',
+                        Text(l10n.errorLabel(_imageError),
                             style: const TextStyle(color: Colors.red))
                       else if (_blobResponse != null)
                         Column(
@@ -269,21 +272,22 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                             ),
                             const SizedBox(height: 16),
                             if (_blobResponse?.mimeType != null)
-                              Text('Mime Type: ${_blobResponse!.mimeType}'),
+                              Text(l10n
+                                  .blossomMimeType(_blobResponse!.mimeType!)),
                             if (_blobResponse?.contentLength != null)
-                              Text(
-                                  'Size: ${_blobResponse!.contentLength} bytes'),
+                              Text(l10n.blossomFileSizeBytes(
+                                  _blobResponse!.contentLength.toString())),
                           ],
                         )
                       else
-                        const Text('No image downloaded yet'),
+                        Text(l10n.blossomNoImageYet),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
                             onPressed: _isLoadingImage ? null : _downloadImage,
-                            child: const Text('Download Image'),
+                            child: Text(l10n.blossomDownloadImage),
                           ),
                           ElevatedButton(
                             onPressed: () {
@@ -291,7 +295,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                                 _blobResponse = null;
                               });
                             },
-                            child: const Text('Clear Image'),
+                            child: Text(l10n.blossomClearImage),
                           ),
                         ],
                       ),
@@ -308,13 +312,13 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      Text('Video Demo (checkBlob)',
+                      Text(l10n.blossomVideoDemoTitle,
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(height: 16),
                       if (_isLoadingVideo)
                         const Center(child: CircularProgressIndicator())
                       else if (_videoError.isNotEmpty)
-                        Text('Error: $_videoError',
+                        Text(l10n.errorLabel(_videoError),
                             style: const TextStyle(color: Colors.red))
                       else if (_videoUrl != null)
                         Column(
@@ -348,7 +352,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                               ],
                             ),
                             Text(
-                              'Video URL: $_videoUrl',
+                              l10n.blossomVideoUrl(_videoUrl!),
                               style: const TextStyle(fontSize: 12),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -356,7 +360,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                           ],
                         )
                       else
-                        const Text('No video loaded yet'),
+                        Text(l10n.blossomNoVideoYet),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -364,7 +368,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                           ElevatedButton(
                             onPressed:
                                 _isLoadingVideo ? null : _checkAndInitVideo,
-                            child: const Text('Load Video'),
+                            child: Text(l10n.blossomLoadVideo),
                           ),
                           ElevatedButton(
                             onPressed: () {
@@ -373,7 +377,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                                 _videoUrl = null;
                               });
                             },
-                            child: const Text('Clear Video'),
+                            child: Text(l10n.blossomClearVideo),
                           ),
                         ],
                       ),
@@ -391,38 +395,38 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Upload File from Disk',
+                      Text(l10n.blossomUploadTitle,
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(height: 16),
                       Text(
-                        'Demonstrates uploadFromFile() method with streaming progress',
+                        l10n.blossomUploadDescription,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 16),
                       if (_isUploading) ...[
                         LinearProgressIndicator(value: _uploadProgress),
                         const SizedBox(height: 8),
-                        Text(
-                            'Uploading: ${(_uploadProgress * 100).toStringAsFixed(1)}%'),
+                        Text(l10n.blossomUploadingProgress(
+                            (_uploadProgress * 100).toStringAsFixed(1))),
                       ] else if (_uploadError.isNotEmpty)
-                        Text('Error: $_uploadError',
+                        Text(l10n.errorLabel(_uploadError),
                             style: const TextStyle(color: Colors.red))
                       else if (_uploadedSha256 != null) ...[
-                        const Text('✓ Upload successful!',
+                        Text(l10n.blossomUploadSuccess,
                             style: TextStyle(
                                 color: Colors.green,
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
-                        Text('SHA256: $_uploadedSha256',
+                        Text(l10n.blossomSha256(_uploadedSha256!),
                             style: const TextStyle(
                                 fontSize: 12, fontFamily: 'monospace')),
                         const SizedBox(height: 4),
-                        Text('URL: $_uploadedUrl',
+                        Text(l10n.blossomUrl(_uploadedUrl!),
                             style: const TextStyle(fontSize: 12),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis),
                       ] else
-                        const Text('No file uploaded yet'),
+                        Text(l10n.blossomNoUploadedFileYet),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -430,7 +434,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                           ElevatedButton.icon(
                             onPressed: _isUploading ? null : _pickAndUploadFile,
                             icon: const Icon(Icons.upload_file),
-                            label: const Text('Pick & Upload File'),
+                            label: Text(l10n.blossomPickAndUploadFile),
                           ),
                           if (_uploadedSha256 != null)
                             ElevatedButton(
@@ -441,7 +445,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                                   _uploadError = '';
                                 });
                               },
-                              child: const Text('Clear'),
+                              child: Text(l10n.clear),
                             ),
                         ],
                       ),
@@ -459,31 +463,31 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Download File to Disk',
+                      Text(l10n.blossomDownloadTitle,
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(height: 16),
                       Text(
-                        'Demonstrates downloadToFile() method (saves directly to disk)',
+                        l10n.blossomDownloadDescription,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 16),
                       if (_isDownloading)
                         const Center(child: CircularProgressIndicator())
                       else if (_downloadError.isNotEmpty)
-                        Text('Error: $_downloadError',
+                        Text(l10n.errorLabel(_downloadError),
                             style: const TextStyle(color: Colors.red))
                       else if (_downloadedFilePath != null) ...[
-                        const Text('✓ Download successful!',
+                        Text(l10n.downloadSuccess,
                             style: TextStyle(
                                 color: Colors.green,
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
-                        Text('Saved to: $_downloadedFilePath',
+                        Text(l10n.blossomSavedTo(_downloadedFilePath!),
                             style: const TextStyle(fontSize: 12),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis),
                       ] else
-                        const Text('No file downloaded yet'),
+                        Text(l10n.blossomNoDownloadedFileYet),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -493,7 +497,7 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                                 ? null
                                 : _downloadFile,
                             icon: const Icon(Icons.download),
-                            label: const Text('Download Uploaded File'),
+                            label: Text(l10n.blossomDownloadUploadedFile),
                           ),
                           if (_downloadedFilePath != null)
                             ElevatedButton(
@@ -503,15 +507,15 @@ class _BlossomMediaPageState extends State<BlossomMediaPage> {
                                   _downloadError = '';
                                 });
                               },
-                              child: const Text('Clear'),
+                              child: Text(l10n.clear),
                             ),
                         ],
                       ),
                       if (_uploadedUrl == null)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8.0),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
-                            'Upload a file first to enable download',
+                            l10n.blossomUploadFirstToEnableDownload,
                             style: TextStyle(
                               fontSize: 12,
                               fontStyle: FontStyle.italic,

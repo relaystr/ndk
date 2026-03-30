@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/entities.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_demo/login_popup.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
@@ -34,6 +35,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final loggedPubkey = widget.getLoggedPubkey();
 
     if (loggedPubkey == null) {
@@ -97,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No account logged in.',
+                  l10n.profileNoAccount,
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -105,7 +107,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 FilledButton.icon(
                   onPressed: _openLoginPopup,
                   icon: const Icon(Icons.login),
-                  label: const Text('Login'),
+                  label: Text(l10n.logIn),
                 ),
               ],
             ),
@@ -139,7 +141,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 return Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text('Error fetching metadata: ${snapshot.error}'),
+                    child: Text(
+                      l10n.profileMetadataError(snapshot.error.toString()),
+                    ),
                   ),
                 );
               }
@@ -156,7 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'About',
+                        l10n.profileAbout,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
