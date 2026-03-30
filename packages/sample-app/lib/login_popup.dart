@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 Future<void> showNLoginPopup({
@@ -10,13 +11,14 @@ Future<void> showNLoginPopup({
   return showDialog<void>(
     context: context,
     builder: (dialogContext) {
+      final l10n = dialogContext.l10n;
       return AlertDialog(
         titlePadding: const EdgeInsets.fromLTRB(24, 16, 8, 0),
         title: Row(
           children: [
             Expanded(child: Text(title)),
             IconButton(
-              tooltip: 'Close',
+              tooltip: l10n.closeTooltip,
               onPressed: () => Navigator.of(dialogContext).pop(),
               icon: const Icon(Icons.close),
             ),

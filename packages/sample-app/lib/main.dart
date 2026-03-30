@@ -9,6 +9,8 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/blossom_page.dart';
 import 'package:ndk_demo/demo_app_config.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
+import 'package:ndk_demo/l10n/generated/sample_app_localizations.dart';
 import 'package:ndk_demo/login_popup.dart';
 import 'package:ndk_demo/profile_page.dart';
 import 'package:ndk_demo/relays_page.dart';
@@ -83,15 +85,16 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Nostr Developer Kit Demo',
+      onGenerateTitle: (context) => context.l10n.appName,
       locale: _currentLocale,
       localizationsDelegates: const [
+        SampleAppLocalizations.delegate,
         ndk_flutter.AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: ndk_flutter.AppLocalizations.supportedLocales,
+      supportedLocales: SampleAppLocalizations.supportedLocales,
       home: Stack(
         children: [
           SafeArea(
@@ -126,6 +129,7 @@ class _MyHomePageState extends State<MyHomePage>
     with TickerProviderStateMixin, ProtocolListener {
   late TabController _tabController;
   static const int _profileTabIndex = 1;
+  static const int _walletsTabIndex = 4;
   StreamSubscription<Account?>? _authSub;
   late List<Tab> _tabs;
   late List<Widget> _tabPages;
@@ -133,7 +137,17 @@ class _MyHomePageState extends State<MyHomePage>
       GlobalKey<WalletsPageState>();
   late final WalletsPage _walletsPage;
 
-  static const String walletsTabName = 'Wallets';
+  List<Tab> _buildTabs(BuildContext context) {
+    final l10n = context.l10n;
+    return <Tab>[
+      Tab(text: l10n.tabAccounts),
+      Tab(text: l10n.tabProfile),
+      Tab(text: l10n.tabRelays),
+      Tab(text: l10n.tabBlossom),
+      Tab(text: l10n.tabWallets),
+      Tab(text: l10n.tabWidgets),
+    ];
+  }
 
 // Callback method to be passed to AccountsPage
   void _handleAccountChange() {
@@ -151,13 +165,13 @@ class _MyHomePageState extends State<MyHomePage>
     super.initState();
     _walletsPage = WalletsPage(key: _walletsPageKey);
 
-    _tabs = <Tab>[
-      const Tab(text: 'Accounts'),
-      const Tab(text: 'Profile'),
-      const Tab(text: 'Relays'),
-      const Tab(text: "Blossom"),
-      const Tab(text: walletsTabName),
-      const Tab(text: 'Widgets'),
+    _tabs = const <Tab>[
+      Tab(text: 'Accounts'),
+      Tab(text: 'Profile'),
+      Tab(text: 'Relays'),
+      Tab(text: 'Blossom'),
+      Tab(text: 'Wallets'),
+      Tab(text: 'Widgets'),
     ];
 
     _tabController = TabController(length: _tabs.length, vsync: this);
@@ -221,39 +235,20 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void switchToWalletsTab() {
-    int walletsPageIndex = -1;
-    for (int i = 0; i < _tabs.length; i++) {
-      if (_tabs[i].text == walletsTabName) {
-        walletsPageIndex = i;
-        break;
-      }
-    }
-
-    if (walletsPageIndex != -1) {
-      if (_tabController.index != walletsPageIndex) {
-        _tabController.animateTo(walletsPageIndex);
-        print(
-            "_MyHomePageState: Switched to wallets tab (index $walletsPageIndex).");
-      } else {
-        print(
-            "_MyHomePageState: Already on wallets tab (index $walletsPageIndex).");
-      }
+    if (_tabController.index != _walletsTabIndex) {
+      _tabController.animateTo(_walletsTabIndex);
+      print(
+          "_MyHomePageState: Switched to wallets tab (index $_walletsTabIndex).");
     } else {
       print(
-          "_MyHomePageState: Wallets tab not found by name '$walletsTabName'. Cannot switch.");
+          "_MyHomePageState: Already on wallets tab (index $_walletsTabIndex).");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    _tabs = <Tab>[
-      const Tab(text: 'Accounts'),
-      const Tab(text: 'Profile'),
-      const Tab(text: 'Relays'),
-      const Tab(text: "Blossom"),
-      const Tab(text: walletsTabName),
-      const Tab(text: 'Widgets'),
-    ];
+    final l10n = context.l10n;
+    _tabs = _buildTabs(context);
 
     _tabPages = <Widget>[
       AccountsPage(onAccountChanged: _handleAccountChange),
@@ -273,7 +268,7 @@ class _MyHomePageState extends State<MyHomePage>
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('NDK Demo'),
+            Text(l10n.appBarTitle),
             const SizedBox(width: 8),
             Text(
               'v$packageVersion',
@@ -307,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage>
                     );
 
               return IconButton(
-                tooltip: 'Profile',
+                tooltip: l10n.profileTooltip,
                 onPressed: () {
                   if (loggedPubkey != null) {
                     _tabController.animateTo(_profileTabIndex);

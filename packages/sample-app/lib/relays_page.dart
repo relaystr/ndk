@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ndk/data_layer/repositories/nostr_transport/websocket_client_nostr_transport.dart';
 import 'package:ndk/entities.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
 
 import 'main.dart';
 
@@ -13,7 +14,8 @@ class RelaysPage extends StatefulWidget {
   State<RelaysPage> createState() => _RelaysPageState();
 }
 
-class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMixin {
+class _RelaysPageState extends State<RelaysPage>
+    with AutomaticKeepAliveClientMixin {
   UserRelayList? relays;
   bool _isLoadingRelayList = true;
   StreamSubscription<dynamic>? _relayConnectivitySub;
@@ -25,6 +27,7 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
     required Color stateColor,
     required String stateLabel,
   }) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
@@ -57,7 +60,7 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Connection: $stateLabel',
+                        l10n.relayConnection(stateLabel),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -71,7 +74,8 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
               runSpacing: 8,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: stateColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(999),
@@ -86,25 +90,27 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
                 ),
                 if (marker.isRead)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      'Read',
+                      l10n.relayRead,
                       style: TextStyle(color: colorScheme.onPrimaryContainer),
                     ),
                   ),
                 if (marker.isWrite)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      'Write',
+                      l10n.relayWrite,
                       style: TextStyle(color: colorScheme.onSecondaryContainer),
                     ),
                   ),
@@ -173,6 +179,7 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = context.l10n;
     if (_isLoadingRelayList) {
       return const Center(
         child: Padding(
@@ -183,10 +190,10 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
     }
 
     if (ndk.accounts.getPublicKey() == null) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Text('Log in to view your relay list.'),
+          padding: const EdgeInsets.all(20),
+          child: Text(l10n.relaysLoginRequired),
         ),
       );
     }
@@ -203,7 +210,7 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
               await _loadRelayList(forceRefresh: true);
             },
             icon: const Icon(Icons.cloud_download_outlined),
-            label: const Text("Fetch relay list"),
+            label: Text(l10n.relaysFetchButton),
           ),
         ),
       );
@@ -222,12 +229,12 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Relay List',
+                  l10n.relayListHeading,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '${entries.length} configured relay${entries.length == 1 ? '' : 's'}',
+                  l10n.relayConfiguredCount(entries.length),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
@@ -236,7 +243,9 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
         }
 
         final entry = entries[index - 1];
-        final transport = ndk.relays.getRelayConnectivity(entry.key)?.relayTransport as WebSocketClientNostrTransport?;
+        final transport = ndk.relays
+            .getRelayConnectivity(entry.key)
+            ?.relayTransport as WebSocketClientNostrTransport?;
         final stateColor = transport != null
             ? transport.isConnecting()
                 ? Colors.orange
@@ -246,11 +255,11 @@ class _RelaysPageState extends State<RelaysPage> with AutomaticKeepAliveClientMi
             : Colors.grey;
         final stateLabel = transport != null
             ? transport.isConnecting()
-                ? 'Connecting'
+                ? l10n.relayStateConnecting
                 : transport.isOpen()
-                    ? 'Online'
-                    : 'Offline'
-            : 'Unknown';
+                    ? l10n.relayStateOnline
+                    : l10n.relayStateOffline
+            : l10n.relayStateUnknown;
 
         return _buildRelayCard(
           context,
