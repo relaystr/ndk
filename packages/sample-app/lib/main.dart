@@ -1,27 +1,22 @@
 import 'dart:async';
 
-import 'package:amberflutter/amberflutter.dart';
-import 'package:ndk/data_layer/repositories/cache_manager/sembast_cache_manager.dart';
-import 'package:ndk_drift/ndk_drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
-import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/src/version.dart';
 import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/blossom_page.dart';
 import 'package:ndk_demo/demo_app_config.dart';
 import 'package:ndk_demo/login_popup.dart';
-import 'package:ndk_demo/nwc_page.dart';
 import 'package:ndk_demo/profile_page.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_demo/wallets.dart';
-import 'package:ndk_demo/verifiers_performance.dart';
 import 'package:ndk_demo/widgets_demo_page.dart';
+import 'package:ndk_drift/ndk_drift.dart';
+import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
+import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
@@ -134,9 +129,11 @@ class _MyHomePageState extends State<MyHomePage>
   StreamSubscription<Account?>? _authSub;
   late List<Tab> _tabs;
   late List<Widget> _tabPages;
+  final GlobalKey<WalletsPageState> _walletsPageKey =
+      GlobalKey<WalletsPageState>();
+  late final WalletsPage _walletsPage;
 
-// Define a constant for the NWC tab name to avoid magic strings
-  static const String nwcTabName = 'NWC';
+  static const String walletsTabName = 'Wallets';
 
 // Callback method to be passed to AccountsPage
   void _handleAccountChange() {
@@ -152,15 +149,14 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
+    _walletsPage = WalletsPage(key: _walletsPageKey);
 
     _tabs = <Tab>[
       const Tab(text: 'Accounts'),
       const Tab(text: 'Profile'),
       const Tab(text: 'Relays'),
-      const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
-      const Tab(text: 'Verifiers'),
-      const Tab(text: "Wallets"),
+      const Tab(text: walletsTabName),
       const Tab(text: 'Widgets'),
     ];
 
@@ -196,8 +192,11 @@ class _MyHomePageState extends State<MyHomePage>
   void _processUri(Uri uri) {
     if (uri.scheme == 'ndk' && uri.host == 'nwc') {
       print(
-          "_MyHomePageState: ndk://nwc URI received, switching to NwcPage tab.");
-      switchToNwcTab();
+          "_MyHomePageState: ndk://nwc URI received, switching to wallets tab.");
+      switchToWalletsTab();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _walletsPageKey.currentState?.onProtocolUrlReceived(uri.toString());
+      });
     }
   }
 
@@ -221,25 +220,27 @@ class _MyHomePageState extends State<MyHomePage>
     super.dispose();
   }
 
-  void switchToNwcTab() {
-    int nwcPageIndex = -1;
+  void switchToWalletsTab() {
+    int walletsPageIndex = -1;
     for (int i = 0; i < _tabs.length; i++) {
-      if (_tabs[i].text == nwcTabName) {
-        nwcPageIndex = i;
+      if (_tabs[i].text == walletsTabName) {
+        walletsPageIndex = i;
         break;
       }
     }
 
-    if (nwcPageIndex != -1) {
-      if (_tabController.index != nwcPageIndex) {
-        _tabController.animateTo(nwcPageIndex);
-        print("_MyHomePageState: Switched to NWC tab (index $nwcPageIndex).");
+    if (walletsPageIndex != -1) {
+      if (_tabController.index != walletsPageIndex) {
+        _tabController.animateTo(walletsPageIndex);
+        print(
+            "_MyHomePageState: Switched to wallets tab (index $walletsPageIndex).");
       } else {
-        print("_MyHomePageState: Already on NWC tab (index $nwcPageIndex).");
+        print(
+            "_MyHomePageState: Already on wallets tab (index $walletsPageIndex).");
       }
     } else {
       print(
-          "_MyHomePageState: NWC tab not found by name '$nwcTabName'. Cannot switch.");
+          "_MyHomePageState: Wallets tab not found by name '$walletsTabName'. Cannot switch.");
     }
   }
 
@@ -249,10 +250,8 @@ class _MyHomePageState extends State<MyHomePage>
       const Tab(text: 'Accounts'),
       const Tab(text: 'Profile'),
       const Tab(text: 'Relays'),
-      const Tab(text: nwcTabName),
       const Tab(text: "Blossom"),
-      const Tab(text: 'Verifiers'),
-      const Tab(text: "Wallets"),
+      const Tab(text: walletsTabName),
       const Tab(text: 'Widgets'),
     ];
 
@@ -264,10 +263,8 @@ class _MyHomePageState extends State<MyHomePage>
         onAccountChanged: _handleAccountChange,
       ),
       const RelaysPage(),
-      const NwcPage(),
       BlossomMediaPage(ndk: ndk),
-      VerifiersPerformancePage(ndk: ndk),
-      const WalletsPage(),
+      _walletsPage,
       WidgetsDemoPage(onAccountChanged: _handleAccountChange),
     ];
 
@@ -289,7 +286,6 @@ class _MyHomePageState extends State<MyHomePage>
             currentLocale: widget.currentLocale,
             onLocaleChanged: widget.onLocaleChanged,
           ),
-
           const SizedBox(width: 4),
           Builder(
             builder: (context) {
