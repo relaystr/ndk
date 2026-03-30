@@ -30,6 +30,44 @@ If you code with AI then your AI must read https://github.com/relaystr/ndk/blob/
 We strongly recommend using `RustEventVerifier()` for client applications. It uses a separate thread for signature verification and is therefore more performant. \
 !!!
 
+### Prerequisites for using the rust verifier
+
+- rust ( + toolchain for target)
+
+Install Rust:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+````
+
+Rust toolchain android:
+
+```bash
+rustup target add \
+    aarch64-linux-android \
+    armv7-linux-androideabi \
+    x86_64-linux-android \
+    i686-linux-android
+```
+
+Rust toolchain ios:
+
+```bash
+# 64 bit targets (real device & simulator):
+rustup target add aarch64-apple-ios x86_64-apple-ios
+# New simulator target for Xcode 12 and later
+rustup target add aarch64-apple-ios-sim
+# 32 bit targets (you probably don't need these):
+rustup target add armv7-apple-ios i386-apple-ios
+```
+
+## Install
+
+```bash
+flutter pub add ndk_rust_verifier
+flutter pub add ndk_amber
+```
+
 ```dart
 import 'package:ndk/ndk.dart';
 
