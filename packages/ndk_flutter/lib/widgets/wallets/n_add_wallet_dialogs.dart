@@ -1045,6 +1045,7 @@ Future<void> _launchExternalLink(BuildContext context, String url) async {
   );
 }
 
+
 /// Launches the Alby Go app via Android intent
 Future<void> _connectAlbyGo(
   BuildContext context,
