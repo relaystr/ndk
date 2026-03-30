@@ -204,9 +204,6 @@ class RelayManager<T> {
       });
       await relayConnectivity.relayTransport!.ready.timeout(
         Duration(seconds: connectTimeout),
-        onTimeout: () {
-          Logger.log.w(() => "timed out connecting to relay $url");
-        },
       );
 
       _startListeningToSocket(relayConnectivity);
@@ -221,7 +218,7 @@ class RelayManager<T> {
       return Tuple(true, "");
     } catch (e) {
       Logger.log.e(() => "!! could not connect to $url -> $e");
-      relayConnectivity!.relayTransport == null;
+      relayConnectivity!.relayTransport = null;
     }
     relayConnectivity.relay.failedToConnect();
     relayConnectivity.stats.connectionErrors++;
@@ -246,6 +243,7 @@ class RelayManager<T> {
       );
     }
     if (relayConnectivity == null ||
+        relayConnectivity.relayTransport == null ||
         !relayConnectivity.relayTransport!.isOpen()) {
       if (!force &&
           (relayConnectivity != null &&
@@ -267,6 +265,7 @@ class RelayManager<T> {
       }
       relayConnectivity = globalState.relays[url];
       if (relayConnectivity == null ||
+          relayConnectivity.relayTransport == null ||
           !relayConnectivity.relayTransport!.isOpen()) {
         // web socket is not open
         return false;

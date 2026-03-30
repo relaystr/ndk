@@ -15,6 +15,10 @@ class RelayJitBroadcastSpecificRelaysStrategy {
     required RelayManager relayManager,
     required List<String> specificRelays,
   }) async {
+    // Deduplicate relay URLs
+    final uniqueRelayUrls = specificRelays.toSet().toList();
+
+    // function to send message to relay
     void sendToRelay({
       required RelayConnectivity relay,
     }) {
@@ -25,36 +29,36 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       relayManager.send(relay, myClientMsg);
     }
 
-    for (final relayUrl in specificRelays) {
+    // Function to handle broadcasting to a single relay
+    Future<void> sendToUrl(String relayUrl) async {
       // register relay broadcast
       relayManager.registerRelayBroadcast(
         eventToPublish: eventToPublish,
         relayUrl: relayUrl,
       );
 
-      final isConnected = relayManager.isRelayConnected(relayUrl);
-      if (isConnected) {
-        try {
-          final relay = connectedRelays.firstWhere(
-            (element) => element.url == relayUrl,
-          );
-          sendToRelay(relay: relay);
-        } catch (e) {
-          relayManager.failBroadcast(
-            eventToPublish.id,
-            relayUrl,
-            "relay not found in connected list",
-          );
+      try {
+        final isConnected = relayManager.isRelayConnected(relayUrl);
+        if (isConnected) {
+          try {
+            final relay = connectedRelays.firstWhere(
+              (element) => element.url == relayUrl,
+            );
+            sendToRelay(relay: relay);
+          } catch (e) {
+            relayManager.failBroadcast(
+              eventToPublish.id,
+              relayUrl,
+              "relay not found in connected list",
+            );
+          }
+          return;
         }
-        continue;
-      }
 
-      relayManager
-          .reconnectRelay(
-        relayUrl,
-        connectionSource: ConnectionSource.broadcastSpecific,
-      )
-          .then((success) {
+        final success = await relayManager.reconnectRelay(
+          relayUrl,
+          connectionSource: ConnectionSource.broadcastSpecific,
+        );
         if (!success) {
           relayManager.failBroadcast(
             eventToPublish.id,
@@ -74,7 +78,16 @@ class RelayJitBroadcastSpecificRelaysStrategy {
             "relay not found after connection",
           );
         }
-      });
+      } catch (e) {
+        relayManager.failBroadcast(
+          eventToPublish.id,
+          relayUrl,
+          "broadcast error: $e",
+        );
+      }
     }
+
+    // Broadcast to all relays in parallel
+    await Future.wait(uniqueRelayUrls.map(sendToUrl), eagerError: false);
   }
 }
