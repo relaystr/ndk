@@ -303,14 +303,14 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.8.0-dev.2"
+    version: "0.8.0"
   ndk_bip32_keys:
     dependency: "direct overridden"
     description:
       path: "../bip32_keys"
       relative: true
     source: path
-    version: "0.1.0-dev.1"
+    version: "0.1.0"
   node_preamble:
     dependency: transitive
     description:
