@@ -1,4 +1,3 @@
-
 import '../../usecases/nwc/responses/pay_invoice_response.dart';
 import 'wallet.dart';
 import 'wallet_balance.dart';
@@ -28,7 +27,6 @@ abstract class WalletProvider {
 
   /// removes the wallet (e.g., closes connections, streams)
   Future<void> removeWallet(Wallet wallet);
-
 
   /// Returns a stream of wallet balances
   /// Stream emits whenever balance changes

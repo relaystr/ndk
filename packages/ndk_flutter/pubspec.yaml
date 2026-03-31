@@ -19,6 +19,8 @@ environment:
   sdk: ^3.9.0
   flutter: ">=1.17.0"
 
+resolution: workspace
+
 dependencies:
   amberflutter: ^0.0.9
   android_intent_plus: ^6.0.0

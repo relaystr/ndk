@@ -57,8 +57,12 @@ class NwcWallet extends Wallet {
   }
 
   @override
-  bool get canReceive => connection!=null && connection!.permissions.contains(NwcMethod.MAKE_INVOICE.name);
+  bool get canReceive =>
+      connection != null &&
+      connection!.permissions.contains(NwcMethod.MAKE_INVOICE.name);
 
   @override
-  bool get canSend => connection!=null && connection!.permissions.contains(NwcMethod.PAY_INVOICE.name);
+  bool get canSend =>
+      connection != null &&
+      connection!.permissions.contains(NwcMethod.PAY_INVOICE.name);
 }

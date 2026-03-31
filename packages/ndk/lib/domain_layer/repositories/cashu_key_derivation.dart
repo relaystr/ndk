@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-
 import '../usecases/cashu/cashu_seed.dart';
 
 abstract class CashuKeyDerivation {

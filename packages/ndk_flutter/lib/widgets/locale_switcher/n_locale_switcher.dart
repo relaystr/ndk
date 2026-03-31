@@ -47,7 +47,6 @@ class NLocaleSwitcher extends StatelessWidget {
     this.localeDisplayNames,
   });
 
-
   /// Returns a map of locale codes to their display names
   Map<String, String> get _defaultDisplayNames => {
     'en': 'English',

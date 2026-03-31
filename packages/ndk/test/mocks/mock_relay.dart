@@ -279,7 +279,8 @@ class MockRelay {
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
         eventsForThisFilter.addAll(_contactLists.values
-            .where((e) => filter.authors!.contains(e.pubKey) &&
+            .where((e) =>
+                filter.authors!.contains(e.pubKey) &&
                 _matchesTimeFilter(e, filter))
             .toList());
       }
@@ -289,7 +290,8 @@ class MockRelay {
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
         eventsForThisFilter.addAll(_metadatas.values
-            .where((e) => filter.authors!.contains(e.pubKey) &&
+            .where((e) =>
+                filter.authors!.contains(e.pubKey) &&
                 _matchesTimeFilter(e, filter))
             .toList());
       }
@@ -387,7 +389,8 @@ class MockRelay {
 
     // Apply global relay limit if configured
     List<Nip01Event> eventsToSend = allMatchingEvents.toList();
-    if (maxEventsPerRequest != null && eventsToSend.length > maxEventsPerRequest!) {
+    if (maxEventsPerRequest != null &&
+        eventsToSend.length > maxEventsPerRequest!) {
       eventsToSend.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       eventsToSend = eventsToSend.take(maxEventsPerRequest!).toList();
     }

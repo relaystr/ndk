@@ -78,7 +78,7 @@ class Nwc {
             name: "nwc-info",
             explicitRelays: relays,
             filters: [filter],
-            timeout: timeout ?? Duration(seconds: 20+ relays.length * 5),
+            timeout: timeout ?? Duration(seconds: 20 + relays.length * 5),
             timeoutCallback: () {
               onError?.call("timeout");
             },
