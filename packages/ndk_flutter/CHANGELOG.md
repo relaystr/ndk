@@ -1,3 +1,7 @@
+## 0.8.0+1
+
+ - Update a dependency to the latest release.
+
 ## 0.1.0-dev.3
 
  - **FIX**: move amber into ndk_flutter. ([c70df0ec](https://github.com/relaystr/ndk/commit/c70df0ec27d4638697f478dcd1ed3048166145f2))

@@ -1,3 +1,20 @@
+## 0.8.0-dev.3
+
+ - **FIX**: unused import. ([1a4d480f](https://github.com/relaystr/ndk/commit/1a4d480f512956b656edb80b0846d14cc4f2d915))
+ - **FIX**: add missing path. ([a3b57e89](https://github.com/relaystr/ndk/commit/a3b57e8981b870334774f02c56c779e1a6462ef9))
+ - **FIX**: use parallel broadcast pattern in relay_jit_broadcast_specific. ([ba318d85](https://github.com/relaystr/ndk/commit/ba318d85b161515b17867be03a8dd37fb3f31c5b))
+ - **FIX**: parallel broadcast with Future.wait and address PR feedback. ([4f5096d2](https://github.com/relaystr/ndk/commit/4f5096d2d8fc3e2793057dd1faf315f91dcfae66))
+ - **FIX**: apply moved rust code. ([610784b3](https://github.com/relaystr/ndk/commit/610784b310ab7a348100d13083a7cbd6faeda3af))
+ - **FIX**(test): resolve port conflicts in broadcast_test.dart. ([5ae8db79](https://github.com/relaystr/ndk/commit/5ae8db7934bab16e10c3a6b7ca71a1ba170c2ddc))
+ - **FIX**(test): generate MockRelay AUTH challenge once per server lifetime. ([ed90f058](https://github.com/relaystr/ndk/commit/ed90f0585cbb9b88ab117e9bf8fbddf9cfd36359))
+ - **FIX**: start timeout after signing completes. ([f1534b37](https://github.com/relaystr/ndk/commit/f1534b373eae9a489796e3bad0cc3736342138bd))
+ - **FIX**(test): implement missing EventSigner methods in MockSlowSigner. ([a941d7fb](https://github.com/relaystr/ndk/commit/a941d7fbe3f9e8d27bb42ca386ceb710c2ada71c))
+ - **FIX**: fix imports. ([8a10dd61](https://github.com/relaystr/ndk/commit/8a10dd6143d16244ffd31211d91c96857de7609d))
+ - **FIX**: fix imports. ([8351d005](https://github.com/relaystr/ndk/commit/8351d005d7b83ba69b115e6117dfeceff7fd3275))
+ - **FIX**: fix imports. ([a23df4ea](https://github.com/relaystr/ndk/commit/a23df4ea44934cd4b683adbcd382eedaf98663a5))
+ - **FIX**: move sembast to core. ([817569cf](https://github.com/relaystr/ndk/commit/817569cf7cd30d09e6f5550adebfd7d93b930041))
+ - **FIX**: robust broadcast lifecycle and relay connection handling. ([0c2e56d3](https://github.com/relaystr/ndk/commit/0c2e56d3e2010fc9cec5e7e1bc89d4bd719dca0d))
+
 ## 0.8.0-dev.2
 
  - **REFACTOR**: filter keyset by active and unit.
