@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.1.0.826031191078">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.4.0.828267143093">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.1.0">
+    <meta name="generator" content="Retype 4.4.0">
 
     <!-- Primary Meta Tags -->
     <title>Contributing to NDK</title>
@@ -25,13 +25,19 @@
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dart-nostr.com/library-development/contributing/">
+    <meta name="twitter:title" content="Contributing to NDK">
+    <meta name="twitter:description" content="We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:">
+
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.1.0.826031191078" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.4.0.828267143093" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.1.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.4.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -46,7 +52,7 @@
             <!-- Logo -->
             <div class="flex items-center justify-between h-full py-2 md:w-75">
                 <div class="flex items-center px-2 md:px-6">
-                    <a id="retype-branding-logo" href="../../" class="flex items-center leading-snug text-2xl">
+                    <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
                     </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.7.1</span>
                 </div>
@@ -141,12 +147,7 @@
                 <!-- Rendered if sidebar right is enabled -->
                 <div id="retype-sidebar-right-toggle"></div>
                 <!-- Page content  -->
-<doc-anchor-target id="contributing-to-ndk" class="break-words">
-    <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#contributing-to-ndk">#</doc-anchor-trigger>
-        <span>Contributing to NDK</span>
-    </h1>
-</doc-anchor-target>
+<h1 id="contributing-to-ndk">Contributing to NDK</h1>
 <p>We love your input! We want to make contributing to this project as easy and transparent as possible, whether it&#x27;s:</p>
 <ul>
 <li>Reporting a bug</li>
@@ -155,19 +156,9 @@
 <li>Proposing new features</li>
 <li>Becoming a maintainer</li>
 </ul>
-<doc-anchor-target id="we-develop-with-github">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#we-develop-with-github">#</doc-anchor-trigger>
-        <span>We Develop with Github</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="we-develop-with-github">We Develop with Github</h2>
 <p>We use github to host code, track issues and feature requests, and accept pull requests.</p>
-<doc-anchor-target id="we-use-github-flow-so-all-code-changes-happen-through-pull-requests">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#we-use-github-flow-so-all-code-changes-happen-through-pull-requests">#</doc-anchor-trigger>
-        <span>We Use <a href="https://docs.github.com/de/get-started/using-github/github-flow">Github Flow</a>, So All Code Changes Happen Through Pull Requests</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="we-use-github-flow-so-all-code-changes-happen-through-pull-requests">We Use <a href="https://docs.github.com/de/get-started/using-github/github-flow">Github Flow</a>, So All Code Changes Happen Through Pull Requests</h2>
 <p>Pull requests are the best way to propose changes to the codebase (we use <a href="https://docs.github.com/de/get-started/using-github/github-flow">Github Flow</a>). We actively welcome your pull requests:</p>
 <ol>
 <li>Fork the repo and create your branch from <code translate="no" v-pre>master</code>.</li>
@@ -177,28 +168,13 @@
 <li>Make sure your code lints.</li>
 <li>Submit that pull request!</li>
 </ol>
-<doc-anchor-target id="report-bugs-using-githubs-issues">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#report-bugs-using-githubs-issues">#</doc-anchor-trigger>
-        <span>Report bugs using Github&#x27;s <a href="https://github.com/relaystr/ndk/issues">issues</a></span>
-    </h2>
-</doc-anchor-target>
+<h2 id="report-bugs-using-githubs-issues">Report bugs using Github&#x27;s <a href="https://github.com/relaystr/ndk/issues">issues</a></h2>
 <p>We use GitHub issues to track public bugs. Report a bug by <a href="https://github.com/relaystr/ndk/issues">opening a new issue</a>; it&#x27;s that easy!</p>
-<doc-anchor-target id="new-features-and-feature-requests">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#new-features-and-feature-requests">#</doc-anchor-trigger>
-        <span>New Features and Feature Requests</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="new-features-and-feature-requests">New Features and Feature Requests</h2>
 <p>If you want to propose a new feature, please <a href="https://github.com/relaystr/ndk/issues">open an issue</a> first to discuss it. We use user stories to describe new features. We provide a template with examples to help you get started; if you are unsure how to write a user story, read <a href="https://www.mountaingoatsoftware.com/agile/user-stories">this</a>.</p>
 <p>After we triage your issue, it will either be accepted or rejected. If accepted, you can track the progress in <a href="https://github.com/orgs/relaystr/projects/1">this board</a>.
 If you want to work on it yourself, assign it to yourself and start working on it. Preferably let us know that you are working on it (especially for larger features) to increase the chances of merging your PR.</p>
-<doc-anchor-target id="communication-channels">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#communication-channels">#</doc-anchor-trigger>
-        <span>Communication Channels</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="communication-channels">Communication Channels</h2>
 <p>Feel free to reach out to us via the following channels:</p>
 <ul>
 <li><a href="https://github.com/relaystr/ndk/issues">GitHub Issues</a></li>
@@ -206,12 +182,7 @@ If you want to work on it yourself, assign it to yourself and start working on i
 <li>Nostr: <a href="https://njump.me/fmar.dev">fmar</a> <a href="https://njump.me/leo@camelus.app">leo</a></li>
 <li>Email: leo: contact(a t)camelus.app <a href="https://camelus.app/pgp-key.txt">pgp</a></li>
 </ul>
-<doc-anchor-target id="project-structure">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#project-structure">#</doc-anchor-trigger>
-        <span>Project Structure</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="project-structure">Project Structure</h2>
 <p>The project is structured in a layered architecture.</p>
 <ul>
 <li><code translate="no" v-pre>lib/</code>
@@ -290,22 +261,12 @@ If you want to work on it yourself, assign it to yourself and start working on i
 </ul>
 <p>The decision for this architecture can be viewed <a href="../adrs/layerd-architecture/">here</a>.
 If you are unsure where to put your code, please ask us. We are happy to help you.</p>
-<doc-anchor-target id="documentation-guidelines">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#documentation-guidelines">#</doc-anchor-trigger>
-        <span>Documentation Guidelines</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="documentation-guidelines">Documentation Guidelines</h2>
 <p>Every public-facing API should be documented. <br>
 Types of documentation we use are inline docs and retype deployed on <a href="https://dart-nostr.com/">dart-nostr.com</a>.
 When you add a new use case or edit a feature, make sure to create/edit a corresponding markdown file in <code translate="no" v-pre>/doc</code>.
 Generally we use examples in our docs if you do, please add them to <code translate="no" v-pre>/packages/ndk/example</code> as a test so we can ensure everything continues to work.</p>
-<doc-anchor-target id="license">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#license">#</doc-anchor-trigger>
-        <span>License</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="license">License</h2>
 <p>In short, when you submit code changes, your submissions are understood to be under the same <a href="http://choosealicense.com/licenses/mit/">MIT License</a> that covers the project. Feel free to contact the maintainers if that&#x27;s a concern.</p>
 
                 

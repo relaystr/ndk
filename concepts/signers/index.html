@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.1.0.826031191078">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.4.0.828267143093">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.1.0">
+    <meta name="generator" content="Retype 4.4.0">
 
     <!-- Primary Meta Tags -->
     <title>Signers</title>
@@ -25,14 +25,20 @@
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dart-nostr.com/concepts/signers/">
+    <meta name="twitter:title" content="Signers">
+    <meta name="twitter:description" content="Signers are responsible for cryptographic operations: signing events, encrypting and decrypting messages. NDK supports multiple signer types with a unified">
+
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.1.0.826031191078" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.4.0.828267143093" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.1.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.1.0.826031191078" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.4.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.4.0.828267143093" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -47,7 +53,7 @@
             <!-- Logo -->
             <div class="flex items-center justify-between h-full py-2 md:w-75">
                 <div class="flex items-center px-2 md:px-6">
-                    <a id="retype-branding-logo" href="../../" class="flex items-center leading-snug text-2xl">
+                    <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
                     </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.7.1</span>
                 </div>
@@ -142,19 +148,9 @@
                 <!-- Rendered if sidebar right is enabled -->
                 <div id="retype-sidebar-right-toggle"></div>
                 <!-- Page content  -->
-<doc-anchor-target id="signers" class="break-words">
-    <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#signers">#</doc-anchor-trigger>
-        <span>Signers</span>
-    </h1>
-</doc-anchor-target>
+<h1 id="signers">Signers</h1>
 <p>Signers are responsible for cryptographic operations: signing events, encrypting and decrypting messages. NDK supports multiple signer types with a unified API.</p>
-<doc-anchor-target id="signer-types">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#signer-types">#</doc-anchor-trigger>
-        <span>Signer Types</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="signer-types">Signer Types</h2>
 <div class="table-wrapper scrollbar overflow-hidden">
 <table class="comfortable">
 <thead>
@@ -188,24 +184,14 @@
 </tbody>
 </table>
 </div>
-<doc-anchor-target id="pending-requests">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#pending-requests">#</doc-anchor-trigger>
-        <span>Pending Requests</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="pending-requests">Pending Requests</h2>
 <p>External signers (NIP-46, NIP-07, Amber) require user approval for operations. The unified pending requests API allows your UI to:</p>
 <ul>
 <li>Display pending operations to the user</li>
 <li>Cancel pending requests</li>
 <li>React to request completion</li>
 </ul>
-<doc-anchor-target id="listening-to-pending-requests">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#listening-to-pending-requests">#</doc-anchor-trigger>
-        <span>Listening to Pending Requests</span>
-    </h3>
-</doc-anchor-target>
+<h3 id="listening-to-pending-requests">Listening to Pending Requests</h3>
 <p>You can access pending requests directly from an <code translate="no" v-pre>Account</code> or through its signer:</p>
 <div id="listening-to-pending-requests-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">final account = ndk.accounts.getLoggedAccount();
@@ -221,12 +207,7 @@ account?.pendingRequestsStream.listen((requests) {
 // Snapshot (synchronous)
 final currentRequests = account?.pendingRequests ?? [];</code></pre>
 </doc-codeblock></div>
-<doc-anchor-target id="pendingsignerrequest-properties">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#pendingsignerrequest-properties">#</doc-anchor-trigger>
-        <span>PendingSignerRequest Properties</span>
-    </h3>
-</doc-anchor-target>
+<h3 id="pendingsignerrequest-properties">PendingSignerRequest Properties</h3>
 <div id="pendingsignerrequest-properties-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">class PendingSignerRequest {
   final String id;                    // Unique request identifier
@@ -241,12 +222,7 @@ final currentRequests = account?.pendingRequests ?? [];</code></pre>
   String? get content;                // Returns plaintext or ciphertext
 }</code></pre>
 </doc-codeblock></div>
-<doc-anchor-target id="cancelling-requests">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#cancelling-requests">#</doc-anchor-trigger>
-        <span>Cancelling Requests</span>
-    </h3>
-</doc-anchor-target>
+<h3 id="cancelling-requests">Cancelling Requests</h3>
 <div id="cancelling-requests-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">// Cancel a specific request
 final cancelled = account.cancelRequest(requestId);
@@ -265,12 +241,7 @@ if (cancelled) {
   print('User cancelled locally: ${e.requestId}');
 }</code></pre>
 </doc-codeblock></div>
-<doc-anchor-target id="handling-remote-rejections">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#handling-remote-rejections">#</doc-anchor-trigger>
-        <span>Handling Remote Rejections</span>
-    </h3>
-</doc-anchor-target>
+<h3 id="handling-remote-rejections">Handling Remote Rejections</h3>
 <p>When the user rejects a request on the remote signer (bunker, browser extension, Amber), the caller receives a <code translate="no" v-pre>SignerRequestRejectedException</code>:</p>
 <div id="handling-remote-rejections-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">try {
@@ -302,12 +273,7 @@ if (cancelled) {
 </tbody>
 </table>
 </div>
-<doc-anchor-target id="ui-example">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#ui-example">#</doc-anchor-trigger>
-        <span>UI Example</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="ui-example">UI Example</h2>
 <div id="ui-example-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">StreamBuilder&lt;List&lt;PendingSignerRequest&gt;&gt;(
   stream: account.pendingRequestsStream,
@@ -335,22 +301,12 @@ if (cancelled) {
   },
 )</code></pre>
 </doc-codeblock></div>
-<doc-anchor-target id="disposing-accounts">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#disposing-accounts">#</doc-anchor-trigger>
-        <span>Disposing Accounts</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="disposing-accounts">Disposing Accounts</h2>
 <p>Always dispose accounts when done to avoid memory leaks:</p>
 <div id="disposing-accounts-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">await account.dispose();</code></pre>
 </doc-codeblock></div>
-<doc-anchor-target id="when-to-use">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#when-to-use">#</doc-anchor-trigger>
-        <span>When to Use</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="when-to-use">When to Use</h2>
 <p>Use the pending requests API when:</p>
 <ul>
 <li>Building UI for external signers (bunkers, browser extensions, mobile apps)</li>

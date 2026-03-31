@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.1.0.826031191078">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.4.0.828267143093">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.1.0">
+    <meta name="generator" content="Retype 4.4.0">
 
     <!-- Primary Meta Tags -->
     <title>User relay lists</title>
@@ -25,14 +25,20 @@
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dart-nostr.com/usecases/user-relay-lists/">
+    <meta name="twitter:title" content="User relay lists">
+    <meta name="twitter:description" content="User relay lists provides you with the relays for a given user. It orients itself on nip65 but also uses data from nip02 in case nip65 is not available.">
+
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.1.0.826031191078" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.4.0.828267143093" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.1.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.1.0.826031191078" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.4.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.4.0.828267143093" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -47,7 +53,7 @@
             <!-- Logo -->
             <div class="flex items-center justify-between h-full py-2 md:w-75">
                 <div class="flex items-center px-2 md:px-6">
-                    <a id="retype-branding-logo" href="../../" class="flex items-center leading-snug text-2xl">
+                    <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
                     </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.7.1</span>
                 </div>
@@ -142,21 +148,11 @@
                 <!-- Rendered if sidebar right is enabled -->
                 <div id="retype-sidebar-right-toggle"></div>
                 <!-- Page content  -->
-<doc-anchor-target id="user-relay-lists" class="break-words">
-    <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#user-relay-lists">#</doc-anchor-trigger>
-        <span>User relay lists</span>
-    </h1>
-</doc-anchor-target>
+<h1 id="user-relay-lists">User relay lists</h1>
 <p><span class="no-link inline-flex align-middle items-center justify-center font-medium leading-none whitespace-nowrap text-badge-primary-text bg-badge-primary border border-badge-primary-border h-6 px-2 text-xs rounded-md">
     <span>low level</span>
 </span></p>
-<doc-anchor-target id="example">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#example">#</doc-anchor-trigger>
-        <span>Example</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="example">Example</h2>
 <div id="example-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-dart"><code v-pre class="language-dart">final response = await ndk.userRelayLists.getSingleUserRelayList(
     '30782a8323b7c98b172c5a2af7206bb8283c655be6ddce11133611a03d5f1177');
@@ -166,12 +162,7 @@ print(&quot;RELAYS:&quot;);
 print(response?.relays.length ?? &quot;no relays&quot;);
 print(response!.toNip65());</code></pre>
 </doc-codeblock></div>
-<doc-anchor-target id="when-to-use">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#when-to-use">#</doc-anchor-trigger>
-        <span>When to use</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="when-to-use">When to use</h2>
 <p>User relay lists provides you with the relays for a given user. <br />
 It orients itself on nip65 but also uses data from nip02 in case nip65 is not available. <br />
 It&#x27;s used by inbox/outbox; only use this if you are doing something custom that is not directly handled by inbox/outbox.</p>
@@ -194,10 +185,10 @@ It&#x27;s used by inbox/outbox; only use this if you are doing something custom 
                     </div>
             
                     <div class="w-1/2">
-                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-body-link border border-base-border hover:border-base-border-hover rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/zaps/">
+                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-body-link border border-base-border hover:border-base-border-hover rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../usecases/wallets/">
                             <span>
                                 <span class="block text-xs font-normal text-right text-base-text-muted">Next</span>
-                                <span class="block mt-1">Zaps</span>
+                                <span class="block mt-1">Wallets</span>
                             </span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                         </a>

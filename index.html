@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.1.0.826031191078">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.4.0.828267143093">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.1.0">
+    <meta name="generator" content="Retype 4.4.0">
 
     <!-- Primary Meta Tags -->
     <title>Dart Nostr Development Kit (NDK)</title>
@@ -29,13 +29,21 @@
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dart-nostr.com/">
+    <meta name="twitter:title" content="Dart Nostr Development Kit (NDK)">
+    <meta name="twitter:description" content="Build Status Coverage Pub License">
+    <meta name="twitter:image" content="https://github.com/relaystr/ndk/actions/workflows/tests.yaml/badge.svg?branch=master">
+    <meta name="twitter:image:alt" content="Dart Nostr Development Kit (NDK)">
+
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="resources/css/retype.css?v=4.1.0.826031191078" rel="stylesheet">
+    <link href="resources/css/retype.css?v=4.4.0.828267143093" rel="stylesheet">
 
-    <script data-cfasync="false" src="resources/js/config.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="resources/js/retype.js?v=4.1.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="resources/js/lunr.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="resources/js/config.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="resources/js/retype.js?v=4.4.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="resources/js/lunr.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -50,7 +58,7 @@
             <!-- Logo -->
             <div class="flex items-center justify-between h-full py-2 md:w-75">
                 <div class="flex items-center px-2 md:px-6">
-                    <a id="retype-branding-logo" href="" class="flex items-center leading-snug text-2xl">
+                    <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
                     </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.7.1</span>
                 </div>
@@ -145,24 +153,14 @@
                 <!-- Rendered if sidebar right is enabled -->
                 <div id="retype-sidebar-right-toggle"></div>
                 <!-- Page content  -->
-<doc-anchor-target id="dart-nostr-development-kit-ndk" class="break-words">
-    <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#dart-nostr-development-kit-ndk">#</doc-anchor-trigger>
-        <span>Dart Nostr Development Kit (NDK)</span>
-    </h1>
-</doc-anchor-target>
-<p><a href="https://github.com/relaystr/ndk/actions?query=workflow%3A%22tests%22+branch%3Amaster"><img src="https://github.com/relaystr/ndk/actions/workflows/tests.yaml/badge.svg?branch=master" alt="Build Status" /></a> <a href="https://codecov.io/github/relaystr/ndk"><img src="https://img.shields.io/codecov/c/github/relaystr/ndk?color=green" alt="Coverage" /></a> <a href="https://pub.dev/packages/ndk"><img src="https://img.shields.io/pub/v/ndk.svg" alt="Pub" /></a> <a href="license.txt"><img src="https://img.shields.io/github/license/relaystr/ndk.svg" alt="License" /></a></p>
+<h1 id="dart-nostr-development-kit-ndk">Dart Nostr Development Kit (NDK)</h1>
+<p><a href="https://github.com/relaystr/ndk/actions?query=workflow%3A%22tests%22+branch%3Amaster"><img src="https://github.com/relaystr/ndk/actions/workflows/tests.yaml/badge.svg?branch=master" alt="Build Status" /></a> <a href="https://codecov.io/github/relaystr/ndk"><img src="https://img.shields.io/codecov/c/github/relaystr/ndk?color=green" alt="Coverage" class="max-w-full h-auto" /></a> <a href="https://pub.dev/packages/ndk"><img src="https://img.shields.io/pub/v/ndk.svg" alt="Pub" class="max-w-full h-auto" /></a> <a href="https://github.com/relaystr/ndk/blob/master/LICENSE"><img src="https://img.shields.io/github/license/relaystr/ndk.svg" alt="License" class="max-w-full h-auto" /></a></p>
 <p>NDK (Nostr Development Kit) is a Dart library that enhances the Nostr development experience.<br />
 NDK supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.<br />
 Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.</p>
-<doc-anchor-target id="apps-using-ndk">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#apps-using-ndk">#</doc-anchor-trigger>
-        <span>Apps using NDK</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="apps-using-ndk">Apps using NDK</h2>
 <ul>
-<li><a href="https://github.com/relaystr/ndk/releases">sample app</a></li>
+<li><a href="https://dart-nostr.com/app/">sample app</a></li>
 <li><a href="https://github.com/frnandu/yana">yana</a></li>
 <li><a href="https://github.com/leo-lox/camelus">camelus</a></li>
 <li><a href="https://github.com/nostrlabs-io/zap-stream-flutter">zap.stream</a></li>
@@ -173,31 +171,11 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 <li><a href="https://github.com/nogringo/donow">donow</a></li>
 <li><a href="https://github.com/nogringo/submarine">submarine</a></li>
 </ul>
-<doc-anchor-target id="-getting-started-">
-    <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#-getting-started-">#</doc-anchor-trigger>
-        <span><span class="docs-emoji">&#x27A1;&#xFE0F;</span> <a href="https://dart-nostr.com/guides/getting-started/">Getting Started <span class="docs-emoji">&#x1F517;</span></a></span>
-    </h1>
-</doc-anchor-target>
-<doc-anchor-target id="changelog-">
-    <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#changelog-">#</doc-anchor-trigger>
-        <span><a href="./changelog.md">Changelog <span class="docs-emoji">&#x1F517;</span></a></span>
-    </h1>
-</doc-anchor-target>
+<h1 id="-getting-started-"><span class="docs-emoji">&#x27A1;&#xFE0F;</span> <a href="https://dart-nostr.com/guides/getting-started/">Getting Started <span class="docs-emoji">&#x1F517;</span></a></h1>
+<h1 id="changelog-"><a href="https://github.com/relaystr/ndk/blob/master/CHANGELOG.md">Changelog <span class="docs-emoji">&#x1F517;</span></a></h1>
 <hr>
-<doc-anchor-target id="core-features">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#core-features">#</doc-anchor-trigger>
-        <span>Core Features</span>
-    </h2>
-</doc-anchor-target>
-<doc-anchor-target id="network--data-management">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#network--data-management">#</doc-anchor-trigger>
-        <span>Network &amp; Data Management</span>
-    </h3>
-</doc-anchor-target>
+<h2 id="core-features">Core Features</h2>
+<h3 id="network--data-management">Network &amp; Data Management</h3>
 <ul>
 <li><strong>Automatic relay discovery</strong> using inbox/outbox (gossip) model for optimal relay selection</li>
 <li><strong>Flexible data fetching</strong> with query (one-time) and subscription (real-time) modes</li>
@@ -205,23 +183,13 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 <li><strong>Concurrent event streaming</strong> from both cache and network</li>
 <li><strong>Request coverage control</strong> to specify desired relay coverage per request</li>
 </ul>
-<doc-anchor-target id="account--authentication">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#account--authentication">#</doc-anchor-trigger>
-        <span>Account &amp; Authentication</span>
-    </h3>
-</doc-anchor-target>
+<h3 id="account--authentication">Account &amp; Authentication</h3>
 <ul>
 <li><strong>Multiple signer support</strong>: Built-in (BIP-340), Amber, NIP-07 (web), and NIP-46 (remote signing/bunkers)</li>
 <li><strong>Account management</strong> with state tracking and multiple account support</li>
 <li><strong>Relay authentication</strong> (NIP-42) for private relay access</li>
 </ul>
-<doc-anchor-target id="high-level-use-cases">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#high-level-use-cases">#</doc-anchor-trigger>
-        <span>High-Level Use Cases</span>
-    </h3>
-</doc-anchor-target>
+<h3 id="high-level-use-cases">High-Level Use Cases</h3>
 <ul>
 <li><strong>Metadata management</strong>: Query and update user profiles with automatic caching</li>
 <li><strong>Contact lists</strong>: Follow/unfollow users and manage contact lists</li>
@@ -234,12 +202,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 <li><strong>Connectivity</strong>: Get notified about connection issues</li>
 <li><strong>Proof of Work</strong> (NIP-13): Create and verify PoW events</li>
 </ul>
-<doc-anchor-target id="developer-experience">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#developer-experience">#</doc-anchor-trigger>
-        <span>Developer Experience</span>
-    </h3>
-</doc-anchor-target>
+<h3 id="developer-experience">Developer Experience</h3>
 <ul>
 <li><strong>Pluggable architecture</strong>: Bring your own cache, verifier, or signer, replace any component</li>
 <li><strong>Multiple database options</strong>: In-memory, ObjectBox, Sembast</li>
@@ -247,12 +210,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 <li><strong>Comprehensive logging</strong> with configurable log levels and outputs</li>
 <li><strong>Clean architecture</strong> for maintainability and extensibility</li>
 </ul>
-<doc-anchor-target id="not-included">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#not-included">#</doc-anchor-trigger>
-        <span>not Included</span>
-    </h2>
-</doc-anchor-target>
+<h2 id="not-included">not Included</h2>
 <ul>
 <li>ready to use feeds, you have to build them on your own (<span class="docs-emoji">&#x1F6AB;</span> not planned)</li>
 <li>create &amp;&amp; manage keypairs. You have to provide them (<span class="docs-emoji">&#x1F6AB;</span> not planned)</li>

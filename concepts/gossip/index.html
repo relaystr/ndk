@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.1.0.826031191078">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.4.0.828267143093">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.1.0">
+    <meta name="generator" content="Retype 4.4.0">
 
     <!-- Primary Meta Tags -->
     <title>Gossip</title>
@@ -25,13 +25,19 @@
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dart-nostr.com/concepts/gossip/">
+    <meta name="twitter:title" content="Gossip">
+    <meta name="twitter:description" content="The simplest characterization of the gossip model is just this: reading the posts of people you follow from the relays that they wrote them to.">
+
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.1.0.826031191078" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.4.0.828267143093" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.1.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.1.0.826031191078" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.4.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.4.0.828267143093" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -46,7 +52,7 @@
             <!-- Logo -->
             <div class="flex items-center justify-between h-full py-2 md:w-75">
                 <div class="flex items-center px-2 md:px-6">
-                    <a id="retype-branding-logo" href="../../" class="flex items-center leading-snug text-2xl">
+                    <a id="retype-branding-logo" href="https://dart-nostr.com/" class="flex items-center leading-snug text-2xl">
                         <span class="dark:text-white font-bold line-clamp-1 md:line-clamp-2">NDK</span>
                     </a><span id="retype-branding-label" class="inline-flex mt-1 px-2 py-1 ml-4 text-xs font-medium leading-none items-center rounded-md bg-branding-label-bg text-branding-label-text ring-1 ring-branding-label-border ring-inset md:inline-block">v0.7.1</span>
                 </div>
@@ -141,18 +147,8 @@
                 <!-- Rendered if sidebar right is enabled -->
                 <div id="retype-sidebar-right-toggle"></div>
                 <!-- Page content  -->
-<doc-anchor-target id="gossip" class="break-words">
-    <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#gossip">#</doc-anchor-trigger>
-        <span>Gossip</span>
-    </h1>
-</doc-anchor-target>
-<doc-anchor-target id="gossipoutbox-model-of-relay-discovery-and-connectivity">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#gossipoutbox-model-of-relay-discovery-and-connectivity">#</doc-anchor-trigger>
-        <span>Gossip/outbox model of relay discovery and connectivity</span>
-    </h3>
-</doc-anchor-target>
+<h1 id="gossip">Gossip</h1>
+<h3 id="gossipoutbox-model-of-relay-discovery-and-connectivity">Gossip/outbox model of relay discovery and connectivity</h3>
 <p>The simplest characterization of the gossip model is just this: <em>reading the posts of people you follow from the relays that they wrote them to.</em></p>
 <img src="https://mikedilger.com/gossip-model/gossip-model.png" style="width:400px; height:400px"/>
 <p>more details on <a href="https://mikedilger.com/gossip-model/">https://mikedilger.com/gossip-model/</a></p>
