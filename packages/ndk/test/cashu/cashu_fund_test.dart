@@ -367,10 +367,8 @@ void main() {
 
       final spend200 = await ndk.cashu
           .initiateSpend(mintUrl: devMintUrl, amount: 200, unit: "sat");
-      final spend19 = await ndk.cashu
-          .initiateSpend(mintUrl: devMintUrl, amount: 18, unit: "sat");
-      final spend31 = await ndk.cashu
-          .initiateSpend(mintUrl: devMintUrl, amount: 32, unit: "sat");
+      await ndk.cashu.initiateSpend(mintUrl: devMintUrl, amount: 18, unit: "sat");
+      await ndk.cashu.initiateSpend(mintUrl: devMintUrl, amount: 32, unit: "sat");
 
       final spend200Token = spend200.token.toV4TokenString();
       // final spend19Token = spend19.token.toV4TokenString();

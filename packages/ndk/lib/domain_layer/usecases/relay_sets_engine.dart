@@ -269,9 +269,6 @@ class RelaySetsEngine implements NetworkEngine {
     required BroadcastState broadcastState,
     Iterable<String>? specificRelays,
   }) {
-    final doneStream = broadcastState.stateUpdates
-        .map((state) => state.broadcasts.values.toList());
-
     Future<void> asyncStuff() async {
       final Nip01Event workingEvent;
 
