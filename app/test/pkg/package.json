@@ -1,0 +1,9 @@
+{
+  "name": "rust_lib_ndk",
+  "version": "0.1.1",
+  "files": [
+    "rust_lib_ndk_bg.wasm",
+    "rust_lib_ndk.js"
+  ],
+  "browser": "rust_lib_ndk.js"
+}
