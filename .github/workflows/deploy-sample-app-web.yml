@@ -44,7 +44,7 @@ env:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_call' || github.ref_name == 'master'
+    if: github.event_name == 'workflow_call'
     runs-on: ubuntu-latest
     defaults:
       run:
