@@ -1,3 +1,7 @@
+## 0.8.0-dev.0+1
+
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
 ## 0.8.0
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.

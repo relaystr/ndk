@@ -1,3 +1,18 @@
+## 0.2.9-dev.0
+
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: remove duplicated. ([8fa8db2e](https://github.com/relaystr/ndk/commit/8fa8db2e8e378004c2e24ffc8bcd02948c4336bc))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
 ## 0.2.8-dev.10
 
  - **REFACTOR**: rename rawContent to content. ([22da4a00](https://github.com/relaystr/ndk/commit/22da4a00f128fda01718a50cf0a65ae3e867c91d))
