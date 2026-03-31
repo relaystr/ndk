@@ -1,11 +1,3 @@
-import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-// import 'package:nostr_bunker/nostr_bunker.dart';
-import 'package:test/test.dart';
-
-import '../mocks/mock_event_verifier.dart';
-import '../mocks/mock_relay.dart';
-
 void main() {
   // test('two unapproved requests should be pending', () async {
   //   // Start mock relay
