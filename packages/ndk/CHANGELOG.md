@@ -1,148 +1,19 @@
-## 0.8.0-dev.3
+## 0.8.0
 
- - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
- - **FIX**: unused import. ([1a4d480f](https://github.com/relaystr/ndk/commit/1a4d480f512956b656edb80b0846d14cc4f2d915))
- - **FIX**: add missing path. ([a3b57e89](https://github.com/relaystr/ndk/commit/a3b57e8981b870334774f02c56c779e1a6462ef9))
- - **FIX**: use parallel broadcast pattern in relay_jit_broadcast_specific. ([ba318d85](https://github.com/relaystr/ndk/commit/ba318d85b161515b17867be03a8dd37fb3f31c5b))
- - **FIX**: parallel broadcast with Future.wait and address PR feedback. ([4f5096d2](https://github.com/relaystr/ndk/commit/4f5096d2d8fc3e2793057dd1faf315f91dcfae66))
- - **FIX**: apply moved rust code. ([610784b3](https://github.com/relaystr/ndk/commit/610784b310ab7a348100d13083a7cbd6faeda3af))
- - **FIX**(test): resolve port conflicts in broadcast_test.dart. ([5ae8db79](https://github.com/relaystr/ndk/commit/5ae8db7934bab16e10c3a6b7ca71a1ba170c2ddc))
- - **FIX**(test): generate MockRelay AUTH challenge once per server lifetime. ([ed90f058](https://github.com/relaystr/ndk/commit/ed90f0585cbb9b88ab117e9bf8fbddf9cfd36359))
- - **FIX**: start timeout after signing completes. ([f1534b37](https://github.com/relaystr/ndk/commit/f1534b373eae9a489796e3bad0cc3736342138bd))
- - **FIX**(test): implement missing EventSigner methods in MockSlowSigner. ([a941d7fb](https://github.com/relaystr/ndk/commit/a941d7fbe3f9e8d27bb42ca386ceb710c2ada71c))
- - **FIX**: fix imports. ([8a10dd61](https://github.com/relaystr/ndk/commit/8a10dd6143d16244ffd31211d91c96857de7609d))
- - **FIX**: fix imports. ([8351d005](https://github.com/relaystr/ndk/commit/8351d005d7b83ba69b115e6117dfeceff7fd3275))
- - **FIX**: fix imports. ([a23df4ea](https://github.com/relaystr/ndk/commit/a23df4ea44934cd4b683adbcd382eedaf98663a5))
- - **FIX**: move sembast to core. ([817569cf](https://github.com/relaystr/ndk/commit/817569cf7cd30d09e6f5550adebfd7d93b930041))
- - **FIX**: robust broadcast lifecycle and relay connection handling. ([0c2e56d3](https://github.com/relaystr/ndk/commit/0c2e56d3e2010fc9cec5e7e1bc89d4bd719dca0d))
-
-## 0.8.0-dev.2
-
- - **REFACTOR**: filter keyset by active and unit.
- - **REFACTOR**: remove wallet prefix from cashu.
- - **REFACTOR**: rename removeWallet.
- - **REFACTOR**: remove acc prefix, clear seperation wallet.
- - **FIX**: log body http request.
- - **FIX**: cashu tests needed a wallet.
- - **FIX**: missing wallets.dispose in ndk.destroy.
- - **FIX**: initialization.
- - **FIX**: nwc connection.
- - **FIX**: broadcast state timeout.
- - **FIX**: rollback removal of walletsRepo from ndkConfig.
- - **FIX**: rollback removal of walletsRepo from ndkConfig.
- - **FIX**: removed feat combinedTransactions.
- - **FIX**: dispose combined balances activated.
- - **FIX**: separate wallets storage operations from cache manager.
- - **FIX**: usecase name.
- - **FIX**: restore save only unspend tokens.
- - **FIX**: type parsing.
- - **FIX**: spend, redeem exception handeling.
- - **FIX**: cashu redeem failed transaction state.
- - **FIX**: hook up deleteKnownMint to removeWallet.
- - **FIX**: add keysets to decorator.
- - **FIX**: store keysets from network.
- - **FIX**: null err.
- - **FIX**: cashu usecase naming.
- - **FIX**: wallet transaction state storage.
- - **FIX**: cleanup on ndk destroy.
- - **FIX**: melt map output blanks to change.
- - **FIX**: melt change parsing.
- - **FIX**: allow fee reserve 0.
- - **FIX**: swap split change, exact amount.
- - **FIX**: mintUrl in CashuMintBalance.
- - **FIX**: typo.
- - **FIX**: check completion when transcation rcv.
- - **FIX**: test secret comparison.
- - **FIX**: dismiss large keyset amounts.
- - **FIX**: sort swap outputs.
- - **FIX**: correct balance with inactive keysets.
- - **FIX**: getProofs mem cache manager.
- - **FIX**: identify cashu proof by pubKey.
- - **FIX**: dont add total balance.
- - **FIX**: filter keyset for unit.
- - **FIX**: cashuMintInfo fromJson add mintUrl.
- - **FIX**: wallet filter balances by mint.
- - **FIX**: save transaction to db.
- - **FIX**: cashu balances grouping.
- - **FEAT**: spending with state.
- - **FEAT**: cashu mnemonic.
- - **FEAT**: nut13 deterministic secrets.
- - **FEAT**: rust deriveSecret.
- - **FEAT**: seed phrase user api.
- - **FEAT**: CashuKeyDerivation support keysets v2.
- - **FEAT**: fast key derivation.
- - **FEAT**: fast multiply blind msg.
- - **FEAT**: optimized proof select.
- - **FEAT**: cashu restore.
- - **FEAT**: save pending transactions.
- - **FEAT**: auto detect wallet cache manager.
- - **FEAT**: cashu remove mint info.
- - **FEAT**: init combined streams lazy.
- - **FEAT**: dynamically create wallets based on usecase data.
-
-## 0.8.0-dev.1
-
- - **REFACTOR**: filter keyset by active and unit.
- - **REFACTOR**: remove wallet prefix from cashu.
- - **REFACTOR**: rename removeWallet.
- - **REFACTOR**: remove acc prefix, clear seperation wallet.
- - **FIX**: log body http request.
- - **FIX**: cashu tests needed a wallet.
- - **FIX**: missing wallets.dispose in ndk.destroy.
- - **FIX**: initialization.
- - **FIX**: nwc connection.
- - **FIX**: broadcast state timeout.
- - **FIX**: rollback removal of walletsRepo from ndkConfig.
- - **FIX**: rollback removal of walletsRepo from ndkConfig.
- - **FIX**: removed feat combinedTransactions.
- - **FIX**: dispose combined balances activated.
- - **FIX**: separate wallets storage operations from cache manager.
- - **FIX**: usecase name.
- - **FIX**: restore save only unspend tokens.
- - **FIX**: type parsing.
- - **FIX**: spend, redeem exception handeling.
- - **FIX**: cashu redeem failed transaction state.
- - **FIX**: hook up deleteKnownMint to removeWallet.
- - **FIX**: add keysets to decorator.
- - **FIX**: store keysets from network.
- - **FIX**: null err.
- - **FIX**: cashu usecase naming.
- - **FIX**: wallet transaction state storage.
- - **FIX**: cleanup on ndk destroy.
- - **FIX**: melt map output blanks to change.
- - **FIX**: melt change parsing.
- - **FIX**: allow fee reserve 0.
- - **FIX**: swap split change, exact amount.
- - **FIX**: mintUrl in CashuMintBalance.
- - **FIX**: typo.
- - **FIX**: check completion when transcation rcv.
- - **FIX**: test secret comparison.
- - **FIX**: dismiss large keyset amounts.
- - **FIX**: sort swap outputs.
- - **FIX**: correct balance with inactive keysets.
- - **FIX**: getProofs mem cache manager.
- - **FIX**: identify cashu proof by pubKey.
- - **FIX**: dont add total balance.
- - **FIX**: filter keyset for unit.
- - **FIX**: cashuMintInfo fromJson add mintUrl.
- - **FIX**: wallet filter balances by mint.
- - **FIX**: save transaction to db.
- - **FIX**: cashu balances grouping.
- - **FEAT**: spending with state.
- - **FEAT**: cashu mnemonic.
- - **FEAT**: nut13 deterministic secrets.
- - **FEAT**: rust deriveSecret.
- - **FEAT**: seed phrase user api.
- - **FEAT**: CashuKeyDerivation support keysets v2.
- - **FEAT**: fast key derivation.
- - **FEAT**: fast multiply blind msg.
- - **FEAT**: optimized proof select.
- - **FEAT**: cashu restore.
- - **FEAT**: save pending transactions.
- - **FEAT**: auto detect wallet cache manager.
- - **FEAT**: cashu remove mint info.
- - **FEAT**: init combined streams lazy.
- - **FEAT**: dynamically create wallets based on usecase data.
+ - Wallets usecase
+ - Cashu support
+ - LNURL wallet receive only
+ - ndk CLI tool with install.sh script
+ - Drift cache manager
+ - Signer pending requests
+ - Paginated requests
+ - Rust event verifier using native assets in ndk core package
+ - Web event verifier using web crypto
+ - Implement RFC 3986 compliant relay URL normalization
+ - Move sembast to core
+ - Fix: broadcast timeout
+ - Move amber into ndk_flutter
+ - Remove deprecated isar package
 
 ## 0.7.2-dev.2
 
