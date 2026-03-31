@@ -46,6 +46,7 @@ dependencies:
   ffi: ^2.1.4
   web: ^1.1.1
   sembast: ">=3.8.6 <4.0.0"
+  path: ^1.9.1
 
 dev_dependencies:
   build_runner: ^2.11.1 
