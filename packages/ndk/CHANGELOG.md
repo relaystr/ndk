@@ -1,3 +1,13 @@
+## 0.8.0+3
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
+## 0.8.0+2
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
 ## 0.8.0+1
 
  - **FEAT**:  Wallets usecase
