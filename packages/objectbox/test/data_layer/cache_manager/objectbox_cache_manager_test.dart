@@ -49,7 +49,6 @@ void main() async {
       mintKeyPairs: {},
       mintUrl: 'https://test.mint.com',
       unit: 'sat',
-
     );
     cacheManager.saveKeyset(cashuKeyset);
 

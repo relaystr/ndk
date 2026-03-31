@@ -315,8 +315,8 @@ class RelaySetsEngine implements NetworkEngine {
               "could not find user relay list from nip65, using default bootstrap relays");
         }
 
-        await Future.wait(writeRelaysUrls.map((relayUrl) =>
-            doRelayBroadcast(relayUrl, workingEvent)));
+        await Future.wait(writeRelaysUrls
+            .map((relayUrl) => doRelayBroadcast(relayUrl, workingEvent)));
 
         // =====================================================================================
         // other inbox
@@ -345,8 +345,8 @@ class RelaySetsEngine implements NetworkEngine {
             myWriteRelayUrlsOthers.addAll(maxList);
           }
 
-          await Future.wait(myWriteRelayUrlsOthers.map((relayUrl) =>
-              doRelayBroadcast(relayUrl, workingEvent)));
+          await Future.wait(myWriteRelayUrlsOthers
+              .map((relayUrl) => doRelayBroadcast(relayUrl, workingEvent)));
         }
       }
       broadcastState.closeIfNoRelays();
