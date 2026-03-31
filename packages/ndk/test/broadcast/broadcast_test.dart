@@ -13,7 +13,7 @@ void main() {
           bootstrapRelays: ["ws://localhost:25565"],
         ),
       );
-      
+
       addTearDown(() async => ndk.destroy());
 
       final keyPair = Bip340.generatePrivateKey();

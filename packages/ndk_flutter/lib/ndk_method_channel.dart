@@ -16,15 +16,15 @@ class MethodChannelDartNdk extends NdkPlatform {
   }
 
   Future<bool?> verifySignature(
-      String signature, String hash, String pubKey) async {
+    String signature,
+    String hash,
+    String pubKey,
+  ) async {
     final arguments = {
       "signature": hex.decode(signature),
       "hash": hex.decode(hash),
-      "pubKey": hex.decode(pubKey)
+      "pubKey": hex.decode(pubKey),
     };
-    return await methodChannel.invokeMethod<bool>(
-      'verifySignature',
-      arguments,
-    );
+    return await methodChannel.invokeMethod<bool>('verifySignature', arguments);
   }
 }

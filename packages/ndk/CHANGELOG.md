@@ -1,23 +1,38 @@
+## 0.8.0+1
+
+ - **FEAT**:  Wallets usecase
+ - **FEAT**:  Cashu support
+ - **FEAT**:  LNURL wallet receive only
+ - **FEAT**:  ndk CLI tool with install.sh script
+ - **FEAT**:  Drift cache manager
+ - **FEAT**:  Signer pending requests
+ - **FEAT**:  Paginated requests
+ - **FEAT**:  Rust event verifier using native assets in ndk core package
+ - **FEAT**:  Web event verifier using web crypto
+ - **FEAT**:  Implement RFC 3986 compliant relay URL normalization
+ - **FEAT**:  Move amber into ndk_flutter
+ - **FEAT**:  Move sembast to core
+ - **FIX**:  Fix: broadcast timeout
+ - **FIX**:  Remove deprecated isar package
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
+
 ## 0.8.0
 
- - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
-
-## 0.8.0
-
- - Wallets usecase
- - Cashu support
- - LNURL wallet receive only
- - ndk CLI tool with install.sh script
- - Drift cache manager
- - Signer pending requests
- - Paginated requests
- - Rust event verifier using native assets in ndk core package
- - Web event verifier using web crypto
- - Implement RFC 3986 compliant relay URL normalization
- - Move sembast to core
- - Fix: broadcast timeout
- - Move amber into ndk_flutter
- - Remove deprecated isar package
+ - **FEAT**:  Wallets usecase
+ - **FEAT**:  Cashu support
+ - **FEAT**:  LNURL wallet receive only
+ - **FEAT**:  ndk CLI tool with install.sh script
+ - **FEAT**:  Drift cache manager
+ - **FEAT**:  Signer pending requests
+ - **FEAT**:  Paginated requests
+ - **FEAT**:  Rust event verifier using native assets in ndk core package
+ - **FEAT**:  Web event verifier using web crypto
+ - **FEAT**:  Implement RFC 3986 compliant relay URL normalization
+ - **FEAT**:  Move amber into ndk_flutter
+ - **FEAT**:  Move sembast to core
+ - **FIX**:  Fix: broadcast timeout
+ - **FIX**:  Remove deprecated isar package
 
 ## 0.7.2-dev.2
 

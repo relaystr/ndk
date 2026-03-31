@@ -193,7 +193,7 @@ class Initialization {
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
     nwc = Nwc(requests: requests, broadcast: broadcast);
 
-    if (_ndkConfig.walletsRepo == null ) {
+    if (_ndkConfig.walletsRepo == null) {
       // auto detect if the provided cache manager has wallets capabilities.
       if (_ndkConfig.cache is WalletsRepo) {
         _ndkConfig.walletsRepo = _ndkConfig.cache as WalletsRepo;
