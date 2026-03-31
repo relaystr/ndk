@@ -1,5 +1,9 @@
 ## 0.8.0
 
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.8.0
+
  - Wallets usecase
  - Cashu support
  - LNURL wallet receive only
