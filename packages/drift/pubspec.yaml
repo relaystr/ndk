@@ -15,7 +15,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ndk: ^0.7.1
+  ndk: ^0.8.1
   drift: ^2.31.0
   drift_flutter: ^0.2.8
   path_provider: ^2.1.5
