@@ -1,3 +1,7 @@
+## 0.8.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.8.0-dev.3
 
  - **FIX**: unused import. ([1a4d480f](https://github.com/relaystr/ndk/commit/1a4d480f512956b656edb80b0846d14cc4f2d915))
