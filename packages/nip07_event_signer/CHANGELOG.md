@@ -1,3 +1,7 @@
+## 1.0.9
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
 ## 1.0.8
 
  - Update a dependency to the latest release.
