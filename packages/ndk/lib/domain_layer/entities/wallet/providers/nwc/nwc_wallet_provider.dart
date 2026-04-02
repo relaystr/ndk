@@ -80,6 +80,10 @@ class NwcWalletProvider implements WalletProvider {
     try {
       await _connectWallet(nwcWallet);
       completer.complete();
+      final fetchedPermissions = nwcWallet.connection?.permissions ?? {};
+      if (!_setEquals(fetchedPermissions, nwcWallet.cachedPermissions)) {
+        return nwcWallet.withCachedPermissions(fetchedPermissions);
+      }
     } catch (e) {
       completer.completeError(e);
       rethrow;
@@ -286,5 +290,11 @@ class NwcWalletProvider implements WalletProvider {
       wallet.nwcUrl,
       doGetInfoMethod: true,
     );
+  }
+
+  bool _setEquals(Set<String> a, Set<String> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    return a.containsAll(b);
   }
 }
