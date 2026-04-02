@@ -82,6 +82,14 @@ class _NWalletCardState extends State<NWalletCard> {
   GetBudgetResponse? _budgetResponse;
   bool _isFetchingBudget = false;
 
+  Set<String> _nwcPermissions(NwcWallet wallet) {
+    final livePermissions = wallet.connection?.permissions;
+    if (livePermissions != null && livePermissions.isNotEmpty) {
+      return livePermissions;
+    }
+    return wallet.cachedPermissions;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -126,7 +134,8 @@ class _NWalletCardState extends State<NWalletCard> {
       }
 
       final connection = nwcWallet.connection;
-      if (connection == null || connection.permissions.isEmpty) {
+      final permissions = _nwcPermissions(nwcWallet);
+      if (connection == null || permissions.isEmpty) {
         if (mounted) {
           setState(() {
             _budgetResponse = null;
@@ -136,7 +145,7 @@ class _NWalletCardState extends State<NWalletCard> {
       }
 
       // Check if get_budget permission is available
-      if (!connection.permissions.contains(NwcMethod.GET_BUDGET.name)) {
+      if (!permissions.contains(NwcMethod.GET_BUDGET.name)) {
         if (mounted) {
           setState(() {
             _budgetResponse = null;
@@ -200,8 +209,8 @@ class _NWalletCardState extends State<NWalletCard> {
         final oldConnection = oldNwc.connection;
         final newConnection = newNwc.connection;
 
-        final oldPermissions = oldConnection?.permissions.toSet() ?? <String>{};
-        final newPermissions = newConnection?.permissions.toSet() ?? <String>{};
+        final oldPermissions = _nwcPermissions(oldNwc);
+        final newPermissions = _nwcPermissions(newNwc);
 
         final connectionChanged = oldConnection?.uri != newConnection?.uri;
 
@@ -231,12 +240,10 @@ class _NWalletCardState extends State<NWalletCard> {
     final bool isCashu = widget.wallet is CashuWallet;
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
+    final nwcPermissions =
+        isNwc ? _nwcPermissions(widget.wallet as NwcWallet) : const <String>{};
     final bool canShowNwcBalance =
-        !isNwc ||
-        ((widget.wallet as NwcWallet).connection?.permissions.contains(
-              NwcMethod.GET_BALANCE.name,
-            ) ??
-            false);
+        !isNwc || nwcPermissions.contains(NwcMethod.GET_BALANCE.name);
     final bool showBudgetInfo = isNwc && _shouldShowBudgetInfo();
     final bool isNwcReceiveOnly =
         isNwc && widget.wallet.canReceive && !widget.wallet.canSend;
