@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-04-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.1-dev.0+1`](#ndk---v081-dev01)
+ - [`ndk_objectbox` - `v0.2.11-dev.0+1`](#ndk_objectbox---v0211-dev01)
+ - [`nip07_event_signer` - `v1.0.10-dev.0`](#nip07_event_signer---v1010-dev0)
+ - [`ndk_drift` - `v0.1.1-dev.0+1`](#ndk_drift---v011-dev01)
+ - [`ndk_flutter` - `v0.8.1-dev.0+1`](#ndk_flutter---v081-dev01)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.11-dev.0+1`
+ - `nip07_event_signer` - `v1.0.10-dev.0`
+ - `ndk_drift` - `v0.1.1-dev.0+1`
+ - `ndk_flutter` - `v0.8.1-dev.0+1`
+
+---
+
+#### `ndk` - `v0.8.1-dev.0+1`
+
+ - **FIX**: nwc cached permissions. ([dd6a8892](https://github.com/relaystr/ndk/commit/dd6a8892963c04a62ee0c1eda5ea4db7e6bc42d3))
+
+
 ## 2026-03-31
 
 ### Changes

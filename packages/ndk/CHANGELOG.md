@@ -1,3 +1,7 @@
+## 0.8.1-dev.0+1
+
+ - **FIX**: nwc cached permissions. ([dd6a8892](https://github.com/relaystr/ndk/commit/dd6a8892963c04a62ee0c1eda5ea4db7e6bc42d3))
+
 ## 0.8.1
 
  - **FEAT**:  Wallets usecase

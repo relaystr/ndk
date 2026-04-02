@@ -1,3 +1,7 @@
+## 0.2.11-dev.0+1
+
+ - Update a dependency to the latest release.
+
 ## 0.2.11
 
  - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
