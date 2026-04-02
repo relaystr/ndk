@@ -15,6 +15,49 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.8.2-dev.1`](#ndk---v082-dev1)
+ - [`ndk_flutter` - `v0.8.2-dev.1`](#ndk_flutter---v082-dev1)
+ - [`ndk_objectbox` - `v0.2.11-dev.1`](#ndk_objectbox---v0211-dev1)
+ - [`nip07_event_signer` - `v1.0.10-dev.1`](#nip07_event_signer---v1010-dev1)
+ - [`ndk_drift` - `v0.1.1-dev.1`](#ndk_drift---v011-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.11-dev.1`
+ - `nip07_event_signer` - `v1.0.10-dev.1`
+ - `ndk_drift` - `v0.1.1-dev.1`
+
+---
+
+#### `ndk` - `v0.8.2-dev.1`
+
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+
+#### `ndk_flutter` - `v0.8.2-dev.1`
+
+ - **FIX**: formaty intl balance and budget. ([eb394361](https://github.com/relaystr/ndk/commit/eb394361a398e944ea2ff14ec5f0c7ae6128bc1a))
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([7b2c37e5](https://github.com/relaystr/ndk/commit/7b2c37e5575e851cf8e53824d62e2081d8e73845))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+ - **FIX**: keep default walletAuth. ([db518547](https://github.com/relaystr/ndk/commit/db518547f7dbbae9359389f1aa4d7f798dc86416))
+ - **FEAT**: alby go alternative connect method nostrnwc. ([0e21d30b](https://github.com/relaystr/ndk/commit/0e21d30b7bcb1617fb831816e4124fcb491b8a6e))
+
+
+## 2026-04-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.8.1-dev.0+1`](#ndk---v081-dev01)
  - [`ndk_objectbox` - `v0.2.11-dev.0+1`](#ndk_objectbox---v0211-dev01)
  - [`nip07_event_signer` - `v1.0.10-dev.0`](#nip07_event_signer---v1010-dev0)

@@ -1,3 +1,12 @@
+## 0.8.2-dev.1
+
+ - **FIX**: formaty intl balance and budget. ([eb394361](https://github.com/relaystr/ndk/commit/eb394361a398e944ea2ff14ec5f0c7ae6128bc1a))
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([7b2c37e5](https://github.com/relaystr/ndk/commit/7b2c37e5575e851cf8e53824d62e2081d8e73845))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+ - **FIX**: keep default walletAuth. ([db518547](https://github.com/relaystr/ndk/commit/db518547f7dbbae9359389f1aa4d7f798dc86416))
+ - **FEAT**: alby go alternative connect method nostrnwc. ([0e21d30b](https://github.com/relaystr/ndk/commit/0e21d30b7bcb1617fb831816e4124fcb491b8a6e))
+
 ## 0.8.1-dev.0+1
 
  - Update a dependency to the latest release.
