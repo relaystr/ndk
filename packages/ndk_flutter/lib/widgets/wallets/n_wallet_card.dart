@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
@@ -214,7 +215,8 @@ class _NWalletCardState extends State<NWalletCard> {
 
         final connectionChanged = oldConnection?.uri != newConnection?.uri;
 
-        final permissionsChanged = oldPermissions.length != newPermissions.length ||
+        final permissionsChanged =
+            oldPermissions.length != newPermissions.length ||
             oldPermissions.difference(newPermissions).isNotEmpty ||
             newPermissions.difference(oldPermissions).isNotEmpty;
 
@@ -240,8 +242,9 @@ class _NWalletCardState extends State<NWalletCard> {
     final bool isCashu = widget.wallet is CashuWallet;
     final bool isNwc = widget.wallet is NwcWallet;
     final bool isLnurl = widget.wallet is LnurlWallet;
-    final nwcPermissions =
-        isNwc ? _nwcPermissions(widget.wallet as NwcWallet) : const <String>{};
+    final nwcPermissions = isNwc
+        ? _nwcPermissions(widget.wallet as NwcWallet)
+        : const <String>{};
     final bool canShowNwcBalance =
         !isNwc || nwcPermissions.contains(NwcMethod.GET_BALANCE.name);
     final bool showBudgetInfo = isNwc && _shouldShowBudgetInfo();
@@ -968,6 +971,9 @@ class _NWalletCardState extends State<NWalletCard> {
 
   Widget _buildBalance(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final numberFormatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toString(),
+    );
     final isCompactNwc = widget.wallet is NwcWallet && _shouldShowBudgetInfo();
     final balanceFontSize = isCompactNwc ? 24.0 : 28.0;
     final unitFontSize = isCompactNwc ? 12.0 : 14.0;
@@ -989,7 +995,7 @@ class _NWalletCardState extends State<NWalletCard> {
         return Row(
           children: [
             Text(
-              '$satBalance',
+              numberFormatter.format(satBalance),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: balanceFontSize,

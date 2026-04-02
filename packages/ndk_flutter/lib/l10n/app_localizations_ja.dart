@@ -930,14 +930,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String get deleteWalletConfirmation => 'ウォレットを削除しますか?';
 
   @override
-  String get deleteWalletConfirmationMessage =>
-      'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
+  String get deleteWalletConfirmationMessage => 'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
 
   @override
   String get addWalletTitle => 'ウォレットを追加';
 
   @override
   String get chooseWalletType => 'ウォレットタイプを選択';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => 'NWCでリモートウォレットに接続';
+
+  @override
+  String get lnurlWalletTypeTitle => 'LNURL / Lightning Address';
+
+  @override
+  String get lnurlWalletTypeSubtitle => 'LNURLまたはLightning Address対応ウォレットを使う';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle => 'Cashuミント対応のecashウォレットを使う';
 
   @override
   String get cashuOption => 'Cashu';
@@ -947,24 +964,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get lnurlOption => 'LNURL';
-
-  @override
-  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
-
-  @override
-  String get nwcWalletTypeSubtitle => 'NWCで既存のウォレットに接続';
-
-  @override
-  String get lnurlWalletTypeTitle => 'Lightning Address (LNURL)';
-
-  @override
-  String get lnurlWalletTypeSubtitle => 'user@domain.com で支払いを受け取る';
-
-  @override
-  String get cashuWalletTypeTitle => 'Cashu';
-
-  @override
-  String get cashuWalletTypeSubtitle => 'Cashuミントを使うecashウォレット';
 
   @override
   String get connectNwcTitle => 'NWCを接続';
@@ -1028,7 +1027,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    return '予算: $used / $total';
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '予算: $usedString / $totalString';
   }
 
   @override

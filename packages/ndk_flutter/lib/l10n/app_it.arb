@@ -1264,6 +1264,12 @@
   "@chooseWalletType": {
     "description": "Prompt to choose wallet type"
   },
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "nwcWalletTypeSubtitle": "Connetti un portafoglio remoto con NWC",
+  "lnurlWalletTypeTitle": "LNURL / Indirizzo Lightning",
+  "lnurlWalletTypeSubtitle": "Usa un portafoglio custodial con LNURL o un indirizzo Lightning",
+  "cashuWalletTypeTitle": "Cashu",
+  "cashuWalletTypeSubtitle": "Usa un portafoglio ecash basato su una mint Cashu",
   "cashuOption": "Cashu",
   "@cashuOption": {
     "description": "Label for Cashu wallet option"
@@ -1334,10 +1340,12 @@
     "placeholders": {
       "used": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Amount already used"
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total budget amount"
       }
     }
