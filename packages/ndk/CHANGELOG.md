@@ -1,3 +1,8 @@
+## 0.8.2-dev.1
+
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+
 ## 0.8.1-dev.0+1
 
  - **FIX**: nwc cached permissions. ([dd6a8892](https://github.com/relaystr/ndk/commit/dd6a8892963c04a62ee0c1eda5ea4db7e6bc42d3))
