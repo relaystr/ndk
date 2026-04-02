@@ -61,7 +61,7 @@ class NWallets extends StatefulWidget {
   /// Parameters for launching Alby Go NWC connection.
   final AlbyGoConnectConfig albyGoConnectConfig;
 
-  /// Optional coordinator for handling the Alby Go walletauth flow.
+  /// Optional coordinator for handling the Alby Go NWC connection flow.
   final NwcWalletAuthCoordinator? nwcWalletAuthCoordinator;
 
   /// Custom icon configuration for Cashu wallets

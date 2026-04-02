@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +19,9 @@ import '../../l10n/app_localizations.dart';
 
 const String _defaultMintUrl = 'https://mint.minibits.cash/Bitcoin';
 const String _dialogBackResult = '__back__';
+
+enum AlbyGoConnectMethod { walletAuth, nostrNwcCallback }
+
 const List<NwcMethod> _defaultAlbyGoRequestMethods = [
   NwcMethod.GET_INFO,
   NwcMethod.GET_BALANCE,
@@ -42,6 +46,10 @@ class AlbyGoConnectConfig {
   final String discoveryRelay;
   final List<NwcMethod> requestMethods;
   final String walletName;
+  final AlbyGoConnectMethod connectMethod;
+
+  /// Host used when [connectMethod] is [AlbyGoConnectMethod.nostrNwcCallback].
+  final String nostrNwcHost;
 
   const AlbyGoConnectConfig({
     required this.appName,
@@ -50,6 +58,8 @@ class AlbyGoConnectConfig {
     this.discoveryRelay = 'wss://relay.getalby.com',
     this.requestMethods = _defaultAlbyGoRequestMethods,
     this.walletName = 'Alby Go',
+    this.connectMethod = AlbyGoConnectMethod.nostrNwcCallback,
+    this.nostrNwcHost = 'connect',
   });
 }
 
@@ -62,6 +72,7 @@ const AlbyGoConnectConfig kDefaultAlbyGoConnectConfig = AlbyGoConnectConfig(
 
 class NwcWalletAuthCoordinator {
   _PendingNwcWalletAuthSession? _pendingSession;
+  _PendingNwcCallbackSession? _pendingCallbackSession;
 
   bool get hasPendingSession => _pendingSession != null;
 
@@ -70,37 +81,64 @@ class NwcWalletAuthCoordinator {
     NdkFlutter ndkFlutter, {
     AlbyGoConnectConfig config = kDefaultAlbyGoConnectConfig,
   }) async {
-    if (kIsWeb || !Platform.isAndroid) return;
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
 
     final appKey = Bip340.generatePrivateKey();
-    final launchUri = Uri(
-      scheme: 'nostr+walletauth',
-      host: appKey.publicKey,
-      queryParameters: {
-        'relay': config.discoveryRelay,
-        'name': config.appName,
-        'request_methods': config.requestMethods
-            .map((method) => method.name)
-            .join(' '),
-        'icon': config.appIconUrl,
-        'return_to': config.callback,
-      },
-    );
+    Uri launchUri;
+    if (config.connectMethod == AlbyGoConnectMethod.walletAuth) {
+      launchUri = Uri(
+        scheme: 'nostr+walletauth',
+        host: appKey.publicKey,
+        queryParameters: {
+          'relay': config.discoveryRelay,
+          'name': config.appName,
+          'request_methods': config.requestMethods
+              .map((method) => method.name)
+              .join(' '),
+          'icon': config.appIconUrl,
+          'return_to': config.callback,
+        },
+      );
 
-    _pendingSession = _PendingNwcWalletAuthSession(
-      appKey: appKey,
-      discoveryRelay: config.discoveryRelay,
-      returnTo: config.callback,
-      walletName: config.walletName,
-    );
+      _pendingSession = _PendingNwcWalletAuthSession(
+        appKey: appKey,
+        discoveryRelay: config.discoveryRelay,
+        returnTo: config.callback,
+        walletName: config.walletName,
+      );
+      _pendingCallbackSession = null;
+    } else {
+      launchUri = Uri(
+        scheme: 'nostrnwc',
+        host: config.nostrNwcHost,
+        queryParameters: {
+          'appname': config.appName,
+          'appicon': config.appIconUrl,
+          'callback': config.callback,
+        },
+      );
+      _pendingSession = null;
+      _pendingCallbackSession = _PendingNwcCallbackSession(
+        returnTo: config.callback,
+        walletName: config.walletName,
+      );
+    }
 
     try {
-      final launched = await launchUrl(
-        launchUri,
-        mode: LaunchMode.externalApplication,
-      );
-      if (!launched) {
-        throw StateError('Could not launch wallet app');
+      if (Platform.isAndroid) {
+        final intent = AndroidIntent(
+          action: 'action_view',
+          data: launchUri.toString(),
+        );
+        await intent.launch();
+      } else {
+        final launched = await launchUrl(
+          launchUri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (!launched) {
+          throw StateError('Could not launch wallet app');
+        }
       }
     } catch (e) {
       _pendingSession = null;
@@ -120,6 +158,53 @@ class NwcWalletAuthCoordinator {
     NdkFlutter ndkFlutter,
     String url,
   ) async {
+    final l10n = context.mounted ? AppLocalizations.of(context)! : null;
+    final scaffoldMessenger = context.mounted
+        ? ScaffoldMessenger.of(context)
+        : null;
+
+    final callbackNwcUri = _extractNwcUriFromCallback(url);
+    if (callbackNwcUri != null) {
+      final pendingCallbackSession = _pendingCallbackSession;
+      if (pendingCallbackSession != null &&
+          !url.startsWith(Nwc.kNWCProtocolPrefix) &&
+          !_matchesReturnTo(url, pendingCallbackSession.returnTo)) {
+        return false;
+      }
+
+      try {
+        await _addNwcWallet(
+          ndkFlutter,
+          nwcUri: callbackNwcUri,
+          walletName:
+              pendingCallbackSession?.walletName ??
+              _pendingSession?.walletName ??
+              kDefaultAlbyGoConnectConfig.walletName,
+        );
+        if (context.mounted) {
+          scaffoldMessenger!.showSnackBar(
+            SnackBar(
+              content: Text(l10n!.nwcWalletAdded),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          scaffoldMessenger!.showSnackBar(
+            SnackBar(
+              content: Text(l10n!.error(e.toString())),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        _pendingSession = null;
+        _pendingCallbackSession = null;
+      }
+      return true;
+    }
+
     final pendingSession = _pendingSession;
     if (pendingSession == null ||
         !_matchesReturnTo(url, pendingSession.returnTo)) {
@@ -127,18 +212,17 @@ class NwcWalletAuthCoordinator {
     }
 
     _pendingSession = null;
+    _pendingCallbackSession = null;
 
-    if (!context.mounted) return true;
-    final l10n = AppLocalizations.of(context)!;
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Wallet callback received. Fetching connection info...',
+    if (context.mounted) {
+      scaffoldMessenger!.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Wallet callback received. Fetching connection info...',
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     try {
       final stream = ndkFlutter.ndk.requests
@@ -165,30 +249,26 @@ class NwcWalletAuthCoordinator {
       final constructedNwcUri =
           'nostr+walletconnect://${foundWalletAuthEvent.pubKey}?relay=${Uri.encodeComponent(pendingSession.discoveryRelay)}&secret=$appPrivateKey';
 
-      final walletId = DateTime.now().millisecondsSinceEpoch.toString();
-      final nwcWallet = NwcWallet(
-        id: walletId,
-        name: pendingSession.walletName,
-        supportedUnits: {'sat'},
-        nwcUrl: constructedNwcUri,
+      await _addNwcWallet(
+        ndkFlutter,
+        nwcUri: constructedNwcUri,
+        walletName: pendingSession.walletName,
       );
 
-      await ndkFlutter.ndk.wallets.addWallet(nwcWallet);
-
       if (!context.mounted) return true;
-      scaffoldMessenger.showSnackBar(
+      scaffoldMessenger!.showSnackBar(
         SnackBar(
-          content: Text(l10n.nwcWalletAdded),
+          content: Text(l10n!.nwcWalletAdded),
           backgroundColor: Colors.green,
         ),
       );
       return true;
     } on TimeoutException {
       if (!context.mounted) return true;
-      scaffoldMessenger.showSnackBar(
+      scaffoldMessenger!.showSnackBar(
         SnackBar(
           content: Text(
-            l10n.error(
+            l10n!.error(
               'Timed out while waiting for wallet connection info from ${pendingSession.discoveryRelay}',
             ),
           ),
@@ -198,14 +278,29 @@ class NwcWalletAuthCoordinator {
       return true;
     } catch (e) {
       if (!context.mounted) return true;
-      scaffoldMessenger.showSnackBar(
+      scaffoldMessenger!.showSnackBar(
         SnackBar(
-          content: Text(l10n.error(e.toString())),
+          content: Text(l10n!.error(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
       return true;
     }
+  }
+
+  Future<void> _addNwcWallet(
+    NdkFlutter ndkFlutter, {
+    required String nwcUri,
+    required String walletName,
+  }) async {
+    final walletId = DateTime.now().millisecondsSinceEpoch.toString();
+    final nwcWallet = NwcWallet(
+      id: walletId,
+      name: walletName,
+      supportedUnits: {'sat'},
+      nwcUrl: nwcUri,
+    );
+    await ndkFlutter.ndk.wallets.addWallet(nwcWallet);
   }
 }
 
@@ -218,6 +313,16 @@ class _PendingNwcWalletAuthSession {
   const _PendingNwcWalletAuthSession({
     required this.appKey,
     required this.discoveryRelay,
+    required this.returnTo,
+    required this.walletName,
+  });
+}
+
+class _PendingNwcCallbackSession {
+  final String returnTo;
+  final String walletName;
+
+  const _PendingNwcCallbackSession({
     required this.returnTo,
     required this.walletName,
   });
@@ -1012,8 +1117,8 @@ Future<bool> showNwcConnectionOptionsDialog(
                   runSpacing: 16,
                   alignment: WrapAlignment.center,
                   children: [
-                    // Alby Go button (only on Android, not web)
-                    if (!kIsWeb && Platform.isAndroid)
+                    // Alby Go button (on mobile native platforms, not web)
+                    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS))
                       _WalletTypeOptionButton(
                         imageAsset: 'assets/images/albygo.png',
                         label: l10n.albyGoOption,
@@ -1249,6 +1354,36 @@ Future<void> _launchExternalLink(BuildContext context, String url) async {
       backgroundColor: Colors.red,
     ),
   );
+}
+
+String? _extractNwcUriFromCallback(String receivedUrl) {
+  const prefix = Nwc.kNWCProtocolPrefix;
+  if (receivedUrl.startsWith(prefix)) {
+    return receivedUrl;
+  }
+
+  final receivedUri = Uri.tryParse(receivedUrl);
+  if (receivedUri == null) return null;
+
+  final candidates = <String>{
+    ...receivedUri.queryParameters.values,
+    if (receivedUri.fragment.isNotEmpty) receivedUri.fragment,
+  };
+
+  for (final rawValue in candidates) {
+    if (rawValue.startsWith(prefix)) {
+      return rawValue;
+    }
+    try {
+      final decoded = Uri.decodeComponent(rawValue);
+      if (decoded.startsWith(prefix)) {
+        return decoded;
+      }
+    } on FormatException {
+      // Ignore malformed percent-encoding in callback values.
+    }
+  }
+  return null;
 }
 
 bool _matchesReturnTo(String receivedUrl, String expectedReturnTo) {
