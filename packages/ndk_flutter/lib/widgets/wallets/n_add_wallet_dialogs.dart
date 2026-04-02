@@ -58,7 +58,7 @@ class AlbyGoConnectConfig {
     this.discoveryRelay = 'wss://relay.getalby.com',
     this.requestMethods = _defaultAlbyGoRequestMethods,
     this.walletName = 'Alby Go',
-    this.connectMethod = AlbyGoConnectMethod.nostrNwcCallback,
+    this.connectMethod = AlbyGoConnectMethod.walletAuth,
     this.nostrNwcHost = 'connect',
   });
 }
