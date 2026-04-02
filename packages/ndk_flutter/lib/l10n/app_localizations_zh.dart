@@ -939,6 +939,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chooseWalletType => '选择钱包类型';
 
   @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => '通过 NWC 连接远程钱包';
+
+  @override
+  String get lnurlWalletTypeTitle => 'LNURL / Lightning 地址';
+
+  @override
+  String get lnurlWalletTypeSubtitle => '使用支持 LNURL 或 Lightning 地址的托管钱包';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle => '使用由 Cashu mint 支持的 ecash 钱包';
+
+  @override
   String get cashuOption => 'Cashu';
 
   @override
@@ -946,24 +964,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lnurlOption => 'LNURL';
-
-  @override
-  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
-
-  @override
-  String get nwcWalletTypeSubtitle => '通过 NWC 连接到现有钱包';
-
-  @override
-  String get lnurlWalletTypeTitle => 'Lightning 地址 (LNURL)';
-
-  @override
-  String get lnurlWalletTypeSubtitle => '接收发送到 user@domain.com 的付款';
-
-  @override
-  String get cashuWalletTypeTitle => 'Cashu';
-
-  @override
-  String get cashuWalletTypeSubtitle => '使用 Cashu mint 的 ecash 钱包';
 
   @override
   String get connectNwcTitle => '连接 NWC';
@@ -1027,7 +1027,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    return '预算：$used / $total';
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '预算：$usedString / $totalString';
   }
 
   @override

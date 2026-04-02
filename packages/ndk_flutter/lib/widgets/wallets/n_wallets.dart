@@ -61,7 +61,7 @@ class NWallets extends StatefulWidget {
   /// Parameters for launching Alby Go NWC connection.
   final AlbyGoConnectConfig albyGoConnectConfig;
 
-  /// Optional coordinator for handling the Alby Go walletauth flow.
+  /// Optional coordinator for handling the Alby Go NWC connection flow.
   final NwcWalletAuthCoordinator? nwcWalletAuthCoordinator;
 
   /// Custom icon configuration for Cashu wallets
@@ -114,12 +114,24 @@ class NWalletsState extends State<NWallets> {
         widget.nwcWalletAuthCoordinator ?? NwcWalletAuthCoordinator();
   }
 
-  Future<bool> onProtocolUrlReceived(String url) {
-    return _nwcWalletAuthCoordinator.processProtocolUrl(
+  Future<bool> onProtocolUrlReceived(String url) async {
+    final handled = await _nwcWalletAuthCoordinator.processProtocolUrl(
       context,
       widget.ndkFlutter,
       url,
     );
+
+    if (!handled || !mounted) return handled;
+
+    final connectedWalletId = _nwcWalletAuthCoordinator
+        .takeLastConnectedWalletId();
+    if (connectedWalletId != null) {
+      setState(() {
+        _selectedWalletId = connectedWalletId;
+      });
+      widget.onWalletSelected?.call(connectedWalletId);
+    }
+    return handled;
   }
 
   @override

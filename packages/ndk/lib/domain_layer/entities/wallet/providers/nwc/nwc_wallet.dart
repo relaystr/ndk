@@ -64,7 +64,7 @@ class NwcWallet extends Wallet {
   }
 
   NwcWallet withCachedPermissions(Set<String> permissions) {
-    return NwcWallet(
+    final wallet = NwcWallet(
       id: id,
       name: name,
       supportedUnits: supportedUnits,
@@ -72,6 +72,11 @@ class NwcWallet extends Wallet {
       cachedPermissions: permissions,
       metadata: metadata,
     );
+    wallet.connection = connection;
+    wallet.balanceSubject = balanceSubject;
+    wallet.transactionsSubject = transactionsSubject;
+    wallet.pendingTransactionsSubject = pendingTransactionsSubject;
+    return wallet;
   }
 
   static Set<String> _parsePermissions(dynamic value) {
