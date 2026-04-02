@@ -47,7 +47,7 @@ class AlbyGoConnectConfig {
     required this.appName,
     required this.appIconUrl,
     required this.callback,
-    this.discoveryRelay = 'wss://relay.getalby.com/v1',
+    this.discoveryRelay = 'wss://relay.getalby.com',
     this.requestMethods = _defaultAlbyGoRequestMethods,
     this.walletName = 'Alby Go',
   });
