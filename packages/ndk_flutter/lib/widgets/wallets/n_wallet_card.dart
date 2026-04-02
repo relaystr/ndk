@@ -106,7 +106,7 @@ class _NWalletCardState extends State<NWalletCard> {
   }
 
   Future<void> _fetchBudgetWhenReady() async {
-    if (!(widget.wallet is NwcWallet)) return;
+    if (widget.wallet is! NwcWallet) return;
     if (_isFetchingBudget) return;
     _isFetchingBudget = true;
 
@@ -203,10 +203,7 @@ class _NWalletCardState extends State<NWalletCard> {
         final oldPermissions = oldConnection?.permissions.toSet() ?? <String>{};
         final newPermissions = newConnection?.permissions.toSet() ?? <String>{};
 
-        final connectionChanged =
-            oldConnection?.uri.walletPubkey !=
-                newConnection?.uri.walletPubkey ||
-            oldConnection?.uri.relay != newConnection?.uri.relay;
+        final connectionChanged = oldConnection?.uri != newConnection?.uri;
 
         final permissionsChanged = oldPermissions.length != newPermissions.length ||
             oldPermissions.difference(newPermissions).isNotEmpty ||
