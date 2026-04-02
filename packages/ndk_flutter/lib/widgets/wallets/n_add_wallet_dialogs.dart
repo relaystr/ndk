@@ -73,8 +73,15 @@ const AlbyGoConnectConfig kDefaultAlbyGoConnectConfig = AlbyGoConnectConfig(
 class NwcWalletAuthCoordinator {
   _PendingNwcWalletAuthSession? _pendingSession;
   _PendingNwcCallbackSession? _pendingCallbackSession;
+  String? _lastConnectedWalletId;
 
   bool get hasPendingSession => _pendingSession != null;
+
+  String? takeLastConnectedWalletId() {
+    final walletId = _lastConnectedWalletId;
+    _lastConnectedWalletId = null;
+    return walletId;
+  }
 
   Future<void> connectAlbyGo(
     BuildContext context,
@@ -301,6 +308,7 @@ class NwcWalletAuthCoordinator {
       nwcUrl: nwcUri,
     );
     await ndkFlutter.ndk.wallets.addWallet(nwcWallet);
+    _lastConnectedWalletId = walletId;
   }
 }
 

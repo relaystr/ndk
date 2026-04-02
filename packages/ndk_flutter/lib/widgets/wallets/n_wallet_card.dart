@@ -80,12 +80,23 @@ class NWalletCard extends StatefulWidget {
 class _NWalletCardState extends State<NWalletCard> {
   List<Color>? _customGradientColors;
   GetBudgetResponse? _budgetResponse;
+  bool _isFetchingBudget = false;
 
   @override
   void initState() {
     super.initState();
     _loadCustomColor();
+    _initializeNwcBalanceIfNeeded();
     _fetchBudgetIfNeeded();
+  }
+
+  void _initializeNwcBalanceIfNeeded() {
+    if (widget.wallet is! NwcWallet) return;
+    try {
+      widget.ndkFlutter.ndk.wallets.getBalance(widget.wallet.id, 'sat');
+    } catch (_) {
+      // Keep initialization best-effort.
+    }
   }
 
   void _fetchBudgetIfNeeded() {
@@ -96,36 +107,53 @@ class _NWalletCardState extends State<NWalletCard> {
 
   Future<void> _fetchBudgetWhenReady() async {
     if (!(widget.wallet is NwcWallet)) return;
+    if (_isFetchingBudget) return;
+    _isFetchingBudget = true;
 
     final nwcWallet = widget.wallet as NwcWallet;
 
-    // Use the balance stream to detect when wallet is fully initialized
-    // The wallets system initializes the wallet when getting balances
-    await for (final _
-        in widget.ndkFlutter.ndk.wallets
-            .getBalancesStream(nwcWallet.id)
-            .take(1)
-            .timeout(const Duration(seconds: 10))) {
-      // Got balance data - wallet is connected
-      break;
-    }
+    try {
+      // Ensure NWC wallet balance stream is initialized.
+      _initializeNwcBalanceIfNeeded();
 
-    final connection = nwcWallet.connection;
-    if (connection == null || connection.permissions.isEmpty) {
-      return;
-    }
+      // Use the balance stream to detect when wallet is fully initialized.
+      await for (final _
+          in widget.ndkFlutter.ndk.wallets
+              .getBalancesStream(nwcWallet.id)
+              .take(1)
+              .timeout(const Duration(seconds: 10))) {
+        break;
+      }
 
-    // Check if get_budget permission is available
-    if (!connection.permissions.contains(NwcMethod.GET_BUDGET.name)) {
-      return;
-    }
+      final connection = nwcWallet.connection;
+      if (connection == null || connection.permissions.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _budgetResponse = null;
+          });
+        }
+        return;
+      }
 
-    final budget = await widget.ndkFlutter.ndk.nwc.getBudget(connection);
+      // Check if get_budget permission is available
+      if (!connection.permissions.contains(NwcMethod.GET_BUDGET.name)) {
+        if (mounted) {
+          setState(() {
+            _budgetResponse = null;
+          });
+        }
+        return;
+      }
 
-    if (mounted) {
-      setState(() {
-        _budgetResponse = budget;
-      });
+      final budget = await widget.ndkFlutter.ndk.nwc.getBudget(connection);
+
+      if (mounted) {
+        setState(() {
+          _budgetResponse = budget;
+        });
+      }
+    } finally {
+      _isFetchingBudget = false;
     }
   }
 
@@ -154,9 +182,49 @@ class _NWalletCardState extends State<NWalletCard> {
         _loadCustomColor();
       });
     }
-    // Refresh budget when switching to a different NWC wallet
-    if (oldWidget.wallet.id != widget.wallet.id && widget.wallet is NwcWallet) {
-      _fetchBudgetWhenReady();
+    final isCurrentNwc = widget.wallet is NwcWallet;
+    final isOldNwc = oldWidget.wallet is NwcWallet;
+    final walletIdChanged = oldWidget.wallet.id != widget.wallet.id;
+
+    if (isCurrentNwc) {
+      _initializeNwcBalanceIfNeeded();
+    }
+
+    // Refresh budget when switching wallet OR when NWC connection/permissions changed.
+    if (isCurrentNwc) {
+      bool shouldRefreshBudget = walletIdChanged || !isOldNwc;
+
+      if (!shouldRefreshBudget && isOldNwc) {
+        final oldNwc = oldWidget.wallet as NwcWallet;
+        final newNwc = widget.wallet as NwcWallet;
+        final oldConnection = oldNwc.connection;
+        final newConnection = newNwc.connection;
+
+        final oldPermissions = oldConnection?.permissions.toSet() ?? <String>{};
+        final newPermissions = newConnection?.permissions.toSet() ?? <String>{};
+
+        final connectionChanged =
+            oldConnection?.uri.walletPubkey !=
+                newConnection?.uri.walletPubkey ||
+            oldConnection?.uri.relay != newConnection?.uri.relay;
+
+        final permissionsChanged = oldPermissions.length != newPermissions.length ||
+            oldPermissions.difference(newPermissions).isNotEmpty ||
+            newPermissions.difference(oldPermissions).isNotEmpty;
+
+        shouldRefreshBudget = connectionChanged || permissionsChanged;
+      }
+
+      if (shouldRefreshBudget) {
+        _fetchBudgetWhenReady();
+      }
+    } else if (isOldNwc && !isCurrentNwc) {
+      // Switched away from NWC wallet; clear stale budget state.
+      if (_budgetResponse != null) {
+        setState(() {
+          _budgetResponse = null;
+        });
+      }
     }
   }
 
