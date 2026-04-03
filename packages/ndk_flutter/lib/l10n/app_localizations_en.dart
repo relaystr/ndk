@@ -617,4 +617,441 @@ class AppLocalizationsEn extends AppLocalizations {
   String unknownEventKind(int kind) {
     return 'Event Kind $kind';
   }
+
+  @override
+  String get walletsTitle => 'Wallets';
+
+  @override
+  String get recentActivityTitle => 'Recent Activity';
+
+  @override
+  String get addCashuWallet => 'Add Cashu Wallet';
+
+  @override
+  String get addNwcWallet => 'Add NWC Wallet';
+
+  @override
+  String get addLnurlWallet => 'Add LNURL Wallet';
+
+  @override
+  String get addCashuTooltip => 'Add Cashu Wallet';
+
+  @override
+  String get addNwcTooltip => 'Add NWC Wallet';
+
+  @override
+  String get addLnurlTooltip => 'Add LNURL Wallet';
+
+  @override
+  String get addCashuWalletTitle => 'Add Cashu Wallet';
+
+  @override
+  String get enterMintUrl => 'Enter the mint URL to add a Cashu wallet.';
+
+  @override
+  String get mintUrl => 'Mint URL';
+
+  @override
+  String get mintUrlHint => 'https://mint.example.com';
+
+  @override
+  String get pleaseEnterMintUrl => 'Please enter a mint URL';
+
+  @override
+  String get cashuWalletAdded => 'Cashu wallet added successfully!';
+
+  @override
+  String get failedToAddMint => 'Failed to add mint. Please check the URL and try again.';
+
+  @override
+  String get addNwcWalletTitle => 'Add NWC Wallet';
+
+  @override
+  String get faucet => 'Faucet';
+
+  @override
+  String get manual => 'Manual';
+
+  @override
+  String get nwcFaucetDescription => 'Create a test wallet with sats from the NWC faucet.';
+
+  @override
+  String get startingBalance => 'Starting Balance';
+
+  @override
+  String get startingBalanceHint => '10000';
+
+  @override
+  String get nwcConnectionUri => 'NWC Connection URI';
+
+  @override
+  String get nwcConnectionUriHint => 'nostr+walletconnect://...';
+
+  @override
+  String get nwcWalletAdded => 'NWC wallet added successfully!';
+
+  @override
+  String nwcFaucetWalletAdded(int balance) {
+    return 'NWC faucet wallet added with $balance sats!';
+  }
+
+  @override
+  String get invalidFaucetResponse => 'Invalid response from faucet';
+
+  @override
+  String get errorCreatingWallet => 'Error creating wallet';
+
+  @override
+  String get addLnurlWalletTitle => 'Add LNURL Wallet';
+
+  @override
+  String get enterLnurlIdentifier => 'Enter your LNURL identifier (user@domain.com).';
+
+  @override
+  String get lnurlIdentifierHint => 'user@example.com';
+
+  @override
+  String get pleaseEnterValidIdentifier => 'Please enter a valid identifier (user@domain.com)';
+
+  @override
+  String get lnurlWalletAdded => 'LNURL wallet added successfully!';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get send => 'Send';
+
+  @override
+  String get receive => 'Receive';
+
+  @override
+  String get setAsDefaultForReceiving => 'Set as default for receiving';
+
+  @override
+  String get setAsDefaultForSending => 'Set as default for sending';
+
+  @override
+  String get defaultForReceiving => 'Default for receiving';
+
+  @override
+  String get defaultForSending => 'Default for sending';
+
+  @override
+  String get defaultWalletForReceivingTooltip => 'This wallet is the default one for receiving payments.';
+
+  @override
+  String get defaultWalletForSendingTooltip => 'This wallet is the default one for sending payments.';
+
+  @override
+  String get sendOptionsTitle => 'Send Options';
+
+  @override
+  String get sendByToken => 'Send by Token';
+
+  @override
+  String get sendByTokenDescription => 'Create a Cashu token to send';
+
+  @override
+  String get sendByLightning => 'Send by Lightning';
+
+  @override
+  String get sendByLightningDescription => 'Pay a Lightning invoice';
+
+  @override
+  String get payInvoiceTitle => 'Pay Invoice';
+
+  @override
+  String get invoice => 'Invoice';
+
+  @override
+  String get invoiceHint => 'lnbc...';
+
+  @override
+  String get pleaseEnterInvoice => 'Please enter an invoice';
+
+  @override
+  String get invoicePaid => 'Invoice paid!';
+
+  @override
+  String paymentFailed(String message) {
+    return 'Payment failed: $message';
+  }
+
+  @override
+  String get receiveOptionsTitle => 'Receive Options';
+
+  @override
+  String get receiveByToken => 'Receive by Token';
+
+  @override
+  String get receiveByTokenDescription => 'Receive a Cashu token';
+
+  @override
+  String get receiveByLightning => 'Receive by Lightning';
+
+  @override
+  String get receiveByLightningDescription => 'Create a Lightning invoice';
+
+  @override
+  String get receiveByTokenTitle => 'Receive by Token';
+
+  @override
+  String get token => 'Token';
+
+  @override
+  String get tokenHint => 'Paste token here...';
+
+  @override
+  String get pleaseEnterToken => 'Please enter a token';
+
+  @override
+  String get tokenReceived => 'Token received!';
+
+  @override
+  String get createInvoiceTitle => 'Create Invoice';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get amountHint => '100';
+
+  @override
+  String get pleaseEnterValidAmount => 'Please enter a valid amount';
+
+  @override
+  String get tokenCopiedToClipboard => 'Token copied to clipboard!';
+
+  @override
+  String get invoiceCreatedAndCopied => 'Invoice created and copied!';
+
+  @override
+  String get invoiceTrackingTitle => 'Lightning Invoice';
+
+  @override
+  String get invoiceCreatedMessage => 'Invoice created and copied!';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get copyAgain => 'Copy Again';
+
+  @override
+  String get copied => 'Copied!';
+
+  @override
+  String get paymentReceived => 'Payment received!';
+
+  @override
+  String get waitingForPayment => 'Waiting for payment...';
+
+  @override
+  String get paid => 'Paid!';
+
+  @override
+  String get createToken => 'Create Token';
+
+  @override
+  String get pay => 'Pay';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get pendingTransactions => 'Pending';
+
+  @override
+  String get recentTransactions => 'Recent Transactions';
+
+  @override
+  String get noRecentTransactions => 'No recent transactions';
+
+  @override
+  String get noWalletsYet => 'No wallets yet';
+
+  @override
+  String get noWalletsAvailable => 'No wallets available';
+
+  @override
+  String get tapToAddWallet => 'Tap + to add one';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String error(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String get unknownWalletType => 'Unknown';
+
+  @override
+  String get cashuWallet => 'Cashu';
+
+  @override
+  String get nwcWallet => 'NWC';
+
+  @override
+  String get lnurlWallet => 'LNURL';
+
+  @override
+  String get nwcWalletSubtitle => 'NWC Wallet';
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get sats => 'sats';
+
+  @override
+  String get selected => 'SELECTED';
+
+  @override
+  String get receiveOnlyWallet => 'Receive-only wallet';
+
+  @override
+  String receiveRange(int min, int max) {
+    return 'Receive: $min - $max sats';
+  }
+
+  @override
+  String get limitsUnavailable => 'Limits unavailable';
+
+  @override
+  String get tokenCopied => 'Token copied';
+
+  @override
+  String get deleteWalletConfirmation => 'Delete Wallet?';
+
+  @override
+  String get deleteWalletConfirmationMessage => 'Are you sure you want to delete this wallet? This action cannot be undone.';
+
+  @override
+  String get addWalletTitle => 'Add Wallet';
+
+  @override
+  String get chooseWalletType => 'Choose wallet type';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => 'Connect to a remote wallet with NWC';
+
+  @override
+  String get lnurlWalletTypeTitle => 'LNURL / Lightning Address';
+
+  @override
+  String get lnurlWalletTypeSubtitle => 'Use a custodial wallet with LNURL or a Lightning address';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle => 'Use an ecash wallet backed by a Cashu mint';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get connectNwcTitle => 'Connect NWC';
+
+  @override
+  String get chooseNwcMethod => 'Choose connection method';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get manualOption => 'Manual';
+
+  @override
+  String get faucetOption => 'Faucet';
+
+  @override
+  String get invalidNwcQrCode => 'Invalid NWC QR code';
+
+  @override
+  String get scanNwcQrCodeTitle => 'Scan NWC QR Code';
+
+  @override
+  String get cameraNotAvailable => 'Camera not available';
+
+  @override
+  String get scanNwcInstructions => 'Scan the QR code from your NWC wallet app';
+
+  @override
+  String get invalidNwcUri => 'Invalid NWC URI';
+
+  @override
+  String get paste => 'Paste';
+
+  @override
+  String get fromYourProfile => 'From your profile';
+
+  @override
+  String get orEnterManually => 'Or enter manually:';
+
+  @override
+  String get renameWallet => 'Rename';
+
+  @override
+  String get pickColor => 'Pick Color';
+
+  @override
+  String get deleteWallet => 'Delete';
+
+  @override
+  String get walletName => 'Wallet Name';
+
+  @override
+  String get walletNameHint => 'Enter wallet name';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get walletRenamed => 'Wallet renamed';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Budget: $usedString / $totalString';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return 'Renews in $days days';
+  }
+
+  @override
+  String get budgetDaily => 'Daily';
+
+  @override
+  String get budgetWeekly => 'Weekly';
+
+  @override
+  String get budgetMonthly => 'Monthly';
+
+  @override
+  String get budgetYearly => 'Yearly';
+
+  @override
+  String get budgetNever => 'Never';
 }

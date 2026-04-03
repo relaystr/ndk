@@ -2,15 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ndk/domain_layer/usecases/nwc/requests/get_budget.dart';
-import 'package:ndk/domain_layer/usecases/nwc/responses/get_budget_response.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
 import 'consts/nwc_kind.dart';
-import 'consts/nwc_method.dart';
 import 'consts/transaction_type.dart';
-import 'nostr_wallet_connect_uri.dart';
 import 'nwc_notification.dart';
 import 'requests/get_balance.dart';
 import 'requests/get_info.dart';
@@ -81,7 +78,7 @@ class Nwc {
             name: "nwc-info",
             explicitRelays: relays,
             filters: [filter],
-            timeout: timeout ?? Duration(seconds: 5),
+            timeout: timeout ?? Duration(seconds: 20 + relays.length * 5),
             timeoutCallback: () {
               onError?.call("timeout");
             },
@@ -89,45 +86,43 @@ class Nwc {
             cacheWrite: false)
         .future;
     if (infoEvent.isNotEmpty) {
-      Nip01Event event = infoEvent.first;
-      if (event.kind == NwcKind.INFO.value && event.content != "") {
-        final connection = NwcConnection(parsedUri);
-        connection.useETagForEachRequest = useETagForEachRequest;
-        connection.ignoreCapabilitiesCheck = ignoreCapabilitiesCheck;
+      final event = infoEvent.first;
+      final connection = NwcConnection(parsedUri);
+      connection.useETagForEachRequest = useETagForEachRequest;
+      connection.ignoreCapabilitiesCheck = ignoreCapabilitiesCheck;
 
-        connection.permissions = event.content.split(" ").toSet();
+      connection.permissions = event.content.split(" ").toSet();
 
-        if (connection.permissions.length == 1) {
-          connection.permissions =
-              connection.permissions.first.split(",").toSet();
-        }
-
-        List<String> versionTags = event.getTags('v');
-        if (versionTags.isNotEmpty) {
-          connection.supportedVersions = versionTags.first.split(" ");
-        }
-        List<String> encryptions = event.getTags('encryption');
-        if (encryptions.isNotEmpty) {
-          connection.supportedEncryptions = encryptions.first.split(" ");
-        }
-
-        await _subscribeToNotificationsAndResponses(connection);
-
-        if (doGetInfoMethod &&
-            (ignoreCapabilitiesCheck ||
-                connection.permissions.contains(NwcMethod.GET_INFO.name))) {
-          try {
-            await getInfo(connection, timeout: timeout).then((info) {
-              connection.info = info;
-            });
-          } catch (e) {
-            onError?.call("timeout get_info");
-          }
-        }
-        Logger.log.i(() => "NWC ${connection.uri} connected");
-        _connections.add(connection);
-        completer.complete(connection);
+      if (connection.permissions.length == 1) {
+        connection.permissions =
+            connection.permissions.first.split(",").toSet();
       }
+
+      List<String> versionTags = event.getTags('v');
+      if (versionTags.isNotEmpty) {
+        connection.supportedVersions = versionTags.first.split(" ");
+      }
+      List<String> encryptions = event.getTags('encryption');
+      if (encryptions.isNotEmpty) {
+        connection.supportedEncryptions = encryptions.first.split(" ");
+      }
+
+      await _subscribeToNotificationsAndResponses(connection);
+
+      if (doGetInfoMethod &&
+          (ignoreCapabilitiesCheck ||
+              connection.permissions.contains(NwcMethod.GET_INFO.name))) {
+        try {
+          await getInfo(connection, timeout: timeout).then((info) {
+            connection.info = info;
+          });
+        } catch (e) {
+          onError?.call("timeout get_info");
+        }
+      }
+      Logger.log.i(() => "NWC ${connection.uri} connected");
+      _connections.add(connection);
+      completer.complete(connection);
     } else {
       onError?.call("not found");
       completer.complete(NwcConnection(parsedUri));

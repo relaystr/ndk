@@ -3,14 +3,12 @@ name: ndk
 repository: https://github.com/relaystr/ndk
 
 packages:
-  - packages/amber
+  - packages/bip32_keys
   - packages/ndk
   - packages/objectbox
-  - packages/rust_verifier
-  - packages/rust_verifier/rust_builder
   - packages/nip07_event_signer
   - packages/sembast_cache_manager
-  - packages/drift_cache_manager
+  - packages/drift
   - packages/ndk_cache_manager_test_suite
   - packages/ndk_flutter
 
@@ -63,8 +61,9 @@ scripts:
       flutter: true
       dir-exists: test
 
-#command:
-#  version:
-#    hooks:
-#      preCommit: |
-#        melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"
+command:
+  version:
+    hooks:
+      preCommit: |
+        melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"
+        git add packages/ndk/lib/src/version.dart

@@ -9,13 +9,13 @@ list(APPEND FLUTTER_PLUGIN_LIST
   protocol_handler_windows
   screen_brightness_windows
   screen_retriever_windows
+  sqlite3_flutter_libs
   url_launcher_windows
   window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
   media_kit_native_event_loop
-  rust_lib_ndk
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.9.25'
+    ext.kotlin_version = '2.1.0'
     repositories {
         google()
         mavenCentral()
@@ -21,7 +21,7 @@ subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             project.android {
-                compileSdkVersion 34
+                compileSdkVersion 35
             }
         }
     }

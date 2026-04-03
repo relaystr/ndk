@@ -1,3 +1,39 @@
+## 0.8.2-dev.1
+
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+
+## 0.8.1-dev.0+1
+
+ - **FIX**: nwc cached permissions. ([dd6a8892](https://github.com/relaystr/ndk/commit/dd6a8892963c04a62ee0c1eda5ea4db7e6bc42d3))
+
+## 0.8.1
+
+ - **FEAT**:  Wallets usecase
+ - **FEAT**:  Cashu support
+ - **FEAT**:  LNURL wallet receive only
+ - **FEAT**:  ndk CLI tool with install.sh script
+ - **FEAT**:  Drift cache manager
+ - **FEAT**:  Signer pending requests
+ - **FEAT**:  Paginated requests
+ - **FEAT**:  Rust event verifier using native assets in ndk core package
+ - **FEAT**:  Web event verifier using web crypto
+ - **FEAT**:  Implement RFC 3986 compliant relay URL normalization
+ - **FEAT**:  Move amber into ndk_flutter
+ - **FEAT**:  Move sembast to core
+ - **FIX**:  Fix: broadcast timeout
+ - **FIX**:  Remove deprecated isar package
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
+## 0.7.2-dev.2
+
+ - **FIX**: min sdk 3.6 for hooks.
+
+## 0.7.2-dev.1
+
+ - **FIX**: cleanup.
+ - **FEAT**: cli.
+
 ## 0.7.2-dev.0
 
  - **FEAT**: paginated requests.

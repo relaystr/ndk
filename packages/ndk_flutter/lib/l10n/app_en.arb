@@ -114,7 +114,6 @@
   "@extension": {
     "description": "Label for browser extension account type"
   },
-
   "userMetadata": "User Metadata",
   "@userMetadata": {
     "description": "Nostr event kind 0"
@@ -820,5 +819,611 @@
         "description": "The numeric kind identifier"
       }
     }
+  },
+  "walletsTitle": "Wallets",
+  "@walletsTitle": {
+    "description": "Title for wallets section"
+  },
+  "recentActivityTitle": "Recent Activity",
+  "@recentActivityTitle": {
+    "description": "Title for recent activity section"
+  },
+  "addCashuWallet": "Add Cashu Wallet",
+  "@addCashuWallet": {
+    "description": "Label for add Cashu wallet button"
+  },
+  "addNwcWallet": "Add NWC Wallet",
+  "@addNwcWallet": {
+    "description": "Label for add NWC wallet button"
+  },
+  "addLnurlWallet": "Add LNURL Wallet",
+  "@addLnurlWallet": {
+    "description": "Label for add LNURL wallet button"
+  },
+  "addCashuTooltip": "Add Cashu Wallet",
+  "@addCashuTooltip": {
+    "description": "Tooltip for add Cashu wallet button"
+  },
+  "addNwcTooltip": "Add NWC Wallet",
+  "@addNwcTooltip": {
+    "description": "Tooltip for add NWC wallet button"
+  },
+  "addLnurlTooltip": "Add LNURL Wallet",
+  "@addLnurlTooltip": {
+    "description": "Tooltip for add LNURL wallet button"
+  },
+  "addCashuWalletTitle": "Add Cashu Wallet",
+  "@addCashuWalletTitle": {
+    "description": "Title for add Cashu wallet dialog"
+  },
+  "enterMintUrl": "Enter the mint URL to add a Cashu wallet.",
+  "@enterMintUrl": {
+    "description": "Prompt for mint URL input"
+  },
+  "mintUrl": "Mint URL",
+  "@mintUrl": {
+    "description": "Label for mint URL input"
+  },
+  "mintUrlHint": "https://mint.example.com",
+  "@mintUrlHint": {
+    "description": "Hint for mint URL input"
+  },
+  "pleaseEnterMintUrl": "Please enter a mint URL",
+  "@pleaseEnterMintUrl": {
+    "description": "Error message for empty mint URL"
+  },
+  "cashuWalletAdded": "Cashu wallet added successfully!",
+  "@cashuWalletAdded": {
+    "description": "Success message when Cashu wallet is added"
+  },
+  "failedToAddMint": "Failed to add mint. Please check the URL and try again.",
+  "@failedToAddMint": {
+    "description": "Error message when adding Cashu wallet fails"
+  },
+  "addNwcWalletTitle": "Add NWC Wallet",
+  "@addNwcWalletTitle": {
+    "description": "Title for add NWC wallet dialog"
+  },
+  "faucet": "Faucet",
+  "@faucet": {
+    "description": "Tab label for faucet option"
+  },
+  "manual": "Manual",
+  "@manual": {
+    "description": "Tab label for manual option"
+  },
+  "nwcFaucetDescription": "Create a test wallet with sats from the NWC faucet.",
+  "@nwcFaucetDescription": {
+    "description": "Description for NWC faucet"
+  },
+  "startingBalance": "Starting Balance",
+  "@startingBalance": {
+    "description": "Label for starting balance input"
+  },
+  "startingBalanceHint": "10000",
+  "@startingBalanceHint": {
+    "description": "Hint for starting balance input"
+  },
+  "nwcConnectionUri": "NWC Connection URI",
+  "@nwcConnectionUri": {
+    "description": "Label for NWC connection URI input"
+  },
+  "nwcConnectionUriHint": "nostr+walletconnect://...",
+  "@nwcConnectionUriHint": {
+    "description": "Hint for NWC connection URI input"
+  },
+  "nwcWalletAdded": "NWC wallet added successfully!",
+  "@nwcWalletAdded": {
+    "description": "Success message when NWC wallet is added"
+  },
+  "nwcFaucetWalletAdded": "NWC faucet wallet added with {balance} sats!",
+  "@nwcFaucetWalletAdded": {
+    "description": "Success message when NWC faucet wallet is added",
+    "placeholders": {
+      "balance": {
+        "type": "int",
+        "description": "The balance amount in sats"
+      }
+    }
+  },
+  "invalidFaucetResponse": "Invalid response from faucet",
+  "@invalidFaucetResponse": {
+    "description": "Error message for invalid faucet response"
+  },
+  "errorCreatingWallet": "Error creating wallet",
+  "@errorCreatingWallet": {
+    "description": "Error message when creating NWC wallet fails"
+  },
+  "addLnurlWalletTitle": "Add LNURL Wallet",
+  "@addLnurlWalletTitle": {
+    "description": "Title for add LNURL wallet dialog"
+  },
+  "enterLnurlIdentifier": "Enter your LNURL identifier (user@domain.com).",
+  "@enterLnurlIdentifier": {
+    "description": "Prompt for LNURL identifier input"
+  },
+  "lnurlIdentifierHint": "user@example.com",
+  "@lnurlIdentifierHint": {
+    "description": "Hint for LNURL identifier input"
+  },
+  "pleaseEnterValidIdentifier": "Please enter a valid identifier (user@domain.com)",
+  "@pleaseEnterValidIdentifier": {
+    "description": "Error message for invalid LNURL identifier"
+  },
+  "lnurlWalletAdded": "LNURL wallet added successfully!",
+  "@lnurlWalletAdded": {
+    "description": "Success message when LNURL wallet is added"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button label for cancel action"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Button label for add action"
+  },
+  "send": "Send",
+  "@send": {
+    "description": "Label for send action"
+  },
+  "receive": "Receive",
+  "@receive": {
+    "description": "Label for receive action"
+  },
+  "setAsDefaultForReceiving": "Set as default for receiving",
+  "@setAsDefaultForReceiving": {
+    "description": "Menu option to set wallet as default for receiving"
+  },
+  "setAsDefaultForSending": "Set as default for sending",
+  "@setAsDefaultForSending": {
+    "description": "Menu option to set wallet as default for sending"
+  },
+  "defaultForReceiving": "Default for receiving",
+  "@defaultForReceiving": {
+    "description": "Menu label for wallet already default for receiving"
+  },
+  "defaultForSending": "Default for sending",
+  "@defaultForSending": {
+    "description": "Menu label for wallet already default for sending"
+  },
+  "defaultWalletForReceivingTooltip": "This wallet is the default one for receiving payments.",
+  "@defaultWalletForReceivingTooltip": {
+    "description": "Tooltip shown on receiving default ribbon"
+  },
+  "defaultWalletForSendingTooltip": "This wallet is the default one for sending payments.",
+  "@defaultWalletForSendingTooltip": {
+    "description": "Tooltip shown on sending default ribbon"
+  },
+  "sendOptionsTitle": "Send Options",
+  "@sendOptionsTitle": {
+    "description": "Title for send options sheet"
+  },
+  "sendByToken": "Send by Token",
+  "@sendByToken": {
+    "description": "Option for sending by token"
+  },
+  "sendByTokenDescription": "Create a Cashu token to send",
+  "@sendByTokenDescription": {
+    "description": "Description for send by token option"
+  },
+  "sendByLightning": "Send by Lightning",
+  "@sendByLightning": {
+    "description": "Option for sending by Lightning"
+  },
+  "sendByLightningDescription": "Pay a Lightning invoice",
+  "@sendByLightningDescription": {
+    "description": "Description for send by Lightning option"
+  },
+  "payInvoiceTitle": "Pay Invoice",
+  "@payInvoiceTitle": {
+    "description": "Title for pay invoice dialog"
+  },
+  "invoice": "Invoice",
+  "@invoice": {
+    "description": "Label for invoice input"
+  },
+  "invoiceHint": "lnbc...",
+  "@invoiceHint": {
+    "description": "Hint for invoice input"
+  },
+  "pleaseEnterInvoice": "Please enter an invoice",
+  "@pleaseEnterInvoice": {
+    "description": "Error message for empty invoice"
+  },
+  "invoicePaid": "Invoice paid!",
+  "@invoicePaid": {
+    "description": "Success message when invoice is paid"
+  },
+  "paymentFailed": "Payment failed: {message}",
+  "@paymentFailed": {
+    "description": "Error message when payment fails",
+    "placeholders": {
+      "message": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "receiveOptionsTitle": "Receive Options",
+  "@receiveOptionsTitle": {
+    "description": "Title for receive options sheet"
+  },
+  "receiveByToken": "Receive by Token",
+  "@receiveByToken": {
+    "description": "Option for receiving by token"
+  },
+  "receiveByTokenDescription": "Receive a Cashu token",
+  "@receiveByTokenDescription": {
+    "description": "Description for receive by token option"
+  },
+  "receiveByLightning": "Receive by Lightning",
+  "@receiveByLightning": {
+    "description": "Option for receiving by Lightning"
+  },
+  "receiveByLightningDescription": "Create a Lightning invoice",
+  "@receiveByLightningDescription": {
+    "description": "Description for receive by Lightning option"
+  },
+  "receiveByTokenTitle": "Receive by Token",
+  "@receiveByTokenTitle": {
+    "description": "Title for receive by token dialog"
+  },
+  "token": "Token",
+  "@token": {
+    "description": "Label for token input"
+  },
+  "tokenHint": "Paste token here...",
+  "@tokenHint": {
+    "description": "Hint for token input"
+  },
+  "pleaseEnterToken": "Please enter a token",
+  "@pleaseEnterToken": {
+    "description": "Error message for empty token"
+  },
+  "tokenReceived": "Token received!",
+  "@tokenReceived": {
+    "description": "Success message when token is received"
+  },
+  "createInvoiceTitle": "Create Invoice",
+  "@createInvoiceTitle": {
+    "description": "Title for create invoice dialog"
+  },
+  "amount": "Amount",
+  "@amount": {
+    "description": "Label for amount input"
+  },
+  "amountHint": "100",
+  "@amountHint": {
+    "description": "Hint for amount input"
+  },
+  "pleaseEnterValidAmount": "Please enter a valid amount",
+  "@pleaseEnterValidAmount": {
+    "description": "Error message for invalid amount"
+  },
+  "tokenCopiedToClipboard": "Token copied to clipboard!",
+  "@tokenCopiedToClipboard": {
+    "description": "Success message when token is copied to clipboard"
+  },
+  "invoiceCreatedAndCopied": "Invoice created and copied!",
+  "@invoiceCreatedAndCopied": {
+    "description": "Success message when invoice is created and copied"
+  },
+  "invoiceTrackingTitle": "Lightning Invoice",
+  "@invoiceTrackingTitle": {
+    "description": "Title for invoice tracking dialog"
+  },
+  "invoiceCreatedMessage": "Invoice created and copied!",
+  "@invoiceCreatedMessage": {
+    "description": "Message shown when invoice is created"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Label for close button"
+  },
+  "copyAgain": "Copy Again",
+  "@copyAgain": {
+    "description": "Label for copy again button"
+  },
+  "copied": "Copied!",
+  "@copied": {
+    "description": "Message shown when copied"
+  },
+  "paymentReceived": "Payment received!",
+  "@paymentReceived": {
+    "description": "Message shown when payment is received"
+  },
+  "waitingForPayment": "Waiting for payment...",
+  "@waitingForPayment": {
+    "description": "Status message while waiting for payment"
+  },
+  "paid": "Paid!",
+  "@paid": {
+    "description": "Status message when payment is complete"
+  },
+  "createToken": "Create Token",
+  "@createToken": {
+    "description": "Label for create token button"
+  },
+  "pay": "Pay",
+  "@pay": {
+    "description": "Label for pay button"
+  },
+  "create": "Create",
+  "@create": {
+    "description": "Label for create button"
+  },
+  "pendingTransactions": "Pending",
+  "@pendingTransactions": {
+    "description": "Title for pending transactions section"
+  },
+  "recentTransactions": "Recent Transactions",
+  "@recentTransactions": {
+    "description": "Title for recent transactions section"
+  },
+  "noRecentTransactions": "No recent transactions",
+  "@noRecentTransactions": {
+    "description": "Message shown when there are no recent transactions"
+  },
+  "noWalletsYet": "No wallets yet",
+  "@noWalletsYet": {
+    "description": "Message shown when there are no wallets"
+  },
+  "noWalletsAvailable": "No wallets available",
+  "@noWalletsAvailable": {
+    "description": "Message shown when no wallets are available"
+  },
+  "tapToAddWallet": "Tap + to add one",
+  "@tapToAddWallet": {
+    "description": "Hint to add a wallet"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Label for delete action"
+  },
+  "error": "Error: {message}",
+  "@error": {
+    "description": "Error message for general errors",
+    "placeholders": {
+      "message": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "unknownWalletType": "Unknown",
+  "@unknownWalletType": {
+    "description": "Label for unknown wallet type"
+  },
+  "cashuWallet": "Cashu",
+  "@cashuWallet": {
+    "description": "Label for Cashu wallet type"
+  },
+  "nwcWallet": "NWC",
+  "@nwcWallet": {
+    "description": "Label for NWC wallet type"
+  },
+  "lnurlWallet": "LNURL",
+  "@lnurlWallet": {
+    "description": "Label for LNURL wallet type"
+  },
+  "nwcWalletSubtitle": "NWC Wallet",
+  "@nwcWalletSubtitle": {
+    "description": "Subtitle for NWC wallet"
+  },
+  "balance": "Balance",
+  "@balance": {
+    "description": "Label for balance display"
+  },
+  "sats": "sats",
+  "@sats": {
+    "description": "Label for sats"
+  },
+  "selected": "SELECTED",
+  "@selected": {
+    "description": "Label shown when a wallet is selected"
+  },
+  "receiveOnlyWallet": "Receive-only wallet",
+  "@receiveOnlyWallet": {
+    "description": "Label for receive-only wallet"
+  },
+  "receiveRange": "Receive: {min} - {max} sats",
+  "@receiveRange": {
+    "description": "Label showing receive range for LNURL wallet",
+    "placeholders": {
+      "min": {
+        "type": "int",
+        "description": "Minimum amount"
+      },
+      "max": {
+        "type": "int",
+        "description": "Maximum amount"
+      }
+    }
+  },
+  "limitsUnavailable": "Limits unavailable",
+  "@limitsUnavailable": {
+    "description": "Message shown when limits are unavailable"
+  },
+  "tokenCopied": "Token copied",
+  "@tokenCopied": {
+    "description": "Message shown when token is copied"
+  },
+  "deleteWalletConfirmation": "Delete Wallet?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "Are you sure you want to delete this wallet? This action cannot be undone.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "Add Wallet",
+  "@addWalletTitle": {
+    "description": "Title for add wallet dialog"
+  },
+  "chooseWalletType": "Choose wallet type",
+  "@chooseWalletType": {
+    "description": "Prompt to choose wallet type"
+  },
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "@nwcWalletTypeTitle": {
+    "description": "Title for the NWC wallet type option"
+  },
+  "nwcWalletTypeSubtitle": "Connect to a remote wallet with NWC",
+  "@nwcWalletTypeSubtitle": {
+    "description": "Subtitle for the NWC wallet type option"
+  },
+  "lnurlWalletTypeTitle": "LNURL / Lightning Address",
+  "@lnurlWalletTypeTitle": {
+    "description": "Title for the LNURL wallet type option"
+  },
+  "lnurlWalletTypeSubtitle": "Use a custodial wallet with LNURL or a Lightning address",
+  "@lnurlWalletTypeSubtitle": {
+    "description": "Subtitle for the LNURL wallet type option"
+  },
+  "cashuWalletTypeTitle": "Cashu",
+  "@cashuWalletTypeTitle": {
+    "description": "Title for the Cashu wallet type option"
+  },
+  "cashuWalletTypeSubtitle": "Use an ecash wallet backed by a Cashu mint",
+  "@cashuWalletTypeSubtitle": {
+    "description": "Subtitle for the Cashu wallet type option"
+  },
+  "cashuOption": "Cashu",
+  "@cashuOption": {
+    "description": "Label for Cashu wallet option"
+  },
+  "nwcOption": "NWC",
+  "@nwcOption": {
+    "description": "Label for NWC wallet option"
+  },
+  "lnurlOption": "LNURL",
+  "@lnurlOption": {
+    "description": "Label for LNURL wallet option"
+  },
+  "connectNwcTitle": "Connect NWC",
+  "@connectNwcTitle": {
+    "description": "Title for NWC connection dialog"
+  },
+  "chooseNwcMethod": "Choose connection method",
+  "@chooseNwcMethod": {
+    "description": "Prompt to choose NWC connection method"
+  },
+  "albyGoOption": "Alby Go",
+  "@albyGoOption": {
+    "description": "Label for Alby Go option"
+  },
+  "manualOption": "Manual",
+  "@manualOption": {
+    "description": "Label for manual connection option"
+  },
+  "faucetOption": "Faucet",
+  "@faucetOption": {
+    "description": "Label for faucet option"
+  },
+  "invalidNwcQrCode": "Invalid NWC QR code",
+  "@invalidNwcQrCode": {
+    "description": "Error message for invalid NWC QR code"
+  },
+  "scanNwcQrCodeTitle": "Scan NWC QR Code",
+  "@scanNwcQrCodeTitle": {
+    "description": "Title for scanning NWC QR code"
+  },
+  "cameraNotAvailable": "Camera not available",
+  "@cameraNotAvailable": {
+    "description": "Message shown when camera is not available"
+  },
+  "scanNwcInstructions": "Scan the QR code from your NWC wallet app",
+  "@scanNwcInstructions": {
+    "description": "Instructions for scanning NWC QR code"
+  },
+  "invalidNwcUri": "Invalid NWC URI",
+  "@invalidNwcUri": {
+    "description": "Error message for invalid NWC URI"
+  },
+  "paste": "Paste",
+  "@paste": {
+    "description": "Label for paste action"
+  },
+  "fromYourProfile": "From your profile",
+  "@fromYourProfile": {
+    "description": "Label indicating a value comes from user's profile"
+  },
+  "orEnterManually": "Or enter manually:",
+  "@orEnterManually": {
+    "description": "Label for manual entry option"
+  },
+  "renameWallet": "Rename",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Pick Color",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Delete",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Wallet Name",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Enter wallet name",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Wallet renamed",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  },
+  "budgetUsedOf": "Budget: {used} / {total}",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Renews in {days} days",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Daily",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Weekly",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Monthly",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Yearly",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Never",
+  "@budgetNever": {
+    "description": "Never renews budget"
   }
 }

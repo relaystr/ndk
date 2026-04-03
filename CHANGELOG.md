@@ -3,6 +3,1175 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-04-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.2-dev.1`](#ndk---v082-dev1)
+ - [`ndk_flutter` - `v0.8.2-dev.1`](#ndk_flutter---v082-dev1)
+ - [`ndk_objectbox` - `v0.2.11-dev.1`](#ndk_objectbox---v0211-dev1)
+ - [`nip07_event_signer` - `v1.0.10-dev.1`](#nip07_event_signer---v1010-dev1)
+ - [`ndk_drift` - `v0.1.1-dev.1`](#ndk_drift---v011-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.11-dev.1`
+ - `nip07_event_signer` - `v1.0.10-dev.1`
+ - `ndk_drift` - `v0.1.1-dev.1`
+
+---
+
+#### `ndk` - `v0.8.2-dev.1`
+
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+
+#### `ndk_flutter` - `v0.8.2-dev.1`
+
+ - **FIX**: formaty intl balance and budget. ([eb394361](https://github.com/relaystr/ndk/commit/eb394361a398e944ea2ff14ec5f0c7ae6128bc1a))
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([7b2c37e5](https://github.com/relaystr/ndk/commit/7b2c37e5575e851cf8e53824d62e2081d8e73845))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+ - **FIX**: keep default walletAuth. ([db518547](https://github.com/relaystr/ndk/commit/db518547f7dbbae9359389f1aa4d7f798dc86416))
+ - **FEAT**: alby go alternative connect method nostrnwc. ([0e21d30b](https://github.com/relaystr/ndk/commit/0e21d30b7bcb1617fb831816e4124fcb491b8a6e))
+
+
+## 2026-04-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.1-dev.0+1`](#ndk---v081-dev01)
+ - [`ndk_objectbox` - `v0.2.11-dev.0+1`](#ndk_objectbox---v0211-dev01)
+ - [`nip07_event_signer` - `v1.0.10-dev.0`](#nip07_event_signer---v1010-dev0)
+ - [`ndk_drift` - `v0.1.1-dev.0+1`](#ndk_drift---v011-dev01)
+ - [`ndk_flutter` - `v0.8.1-dev.0+1`](#ndk_flutter---v081-dev01)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.11-dev.0+1`
+ - `nip07_event_signer` - `v1.0.10-dev.0`
+ - `ndk_drift` - `v0.1.1-dev.0+1`
+ - `ndk_flutter` - `v0.8.1-dev.0+1`
+
+---
+
+#### `ndk` - `v0.8.1-dev.0+1`
+
+ - **FIX**: nwc cached permissions. ([dd6a8892](https://github.com/relaystr/ndk/commit/dd6a8892963c04a62ee0c1eda5ea4db7e6bc42d3))
+
+
+## 2026-03-31
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.0+3`](#ndk---v0803)
+ - [`ndk_drift` - `v0.1.0+3`](#ndk_drift---v0103)
+ - [`ndk_flutter` - `v0.8.0+4`](#ndk_flutter---v0804)
+ - [`ndk_objectbox` - `v0.2.11`](#ndk_objectbox---v0211)
+ - [`nip07_event_signer` - `v1.0.10`](#nip07_event_signer---v1010)
+
+---
+
+#### `ndk` - `v0.8.0+3`
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
+#### `ndk_drift` - `v0.1.0+3`
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
+#### `ndk_flutter` - `v0.8.0+4`
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
+#### `ndk_objectbox` - `v0.2.11`
+
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+ - **FIX**: remove duplicated. ([8fa8db2e](https://github.com/relaystr/ndk/commit/8fa8db2e8e378004c2e24ffc8bcd02948c4336bc))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
+#### `nip07_event_signer` - `v1.0.10`
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
+
+## 2026-03-31
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.0+2`](#ndk---v0802)
+ - [`ndk_drift` - `v0.1.0+2`](#ndk_drift---v0102)
+ - [`ndk_flutter` - `v0.8.0+3`](#ndk_flutter---v0803)
+ - [`ndk_objectbox` - `v0.2.10`](#ndk_objectbox---v0210)
+ - [`nip07_event_signer` - `v1.0.9`](#nip07_event_signer---v109)
+
+---
+
+#### `ndk` - `v0.8.0+2`
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
+#### `ndk_drift` - `v0.1.0+2`
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
+#### `ndk_flutter` - `v0.8.0+3`
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
+#### `ndk_objectbox` - `v0.2.10`
+
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+ - **FIX**: remove duplicated. ([8fa8db2e](https://github.com/relaystr/ndk/commit/8fa8db2e8e378004c2e24ffc8bcd02948c4336bc))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
+#### `nip07_event_signer` - `v1.0.9`
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
+
+## 2026-03-31
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.0+1`](#ndk---v0801)
+ - [`ndk_objectbox` - `v0.2.9`](#ndk_objectbox---v029)
+ - [`nip07_event_signer` - `v1.0.8`](#nip07_event_signer---v108)
+ - [`ndk_drift` - `v0.1.0+1`](#ndk_drift---v0101)
+ - [`ndk_flutter` - `v0.8.0+2`](#ndk_flutter---v0802)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.8`
+ - `ndk_drift` - `v0.1.0+1`
+ - `ndk_flutter` - `v0.8.0+2`
+
+---
+
+#### `ndk` - `v0.8.0+1`
+
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
+#### `ndk_objectbox` - `v0.2.9`
+
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: remove duplicated. ([8fa8db2e](https://github.com/relaystr/ndk/commit/8fa8db2e8e378004c2e24ffc8bcd02948c4336bc))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
+
+## 2026-03-31
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk_objectbox` - `v0.2.8`](#ndk_objectbox---v028)
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.0`](#ndk---v080)
+ - [`ndk_bip32_keys` - `v0.1.0`](#ndk_bip32_keys---v010)
+ - [`ndk_drift` - `v0.1.0`](#ndk_drift---v010)
+ - [`ndk_flutter` - `v0.8.0+1`](#ndk_flutter---v0801)
+ - [`nip07_event_signer` - `v1.0.7`](#nip07_event_signer---v107)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.8.0`
+ - `ndk_bip32_keys` - `v0.1.0`
+ - `ndk_drift` - `v0.1.0`
+ - `ndk_flutter` - `v0.8.0+1`
+ - `ndk_objectbox` - `v0.2.8`
+ - `nip07_event_signer` - `v1.0.7`
+
+---
+
+#### `ndk_objectbox` - `v0.2.8`
+
+#### `ndk` - `v0.8.0`
+
+#### `ndk_bip32_keys` - `v0.1.0`
+
+#### `ndk_drift` - `v0.1.0`
+
+#### `ndk_flutter` - `v0.8.0+1`
+
+#### `nip07_event_signer` - `v1.0.7`
+
+
+## 2026-03-31
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.0-dev.3`](#ndk---v080-dev3)
+ - [`ndk_objectbox` - `v0.2.8-dev.10`](#ndk_objectbox---v028-dev10)
+ - [`nip07_event_signer` - `v1.0.7-dev.6`](#nip07_event_signer---v107-dev6)
+ - [`ndk_drift` - `v0.1.0-dev.3`](#ndk_drift---v010-dev3)
+ - [`ndk_flutter` - `v0.8.0-dev.0+1`](#ndk_flutter---v080-dev01)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.7-dev.6`
+ - `ndk_drift` - `v0.1.0-dev.3`
+ - `ndk_flutter` - `v0.8.0-dev.0+1`
+
+---
+
+#### `ndk` - `v0.8.0-dev.3`
+
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+ - **FIX**: unused import. ([1a4d480f](https://github.com/relaystr/ndk/commit/1a4d480f512956b656edb80b0846d14cc4f2d915))
+ - **FIX**: add missing path. ([a3b57e89](https://github.com/relaystr/ndk/commit/a3b57e8981b870334774f02c56c779e1a6462ef9))
+ - **FIX**: use parallel broadcast pattern in relay_jit_broadcast_specific. ([ba318d85](https://github.com/relaystr/ndk/commit/ba318d85b161515b17867be03a8dd37fb3f31c5b))
+ - **FIX**: parallel broadcast with Future.wait and address PR feedback. ([4f5096d2](https://github.com/relaystr/ndk/commit/4f5096d2d8fc3e2793057dd1faf315f91dcfae66))
+ - **FIX**: apply moved rust code. ([610784b3](https://github.com/relaystr/ndk/commit/610784b310ab7a348100d13083a7cbd6faeda3af))
+ - **FIX**(test): resolve port conflicts in broadcast_test.dart. ([5ae8db79](https://github.com/relaystr/ndk/commit/5ae8db7934bab16e10c3a6b7ca71a1ba170c2ddc))
+ - **FIX**(test): generate MockRelay AUTH challenge once per server lifetime. ([ed90f058](https://github.com/relaystr/ndk/commit/ed90f0585cbb9b88ab117e9bf8fbddf9cfd36359))
+ - **FIX**: start timeout after signing completes. ([f1534b37](https://github.com/relaystr/ndk/commit/f1534b373eae9a489796e3bad0cc3736342138bd))
+ - **FIX**(test): implement missing EventSigner methods in MockSlowSigner. ([a941d7fb](https://github.com/relaystr/ndk/commit/a941d7fbe3f9e8d27bb42ca386ceb710c2ada71c))
+ - **FIX**: fix imports. ([8a10dd61](https://github.com/relaystr/ndk/commit/8a10dd6143d16244ffd31211d91c96857de7609d))
+ - **FIX**: fix imports. ([8351d005](https://github.com/relaystr/ndk/commit/8351d005d7b83ba69b115e6117dfeceff7fd3275))
+ - **FIX**: fix imports. ([a23df4ea](https://github.com/relaystr/ndk/commit/a23df4ea44934cd4b683adbcd382eedaf98663a5))
+ - **FIX**: move sembast to core. ([817569cf](https://github.com/relaystr/ndk/commit/817569cf7cd30d09e6f5550adebfd7d93b930041))
+ - **FIX**: robust broadcast lifecycle and relay connection handling. ([0c2e56d3](https://github.com/relaystr/ndk/commit/0c2e56d3e2010fc9cec5e7e1bc89d4bd719dca0d))
+
+#### `ndk_objectbox` - `v0.2.8-dev.10`
+
+ - **REFACTOR**: rename rawContent to content. ([22da4a00](https://github.com/relaystr/ndk/commit/22da4a00f128fda01718a50cf0a65ae3e867c91d))
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: remove duplicated. ([8fa8db2e](https://github.com/relaystr/ndk/commit/8fa8db2e8e378004c2e24ffc8bcd02948c4336bc))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: use setter for known properties + content never null. ([a1b469f7](https://github.com/relaystr/ndk/commit/a1b469f7431f418ab4421cf0e7f3327166899169))
+ - **FIX**(perf): improved tag storage. ([db4fcf11](https://github.com/relaystr/ndk/commit/db4fcf116715bffe935c3bbab4c338685f630452))
+ - **FIX**(perf): removing json methods. ([337cb5e0](https://github.com/relaystr/ndk/commit/337cb5e0922ad494cc70336f5128bdbdeae1998e))
+ - **FIX**(perf): remove calcId from db obj. ([892dcc9c](https://github.com/relaystr/ndk/commit/892dcc9c93b48698aaeb59a5d1c457b57ede3b61))
+ - **FIX**: objectbox nullable sig. ([fdd70d1d](https://github.com/relaystr/ndk/commit/fdd70d1db6bb2e6d12d9e60a8e8cbb4dc0fd396d))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields. ([f1c8ca50](https://github.com/relaystr/ndk/commit/f1c8ca505f083fc83565fa135c1be15a4ed8520c))
+ - **FEAT**: change removeEvents to support flexible filtering. ([c378887e](https://github.com/relaystr/ndk/commit/c378887e990b967069179a1ff84e1f81a7587ae4))
+ - **FEAT**(cache): add removeEvents method for bulk event deletion. ([2d8a3f5e](https://github.com/relaystr/ndk/commit/2d8a3f5e61922e11ab7895b97838fb47c0b5b213))
+ - **FEAT**(cache): add clearAll() method to CacheManager. ([b94a1d4b](https://github.com/relaystr/ndk/commit/b94a1d4b0f92c2c5b48da1ef7b21f937cc257976))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
+
+## 2026-03-25
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.1.0-dev.3`](#ndk_flutter---v010-dev3)
+ - [`ndk_objectbox` - `v0.2.8-dev.9`](#ndk_objectbox---v028-dev9)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.10`](#ndk_rust_verifier---v050-dev10)
+
+---
+
+#### `ndk_flutter` - `v0.1.0-dev.3`
+
+ - **FIX**: move amber into ndk_flutter. ([c70df0ec](https://github.com/relaystr/ndk/commit/c70df0ec27d4638697f478dcd1ed3048166145f2))
+
+#### `ndk_objectbox` - `v0.2.8-dev.9`
+
+ - **REFACTOR**: rename rawContent to content. ([22da4a00](https://github.com/relaystr/ndk/commit/22da4a00f128fda01718a50cf0a65ae3e867c91d))
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: remove duplicated. ([8fa8db2e](https://github.com/relaystr/ndk/commit/8fa8db2e8e378004c2e24ffc8bcd02948c4336bc))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: use setter for known properties + content never null. ([a1b469f7](https://github.com/relaystr/ndk/commit/a1b469f7431f418ab4421cf0e7f3327166899169))
+ - **FIX**(perf): improved tag storage. ([db4fcf11](https://github.com/relaystr/ndk/commit/db4fcf116715bffe935c3bbab4c338685f630452))
+ - **FIX**(perf): removing json methods. ([337cb5e0](https://github.com/relaystr/ndk/commit/337cb5e0922ad494cc70336f5128bdbdeae1998e))
+ - **FIX**(perf): remove calcId from db obj. ([892dcc9c](https://github.com/relaystr/ndk/commit/892dcc9c93b48698aaeb59a5d1c457b57ede3b61))
+ - **FIX**: objectbox nullable sig. ([fdd70d1d](https://github.com/relaystr/ndk/commit/fdd70d1db6bb2e6d12d9e60a8e8cbb4dc0fd396d))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields. ([f1c8ca50](https://github.com/relaystr/ndk/commit/f1c8ca505f083fc83565fa135c1be15a4ed8520c))
+ - **FEAT**: change removeEvents to support flexible filtering. ([c378887e](https://github.com/relaystr/ndk/commit/c378887e990b967069179a1ff84e1f81a7587ae4))
+ - **FEAT**(cache): add removeEvents method for bulk event deletion. ([2d8a3f5e](https://github.com/relaystr/ndk/commit/2d8a3f5e61922e11ab7895b97838fb47c0b5b213))
+ - **FEAT**(cache): add clearAll() method to CacheManager. ([b94a1d4b](https://github.com/relaystr/ndk/commit/b94a1d4b0f92c2c5b48da1ef7b21f937cc257976))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.10`
+
+ - **REFACTOR**: rename removeWallet. ([377cee0b](https://github.com/relaystr/ndk/commit/377cee0bd0f5e0216ece0143134045357d1b3989))
+ - **PERF**: use secp256k1. ([247a294f](https://github.com/relaystr/ndk/commit/247a294fd8ce36de824dfc52215173674e7126b9))
+ - **FIX**: remove duplicated. ([8fa8db2e](https://github.com/relaystr/ndk/commit/8fa8db2e8e378004c2e24ffc8bcd02948c4336bc))
+ - **FEAT**: fast multiply blind msg. ([7cc51929](https://github.com/relaystr/ndk/commit/7cc51929239a10e5bd352e21db12f67c7d8a1e03))
+ - **FEAT**: CashuKeyDerivation support keysets v2. ([bf057bbc](https://github.com/relaystr/ndk/commit/bf057bbc7a0d9382f1f4d758abf0b9b8c932d409))
+ - **FEAT**: rust deriveSecret. ([bdd88cba](https://github.com/relaystr/ndk/commit/bdd88cba527ec61afeec70738051379cf7ca3c95))
+
+
+## 2026-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.0-dev.2`](#ndk_drift---v010-dev2)
+ - [`ndk_flutter` - `v0.1.0-dev.2`](#ndk_flutter---v010-dev2)
+ - [`ndk_objectbox` - `v0.2.8-dev.8`](#ndk_objectbox---v028-dev8)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.9`](#ndk_rust_verifier---v050-dev9)
+
+---
+
+#### `ndk_drift` - `v0.1.0-dev.2`
+
+ - **FIX**: add back wallets methods and make it extend WalletsRepo. ([8e997d35](https://github.com/relaystr/ndk/commit/8e997d35e1aff3c7d9d0faa6a387e34a2d2ae12e))
+
+#### `ndk_flutter` - `v0.1.0-dev.2`
+
+ - **FIX**: 0.1.0-dev.1. ([5e7c16ba](https://github.com/relaystr/ndk/commit/5e7c16ba548b47b727fae46caef5b2e5860179dd))
+ - **FIX**: better wallet type choosing dialog. ([75eefe1d](https://github.com/relaystr/ndk/commit/75eefe1da7d36263ed1988bd1a65c1a946a4c850))
+ - **FIX**: separate wallets storage operations from cache manager. ([92bb9a22](https://github.com/relaystr/ndk/commit/92bb9a22d6a0f22169ced6741ddf9aaa77db00b5))
+ - **FIX**: conditional web import to support wasm. ([33b3ccdd](https://github.com/relaystr/ndk/commit/33b3ccddd2e4bdd61bb45dee1741767b294f759d))
+
+#### `ndk_objectbox` - `v0.2.8-dev.8`
+
+ - **REFACTOR**: rename rawContent to content. ([22da4a00](https://github.com/relaystr/ndk/commit/22da4a00f128fda01718a50cf0a65ae3e867c91d))
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: use setter for known properties + content never null. ([a1b469f7](https://github.com/relaystr/ndk/commit/a1b469f7431f418ab4421cf0e7f3327166899169))
+ - **FIX**(perf): improved tag storage. ([db4fcf11](https://github.com/relaystr/ndk/commit/db4fcf116715bffe935c3bbab4c338685f630452))
+ - **FIX**(perf): removing json methods. ([337cb5e0](https://github.com/relaystr/ndk/commit/337cb5e0922ad494cc70336f5128bdbdeae1998e))
+ - **FIX**(perf): remove calcId from db obj. ([892dcc9c](https://github.com/relaystr/ndk/commit/892dcc9c93b48698aaeb59a5d1c457b57ede3b61))
+ - **FIX**: objectbox nullable sig. ([fdd70d1d](https://github.com/relaystr/ndk/commit/fdd70d1db6bb2e6d12d9e60a8e8cbb4dc0fd396d))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields. ([f1c8ca50](https://github.com/relaystr/ndk/commit/f1c8ca505f083fc83565fa135c1be15a4ed8520c))
+ - **FEAT**: change removeEvents to support flexible filtering. ([c378887e](https://github.com/relaystr/ndk/commit/c378887e990b967069179a1ff84e1f81a7587ae4))
+ - **FEAT**(cache): add removeEvents method for bulk event deletion. ([2d8a3f5e](https://github.com/relaystr/ndk/commit/2d8a3f5e61922e11ab7895b97838fb47c0b5b213))
+ - **FEAT**(cache): add clearAll() method to CacheManager. ([b94a1d4b](https://github.com/relaystr/ndk/commit/b94a1d4b0f92c2c5b48da1ef7b21f937cc257976))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.9`
+
+ - **REFACTOR**: rename removeWallet. ([377cee0b](https://github.com/relaystr/ndk/commit/377cee0bd0f5e0216ece0143134045357d1b3989))
+ - **PERF**: use secp256k1. ([247a294f](https://github.com/relaystr/ndk/commit/247a294fd8ce36de824dfc52215173674e7126b9))
+ - **FEAT**: fast multiply blind msg. ([7cc51929](https://github.com/relaystr/ndk/commit/7cc51929239a10e5bd352e21db12f67c7d8a1e03))
+ - **FEAT**: CashuKeyDerivation support keysets v2. ([bf057bbc](https://github.com/relaystr/ndk/commit/bf057bbc7a0d9382f1f4d758abf0b9b8c932d409))
+ - **FEAT**: rust deriveSecret. ([bdd88cba](https://github.com/relaystr/ndk/commit/bdd88cba527ec61afeec70738051379cf7ca3c95))
+
+
+## 2026-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.0.2-dev.7`](#ndk_drift---v002-dev7)
+ - [`ndk_flutter` - `v0.0.2-dev.9`](#ndk_flutter---v002-dev9)
+ - [`ndk_objectbox` - `v0.2.8-dev.7`](#ndk_objectbox---v028-dev7)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.8`](#ndk_rust_verifier---v050-dev8)
+
+---
+
+#### `ndk_drift` - `v0.0.2-dev.7`
+
+ - **FIX**: rename drift_cache_manager to ndk_drift. ([484faef2](https://github.com/relaystr/ndk/commit/484faef2e15beac36c654a44547e21e9cd4f2d08))
+
+#### `ndk_flutter` - `v0.0.2-dev.9`
+
+ - **FIX**: better wallet type choosing dialog. ([75eefe1d](https://github.com/relaystr/ndk/commit/75eefe1da7d36263ed1988bd1a65c1a946a4c850))
+ - **FIX**: separate wallets storage operations from cache manager. ([92bb9a22](https://github.com/relaystr/ndk/commit/92bb9a22d6a0f22169ced6741ddf9aaa77db00b5))
+ - **FIX**: conditional web import to support wasm. ([33b3ccdd](https://github.com/relaystr/ndk/commit/33b3ccddd2e4bdd61bb45dee1741767b294f759d))
+ - **FIX**: wasm compatible conditional import. ([f5810f31](https://github.com/relaystr/ndk/commit/f5810f3108b792cece307574c19914d2cac0753f))
+
+#### `ndk_objectbox` - `v0.2.8-dev.7`
+
+ - **REFACTOR**: rename rawContent to content. ([22da4a00](https://github.com/relaystr/ndk/commit/22da4a00f128fda01718a50cf0a65ae3e867c91d))
+ - **REFACTOR**: remove acc prefix, clear seperation wallet. ([4da6091f](https://github.com/relaystr/ndk/commit/4da6091fb0e33889c8e9555210ba3eb249bcb649))
+ - **REFACTOR**: remove wallet prefix from cashu. ([8658f196](https://github.com/relaystr/ndk/commit/8658f1966f005c99b022b17b8ca23c758cd00676))
+ - **FIX**: missing clear cashu/wallet stuff on clearAll. ([b6b093af](https://github.com/relaystr/ndk/commit/b6b093af3ae6aaeceea3c9e3507a71bcaef5e4dc))
+ - **FIX**: remove unique for cashu counter. ([8bd0e6a7](https://github.com/relaystr/ndk/commit/8bd0e6a7a2b23b5540458caa05e9295d7391483d))
+ - **FIX**: separate wallets storage operations from cache manager. ([e9e0199a](https://github.com/relaystr/ndk/commit/e9e0199a3e55856603b9c667098d74bd697635ca))
+ - **FIX**: use setter for known properties + content never null. ([a1b469f7](https://github.com/relaystr/ndk/commit/a1b469f7431f418ab4421cf0e7f3327166899169))
+ - **FIX**(perf): improved tag storage. ([db4fcf11](https://github.com/relaystr/ndk/commit/db4fcf116715bffe935c3bbab4c338685f630452))
+ - **FIX**(perf): removing json methods. ([337cb5e0](https://github.com/relaystr/ndk/commit/337cb5e0922ad494cc70336f5128bdbdeae1998e))
+ - **FIX**(perf): remove calcId from db obj. ([892dcc9c](https://github.com/relaystr/ndk/commit/892dcc9c93b48698aaeb59a5d1c457b57ede3b61))
+ - **FIX**: objectbox nullable sig. ([fdd70d1d](https://github.com/relaystr/ndk/commit/fdd70d1db6bb2e6d12d9e60a8e8cbb4dc0fd396d))
+ - **FIX**: getProofs mem cache manager. ([68d64656](https://github.com/relaystr/ndk/commit/68d64656ed3011ed1ec57a3d499475c735092d28))
+ - **FIX**: objectbox mintInfo parsing. ([35944992](https://github.com/relaystr/ndk/commit/359449921d2420b96fefa3a2bdadc78e9c3514fd))
+ - **FIX**: objectbox transaction not async. ([61be7f20](https://github.com/relaystr/ndk/commit/61be7f20c7f0bf761fa195583c0f738b18f8e62c))
+ - **FIX**: type parsing. ([ef94039e](https://github.com/relaystr/ndk/commit/ef94039e12beb76150dcff7be58ea7678affb373))
+ - **FEAT**: cashu remove mint info. ([e2b4f923](https://github.com/relaystr/ndk/commit/e2b4f923dd771ee9b9e846563c208636e1d0c1f5))
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields. ([f1c8ca50](https://github.com/relaystr/ndk/commit/f1c8ca505f083fc83565fa135c1be15a4ed8520c))
+ - **FEAT**: change removeEvents to support flexible filtering. ([c378887e](https://github.com/relaystr/ndk/commit/c378887e990b967069179a1ff84e1f81a7587ae4))
+ - **FEAT**(cache): add removeEvents method for bulk event deletion. ([2d8a3f5e](https://github.com/relaystr/ndk/commit/2d8a3f5e61922e11ab7895b97838fb47c0b5b213))
+ - **FEAT**(cache): add clearAll() method to CacheManager. ([b94a1d4b](https://github.com/relaystr/ndk/commit/b94a1d4b0f92c2c5b48da1ef7b21f937cc257976))
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup. ([02b1ed0d](https://github.com/relaystr/ndk/commit/02b1ed0d27a38fa5f69648dc738b052bff9897bd))
+ - **FEAT**: spending with state. ([729f7e4e](https://github.com/relaystr/ndk/commit/729f7e4e760bf5e8d50de8e316fc3f155c3fb082))
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.8`
+
+ - **REFACTOR**: rename removeWallet. ([377cee0b](https://github.com/relaystr/ndk/commit/377cee0bd0f5e0216ece0143134045357d1b3989))
+ - **PERF**: use secp256k1. ([247a294f](https://github.com/relaystr/ndk/commit/247a294fd8ce36de824dfc52215173674e7126b9))
+ - **FEAT**: fast multiply blind msg. ([7cc51929](https://github.com/relaystr/ndk/commit/7cc51929239a10e5bd352e21db12f67c7d8a1e03))
+ - **FEAT**: CashuKeyDerivation support keysets v2. ([bf057bbc](https://github.com/relaystr/ndk/commit/bf057bbc7a0d9382f1f4d758abf0b9b8c932d409))
+ - **FEAT**: rust deriveSecret. ([bdd88cba](https://github.com/relaystr/ndk/commit/bdd88cba527ec61afeec70738051379cf7ca3c95))
+
+
+## 2026-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2-dev.6`](#drift_cache_manager---v002-dev6)
+ - [`ndk_flutter` - `v0.0.2-dev.8`](#ndk_flutter---v002-dev8)
+ - [`ndk_objectbox` - `v0.2.8-dev.6`](#ndk_objectbox---v028-dev6)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.7`](#ndk_rust_verifier---v050-dev7)
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.6`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `ndk_flutter` - `v0.0.2-dev.8`
+
+ - **FIX**: better wallet type choosing dialog.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_objectbox` - `v0.2.8-dev.6`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **REFACTOR**: remove acc prefix, clear seperation wallet.
+ - **REFACTOR**: remove wallet prefix from cashu.
+ - **FIX**: missing clear cashu/wallet stuff on clearAll.
+ - **FIX**: remove unique for cashu counter.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FIX**: getProofs mem cache manager.
+ - **FIX**: objectbox mintInfo parsing.
+ - **FIX**: objectbox transaction not async.
+ - **FIX**: type parsing.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: spending with state.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.7`
+
+ - **REFACTOR**: rename removeWallet.
+ - **PERF**: use secp256k1.
+ - **FEAT**: fast multiply blind msg.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
+
+## 2026-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2-dev.5`](#drift_cache_manager---v002-dev5)
+ - [`ndk` - `v0.8.0-dev.2`](#ndk---v080-dev2)
+ - [`ndk_amber` - `v0.4.1-dev.5`](#ndk_amber---v041-dev5)
+ - [`ndk_bip32_keys` - `v0.1.0-dev.1`](#ndk_bip32_keys---v010-dev1)
+ - [`ndk_flutter` - `v0.0.2-dev.7`](#ndk_flutter---v002-dev7)
+ - [`ndk_objectbox` - `v0.2.8-dev.5`](#ndk_objectbox---v028-dev5)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.6`](#ndk_rust_verifier---v050-dev6)
+ - [`rust_lib_ndk` - `v0.1.7-dev.3`](#rust_lib_ndk---v017-dev3)
+ - [`sembast_cache_manager` - `v1.0.8-dev.4`](#sembast_cache_manager---v108-dev4)
+ - [`nip07_event_signer` - `v1.0.7-dev.5`](#nip07_event_signer---v107-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.7-dev.5`
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.5`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `ndk` - `v0.8.0-dev.2`
+
+ - **REFACTOR**: filter keyset by active and unit.
+ - **REFACTOR**: remove wallet prefix from cashu.
+ - **REFACTOR**: rename removeWallet.
+ - **REFACTOR**: remove acc prefix, clear seperation wallet.
+ - **FIX**: log body http request.
+ - **FIX**: cashu tests needed a wallet.
+ - **FIX**: missing wallets.dispose in ndk.destroy.
+ - **FIX**: initialization.
+ - **FIX**: nwc connection.
+ - **FIX**: broadcast state timeout.
+ - **FIX**: rollback removal of walletsRepo from ndkConfig.
+ - **FIX**: rollback removal of walletsRepo from ndkConfig.
+ - **FIX**: removed feat combinedTransactions.
+ - **FIX**: dispose combined balances activated.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: usecase name.
+ - **FIX**: restore save only unspend tokens.
+ - **FIX**: type parsing.
+ - **FIX**: spend, redeem exception handeling.
+ - **FIX**: cashu redeem failed transaction state.
+ - **FIX**: hook up deleteKnownMint to removeWallet.
+ - **FIX**: add keysets to decorator.
+ - **FIX**: store keysets from network.
+ - **FIX**: null err.
+ - **FIX**: cashu usecase naming.
+ - **FIX**: wallet transaction state storage.
+ - **FIX**: cleanup on ndk destroy.
+ - **FIX**: melt map output blanks to change.
+ - **FIX**: melt change parsing.
+ - **FIX**: allow fee reserve 0.
+ - **FIX**: swap split change, exact amount.
+ - **FIX**: mintUrl in CashuMintBalance.
+ - **FIX**: typo.
+ - **FIX**: check completion when transcation rcv.
+ - **FIX**: test secret comparison.
+ - **FIX**: dismiss large keyset amounts.
+ - **FIX**: sort swap outputs.
+ - **FIX**: correct balance with inactive keysets.
+ - **FIX**: getProofs mem cache manager.
+ - **FIX**: identify cashu proof by pubKey.
+ - **FIX**: dont add total balance.
+ - **FIX**: filter keyset for unit.
+ - **FIX**: cashuMintInfo fromJson add mintUrl.
+ - **FIX**: wallet filter balances by mint.
+ - **FIX**: save transaction to db.
+ - **FIX**: cashu balances grouping.
+ - **FEAT**: spending with state.
+ - **FEAT**: cashu mnemonic.
+ - **FEAT**: nut13 deterministic secrets.
+ - **FEAT**: rust deriveSecret.
+ - **FEAT**: seed phrase user api.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: fast key derivation.
+ - **FEAT**: fast multiply blind msg.
+ - **FEAT**: optimized proof select.
+ - **FEAT**: cashu restore.
+ - **FEAT**: save pending transactions.
+ - **FEAT**: auto detect wallet cache manager.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: init combined streams lazy.
+ - **FEAT**: dynamically create wallets based on usecase data.
+
+#### `ndk_amber` - `v0.4.1-dev.5`
+
+ - **REFACTOR**: rename removeWallet.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+
+#### `ndk_bip32_keys` - `v0.1.0-dev.1`
+
+ - **FIX**: add missing CHANGELOG & LICENCE for bip32_keys.
+
+#### `ndk_flutter` - `v0.0.2-dev.7`
+
+ - **FIX**: better wallet type choosing dialog.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_objectbox` - `v0.2.8-dev.5`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **REFACTOR**: remove acc prefix, clear seperation wallet.
+ - **REFACTOR**: remove wallet prefix from cashu.
+ - **FIX**: missing clear cashu/wallet stuff on clearAll.
+ - **FIX**: remove unique for cashu counter.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FIX**: getProofs mem cache manager.
+ - **FIX**: objectbox mintInfo parsing.
+ - **FIX**: objectbox transaction not async.
+ - **FIX**: type parsing.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: spending with state.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.6`
+
+ - **REFACTOR**: rename removeWallet.
+ - **PERF**: use secp256k1.
+ - **FEAT**: fast multiply blind msg.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.3`
+
+ - **PERF**: use secp256k1.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
+#### `sembast_cache_manager` - `v1.0.8-dev.4`
+
+ - **FIX**: db coupeling cashu proof, keyset sembast.
+ - **FIX**: sembast merge err.
+ - **FEAT**: cashu remove mint info.
+
+
+## 2026-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2-dev.4`](#drift_cache_manager---v002-dev4)
+ - [`ndk` - `v0.7.2-dev.3`](#ndk---v072-dev3)
+ - [`ndk_amber` - `v0.4.1-dev.4`](#ndk_amber---v041-dev4)
+ - [`ndk_bip32_keys` - `v0.1.0-dev.0+1`](#ndk_bip32_keys---v010-dev01)
+ - [`ndk_flutter` - `v0.0.2-dev.6`](#ndk_flutter---v002-dev6)
+ - [`ndk_objectbox` - `v0.2.8-dev.4`](#ndk_objectbox---v028-dev4)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.5`](#ndk_rust_verifier---v050-dev5)
+ - [`rust_lib_ndk` - `v0.1.7-dev.2`](#rust_lib_ndk---v017-dev2)
+ - [`sembast_cache_manager` - `v1.0.8-dev.3`](#sembast_cache_manager---v108-dev3)
+ - [`nip07_event_signer` - `v1.0.7-dev.4`](#nip07_event_signer---v107-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.7-dev.4`
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.4`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `ndk` - `v0.7.2-dev.3`
+
+ - **REFACTOR**: filter keyset by active and unit.
+ - **REFACTOR**: remove wallet prefix from cashu.
+ - **REFACTOR**: rename removeWallet.
+ - **REFACTOR**: remove acc prefix, clear seperation wallet.
+ - **FIX**: log body http request.
+ - **FIX**: cashu tests needed a wallet.
+ - **FIX**: missing wallets.dispose in ndk.destroy.
+ - **FIX**: initialization.
+ - **FIX**: nwc connection.
+ - **FIX**: broadcast state timeout.
+ - **FIX**: rollback removal of walletsRepo from ndkConfig.
+ - **FIX**: rollback removal of walletsRepo from ndkConfig.
+ - **FIX**: removed feat combinedTransactions.
+ - **FIX**: dispose combined balances activated.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: usecase name.
+ - **FIX**: restore save only unspend tokens.
+ - **FIX**: type parsing.
+ - **FIX**: spend, redeem exception handeling.
+ - **FIX**: cashu redeem failed transaction state.
+ - **FIX**: hook up deleteKnownMint to removeWallet.
+ - **FIX**: add keysets to decorator.
+ - **FIX**: store keysets from network.
+ - **FIX**: null err.
+ - **FIX**: cashu usecase naming.
+ - **FIX**: wallet transaction state storage.
+ - **FIX**: cleanup on ndk destroy.
+ - **FIX**: melt map output blanks to change.
+ - **FIX**: melt change parsing.
+ - **FIX**: allow fee reserve 0.
+ - **FIX**: swap split change, exact amount.
+ - **FIX**: mintUrl in CashuMintBalance.
+ - **FIX**: typo.
+ - **FIX**: check completion when transcation rcv.
+ - **FIX**: test secret comparison.
+ - **FIX**: dismiss large keyset amounts.
+ - **FIX**: sort swap outputs.
+ - **FIX**: correct balance with inactive keysets.
+ - **FIX**: getProofs mem cache manager.
+ - **FIX**: identify cashu proof by pubKey.
+ - **FIX**: dont add total balance.
+ - **FIX**: filter keyset for unit.
+ - **FIX**: cashuMintInfo fromJson add mintUrl.
+ - **FIX**: wallet filter balances by mint.
+ - **FIX**: save transaction to db.
+ - **FIX**: cashu balances grouping.
+ - **FEAT**: spending with state.
+ - **FEAT**: cashu mnemonic.
+ - **FEAT**: nut13 deterministic secrets.
+ - **FEAT**: rust deriveSecret.
+ - **FEAT**: seed phrase user api.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: fast key derivation.
+ - **FEAT**: fast multiply blind msg.
+ - **FEAT**: optimized proof select.
+ - **FEAT**: cashu restore.
+ - **FEAT**: save pending transactions.
+ - **FEAT**: auto detect wallet cache manager.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: init combined streams lazy.
+ - **FEAT**: dynamically create wallets based on usecase data.
+
+#### `ndk_amber` - `v0.4.1-dev.4`
+
+ - **REFACTOR**: rename removeWallet.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+
+#### `ndk_bip32_keys` - `v0.1.0-dev.0+1`
+
+ - **FIX**: add missing CHANGELOG & LICENCE for bip32_keys.
+
+#### `ndk_flutter` - `v0.0.2-dev.6`
+
+ - **FIX**: better wallet type choosing dialog.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_objectbox` - `v0.2.8-dev.4`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **REFACTOR**: remove acc prefix, clear seperation wallet.
+ - **REFACTOR**: remove wallet prefix from cashu.
+ - **FIX**: missing clear cashu/wallet stuff on clearAll.
+ - **FIX**: remove unique for cashu counter.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FIX**: getProofs mem cache manager.
+ - **FIX**: objectbox mintInfo parsing.
+ - **FIX**: objectbox transaction not async.
+ - **FIX**: type parsing.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+ - **FEAT**: spending with state.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.5`
+
+ - **REFACTOR**: rename removeWallet.
+ - **PERF**: use secp256k1.
+ - **FEAT**: fast multiply blind msg.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.2`
+
+ - **FEAT**: CashuKeyDerivation support keysets v2.
+ - **FEAT**: rust deriveSecret.
+
+#### `sembast_cache_manager` - `v1.0.8-dev.3`
+
+ - **FIX**: db coupeling cashu proof, keyset sembast.
+ - **FIX**: sembast merge err.
+ - **FEAT**: cashu remove mint info.
+
+
+## 2026-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2-dev.3`](#drift_cache_manager---v002-dev3)
+ - [`ndk_amber` - `v0.4.1-dev.3`](#ndk_amber---v041-dev3)
+ - [`ndk_flutter` - `v0.0.2-dev.5`](#ndk_flutter---v002-dev5)
+ - [`ndk_objectbox` - `v0.2.8-dev.3`](#ndk_objectbox---v028-dev3)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.4`](#ndk_rust_verifier---v050-dev4)
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.3`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `ndk_amber` - `v0.4.1-dev.3`
+
+ - **FEAT**: export amberflutter in ndk_amber package.
+
+#### `ndk_flutter` - `v0.0.2-dev.5`
+
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_objectbox` - `v0.2.8-dev.3`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.4`
+
+ - **PERF**: use secp256k1.
+
+
+## 2026-03-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`drift_cache_manager` - `v0.0.2-dev.2`](#drift_cache_manager---v002-dev2)
+ - [`ndk` - `v0.7.2-dev.2`](#ndk---v072-dev2)
+ - [`ndk_flutter` - `v0.0.2-dev.4`](#ndk_flutter---v002-dev4)
+ - [`ndk_objectbox` - `v0.2.8-dev.2`](#ndk_objectbox---v028-dev2)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.3`](#ndk_rust_verifier---v050-dev3)
+ - [`ndk_amber` - `v0.4.1-dev.2`](#ndk_amber---v041-dev2)
+ - [`nip07_event_signer` - `v1.0.7-dev.3`](#nip07_event_signer---v107-dev3)
+ - [`sembast_cache_manager` - `v1.0.8-dev.2`](#sembast_cache_manager---v108-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.1-dev.2`
+ - `nip07_event_signer` - `v1.0.7-dev.3`
+ - `sembast_cache_manager` - `v1.0.8-dev.2`
+
+---
+
+#### `drift_cache_manager` - `v0.0.2-dev.2`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+
+#### `ndk` - `v0.7.2-dev.2`
+
+ - **FIX**: min sdk 3.6 for hooks.
+
+#### `ndk_flutter` - `v0.0.2-dev.4`
+
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FIX**(ndk_flutter): suppress experimental_member_use warning.
+ - **FIX**(ndk_flutter): pass cachedPublicKey to signers during session restore.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_objectbox` - `v0.2.8-dev.2`
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**(perf): improved tag storage.
+ - **FIX**(perf): removing json methods.
+ - **FIX**(perf): remove calcId from db obj.
+ - **FIX**: objectbox nullable sig.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: change removeEvents to support flexible filtering.
+ - **FEAT**(cache): add removeEvents method for bulk event deletion.
+ - **FEAT**(cache): add clearAll() method to CacheManager.
+ - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.3`
+
+ - **PERF**: use secp256k1.
+
+
+## 2026-03-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.7.2-dev.1`](#ndk---v072-dev1)
+ - [`ndk_flutter` - `v0.0.2-dev.3`](#ndk_flutter---v002-dev3)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.2`](#ndk_rust_verifier---v050-dev2)
+ - [`rust_lib_ndk` - `v0.1.7-dev.1`](#rust_lib_ndk---v017-dev1)
+ - [`ndk_amber` - `v0.4.1-dev.1`](#ndk_amber---v041-dev1)
+ - [`ndk_objectbox` - `v0.2.8-dev.1`](#ndk_objectbox---v028-dev1)
+ - [`nip07_event_signer` - `v1.0.7-dev.2`](#nip07_event_signer---v107-dev2)
+ - [`sembast_cache_manager` - `v1.0.8-dev.1`](#sembast_cache_manager---v108-dev1)
+ - [`drift_cache_manager` - `v0.0.2-dev.1`](#drift_cache_manager---v002-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_amber` - `v0.4.1-dev.1`
+ - `ndk_objectbox` - `v0.2.8-dev.1`
+ - `nip07_event_signer` - `v1.0.7-dev.2`
+ - `sembast_cache_manager` - `v1.0.8-dev.1`
+ - `drift_cache_manager` - `v0.0.2-dev.1`
+
+---
+
+#### `ndk` - `v0.7.2-dev.1`
+
+ - **FIX**: cleanup.
+ - **FEAT**: cli.
+
+#### `ndk_flutter` - `v0.0.2-dev.3`
+
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FIX**(ndk_flutter): suppress experimental_member_use warning.
+ - **FIX**(ndk_flutter): pass cachedPublicKey to signers during session restore.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.2`
+
+ - **PERF**: use secp256k1.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.1`
+
+ - **PERF**: use secp256k1.
+ - **FIX**: remove hex package depandance.
+
+
+## 2026-03-10
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.0.2-dev.2`](#ndk_flutter---v002-dev2)
+ - [`ndk_rust_verifier` - `v0.5.0-dev.1`](#ndk_rust_verifier---v050-dev1)
+ - [`rust_lib_ndk` - `v0.1.7-dev.0+2`](#rust_lib_ndk---v017-dev02)
+
+---
+
+#### `ndk_flutter` - `v0.0.2-dev.2`
+
+ - **FIX**: conditional web import to support wasm.
+ - **FIX**: wasm compatible conditional import.
+ - **FIX**: include generated localization files for pub.dev publishing.
+ - **FIX**: unify chips.
+ - **FIX**(ndk_flutter): suppress experimental_member_use warning.
+ - **FIX**(ndk_flutter): pass cachedPublicKey to signers during session restore.
+ - **FEAT**: missing translations.
+ - **FEAT**: pending requests widget.
+
+#### `ndk_rust_verifier` - `v0.5.0-dev.1`
+
+ - **PERF**: use secp256k1.
+
+#### `rust_lib_ndk` - `v0.1.7-dev.0+2`
+
+ - **PERF**: use secp256k1.
+
+
 ## 2026-03-10
 
 ### Changes

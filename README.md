@@ -21,10 +21,6 @@ NDK ships in small packages to allow granular control of dependencies in your da
 
 Core package of the NDK. Go here for instructions on how to use the NDK. 📜
 
-### [🔗 amber](./packages/amber/)
-
-Amber signer compatible with the NDK.
-
 ### [🔗 nip07 event signer](./packages/nip07_event_signer/)
 
 NIP-07 signer compatible with the NDK.
@@ -33,17 +29,9 @@ NIP-07 signer compatible with the NDK.
 
 ObjectBox database implementation.
 
-### [🔗 Isar](./packages/isar/)
+### [🔗 Ndk Flutter](./packages/ndk_flutter/)
 
-Isar database implementation.
-
-### [🔗 Sembast cache manager](./packages/sembast_cache_manager/)
-
-Sembast database implementation.
-
-### [🔗 rust verifier](./packages/rust_verifier/)
-
-Event verifier written in Rust.
+Flutter widgets and utilities that require Flutter as a dependency.
 
 ### [🔗 sample app](./packages/sample-app/)
 

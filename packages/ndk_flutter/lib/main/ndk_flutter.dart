@@ -6,13 +6,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk_amber/ndk_amber.dart';
 import 'package:ndk_flutter/main/config.dart';
 import 'package:ndk_flutter/models/accounts.dart';
 import 'package:ndk_flutter/models/nip_05_result.dart';
 import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
+
+import '../data_layer/data_sources/amber_flutter.dart';
+import '../data_layer/repositories/signers/amber_event_signer.dart';
 
 class NdkFlutter {
   final Ndk ndk;

@@ -1,0 +1,101 @@
+package android
+
+group = 'com.sebdeveloper6952.amberflutter.amberflutter'
+version = '1.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.12.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    if (project.android.hasProperty("namespace")) {
+        namespace = 'relastr.ndk'
+    }
+
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
+    }
+
+    defaultConfig {
+        minSdk = 21
+    }
+
+    dependencies {
+        testImplementation 'org.jetbrains.kotlin:kotlin-test'
+        testImplementation 'org.mockito:mockito-core:5.23.0'
+        implementation 'com.google.code.gson:gson:2.13.2'
+        implementation 'fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.23.0'
+    }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+            testLogging {
+                events "passed", "skipped", "failed", "standardOut", "standardError"
+                outputs.upToDateWhen { false }
+                showStandardStreams = true
+            }
+        }
+    }
+}
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.extensions.findByName("android") != null) {
+            // Raise any plugin still stuck on old compileSdk values to 36
+            Integer pluginCompileSdk = project.android.compileSdk
+            if (pluginCompileSdk != null && pluginCompileSdk < 33) {
+                project.logger.warn(
+                        "Warning: Overriding compileSdk in plugin '${project.name}' " +
+                                "from ${pluginCompileSdk} to 36."
+                )
+                project.android {
+                    compileSdk = 36
+                }
+            }
+
+
+            project.android.compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+        }
+        project.tasks.withType(JavaCompile).configureEach {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+    }
+
+    layout.buildDirectory = rootProject.layout.buildDirectory.dir(project.name)
+    project.evaluationDependsOn(":app")
+}

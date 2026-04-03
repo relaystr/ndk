@@ -100,7 +100,8 @@ class MockRelay {
     this.server = server;
     var stream = server.transform(WebSocketTransformer());
 
-    String challenge = '';
+    // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
+    final String challenge = Helpers.getRandomString(10);
     Set<String> authenticatedPubkeys = {};
 
     stream.listen((webSocket) {
@@ -112,7 +113,6 @@ class MockRelay {
       }
       if ((requireAuthForRequests || requireAuthForEvents) &&
           sendAuthChallenge) {
-        challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
       webSocket.listen((message) async {
@@ -284,7 +284,8 @@ class MockRelay {
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
         eventsForThisFilter.addAll(_contactLists.values
-            .where((e) => filter.authors!.contains(e.pubKey) &&
+            .where((e) =>
+                filter.authors!.contains(e.pubKey) &&
                 _matchesTimeFilter(e, filter))
             .toList());
       }
@@ -294,7 +295,8 @@ class MockRelay {
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
         eventsForThisFilter.addAll(_metadatas.values
-            .where((e) => filter.authors!.contains(e.pubKey) &&
+            .where((e) =>
+                filter.authors!.contains(e.pubKey) &&
                 _matchesTimeFilter(e, filter))
             .toList());
       }
@@ -406,7 +408,8 @@ class MockRelay {
 
     // Apply global relay limit if configured
     List<Nip01Event> eventsToSend = allMatchingEvents.toList();
-    if (maxEventsPerRequest != null && eventsToSend.length > maxEventsPerRequest!) {
+    if (maxEventsPerRequest != null &&
+        eventsToSend.length > maxEventsPerRequest!) {
       eventsToSend.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       eventsToSend = eventsToSend.take(maxEventsPerRequest!).toList();
     }

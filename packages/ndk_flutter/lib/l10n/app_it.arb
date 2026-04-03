@@ -1,0 +1,1411 @@
+{
+  "@@locale": "it",
+  "createAccount": "Crea il tuo account",
+  "@createAccount": {
+    "description": "Button text for creating a new account"
+  },
+  "newHere": "Sei nuovo qui?",
+  "@newHere": {
+    "description": "Question asking if the user is new to the platform"
+  },
+  "nostrAddress": "Indirizzo Nostr",
+  "@nostrAddress": {
+    "description": "Label for nostr address input field"
+  },
+  "publicKey": "Chiave pubblica",
+  "@publicKey": {
+    "description": "Label for public key input field"
+  },
+  "privateKey": "Chiave privata (non sicura)",
+  "@privateKey": {
+    "description": "Label for private key input field"
+  },
+  "browserExtension": "Estensione del browser",
+  "@browserExtension": {
+    "description": "Label for browser extension login section"
+  },
+  "connect": "Connetti",
+  "@connect": {
+    "description": "Button text to connect with browser extension"
+  },
+  "install": "Installa",
+  "@install": {
+    "description": "Button text to install browser extension"
+  },
+  "logout": "Esci",
+  "@logout": {
+    "description": "Button text to logout from the application"
+  },
+  "nostrAddressHint": "nome@esempio.com",
+  "@nostrAddressHint": {
+    "description": "Placeholder text for nostr address input field"
+  },
+  "invalidAddress": "Indirizzo non valido",
+  "@invalidAddress": {
+    "description": "Error message for invalid nostr address"
+  },
+  "unableToConnect": "Impossibile connettersi",
+  "@unableToConnect": {
+    "description": "Error message when unable to connect to nostr address"
+  },
+  "publicKeyHint": "npub1...",
+  "@publicKeyHint": {
+    "description": "Placeholder text for public key input field"
+  },
+  "privateKeyHint": "nsec1...",
+  "@privateKeyHint": {
+    "description": "Placeholder text for private key input field"
+  },
+  "newToNostr": "Nuovo su Nostr?",
+  "@newToNostr": {
+    "description": "Question asking if the user is new to Nostr"
+  },
+  "getStarted": "Inizia",
+  "@getStarted": {
+    "description": "Button text to get started with Nostr"
+  },
+  "bunker": "Bunker",
+  "@bunker": {
+    "description": "Label for bunker login section"
+  },
+  "bunkerAuthentication": "Autenticazione Bunker",
+  "@bunkerAuthentication": {
+    "description": "Title for bunker authentication toast"
+  },
+  "tapToOpen": "Tocca per aprire: {url}",
+  "@tapToOpen": {
+    "description": "Description for bunker authentication toast",
+    "placeholders": {
+      "url": {
+        "type": "String",
+        "example": "https://example.com/auth"
+      }
+    }
+  },
+  "showNostrConnectQrcode": "Mostra QR code Nostr Connect",
+  "@showNostrConnectQrcode": {
+    "description": "Button text to show nostr connect QR code"
+  },
+  "loginWithAmber": "Accedi con Amber",
+  "@loginWithAmber": {
+    "description": "Button text to login with Amber"
+  },
+  "nostrConnectUrl": "URL Nostr Connect",
+  "@nostrConnectUrl": {
+    "description": "Title for nostr connect URL dialog"
+  },
+  "copy": "Copia",
+  "@copy": {
+    "description": "Button text to copy to clipboard"
+  },
+  "addAccount": "Aggiungi account",
+  "@addAccount": {
+    "description": "Button text to add a new account"
+  },
+  "readOnly": "Sola lettura",
+  "@readOnly": {
+    "description": "Label for read-only account type"
+  },
+  "nsec": "Nsec",
+  "@nsec": {
+    "description": "Label for nsec (private key) account type"
+  },
+  "extension": "Estensione",
+  "@extension": {
+    "description": "Label for browser extension account type"
+  },
+  "userMetadata": "Metadati utente",
+  "@userMetadata": {
+    "description": "Nostr event kind 0"
+  },
+  "shortTextNote": "Nota di testo breve",
+  "@shortTextNote": {
+    "description": "Nostr event kind 1"
+  },
+  "recommendRelay": "Relay consigliato",
+  "@recommendRelay": {
+    "description": "Nostr event kind 2"
+  },
+  "follows": "Seguiti",
+  "@follows": {
+    "description": "Nostr event kind 3"
+  },
+  "encryptedDirectMessages": "Messaggi diretti cifrati",
+  "@encryptedDirectMessages": {
+    "description": "Nostr event kind 4"
+  },
+  "eventDeletionRequest": "Richiesta di eliminazione evento",
+  "@eventDeletionRequest": {
+    "description": "Nostr event kind 5"
+  },
+  "repost": "Ricondivisione",
+  "@repost": {
+    "description": "Nostr event kind 6"
+  },
+  "reaction": "Reazione",
+  "@reaction": {
+    "description": "Nostr event kind 7"
+  },
+  "badgeAward": "Assegnazione badge",
+  "@badgeAward": {
+    "description": "Nostr event kind 8"
+  },
+  "chatMessage": "Messaggio in chat",
+  "@chatMessage": {
+    "description": "Nostr event kind 9"
+  },
+  "groupChatThreadedReply": "Risposta in thread nella chat di gruppo",
+  "@groupChatThreadedReply": {
+    "description": "Nostr event kind 10"
+  },
+  "thread": "Thread",
+  "@thread": {
+    "description": "Nostr event kind 11"
+  },
+  "groupThreadReply": "Risposta nel thread di gruppo",
+  "@groupThreadReply": {
+    "description": "Nostr event kind 12"
+  },
+  "seal": "Sigillo",
+  "@seal": {
+    "description": "Nostr event kind 13"
+  },
+  "directMessage": "Messaggio diretto",
+  "@directMessage": {
+    "description": "Nostr event kind 14"
+  },
+  "fileMessage": "Messaggio con file",
+  "@fileMessage": {
+    "description": "Nostr event kind 15"
+  },
+  "genericRepost": "Ricondivisione generica",
+  "@genericRepost": {
+    "description": "Nostr event kind 16"
+  },
+  "reactionToWebsite": "Reazione a un sito web",
+  "@reactionToWebsite": {
+    "description": "Nostr event kind 17"
+  },
+  "picture": "Immagine",
+  "@picture": {
+    "description": "Nostr event kind 20"
+  },
+  "videoEvent": "Evento video",
+  "@videoEvent": {
+    "description": "Nostr event kind 21"
+  },
+  "shortFormPortraitVideoEvent": "Video verticale in formato breve",
+  "@shortFormPortraitVideoEvent": {
+    "description": "Nostr event kind 22"
+  },
+  "internalReference": "Riferimento interno",
+  "@internalReference": {
+    "description": "Nostr event kind 30"
+  },
+  "externalReference": "Riferimento esterno",
+  "@externalReference": {
+    "description": "Nostr event kind 31"
+  },
+  "hardcopyReference": "Riferimento cartaceo",
+  "@hardcopyReference": {
+    "description": "Nostr event kind 32"
+  },
+  "promptReference": "Riferimento prompt",
+  "@promptReference": {
+    "description": "Nostr event kind 33"
+  },
+  "channelCreation": "Creazione canale",
+  "@channelCreation": {
+    "description": "Nostr event kind 40"
+  },
+  "channelMetadata": "Metadati canale",
+  "@channelMetadata": {
+    "description": "Nostr event kind 41"
+  },
+  "channelMessage": "Messaggio nel canale",
+  "@channelMessage": {
+    "description": "Nostr event kind 42"
+  },
+  "channelHideMessage": "Nascondi messaggio nel canale",
+  "@channelHideMessage": {
+    "description": "Nostr event kind 43"
+  },
+  "channelMuteUser": "Silenzia utente nel canale",
+  "@channelMuteUser": {
+    "description": "Nostr event kind 44"
+  },
+  "requestToVanish": "Richiesta di scomparsa",
+  "@requestToVanish": {
+    "description": "Nostr event kind 62"
+  },
+  "chessPgn": "Scacchi (PGN)",
+  "@chessPgn": {
+    "description": "Nostr event kind 64"
+  },
+  "mlsKeyPackage": "Pacchetto chiavi MLS",
+  "@mlsKeyPackage": {
+    "description": "Nostr event kind 443"
+  },
+  "mlsWelcome": "Benvenuto MLS",
+  "@mlsWelcome": {
+    "description": "Nostr event kind 444"
+  },
+  "mlsGroupEvent": "Evento gruppo MLS",
+  "@mlsGroupEvent": {
+    "description": "Nostr event kind 445"
+  },
+  "mergeRequests": "Richieste di unione",
+  "@mergeRequests": {
+    "description": "Nostr event kind 818"
+  },
+  "pollResponse": "Risposta al sondaggio",
+  "@pollResponse": {
+    "description": "Nostr event kind 1018"
+  },
+  "marketplaceBid": "Offerta nel marketplace",
+  "@marketplaceBid": {
+    "description": "Nostr event kind 1021"
+  },
+  "marketplaceBidConfirmation": "Conferma offerta nel marketplace",
+  "@marketplaceBidConfirmation": {
+    "description": "Nostr event kind 1022"
+  },
+  "openTimestamps": "OpenTimestamps",
+  "@openTimestamps": {
+    "description": "Nostr event kind 1040"
+  },
+  "giftWrap": "Confezione regalo",
+  "@giftWrap": {
+    "description": "Nostr event kind 1059"
+  },
+  "fileMetadata": "Metadati file",
+  "@fileMetadata": {
+    "description": "Nostr event kind 1063"
+  },
+  "poll": "Sondaggio",
+  "@poll": {
+    "description": "Nostr event kind 1068"
+  },
+  "comment": "Commento",
+  "@comment": {
+    "description": "Nostr event kind 1111"
+  },
+  "voiceMessage": "Messaggio vocale",
+  "@voiceMessage": {
+    "description": "Nostr event kind 1222"
+  },
+  "voiceMessageComment": "Commento al messaggio vocale",
+  "@voiceMessageComment": {
+    "description": "Nostr event kind 1244"
+  },
+  "liveChatMessage": "Messaggio nella chat in diretta",
+  "@liveChatMessage": {
+    "description": "Nostr event kind 1311"
+  },
+  "codeSnippet": "Frammento di codice",
+  "@codeSnippet": {
+    "description": "Nostr event kind 1337"
+  },
+  "gitPatch": "Patch Git",
+  "@gitPatch": {
+    "description": "Nostr event kind 1617"
+  },
+  "gitPullRequest": "Pull Request Git",
+  "@gitPullRequest": {
+    "description": "Nostr event kind 1618"
+  },
+  "gitStatusUpdate": "Aggiornamento stato Git",
+  "@gitStatusUpdate": {
+    "description": "Nostr event kind 1619"
+  },
+  "gitIssue": "Issue Git",
+  "@gitIssue": {
+    "description": "Nostr event kind 1621"
+  },
+  "gitIssueUpdate": "Aggiornamento issue Git",
+  "@gitIssueUpdate": {
+    "description": "Nostr event kind 1622"
+  },
+  "status": "Stato",
+  "@status": {
+    "description": "Nostr event kind 1630"
+  },
+  "statusUpdate": "Aggiornamento stato",
+  "@statusUpdate": {
+    "description": "Nostr event kind 1631"
+  },
+  "statusDelete": "Eliminazione stato",
+  "@statusDelete": {
+    "description": "Nostr event kind 1632"
+  },
+  "statusReply": "Risposta allo stato",
+  "@statusReply": {
+    "description": "Nostr event kind 1633"
+  },
+  "problemTracker": "Tracker problemi",
+  "@problemTracker": {
+    "description": "Nostr event kind 1971"
+  },
+  "reporting": "Segnalazione",
+  "@reporting": {
+    "description": "Nostr event kind 1984"
+  },
+  "label": "Etichetta",
+  "@label": {
+    "description": "Nostr event kind 1985"
+  },
+  "relayReviews": "Recensioni relay",
+  "@relayReviews": {
+    "description": "Nostr event kind 1986"
+  },
+  "aiEmbeddings": "Embedding AI / Liste vettoriali",
+  "@aiEmbeddings": {
+    "description": "Nostr event kind 1987"
+  },
+  "torrent": "Torrent",
+  "@torrent": {
+    "description": "Nostr event kind 2003"
+  },
+  "torrentComment": "Commento torrent",
+  "@torrentComment": {
+    "description": "Nostr event kind 2004"
+  },
+  "coinjoinPool": "Pool Coinjoin",
+  "@coinjoinPool": {
+    "description": "Nostr event kind 2022"
+  },
+  "communityPostApproval": "Approvazione post della community",
+  "@communityPostApproval": {
+    "description": "Nostr event kind 4550"
+  },
+  "jobRequest": "Richiesta di lavoro",
+  "@jobRequest": {
+    "description": "Nostr event kinds 5000-5999"
+  },
+  "jobResult": "Risultato lavoro",
+  "@jobResult": {
+    "description": "Nostr event kinds 6000-6999"
+  },
+  "jobFeedback": "Feedback sul lavoro",
+  "@jobFeedback": {
+    "description": "Nostr event kind 7000"
+  },
+  "cashuWalletToken": "Token portafoglio Cashu",
+  "@cashuWalletToken": {
+    "description": "Nostr event kind 7374"
+  },
+  "cashuWalletProofs": "Prove portafoglio Cashu",
+  "@cashuWalletProofs": {
+    "description": "Nostr event kind 7375"
+  },
+  "cashuWalletHistory": "Cronologia portafoglio Cashu",
+  "@cashuWalletHistory": {
+    "description": "Nostr event kind 7376"
+  },
+  "geocacheCreate": "Crea geocache",
+  "@geocacheCreate": {
+    "description": "Nostr event kind 7516"
+  },
+  "geocacheUpdate": "Aggiornamento geocache",
+  "@geocacheUpdate": {
+    "description": "Nostr event kind 7517"
+  },
+  "groupControlEvent": "Evento di controllo gruppo",
+  "@groupControlEvent": {
+    "description": "Nostr event kinds 9000-9030"
+  },
+  "zapGoal": "Obiettivo Zap",
+  "@zapGoal": {
+    "description": "Nostr event kind 9041"
+  },
+  "nutzap": "Nutzap",
+  "@nutzap": {
+    "description": "Nostr event kind 9321"
+  },
+  "tidalLogin": "Accesso Tidal",
+  "@tidalLogin": {
+    "description": "Nostr event kind 9467"
+  },
+  "zapRequest": "Richiesta Zap",
+  "@zapRequest": {
+    "description": "Nostr event kind 9734"
+  },
+  "zap": "Zap",
+  "@zap": {
+    "description": "Nostr event kind 9735"
+  },
+  "highlights": "In evidenza",
+  "@highlights": {
+    "description": "Nostr event kind 9802"
+  },
+  "muteList": "Lista silenziati",
+  "@muteList": {
+    "description": "Nostr event kind 10000"
+  },
+  "pinList": "Lista elementi fissati",
+  "@pinList": {
+    "description": "Nostr event kind 10001"
+  },
+  "relayListMetadata": "Metadati lista relay",
+  "@relayListMetadata": {
+    "description": "Nostr event kind 10002"
+  },
+  "bookmarkList": "Lista segnalibri",
+  "@bookmarkList": {
+    "description": "Nostr event kind 10003"
+  },
+  "communitiesList": "Lista community",
+  "@communitiesList": {
+    "description": "Nostr event kind 10004"
+  },
+  "publicChatsList": "Lista chat pubbliche",
+  "@publicChatsList": {
+    "description": "Nostr event kind 10005"
+  },
+  "blockedRelaysList": "Lista relay bloccati",
+  "@blockedRelaysList": {
+    "description": "Nostr event kind 10006"
+  },
+  "searchRelaysList": "Lista relay di ricerca",
+  "@searchRelaysList": {
+    "description": "Nostr event kind 10007"
+  },
+  "userGroups": "Gruppi utente",
+  "@userGroups": {
+    "description": "Nostr event kind 10009"
+  },
+  "favoritesList": "Lista preferiti",
+  "@favoritesList": {
+    "description": "Nostr event kind 10012"
+  },
+  "privateEventsList": "Lista eventi privati",
+  "@privateEventsList": {
+    "description": "Nostr event kind 10013"
+  },
+  "interestsList": "Lista interessi",
+  "@interestsList": {
+    "description": "Nostr event kind 10015"
+  },
+  "mediaFollowsList": "Lista media seguiti",
+  "@mediaFollowsList": {
+    "description": "Nostr event kind 10019"
+  },
+  "peopleFollowsList": "Lista persone seguite",
+  "@peopleFollowsList": {
+    "description": "Nostr event kind 10020"
+  },
+  "userEmojiList": "Lista emoji utente",
+  "@userEmojiList": {
+    "description": "Nostr event kind 10030"
+  },
+  "dmRelayList": "Lista relay DM",
+  "@dmRelayList": {
+    "description": "Nostr event kind 10050"
+  },
+  "keyPackageRelayList": "Lista relay pacchetti chiavi",
+  "@keyPackageRelayList": {
+    "description": "Nostr event kind 10051"
+  },
+  "userServerList": "Lista server utente",
+  "@userServerList": {
+    "description": "Nostr event kind 10063"
+  },
+  "fileStorageServerList": "Lista server di archiviazione file",
+  "@fileStorageServerList": {
+    "description": "Nostr event kind 10096"
+  },
+  "relayMonitorAnnouncement": "Annuncio monitor relay",
+  "@relayMonitorAnnouncement": {
+    "description": "Nostr event kind 10166"
+  },
+  "roomPresence": "Presenza nella stanza",
+  "@roomPresence": {
+    "description": "Nostr event kind 10312"
+  },
+  "proxyAnnouncement": "Annuncio proxy",
+  "@proxyAnnouncement": {
+    "description": "Nostr event kind 10377"
+  },
+  "transportMethodAnnouncement": "Annuncio metodo di trasporto",
+  "@transportMethodAnnouncement": {
+    "description": "Nostr event kind 11111"
+  },
+  "walletInfo": "Informazioni portafoglio",
+  "@walletInfo": {
+    "description": "Nostr event kind 13194"
+  },
+  "cashuWalletEvent": "Evento portafoglio Cashu",
+  "@cashuWalletEvent": {
+    "description": "Nostr event kind 17375"
+  },
+  "lightningPubRpc": "Lightning Pub RPC",
+  "@lightningPubRpc": {
+    "description": "Nostr event kind 21000"
+  },
+  "clientAuthentication": "Autenticazione client",
+  "@clientAuthentication": {
+    "description": "Nostr event kind 22242"
+  },
+  "walletRequest": "Richiesta portafoglio",
+  "@walletRequest": {
+    "description": "Nostr event kind 23194"
+  },
+  "walletResponse": "Risposta portafoglio",
+  "@walletResponse": {
+    "description": "Nostr event kind 23195"
+  },
+  "nostrConnectEvent": "Nostr Connect",
+  "@nostrConnectEvent": {
+    "description": "Nostr event kind 24133"
+  },
+  "blobsStoredOnMediaservers": "Blob archiviati sui media server",
+  "@blobsStoredOnMediaservers": {
+    "description": "Nostr event kind 24242"
+  },
+  "httpAuth": "Autenticazione HTTP",
+  "@httpAuth": {
+    "description": "Nostr event kind 27235"
+  },
+  "categorizedPeopleList": "Lista persone categorizzata",
+  "@categorizedPeopleList": {
+    "description": "Nostr event kind 30000"
+  },
+  "categorizedBookmarkList": "Lista segnalibri categorizzata",
+  "@categorizedBookmarkList": {
+    "description": "Nostr event kind 30001"
+  },
+  "categorizedRelayList": "Lista relay categorizzata",
+  "@categorizedRelayList": {
+    "description": "Nostr event kind 30002"
+  },
+  "bookmarkSets": "Raccolte segnalibri",
+  "@bookmarkSets": {
+    "description": "Nostr event kind 30003"
+  },
+  "curationSets": "Raccolte curate",
+  "@curationSets": {
+    "description": "Nostr event kind 30004"
+  },
+  "videoSets": "Raccolte video",
+  "@videoSets": {
+    "description": "Nostr event kind 30005"
+  },
+  "kindMuteSets": "Raccolte silenziamento tipo",
+  "@kindMuteSets": {
+    "description": "Nostr event kind 30007"
+  },
+  "profileBadges": "Badge profilo",
+  "@profileBadges": {
+    "description": "Nostr event kind 30008"
+  },
+  "badgeDefinition": "Definizione badge",
+  "@badgeDefinition": {
+    "description": "Nostr event kind 30009"
+  },
+  "interestSets": "Raccolte interessi",
+  "@interestSets": {
+    "description": "Nostr event kind 30015"
+  },
+  "createOrUpdateStall": "Crea o aggiorna il banco",
+  "@createOrUpdateStall": {
+    "description": "Nostr event kind 30017"
+  },
+  "createOrUpdateProduct": "Crea o aggiorna il prodotto",
+  "@createOrUpdateProduct": {
+    "description": "Nostr event kind 30018"
+  },
+  "marketplaceUiUx": "Interfaccia marketplace",
+  "@marketplaceUiUx": {
+    "description": "Nostr event kind 30019"
+  },
+  "productSoldAsAuction": "Prodotto venduto all'asta",
+  "@productSoldAsAuction": {
+    "description": "Nostr event kind 30020"
+  },
+  "longFormContent": "Contenuto lungo",
+  "@longFormContent": {
+    "description": "Nostr event kind 30023"
+  },
+  "draftLongFormContent": "Bozza contenuto lungo",
+  "@draftLongFormContent": {
+    "description": "Nostr event kind 30024"
+  },
+  "emojiSets": "Raccolte emoji",
+  "@emojiSets": {
+    "description": "Nostr event kind 30030"
+  },
+  "curatedPublicationItem": "Elemento pubblicazione curata",
+  "@curatedPublicationItem": {
+    "description": "Nostr event kind 30040"
+  },
+  "curatedPublicationDraft": "Bozza pubblicazione curata",
+  "@curatedPublicationDraft": {
+    "description": "Nostr event kind 30041"
+  },
+  "releaseArtifactSets": "Raccolte artefatti di rilascio",
+  "@releaseArtifactSets": {
+    "description": "Nostr event kind 30063"
+  },
+  "applicationSpecificData": "Dati specifici dell'applicazione",
+  "@applicationSpecificData": {
+    "description": "Nostr event kind 30078"
+  },
+  "relayDiscovery": "Scoperta relay",
+  "@relayDiscovery": {
+    "description": "Nostr event kind 30166"
+  },
+  "appCurationSets": "Raccolte curate delle app",
+  "@appCurationSets": {
+    "description": "Nostr event kind 30267"
+  },
+  "liveEvent": "Evento in diretta",
+  "@liveEvent": {
+    "description": "Nostr event kind 30311"
+  },
+  "userStatus": "Stato utente",
+  "@userStatus": {
+    "description": "Nostr event kind 30315"
+  },
+  "slideSet": "Raccolta slide",
+  "@slideSet": {
+    "description": "Nostr event kind 30388"
+  },
+  "classifiedListing": "Annuncio classificato",
+  "@classifiedListing": {
+    "description": "Nostr event kind 30402"
+  },
+  "draftClassifiedListing": "Bozza annuncio classificato",
+  "@draftClassifiedListing": {
+    "description": "Nostr event kind 30403"
+  },
+  "repositoryAnnouncement": "Annuncio repository",
+  "@repositoryAnnouncement": {
+    "description": "Nostr event kind 30617"
+  },
+  "repositoryStateAnnouncement": "Annuncio stato repository",
+  "@repositoryStateAnnouncement": {
+    "description": "Nostr event kind 30618"
+  },
+  "wikiArticle": "Articolo Wiki",
+  "@wikiArticle": {
+    "description": "Nostr event kind 30818"
+  },
+  "redirects": "Reindirizzamenti",
+  "@redirects": {
+    "description": "Nostr event kind 30819"
+  },
+  "draftEvent": "Bozza evento",
+  "@draftEvent": {
+    "description": "Nostr event kind 31234"
+  },
+  "linkSet": "Raccolta link",
+  "@linkSet": {
+    "description": "Nostr event kind 31388"
+  },
+  "feed": "Feed",
+  "@feed": {
+    "description": "Nostr event kind 31890"
+  },
+  "dateBasedCalendarEvent": "Evento calendario (data)",
+  "@dateBasedCalendarEvent": {
+    "description": "Nostr event kind 31922"
+  },
+  "timeBasedCalendarEvent": "Evento calendario (orario)",
+  "@timeBasedCalendarEvent": {
+    "description": "Nostr event kind 31923"
+  },
+  "calendar": "Calendario",
+  "@calendar": {
+    "description": "Nostr event kind 31924"
+  },
+  "calendarEventRsvp": "RSVP evento calendario",
+  "@calendarEventRsvp": {
+    "description": "Nostr event kind 31925"
+  },
+  "handlerRecommendation": "Raccomandazione handler",
+  "@handlerRecommendation": {
+    "description": "Nostr event kind 31989"
+  },
+  "handlerInformation": "Informazioni handler",
+  "@handlerInformation": {
+    "description": "Nostr event kind 31990"
+  },
+  "softwareApplication": "Applicazione software",
+  "@softwareApplication": {
+    "description": "Nostr event kind 32267"
+  },
+  "videoView": "Visualizzazione video",
+  "@videoView": {
+    "description": "Nostr event kind 34237"
+  },
+  "communityDefinition": "Definizione community",
+  "@communityDefinition": {
+    "description": "Nostr event kind 34550"
+  },
+  "geocacheListing": "Inserzione geocache",
+  "@geocacheListing": {
+    "description": "Nostr event kind 37516"
+  },
+  "mintAnnouncement": "Annuncio zecca",
+  "@mintAnnouncement": {
+    "description": "Nostr event kind 38172"
+  },
+  "mintQuote": "Preventivo zecca",
+  "@mintQuote": {
+    "description": "Nostr event kind 38173"
+  },
+  "peerToPeerOrder": "Ordine peer-to-peer",
+  "@peerToPeerOrder": {
+    "description": "Nostr event kind 38383"
+  },
+  "groupMetadata": "Metadati gruppo",
+  "@groupMetadata": {
+    "description": "Nostr event kind 39000"
+  },
+  "groupAdminMetadata": "Metadati admin gruppo",
+  "@groupAdminMetadata": {
+    "description": "Nostr event kind 39001"
+  },
+  "groupMemberMetadata": "Metadati membro gruppo",
+  "@groupMemberMetadata": {
+    "description": "Nostr event kind 39002"
+  },
+  "groupAdminsList": "Lista admin gruppo",
+  "@groupAdminsList": {
+    "description": "Nostr event kind 39003"
+  },
+  "groupMembersList": "Lista membri gruppo",
+  "@groupMembersList": {
+    "description": "Nostr event kind 39004"
+  },
+  "groupRoles": "Ruoli del gruppo",
+  "@groupRoles": {
+    "description": "Nostr event kind 39005"
+  },
+  "groupPermissions": "Permessi del gruppo",
+  "@groupPermissions": {
+    "description": "Nostr event kind 39006"
+  },
+  "groupChatMessage": "Messaggio chat di gruppo",
+  "@groupChatMessage": {
+    "description": "Nostr event kind 39007"
+  },
+  "groupChatThread": "Thread chat di gruppo",
+  "@groupChatThread": {
+    "description": "Nostr event kind 39008"
+  },
+  "groupPinned": "Fissato nel gruppo",
+  "@groupPinned": {
+    "description": "Nostr event kind 39009"
+  },
+  "starterPacks": "Pack iniziali",
+  "@starterPacks": {
+    "description": "Nostr event kind 39089"
+  },
+  "mediaStarterPacks": "Pack iniziali media",
+  "@mediaStarterPacks": {
+    "description": "Nostr event kind 39092"
+  },
+  "webBookmarks": "Segnalibri web",
+  "@webBookmarks": {
+    "description": "Nostr event kind 39701"
+  },
+  "unknownEventKind": "Tipo evento {kind}",
+  "@unknownEventKind": {
+    "description": "Fallback for unknown event kinds",
+    "placeholders": {
+      "kind": {
+        "type": "int",
+        "description": "The numeric kind identifier"
+      }
+    }
+  },
+  "walletsTitle": "Portafogli",
+  "@walletsTitle": {
+    "description": "Title for wallets section"
+  },
+  "recentActivityTitle": "Attività recente",
+  "@recentActivityTitle": {
+    "description": "Title for recent activity section"
+  },
+  "addCashuWallet": "Aggiungi portafoglio Cashu",
+  "@addCashuWallet": {
+    "description": "Label for add Cashu wallet button"
+  },
+  "addNwcWallet": "Aggiungi portafoglio NWC",
+  "@addNwcWallet": {
+    "description": "Label for add NWC wallet button"
+  },
+  "addLnurlWallet": "Aggiungi portafoglio LNURL",
+  "@addLnurlWallet": {
+    "description": "Label for add LNURL wallet button"
+  },
+  "addCashuTooltip": "Aggiungi portafoglio Cashu",
+  "@addCashuTooltip": {
+    "description": "Tooltip for add Cashu wallet button"
+  },
+  "addNwcTooltip": "Aggiungi portafoglio NWC",
+  "@addNwcTooltip": {
+    "description": "Tooltip for add NWC wallet button"
+  },
+  "addLnurlTooltip": "Aggiungi portafoglio LNURL",
+  "@addLnurlTooltip": {
+    "description": "Tooltip for add LNURL wallet button"
+  },
+  "addCashuWalletTitle": "Aggiungi portafoglio Cashu",
+  "@addCashuWalletTitle": {
+    "description": "Title for add Cashu wallet dialog"
+  },
+  "enterMintUrl": "Inserisci l'URL della zecca per aggiungere un portafoglio Cashu.",
+  "@enterMintUrl": {
+    "description": "Prompt for mint URL input"
+  },
+  "mintUrl": "URL zecca",
+  "@mintUrl": {
+    "description": "Label for mint URL input"
+  },
+  "mintUrlHint": "https://mint.example.com",
+  "@mintUrlHint": {
+    "description": "Hint for mint URL input"
+  },
+  "pleaseEnterMintUrl": "Inserisci un URL della zecca",
+  "@pleaseEnterMintUrl": {
+    "description": "Error message for empty mint URL"
+  },
+  "cashuWalletAdded": "Portafoglio Cashu aggiunto con successo!",
+  "@cashuWalletAdded": {
+    "description": "Success message when Cashu wallet is added"
+  },
+  "failedToAddMint": "Impossibile aggiungere la zecca. Controlla l'URL e riprova.",
+  "@failedToAddMint": {
+    "description": "Error message when adding Cashu wallet fails"
+  },
+  "addNwcWalletTitle": "Aggiungi portafoglio NWC",
+  "@addNwcWalletTitle": {
+    "description": "Title for add NWC wallet dialog"
+  },
+  "faucet": "Faucet",
+  "@faucet": {
+    "description": "Tab label for faucet option"
+  },
+  "manual": "Manuale",
+  "@manual": {
+    "description": "Tab label for manual option"
+  },
+  "nwcFaucetDescription": "Crea un portafoglio di test con sats dal faucet NWC.",
+  "@nwcFaucetDescription": {
+    "description": "Description for NWC faucet"
+  },
+  "startingBalance": "Saldo iniziale",
+  "@startingBalance": {
+    "description": "Label for starting balance input"
+  },
+  "startingBalanceHint": "10000",
+  "@startingBalanceHint": {
+    "description": "Hint for starting balance input"
+  },
+  "nwcConnectionUri": "URI connessione NWC",
+  "@nwcConnectionUri": {
+    "description": "Label for NWC connection URI input"
+  },
+  "nwcConnectionUriHint": "nostr+walletconnect://...",
+  "@nwcConnectionUriHint": {
+    "description": "Hint for NWC connection URI input"
+  },
+  "nwcWalletAdded": "Portafoglio NWC aggiunto con successo!",
+  "@nwcWalletAdded": {
+    "description": "Success message when NWC wallet is added"
+  },
+  "nwcFaucetWalletAdded": "Portafoglio NWC aggiunto con {balance} sats!",
+  "@nwcFaucetWalletAdded": {
+    "description": "Success message when NWC faucet wallet is added",
+    "placeholders": {
+      "balance": {
+        "type": "int",
+        "description": "The balance amount in sats"
+      }
+    }
+  },
+  "invalidFaucetResponse": "Risposta non valida dal faucet",
+  "@invalidFaucetResponse": {
+    "description": "Error message for invalid faucet response"
+  },
+  "errorCreatingWallet": "Errore durante la creazione del portafoglio",
+  "@errorCreatingWallet": {
+    "description": "Error message when creating NWC wallet fails"
+  },
+  "addLnurlWalletTitle": "Aggiungi portafoglio LNURL",
+  "@addLnurlWalletTitle": {
+    "description": "Title for add LNURL wallet dialog"
+  },
+  "enterLnurlIdentifier": "Inserisci il tuo identificatore LNURL (utente@dominio.com).",
+  "@enterLnurlIdentifier": {
+    "description": "Prompt for LNURL identifier input"
+  },
+  "lnurlIdentifierHint": "user@example.com",
+  "@lnurlIdentifierHint": {
+    "description": "Hint for LNURL identifier input"
+  },
+  "pleaseEnterValidIdentifier": "Inserisci un identificatore valido (utente@dominio.com)",
+  "@pleaseEnterValidIdentifier": {
+    "description": "Error message for invalid LNURL identifier"
+  },
+  "lnurlWalletAdded": "Portafoglio LNURL aggiunto con successo!",
+  "@lnurlWalletAdded": {
+    "description": "Success message when LNURL wallet is added"
+  },
+  "cancel": "Annulla",
+  "@cancel": {
+    "description": "Button label for cancel action"
+  },
+  "add": "Aggiungi",
+  "@add": {
+    "description": "Button label for add action"
+  },
+  "send": "Invia",
+  "@send": {
+    "description": "Label for send action"
+  },
+  "receive": "Ricevi",
+  "@receive": {
+    "description": "Label for receive action"
+  },
+  "setAsDefaultForReceiving": "Imposta come predefinito per ricevere",
+  "@setAsDefaultForReceiving": {
+    "description": "Menu option to set wallet as default for receiving"
+  },
+  "setAsDefaultForSending": "Imposta come predefinito per inviare",
+  "@setAsDefaultForSending": {
+    "description": "Menu option to set wallet as default for sending"
+  },
+  "defaultForReceiving": "Predefinito per ricevere",
+  "@defaultForReceiving": {
+    "description": "Menu label for wallet already default for receiving"
+  },
+  "defaultForSending": "Predefinito per inviare",
+  "@defaultForSending": {
+    "description": "Menu label for wallet already default for sending"
+  },
+  "defaultWalletForReceivingTooltip": "Questo portafoglio e il predefinito per ricevere pagamenti.",
+  "@defaultWalletForReceivingTooltip": {
+    "description": "Tooltip shown on receiving default ribbon"
+  },
+  "defaultWalletForSendingTooltip": "Questo portafoglio e il predefinito per inviare pagamenti.",
+  "@defaultWalletForSendingTooltip": {
+    "description": "Tooltip shown on sending default ribbon"
+  },
+  "sendOptionsTitle": "Opzioni di invio",
+  "@sendOptionsTitle": {
+    "description": "Title for send options sheet"
+  },
+  "sendByToken": "Invia con token",
+  "@sendByToken": {
+    "description": "Option for sending by token"
+  },
+  "sendByTokenDescription": "Crea un token Cashu da inviare",
+  "@sendByTokenDescription": {
+    "description": "Description for send by token option"
+  },
+  "sendByLightning": "Invia tramite Lightning",
+  "@sendByLightning": {
+    "description": "Option for sending by Lightning"
+  },
+  "sendByLightningDescription": "Paga una fattura Lightning",
+  "@sendByLightningDescription": {
+    "description": "Description for send by Lightning option"
+  },
+  "payInvoiceTitle": "Paga fattura",
+  "@payInvoiceTitle": {
+    "description": "Title for pay invoice dialog"
+  },
+  "invoice": "Fattura",
+  "@invoice": {
+    "description": "Label for invoice input"
+  },
+  "invoiceHint": "lnbc...",
+  "@invoiceHint": {
+    "description": "Hint for invoice input"
+  },
+  "pleaseEnterInvoice": "Inserisci una fattura",
+  "@pleaseEnterInvoice": {
+    "description": "Error message for empty invoice"
+  },
+  "invoicePaid": "Fattura pagata!",
+  "@invoicePaid": {
+    "description": "Success message when invoice is paid"
+  },
+  "paymentFailed": "Pagamento fallito: {message}",
+  "@paymentFailed": {
+    "description": "Error message when payment fails",
+    "placeholders": {
+      "message": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "receiveOptionsTitle": "Opzioni di ricezione",
+  "@receiveOptionsTitle": {
+    "description": "Title for receive options sheet"
+  },
+  "receiveByToken": "Ricevi con token",
+  "@receiveByToken": {
+    "description": "Option for receiving by token"
+  },
+  "receiveByTokenDescription": "Ricevi un token Cashu",
+  "@receiveByTokenDescription": {
+    "description": "Description for receive by token option"
+  },
+  "receiveByLightning": "Ricevi tramite Lightning",
+  "@receiveByLightning": {
+    "description": "Option for receiving by Lightning"
+  },
+  "receiveByLightningDescription": "Crea una fattura Lightning",
+  "@receiveByLightningDescription": {
+    "description": "Description for receive by Lightning option"
+  },
+  "receiveByTokenTitle": "Ricevi con token",
+  "@receiveByTokenTitle": {
+    "description": "Title for receive by token dialog"
+  },
+  "token": "Token",
+  "@token": {
+    "description": "Label for token input"
+  },
+  "tokenHint": "Incolla il token qui...",
+  "@tokenHint": {
+    "description": "Hint for token input"
+  },
+  "pleaseEnterToken": "Inserisci un token",
+  "@pleaseEnterToken": {
+    "description": "Error message for empty token"
+  },
+  "tokenReceived": "Token ricevuto!",
+  "@tokenReceived": {
+    "description": "Success message when token is received"
+  },
+  "createInvoiceTitle": "Crea fattura",
+  "@createInvoiceTitle": {
+    "description": "Title for create invoice dialog"
+  },
+  "amount": "Importo",
+  "@amount": {
+    "description": "Label for amount input"
+  },
+  "amountHint": "100",
+  "@amountHint": {
+    "description": "Hint for amount input"
+  },
+  "pleaseEnterValidAmount": "Inserisci un importo valido",
+  "@pleaseEnterValidAmount": {
+    "description": "Error message for invalid amount"
+  },
+  "tokenCopiedToClipboard": "Token copiato negli appunti!",
+  "@tokenCopiedToClipboard": {
+    "description": "Success message when token is copied to clipboard"
+  },
+  "invoiceCreatedAndCopied": "Fattura creata e copiata!",
+  "@invoiceCreatedAndCopied": {
+    "description": "Success message when invoice is created and copied"
+  },
+  "invoiceTrackingTitle": "Fattura Lightning",
+  "@invoiceTrackingTitle": {
+    "description": "Title for invoice tracking dialog"
+  },
+  "invoiceCreatedMessage": "Fattura creata e copiata!",
+  "@invoiceCreatedMessage": {
+    "description": "Message shown when invoice is created"
+  },
+  "close": "Chiudi",
+  "@close": {
+    "description": "Label for close button"
+  },
+  "copyAgain": "Copia di nuovo",
+  "@copyAgain": {
+    "description": "Label for copy again button"
+  },
+  "copied": "Copiato!",
+  "@copied": {
+    "description": "Message shown when copied"
+  },
+  "paymentReceived": "Pagamento ricevuto!",
+  "@paymentReceived": {
+    "description": "Message shown when payment is received"
+  },
+  "waitingForPayment": "In attesa del pagamento...",
+  "@waitingForPayment": {
+    "description": "Status message while waiting for payment"
+  },
+  "paid": "Pagato!",
+  "@paid": {
+    "description": "Status message when payment is complete"
+  },
+  "createToken": "Crea token",
+  "@createToken": {
+    "description": "Label for create token button"
+  },
+  "pay": "Paga",
+  "@pay": {
+    "description": "Label for pay button"
+  },
+  "create": "Crea",
+  "@create": {
+    "description": "Label for create button"
+  },
+  "pendingTransactions": "In sospeso",
+  "@pendingTransactions": {
+    "description": "Title for pending transactions section"
+  },
+  "recentTransactions": "Transazioni recenti",
+  "@recentTransactions": {
+    "description": "Title for recent transactions section"
+  },
+  "noRecentTransactions": "Nessuna transazione recente",
+  "@noRecentTransactions": {
+    "description": "Message shown when there are no recent transactions"
+  },
+  "noWalletsYet": "Nessun portafoglio",
+  "@noWalletsYet": {
+    "description": "Message shown when there are no wallets"
+  },
+  "noWalletsAvailable": "Nessun portafoglio disponibile",
+  "@noWalletsAvailable": {
+    "description": "Message shown when no wallets are available"
+  },
+  "tapToAddWallet": "Tocca + per aggiungerne uno",
+  "@tapToAddWallet": {
+    "description": "Hint to add a wallet"
+  },
+  "delete": "Elimina",
+  "@delete": {
+    "description": "Label for delete action"
+  },
+  "error": "Errore: {message}",
+  "@error": {
+    "description": "Error message for general errors",
+    "placeholders": {
+      "message": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "unknownWalletType": "Sconosciuto",
+  "@unknownWalletType": {
+    "description": "Label for unknown wallet type"
+  },
+  "cashuWallet": "Cashu",
+  "@cashuWallet": {
+    "description": "Label for Cashu wallet type"
+  },
+  "nwcWallet": "NWC",
+  "@nwcWallet": {
+    "description": "Label for NWC wallet type"
+  },
+  "lnurlWallet": "LNURL",
+  "@lnurlWallet": {
+    "description": "Label for LNURL wallet type"
+  },
+  "nwcWalletSubtitle": "Portafoglio NWC",
+  "@nwcWalletSubtitle": {
+    "description": "Subtitle for NWC wallet"
+  },
+  "balance": "Saldo",
+  "@balance": {
+    "description": "Label for balance display"
+  },
+  "sats": "sats",
+  "@sats": {
+    "description": "Label for sats"
+  },
+  "selected": "SELEZIONATO",
+  "@selected": {
+    "description": "Label shown when a wallet is selected"
+  },
+  "receiveOnlyWallet": "Portafoglio solo ricezione",
+  "@receiveOnlyWallet": {
+    "description": "Label for receive-only wallet"
+  },
+  "receiveRange": "Ricezione: {min} - {max} sats",
+  "@receiveRange": {
+    "description": "Label showing receive range for LNURL wallet",
+    "placeholders": {
+      "min": {
+        "type": "int",
+        "description": "Minimum amount"
+      },
+      "max": {
+        "type": "int",
+        "description": "Maximum amount"
+      }
+    }
+  },
+  "limitsUnavailable": "Limiti non disponibili",
+  "@limitsUnavailable": {
+    "description": "Message shown when limits are unavailable"
+  },
+  "tokenCopied": "Token copiato",
+  "deleteWalletConfirmation": "Eliminare Portafoglio?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "Sei sicuro di voler eliminare questo portafoglio? Questa azione non può essere annullata.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "@tokenCopied": {
+    "description": "Message shown when token is copied"
+  },
+  "addWalletTitle": "Aggiungi Portafoglio",
+  "@addWalletTitle": {
+    "description": "Title for add wallet dialog"
+  },
+  "chooseWalletType": "Scegli il tipo di portafoglio",
+  "@chooseWalletType": {
+    "description": "Prompt to choose wallet type"
+  },
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "nwcWalletTypeSubtitle": "Connetti un portafoglio remoto con NWC",
+  "lnurlWalletTypeTitle": "LNURL / Indirizzo Lightning",
+  "lnurlWalletTypeSubtitle": "Usa un portafoglio custodial con LNURL o un indirizzo Lightning",
+  "cashuWalletTypeTitle": "Cashu",
+  "cashuWalletTypeSubtitle": "Usa un portafoglio ecash basato su una mint Cashu",
+  "cashuOption": "Cashu",
+  "@cashuOption": {
+    "description": "Label for Cashu wallet option"
+  },
+  "nwcOption": "NWC",
+  "@nwcOption": {
+    "description": "Label for NWC wallet option"
+  },
+  "lnurlOption": "LNURL",
+  "@lnurlOption": {
+    "description": "Label for LNURL wallet option"
+  },
+  "connectNwcTitle": "Connetti NWC",
+  "@connectNwcTitle": {
+    "description": "Title for NWC connection dialog"
+  },
+  "chooseNwcMethod": "Scegli il metodo di connessione",
+  "@chooseNwcMethod": {
+    "description": "Prompt to choose NWC connection method"
+  },
+  "albyGoOption": "Alby Go",
+  "@albyGoOption": {
+    "description": "Label for Alby Go option"
+  },
+  "manualOption": "Manuale",
+  "@manualOption": {
+    "description": "Label for manual connection option"
+  },
+  "faucetOption": "Faucet",
+  "@faucetOption": {
+    "description": "Label for faucet option"
+  },
+  "invalidNwcQrCode": "Codice QR NWC non valido",
+  "@invalidNwcQrCode": {
+    "description": "Error message for invalid NWC QR code"
+  },
+  "scanNwcQrCodeTitle": "Scansiona codice QR NWC",
+  "@scanNwcQrCodeTitle": {
+    "description": "Title for scanning NWC QR code"
+  },
+  "cameraNotAvailable": "Fotocamera non disponibile",
+  "@cameraNotAvailable": {
+    "description": "Message shown when camera is not available"
+  },
+  "scanNwcInstructions": "Scansiona il codice QR dalla tua app di portafoglio NWC",
+  "@scanNwcInstructions": {
+    "description": "Instructions for scanning NWC QR code"
+  },
+  "invalidNwcUri": "URI NWC non valido",
+  "@invalidNwcUri": {
+    "description": "Error message for invalid NWC URI"
+  },
+  "paste": "Incolla",
+  "@paste": {
+    "description": "Label for paste action"
+  },
+  "fromYourProfile": "Dal tuo profilo",
+  "@fromYourProfile": {
+    "description": "Label indicating a value comes from user's profile"
+  },
+  "orEnterManually": "Oppure inserisci manualmente:",
+  "@orEnterManually": {
+    "description": "Label for manual entry option"
+  },
+  "budgetUsedOf": "Bilancio: {used} / {total}",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Si rinnova in {days} giorni",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Giornaliero",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Settimanale",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Mensile",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Annuale",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Mai",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Rinomina",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Scegli colore",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Elimina",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Nome del portafoglio",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Inserisci il nome del portafoglio",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Salva",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Portafoglio rinominato",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
+}

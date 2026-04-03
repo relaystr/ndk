@@ -7,6 +7,7 @@ library;
 
 export 'presentation_layer/ndk.dart';
 export 'presentation_layer/ndk_config.dart';
+export 'src/version.dart';
 export 'domain_layer/entities/ndk_request.dart';
 export 'domain_layer/entities/request_response.dart';
 export 'domain_layer/entities/broadcast_response.dart';
@@ -30,12 +31,16 @@ export 'domain_layer/entities/metadata.dart';
 export 'domain_layer/entities/event_filter.dart';
 
 export 'domain_layer/usecases/nwc/responses/get_balance_response.dart';
+export 'domain_layer/usecases/nwc/responses/get_budget_response.dart';
 export 'domain_layer/usecases/nwc/responses/get_info_response.dart';
 export 'domain_layer/usecases/nwc/responses/make_invoice_response.dart';
 export 'domain_layer/usecases/nwc/responses/pay_invoice_response.dart';
 export 'domain_layer/usecases/nwc/responses/list_transactions_response.dart';
 export 'domain_layer/usecases/nwc/responses/lookup_invoice_response.dart';
 export 'domain_layer/usecases/nwc/nwc_connection.dart';
+export 'domain_layer/usecases/nwc/nostr_wallet_connect_uri.dart';
+export 'domain_layer/usecases/nwc/consts/nwc_method.dart';
+export 'domain_layer/usecases/nwc/consts/budget_renewal_period.dart';
 export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/blossom_strategies.dart';
 export 'domain_layer/entities/blob_upload_progress.dart';
@@ -53,6 +58,7 @@ export 'domain_layer/entities/account.dart';
 export 'domain_layer/repositories/event_verifier.dart';
 export 'domain_layer/repositories/event_signer.dart';
 export 'data_layer/repositories/verifiers/bip340_event_verifier.dart';
+export 'data_layer/repositories/verifiers/rust_event_verifier.dart';
 export 'data_layer/repositories/signers/bip340_event_signer.dart';
 export 'domain_layer/entities/pending_signer_request.dart';
 export 'domain_layer/entities/signer_request_cancelled_exception.dart';
@@ -61,7 +67,8 @@ export 'domain_layer/entities/signer_request_rejected_exception.dart';
 /// cache
 export 'domain_layer/repositories/cache_manager.dart';
 export 'data_layer/repositories/cache_manager/mem_cache_manager.dart';
-// export 'data_layer/repositories/cache_manager/db_cache_manager.dart';
+export 'data_layer/repositories/cache_manager/sembast_cache_manager.dart'
+    if (dart.library.io) 'data_layer/repositories/cache_manager/sembast_cache_manager.dart';
 
 /**
  * common usecases
@@ -87,6 +94,12 @@ export 'domain_layer/usecases/accounts/accounts.dart';
 export 'domain_layer/usecases/files/blossom_user_server_list.dart';
 export 'domain_layer/usecases/search/search.dart';
 export 'domain_layer/usecases/gift_wrap/gift_wrap.dart';
+export 'domain_layer/usecases/cashu/cashu.dart';
+export 'domain_layer/usecases/cashu/cashu_seed.dart';
+export 'domain_layer/entities/cashu/cashu_blinded_message.dart';
+export 'domain_layer/entities/cashu/cashu_blinded_signature.dart';
+export 'domain_layer/entities/cashu/cashu_restore_result.dart';
+export 'domain_layer/usecases/wallets/wallets.dart';
 export 'domain_layer/usecases/bunkers/bunkers.dart';
 export 'domain_layer/usecases/bunkers/models/bunker_connection.dart';
 export 'domain_layer/usecases/bunkers/models/nostr_connect.dart';

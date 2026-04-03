@@ -181,8 +181,7 @@ class DbMetadata {
       updatedAt: ndkM.updatedAt,
       refreshedTimestamp: ndkM.refreshedTimestamp,
       tagsJson: ndkM.tags.isNotEmpty ? jsonEncode(ndkM.tags) : null,
-      rawContentJson:
-          ndkM.content.isNotEmpty ? jsonEncode(ndkM.content) : null,
+      rawContentJson: ndkM.content.isNotEmpty ? jsonEncode(ndkM.content) : null,
     );
 
     return dbM;

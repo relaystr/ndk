@@ -1,3 +1,0 @@
-package packages.ndk_amber.android
-
-rootProject.name = 'amberflutter'

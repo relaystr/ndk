@@ -30,7 +30,7 @@ class HomePage extends StatelessWidget {
                         const AppGap.s16(),
                         const AppText.h1('Zaplab'),
                         const AppGap.s8(),
-                        AppText.med16(
+                        const AppText.med16(
                           'Demo App',
                           color: Colors.white60
                           // theme.colors.white66,
