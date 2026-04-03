@@ -1,22 +1,40 @@
 import 'dart:io';
+
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
 import 'package:sembast/sembast_io.dart';
+import 'package:sembast_web/sembast_web.dart';
 import 'ndk_extensions.dart';
 import 'package:path/path.dart' as p;
 
 class SembastCacheManager extends CacheManager {
   static Future<SembastCacheManager> create({
-    required String databasePath,
+    String? databasePath,
     String databaseName = "sembast_cache_manager",
   }) async {
-    final dbFileName = "$databaseName.db";
-    final dbPath = p.join(databasePath, dbFileName);
+    // Detect web platform - works in Dart and Flutter
+    const isWeb = identical(0, 0.0);
 
-    await Directory(databasePath).create(recursive: true);
+    final sembast.Database database;
+    if (isWeb) {
+      // On web, use IndexedDB via sembast_web (databasePath is ignored)
+      database = await databaseFactoryWeb.openDatabase(databaseName);
+    } else {
+      // On native platforms, databasePath is required
+      if (databasePath == null || databasePath.isEmpty) {
+        throw ArgumentError(
+          'databasePath is required on native platforms. '
+          'Provide a valid directory path for database storage.',
+        );
+      }
 
-    final database = await databaseFactoryIo.openDatabase(dbPath);
+      await Directory(databasePath).create(recursive: true);
+      final dbFileName = "$databaseName.db";
+      final dbPath = p.join(databasePath, dbFileName);
+      database = await databaseFactoryIo.openDatabase(dbPath);
+    }
+
     return SembastCacheManager(database);
   }
 

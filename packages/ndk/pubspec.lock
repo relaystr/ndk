@@ -369,6 +369,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  idb_shim:
+    dependency: transitive
+    description:
+      name: idb_shim
+      sha256: "62b37b2415074f3c104e93b22c3ef24c4adc52890e74c30ed36a09dd0948a2de"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.8.5+1"
   io:
     dependency: transitive
     description:
@@ -444,9 +452,10 @@ packages:
   ndk_bip32_keys:
     dependency: "direct main"
     description:
-      path: "../bip32_keys"
-      relative: true
-    source: path
+      name: ndk_bip32_keys
+      sha256: "6bc311451646b6d488ca8e4c9907dc0e8486d93de752d5ab09c5c7b6c96238d8"
+      url: "https://pub.dev"
+    source: hosted
     version: "0.1.0"
   ndk_cache_manager_test_suite:
     dependency: "direct dev"
@@ -551,6 +560,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.8.6"
+  sembast_web:
+    dependency: "direct main"
+    description:
+      name: sembast_web
+      sha256: eaeb2f14613098fb8b363b01ae4e280031736b7ae1aa38653dbee0d47af6e3ea
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.4+1"
   shelf:
     dependency: "direct dev"
     description:
