@@ -63,7 +63,11 @@ class TrustedAssertions {
       providersByRelay.putIfAbsent(provider.relay, () => []).add(provider);
     }
 
-    Nip85UserMetrics? result;
+    final aggregatedMetrics = <Nip85Metric, dynamic>{};
+    final metricCreatedAt = <Nip85Metric, int>{};
+    final topics = <String>{};
+    String? latestProviderPubkey;
+    String? latestPubkey;
     int latestCreatedAt = 0;
 
     // Query each relay
@@ -87,9 +91,23 @@ class TrustedAssertions {
             )
             .stream) {
           final parsed = _parseUserMetricsEvent(event, metrics);
-          if (parsed != null && parsed.createdAt > latestCreatedAt) {
-            result = parsed;
+          if (parsed == null) continue;
+
+          parsed.metrics.forEach((metric, value) {
+            final currentMetricCreatedAt = metricCreatedAt[metric] ?? -1;
+            if (parsed.createdAt >= currentMetricCreatedAt) {
+              aggregatedMetrics[metric] = value;
+              metricCreatedAt[metric] = parsed.createdAt;
+            }
+          });
+
+          if (parsed.createdAt >= latestCreatedAt) {
             latestCreatedAt = parsed.createdAt;
+            latestProviderPubkey = parsed.providerPubkey;
+            latestPubkey = parsed.pubkey;
+            topics
+              ..clear()
+              ..addAll(parsed.topics);
           }
         }
       } catch (_) {
@@ -97,7 +115,17 @@ class TrustedAssertions {
       }
     }
 
-    return result;
+    if (latestProviderPubkey == null) {
+      return null;
+    }
+
+    return Nip85UserMetrics(
+      pubkey: latestPubkey ?? pubkey,
+      providerPubkey: latestProviderPubkey,
+      createdAt: latestCreatedAt,
+      metrics: aggregatedMetrics,
+      topics: topics.toList(),
+    );
   }
 
   /// Stream user metrics from trusted providers
@@ -133,6 +161,12 @@ class TrustedAssertions {
 
     // Track subscriptions for cleanup
     final subscriptionIds = <String>[];
+    final aggregatedMetrics = <Nip85Metric, dynamic>{};
+    final metricCreatedAt = <Nip85Metric, int>{};
+    final topics = <String>{};
+    String? latestProviderPubkey;
+    String? latestPubkey;
+    int latestCreatedAt = 0;
 
     // Subscribe to each relay
     for (final entry in providersByRelay.entries) {
@@ -154,8 +188,35 @@ class TrustedAssertions {
       response.stream.listen(
         (event) {
           final parsed = _parseUserMetricsEvent(event, metrics);
-          if (parsed != null) {
-            controller.add(parsed);
+          if (parsed == null) return;
+
+          parsed.metrics.forEach((metric, value) {
+            final currentMetricCreatedAt = metricCreatedAt[metric] ?? -1;
+            if (parsed.createdAt >= currentMetricCreatedAt) {
+              aggregatedMetrics[metric] = value;
+              metricCreatedAt[metric] = parsed.createdAt;
+            }
+          });
+
+          if (parsed.createdAt >= latestCreatedAt) {
+            latestCreatedAt = parsed.createdAt;
+            latestProviderPubkey = parsed.providerPubkey;
+            latestPubkey = parsed.pubkey;
+            topics
+              ..clear()
+              ..addAll(parsed.topics);
+          }
+
+          if (latestProviderPubkey != null) {
+            controller.add(
+              Nip85UserMetrics(
+                pubkey: latestPubkey ?? pubkey,
+                providerPubkey: latestProviderPubkey!,
+                createdAt: latestCreatedAt,
+                metrics: Map.from(aggregatedMetrics),
+                topics: topics.toList(),
+              ),
+            );
           }
         },
         onError: (e) {
