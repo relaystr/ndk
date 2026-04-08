@@ -101,4 +101,7 @@ class ClientMsgType {
   static const String kEvent = "EVENT";
   static const String kCount = "COUNT";
   static const String kAuth = "AUTH";
+  static const String kNegOpen = "NEG-OPEN";
+  static const String kNegMsg = "NEG-MSG";
+  static const String kNegClose = "NEG-CLOSE";
 }

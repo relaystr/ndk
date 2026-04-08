@@ -40,6 +40,7 @@ import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/lnurl/lnurl.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/nip_05.dart';
+import '../domain_layer/usecases/nip77/nip77.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
@@ -98,6 +99,8 @@ class Initialization {
   late ProofOfWork proofOfWork;
 
   late Nip05Usecase nip05;
+  late Nip77Internal _nip77Internal;
+  late Nip77 nip77;
 
   late final NetworkEngine engine;
 
@@ -311,7 +314,23 @@ class Initialization {
     );
     proofOfWork = ProofOfWork();
 
+    _nip77Internal = Nip77Internal(
+      globalState: _globalState,
+      relayManager: relayManager,
+      cacheManager: _ndkConfig.cache,
+    );
+    nip77 = _nip77Internal.publicApi;
+
+    // Wire up NIP-77 handlers
+    relayManager.onNegMsg = _nip77Internal.processNegMsg;
+    relayManager.onNegErr = _nip77Internal.processNegErr;
+
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
+  }
+
+  /// Close all active NIP-77 negotiations
+  void closeAllNip77Negotiations() {
+    _nip77Internal.closeAll();
   }
 }
