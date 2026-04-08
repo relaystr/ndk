@@ -169,6 +169,7 @@ class Nip77Internal {
         cleanUrl,
         connectionSource: ConnectionSource.explicit,
       );
+      if (state.isCompleted) return; // Guard: timeout may have fired during await
       if (!connected) {
         state.completeWithError(Exception('Failed to connect to relay: $cleanUrl'));
         _globalState.inFlightNegotiations.remove(subscriptionId);
@@ -191,6 +192,7 @@ class Nip77Internal {
       } else {
         localItems = await _buildItemsFromFilter(filter);
       }
+      if (state.isCompleted) return; // Guard: timeout may have fired during await
 
       // Update state with local items
       state.localItems.addAll(localItems);
@@ -200,7 +202,8 @@ class Nip77Internal {
           neg.NegentropyEncoder.createInitialMessage(localItems, neg.NegentropyEncoder.idSize);
       final initialPayload = neg.NegentropyEncoder.bytesToHex(initialMessage);
 
-      // Send NEG-OPEN
+      // Send NEG-OPEN (final guard before network action)
+      if (state.isCompleted) return;
       final negOpen = ['NEG-OPEN', subscriptionId, filter.toMap(), initialPayload];
       _relayManager.getRelayConnectivity(cleanUrl)?.relayTransport?.send(
             jsonEncode(negOpen),
