@@ -170,8 +170,15 @@ class Ndk {
   /// Trusted Assertions (NIP-85)
   ///
   /// Fetch pre-computed metrics from trusted service providers.
-  @experimental
+  @experimental // api might change
   TrustedAssertions get ta => _initialization.trustedAssertions;
+
+  /// Trusted Assertions (NIP-85)
+  ///
+  /// Fetch pre-computed metrics from trusted service providers.
+  /// short alias for trusted assertions => ndk.ta.getMetrics()
+  @experimental // api might change
+  TrustedAssertions get trustedAssertions => ta;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {
