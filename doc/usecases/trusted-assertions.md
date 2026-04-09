@@ -65,7 +65,7 @@ final user = await ndk.ta.getUserMetrics(
 print('user rank=${user?.rank} postCount=${user?.postCount}');
 ```
 
-## 3) Streaming updates (recommended for JIT assertions)
+## 3) Streaming updates (recommended for trust providers that stream their values like cipolin)
 
 Providers like [Cipolin](https://github.com/nogringo/cipolin/) emit progressive updates while syncing, so streaming APIs are the best fit.
 
