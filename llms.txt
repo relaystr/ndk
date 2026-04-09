@@ -1,0 +1,59 @@
+﻿# Dart Nostr Development Kit (NDK)
+
+> Build Status Coverage Pub License
+
+- [Dart Nostr Development Kit (NDK)](https://dart-nostr.com/index.md): Dart Nostr Development Kit (NDK)
+- [Guides](https://dart-nostr.com/guides/index.md)
+- [Use Cases](https://dart-nostr.com/usecases/index.md)
+- [Concepts](https://dart-nostr.com/concepts/index.md)
+- [Common terminology](https://dart-nostr.com/common-terminology.md): term
+- [Library development 🏗️](https://dart-nostr.com/library-development/index.md): Install prerequisites
+
+## Guides
+
+- [Getting started](https://dart-nostr.com/guides/getting-started.md): Ndk has a core package ndk and optional packages like amber and objectbox
+- [Enabling gossip](https://dart-nostr.com/guides/enabling-gossip.md): The simplest way to enable inbox/outbox (gossip) is to use the JIT engine, as it does everything automatically.
+- [Persistence](https://dart-nostr.com/guides/persistence.md): Ndk comes with several database offerings. The simplest is the MemCacheManager which is an in-memory cache. This is useful for testing and small applications.
+- [Tips](https://dart-nostr.com/guides/tips.md): If you have a relatively simple app you can initialize ndk in your main method and pass down ndk on the widget tree. For more more complex applications we recommend using riverpod or simmilar packages/methods (get_it, singletons etc).
+
+## Use Cases
+
+- [Trusted Assertions (NIP-85)](https://dart-nostr.com/usecases/trusted-assertions.md): Trusted assertions are data events computed by a provider. It's useful when certain operations might be too expensive (bandwidth, compute) on the edge device.
+- [Accounts](https://dart-nostr.com/usecases/accounts.md): Store the BunkerConnection details locally to re-establish the connection in future sessions. Use bunkerConnection.toJson() to serialize and BunkerConnection.fromJson() to restore.
+- [Blossom](https://dart-nostr.com/usecases/blossom.md): For a simpler, more generic API, check out Blossom
+- [Broadcast](https://dart-nostr.com/usecases/broadcast.md): You might encounter a warning about missing nip65 data. You can ignore this warning to use NDK with your specified/default relays. If you want to use the outbox model, check out the enabling gossip guide (recommended).
+- [cashu - eCash](https://dart-nostr.com/usecases/cashu.md): DO NOT USE IN PRODUCTION!
+- [Connectivity](https://dart-nostr.com/usecases/connectivity.md): Ndk uses exponential backoff to reconnect to relays. The reconnect interval might be too long when the app is in the background and then resumed. You can instantly reconnect using the tryReconnect() method, as shown in the example above.
+- [Domain verification (nip05)](https://dart-nostr.com/usecases/domain-verification-(nip05).md): Uses caching so there are no repeated network requests if you call this multiple times. Use this when you need to verify a domain. If you call this, the result is automatically used as inbox/outbox information.
+- [Files](https://dart-nostr.com/usecases/files.md): Files uses blossom under the hood to get, upload and delete files. The default user server list, specified by kind 10063 is used for upload and delete
+- [Follows](https://dart-nostr.com/usecases/follows.md): Gives you the list of contacts for a given pubKey.
+- [Gift Wrap](https://dart-nostr.com/usecases/gift-wrap.md): Gift Wrap depends on the logged in user (accounts usecase) make sure you are logged in with the right user
+- [Lists](https://dart-nostr.com/usecases/lists.md): We distinguish between lists and sets:
+- [Metadata](https://dart-nostr.com/usecases/metadata.md): Gives you the metadata for a given pubkey. Uses caching, so repeated calls are ok.
+- [Nwc](https://dart-nostr.com/usecases/nwc.md): You need a nostr+walletconnect://... uri from your NWC wallet service provider.
+- [Relay sets](https://dart-nostr.com/usecases/relay-sets.md): Calculates the best relays for a given set of pubkeys. It's used by inbox/outbox. This allows for granular control in the relaySets engine. E.g. calculating the best relays for a thread view.
+- [Requests](https://dart-nostr.com/usecases/requests.md): Relays can misbehave and return events that do not match your query filters.
+- [User relay lists](https://dart-nostr.com/usecases/user-relay-lists.md): User relay lists provides you with the relays for a given user. It orients itself on nip65 but also uses data from nip02 in case nip65 is not available. It's used by inbox/outbox; only use this if you are doing something custom that is not directly handled by inbox/outbox.
+- [Wallets](https://dart-nostr.com/usecases/wallets.md): DO NOT USE IN PRODUCTION!
+- [Zaps](https://dart-nostr.com/usecases/zaps.md): You need a nostr+walletconnect://... uri from your NWC wallet service provider.
+
+## Concepts
+
+### Engines
+
+- [Engines](https://dart-nostr.com/concepts/engines/engines.md): NDK ships with two network Engines. An Engine is part of the code that resolves nostr requests over the network and handles the WebSocket connections. Its used to handle the inbox/outbox (gossip) model efficiently.
+- [Relay JIT Engine](https://dart-nostr.com/concepts/engines/jit_engine/readme.md): The idea is to resolve relays just in time as the requests from the library user stream in. This has the benefit that only the currently needed relays are connected, and requests get automatically split.
+- [Gossip](https://dart-nostr.com/concepts/gossip.md): The simplest characterization of the gossip model is just this: reading the posts of people you follow from the relays that they wrote them to.
+- [NIP-42 Authentication](https://dart-nostr.com/concepts/nip42-auth.md): NDK handles NIP-42 relay authentication automatically. When a relay requires authentication, NDK will sign and send AUTH events, then retry the original request.
+- [Performance](https://dart-nostr.com/concepts/performance.md): There are two main constrains that we aim for: battery/compute and network bandwidth.
+- [Signers](https://dart-nostr.com/concepts/signers.md): Signers are responsible for cryptographic operations: signing events, encrypting and decrypting messages. NDK supports multiple signer types with a unified API.
+
+## Library Development
+
+- [Contributing to NDK](https://dart-nostr.com/library-development/contributing.md): We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
+
+### ADRs
+
+- [ADRs](https://dart-nostr.com/library-development/adrs/index.md)
+- [Architecture Decision Record: Layered Architecture](https://dart-nostr.com/library-development/adrs/layerd-architecture.md): Title: Layered Architecture - folder structure
+- [Architecture Decision Record: Wallet Cashu API](https://dart-nostr.com/library-development/adrs/wallet-cashu.md): Title: Wallet Cashu - api design

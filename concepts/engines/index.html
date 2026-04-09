@@ -4,24 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.4.0.828309657070">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.4.0">
+    <meta name="generator" content="Retype 4.5.2">
 
     <!-- Primary Meta Tags -->
     <title>Engines</title>
     <meta name="title" content="Engines">
-    <meta name="description" content="NDK ships with two network Engines. An Engine is part of the code that resolves nostr requests over the network and handles the WebSocket connections. Its">
+    <meta name="description" content="NDK ships with two network Engines. An Engine is part of the code that resolves nostr requests over the network and handles the WebSocket connections. Its used to handle the inbox/outbox (gossip) model efficiently.">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/concepts/engines/">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://dart-nostr.com/sitemap.xml">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dart-nostr.com/concepts/engines/">
     <meta property="og:title" content="Engines">
-    <meta property="og:description" content="NDK ships with two network Engines. An Engine is part of the code that resolves nostr requests over the network and handles the WebSocket connections. Its">
+    <meta property="og:description" content="NDK ships with two network Engines. An Engine is part of the code that resolves nostr requests over the network and handles the WebSocket connections. Its used to handle the inbox/outbox (gossip) model efficiently.">
     <meta property="og:site_name" content="NDK">
     <meta property="og:locale" content="en_US">
 
@@ -29,15 +30,18 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://dart-nostr.com/concepts/engines/">
     <meta name="twitter:title" content="Engines">
-    <meta name="twitter:description" content="NDK ships with two network Engines. An Engine is part of the code that resolves nostr requests over the network and handles the WebSocket connections. Its">
+    <meta name="twitter:description" content="NDK ships with two network Engines. An Engine is part of the code that resolves nostr requests over the network and handles the WebSocket connections. Its used to handle the inbox/outbox (gossip) model efficiently.">
+
+    <!-- Alternate Markdown -->
+    <link rel="alternate" type="text/markdown" href="https://dart-nostr.com/concepts/engines/engines.md">
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.4.0.828309657070" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.4.0.828309657070" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.4.0.828309657070" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -143,9 +147,11 @@
 <div class="flex">
     <div id="retype-main" class="min-w-0 p-4 grow md:px-16">
         <main class="relative pb-12 lg:pt-2">
-            <div class="retype-markdown" id="retype-content">
+            <div class="relative retype-markdown" id="retype-content">
                 <!-- Rendered if sidebar right is enabled -->
                 <div id="retype-sidebar-right-toggle"></div>
+                <doc-page-actions></doc-page-actions>
+
                 <!-- Page content  -->
 <h1 id="engines">Engines</h1>
 <h2 id="engines-1">Engines</h2>
@@ -236,6 +242,6 @@ If you want to implement your own engine with custom behavior you need to touch 
 
     <div id="retype-overlay-target"></div>
 
-    <script data-cfasync="false">window.__DOCS__ = { "title": "Engines", level: 2, icon: "file", hasPrism: false, hasMermaid: false, hasMath: false, tocDepth: 23 }</script>
+        <script data-cfasync="false">window.__DOCS__ = { "title": "Engines", level: 2, icon: "file", hasPrism: false, hasInstagram: false, hasMermaid: false, hasMath: false, tocDepth: 23, "md": "/concepts/engines/engines.md" }</script>
 </body>
 </html>

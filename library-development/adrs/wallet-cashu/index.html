@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.4.0.828309657070">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.2.829067039104">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.4.0">
+    <meta name="generator" content="Retype 4.5.2">
 
     <!-- Primary Meta Tags -->
     <title>Architecture Decision Record: Wallet Cashu API</title>
@@ -16,6 +16,7 @@
 
     <!-- Canonical -->
     <link rel="canonical" href="https://dart-nostr.com/library-development/adrs/wallet-cashu/">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="https://dart-nostr.com/sitemap.xml">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
@@ -31,14 +32,17 @@
     <meta name="twitter:title" content="Architecture Decision Record: Wallet Cashu API">
     <meta name="twitter:description" content="Title: Wallet Cashu - api design">
 
+    <!-- Alternate Markdown -->
+    <link rel="alternate" type="text/markdown" href="https://dart-nostr.com/library-development/adrs/wallet-cashu.md">
+
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../../resources/css/retype.css?v=4.4.0.828309657070" rel="stylesheet">
+    <link href="../../../resources/css/retype.css?v=4.5.2.829067039104" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../../resources/js/config.js?v=4.4.0.828309657070" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../../resources/js/retype.js?v=4.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../../resources/js/lunr.js?v=4.4.0.828309657070" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../../resources/js/prism.js?v=4.4.0.828309657070" defer></script>
+    <script data-cfasync="false" src="../../../resources/js/config.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../../resources/js/retype.js?v=4.5.2" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../../resources/js/lunr.js?v=4.5.2.829067039104" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../../resources/js/prism.js?v=4.5.2.829067039104" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -144,9 +148,11 @@
 <div class="flex">
     <div id="retype-main" class="min-w-0 p-4 grow md:px-16">
         <main class="relative pb-12 lg:pt-2">
-            <div class="retype-markdown" id="retype-content">
+            <div class="relative retype-markdown" id="retype-content">
                 <!-- Rendered if sidebar right is enabled -->
                 <div id="retype-sidebar-right-toggle"></div>
+                <doc-page-actions></doc-page-actions>
+
                 <!-- Page content  -->
 <h1 id="architecture-decision-record-wallet-cashu-api">Architecture Decision Record: Wallet Cashu API</h1>
 <p>Title: Wallet Cashu - api design</p>
@@ -155,11 +161,14 @@
 <p>Updated on 03-09-2025</p>
 <h2 id="contributors">contributors</h2>
 <ul>
-<li><p>Main contributor(s): leo-lox</p>
+<li>
+<p>Main contributor(s): leo-lox</p>
 </li>
-<li><p>Reviewer(s): frnandu, nogringo</p>
+<li>
+<p>Reviewer(s): frnandu, nogringo</p>
 </li>
-<li><p>Final decision made by: frnandu, leo-lox, nogringo</p>
+<li>
+<p>Final decision made by: frnandu, leo-lox, nogringo</p>
 </li>
 </ul>
 <h2 id="context-and-problem-statement">Context and Problem Statement</h2>
@@ -217,7 +226,8 @@ This is needed so the end-user can check the fees (transaction summary) before m
 <p>The reactive nature of transactions makes it necessary to use some form of subscriptions.
 Using this approach, the available options to the user/dev are quite clear.</p>
 <ul>
-<li><p>Pros</p>
+<li>
+<p>Pros</p>
 <ul>
 <li>Clear separations of what options are available at a given time.</li>
 <li>Data is directly available; no need to call a getter</li>
@@ -226,7 +236,8 @@ Using this approach, the available options to the user/dev are quite clear.</p>
 <li>Does not necessarily require cashu/implementation knowledge</li>
 </ul>
 </li>
-<li><p>Cons</p>
+<li>
+<p>Cons</p>
 <ul>
 <li>Requires subscription management for the user/dev</li>
 <li>More complex to implement (for us)</li>
@@ -301,6 +312,6 @@ Proceeding with a simpler method-based approach in combination with transaction 
 
     <div id="retype-overlay-target"></div>
 
-    <script data-cfasync="false">window.__DOCS__ = { "title": "Architecture Decision Record: Wallet Cashu API", level: 3, icon: "file", hasPrism: true, hasMermaid: false, hasMath: false, tocDepth: 23 }</script>
+        <script data-cfasync="false">window.__DOCS__ = { "title": "Architecture Decision Record: Wallet Cashu API", level: 3, icon: "file", hasPrism: true, hasInstagram: false, hasMermaid: false, hasMath: false, tocDepth: 23, "md": "/library-development/adrs/wallet-cashu.md" }</script>
 </body>
 </html>
