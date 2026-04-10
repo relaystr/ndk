@@ -312,6 +312,12 @@
   },
   "addWalletTitle": "Ajouter un Portefeuille",
   "chooseWalletType": "Choisir le type de portefeuille",
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "nwcWalletTypeSubtitle": "Connecter un portefeuille distant avec NWC",
+  "lnurlWalletTypeTitle": "LNURL / Adresse Lightning",
+  "lnurlWalletTypeSubtitle": "Utiliser un portefeuille custodial avec LNURL ou une adresse Lightning",
+  "cashuWalletTypeTitle": "Cashu",
+  "cashuWalletTypeSubtitle": "Utiliser un portefeuille ecash adosse a une mint Cashu",
   "cashuOption": "Cashu",
   "nwcOption": "NWC",
   "lnurlOption": "LNURL",
@@ -334,10 +340,12 @@
     "placeholders": {
       "used": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Amount already used"
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total budget amount"
       }
     }

@@ -1,4 +1,12 @@
-## 0.1.0-dev.2
+## 0.1.1-dev.1
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.0+1
+
+ - Update a dependency to the latest release.
+
+## 0.1.1
 
  - **FIX**: add back wallets methods and make it extend WalletsRepo. ([8e997d35](https://github.com/relaystr/ndk/commit/8e997d35e1aff3c7d9d0faa6a387e34a2d2ae12e))
 

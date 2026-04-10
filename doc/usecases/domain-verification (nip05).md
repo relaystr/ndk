@@ -22,4 +22,4 @@ Uses caching so there are no repeated network requests if you call this multiple
 Use this when you need to verify a domain. \
 If you call this, the result is automatically used as inbox/outbox information.
 
-:::code source="../../packages/ndk/lib/config/nip_05_defaults.dart" language="dart" range="4-5" title="default cache time" :::
+:::code source="../../packages/ndk/lib/config/nip_05_defaults.dart" language="dart" range="3-4" title="default cache time" :::

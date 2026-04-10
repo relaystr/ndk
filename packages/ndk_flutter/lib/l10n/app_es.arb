@@ -312,6 +312,12 @@
   },
   "addWalletTitle": "Añadir Cartera",
   "chooseWalletType": "Elegir tipo de cartera",
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "nwcWalletTypeSubtitle": "Conectarse a una cartera remota con NWC",
+  "lnurlWalletTypeTitle": "LNURL / Direccion Lightning",
+  "lnurlWalletTypeSubtitle": "Usar una cartera custodial con LNURL o una direccion Lightning",
+  "cashuWalletTypeTitle": "Cashu",
+  "cashuWalletTypeSubtitle": "Usar una cartera ecash respaldada por una mint de Cashu",
   "cashuOption": "Cashu",
   "nwcOption": "NWC",
   "lnurlOption": "LNURL",
@@ -334,10 +340,12 @@
     "placeholders": {
       "used": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Amount already used"
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total budget amount"
       }
     }

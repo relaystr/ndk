@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/src/version.dart';
 
 import 'cli_command.dart';
 
