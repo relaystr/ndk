@@ -6,7 +6,7 @@ Title: Package Structure dart, flutter
 
 In progress
 
-Updated on 01-04-2026
+Updated on 11-04-2026
 
 ## contributors
 
@@ -86,3 +86,27 @@ Another benefit is that we can prescreen db packages for their web compatibility
 
 ## Final Notes
 
+accepted:
+
+| previous package | operation | new structure |
+|:--------|:--------:|--------:|
+| ndk_amber | embedded => | ndk_flutter |
+| drift_cache_manager  | renamed  | ndk_drift |
+| isar  | removed  | discontinued |
+| ndk  | -- | ndk |
+| ndk_cache_manager_test_suite  | -- | ndk_cache_manager_test_suite |
+| ndk_flutter  | -- | ndk_flutter |
+| nip07_event_signer  | -- | nip07_event_signer |
+| ndk_objectbox  | -- | ndk_objectbox |
+| ndk_rust_verifier  |  embedded => |  ndk (native assets) |
+| ndk_demo  | -- | ndk_demo |
+| sembast_cache_manager  | embedded => | ndk |
+| ndk_bip32_keys  |  embedded => | ndk | 
+
+changes:
+| previous package | operation | new structure |
+|:--------|:--------:|--------:|
+| ndk_bip32_keys  |  embedded => | ndk | 
+
+
+=> clear seperation for sembast [issue](https://github.com/relaystr/ndk/issues/574?reload=1)
