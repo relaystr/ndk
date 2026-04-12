@@ -440,16 +440,16 @@ class RelayManager<T> {
     final myCompleter = Completer<void>();
     _lastMessageCompleter = myCompleter;
 
+    // Decode synchronously to avoid DDC's generic async type-check bug on web.
+    // On web, awaiting a Future<ConcreteType> triggers a runtime cast via DDC's
+    // generic async machinery that fails with LegacyJavaScriptObject even when
+    // the value is correct. IsolateManager.runInEncodingIsolate already calls
+    // decodeNostrMsg synchronously on web, so we skip the indirection entirely.
     NostrMessageRaw nostrMsg;
     try {
-      nostrMsg = await IsolateManager.instance
-          .runInEncodingIsolate<String, NostrMessageRaw>(
-        decodeNostrMsg,
-        msgStr,
-      );
-    } catch (e) {
-      // Isolates not available on web
       nostrMsg = decodeNostrMsg(msgStr);
+    } catch (e) {
+      nostrMsg = NostrMessageRaw(type: NostrMessageRawType.unknown);
     }
 
     if (previousMessage != null) {
