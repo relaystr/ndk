@@ -1,3 +1,7 @@
+## 0.8.2-dev.3
+
+ - **FIX**: validate nsec/npub prefix before decoding. ([ac682700](https://github.com/relaystr/ndk/commit/ac682700b92023de6da0c5e15c248145b13a82db))
+
 ## 0.8.2-dev.2
 
  - **FIX**: validate nsec/npub prefix before decoding. ([ac682700](https://github.com/relaystr/ndk/commit/ac682700b92023de6da0c5e15c248145b13a82db))
