@@ -1,3 +1,7 @@
+## 0.8.2-dev.2
+
+ - **FIX**: validate nsec/npub prefix before decoding. ([ac682700](https://github.com/relaystr/ndk/commit/ac682700b92023de6da0c5e15c248145b13a82db))
+
 ## 0.8.2-dev.1
 
  - **FIX**: formaty intl balance and budget. ([eb394361](https://github.com/relaystr/ndk/commit/eb394361a398e944ea2ff14ec5f0c7ae6128bc1a))
