@@ -444,10 +444,9 @@ packages:
   ndk_bip32_keys:
     dependency: "direct main"
     description:
-      name: ndk_bip32_keys
-      sha256: "6bc311451646b6d488ca8e4c9907dc0e8486d93de752d5ab09c5c7b6c96238d8"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../bip32_keys"
+      relative: true
+    source: path
     version: "0.1.0"
   ndk_cache_manager_test_suite:
     dependency: "direct dev"

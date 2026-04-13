@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-04-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.2-dev.2`](#ndk---v082-dev2)
+ - [`ndk_flutter` - `v0.8.2-dev.2`](#ndk_flutter---v082-dev2)
+ - [`ndk_objectbox` - `v0.2.11-dev.2`](#ndk_objectbox---v0211-dev2)
+ - [`nip07_event_signer` - `v1.0.10-dev.2`](#nip07_event_signer---v1010-dev2)
+ - [`ndk_drift` - `v0.1.1-dev.2`](#ndk_drift---v011-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.11-dev.2`
+ - `nip07_event_signer` - `v1.0.10-dev.2`
+ - `ndk_drift` - `v0.1.1-dev.2`
+
+---
+
+#### `ndk` - `v0.8.2-dev.2`
+
+ - **FIX**: merge user metrics. ([624ae703](https://github.com/relaystr/ndk/commit/624ae70314a855787f15d3731c3edbb02532c8ec))
+ - **FIX**: merge assertions events. ([cff74ee1](https://github.com/relaystr/ndk/commit/cff74ee1b2df1bd6ab12a2579cc218ec6f702da2))
+ - **FIX**: use Bip340EventSigner to sign events in tests. ([7934063b](https://github.com/relaystr/ndk/commit/7934063bd5bdfc1fa798b11936291918068f88b9))
+ - **FEAT**: add optional relayUrls param to getOptimizedFilters and handle empty cache. ([d3e3a242](https://github.com/relaystr/ndk/commit/d3e3a24270afab6a1c0d4ababe9c067df5420e51))
+ - **FEAT**: default providers. ([26fc8faf](https://github.com/relaystr/ndk/commit/26fc8faf22e53a97f91fe05c7ff5988bdb46414c))
+ - **FEAT**: others trusted assertions. ([ada22c70](https://github.com/relaystr/ndk/commit/ada22c70bc7e75b9d404a5cc1356ec31ad6886a6))
+ - **FEAT**: user trusted assertions. ([04772612](https://github.com/relaystr/ndk/commit/04772612aad14f0f13fa3207c44ecce239f6b5d5))
+
+#### `ndk_flutter` - `v0.8.2-dev.2`
+
+ - **FIX**: validate nsec/npub prefix before decoding. ([ac682700](https://github.com/relaystr/ndk/commit/ac682700b92023de6da0c5e15c248145b13a82db))
+
+
 ## 2026-04-02
 
 ### Changes
