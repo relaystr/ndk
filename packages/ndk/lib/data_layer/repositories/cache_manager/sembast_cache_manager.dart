@@ -26,6 +26,8 @@ class SembastCacheManager extends CacheManager {
   late final sembast.StoreRef<String, Map<String, Object?>> _metadataStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _contactListStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _relayListStore;
+  late final sembast.StoreRef<String, Map<String, Object?>>
+      _trustedAssertionPreferencesStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _nip05Store;
   late final sembast.StoreRef<String, Map<String, Object?>> _relaySetStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
@@ -41,6 +43,8 @@ class SembastCacheManager extends CacheManager {
     _metadataStore = sembast.stringMapStoreFactory.store('metadata');
     _contactListStore = sembast.stringMapStoreFactory.store('contact_lists');
     _relayListStore = sembast.stringMapStoreFactory.store('relay_lists');
+    _trustedAssertionPreferencesStore =
+        sembast.stringMapStoreFactory.store('trusted_assertion_preferences');
     _nip05Store = sembast.stringMapStoreFactory.store('nip05');
     _relaySetStore = sembast.stringMapStoreFactory.store('relay_sets');
     _keysetStore = sembast.stringMapStoreFactory.store('keysets');
@@ -213,6 +217,15 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<TrustedAssertionPreferences?> loadTrustedAssertionPreferences(
+      String pubKey) async {
+    final data =
+        await _trustedAssertionPreferencesStore.record(pubKey).get(_database);
+    if (data == null) return null;
+    return TrustedAssertionPreferencesExtension.fromJsonStorage(data);
+  }
+
+  @override
   Future<void> removeAllContactLists() async {
     await _contactListStore.delete(_database);
   }
@@ -248,6 +261,11 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<void> removeAllUserRelayLists() async {
     await _relayListStore.delete(_database);
+  }
+
+  @override
+  Future<void> removeAllTrustedAssertionPreferences() async {
+    await _trustedAssertionPreferencesStore.delete(_database);
   }
 
   @override
@@ -366,6 +384,11 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<void> removeTrustedAssertionPreferences(String pubKey) async {
+    await _trustedAssertionPreferencesStore.record(pubKey).delete(_database);
+  }
+
+  @override
   Future<void> saveContactList(ContactList contactList) async {
     await _contactListStore
         .record(contactList.pubKey)
@@ -441,6 +464,14 @@ class SembastCacheManager extends CacheManager {
     final keys = userRelayLists.map((u) => u.pubKey).toList();
     final values = userRelayLists.map((u) => u.toJsonForStorage()).toList();
     await _relayListStore.records(keys).put(_database, values);
+  }
+
+  @override
+  Future<void> saveTrustedAssertionPreferences(
+      TrustedAssertionPreferences preferences) async {
+    await _trustedAssertionPreferencesStore
+        .record(preferences.pubKey)
+        .put(_database, preferences.toJsonForStorage());
   }
 
   @override
@@ -788,6 +819,7 @@ class SembastCacheManager extends CacheManager {
       _metadataStore.delete(_database),
       _contactListStore.delete(_database),
       _relayListStore.delete(_database),
+      _trustedAssertionPreferencesStore.delete(_database),
       _nip05Store.delete(_database),
       _relaySetStore.delete(_database),
       _filterFetchedRangeStore.delete(_database),

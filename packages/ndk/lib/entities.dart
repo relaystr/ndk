@@ -34,6 +34,7 @@ export 'domain_layer/entities/blob_upload_progress.dart';
 export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/account.dart';
 export 'domain_layer/entities/nip_85.dart';
+export 'domain_layer/entities/trusted_assertion_preferences.dart';
 
 /// Cashu entities
 export 'domain_layer/entities/cashu/cashu_keyset.dart';

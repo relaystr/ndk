@@ -24,7 +24,13 @@ class MockRelay {
   Map<String, Nip01Event> _nip85Assertions = {}; // NIP-85 assertions keyed by "author:dTag"
   final Set<Nip01Event> _storedEvents = {}; // Store received events
 
-  // Track all connected clients with their subscriptions
+  /// Pre-store an event so it's available for queries.
+  /// Useful for testing replaceable events or seeding data before clients connect.
+  void storeEvent(Nip01Event event) {
+    _storedEvents.add(event);
+  }
+
+  /// Track all connected clients with their subscriptions
   final Map<WebSocket, Map<String, List<Filter>>> _clientSubscriptions = {};
   bool signEvents;
   bool requireAuthForRequests;

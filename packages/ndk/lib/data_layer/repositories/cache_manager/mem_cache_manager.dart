@@ -10,6 +10,7 @@ import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
+import '../../../domain_layer/entities/trusted_assertion_preferences.dart';
 import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
 
@@ -19,6 +20,10 @@ import '../../../domain_layer/repositories/cache_manager.dart';
 class MemCacheManager implements CacheManager {
   /// In memory storage
   Map<String, UserRelayList> userRelayLists = {};
+
+  /// In memory storage for trusted assertion preferences (kind 10040)
+  /// Keyed by user pubKey
+  Map<String, TrustedAssertionPreferences> trustedAssertionPreferences = {};
 
   /// In memory storage
   Map<String, RelaySet> relaySets = {};
@@ -82,6 +87,32 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeUserRelayList(String pubKey) async {
     userRelayLists.remove(pubKey);
+  }
+
+  // ===========================================================================
+  // Trusted Assertion Preferences (kind 10040)
+  // ===========================================================================
+
+  @override
+  Future<void> saveTrustedAssertionPreferences(
+      TrustedAssertionPreferences preferences) async {
+    trustedAssertionPreferences[preferences.pubKey] = preferences;
+  }
+
+  @override
+  Future<TrustedAssertionPreferences?> loadTrustedAssertionPreferences(
+      String pubKey) async {
+    return trustedAssertionPreferences[pubKey];
+  }
+
+  @override
+  Future<void> removeTrustedAssertionPreferences(String pubKey) async {
+    trustedAssertionPreferences.remove(pubKey);
+  }
+
+  @override
+  Future<void> removeAllTrustedAssertionPreferences() async {
+    trustedAssertionPreferences.clear();
   }
 
   /// **************************************************************************
@@ -611,6 +642,7 @@ class MemCacheManager implements CacheManager {
   Future<void> clearAll() async {
     events.clear();
     userRelayLists.clear();
+    trustedAssertionPreferences.clear();
     relaySets.clear();
     contactLists.clear();
     metadatas.clear();

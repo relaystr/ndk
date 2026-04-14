@@ -47,6 +47,7 @@ import '../domain_layer/usecases/relay_sets_engine.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/ta/trusted_assertions.dart';
+import '../domain_layer/usecases/ta/trusted_assertion_preferences.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/wallets/wallets.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
@@ -98,6 +99,7 @@ class Initialization {
   late FetchedRanges fetchedRanges;
   late ProofOfWork proofOfWork;
   late TrustedAssertions trustedAssertions;
+  late TrustedAssertionPrefsUsecase trustedAssertionPreferences;
 
   late Nip05Usecase nip05;
 
@@ -313,9 +315,19 @@ class Initialization {
     );
     proofOfWork = ProofOfWork();
 
+    trustedAssertionPreferences = TrustedAssertionPrefsUsecase(
+      requests: requests,
+      cacheManager: _ndkConfig.cache,
+      broadcast: broadcast,
+      accounts: accounts,
+      userRelayLists: userRelayLists,
+      relayManager: relayManager,
+    );
+
     trustedAssertions = TrustedAssertions(
       requests: requests,
       defaultProviders: _ndkConfig.defaultTrustedProviders,
+      preferences: trustedAssertionPreferences,
     );
 
     /// set the user configured log level

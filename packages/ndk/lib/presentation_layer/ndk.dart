@@ -24,6 +24,7 @@ import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/requests/requests.dart';
 import '../domain_layer/usecases/search/search.dart';
 import '../domain_layer/usecases/ta/trusted_assertions.dart';
+import '../domain_layer/usecases/ta/trusted_assertion_preferences.dart';
 import '../domain_layer/usecases/user_relay_lists/user_relay_lists.dart';
 import '../domain_layer/usecases/wallets/wallets.dart';
 import '../domain_layer/usecases/zaps/zaps.dart';
@@ -179,6 +180,15 @@ class Ndk {
   /// short alias for trusted assertions => ndk.ta.getMetrics()
   @experimental // api might change
   TrustedAssertions get trustedAssertions => ta;
+
+  /// Trusted Assertion Preferences (NIP-85 kind 10040)
+  ///
+  /// Manage the user's trusted assertion preferences.
+  /// Fetch, update, and manage the user's kind 10040 event
+  /// which declares their trusted service providers.
+  @experimental
+  TrustedAssertionPrefsUsecase get taPreferences =>
+      _initialization.trustedAssertionPreferences;
 
   /// Close all transports on relay manager
   Future<void> destroy() async {

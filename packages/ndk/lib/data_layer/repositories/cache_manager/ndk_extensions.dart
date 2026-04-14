@@ -392,3 +392,46 @@ extension CashuMintInfoExtension on CashuMintInfo {
     );
   }
 }
+
+// Extension for TrustedAssertionPreferences to add JSON serialization support
+extension TrustedAssertionPreferencesExtension on TrustedAssertionPreferences {
+  Map<String, Object?> toJsonForStorage() {
+    return {
+      'pubKey': pubKey,
+      'id': id,
+      'createdAt': createdAt,
+      'publicProviders':
+          publicProviders.map((p) => p.toTag()).toList(),
+      'privateProviders':
+          privateProviders.map((p) => p.toTag()).toList(),
+      'encryptedContent': encryptedContent,
+    };
+  }
+
+  static TrustedAssertionPreferences fromJsonStorage(Map<String, Object?> json) {
+    List<Nip85TrustedProvider> parseProvidersList(
+        dynamic listJson) {
+      final result = <Nip85TrustedProvider>[];
+      if (listJson == null) return result;
+      for (final tag in listJson as List) {
+        final tagList = (tag as List).map((e) => e as String).toList();
+        final provider = Nip85TrustedProvider.fromTag(tagList);
+        if (provider != null) {
+          result.add(provider);
+        }
+      }
+      return result;
+    }
+
+    return TrustedAssertionPreferences(
+      pubKey: json['pubKey'] as String,
+      id: json['id'] as String,
+      createdAt: json['createdAt'] as int,
+      publicProviders:
+          parseProvidersList(json['publicProviders']),
+      privateProviders:
+          parseProvidersList(json['privateProviders']),
+      encryptedContent: json['encryptedContent'] as String?,
+    );
+  }
+}

@@ -6,6 +6,7 @@ import '../entities/filter_fetched_ranges.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
+import '../entities/trusted_assertion_preferences.dart';
 import '../entities/user_relay_list.dart';
 import '../entities/metadata.dart';
 
@@ -64,6 +65,16 @@ abstract class CacheManager {
   Future<UserRelayList?> loadUserRelayList(String pubKey);
   Future<void> removeUserRelayList(String pubKey);
   Future<void> removeAllUserRelayLists();
+
+  /// Trusted Assertion Preferences (kind 10040)
+  Future<void> saveTrustedAssertionPreferences(
+      TrustedAssertionPreferences preferences);
+
+  Future<TrustedAssertionPreferences?> loadTrustedAssertionPreferences(
+      String pubKey);
+
+  Future<void> removeTrustedAssertionPreferences(String pubKey);
+  Future<void> removeAllTrustedAssertionPreferences();
 
   Future<RelaySet?> loadRelaySet(String name, String pubKey);
   Future<void> saveRelaySet(RelaySet relaySet);

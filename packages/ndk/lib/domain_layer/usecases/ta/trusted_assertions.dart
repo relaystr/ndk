@@ -4,19 +4,67 @@ import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/nip_85.dart';
 import '../requests/requests.dart';
+import 'trusted_assertion_preferences.dart';
 
 /// Trusted Assertions usecase (NIP-85)
 ///
 /// Allows fetching pre-computed metrics from trusted service providers.
+///
+/// By default, uses hardcoded default providers. To use the user's personal
+/// preferences (kind 10040), pass a [TrustedAssertionPrefsUsecase] instance
+/// and set [usePreferencesFrom] to true when calling methods.
 class TrustedAssertions {
   final Requests _requests;
   final List<Nip85TrustedProvider> _defaultProviders;
+  final TrustedAssertionPrefsUsecase? _preferences;
 
   TrustedAssertions({
     required Requests requests,
     required List<Nip85TrustedProvider> defaultProviders,
+    TrustedAssertionPrefsUsecase? preferences,
   })  : _requests = requests,
-        _defaultProviders = defaultProviders;
+        _defaultProviders = defaultProviders,
+        _preferences = preferences;
+
+  /// Resolves the effective list of providers.
+  ///
+  /// If [providers] is explicitly provided, uses those.
+  /// If [usePreferencesFrom] is true, fetches from the user's kind 10040.
+  /// Otherwise, falls back to default providers.
+  Future<List<Nip85TrustedProvider>> _resolveProviders({
+    List<Nip85TrustedProvider>? providers,
+    bool usePreferencesFrom = false,
+    String? userPubKey,
+    required int kind,
+    Set<Nip85Metric>? metrics,
+  }) async {
+    // Explicit providers take highest precedence
+    if (providers != null) {
+      return _filterProviders(
+        providers,
+        kind: kind,
+        metrics: metrics,
+      );
+    }
+
+    // Use user's kind 10040 preferences if requested and available
+    if (usePreferencesFrom && _preferences != null) {
+      final prefs = await _preferences.getPreferences(pubKey: userPubKey);
+      if (prefs != null) {
+        return prefs.filterProviders(
+          kind: kind,
+          metrics: metrics,
+        );
+      }
+    }
+
+    // Fall back to default providers
+    return _filterProviders(
+      _defaultProviders,
+      kind: kind,
+      metrics: metrics,
+    );
+  }
 
   /// Filter providers by kind and optionally by metrics
   List<Nip85TrustedProvider> _filterProviders(
@@ -39,16 +87,20 @@ class TrustedAssertions {
   ///
   /// [pubkey] - The public key of the user to get metrics for
   /// [metrics] - Optional set of specific metrics to fetch. If null, fetches all available.
-  /// [providers] - Optional list of providers to use. If null, uses default providers.
+  /// [providers] - Optional list of providers to use. If null, uses default/providers from preferences.
+  /// [usePreferencesFrom] - If true, fetches providers from user's kind 10040 preferences.
   ///
   /// Returns [Nip85UserMetrics] or null if no assertion found.
   Future<Nip85UserMetrics?> getUserMetrics(
     String pubkey, {
     Set<Nip85Metric>? metrics,
     List<Nip85TrustedProvider>? providers,
+    bool usePreferencesFrom = false,
   }) async {
-    final effectiveProviders = _filterProviders(
-      providers ?? _defaultProviders,
+    final effectiveProviders = await _resolveProviders(
+      providers: providers,
+      usePreferencesFrom: usePreferencesFrom,
+      userPubKey: pubkey,
       kind: Nip85Kind.user,
       metrics: metrics,
     );
@@ -135,6 +187,7 @@ class TrustedAssertions {
   /// [providers] - Optional list of providers to use. If null, uses default providers.
   ///
   /// Returns a [Stream] of [Nip85UserMetrics] that emits updates as they arrive.
+  /// Note: For streaming with user preferences, use [streamUserMetricsWithPreferences].
   Stream<Nip85UserMetrics> streamUserMetrics(
     String pubkey, {
     Set<Nip85Metric>? metrics,
@@ -226,6 +279,78 @@ class TrustedAssertions {
     }
 
     // Close subscriptions when stream is cancelled
+    controller.onCancel = () async {
+      for (final id in subscriptionIds) {
+        await _requests.closeSubscription(id);
+      }
+    };
+
+    return controller.stream;
+  }
+
+  /// Stream user metrics using providers from the user's kind 10040 preferences.
+  ///
+  /// This is an async version that resolves providers from preferences before
+  /// setting up the stream subscriptions.
+  ///
+  /// [pubkey] - The public key of the user to get metrics for
+  /// [metrics] - Optional set of specific metrics to fetch. If null, fetches all available.
+  ///
+  /// Returns a [Stream] of [Nip85UserMetrics] that emits updates as they arrive.
+  Future<Stream<Nip85UserMetrics>> streamUserMetricsWithPreferences({
+    required String pubkey,
+    Set<Nip85Metric>? metrics,
+  }) async {
+    final effectiveProviders = await _resolveProviders(
+      usePreferencesFrom: true,
+      userPubKey: pubkey,
+      kind: Nip85Kind.user,
+      metrics: metrics,
+    );
+
+    final controller = StreamController<Nip85UserMetrics>();
+
+    if (effectiveProviders.isEmpty) {
+      controller.close();
+      return controller.stream;
+    }
+
+    final providersByRelay = <String, List<Nip85TrustedProvider>>{};
+    for (final provider in effectiveProviders) {
+      providersByRelay.putIfAbsent(provider.relay, () => []).add(provider);
+    }
+
+    final subscriptionIds = <String>[];
+
+    for (final entry in providersByRelay.entries) {
+      final relay = entry.key;
+      final relayProviders = entry.value;
+      final providerPubkeys = relayProviders.map((p) => p.pubkey).toList();
+
+      final response = _requests.subscription(
+        filter: Filter(
+          kinds: [Nip85Kind.user],
+          authors: providerPubkeys,
+          dTags: [pubkey],
+        ),
+        explicitRelays: [relay],
+      );
+
+      subscriptionIds.add(response.requestId);
+
+      response.stream.listen(
+        (event) {
+          final parsed = _parseUserMetricsEvent(event, metrics);
+          if (parsed != null) {
+            controller.add(parsed);
+          }
+        },
+        onError: (e) {
+          // Ignore errors from individual relays
+        },
+      );
+    }
+
     controller.onCancel = () async {
       for (final id in subscriptionIds) {
         await _requests.closeSubscription(id);
