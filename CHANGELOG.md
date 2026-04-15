@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-04-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.2-dev.4`](#ndk---v082-dev4)
+ - [`ndk_objectbox` - `v0.2.11-dev.4`](#ndk_objectbox---v0211-dev4)
+ - [`nip07_event_signer` - `v1.0.10-dev.4`](#nip07_event_signer---v1010-dev4)
+ - [`ndk_drift` - `v0.1.1-dev.4`](#ndk_drift---v011-dev4)
+ - [`ndk_flutter` - `v0.8.2-dev.4`](#ndk_flutter---v082-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.11-dev.4`
+ - `nip07_event_signer` - `v1.0.10-dev.4`
+ - `ndk_drift` - `v0.1.1-dev.4`
+ - `ndk_flutter` - `v0.8.2-dev.4`
+
+---
+
+#### `ndk` - `v0.8.2-dev.4`
+
+ - **FEAT**(experiment): qs dilithium singer, verifier. ([e680430b](https://github.com/relaystr/ndk/commit/e680430b5f4ae2826d5ec642688b0afbe49b0609))
+
+
 ## 2026-04-13
 
 ### Changes
