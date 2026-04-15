@@ -1,26 +1,28 @@
-import 'package:amberflutter/amberflutter.dart';
-import 'package:ndk_drift/ndk_drift.dart';
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
-import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/accounts_page.dart';
 import 'package:ndk_demo/blossom_page.dart';
 import 'package:ndk_demo/demo_app_config.dart';
-import 'package:ndk_demo/nwc_page.dart';
-import 'package:ndk_demo/quantum_secure_page.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
+import 'package:ndk_demo/l10n/generated/sample_app_localizations.dart';
+import 'package:ndk_demo/login_popup.dart';
+import 'package:ndk_demo/profile_page.dart';
 import 'package:ndk_demo/relays_page.dart';
 import 'package:ndk_demo/wallets.dart';
-import 'package:ndk_demo/verifiers_performance.dart';
 import 'package:ndk_demo/widgets_demo_page.dart';
-import 'package:ndk_demo/pending_requests_page.dart';
+import 'package:ndk_drift/ndk_drift.dart';
+import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
+import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
-import 'package:sembast_cache_manager/sembast_cache_manager.dart';
+
+import 'quantum_secure_page.dart';
 
 bool amberAvailable = false;
 
@@ -85,15 +87,16 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Nostr Developer Kit Demo',
+      onGenerateTitle: (context) => context.l10n.appName,
       locale: _currentLocale,
       localizationsDelegates: const [
+        SampleAppLocalizations.delegate,
         ndk_flutter.AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: ndk_flutter.AppLocalizations.supportedLocales,
+      supportedLocales: SampleAppLocalizations.supportedLocales,
       home: Stack(
         children: [
           SafeArea(
@@ -127,12 +130,30 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with TickerProviderStateMixin, ProtocolListener {
   late TabController _tabController;
+  static const int _profileTabIndex = 1;
+  static const int _walletsTabIndex = 4;
+  StreamSubscription<Account?>? _authSub;
   late List<Tab> _tabs;
   late List<Widget> _tabPages;
+  final GlobalKey<WalletsPageState> _walletsPageKey =
+      GlobalKey<WalletsPageState>();
+  late final WalletsPage _walletsPage;
 
 // Define a constant for the NWC tab name to avoid magic strings
   static const String nwcTabName = 'NWC';
   static const String quantumSecureTabName = 'Quantum Secure';
+  List<Tab> _buildTabs(BuildContext context) {
+    final l10n = context.l10n;
+    return <Tab>[
+      Tab(text: l10n.tabAccounts),
+      Tab(text: l10n.tabProfile),
+      Tab(text: l10n.tabRelays),
+      Tab(text: l10n.tabBlossom),
+      Tab(text: l10n.tabWallets),
+      Tab(text: l10n.tabWidgets),
+      const Tab(text: quantumSecureTabName),
+    ];
+  }
 
 // Callback method to be passed to AccountsPage
   void _handleAccountChange() {
@@ -148,22 +169,26 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
+    _walletsPage = WalletsPage(key: _walletsPageKey);
 
-    _tabs = <Tab>[
-      const Tab(text: 'Accounts'),
-      const Tab(text: 'Metadata'),
-      const Tab(text: 'Relays'),
-      const Tab(text: nwcTabName),
-      const Tab(text: "Blossom"),
-      const Tab(text: 'Verifiers'),
-      const Tab(text: "Wallets"),
-      const Tab(text: 'Widgets'),
-      const Tab(text: 'Pending'),
-      const Tab(text: quantumSecureTabName),
+    _tabs = const <Tab>[
+      Tab(text: 'Accounts'),
+      Tab(text: 'Profile'),
+      Tab(text: 'Relays'),
+      Tab(text: 'Blossom'),
+      Tab(text: 'Wallets'),
+      Tab(text: 'Widgets'),
+      Tab(text: quantumSecureTabName),
     ];
 
     _tabController = TabController(length: _tabs.length, vsync: this);
     _tabController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+
+    _authSub = ndk.accounts.authStateChanges.listen((_) {
       if (mounted) {
         setState(() {});
       }
@@ -188,8 +213,11 @@ class _MyHomePageState extends State<MyHomePage>
   void _processUri(Uri uri) {
     if (uri.scheme == 'ndk' && uri.host == 'nwc') {
       print(
-          "_MyHomePageState: ndk://nwc URI received, switching to NwcPage tab.");
-      switchToNwcTab();
+          "_MyHomePageState: ndk://nwc URI received, switching to wallets tab.");
+      switchToWalletsTab();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _walletsPageKey.currentState?.onProtocolUrlReceived(uri.toString());
+      });
     }
   }
 
@@ -207,68 +235,100 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   void dispose() {
+    _authSub?.cancel();
     _tabController.dispose();
     protocolHandler.removeListener(this);
     super.dispose();
   }
 
-  void switchToNwcTab() {
-    int nwcPageIndex = -1;
-    for (int i = 0; i < _tabs.length; i++) {
-      if (_tabs[i].text == nwcTabName) {
-        nwcPageIndex = i;
-        break;
-      }
-    }
-
-    if (nwcPageIndex != -1) {
-      if (_tabController.index != nwcPageIndex) {
-        _tabController.animateTo(nwcPageIndex);
-        print("_MyHomePageState: Switched to NWC tab (index $nwcPageIndex).");
-      } else {
-        print("_MyHomePageState: Already on NWC tab (index $nwcPageIndex).");
-      }
+  void switchToWalletsTab() {
+    if (_tabController.index != _walletsTabIndex) {
+      _tabController.animateTo(_walletsTabIndex);
+      print(
+          "_MyHomePageState: Switched to wallets tab (index $_walletsTabIndex).");
     } else {
       print(
-          "_MyHomePageState: NWC tab not found by name '$nwcTabName'. Cannot switch.");
+          "_MyHomePageState: Already on wallets tab (index $_walletsTabIndex).");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    _tabs = <Tab>[
-      const Tab(text: 'Accounts'),
-      const Tab(text: 'Metadata'),
-      const Tab(text: 'Relays'),
-      const Tab(text: nwcTabName),
-      const Tab(text: "Blossom"),
-      const Tab(text: 'Verifiers'),
-      const Tab(text: "Wallets"),
-      const Tab(text: 'Widgets'),
-      const Tab(text: 'Pending'),
-      const Tab(text: quantumSecureTabName),
-    ];
+    final l10n = context.l10n;
+    _tabs = _buildTabs(context);
 
     _tabPages = <Widget>[
       AccountsPage(onAccountChanged: _handleAccountChange),
-      metadata(ndk, context),
+      ProfilePage(
+        ndkFlutter: ndkFlutter,
+        getLoggedPubkey: () => ndk.accounts.getPublicKey(),
+        onAccountChanged: _handleAccountChange,
+      ),
       const RelaysPage(),
-      const NwcPage(),
       BlossomMediaPage(ndk: ndk),
-      VerifiersPerformancePage(ndk: ndk),
-      const WalletsPage(),
+      _walletsPage,
       WidgetsDemoPage(onAccountChanged: _handleAccountChange),
-      const PendingRequestsPage(),
       const QuantumSecurePage(),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nostr Development Kit Demo'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.appBarTitle),
+            const SizedBox(width: 8),
+            Text(
+              'v$packageVersion',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
         actions: [
           NLocaleSwitcher(
             currentLocale: widget.currentLocale,
             onLocaleChanged: widget.onLocaleChanged,
+          ),
+          const SizedBox(width: 4),
+          Builder(
+            builder: (context) {
+              final loggedPubkey = ndk.accounts.getPublicKey();
+              final profileIcon = loggedPubkey == null
+                  ? CircleAvatar(
+                      radius: 14,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.person_outline,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    )
+                  : NPicture(
+                      ndkFlutter: ndkFlutter,
+                      circleAvatarRadius: 14,
+                    );
+
+              return IconButton(
+                tooltip: l10n.profileTooltip,
+                onPressed: () {
+                  if (loggedPubkey != null) {
+                    _tabController.animateTo(_profileTabIndex);
+                    return;
+                  }
+
+                  showNLoginPopup(
+                    context: context,
+                    ndkFlutter: ndkFlutter,
+                    onLoggedIn: () {
+                      _handleAccountChange();
+                      _tabController.animateTo(_profileTabIndex);
+                    },
+                  );
+                },
+                icon: profileIcon,
+              );
+            },
           ),
         ],
         bottom: TabBar(
@@ -285,79 +345,4 @@ class _MyHomePageState extends State<MyHomePage>
       ),
     );
   }
-}
-
-/// how to fetch metadata info
-Widget metadata(Ndk ndk, BuildContext context) {
-  final loggedInAccount = ndk.accounts.getLoggedAccount();
-  final String? pubkey = loggedInAccount?.pubkey;
-
-  if (pubkey == null) {
-    return const Center(
-        child: Padding(
-      padding: EdgeInsets.all(16.0),
-      child: Text('Please log in via the "Accounts" tab to view your metadata.',
-          textAlign: TextAlign.center),
-    ));
-  }
-
-  final Future<Metadata?> response = ndk.metadata.loadMetadata(pubkey);
-
-  return FutureBuilder<Metadata?>(
-    future: response,
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      } else if (snapshot.hasError) {
-        return Center(
-            child: Text('Error fetching metadata: ${snapshot.error}'));
-      } else if (snapshot.hasData && snapshot.data != null) {
-        final metadata = snapshot.data!;
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                if (metadata.picture != null && metadata.picture!.isNotEmpty)
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage(metadata.picture!),
-                    onBackgroundImageError: (exception, stackTrace) {
-                      print("Error loading avatar in metadata tab: $exception");
-                    },
-                    child: metadata.picture == null || metadata.picture!.isEmpty
-                        ? const Icon(Icons.person, size: 50)
-                        : null,
-                  )
-                else
-                  const CircleAvatar(
-                    radius: 50,
-                    child: Icon(Icons.person, size: 50),
-                  ),
-                const SizedBox(height: 16),
-                Text('Name: ${metadata.name ?? 'N/A'}',
-                    style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text('Display Name: ${metadata.displayName ?? 'N/A'}'),
-                Text('NIP-05: ${metadata.nip05 ?? 'N/A'}'),
-                const SizedBox(height: 8),
-                Text('About:', style: Theme.of(context).textTheme.titleMedium),
-                Text(metadata.about ?? 'N/A', textAlign: TextAlign.center),
-                const SizedBox(height: 8),
-                Text('Website: ${metadata.website ?? 'N/A'}'),
-                Text('Lud06: ${metadata.lud06 ?? 'N/A'}'),
-                Text('Lud16: ${metadata.lud16 ?? 'N/A'}'),
-              ],
-            ),
-          ),
-        );
-      } else {
-        return const Center(
-            child: Text(
-                'Metadata not found for this account. You might need to set it in a Nostr client.'));
-      }
-    },
-  );
 }

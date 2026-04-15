@@ -646,8 +646,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get addCashuWalletTitle => 'Cashu-Wallet hinzufügen';
 
   @override
-  String get enterMintUrl =>
-      'Mint-URL eingeben, um ein Cashu-Wallet hinzuzufügen.';
+  String get enterMintUrl => 'Mint-URL eingeben, um ein Cashu-Wallet hinzuzufügen.';
 
   @override
   String get mintUrl => 'Mint-URL';
@@ -662,8 +661,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cashuWalletAdded => 'Cashu-Wallet erfolgreich hinzugefügt!';
 
   @override
-  String get failedToAddMint =>
-      'Mint konnte nicht hinzugefügt werden. Bitte URL prüfen und erneut versuchen.';
+  String get failedToAddMint => 'Mint konnte nicht hinzugefügt werden. Bitte URL prüfen und erneut versuchen.';
 
   @override
   String get addNwcWalletTitle => 'NWC-Wallet hinzufügen';
@@ -675,8 +673,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get manual => 'Manuell';
 
   @override
-  String get nwcFaucetDescription =>
-      'Test-Wallet mit Sats vom NWC-Faucet erstellen.';
+  String get nwcFaucetDescription => 'Test-Wallet mit Sats vom NWC-Faucet erstellen.';
 
   @override
   String get startingBalance => 'Startguthaben';
@@ -708,15 +705,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get addLnurlWalletTitle => 'LNURL-Wallet hinzufügen';
 
   @override
-  String get enterLnurlIdentifier =>
-      'LNURL-Kennung eingeben (benutzer@domain.com).';
+  String get enterLnurlIdentifier => 'LNURL-Kennung eingeben (benutzer@domain.com).';
 
   @override
   String get lnurlIdentifierHint => 'user@example.com';
 
   @override
-  String get pleaseEnterValidIdentifier =>
-      'Bitte eine gültige Kennung eingeben (benutzer@domain.com)';
+  String get pleaseEnterValidIdentifier => 'Bitte eine gültige Kennung eingeben (benutzer@domain.com)';
 
   @override
   String get lnurlWalletAdded => 'LNURL-Wallet erfolgreich hinzugefügt!';
@@ -746,12 +741,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get defaultForSending => 'Standard für Senden';
 
   @override
-  String get defaultWalletForReceivingTooltip =>
-      'Diese Wallet ist die Standard-Wallet für den Empfang von Zahlungen.';
+  String get defaultWalletForReceivingTooltip => 'Diese Wallet ist die Standard-Wallet für den Empfang von Zahlungen.';
 
   @override
-  String get defaultWalletForSendingTooltip =>
-      'Diese Wallet ist die Standard-Wallet für das Senden von Zahlungen.';
+  String get defaultWalletForSendingTooltip => 'Diese Wallet ist die Standard-Wallet für das Senden von Zahlungen.';
 
   @override
   String get sendOptionsTitle => 'Sendeoptionen';
@@ -937,14 +930,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get deleteWalletConfirmation => 'Wallet löschen?';
 
   @override
-  String get deleteWalletConfirmationMessage =>
-      'Sind Sie sicher, dass Sie dieses Wallet löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.';
+  String get deleteWalletConfirmationMessage => 'Sind Sie sicher, dass Sie dieses Wallet löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.';
 
   @override
   String get addWalletTitle => 'Wallet hinzufügen';
 
   @override
   String get chooseWalletType => 'Wallet-Typ wählen';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => 'Mit einer entfernten Wallet über NWC verbinden';
+
+  @override
+  String get lnurlWalletTypeTitle => 'LNURL / Lightning-Adresse';
+
+  @override
+  String get lnurlWalletTypeSubtitle => 'Eine custodial Wallet mit LNURL oder einer Lightning-Adresse verwenden';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle => 'Eine Ecash-Wallet mit einer Cashu-Mint verwenden';
 
   @override
   String get cashuOption => 'Cashu';
@@ -954,26 +964,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lnurlOption => 'LNURL';
-
-  @override
-  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
-
-  @override
-  String get nwcWalletTypeSubtitle =>
-      'Mit einer bestehenden Wallet per NWC verbinden';
-
-  @override
-  String get lnurlWalletTypeTitle => 'Lightning-Adresse (LNURL)';
-
-  @override
-  String get lnurlWalletTypeSubtitle =>
-      'Zahlungen an benutzer@domain.com empfangen';
-
-  @override
-  String get cashuWalletTypeTitle => 'Cashu';
-
-  @override
-  String get cashuWalletTypeSubtitle => 'Ecash-Wallet mit Cashu-Mints';
 
   @override
   String get connectNwcTitle => 'NWC verbinden';
@@ -1000,8 +990,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cameraNotAvailable => 'Kamera nicht verfügbar';
 
   @override
-  String get scanNwcInstructions =>
-      'Scannen Sie den QR-Code aus Ihrer NWC-Wallet-App';
+  String get scanNwcInstructions => 'Scannen Sie den QR-Code aus Ihrer NWC-Wallet-App';
 
   @override
   String get invalidNwcUri => 'Ungültige NWC-URI';
@@ -1038,7 +1027,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    return 'Budget: $used / $total';
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Budget: $usedString / $totalString';
   }
 
   @override

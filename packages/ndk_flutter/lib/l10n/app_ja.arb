@@ -312,6 +312,12 @@
   },
   "addWalletTitle": "ウォレットを追加",
   "chooseWalletType": "ウォレットタイプを選択",
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "nwcWalletTypeSubtitle": "NWCでリモートウォレットに接続",
+  "lnurlWalletTypeTitle": "LNURL / Lightning Address",
+  "lnurlWalletTypeSubtitle": "LNURLまたはLightning Address対応ウォレットを使う",
+  "cashuWalletTypeTitle": "Cashu",
+  "cashuWalletTypeSubtitle": "Cashuミント対応のecashウォレットを使う",
   "cashuOption": "Cashu",
   "nwcOption": "NWC",
   "lnurlOption": "LNURL",
@@ -334,10 +340,12 @@
     "placeholders": {
       "used": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Amount already used"
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total budget amount"
       }
     }

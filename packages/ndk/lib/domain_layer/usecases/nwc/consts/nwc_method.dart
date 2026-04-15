@@ -15,6 +15,7 @@ class NwcMethod {
   static const NwcMethod PAY_KEYSEND = NwcMethod('pay_keysend');
   static const NwcMethod MULTI_PAY_KEYSEND = NwcMethod('multi_pay_keysend');
   static const NwcMethod MAKE_INVOICE = NwcMethod('make_invoice');
+  static const NwcMethod SIGN_MESSAGE = NwcMethod('sign_message');
   static const NwcMethod MAKE_HOLD_INVOICE = NwcMethod('make_hold_invoice');
   static const NwcMethod CANCEL_HOLD_INVOICE = NwcMethod('cancel_hold_invoice');
   static const NwcMethod SETTLE_HOLD_INVOICE = NwcMethod('settle_hold_invoice');
@@ -29,6 +30,7 @@ class NwcMethod {
     PAY_KEYSEND.name: PAY_KEYSEND,
     MULTI_PAY_KEYSEND.name: MULTI_PAY_KEYSEND,
     MAKE_INVOICE.name: MAKE_INVOICE,
+    SIGN_MESSAGE.name: SIGN_MESSAGE,
     MAKE_HOLD_INVOICE.name: MAKE_HOLD_INVOICE,
     CANCEL_HOLD_INVOICE.name: CANCEL_HOLD_INVOICE,
     SETTLE_HOLD_INVOICE.name: SETTLE_HOLD_INVOICE,

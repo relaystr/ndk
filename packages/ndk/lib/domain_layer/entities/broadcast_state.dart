@@ -65,11 +65,16 @@ class BroadcastState {
   /// completes when all relays have responded or timed out
   /// first string is the relay url, second is the response
   bool get publishDone {
+    // If no relays were registered and the engine closed the controller, it's done
+    if (broadcasts.isEmpty) {
+      return networkController.isClosed;
+    }
+
     // Check if all relays have responded (success or failure)
     final allResponded = broadcasts.values.every(
       (element) => element.okReceived || element.msg.isNotEmpty,
     );
-    if (allResponded && broadcasts.isNotEmpty) {
+    if (allResponded) {
       return true;
     }
 
@@ -88,6 +93,8 @@ class BroadcastState {
   Timer? _timeoutTimer;
   bool _isDisposed = false;
 
+  bool _timeoutStarted = false;
+
   /// creates a new [BroadcastState] instance
   BroadcastState({
     required this.timeout,
@@ -100,8 +107,15 @@ class BroadcastState {
       _stateUpdatesController.add(this);
       // check if all relays responded
       _checkBroadcastDone();
+    }, onDone: () {
+      _checkBroadcastDone();
     });
+  }
 
+  /// Starts the timeout timer. Call this after signing is complete.
+  void startTimeout() {
+    if (_timeoutStarted) return;
+    _timeoutStarted = true;
     _timeoutTimer = Timer(timeout, () {
       if (!publishDone) {
         _stateUpdatesController.add(this);
@@ -112,6 +126,7 @@ class BroadcastState {
 
   void _checkBroadcastDone() {
     if (publishDone) {
+      _stateUpdatesController.add(this);
       _dispose();
     }
   }
@@ -132,5 +147,13 @@ class BroadcastState {
   void addError(Object error, [StackTrace? stackTrace]) {
     _stateUpdatesController.addError(error, stackTrace);
     _dispose();
+  }
+
+  /// Close the network controller if no relays were registered.
+  /// This should be called after broadcast strategies complete
+  /// to signal that the broadcast is done when there were no relays to broadcast to.
+  void closeIfNoRelays() {
+    if (broadcasts.isNotEmpty || networkController.isClosed) return;
+    networkController.close();
   }
 }

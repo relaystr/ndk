@@ -16,7 +16,7 @@ void main() async {
     late Ndk ndk;
 
     setUp(() async {
-      relay0 = MockRelay(name: "relay 0", explicitPort: 5098);
+      relay0 = MockRelay(name: "relay 0", explicitPort: 5102);
       await relay0.startServer(nip65s: {
         key0: Nip65(
             pubKey: key0.publicKey,
@@ -252,7 +252,7 @@ void main() async {
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
 
       // Create a slow relay that won't respond in time
-      MockRelay slowRelay = MockRelay(name: "slow relay", explicitPort: 5099);
+      MockRelay slowRelay = MockRelay(name: "slow relay", explicitPort: 5103);
       await slowRelay.startServer(
         nip65s: {
           key0: Nip65(
@@ -316,8 +316,8 @@ void main() async {
       ndk.accounts
           .loginPrivateKey(pubkey: key0.publicKey, privkey: key0.privateKey!);
 
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5099);
-      MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 5100);
+      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 5104);
+      MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 5106);
 
       await relay1.startServer(nip65s: {
         key0: Nip65(

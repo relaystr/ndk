@@ -80,8 +80,7 @@ void main() {
         content: 'hello world',
         sig: Bip340.sign(correctId, keyPair.privateKey!),
         // Set wrong id after signing
-        id:
-            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       );
 
       final result = await verifier.verify(event);

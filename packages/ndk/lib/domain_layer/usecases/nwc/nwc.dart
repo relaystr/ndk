@@ -2,15 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ndk/domain_layer/usecases/nwc/requests/get_budget.dart';
-import 'package:ndk/domain_layer/usecases/nwc/responses/get_budget_response.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
 import 'consts/nwc_kind.dart';
-import 'consts/nwc_method.dart';
 import 'consts/transaction_type.dart';
-import 'nostr_wallet_connect_uri.dart';
 import 'nwc_notification.dart';
 import 'requests/get_balance.dart';
 import 'requests/get_info.dart';
@@ -81,7 +78,7 @@ class Nwc {
             name: "nwc-info",
             explicitRelays: relays,
             filters: [filter],
-            timeout: timeout ?? Duration(seconds: 20+ relays.length * 5),
+            timeout: timeout ?? Duration(seconds: 20 + relays.length * 5),
             timeoutCallback: () {
               onError?.call("timeout");
             },

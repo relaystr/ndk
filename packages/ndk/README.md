@@ -11,7 +11,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 ## Apps using NDK
 
-- [sample app](https://github.com/relaystr/ndk/releases)
+- [sample app](https://dart-nostr.com/app/)
 - [yana](https://github.com/frnandu/yana)
 - [camelus](https://github.com/leo-lox/camelus)
 - [zap.stream](https://github.com/nostrlabs-io/zap-stream-flutter)
@@ -60,7 +60,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 ### Developer Experience
 
 - **Pluggable architecture**: Bring your own cache, verifier, or signer, replace any component
-- **Multiple database options**: In-memory, Isar, ObjectBox, Sembast
+- **Multiple database options**: In-memory, ObjectBox, Sembast
 - **Event verification**: BIP-340 or Rust-based (recommended for performance)
 - **Comprehensive logging** with configurable log levels and outputs
 - **Clean architecture** for maintainability and extensibility

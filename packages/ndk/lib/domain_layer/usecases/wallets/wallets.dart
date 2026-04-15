@@ -109,6 +109,12 @@ class Wallets {
   /// stream of all wallets
   Stream<List<Wallet>> get walletsStream => _walletsSubject.stream;
 
+  /// Get all wallets currently known to the usecase.
+  Future<List<Wallet>> getWallets() async {
+    await _initializationFuture;
+    return _wallets.toList();
+  }
+
   Future<List<WalletTransaction>> combinedTransactions({
     int? limit,
     int? offset,

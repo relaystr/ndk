@@ -35,6 +35,8 @@ class RequestState {
   Set<String> returnedIds = {};
 
   Timer? _timeout;
+  DateTime? _timeoutStartedAt;
+  Duration? _remainingTimeout;
 
   Stream<Nip01Event> get stream => controller.stream;
 
@@ -76,11 +78,7 @@ class RequestState {
     // if we have a timeout set, we start it
     if (request.timeoutDuration != null) {
       timeoutDuration = request.timeoutDuration;
-      _timeout = Timer(timeoutDuration!, () {
-        onTimeout?.call(this);
-        // call close on all controllers
-        close();
-      });
+      _startTimeout(timeoutDuration!);
     }
     _streamSubscription = controller.listen((e) {}, onDone: () {
       if (_timeout != null) {
@@ -88,6 +86,34 @@ class RequestState {
       }
       _streamSubscription.cancel();
     });
+  }
+
+  void _startTimeout(Duration duration) {
+    _timeoutStartedAt = DateTime.now();
+    _timeout = Timer(duration, () {
+      onTimeout?.call(this);
+      close();
+    });
+  }
+
+  /// Pauses the timeout timer. Call this before signing starts.
+  void pauseTimeout() {
+    if (_timeout == null || timeoutDuration == null) return;
+
+    final elapsed = DateTime.now().difference(_timeoutStartedAt!);
+    _remainingTimeout = timeoutDuration! - elapsed;
+    if (_remainingTimeout!.isNegative) {
+      _remainingTimeout = Duration.zero;
+    }
+    _timeout!.cancel();
+    _timeout = null;
+  }
+
+  /// Resumes the timeout timer. Call this after signing completes.
+  void resumeTimeout() {
+    if (_remainingTimeout == null) return;
+    _startTimeout(_remainingTimeout!);
+    _remainingTimeout = null;
   }
 
   /// checks if all requests received EOSE
