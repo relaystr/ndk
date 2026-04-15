@@ -1,3 +1,7 @@
+## 0.8.2-dev.4
+
+ - **FEAT**(experiment): qs dilithium singer, verifier. ([e680430b](https://github.com/relaystr/ndk/commit/e680430b5f4ae2826d5ec642688b0afbe49b0609))
+
 ## 0.8.2-dev.3
 
  - **FIX**: merge user metrics. ([624ae703](https://github.com/relaystr/ndk/commit/624ae70314a855787f15d3731c3edbb02532c8ec))
