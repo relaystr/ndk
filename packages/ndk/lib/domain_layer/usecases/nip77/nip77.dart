@@ -85,6 +85,11 @@ class Nip77 {
     _internal.processNegErr(subscriptionId, relayUrl, errorMsg);
   }
 
+  /// Close a specific NIP-77 negotiation
+  void close(String subscriptionId) {
+    _internal.close(subscriptionId);
+  }
+
   /// Close all active NIP-77 negotiations
   void closeAll() {
     _internal.closeAll();
