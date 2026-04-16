@@ -60,12 +60,35 @@ class Nip77Response {
 
 /// Public API for NIP-77 Negentropy sync
 class Nip77 {
-  final Nip77Internal _internal;
+  final _Nip77Internal _internal;
 
-  Nip77._({required Nip77Internal internal}) : _internal = internal;
+  Nip77({
+    required GlobalState globalState,
+    required RelayManager relayManager,
+    required CacheManager cacheManager,
+  }) : _internal = _Nip77Internal(
+          globalState: globalState,
+          relayManager: relayManager,
+          cacheManager: cacheManager,
+        );
 
   /// Default timeout for reconciliation
   static const Duration defaultTimeout = Duration(seconds: 30);
+
+  /// Process incoming NEG-MSG from a relay
+  void processNegMsg(String subscriptionId, String relayUrl, String payload) {
+    _internal.processNegMsg(subscriptionId, relayUrl, payload);
+  }
+
+  /// Process incoming NEG-ERR from a relay
+  void processNegErr(String subscriptionId, String relayUrl, String errorMsg) {
+    _internal.processNegErr(subscriptionId, relayUrl, errorMsg);
+  }
+
+  /// Close all active NIP-77 negotiations
+  void closeAll() {
+    _internal.closeAll();
+  }
 
   /// Start a negentropy reconciliation with a relay
   ///

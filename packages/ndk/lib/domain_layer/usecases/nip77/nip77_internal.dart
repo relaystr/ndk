@@ -3,22 +3,18 @@ part of 'nip77.dart';
 /// Internal implementation of NIP-77 Negentropy sync.
 ///
 /// **Not part of the public API.** Use [Nip77] instead.
-// ignore_for_file: public_member_api_docs
-class Nip77Internal {
+class _Nip77Internal {
   final GlobalState _globalState;
   final RelayManager _relayManager;
   final CacheManager _cacheManager;
 
-  Nip77Internal({
+  _Nip77Internal({
     required GlobalState globalState,
     required RelayManager relayManager,
     required CacheManager cacheManager,
   })  : _globalState = globalState,
         _relayManager = relayManager,
         _cacheManager = cacheManager;
-
-  /// Creates the public API wrapper
-  Nip77 get publicApi => Nip77._(internal: this);
 
   Nip77Response reconcile({
     required String relayUrl,
@@ -78,8 +74,9 @@ class Nip77Internal {
         cleanUrl,
         connectionSource: ConnectionSource.explicit,
       );
-      if (state.isCompleted)
+      if (state.isCompleted) {
         return; // Guard: timeout may have fired during await
+      }
       if (!connected) {
         state.completeWithError(
             Exception('Failed to connect to relay: $cleanUrl'));
@@ -103,8 +100,9 @@ class Nip77Internal {
       } else {
         localItems = await _buildItemsFromFilter(filter);
       }
-      if (state.isCompleted)
+      if (state.isCompleted) {
         return; // Guard: timeout may have fired during await
+      }
 
       // Update state with local items
       state.localItems.addAll(localItems);

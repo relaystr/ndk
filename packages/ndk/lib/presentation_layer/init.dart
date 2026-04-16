@@ -87,7 +87,6 @@ class Initialization {
   late ProofOfWork proofOfWork;
 
   late Nip05Usecase nip05;
-  late Nip77Internal _nip77Internal;
   late Nip77 nip77;
 
   late final NetworkEngine engine;
@@ -268,16 +267,15 @@ class Initialization {
 
     proofOfWork = ProofOfWork();
 
-    _nip77Internal = Nip77Internal(
+    nip77 = Nip77(
       globalState: _globalState,
       relayManager: relayManager,
       cacheManager: _ndkConfig.cache,
     );
-    nip77 = _nip77Internal.publicApi;
 
     // Wire up NIP-77 handlers
-    relayManager.onNegMsg = _nip77Internal.processNegMsg;
-    relayManager.onNegErr = _nip77Internal.processNegErr;
+    relayManager.onNegMsg = nip77.processNegMsg;
+    relayManager.onNegErr = nip77.processNegErr;
 
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
@@ -285,6 +283,6 @@ class Initialization {
 
   /// Close all active NIP-77 negotiations
   void closeAllNip77Negotiations() {
-    _nip77Internal.closeAll();
+    nip77.closeAll();
   }
 }
