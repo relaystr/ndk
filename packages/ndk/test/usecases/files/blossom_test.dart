@@ -19,6 +19,7 @@ import '../../mocks/mock_event_verifier.dart';
 
 const int primaryServerPort = 30000;
 const int secondaryServerPort = 30001;
+const int statusServerPort = 30002;
 
 void main() {
   late MockBlossomServer server;
@@ -77,6 +78,26 @@ void main() {
       );
       expect(utf8.decode(getResponse.data), equals('Hello, Blossom!'));
       expect(utf8.decode(getResponseAuth.data), equals('Hello, Blossom!'));
+    });
+
+    test('Upload accepts Created response status', () async {
+      final createdServer = MockBlossomServer(
+        port: statusServerPort,
+        uploadStatusCode: 201,
+      );
+      await createdServer.start();
+      addTearDown(createdServer.stop);
+
+      final testData = Uint8List.fromList(utf8.encode('Hello, Created!'));
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:$statusServerPort'],
+      );
+
+      expect(uploadResponse.first.success, true);
+      expect(uploadResponse.first.descriptor, isNotNull);
+      expect(uploadResponse.first.descriptor!.size, equals(testData.length));
     });
 
     test('Upload and check blob', () async {
@@ -189,6 +210,30 @@ void main() {
       );
       //check that something throws an error
       expect(getResponse, throwsException);
+    });
+
+    test('Delete accepts Accepted response status', () async {
+      final acceptedServer = MockBlossomServer(
+        port: statusServerPort,
+        deleteStatusCode: 202,
+      );
+      await acceptedServer.start();
+      addTearDown(acceptedServer.stop);
+
+      final testData = Uint8List.fromList(utf8.encode('Delete accepted'));
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:$statusServerPort'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final deleteResponse = await client.deleteBlob(
+        sha256: uploadResponse.first.descriptor!.sha256,
+        serverUrls: ['http://localhost:$statusServerPort'],
+      );
+
+      expect(deleteResponse.first.success, true);
     });
   });
 
@@ -521,6 +566,36 @@ void main() {
 
       expect(utf8.decode(fromServer1.data), equals(myData));
       expect(utf8.decode(fromServer2.data), equals(myData));
+    });
+
+    test('mirrorToServers accepts Created response status', () async {
+      final mirrorServer = MockBlossomServer(
+        port: statusServerPort,
+        mirrorStatusCode: 201,
+      );
+      await mirrorServer.start();
+      addTearDown(mirrorServer.stop);
+
+      final myData = "mirror created status test";
+      final testData = Uint8List.fromList(utf8.encode(myData));
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:$primaryServerPort'],
+      );
+      expect(uploadResponse.first.success, true);
+
+      final sha256 = uploadResponse.first.descriptor!.sha256;
+      final blossomUrl =
+          Uri.parse('http://localhost:$primaryServerPort/$sha256');
+
+      final mirrorResponse = await client.mirrorToServers(
+        blossomUrl: blossomUrl,
+        targetServerUrls: ['http://localhost:$statusServerPort'],
+      );
+
+      expect(mirrorResponse.first.success, true);
+      expect(mirrorResponse.first.descriptor?.sha256, equals(sha256));
     });
 
     test('mirrorToServers should mirror to multiple servers simultaneously',
