@@ -15,8 +15,8 @@ platforms:
   windows:
 
 dependencies:
-  objectbox: ^5.2.0 
-  objectbox_flutter_libs: ^5.2.0
+  objectbox: ^5.3.1 
+  objectbox_flutter_libs: ^5.3.1 
   ndk: ^0.8.2-dev.3
   flat_buffers: ^25.9.23
   path_provider: ^2.1.5
@@ -25,9 +25,9 @@ dependencies:
   crypto: ^3.0.7
 
 dev_dependencies:
-  build_runner: ^2.11.1 
+  build_runner: ^2.13.1
   mockito: ^5.6.3
-  objectbox_generator: ^5.2.0
+  objectbox_generator: ^5.3.1 
   test: any
   ndk_cache_manager_test_suite:
     path: ../ndk_cache_manager_test_suite
