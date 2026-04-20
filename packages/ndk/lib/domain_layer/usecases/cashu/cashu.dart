@@ -433,6 +433,7 @@ class Cashu {
 
   Future<void> deleteKnownMint({
     required String mintUrl,
+    bool deleteProofs = true,
   }) async {
     // Remove from cache
     await _cacheManager.removeMintInfo(mintUrl: mintUrl);
@@ -442,6 +443,13 @@ class Cashu {
 
     // Update the stream
     _knownMintsSubject?.add(_knownMints);
+
+    if (deleteProofs) {
+      final allProofs = await _cacheManagerCashu.getProofs(mintUrl: mintUrl);
+      // Also delete associated proofs
+      await _cacheManagerCashu.removeProofs(
+          mintUrl: mintUrl, proofs: allProofs);
+    }
 
     Logger.log.i(() => 'Deleted mint from known mints: $mintUrl');
   }
