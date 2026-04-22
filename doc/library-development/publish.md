@@ -41,11 +41,11 @@ Notice: the automated PR does just versioning and publish dry-run. The Publishin
 
 ## publish manually
 
-1.) either change the versions manually (also all dependencies) or run melos version (this will create a git commit)
+1. either change the versions manually (also all dependencies) or run melos version (this will create a git commit)
 
-2.) run 'melos run format'
+2. run 'melos run format'
 
-3.) commit your changes to git
+3. commit your changes to git
 
-4.) run `melos publish` check everything then run `melos publish --no-dry-run`. For a single package run `melos publish --<package name>`
+4. run `melos publish` check everything then run `melos publish --no-dry-run`. For a single package run `melos publish --<package name>`
 
