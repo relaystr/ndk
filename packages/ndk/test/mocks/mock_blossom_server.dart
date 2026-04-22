@@ -94,6 +94,52 @@ class MockBlossomServer {
       );
     });
 
+    // PUT /media - Upload Media Blob
+    router.put('/media', (Request request) async {
+      // Check for authorization header
+      final authHeader = request.headers['authorization'];
+
+      if (authHeader == null) {
+        return Response.forbidden('Missing authorization');
+      }
+
+      try {
+        final authEvent =
+            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        if (!_verifyAuthEvent(authEvent, 'media')) {
+          return Response.forbidden('Invalid authorization event');
+        }
+      } catch (e) {
+        return Response.forbidden('Invalid authorization format');
+      }
+
+      // Read the request body
+      final bytes = await request.read().expand((chunk) => chunk).toList();
+      final data = Uint8List.fromList(bytes);
+
+      final sha256 = _computeSha256(data);
+      final contentType =
+          request.headers['content-type'] ?? 'application/octet-stream';
+
+      _blobs[sha256] = _BlobEntry(
+        data: data,
+        contentType: contentType,
+        uploader: 'test_pubkey',
+        uploadedAt: DateTime.now(),
+      );
+
+      return Response.ok(
+        json.encode({
+          'url': 'http://localhost:$port/$sha256',
+          'sha256': sha256,
+          'size': data.length,
+          'type': contentType,
+          'uploaded': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
     // GET /list/<pubkey> - List Blobs
     router.get('/list/<pubkey>', (Request request, String pubkey) {
       final authHeader = request.headers['authorization'];

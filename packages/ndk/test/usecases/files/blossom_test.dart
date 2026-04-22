@@ -141,6 +141,20 @@ void main() {
       expect(utf8.decode(getResponse.data), equals('Hello World!'));
     });
 
+    test('Upload media uses media authorization type', () async {
+      final testData = Uint8List.fromList(utf8.encode('Hello, Blossom media!'));
+
+      final uploadResponse = await client.uploadBlob(
+        data: testData,
+        serverUrls: ['http://localhost:${server.port}'],
+        contentType: 'image/png',
+        serverMediaOptimisation: true,
+      );
+
+      expect(uploadResponse.first.success, true);
+      expect(uploadResponse.first.descriptor, isNotNull);
+    });
+
     test('List blobs for user', () async {
       // Upload some test blobs first
       final testData1 = Uint8List.fromList(utf8.encode('Test 1'));
@@ -685,6 +699,26 @@ void main() {
       );
 
       expect(utf8.decode(getResponse.data), equals(testContent));
+    });
+
+    test('uploadBlobFromFile media uses media authorization type', () async {
+      final testFile = File('${tempDir.path}/test_media_upload.png');
+      final testContent = 'Hello from media file upload test!';
+      await testFile.writeAsString(testContent);
+
+      final uploadResults = <BlobUploadResult>[];
+      await for (final progress in client.uploadBlobFromFile(
+        filePath: testFile.path,
+        serverUrls: ['http://localhost:$primaryServerPort'],
+        contentType: 'image/png',
+        serverMediaOptimisation: true,
+      )) {
+        uploadResults.addAll(progress.completedUploads);
+      }
+
+      expect(uploadResults.any((result) => result.success), true);
+      expect(uploadResults.firstWhere((result) => result.success).descriptor,
+          isNotNull);
     });
 
     test('uploadBlobFromFile emits phase-aware BlobUploadProgress stream',
