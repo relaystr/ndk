@@ -33,7 +33,9 @@ If you want a major release check 'Version as prerelease'!
 
 A new PR named 'chore(release): Publish packages' will open Review the changelog/versions, modify if needed.
 
+!!!
 Merging this PR will automatically publish the changed (packages with version bump) packages to pub.dev
+!!!
 
 Notice: the automated PR does just versioning and publish dry-run. The Publishing happens when this PR is merged.
 
