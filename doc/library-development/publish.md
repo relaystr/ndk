@@ -13,9 +13,9 @@ Create a tag
 
 Push to git
 
-```git push origin v1.2.3 
-or
-git push --tags # push all local tags tags
+```
+git push origin v1.2.3
+
 ```
 
 > This will build the sample app and create a draft github release (gh actions).
