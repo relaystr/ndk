@@ -3,6 +3,39 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
 
+class _RecordingNip44Cryptography implements Nip44Cryptography {
+  String? lastEncryptPlaintext;
+  String? lastEncryptPrivateKey;
+  String? lastEncryptPublicKey;
+  String? lastDecryptCiphertext;
+  String? lastDecryptPrivateKey;
+  String? lastDecryptPublicKey;
+
+  @override
+  Future<String> encrypt({
+    required String plaintext,
+    required String privateKey,
+    required String publicKey,
+  }) async {
+    lastEncryptPlaintext = plaintext;
+    lastEncryptPrivateKey = privateKey;
+    lastEncryptPublicKey = publicKey;
+    return 'enc:$plaintext:$publicKey';
+  }
+
+  @override
+  Future<String> decrypt({
+    required String ciphertext,
+    required String privateKey,
+    required String publicKey,
+  }) async {
+    lastDecryptCiphertext = ciphertext;
+    lastDecryptPrivateKey = privateKey;
+    lastDecryptPublicKey = publicKey;
+    return 'dec:$ciphertext:$publicKey';
+  }
+}
+
 void main() {
   group('Bip340EventSigner', () {
     late Bip340EventSigner signer;
@@ -145,6 +178,35 @@ void main() {
         expect(decrypted, equals(message));
 
         await otherSigner.dispose();
+      });
+
+      test('delegates NIP-44 operations to configured cryptography', () async {
+        final crypto = _RecordingNip44Cryptography();
+        final customSigner = Bip340EventSigner(
+          privateKey: keyPair.privateKey,
+          publicKey: keyPair.publicKey,
+          nip44Cryptography: crypto,
+        );
+
+        final encrypted = await customSigner.encryptNip44(
+          plaintext: 'hello',
+          recipientPubKey: 'recipient-pubkey',
+        );
+        final decrypted = await customSigner.decryptNip44(
+          ciphertext: 'ciphertext',
+          senderPubKey: 'sender-pubkey',
+        );
+
+        expect(encrypted, 'enc:hello:recipient-pubkey');
+        expect(decrypted, 'dec:ciphertext:sender-pubkey');
+        expect(crypto.lastEncryptPlaintext, 'hello');
+        expect(crypto.lastEncryptPrivateKey, keyPair.privateKey);
+        expect(crypto.lastEncryptPublicKey, 'recipient-pubkey');
+        expect(crypto.lastDecryptCiphertext, 'ciphertext');
+        expect(crypto.lastDecryptPrivateKey, keyPair.privateKey);
+        expect(crypto.lastDecryptPublicKey, 'sender-pubkey');
+
+        await customSigner.dispose();
       });
     });
   });

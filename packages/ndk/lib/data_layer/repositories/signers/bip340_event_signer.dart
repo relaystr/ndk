@@ -6,7 +6,8 @@ import '../../../shared/nips/nip01/helpers.dart';
 import '../../../shared/nips/nip04/nip04.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
-import '../../../shared/nips/nip44/nip44.dart';
+import '../../../domain_layer/repositories/nip44_cryptography.dart';
+import '../cryptography/default_nip44_cryptography.dart';
 
 /// Pure Dart Event Signer
 class Bip340EventSigner implements EventSigner {
@@ -16,11 +17,15 @@ class Bip340EventSigner implements EventSigner {
   /// hex public key
   String publicKey;
 
+  final Nip44Cryptography _nip44Cryptography;
+
   /// Get a new event signer with the given keys
   Bip340EventSigner({
     required this.privateKey,
     required this.publicKey,
-  });
+    Nip44Cryptography? nip44Cryptography,
+  }) : _nip44Cryptography =
+            nip44Cryptography ?? const DefaultNip44Cryptography();
 
   @override
   Future<Nip01Event> sign(Nip01Event event) async {
@@ -55,10 +60,10 @@ class Bip340EventSigner implements EventSigner {
     required String plaintext,
     required String recipientPubKey,
   }) {
-    return Nip44.encryptMessage(
-      plaintext,
-      privateKey!,
-      recipientPubKey,
+    return _nip44Cryptography.encrypt(
+      plaintext: plaintext,
+      privateKey: privateKey!,
+      publicKey: recipientPubKey,
     );
   }
 
@@ -67,10 +72,10 @@ class Bip340EventSigner implements EventSigner {
     required String ciphertext,
     required String senderPubKey,
   }) {
-    return Nip44.decryptMessage(
-      ciphertext,
-      privateKey!,
-      senderPubKey,
+    return _nip44Cryptography.decrypt(
+      ciphertext: ciphertext,
+      privateKey: privateKey!,
+      publicKey: senderPubKey,
     );
   }
 

@@ -58,6 +58,33 @@ class _RecordingSigner implements EventSigner {
   Future<Nip01Event> sign(Nip01Event event) async => event.copyWith(sig: 'sig');
 }
 
+class _RecordingNip44Cryptography implements Nip44Cryptography {
+  String? lastEncryptPlaintext;
+  String? lastEncryptPrivateKey;
+  String? lastEncryptPublicKey;
+
+  @override
+  Future<String> decrypt({
+    required String ciphertext,
+    required String privateKey,
+    required String publicKey,
+  }) async {
+    return 'dec:$ciphertext:$publicKey';
+  }
+
+  @override
+  Future<String> encrypt({
+    required String plaintext,
+    required String privateKey,
+    required String publicKey,
+  }) async {
+    lastEncryptPlaintext = plaintext;
+    lastEncryptPrivateKey = privateKey;
+    lastEncryptPublicKey = publicKey;
+    return 'enc:$plaintext:$publicKey';
+  }
+}
+
 void main() async {
   group('accounts', () {
     KeyPair key0 = Bip340.generatePrivateKey();
@@ -143,6 +170,37 @@ void main() async {
         key0.publicKey,
       );
       expect(customNdk.accounts.canSign, isTrue);
+    });
+
+    test('loginPrivateKey uses configured nip44Cryptography by default',
+        () async {
+      final crypto = _RecordingNip44Cryptography();
+      final customNdk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [],
+          nip44Cryptography: crypto,
+        ),
+      );
+
+      customNdk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+
+      final signer = customNdk.accounts.getLoggedAccount()!.signer;
+      final encrypted = await signer.encryptNip44(
+        plaintext: 'hello',
+        recipientPubKey: key1.publicKey,
+      );
+
+      expect(encrypted, 'enc:hello:${key1.publicKey}');
+      expect(crypto.lastEncryptPlaintext, 'hello');
+      expect(crypto.lastEncryptPrivateKey, key0.privateKey);
+      expect(crypto.lastEncryptPublicKey, key1.publicKey);
+
+      await customNdk.destroy();
     });
 
     test('loginExternalSigner', () {
