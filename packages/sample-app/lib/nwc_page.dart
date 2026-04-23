@@ -191,7 +191,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
         // Retrieve the discoveryRelay and appPubkey that were set before launching nostr+walletauth
         // These are final and won't change during this try block.
 
-        const String discoveryRelayForQuery = "wss://relay.getalby.com/v1";
+        const String discoveryRelayForQuery = "wss://relay.getalby.com";
         final String appPubkeyForTag = nwcAppKey!.publicKey;
 
         // Clear pending state now that we are processing it.
@@ -326,7 +326,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
             String methods =
                 "get_info get_balance get_budget make_invoice pay_invoice lookup_invoice list_transactions sign_message make_hold_invoice cancel_hold_invoice settle_hold_invoice"; // Example
             String discoveryRelay =
-                "wss://relay.getalby.com/v1"; // Example from existing code
+                "wss://relay.getalby.com"; // Example from existing code
             String returnTo = "ndk://nwc"; // Example
 
             // Construct the URI that will be launched.

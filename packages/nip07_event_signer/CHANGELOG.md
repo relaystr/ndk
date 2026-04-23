@@ -1,3 +1,39 @@
+## 1.0.10-dev.5
+
+ - Update a dependency to the latest release.
+
+## 1.0.10-dev.4
+
+ - Update a dependency to the latest release.
+
+## 1.0.10-dev.3
+
+ - Update a dependency to the latest release.
+
+## 1.0.10-dev.2
+
+ - Update a dependency to the latest release.
+
+## 1.0.10-dev.1
+
+ - Update a dependency to the latest release.
+
+## 1.0.10-dev.0
+
+ - Update a dependency to the latest release.
+
+## 1.0.10
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
+## 1.0.9
+
+ - **FIX**: add changes to pub.dev changelog. ([3d544e3b](https://github.com/relaystr/ndk/commit/3d544e3b937fab98b17a684d5a68027bcea706e9))
+
+## 1.0.8
+
+ - Update a dependency to the latest release.
+
 ## 1.0.7
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.

@@ -33,10 +33,6 @@ ObjectBox database implementation.
 
 Flutter widgets and utilities that require Flutter as a dependency.
 
-### [🔗 Sembast cache manager](./packages/sembast_cache_manager/)
-
-Sembast database implementation.
-
 ### [🔗 sample app](./packages/sample-app/)
 
 example app using the NDK.

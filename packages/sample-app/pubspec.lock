@@ -611,29 +611,29 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.8.0-dev.2"
+    version: "0.8.2-dev.3"
   ndk_bip32_keys:
     dependency: transitive
     description:
       name: ndk_bip32_keys
-      sha256: "3b17d1b84ce3f8a5f6f755c95d90c135444fae55b60b3876a5c1cea908847ab7"
+      sha256: "6bc311451646b6d488ca8e4c9907dc0e8486d93de752d5ab09c5c7b6c96238d8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0-dev.1"
+    version: "0.1.0"
   ndk_drift:
     dependency: "direct main"
     description:
       path: "../drift"
       relative: true
     source: path
-    version: "0.1.0-dev.2"
+    version: "0.1.1-dev.3"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.1.0-dev.3"
+    version: "0.8.2-dev.3"
   nested:
     dependency: transitive
     description:
@@ -648,7 +648,7 @@ packages:
       path: "../nip07_event_signer"
       relative: true
     source: path
-    version: "1.0.7-dev.5"
+    version: "1.0.10-dev.3"
   objective_c:
     dependency: transitive
     description:

@@ -1,6 +1,6 @@
 name: nip07_event_signer
 description: Nostr nip07 signer for ndk
-version: 1.0.7
+version: 1.0.10-dev.5
 repository: https://github.com/relaystr/ndk
 
 topics:
@@ -12,7 +12,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  ndk: ^0.8.0
+  ndk: ^0.8.2-dev.5
   rxdart: ^0.28.0
 
 dev_dependencies:

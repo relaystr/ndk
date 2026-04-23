@@ -22,6 +22,8 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
+import 'quantum_secure_page.dart';
+
 bool amberAvailable = false;
 
 late Ndk ndk;
@@ -137,6 +139,9 @@ class _MyHomePageState extends State<MyHomePage>
       GlobalKey<WalletsPageState>();
   late final WalletsPage _walletsPage;
 
+// Define a constant for the NWC tab name to avoid magic strings
+  static const String nwcTabName = 'NWC';
+  static const String quantumSecureTabName = 'Quantum Secure';
   List<Tab> _buildTabs(BuildContext context) {
     final l10n = context.l10n;
     return <Tab>[
@@ -146,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage>
       Tab(text: l10n.tabBlossom),
       Tab(text: l10n.tabWallets),
       Tab(text: l10n.tabWidgets),
+      const Tab(text: quantumSecureTabName),
     ];
   }
 
@@ -172,6 +178,7 @@ class _MyHomePageState extends State<MyHomePage>
       Tab(text: 'Blossom'),
       Tab(text: 'Wallets'),
       Tab(text: 'Widgets'),
+      Tab(text: quantumSecureTabName),
     ];
 
     _tabController = TabController(length: _tabs.length, vsync: this);
@@ -261,6 +268,7 @@ class _MyHomePageState extends State<MyHomePage>
       BlossomMediaPage(ndk: ndk),
       _walletsPage,
       WidgetsDemoPage(onAccountChanged: _handleAccountChange),
+      const QuantumSecurePage(),
     ];
 
     return Scaffold(

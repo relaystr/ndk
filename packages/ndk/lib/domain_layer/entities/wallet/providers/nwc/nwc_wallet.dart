@@ -9,7 +9,10 @@ import 'package:rxdart/rxdart.dart';
 /// NWC (Nostr Wallet Connect) wallet implementation
 /// Manages connection to a remote wallet via NWC protocol
 class NwcWallet extends Wallet {
+  static const String kPermissionsMetadataKey = 'permissions';
+
   final String nwcUrl;
+  final Set<String> cachedPermissions;
   NwcConnection? connection;
   BehaviorSubject<List<WalletBalance>>? balanceSubject;
   BehaviorSubject<List<WalletTransaction>>? transactionsSubject;
@@ -23,11 +26,14 @@ class NwcWallet extends Wallet {
     super.type = WalletType.NWC,
     required super.supportedUnits,
     required this.nwcUrl,
+    Set<String> cachedPermissions = const {},
     Map<String, dynamic>? metadata,
-  }) : super(
+  })  : cachedPermissions = Set.unmodifiable(cachedPermissions),
+        super(
           metadata: Map.unmodifiable({
             ...(metadata ?? const {}),
             'nwcUrl': nwcUrl,
+            kPermissionsMetadataKey: cachedPermissions.toList(),
           }),
         );
 
@@ -52,17 +58,46 @@ class NwcWallet extends Wallet {
       name: name,
       supportedUnits: supportedUnits,
       nwcUrl: nwcUrl,
+      cachedPermissions: _parsePermissions(metadata[kPermissionsMetadataKey]),
       metadata: metadata,
     );
   }
 
+  NwcWallet withCachedPermissions(Set<String> permissions) {
+    final wallet = NwcWallet(
+      id: id,
+      name: name,
+      supportedUnits: supportedUnits,
+      nwcUrl: nwcUrl,
+      cachedPermissions: permissions,
+      metadata: metadata,
+    );
+    wallet.connection = connection;
+    wallet.balanceSubject = balanceSubject;
+    wallet.transactionsSubject = transactionsSubject;
+    wallet.pendingTransactionsSubject = pendingTransactionsSubject;
+    return wallet;
+  }
+
+  static Set<String> _parsePermissions(dynamic value) {
+    if (value == null) return {};
+    if (value is String) return {value};
+    if (value is List) {
+      return value.whereType<String>().toSet();
+    }
+    return {};
+  }
+
+  Set<String> get _effectivePermissions =>
+      connection?.permissions.isNotEmpty == true
+          ? connection!.permissions
+          : cachedPermissions;
+
   @override
   bool get canReceive =>
-      connection != null &&
-      connection!.permissions.contains(NwcMethod.MAKE_INVOICE.name);
+      _effectivePermissions.contains(NwcMethod.MAKE_INVOICE.name);
 
   @override
   bool get canSend =>
-      connection != null &&
-      connection!.permissions.contains(NwcMethod.PAY_INVOICE.name);
+      _effectivePermissions.contains(NwcMethod.PAY_INVOICE.name);
 }
