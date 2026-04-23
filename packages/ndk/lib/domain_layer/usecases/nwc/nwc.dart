@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:ndk/domain_layer/usecases/nwc/requests/get_budget.dart';
 import 'package:ndk/ndk.dart';
+import '../../../data_layer/repositories/signers/default_event_signer_factory.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
@@ -43,13 +44,16 @@ class Nwc {
 
   final Requests _requests;
   final Broadcast _broadcast;
+  final EventSignerFactory _eventSignerFactory;
 
   /// main constructor
   Nwc({
     required Requests requests,
     required Broadcast broadcast,
+    EventSignerFactory? eventSignerFactory,
   })  : _requests = requests,
-        _broadcast = broadcast;
+        _broadcast = broadcast,
+        _eventSignerFactory = eventSignerFactory ?? defaultEventSignerFactory;
 
   final Map<String, Completer<NwcResponse>> _inflighRequests = {};
   final Map<String, Timer> _inflighRequestTimers = {};
@@ -87,7 +91,10 @@ class Nwc {
         .future;
     if (infoEvent.isNotEmpty) {
       final event = infoEvent.first;
-      final connection = NwcConnection(parsedUri);
+      final connection = NwcConnection(
+        parsedUri,
+        eventSignerFactory: _eventSignerFactory,
+      );
       connection.useETagForEachRequest = useETagForEachRequest;
       connection.ignoreCapabilitiesCheck = ignoreCapabilitiesCheck;
 
@@ -125,7 +132,12 @@ class Nwc {
       completer.complete(connection);
     } else {
       onError?.call("not found");
-      completer.complete(NwcConnection(parsedUri));
+      completer.complete(
+        NwcConnection(
+          parsedUri,
+          eventSignerFactory: _eventSignerFactory,
+        ),
+      );
     }
     return completer.future;
   }

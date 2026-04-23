@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import '../../../data_layer/models/nip_01_event_model.dart';
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../../data_layer/repositories/signers/default_event_signer_factory.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
@@ -12,8 +12,12 @@ class GiftWrap {
   static const int kGiftWrapEventkind = 1059;
 
   final Accounts accounts;
+  final EventSignerFactory _eventSignerFactory;
 
-  GiftWrap({required this.accounts});
+  GiftWrap({
+    required this.accounts,
+    EventSignerFactory? eventSignerFactory,
+  }) : _eventSignerFactory = eventSignerFactory ?? defaultEventSignerFactory;
 
   /// Returns the signer to use for signing operations.
   /// Uses [customSigner] if provided, otherwise falls back to logged-in account's signer.
@@ -47,6 +51,7 @@ class GiftWrap {
     final giftWrap = await wrapEvent(
       recipientPublicKey: recipientPubkey,
       sealEvent: sealedRumor,
+      eventSignerFactory: _eventSignerFactory,
     );
     return giftWrap;
   }
@@ -163,12 +168,13 @@ class GiftWrap {
     required String recipientPublicKey,
     required Nip01Event sealEvent,
     List<List<String>>? additionalTags,
+    EventSignerFactory? eventSignerFactory,
   }) async {
     // Generate a random one-time-use keypair
     final ephemeralKeys = Bip340.generatePrivateKey();
-    final ephemeralSigner = Bip340EventSigner(
-      privateKey: ephemeralKeys.privateKey,
+    final ephemeralSigner = (eventSignerFactory ?? defaultEventSignerFactory)(
       publicKey: ephemeralKeys.publicKey,
+      privateKey: ephemeralKeys.privateKey,
     );
 
     final encryptedSeal = await ephemeralSigner.encryptNip44(
@@ -200,12 +206,7 @@ class GiftWrap {
       pubKey: ephemeralKeys.publicKey,
     );
 
-    // Sign with ephemeral key
-    final signature = Bip340.sign(giftWrapEvent.id, ephemeralKeys.privateKey!);
-
-    final gWEventSigned = giftWrapEvent.copyWith(sig: signature);
-
-    return gWEventSigned;
+    return ephemeralSigner.sign(giftWrapEvent);
   }
 
   /// Unwraps a gift wrap to get the seal event

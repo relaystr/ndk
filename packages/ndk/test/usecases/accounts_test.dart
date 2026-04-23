@@ -2,6 +2,61 @@ import 'package:test/test.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:rxdart/rxdart.dart';
+
+class _RecordingSigner implements EventSigner {
+  _RecordingSigner({
+    required this.publicKey,
+    required this.privateKey,
+  });
+
+  final String publicKey;
+  final String? privateKey;
+
+  @override
+  bool canSign() => privateKey != null;
+
+  @override
+  bool cancelRequest(String requestId) => false;
+
+  @override
+  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async =>
+      null;
+
+  @override
+  Future<String?> decryptNip44({
+    required String ciphertext,
+    required String senderPubKey,
+  }) async =>
+      null;
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async =>
+      null;
+
+  @override
+  Future<String?> encryptNip44({
+    required String plaintext,
+    required String recipientPubKey,
+  }) async =>
+      null;
+
+  @override
+  String getPublicKey() => publicKey;
+
+  @override
+  List<PendingSignerRequest> get pendingRequests => const [];
+
+  @override
+  Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
+      BehaviorSubject<List<PendingSignerRequest>>.seeded(const []).stream;
+
+  @override
+  Future<Nip01Event> sign(Nip01Event event) async => event.copyWith(sig: 'sig');
+}
 
 void main() async {
   group('accounts', () {
@@ -56,6 +111,38 @@ void main() async {
       expect(ndk.accounts.canSign, true);
       ndk.accounts.logout();
       expect(ndk.accounts.isNotLoggedIn, true);
+    });
+
+    test('loginPrivateKey uses configured eventSignerFactory', () {
+      final customNdk = Ndk(
+        NdkConfig(
+          eventVerifier: Bip340EventVerifier(),
+          cache: MemCacheManager(),
+          bootstrapRelays: [],
+          eventSignerFactory: ({
+            required String publicKey,
+            String? privateKey,
+          }) {
+            return _RecordingSigner(
+              publicKey: publicKey,
+              privateKey: privateKey,
+            );
+          },
+        ),
+      );
+
+      customNdk.accounts.loginPrivateKey(
+        pubkey: key0.publicKey,
+        privkey: key0.privateKey!,
+      );
+
+      expect(customNdk.accounts.getLoggedAccount()!.signer,
+          isA<_RecordingSigner>());
+      expect(
+        customNdk.accounts.getLoggedAccount()!.signer.getPublicKey(),
+        key0.publicKey,
+      );
+      expect(customNdk.accounts.canSign, isTrue);
     });
 
     test('loginExternalSigner', () {

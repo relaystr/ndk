@@ -1,6 +1,11 @@
 import '../entities/nip_01_event.dart';
 import '../entities/pending_signer_request.dart';
 
+typedef EventSignerFactory = EventSigner Function({
+  required String publicKey,
+  String? privateKey,
+});
+
 abstract class EventSigner {
   /// Signs the given event and returns the signed event
   Future<Nip01Event> sign(Nip01Event event);
