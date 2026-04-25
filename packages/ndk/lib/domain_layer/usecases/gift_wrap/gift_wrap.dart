@@ -126,7 +126,10 @@ class GiftWrap {
       content: encryptedContent,
     );
 
-    return sealEvent;
+    // Sign the seal event (required by NIP-59)
+    final signedSeal = await signer.sign(sealEvent);
+
+    return signedSeal;
   }
 
   /// Unseals a sealed event to retrieve the rumor
