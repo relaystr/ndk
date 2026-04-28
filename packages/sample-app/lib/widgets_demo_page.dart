@@ -5,9 +5,7 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import 'main.dart';
 
 class WidgetsDemoPage extends StatefulWidget {
-  final VoidCallback? onAccountChanged;
-
-  const WidgetsDemoPage({super.key, this.onAccountChanged});
+  const WidgetsDemoPage({super.key});
 
   @override
   State<WidgetsDemoPage> createState() => _WidgetsDemoPageState();
@@ -168,11 +166,9 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                           ndkFlutter: ndkFlutter,
                           onAccountSwitch: (pubkey) {
                             setState(() {});
-                            widget.onAccountChanged?.call();
                           },
                           onAccountRemove: (pubkey) {
                             setState(() {});
-                            widget.onAccountChanged?.call();
                           },
                         ),
                       ),
@@ -216,7 +212,6 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                           ndkFlutter: ndkFlutter,
                           onLoggedIn: () {
                             setState(() => _showLogin = false);
-                            widget.onAccountChanged?.call();
                           },
                           enableNip07Login: false,
                           enableAmberLogin: false,

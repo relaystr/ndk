@@ -7,13 +7,11 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 class ProfilePage extends StatefulWidget {
   final NdkFlutter ndkFlutter;
   final String? Function() getLoggedPubkey;
-  final VoidCallback? onAccountChanged;
 
   const ProfilePage({
     super.key,
     required this.ndkFlutter,
     required this.getLoggedPubkey,
-    this.onAccountChanged,
   });
 
   @override
@@ -28,7 +26,6 @@ class _ProfilePageState extends State<ProfilePage> {
       onLoggedIn: () {
         if (!mounted) return;
         setState(() {});
-        widget.onAccountChanged?.call();
       },
     );
   }
@@ -126,7 +123,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ndkFlutter: widget.ndkFlutter,
             onLogout: () {
               setState(() {});
-              widget.onAccountChanged?.call();
             },
           ),
           const SizedBox(height: 16),
