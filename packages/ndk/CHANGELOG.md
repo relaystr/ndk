@@ -1,3 +1,11 @@
+## 0.8.2-dev.6
+
+ - **FIX**: delete pubspec.lock.
+ - **FIX**: stubs for qsVerifier/Signer.
+ - **FIX**: sign seal event.
+ - **FIX**: treat 2xx http statuses as success.
+ - **FEAT**: flatpack build.
+
 ## 0.8.2-dev.5
 
  - **FEAT**(experiment): qs dilithium singer, verifier. ([e680430b](https://github.com/relaystr/ndk/commit/e680430b5f4ae2826d5ec642688b0afbe49b0609))
