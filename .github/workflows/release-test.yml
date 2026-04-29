@@ -203,6 +203,14 @@ jobs:
           asset_name: ndk-demo-app-android-x86_64.apk
           asset_content_type: application/zip
 
+  call-build:
+    needs: [build_cli, build_android]
+    uses: ./.github/workflows/deploy-sample-app-web.yml
+    with:
+      deploy_ref: ${{ github.ref }}
+      base_href: /app/test/
+      destination_dir: app/test
+
   release:
     runs-on: ubuntu-latest
     outputs:

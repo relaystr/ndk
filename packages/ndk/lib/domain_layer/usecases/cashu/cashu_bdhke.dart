@@ -15,7 +15,7 @@ import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';
 import 'cashu_tools.dart';
 
-typedef BlindMessageResult = (String B_, BigInt r);
+typedef BlindMessageResult = (String blindedMessageHex, BigInt r);
 
 class CashuBdhke {
   static Future<List<CashuBlindedMessageItem>> createBlindedMsgForAmounts({
@@ -48,17 +48,16 @@ class CashuBdhke {
         final myR = BigInt.parse(mySecret.blindingHex, radix: 16);
 
         //final secret = Helpers.getSecureRandomString(32);
-        // ignore: non_constant_identifier_names, constant_identifier_names
-        final (B_, r) = blindMessage(secret, r: myR);
+        final (blindedMessageHex, r) = blindMessage(secret, r: myR);
 
-        if (B_.isEmpty) {
+        if (blindedMessageHex.isEmpty) {
           continue;
         }
 
         final blindedMessage = CashuBlindedMessage(
           id: keysetId,
           amount: amount,
-          blindedMessage: B_,
+          blindedMessage: blindedMessageHex,
         );
 
         items.add(CashuBlindedMessageItem(
@@ -101,11 +100,11 @@ class CashuBdhke {
     required String kHex,
     required BigInt r,
   }) {
-    final C_ = CashuTools.pointFromHexString(cHex);
+    final cPoint = CashuTools.pointFromHexString(cHex);
     final K = CashuTools.pointFromHexString(kHex);
     final rK = K * r;
     if (rK == null) return null;
-    return C_ - rK;
+    return cPoint - rK;
   }
 
   static List<CashuProof> unblindSignatures({

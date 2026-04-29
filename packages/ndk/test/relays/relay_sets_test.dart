@@ -418,7 +418,7 @@ void main() async {
   group("misc", () {
     // test('nwc info', () async {
     //   RelayManager relayManager = RelayManager();
-    //   String relay = "wss://relay.getalby.com/v1";
+    //   String relay = "wss://relay.getalby.com";
     //   await relayManager.connectRelay(relay);
     //   var filter = Filter(
     //       kinds: [13194],

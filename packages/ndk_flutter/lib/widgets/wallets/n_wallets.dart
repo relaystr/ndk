@@ -2,12 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
-import 'n_add_wallet_dialogs.dart';
-import 'n_wallet_actions.dart';
-import 'n_wallet_card.dart';
-import 'n_wallet_card_list.dart';
-import 'n_pending_transactions.dart';
-import 'n_recent_transactions.dart';
 
 /// High-level wallets section widget that mirrors the sample app's wallets tab.
 ///
@@ -67,6 +61,9 @@ class NWallets extends StatefulWidget {
   /// Parameters for launching Alby Go NWC connection.
   final AlbyGoConnectConfig albyGoConnectConfig;
 
+  /// Optional coordinator for handling the Alby Go NWC connection flow.
+  final NwcWalletAuthCoordinator? nwcWalletAuthCoordinator;
+
   /// Custom icon configuration for Cashu wallets
   final WalletIconConfig? cashuIcon;
 
@@ -96,17 +93,46 @@ class NWallets extends StatefulWidget {
     this.recentTransactionsHeight = 200,
     this.onWalletSelected,
     this.albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
+    this.nwcWalletAuthCoordinator,
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
   });
 
   @override
-  State<NWallets> createState() => _NWalletsState();
+  State<NWallets> createState() => NWalletsState();
 }
 
-class _NWalletsState extends State<NWallets> {
+class NWalletsState extends State<NWallets> {
   String? _selectedWalletId;
+  late final NwcWalletAuthCoordinator _nwcWalletAuthCoordinator;
+
+  @override
+  void initState() {
+    super.initState();
+    _nwcWalletAuthCoordinator =
+        widget.nwcWalletAuthCoordinator ?? NwcWalletAuthCoordinator();
+  }
+
+  Future<bool> onProtocolUrlReceived(String url) async {
+    final handled = await _nwcWalletAuthCoordinator.processProtocolUrl(
+      context,
+      widget.ndkFlutter,
+      url,
+    );
+
+    if (!handled || !mounted) return handled;
+
+    final connectedWalletId = _nwcWalletAuthCoordinator
+        .takeLastConnectedWalletId();
+    if (connectedWalletId != null) {
+      setState(() {
+        _selectedWalletId = connectedWalletId;
+      });
+      widget.onWalletSelected?.call(connectedWalletId);
+    }
+    return handled;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -235,6 +261,7 @@ class _NWalletsState extends State<NWallets> {
       context,
       widget.ndkFlutter,
       albyGoConnectConfig: widget.albyGoConnectConfig,
+      nwcWalletAuthCoordinator: _nwcWalletAuthCoordinator,
     );
   }
 }

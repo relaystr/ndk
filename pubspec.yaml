@@ -1,8 +1,76 @@
 name: ndk_workspace
+publish_to: none
 description: Workspace configuration for the NDK melos monorepo.
-version: 0.0.0
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 dev_dependencies:
-  melos: ^6.2.0
+  melos: ^7.5.0
+
+
+workspace:
+  - packages/bip32_keys
+  - packages/ndk
+  - packages/objectbox
+  - packages/nip07_event_signer
+  # - packages/sembast_cache_manager
+  - packages/drift
+  - packages/ndk_cache_manager_test_suite
+  - packages/ndk_flutter
+
+melos:
+  scripts:
+    analyze:
+      exec: flutter analyze .
+      description: Analyze a specific package in this project.
+
+    check-format:
+      exec: dart format --set-exit-if-changed .
+      description: Check the format of a specific package in this project.
+
+    format:
+      exec: dart format .
+      description: Format a specific package in this project.
+
+
+    build:
+      run: melos run build:apple && melos run build:android && melos run build:other
+      description: Build all native libraries for the project.
+
+    build:apple:
+      run: bash scripts/build-apple.sh
+      description: Build the XCFramework for iOS and macOS.
+
+    build:android:
+      run: bash scripts/build-android.sh
+      description: Build the .tar.gz for Android.
+
+    build:other:
+      run: bash scripts/build-other.sh
+      description: Build the .tar.gz for all other platforms.
+
+    test:
+      run: melos run test:dart --no-select && melos run test:flutter --no-select
+      description: Run all Dart & Flutter tests in this project.
+
+    test:dart:
+      run: melos exec -c 1 --fail-fast -- "dart test test"
+      description: Run Dart tests for a specific package in this project.
+      select-package:
+        flutter: false
+        dir-exists: test
+
+    test:flutter:
+      run: melos exec -c 1 --fail-fast -- "flutter test test"
+      description: Run Flutter tests for a specific package in this project.
+      select-package:
+        flutter: true
+        dir-exists: test
+
+    command:
+      version:
+        hooks:
+          preCommit: |
+            melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"
+            git add packages/ndk/lib/src/version.dart
+

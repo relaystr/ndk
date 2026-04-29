@@ -312,6 +312,12 @@
   },
   "addWalletTitle": "Добавить Кошелёк",
   "chooseWalletType": "Выберите тип кошелька",
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "nwcWalletTypeSubtitle": "Подключиться к удаленному кошельку через NWC",
+  "lnurlWalletTypeTitle": "LNURL / Lightning-адрес",
+  "lnurlWalletTypeSubtitle": "Использовать кастодиальный кошелек с LNURL или Lightning-адресом",
+  "cashuWalletTypeTitle": "Cashu",
+  "cashuWalletTypeSubtitle": "Использовать ecash-кошелек на базе монетного двора Cashu",
   "cashuOption": "Cashu",
   "nwcOption": "NWC",
   "lnurlOption": "LNURL",
@@ -334,10 +340,12 @@
     "placeholders": {
       "used": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Amount already used"
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total budget amount"
       }
     }

@@ -165,9 +165,6 @@ class JitEngine with Logger implements NetworkEngine {
     required BroadcastState broadcastState,
     Iterable<String>? specificRelays,
   }) {
-    final doneStream = broadcastState.stateUpdates
-        .map((state) => state.broadcasts.values.toList());
-
     Future<void> asyncStuff() async {
       await relayManagerLight.seedRelaysConnected;
 
@@ -182,10 +179,11 @@ class JitEngine with Logger implements NetworkEngine {
         broadcastState.addError(e, stackTrace);
         return;
       }
+      broadcastState.startTimeout();
 
       if (specificRelays != null) {
         final cleanedSpecificRelays = cleanRelayUrls(specificRelays.toList());
-        return RelayJitBroadcastSpecificRelaysStrategy.broadcast(
+        await RelayJitBroadcastSpecificRelaysStrategy.broadcast(
           specificRelays: cleanedSpecificRelays,
           relayManager: relayManagerLight,
           eventToPublish: workingNostrEvent,
@@ -193,10 +191,12 @@ class JitEngine with Logger implements NetworkEngine {
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
               .toList(),
         );
+        broadcastState.closeIfNoRelays();
+        return;
       }
 
       // default publish to own outbox
-      RelayJitBroadcastOutboxStrategy.broadcast(
+      await RelayJitBroadcastOutboxStrategy.broadcast(
         eventToPublish: workingNostrEvent,
         connectedRelays: relayManagerLight.connectedRelays
             .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
@@ -209,7 +209,7 @@ class JitEngine with Logger implements NetworkEngine {
       // check if we need to publish to others inboxes
       if (workingNostrEvent.pTags.isNotEmpty &&
           workingNostrEvent.kind != ContactList.kKind) {
-        RelayJitBroadcastOtherReadStrategy.broadcast(
+        await RelayJitBroadcastOtherReadStrategy.broadcast(
           eventToPublish: workingNostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()
@@ -219,12 +219,14 @@ class JitEngine with Logger implements NetworkEngine {
           pubkeysOfInbox: workingNostrEvent.pTags,
         );
       }
+      broadcastState.closeIfNoRelays();
     }
 
     asyncStuff();
     return NdkBroadcastResponse(
       publishEvent: nostrEvent,
-      broadcastDoneStream: doneStream,
+      broadcastDoneStream: broadcastState.stateUpdates
+          .map((state) => state.broadcasts.values.toList()),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'main.dart';
@@ -17,12 +18,13 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final loggedPubkey = ndk.accounts.getPublicKey();
     final isLoggedIn = loggedPubkey != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NDK Flutter Widgets Demo'),
+        title: Text(l10n.widgetsPageTitle),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -41,7 +43,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Log in via the "Accounts" tab to see personalized widgets.',
+                          l10n.widgetsLoginHint,
                           style: TextStyle(color: Colors.amber.shade900),
                         ),
                       ),
@@ -54,15 +56,14 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
             // NName Widget Section
             _buildSection(
               title: 'NName',
-              description:
-                  'Displays user name from metadata, falls back to formatted npub.',
+              description: l10n.widgetsSectionNNameDescription,
               child: isLoggedIn
                   ? Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
                           children: [
-                            const Text('Current user: '),
+                            Text(l10n.widgetsCurrentUser),
                             NName(ndkFlutter: ndkFlutter),
                           ],
                         ),
@@ -74,8 +75,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
             // NPicture Widget Section
             _buildSection(
               title: 'NPicture',
-              description:
-                  'Displays user profile picture with fallback to initials.',
+              description: l10n.widgetsSectionNPictureDescription,
               child: isLoggedIn
                   ? Card(
                       child: Padding(
@@ -90,7 +90,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                                   circleAvatarRadius: 30,
                                 ),
                                 const SizedBox(height: 8),
-                                const Text('Default'),
+                                Text(l10n.widgetsSizeDefault),
                               ],
                             ),
                             Column(
@@ -100,7 +100,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                                   circleAvatarRadius: 40,
                                 ),
                                 const SizedBox(height: 8),
-                                const Text('Larger'),
+                                Text(l10n.widgetsSizeLarger),
                               ],
                             ),
                             Column(
@@ -110,7 +110,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                                   circleAvatarRadius: 50,
                                 ),
                                 const SizedBox(height: 8),
-                                const Text('Large'),
+                                Text(l10n.widgetsSizeLarge),
                               ],
                             ),
                           ],
@@ -123,8 +123,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
             // NBanner Widget Section
             _buildSection(
               title: 'NBanner',
-              description:
-                  'Displays user banner image with fallback to colored container.',
+              description: l10n.widgetsSectionNBannerDescription,
               child: isLoggedIn
                   ? Card(
                       clipBehavior: Clip.antiAlias,
@@ -143,8 +142,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
             // NUserProfile Widget Section
             _buildSection(
               title: 'NUserProfile',
-              description:
-                  'Complete user profile with banner, picture, name, and NIP-05.',
+              description: l10n.widgetsSectionNUserProfileDescription,
               child: isLoggedIn
                   ? Card(
                       child: Padding(
@@ -161,8 +159,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
             // NSwitchAccount Widget Section
             _buildSection(
               title: 'NSwitchAccount',
-              description:
-                  'Account management widget with switching and logout.',
+              description: l10n.widgetsSectionNSwitchAccountDescription,
               child: isLoggedIn
                   ? Card(
                       child: Padding(
@@ -186,8 +183,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
             // NLogin Widget Section
             _buildSection(
               title: 'NLogin',
-              description:
-                  'Login widget with multiple auth methods (NIP-05, npub, nsec, bunker, etc.).',
+              description: l10n.widgetsSectionNLoginDescription,
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -198,14 +194,14 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                         FilledButton.icon(
                           onPressed: () => setState(() => _showLogin = true),
                           icon: const Icon(Icons.login),
-                          label: const Text('Show NLogin Widget'),
+                          label: Text(l10n.widgetsShowLoginWidget),
                         ),
                       if (_showLogin) ...[
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'NLogin Widget',
+                              l10n.widgetsLoginWidgetTitle,
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             IconButton(
@@ -235,8 +231,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
             // Color from pubkey demo
             _buildSection(
               title: 'getColorFromPubkey',
-              description:
-                  'Static method that generates deterministic colors from pubkeys.',
+              description: l10n.widgetsSectionGetColorDescription,
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -292,13 +287,14 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
   }
 
   Widget _buildPlaceholder(String widgetName) {
+    final l10n = context.l10n;
     return Card(
       color: Colors.grey[100],
       child: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Center(
           child: Text(
-            '$widgetName\n(requires login)',
+            l10n.widgetsRequiresLogin(widgetName),
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey[500]),
           ),

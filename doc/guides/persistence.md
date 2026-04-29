@@ -9,7 +9,6 @@ Available databases:
 
 - `MemCacheManager`
 - [`DbObjectBox`](https://pub.dev/packages/ndk_objectbox)
-- [`IsarCacheManager`](https://pub.dev/packages/ndk_isar) [discontinued! use ObjectBox or Sembast]
 - [`SembastCacheManager`](https://pub.dev/packages/sembast_cache_manager)
 - [`DriftCacheManager`](https://pub.dev/packages/ndk_drift)
 

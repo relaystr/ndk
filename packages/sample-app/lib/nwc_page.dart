@@ -13,7 +13,6 @@ import 'package:ndk/domain_layer/usecases/nwc/responses/nwc_response.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
-import 'package:protocol_handler/protocol_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -23,10 +22,10 @@ class NwcPage extends StatefulWidget {
   const NwcPage({super.key});
 
   @override
-  State<NwcPage> createState() => _NwcPageState();
+  State<NwcPage> createState() => NwcPageState();
 }
 
-class _NwcPageState extends State<NwcPage> with ProtocolListener {
+class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
   TextEditingController uri = TextEditingController();
   TextEditingController amount =
       TextEditingController(); // For normal and hold invoice
@@ -68,16 +67,19 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
   bool isRegularInvoicePaid = false;
   String? regularInvoiceStatusMessage;
   StreamSubscription? regularInvoicePaymentSubscription;
+  AppLifecycleState? _appLifecycleState;
+  String? _deferredProtocolUrl;
 
   @override
   void initState() {
     super.initState();
-    protocolHandler.addListener(this);
+    WidgetsBinding.instance.addObserver(this);
+    _appLifecycleState = WidgetsBinding.instance.lifecycleState;
     uri.addListener(() {
       setState(() {
         if (uri.text == '') {
-          connection = null;
-          _resetInvoiceStates(); // Reset invoice states if connection URI is cleared
+          // connection = null;
+          // _resetInvoiceStates(); // Reset invoice states if connection URI is cleared
         }
       });
     });
@@ -97,6 +99,7 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     uri.dispose();
     amount.dispose();
     // holdAmount.dispose(); // Removed
@@ -104,8 +107,29 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
     invoice.dispose();
     holdInvoiceStateSubscription?.cancel();
     regularInvoicePaymentSubscription?.cancel();
-    protocolHandler.removeListener(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _appLifecycleState = state;
+
+    if (!mounted || state != AppLifecycleState.resumed) {
+      return;
+    }
+
+    final deferredProtocolUrl = _deferredProtocolUrl;
+    _deferredProtocolUrl = null;
+
+    if (deferredProtocolUrl != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _processProtocolUrl(deferredProtocolUrl);
+      });
+      return;
+    }
+
+    setState(() {});
   }
 
   void _resetInvoiceStates() {
@@ -130,8 +154,16 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
     });
   }
 
-  @override
-  void onProtocolUrlReceived(String url) async {
+  void onProtocolUrlReceived(String url) {
+    if (_appLifecycleState != AppLifecycleState.resumed) {
+      _deferredProtocolUrl = url;
+      return;
+    }
+
+    _processProtocolUrl(url);
+  }
+
+  void _processProtocolUrl(String url) async {
     print('NWC Page: Protocol URL received: $url');
 
     if (url.startsWith("ndk://nwc") && // Check if it's our NIP-47 callback
@@ -142,8 +174,6 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
       print('  Expected app pubkey for p tag: $_pendingAppPubkeyForAuth');
 
       final discoveryRelay = _pendingDiscoveryRelayUrl!;
-      final appPubkey = _pendingAppPubkeyForAuth!;
-
       // Clear pending state now that we are processing it.
       // Important to do this early to prevent reprocessing if another callback comes for an old request.
       setState(() {
@@ -158,11 +188,10 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
       );
 
       try {
-
         // Retrieve the discoveryRelay and appPubkey that were set before launching nostr+walletauth
         // These are final and won't change during this try block.
 
-        const String discoveryRelayForQuery = "wss://relay.getalby.com/v1";
+        const String discoveryRelayForQuery = "wss://relay.getalby.com";
         final String appPubkeyForTag = nwcAppKey!.publicKey;
 
         // Clear pending state now that we are processing it.
@@ -172,7 +201,7 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
         //   _pendingAppPubkeyForAuth = null;
         // });
 
-        if (nwcAppKey == null || nwcAppKey!.privateKey == null) {
+         if (nwcAppKey == null || nwcAppKey!.privateKey == null) {
           print(
               'NIP-47 Error: nwcAppKey or its private key is null. Cannot construct NWC URI.');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -184,16 +213,12 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
 
         final stream = ndk.requests
             .query(
-              filters: [
-                Filter(
-                  kinds: [NwcKind.INFO.value],
-                  pTags: [appPubkeyForTag],
-                  limit: 1,
-                )
-              ],
-              explicitRelays: {
-                discoveryRelayForQuery
-              },
+              filter: Filter(
+                kinds: [NwcKind.INFO.value],
+                pTags: [appPubkeyForTag],
+                limit: 1,
+              ),
+              explicitRelays: {discoveryRelayForQuery},
             )
             .stream
             .timeout(const Duration(seconds: 15));
@@ -301,7 +326,7 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
             String methods =
                 "get_info get_balance get_budget make_invoice pay_invoice lookup_invoice list_transactions sign_message make_hold_invoice cancel_hold_invoice settle_hold_invoice"; // Example
             String discoveryRelay =
-                "wss://relay.getalby.com/v1"; // Example from existing code
+                "wss://relay.getalby.com"; // Example from existing code
             String returnTo = "ndk://nwc"; // Example
 
             // Construct the URI that will be launched.
@@ -460,7 +485,8 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
               width: 200,
               child: TextField(
                 controller: amount,
-                textAlign: TextAlign.center, // Center text within field
+                textAlign: TextAlign.center,
+                // Center text within field
                 decoration: const InputDecoration(
                   hintText: "Amount in sats",
                   hintStyle: TextStyle(color: Colors.grey),
@@ -504,7 +530,8 @@ class _NwcPageState extends State<NwcPage> with ProtocolListener {
                           _resetInvoiceStates();
                         });
                       }
-                    : null, // Setting onChanged to null disables the checkbox
+                    : null,
+                // Setting onChanged to null disables the checkbox
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
               ),

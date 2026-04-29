@@ -25,7 +25,9 @@ class SembastWalletsRepo extends WalletsRepo {
     String databaseName = "sembast_cache_manager",
   }) async {
     final database = await databaseFactoryIo.openDatabase(filename);
-    return SembastWalletsRepo(database);
+    final repo = SembastWalletsRepo(database);
+    await repo.initializeWalletDefaults();
+    return repo;
   }
 
   SembastWalletsRepo(this._database) {

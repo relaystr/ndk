@@ -5,7 +5,6 @@ import '../entities/wallet/wallet_type.dart';
 /// Repository for wallet storage operations
 /// Thin abstraction over CacheManager for wallet persistence
 abstract class WalletsRepo {
-
   /// Get wallets by id
   /// return all if [ids] is null
   Future<List<Wallet>> getWallets({List<String>? ids});
@@ -38,7 +37,7 @@ abstract class WalletsRepo {
   /// Set default wallet for sending funds (e.g. for paying invoices)
   void setDefaultWalletForSending(String? walletId);
 
-    /// Get transactions with optional filtering
+  /// Get transactions with optional filtering
   Future<List<WalletTransaction>> getTransactions({
     int? limit,
     int? offset,
@@ -49,5 +48,4 @@ abstract class WalletsRepo {
 
   /// Save transactions to storage
   Future<void> saveTransactions(List<WalletTransaction> transactions);
-
 }

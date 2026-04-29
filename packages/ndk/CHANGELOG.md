@@ -1,130 +1,57 @@
-## 0.8.0-dev.2
+## 0.8.2-dev.5
 
- - **REFACTOR**: filter keyset by active and unit.
- - **REFACTOR**: remove wallet prefix from cashu.
- - **REFACTOR**: rename removeWallet.
- - **REFACTOR**: remove acc prefix, clear seperation wallet.
- - **FIX**: log body http request.
- - **FIX**: cashu tests needed a wallet.
- - **FIX**: missing wallets.dispose in ndk.destroy.
- - **FIX**: initialization.
- - **FIX**: nwc connection.
- - **FIX**: broadcast state timeout.
- - **FIX**: rollback removal of walletsRepo from ndkConfig.
- - **FIX**: rollback removal of walletsRepo from ndkConfig.
- - **FIX**: removed feat combinedTransactions.
- - **FIX**: dispose combined balances activated.
- - **FIX**: separate wallets storage operations from cache manager.
- - **FIX**: usecase name.
- - **FIX**: restore save only unspend tokens.
- - **FIX**: type parsing.
- - **FIX**: spend, redeem exception handeling.
- - **FIX**: cashu redeem failed transaction state.
- - **FIX**: hook up deleteKnownMint to removeWallet.
- - **FIX**: add keysets to decorator.
- - **FIX**: store keysets from network.
- - **FIX**: null err.
- - **FIX**: cashu usecase naming.
- - **FIX**: wallet transaction state storage.
- - **FIX**: cleanup on ndk destroy.
- - **FIX**: melt map output blanks to change.
- - **FIX**: melt change parsing.
- - **FIX**: allow fee reserve 0.
- - **FIX**: swap split change, exact amount.
- - **FIX**: mintUrl in CashuMintBalance.
- - **FIX**: typo.
- - **FIX**: check completion when transcation rcv.
- - **FIX**: test secret comparison.
- - **FIX**: dismiss large keyset amounts.
- - **FIX**: sort swap outputs.
- - **FIX**: correct balance with inactive keysets.
- - **FIX**: getProofs mem cache manager.
- - **FIX**: identify cashu proof by pubKey.
- - **FIX**: dont add total balance.
- - **FIX**: filter keyset for unit.
- - **FIX**: cashuMintInfo fromJson add mintUrl.
- - **FIX**: wallet filter balances by mint.
- - **FIX**: save transaction to db.
- - **FIX**: cashu balances grouping.
- - **FEAT**: spending with state.
- - **FEAT**: cashu mnemonic.
- - **FEAT**: nut13 deterministic secrets.
- - **FEAT**: rust deriveSecret.
- - **FEAT**: seed phrase user api.
- - **FEAT**: CashuKeyDerivation support keysets v2.
- - **FEAT**: fast key derivation.
- - **FEAT**: fast multiply blind msg.
- - **FEAT**: optimized proof select.
- - **FEAT**: cashu restore.
- - **FEAT**: save pending transactions.
- - **FEAT**: auto detect wallet cache manager.
- - **FEAT**: cashu remove mint info.
- - **FEAT**: init combined streams lazy.
- - **FEAT**: dynamically create wallets based on usecase data.
+ - **FEAT**(experiment): qs dilithium singer, verifier. ([e680430b](https://github.com/relaystr/ndk/commit/e680430b5f4ae2826d5ec642688b0afbe49b0609))
 
-## 0.8.0-dev.1
+## 0.8.2-dev.4
 
- - **REFACTOR**: filter keyset by active and unit.
- - **REFACTOR**: remove wallet prefix from cashu.
- - **REFACTOR**: rename removeWallet.
- - **REFACTOR**: remove acc prefix, clear seperation wallet.
- - **FIX**: log body http request.
- - **FIX**: cashu tests needed a wallet.
- - **FIX**: missing wallets.dispose in ndk.destroy.
- - **FIX**: initialization.
- - **FIX**: nwc connection.
- - **FIX**: broadcast state timeout.
- - **FIX**: rollback removal of walletsRepo from ndkConfig.
- - **FIX**: rollback removal of walletsRepo from ndkConfig.
- - **FIX**: removed feat combinedTransactions.
- - **FIX**: dispose combined balances activated.
- - **FIX**: separate wallets storage operations from cache manager.
- - **FIX**: usecase name.
- - **FIX**: restore save only unspend tokens.
- - **FIX**: type parsing.
- - **FIX**: spend, redeem exception handeling.
- - **FIX**: cashu redeem failed transaction state.
- - **FIX**: hook up deleteKnownMint to removeWallet.
- - **FIX**: add keysets to decorator.
- - **FIX**: store keysets from network.
- - **FIX**: null err.
- - **FIX**: cashu usecase naming.
- - **FIX**: wallet transaction state storage.
- - **FIX**: cleanup on ndk destroy.
- - **FIX**: melt map output blanks to change.
- - **FIX**: melt change parsing.
- - **FIX**: allow fee reserve 0.
- - **FIX**: swap split change, exact amount.
- - **FIX**: mintUrl in CashuMintBalance.
- - **FIX**: typo.
- - **FIX**: check completion when transcation rcv.
- - **FIX**: test secret comparison.
- - **FIX**: dismiss large keyset amounts.
- - **FIX**: sort swap outputs.
- - **FIX**: correct balance with inactive keysets.
- - **FIX**: getProofs mem cache manager.
- - **FIX**: identify cashu proof by pubKey.
- - **FIX**: dont add total balance.
- - **FIX**: filter keyset for unit.
- - **FIX**: cashuMintInfo fromJson add mintUrl.
- - **FIX**: wallet filter balances by mint.
- - **FIX**: save transaction to db.
- - **FIX**: cashu balances grouping.
- - **FEAT**: spending with state.
- - **FEAT**: cashu mnemonic.
- - **FEAT**: nut13 deterministic secrets.
- - **FEAT**: rust deriveSecret.
- - **FEAT**: seed phrase user api.
- - **FEAT**: CashuKeyDerivation support keysets v2.
- - **FEAT**: fast key derivation.
- - **FEAT**: fast multiply blind msg.
- - **FEAT**: optimized proof select.
- - **FEAT**: cashu restore.
- - **FEAT**: save pending transactions.
- - **FEAT**: auto detect wallet cache manager.
- - **FEAT**: cashu remove mint info.
- - **FEAT**: init combined streams lazy.
- - **FEAT**: dynamically create wallets based on usecase data.
+ - **FEAT**(experiment): qs dilithium singer, verifier. ([e680430b](https://github.com/relaystr/ndk/commit/e680430b5f4ae2826d5ec642688b0afbe49b0609))
+
+## 0.8.2-dev.3
+
+ - **FIX**: merge user metrics. ([624ae703](https://github.com/relaystr/ndk/commit/624ae70314a855787f15d3731c3edbb02532c8ec))
+ - **FIX**: merge assertions events. ([cff74ee1](https://github.com/relaystr/ndk/commit/cff74ee1b2df1bd6ab12a2579cc218ec6f702da2))
+ - **FIX**: use Bip340EventSigner to sign events in tests. ([7934063b](https://github.com/relaystr/ndk/commit/7934063bd5bdfc1fa798b11936291918068f88b9))
+ - **FEAT**: add optional relayUrls param to getOptimizedFilters and handle empty cache. ([d3e3a242](https://github.com/relaystr/ndk/commit/d3e3a24270afab6a1c0d4ababe9c067df5420e51))
+ - **FEAT**: default providers. ([26fc8faf](https://github.com/relaystr/ndk/commit/26fc8faf22e53a97f91fe05c7ff5988bdb46414c))
+ - **FEAT**: others trusted assertions. ([ada22c70](https://github.com/relaystr/ndk/commit/ada22c70bc7e75b9d404a5cc1356ec31ad6886a6))
+ - **FEAT**: user trusted assertions. ([04772612](https://github.com/relaystr/ndk/commit/04772612aad14f0f13fa3207c44ecce239f6b5d5))
+
+## 0.8.2-dev.2
+
+ - **FIX**: merge user metrics. ([624ae703](https://github.com/relaystr/ndk/commit/624ae70314a855787f15d3731c3edbb02532c8ec))
+ - **FIX**: merge assertions events. ([cff74ee1](https://github.com/relaystr/ndk/commit/cff74ee1b2df1bd6ab12a2579cc218ec6f702da2))
+ - **FIX**: use Bip340EventSigner to sign events in tests. ([7934063b](https://github.com/relaystr/ndk/commit/7934063bd5bdfc1fa798b11936291918068f88b9))
+ - **FEAT**: add optional relayUrls param to getOptimizedFilters and handle empty cache. ([d3e3a242](https://github.com/relaystr/ndk/commit/d3e3a24270afab6a1c0d4ababe9c067df5420e51))
+ - **FEAT**: default providers. ([26fc8faf](https://github.com/relaystr/ndk/commit/26fc8faf22e53a97f91fe05c7ff5988bdb46414c))
+ - **FEAT**: others trusted assertions. ([ada22c70](https://github.com/relaystr/ndk/commit/ada22c70bc7e75b9d404a5cc1356ec31ad6886a6))
+ - **FEAT**: user trusted assertions. ([04772612](https://github.com/relaystr/ndk/commit/04772612aad14f0f13fa3207c44ecce239f6b5d5))
+
+## 0.8.2-dev.1
+
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+
+## 0.8.1-dev.0+1
+
+ - **FIX**: nwc cached permissions. ([dd6a8892](https://github.com/relaystr/ndk/commit/dd6a8892963c04a62ee0c1eda5ea4db7e6bc42d3))
+
+## 0.8.1
+
+ - **FEAT**:  Wallets usecase
+ - **FEAT**:  Cashu support
+ - **FEAT**:  LNURL wallet receive only
+ - **FEAT**:  ndk CLI tool with install.sh script
+ - **FEAT**:  Drift cache manager
+ - **FEAT**:  Signer pending requests
+ - **FEAT**:  Paginated requests
+ - **FEAT**:  Rust event verifier using native assets in ndk core package
+ - **FEAT**:  Web event verifier using web crypto
+ - **FEAT**:  Implement RFC 3986 compliant relay URL normalization
+ - **FEAT**:  Move amber into ndk_flutter
+ - **FEAT**:  Move sembast to core
+ - **FIX**:  Fix: broadcast timeout
+ - **FIX**:  Remove deprecated isar package
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
 
 ## 0.7.2-dev.2
 

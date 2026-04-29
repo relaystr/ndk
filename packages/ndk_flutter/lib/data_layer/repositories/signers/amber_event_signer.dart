@@ -25,10 +25,7 @@ class AmberEventSigner implements EventSigner {
   int _requestCounter = 0;
 
   /// get a amber event signer
-  AmberEventSigner({
-    required this.publicKey,
-    required this.amberFlutterDS,
-  });
+  AmberEventSigner({required this.publicKey, required this.amberFlutterDS});
 
   String get _npub =>
       publicKey.startsWith('npub') ? publicKey : Nip19.encodePubKey(publicKey);
@@ -46,8 +43,9 @@ class AmberEventSigner implements EventSigner {
   }
 
   void _notifyPendingRequestsChange() {
-    _pendingRequestsController
-        .add(_pendingRequests.values.map((e) => e.request).toList());
+    _pendingRequestsController.add(
+      _pendingRequests.values.map((e) => e.request).toList(),
+    );
   }
 
   /// Wraps an async operation to track it as a pending request
@@ -78,37 +76,36 @@ class AmberEventSigner implements EventSigner {
     );
     _notifyPendingRequestsChange();
 
-    operation().then((result) {
-      if (!completer.isCompleted) {
-        completer.complete(result);
-      }
-    }).catchError((e) {
-      if (!completer.isCompleted) {
-        final error = SignerRequestRejectedException(requestId: requestId);
-        completer.completeError(error);
-      }
-    }).whenComplete(() {
-      _pendingRequests.remove(requestId);
-      _notifyPendingRequestsChange();
-    });
+    operation()
+        .then((result) {
+          if (!completer.isCompleted) {
+            completer.complete(result);
+          }
+        })
+        .catchError((e) {
+          if (!completer.isCompleted) {
+            final error = SignerRequestRejectedException(requestId: requestId);
+            completer.completeError(error);
+          }
+        })
+        .whenComplete(() {
+          _pendingRequests.remove(requestId);
+          _notifyPendingRequestsChange();
+        });
 
     return completer.future;
   }
 
   @override
   Future<Nip01Event> sign(Nip01Event event) async {
-    return _trackRequest(
-      SignerMethod.signEvent,
-      () async {
-        final map = await amberFlutterDS.amber.signEvent(
-          currentUser: _npub,
-          eventJson: Nip01EventModel.fromEntity(event).toJsonString(),
-          id: event.id,
-        );
-        return event.copyWith(sig: _extractResult(map));
-      },
-      event: event,
-    );
+    return _trackRequest(SignerMethod.signEvent, () async {
+      final map = await amberFlutterDS.amber.signEvent(
+        currentUser: _npub,
+        eventJson: Nip01EventModel.fromEntity(event).toJsonString(),
+        id: event.id,
+      );
+      return event.copyWith(sig: _extractResult(map));
+    }, event: event);
   }
 
   @override

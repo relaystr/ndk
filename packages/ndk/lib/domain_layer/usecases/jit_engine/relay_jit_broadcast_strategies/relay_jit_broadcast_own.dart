@@ -40,6 +40,9 @@ class RelayJitBroadcastOutboxStrategy {
           .toList();
     }
 
+    // Deduplicate relay URLs
+    final uniqueRelayUrls = writeRelaysUrls.toSet().toList();
+
     // function to send message to relay
     void sendToRelay({
       required RelayConnectivity relay,
@@ -51,28 +54,36 @@ class RelayJitBroadcastOutboxStrategy {
       relayManager.send(relay, myClientMsg);
     }
 
-    for (final relayUrl in writeRelaysUrls) {
+    // Function to handle broadcasting to a single relay
+    Future<void> sendToUrl(String relayUrl) async {
       // register relay broadcast
       relayManager.registerRelayBroadcast(
         eventToPublish: eventToPublish,
         relayUrl: relayUrl,
       );
 
-      final isConnected = relayManager.isRelayConnected(relayUrl);
-      if (isConnected) {
-        sendToRelay(
-          relay: connectedRelays.firstWhere(
-            (element) => element.url == relayUrl,
-          ),
+      try {
+        final isConnected = relayManager.isRelayConnected(relayUrl);
+        if (isConnected) {
+          try {
+            final relay = connectedRelays.firstWhere(
+              (element) => element.url == relayUrl,
+            );
+            sendToRelay(relay: relay);
+          } catch (e) {
+            relayManager.failBroadcast(
+              eventToPublish.id,
+              relayUrl,
+              "relay not found in connected list",
+            );
+          }
+          return;
+        }
+
+        final success = await relayManager.connectRelay(
+          dirtyUrl: relayUrl,
+          connectionSource: ConnectionSource.broadcastOwn,
         );
-        continue;
-      }
-      relayManager
-          .connectRelay(
-        dirtyUrl: relayUrl,
-        connectionSource: ConnectionSource.broadcastOwn,
-      )
-          .then((success) {
         if (!success.first) {
           relayManager.failBroadcast(
             eventToPublish.id,
@@ -81,11 +92,28 @@ class RelayJitBroadcastOutboxStrategy {
           );
           return;
         }
-        final relay = relayManager.connectedRelays
-            .firstWhere((element) => element.url == relayUrl);
 
-        sendToRelay(relay: relay);
-      });
+        try {
+          final relay = relayManager.connectedRelays
+              .firstWhere((element) => element.url == relayUrl);
+          sendToRelay(relay: relay);
+        } catch (e) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "relay not found after connection",
+          );
+        }
+      } catch (e) {
+        relayManager.failBroadcast(
+          eventToPublish.id,
+          relayUrl,
+          "broadcast error: $e",
+        );
+      }
     }
+
+    // Broadcast to all relays in parallel
+    await Future.wait(uniqueRelayUrls.map(sendToUrl), eagerError: false);
   }
 }
