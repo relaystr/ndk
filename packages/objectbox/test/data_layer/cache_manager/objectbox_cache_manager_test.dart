@@ -3,7 +3,7 @@
 import 'dart:io';
 
 import 'package:ndk/entities.dart';
-import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
+import 'package:ndk/testing.dart';
 import 'package:ndk_objectbox/ndk_objectbox.dart';
 import 'package:test/test.dart';
 

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:ndk/data_layer/repositories/cache_manager/sembast_cache_manager.dart';
 import 'package:ndk/entities.dart';
 
-import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
+import 'package:ndk/testing.dart';
 import 'package:test/test.dart';
 
 void main() {

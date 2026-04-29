@@ -31,8 +31,6 @@ dev_dependencies:
   mockito: ^5.6.3
   objectbox_generator: ^5.2.0
   test: any
-  ndk_cache_manager_test_suite:
-    path: ../ndk_cache_manager_test_suite
   flutter_test:
     sdk: flutter
 
