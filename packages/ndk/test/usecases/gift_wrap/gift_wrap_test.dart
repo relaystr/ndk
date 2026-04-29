@@ -27,7 +27,10 @@ void main() {
         .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
     // Create the service
-    giftWrapService = GiftWrap(accounts: ndk.accounts);
+    giftWrapService = GiftWrap(
+      accounts: ndk.accounts,
+      eventVerifier: MockEventVerifier(),
+    );
   });
 
   group('GiftWrapService', () {
