@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
@@ -56,6 +57,9 @@ Future<void> main() async {
   );
 
   await ndkFlutter.restoreAccountsState();
+
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+
   runApp(const MyApp());
 }
 
