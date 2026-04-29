@@ -1,3 +1,7 @@
+## 0.2.11-dev.7
+
+ - **FIX**: delete pubspec.lock.
+
 ## 0.2.11-dev.6
 
  - **FIX**: delete pubspec.lock.
