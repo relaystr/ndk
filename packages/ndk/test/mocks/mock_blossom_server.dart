@@ -12,12 +12,20 @@ class MockBlossomServer {
   // In-memory storage for blobs
   final Map<String, _BlobEntry> _blobs = {};
   final int port;
+  final int uploadStatusCode;
+  final int mirrorStatusCode;
+  final int deleteStatusCode;
   HttpServer? _server;
 
   /// report kind
   static const int kReport = 1984;
 
-  MockBlossomServer({this.port = 3000});
+  MockBlossomServer({
+    this.port = 3000,
+    this.uploadStatusCode = 200,
+    this.mirrorStatusCode = 200,
+    this.deleteStatusCode = 200,
+  });
 
   Router _createRouter() {
     final router = Router();
@@ -82,8 +90,9 @@ class MockBlossomServer {
         uploadedAt: DateTime.now(),
       );
 
-      return Response.ok(
-        json.encode({
+      return Response(
+        uploadStatusCode,
+        body: json.encode({
           'url': 'http://localhost:$port/$sha256',
           'sha256': sha256,
           'size': data.length,
@@ -209,7 +218,7 @@ class MockBlossomServer {
       }
 
       _blobs.remove(sha256);
-      return Response(200);
+      return Response(deleteStatusCode);
     });
 
     router.put('/mirror', (Request request) async {
@@ -277,8 +286,9 @@ class MockBlossomServer {
 
         httpClient.close();
         // Return the same descriptor format as upload
-        return Response.ok(
-          json.encode({
+        return Response(
+          mirrorStatusCode,
+          body: json.encode({
             'url': 'http://localhost:$port/$computedSha256',
             'sha256': computedSha256,
             'size': data.length,
