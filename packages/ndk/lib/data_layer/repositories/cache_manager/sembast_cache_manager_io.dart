@@ -9,9 +9,18 @@ final databaseFactory = databaseFactoryIo;
 
 /// Open a database on native platforms
 Future<sembast.Database> openDatabase({
-  required String databasePath,
+  String? databasePath,
   required String databaseName,
 }) async {
+  if (databasePath == null || databasePath.isEmpty) {
+    throw ArgumentError.value(
+      databasePath,
+      'databasePath',
+      'databasePath is required on native platforms. '
+      'Provide a valid directory path for database storage.',
+    );
+  }
+
   await Directory(databasePath).create(recursive: true);
   final dbFileName = "$databaseName.db";
   final dbPath = p.join(databasePath, dbFileName);
