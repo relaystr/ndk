@@ -16,7 +16,7 @@
 ///   runCacheManagerTestSuite(
 ///     name: 'MyCacheManager',
 ///     createCacheManager: () async => MyCacheManager(),
-///     tearDown: (cacheManager) async => await cacheManager.close(),
+///     cleanUp: (cacheManager) async => await cacheManager.close(),
 ///   );
 /// }
 /// ```
@@ -42,8 +42,8 @@ typedef CacheManagerTearDown = Future<void> Function(CacheManager cacheManager);
 /// Parameters:
 /// - [name]: A descriptive name for the cache manager being tested.
 /// - [createCacheManager]: A factory function that creates a fresh instance
-///   of the cache manager for each test group.
-/// - [cleanUp]: An optional cleanup function called after each test group.
+///   of the cache manager for each test.
+/// - [cleanUp]: An optional cleanup function called after each test.
 ///   This should close/dispose the cache manager.
 ///
 /// Example:
