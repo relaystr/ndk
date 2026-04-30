@@ -468,5 +468,60 @@ void main() async {
       expect(parsedSet.elements.first.value, "wss://encrypted-relay.com");
       expect(parsedSet.elements.first.private, true);
     });
+
+    test(
+        'fromEvent preserves metadata (title/description/image) alongside private elements',
+        () async {
+      // Regression test for: when a set has encrypted private elements AND
+      // public metadata tags, parsing with a full signer must retain both.
+      // Previously, parseSetTags was called only on the decrypted content
+      // (which never contains title/description/image), so metadata was silently
+      // dropped for any set that had private content.
+      final original = Nip51Set(
+        pubKey: key1.publicKey,
+        kind: Nip51List.kRelaySet,
+        name: "metadata-set",
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: "My Relay Set",
+        description: "A set with both private relays and metadata",
+        image: "https://example.com/image.png",
+        elements: [
+          Nip51ListElement(
+            tag: Nip51List.kRelay,
+            value: "wss://private-relay.com",
+            private: true,
+          ),
+          Nip51ListElement(
+            tag: Nip51List.kRelay,
+            value: "wss://public-relay.com",
+            private: false,
+          ),
+        ],
+      );
+
+      // Serialize: private relay goes into encrypted content, metadata stays
+      // as public tags on the event.
+      final event = await original.toEvent(signer1);
+      final signedEvent = await signer1.sign(event);
+
+      // Deserialize with a full signer (can decrypt).
+      final parsed = await Nip51Set.fromEvent(signedEvent, signer1);
+
+      expect(parsed, isNotNull);
+      // Metadata must survive even though private content was decrypted.
+      expect(parsed!.title, "My Relay Set");
+      expect(parsed.description, "A set with both private relays and metadata");
+      expect(parsed.image, "https://example.com/image.png");
+      // Both private and public elements must be present.
+      expect(parsed.elements.length, 2);
+      expect(
+          parsed.elements
+              .any((e) => e.value == "wss://private-relay.com" && e.private),
+          isTrue);
+      expect(
+          parsed.elements
+              .any((e) => e.value == "wss://public-relay.com" && !e.private),
+          isTrue);
+    });
   });
 }
