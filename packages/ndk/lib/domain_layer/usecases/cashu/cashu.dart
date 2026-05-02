@@ -431,8 +431,11 @@ class Cashu {
     return true;
   }
 
+  /// delete mint from known mints \
+  /// [deleteState] if true, also deletes all proofs associated with the mint (default: true)
   Future<void> deleteKnownMint({
     required String mintUrl,
+    bool deleteState = true,
   }) async {
     // Remove from cache
     await _cacheManager.removeMintInfo(mintUrl: mintUrl);
@@ -442,6 +445,21 @@ class Cashu {
 
     // Update the stream
     _knownMintsSubject?.add(_knownMints);
+
+    if (deleteState) {
+      final allProofs = await _cacheManagerCashu.getProofs(mintUrl: mintUrl);
+      // Also delete associated proofs
+      await _cacheManagerCashu.removeProofs(
+          mintUrl: mintUrl, proofs: allProofs);
+
+      final transactionsToRemove = await _walletsRepo.getTransactions(
+        walletType: WalletType.CASHU,
+        walletId: mintUrl,
+      );
+      await _walletsRepo.removeTransactions(
+        transactionsToRemove.map((tx) => tx.id).toList(),
+      );
+    }
 
     Logger.log.i(() => 'Deleted mint from known mints: $mintUrl');
   }

@@ -48,4 +48,8 @@ abstract class WalletsRepo {
 
   /// Save transactions to storage
   Future<void> saveTransactions(List<WalletTransaction> transactions);
+
+  /// Remove transactions by ID
+  /// should only be used for deleting a wallet
+  Future<void> removeTransactions(List<String>? transactionIds);
 }

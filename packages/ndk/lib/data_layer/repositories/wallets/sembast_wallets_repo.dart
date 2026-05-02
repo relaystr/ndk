@@ -120,6 +120,18 @@ class SembastWalletsRepo extends WalletsRepo {
   }
 
   @override
+  Future<void> removeTransactions(List<String>? transactionIds) async {
+    if (transactionIds == null || transactionIds.isEmpty) {
+      return;
+    }
+
+    final finder = sembast.Finder(
+      filter: sembast.Filter.inList('id', transactionIds),
+    );
+    await _transactionStore.delete(_database, finder: finder);
+  }
+
+  @override
   Future<List<Wallet>> getWallets({List<String>? ids}) async {
     if (ids == null || ids.isEmpty) {
       final records = await _walletStore.find(_database);

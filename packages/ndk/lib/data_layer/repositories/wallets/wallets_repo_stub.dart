@@ -25,6 +25,12 @@ class StubWalletsRepo extends WalletsRepo {
   }
 
   @override
+  Future<void> removeTransactions(List<String>? transactionIds) {
+    throw UnimplementedError(
+        "need to set a proper WalletsRepo in NdkConfig to use this method");
+  }
+
+  @override
   Future<List<Wallet>> getWallets({List<String>? ids}) {
     return Future.value([]);
   }
