@@ -67,6 +67,54 @@ void main() {
 
       expect(signedEvent.id, isNotNull);
       expect(signedEvent.sig, isNotNull);
+      expect(Nip01Utils.isIdValid(signedEvent), isTrue);
+    });
+
+    test('sign should preserve created_at returned by remote signer', () async {
+      mockRelay.signEventCreatedAtOffsetSeconds = 11;
+
+      final event = Nip01Event(
+        pubKey: MockRelay.remoteSignerPublicKey,
+        kind: 1,
+        tags: [],
+        content: 'Hello after bunker delay',
+        createdAt: 1234567890,
+      );
+
+      final signedEvent = await signer.sign(event);
+
+      expect(signedEvent.createdAt, equals(event.createdAt + 11));
+      expect(signedEvent.id, isNot(equals(event.id)));
+      expect(Nip01Utils.isIdValid(signedEvent), isTrue);
+      expect(
+        await Bip340EventVerifier(useIsolate: false).verify(signedEvent),
+        isTrue,
+      );
+    });
+
+    test('sign should keep the requested event body from local event',
+        () async {
+      mockRelay.signEventCreatedAtOffsetSeconds = 11;
+      mockRelay.signEventContentOverride = 'mutated by remote signer';
+
+      final event = Nip01Event(
+        pubKey: MockRelay.remoteSignerPublicKey,
+        kind: 1,
+        tags: [
+          ['t', 'test']
+        ],
+        content: 'requested content',
+        createdAt: 1234567890,
+      );
+
+      final signedEvent = await signer.sign(event);
+
+      expect(signedEvent.pubKey, equals(event.pubKey));
+      expect(signedEvent.kind, equals(event.kind));
+      expect(signedEvent.tags, equals(event.tags));
+      expect(signedEvent.content, equals(event.content));
+      expect(signedEvent.createdAt, equals(event.createdAt + 11));
+      expect(Nip01Utils.isIdValid(signedEvent), isFalse);
     });
 
     test('getPublicKey should throw when not cached', () {
