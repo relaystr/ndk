@@ -257,9 +257,14 @@ class Nip46EventSigner implements EventSigner {
       request: request,
       event: event,
     );
-    final signedEvent = jsonDecode(signedEventJson);
 
-    return event.copyWith(id: signedEvent["id"], sig: signedEvent["sig"]);
+    final signedEvent = Nip01EventModel.fromJson(jsonDecode(signedEventJson));
+
+    return event.copyWith(
+      id: signedEvent.id,
+      createdAt: signedEvent.createdAt,
+      sig: signedEvent.sig,
+    );
   }
 
   Future<String> ping() async {
