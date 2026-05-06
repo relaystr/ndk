@@ -5,5 +5,6 @@ export 'data_layer/repositories/signers/amber_event_signer.dart';
 export 'data_layer/data_sources/amber_flutter.dart';
 export 'widgets/widgets.dart';
 export 'verifiers/web_event_verifier.dart';
+export 'signers/web_event_signer.dart';
 export 'utils/nostr_kinds.dart';
 export 'package:amberflutter/amberflutter.dart';
