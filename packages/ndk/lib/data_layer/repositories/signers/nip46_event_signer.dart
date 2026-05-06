@@ -8,6 +8,7 @@ import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../domain_layer/usecases/bunkers/models/bunker_request.dart';
+import 'default_event_signer_factory.dart';
 
 /// Internal class to track a pending request with its completer and metadata
 class _PendingRequestEntry {
@@ -30,12 +31,13 @@ class Nip46EventSigner implements EventSigner {
 
   String? cachedPublicKey;
 
-  late Bip340EventSigner localEventSigner;
+  late EventSigner localEventSigner;
 
   Nip46EventSigner({
     required this.connection,
     required this.requests,
     required this.broadcast,
+    EventSigner? localEventSigner,
     this.authCallback,
     this.cachedPublicKey,
   }) {
@@ -47,10 +49,11 @@ class Nip46EventSigner implements EventSigner {
 
     final keyPair = KeyPair(privKey, pubKey, privKeyHr, pubKeyHr);
 
-    localEventSigner = Bip340EventSigner(
-      privateKey: keyPair.privateKey,
-      publicKey: keyPair.publicKey,
-    );
+    this.localEventSigner = localEventSigner ??
+        defaultEventSignerFactory(
+          publicKey: keyPair.publicKey,
+          privateKey: keyPair.privateKey,
+        );
 
     listenRelays();
   }
@@ -61,7 +64,7 @@ class Nip46EventSigner implements EventSigner {
       filter: Filter(
         authors: [connection.remotePubkey],
         kinds: [BunkerRequest.kKind],
-        pTags: [localEventSigner.publicKey],
+        pTags: [localEventSigner.getPublicKey()],
       ),
     );
 
@@ -134,7 +137,7 @@ class Nip46EventSigner implements EventSigner {
 
     final requestEvent = Nip01Event(
       createdAt: 0,
-      pubKey: localEventSigner.publicKey,
+      pubKey: localEventSigner.getPublicKey(),
       kind: BunkerRequest.kKind,
       tags: [
         ["p", connection.remotePubkey],

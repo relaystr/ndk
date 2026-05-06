@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../../data_layer/repositories/signers/default_event_signer_factory.dart';
 import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
@@ -12,6 +12,11 @@ import '../bunkers/models/nostr_connect.dart';
 
 /// A usecase that handles accounts
 class Accounts {
+  final EventSignerFactory _eventSignerFactory;
+
+  Accounts({EventSignerFactory? eventSignerFactory})
+      : _eventSignerFactory = eventSignerFactory ?? defaultEventSignerFactory;
+
   /// pubKey -> Account
   final Map<String, Account> accounts = {};
   String? _loggedPubkey;
@@ -31,7 +36,7 @@ class Accounts {
     addAccount(
         pubkey: pubkey,
         type: AccountType.privateKey,
-        signer: Bip340EventSigner(privateKey: privkey, publicKey: pubkey));
+        signer: _eventSignerFactory(publicKey: pubkey, privateKey: privkey));
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
@@ -49,7 +54,7 @@ class Accounts {
     addAccount(
         pubkey: pubkey,
         type: AccountType.publicKey,
-        signer: Bip340EventSigner(privateKey: null, publicKey: pubkey));
+        signer: _eventSignerFactory(publicKey: pubkey));
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }

@@ -113,7 +113,9 @@ class Initialization {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 
-    accounts = Accounts();
+    accounts = Accounts(
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
+    );
 
     switch (_ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
@@ -193,7 +195,11 @@ class Initialization {
     );
 
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
-    nwc = Nwc(requests: requests, broadcast: broadcast);
+    nwc = Nwc(
+      requests: requests,
+      broadcast: broadcast,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
+    );
 
     if (_ndkConfig.walletsRepo == null) {
       // auto detect if the provided cache manager has wallets capabilities.
@@ -219,6 +225,7 @@ class Initialization {
     bunkers = Bunkers(
       broadcast: broadcast,
       requests: requests,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
     );
 
     follows = Follows(
@@ -247,6 +254,7 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
       accounts: accounts,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
     );
 
     relaySets = RelaySets(
@@ -285,6 +293,7 @@ class Initialization {
       blossomRepository: blossomRepository,
       accounts: accounts,
       blossomUserServerList: blossomUserServerList,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
     );
 
     files = Files(blossom: blossom);
@@ -303,7 +312,10 @@ class Initialization {
       requests.fetchedRanges = fetchedRanges;
     }
 
-    giftWrap = GiftWrap(accounts: accounts);
+    giftWrap = GiftWrap(
+      accounts: accounts,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
+    );
 
     connectivity = Connectivy(relayManager);
 

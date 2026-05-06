@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bip340/bip340.dart';
 import 'package:ndk/ndk.dart';
+import '../../../data_layer/repositories/signers/default_event_signer_factory.dart';
 import 'nwc_notification.dart';
 
 import 'responses/nwc_response.dart';
@@ -10,6 +11,7 @@ import 'responses/nwc_response.dart';
 class NwcConnection {
   NostrWalletConnectUri uri;
   EventSigner? _signer;
+  final EventSignerFactory _eventSignerFactory;
   GetInfoResponse? info;
   NdkResponse? subscription;
   StreamSubscription<Nip01Event>? _streamSubscription;
@@ -61,11 +63,16 @@ class NwcConnection {
 
   Set<String> permissions = {};
 
-  NwcConnection(this.uri);
+  NwcConnection(
+    this.uri, {
+    EventSignerFactory? eventSignerFactory,
+  }) : _eventSignerFactory = eventSignerFactory ?? defaultEventSignerFactory;
 
   EventSigner get signer {
-    _signer ??= Bip340EventSigner(
-        privateKey: uri.secret, publicKey: getPublicKey(uri.secret));
+    _signer ??= _eventSignerFactory(
+      publicKey: getPublicKey(uri.secret),
+      privateKey: uri.secret,
+    );
     return _signer!;
   }
 

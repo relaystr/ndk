@@ -1,6 +1,6 @@
 import 'package:rxdart/rxdart.dart';
 
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../../data_layer/repositories/signers/default_event_signer_factory.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
@@ -21,6 +21,7 @@ class Lists {
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
   final Accounts _accounts;
+  final EventSignerFactory _eventSignerFactory;
 
   /// Creates a Lists usecase instance.
   Lists({
@@ -28,10 +29,12 @@ class Lists {
     required CacheManager cacheManager,
     required Broadcast broadcast,
     required Accounts accounts,
+    EventSignerFactory? eventSignerFactory,
   })  : _cacheManager = cacheManager,
         _requests = requests,
         _broadcast = broadcast,
-        _accounts = accounts;
+        _accounts = accounts,
+        _eventSignerFactory = eventSignerFactory ?? defaultEventSignerFactory;
 
   EventSigner? get _eventSigner {
     return _accounts.getLoggedAccount()?.signer;
@@ -112,7 +115,7 @@ class Lists {
     bool forceRefresh = false,
     Duration timeout = const Duration(seconds: 5),
   }) async {
-    final signer = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    final signer = _eventSignerFactory(publicKey: publicKey);
 
     Nip51List? list =
         !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
@@ -383,7 +386,7 @@ class Lists {
       }
       mySigner = _eventSigner!;
     } else {
-      mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+      mySigner = _eventSignerFactory(publicKey: publicKey);
     }
 
     return _getSets(kind, mySigner, forceRefresh: forceRefresh);
@@ -655,7 +658,7 @@ class Lists {
     required String publicKey,
     bool forceRefresh = false,
   }) async {
-    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    final mySigner = _eventSignerFactory(publicKey: publicKey);
     return getNip51RelaySets(kind, mySigner, forceRefresh: forceRefresh);
   }
 
