@@ -9,4 +9,6 @@ Even splitting the users filters into smaller relay tailored filters if we know 
 **compute**\
 Right now the most compute intensive operation is verifying signatures. \
 We use the cache to determine if we have already seen the event and only if it is unknown signature verification is done. \
-To make the operation as optimized as possible we strongly recommend using `RustEventVerifier()` because it uses a separate thread for verification.
+To make the operation as optimized as possible we strongly recommend using `PlatformEventVerifier` from the `ndk_flutter` package. It automatically selects the fastest verifier for the current platform (`WebEventVerifier` on web, `RustEventVerifier` on native).
+
+For pure Dart applications (without Flutter), use `RustEventVerifier()` directly on native platforms.
