@@ -28,8 +28,6 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.31.0
   build_runner: ^2.11.0
-  ndk_cache_manager_test_suite:
-    path: ../ndk_cache_manager_test_suite
 
 
 

@@ -1,6 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:ndk_drift/ndk_drift.dart';
-import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
+import 'package:ndk/testing.dart';
 
 void main() {
   runCacheManagerTestSuite(

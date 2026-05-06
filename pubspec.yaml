@@ -15,7 +15,6 @@ workspace:
   - packages/nip07_event_signer
   # - packages/sembast_cache_manager
   - packages/drift
-  - packages/ndk_cache_manager_test_suite
   - packages/ndk_flutter
 
 melos:

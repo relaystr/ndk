@@ -1,4 +1,4 @@
-part of 'ndk_cache_manager_test_suite.dart';
+part of 'cache_manager_test_suite.dart';
 
 // ============================================================================
 // Cashu Tests
