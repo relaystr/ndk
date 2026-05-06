@@ -121,7 +121,13 @@ function base64ToBytes(base64) {
 
 function getSharedSecret(privateKeyHex, publicKeyHex) {
   const privateKeyBytes = hexToBytes(privateKeyHex);
-  const publicKeyBytes = hexToBytes(publicKeyHex);
+  // @noble/curves expects compressed (33-byte) or uncompressed (65-byte) public keys.
+  // Dart package:elliptic uses raw 32-byte X coordinates, so we prepend '02' if needed.
+  let normalizedPubHex = publicKeyHex;
+  if (publicKeyHex.length === 64) {
+    normalizedPubHex = '02' + publicKeyHex;
+  }
+  const publicKeyBytes = hexToBytes(normalizedPubHex);
   // getSharedSecret returns a compressed point (33 bytes). Slice off the prefix
   // to get the X coordinate (32 bytes), matching package:elliptic behaviour.
   const shared = secp256k1.getSharedSecret(privateKeyBytes, publicKeyBytes, true);

@@ -3,7 +3,16 @@ import 'package:ndk/ndk.dart';
 /// Stub implementation for non-web platforms.
 /// WebEventSigner is only available on web platforms.
 class WebEventSigner implements EventSigner {
-  WebEventSigner() {
+  /// hex private key
+  String? privateKey;
+
+  /// hex public key
+  String publicKey;
+
+  WebEventSigner({
+    required this.privateKey,
+    required this.publicKey,
+  }) {
     throw UnsupportedError(
       'WebEventSigner is only available on web platforms. '
       'Use Bip340EventSigner for native platforms.',
