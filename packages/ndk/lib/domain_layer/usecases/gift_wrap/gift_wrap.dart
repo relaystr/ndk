@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import '../../../data_layer/models/nip_01_event_model.dart';
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../entities/gift_wrap_unwrap_result.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
+import '../../repositories/event_verifier.dart';
 import '../accounts/accounts.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 
@@ -12,8 +14,9 @@ class GiftWrap {
   static const int kGiftWrapEventkind = 1059;
 
   final Accounts accounts;
+  final EventVerifier eventVerifier;
 
-  GiftWrap({required this.accounts});
+  GiftWrap({required this.accounts, required this.eventVerifier});
 
   /// Returns the signer to use for signing operations.
   /// Uses [customSigner] if provided, otherwise falls back to logged-in account's signer.
@@ -51,13 +54,15 @@ class GiftWrap {
     return giftWrap;
   }
 
-  /// Unwraps a gift-wrapped event to retrieve the original rumor \
-  /// [giftWrap] the gift-wrapped event to unwrap \
-  /// [customSigner] optional signer to use instead of the logged-in account's signer \
+  /// Unwraps a gift-wrapped event to retrieve the original rumor
+  /// [giftWrap] the gift-wrapped event to unwrap
+  /// [customSigner] optional signer to use instead of the logged-in account's signer
+  /// [verifySignature] whether to verify the seal's signature (default: true)
   /// [returns] the original rumor event
   Future<Nip01Event> fromGiftWrap({
     required Nip01Event giftWrap,
     EventSigner? customSigner,
+    bool verifySignature = true,
   }) async {
     if (giftWrap.kind != kGiftWrapEventkind) {
       throw Exception("Event is not a gift wrap (kind:1059)");
@@ -70,9 +75,50 @@ class GiftWrap {
     final rumor = await unsealRumor(
       sealedEvent: sealEvent,
       customSigner: customSigner,
+      verifySignature: verifySignature,
     );
 
     return rumor;
+  }
+
+  /// Unwraps a gift-wrapped event with signature verification information
+  ///
+  /// This method returns a [GiftWrapUnwrapResult] containing the seal, rumor,
+  /// and verification status. Unlike [fromGiftWrap], this method does not throw
+  /// exceptions for signature verification failures - instead, it returns the
+  /// verification status in the result.
+  ///
+  /// [giftWrap] the gift-wrapped event to unwrap
+  /// [customSigner] optional signer to use instead of the logged-in account's signer
+  /// [returns] a [GiftWrapUnwrapResult] containing the seal, rumor, and verification status
+  Future<GiftWrapUnwrapResult> fromGiftWrapWithInfo({
+    required Nip01Event giftWrap,
+    EventSigner? customSigner,
+  }) async {
+    if (giftWrap.kind != kGiftWrapEventkind) {
+      throw Exception("Event is not a gift wrap (kind:1059)");
+    }
+
+    final sealEvent = await unwrapEvent(
+      wrappedEvent: giftWrap,
+      customSigner: customSigner,
+    );
+
+    // Always verify signature, but capture the result
+    final isSealSignatureValid = await eventVerifier.verify(sealEvent);
+
+    // Decrypt the rumor regardless of signature verification
+    final rumor = await unsealRumor(
+      sealedEvent: sealEvent,
+      customSigner: customSigner,
+      verifySignature: false, // Don't verify again
+    );
+
+    return GiftWrapUnwrapResult(
+      isSealSignatureValid: isSealSignatureValid,
+      seal: sealEvent,
+      rumor: rumor,
+    );
   }
 
   /// Creates a rumor (unsigned event)
@@ -134,11 +180,25 @@ class GiftWrap {
 
   /// Unseals a sealed event to retrieve the rumor
   ///
+  /// [sealedEvent] the sealed event (kind:13) to unseal
   /// [customSigner] optional signer to use instead of the logged-in account's signer
+  /// [verifySignature] whether to verify the seal's signature (default: true)
+  /// [returns] the original rumor event
+  ///
+  /// Throws [Exception] if signature verification fails and verifySignature is true
   Future<Nip01Event> unsealRumor({
     required Nip01Event sealedEvent,
     EventSigner? customSigner,
+    bool verifySignature = true,
   }) async {
+    // Verify seal signature if requested
+    if (verifySignature) {
+      final isValid = await eventVerifier.verify(sealedEvent);
+      if (!isValid) {
+        throw Exception("Seal event signature is invalid");
+      }
+    }
+
     final signer = _getSigner(customSigner: customSigner);
 
     // Now decrypt the seal to get the rumor

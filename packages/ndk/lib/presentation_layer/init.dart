@@ -303,7 +303,10 @@ class Initialization {
       requests.fetchedRanges = fetchedRanges;
     }
 
-    giftWrap = GiftWrap(accounts: accounts);
+    giftWrap = GiftWrap(
+      accounts: accounts,
+      eventVerifier: _ndkConfig.eventVerifier,
+    );
 
     connectivity = Connectivy(relayManager);
 
