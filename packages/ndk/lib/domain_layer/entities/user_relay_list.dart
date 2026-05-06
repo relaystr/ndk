@@ -23,6 +23,10 @@ class UserRelayList {
       .where((entry) => entry.value.isRead)
       .map((entry) => entry.key);
 
+  Iterable<String> get writeUrls => relays.entries
+      .where((entry) => entry.value.isWrite)
+      .map((entry) => entry.key);
+
   static UserRelayList fromNip65(Nip65 nip65) {
     return UserRelayList(
         pubKey: nip65.pubKey,
