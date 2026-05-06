@@ -5,7 +5,7 @@ import 'package:ndk/ndk.dart';
 import 'package:web/web.dart' as web;
 
 import 'js_interop.dart';
-import 'nostr_verify_js.dart';
+import 'nostr_crypto_js.dart';
 
 /// Web implementation of EventVerifier using nostr-tools via JS interop.
 /// Uses native Web Crypto APIs for fast signature verification.
@@ -27,14 +27,14 @@ class WebEventVerifier implements EventVerifier {
 
   void _injectJS() {
     // Check if already loaded (e.g., via index.html)
-    if (nostrVerifier != null) {
+    if (nostrCrypto != null) {
       return;
     }
 
     final script =
         web.document.createElement('script') as web.HTMLScriptElement;
     script.type = 'text/javascript';
-    script.text = nostrVerifyJs;
+    script.text = nostrCryptoJs;
     web.document.head?.appendChild(script);
   }
 
@@ -46,10 +46,10 @@ class WebEventVerifier implements EventVerifier {
       return false;
     }
 
-    final verifier = nostrVerifier;
+    final verifier = nostrCrypto;
     if (verifier == null) {
       throw Exception(
-        'NostrVerifier not available. JS injection may have failed.',
+        'NostrCrypto not available. JS injection may have failed.',
       );
     }
 

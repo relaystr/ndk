@@ -1,16 +1,40 @@
 import 'dart:js_interop';
 
-@JS('NostrVerifier')
-external NostrVerifier? get nostrVerifier;
+@JS('NostrCrypto')
+external NostrCrypto? get nostrCrypto;
 
 @JS()
 @anonymous
-extension type NostrVerifier._(JSObject _) implements JSObject {
+extension type NostrCrypto._(JSObject _) implements JSObject {
   external JSPromise<JSBoolean> verifyEvent(NostrEventJS event);
   external JSPromise<JSBoolean> verifySignature(
     JSString signatureHex,
     JSString messageHash,
     JSString publicKeyHex,
+  );
+  external JSPromise<JSString> signEvent(
+    JSString privateKeyHex,
+    JSString messageHashHex,
+  );
+  external JSPromise<JSString> nip04Encrypt(
+    JSString privateKeyHex,
+    JSString publicKeyHex,
+    JSString plaintext,
+  );
+  external JSPromise<JSString> nip04Decrypt(
+    JSString privateKeyHex,
+    JSString publicKeyHex,
+    JSString ciphertext,
+  );
+  external JSPromise<JSString> nip44Encrypt(
+    JSString privateKeyHex,
+    JSString publicKeyHex,
+    JSString plaintext,
+  );
+  external JSPromise<JSString> nip44Decrypt(
+    JSString privateKeyHex,
+    JSString publicKeyHex,
+    JSString payloadB64,
   );
 }
 

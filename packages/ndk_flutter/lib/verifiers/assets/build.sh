@@ -8,15 +8,15 @@ cd "$(dirname "$0")"
 echo "Building JS bundle..."
 npm run build
 
-echo "Updating nostr_verify_js.dart..."
-cat > ../src/nostr_verify_js.dart << 'DARTEOF'
-/// Bundled nostr-tools verification JS code.
-/// Generated from lib/assets/nostr_verify.src.js using esbuild.
+echo "Updating nostr_crypto_js.dart..."
+cat > ../src/nostr_crypto_js.dart << 'DARTEOF'
+/// Bundled nostr-crypto-bundle JS code.
+/// Generated from lib/assets/nostr_crypto.src.js using esbuild.
 /// To regenerate: cd lib/assets && ./build.sh
-const String nostrVerifyJs = r'''
+const String nostrCryptoJs = r'''
 DARTEOF
 
-cat nostr_verify.js >> ../src/nostr_verify_js.dart
-echo "''';" >> ../src/nostr_verify_js.dart
+cat nostr_crypto.js >> ../src/nostr_crypto_js.dart
+echo "''';" >> ../src/nostr_crypto_js.dart
 
 echo "Done!"
