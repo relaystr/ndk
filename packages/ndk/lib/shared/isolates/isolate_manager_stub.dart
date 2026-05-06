@@ -24,22 +24,36 @@ class IsolateManager {
 
   Future<void> get ready => _readyCompleter.future;
 
-  /// On web, runs the task synchronously on the main thread
+  /// On web, runs the task synchronously on the main thread.
+  ///
+  /// NOTE: intentionally NOT async — DDC (the Dart-to-JavaScript compiler used
+  /// for Flutter Web) has a bug where generic async functions apply the wrong
+  /// runtime type-check when the Future resolves, causing a
+  /// LegacyJavaScriptObject → T cast failure at the await site even when the
+  /// returned value is genuinely of type T.  Using [Future.value] bypasses
+  /// the async machinery entirely and avoids the spurious type error.
   Future<R> runInEncodingIsolate<Q, R>(
     R Function(Q) task,
     Q argument,
-  ) async {
-    await ready;
-    return task(argument);
+  ) {
+    try {
+      return Future<R>.value(task(argument));
+    } catch (e, st) {
+      return Future<R>.error(e, st);
+    }
   }
 
-  /// On web, runs the task synchronously on the main thread
+  /// On web, runs the task synchronously on the main thread.
+  /// See [runInEncodingIsolate] for the rationale for not using async.
   Future<R> runInComputeIsolate<Q, R>(
     R Function(Q) task,
     Q argument,
-  ) async {
-    await ready;
-    return task(argument);
+  ) {
+    try {
+      return Future<R>.value(task(argument));
+    } catch (e, st) {
+      return Future<R>.error(e, st);
+    }
   }
 
   /// On web, runs the streaming task on the main thread

@@ -432,21 +432,24 @@ class RelayManager<T> {
 
   Future<void> _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) async {
+    // On web, WebSocket messages may arrive as JS objects (LegacyJavaScriptObject)
+    // rather than Dart Strings. Ensure proper conversion before decoding.
+    final String msgStr = message is String ? message : message.toString();
     final previousMessage = _lastMessageCompleter;
 
     final myCompleter = Completer<void>();
     _lastMessageCompleter = myCompleter;
 
+    // Decode synchronously to avoid DDC's generic async type-check bug on web.
+    // On web, awaiting a Future<ConcreteType> triggers a runtime cast via DDC's
+    // generic async machinery that fails with LegacyJavaScriptObject even when
+    // the value is correct. IsolateManager.runInEncodingIsolate already calls
+    // decodeNostrMsg synchronously on web, so we skip the indirection entirely.
     NostrMessageRaw nostrMsg;
     try {
-      nostrMsg = await IsolateManager.instance
-          .runInEncodingIsolate<String, NostrMessageRaw>(
-        decodeNostrMsg,
-        message,
-      );
+      nostrMsg = decodeNostrMsg(msgStr);
     } catch (e) {
-      // Isolates not available on web
-      nostrMsg = decodeNostrMsg(message);
+      nostrMsg = NostrMessageRaw(type: NostrMessageRawType.unknown);
     }
 
     if (previousMessage != null) {
@@ -455,7 +458,7 @@ class RelayManager<T> {
 
     myCompleter.complete();
 
-    _processDecodedMessage(nostrMsg, relayConnectivity, message);
+    _processDecodedMessage(nostrMsg, relayConnectivity, msgStr);
   }
 
   void _processDecodedMessage(NostrMessageRaw nostrMsg,
