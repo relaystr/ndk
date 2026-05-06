@@ -71,16 +71,22 @@ class Wallets {
   bool _recentActivated = false;
 
   /// public-facing stream of combined balances, grouped by currency.
-  late final Stream<List<WalletBalance>> combinedBalances =
-      _combinedBalancesSubject.stream.doOnListen(_activateBalances);
+  Stream<List<WalletBalance>> get combinedBalances {
+    _activateBalances();
+    return _combinedBalancesSubject.stream;
+  }
 
   /// public-facing stream of combined pending transactions.
-  late final Stream<List<WalletTransaction>> combinedPendingTransactions =
-      _combinedPendingTransactionsSubject.stream.doOnListen(_activatePending);
+  Stream<List<WalletTransaction>> get combinedPendingTransactions {
+    _activatePending();
+    return _combinedPendingTransactionsSubject.stream;
+  }
 
   /// public-facing stream of combined recent transactions.
-  late final Stream<List<WalletTransaction>> combinedRecentTransactions =
-      _combinedRecentTransactionsSubject.stream.doOnListen(_activateRecent);
+  Stream<List<WalletTransaction>> get combinedRecentTransactions {
+    _activateRecent();
+    return _combinedRecentTransactionsSubject.stream;
+  }
 
   void _activateBalances() {
     if (_balancesActivated) return;
