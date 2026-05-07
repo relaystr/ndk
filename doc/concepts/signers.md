@@ -6,7 +6,9 @@ Signers are responsible for cryptographic operations: signing events, encrypting
 
 | Type | Description | Pending Requests |
 |------|-------------|------------------|
-| `Bip340EventSigner` | Local signer with private key | No (instant) |
+| `Bip340EventSigner` | Local signer with private key (pure Dart) | No (instant) |
+| `WebEventSigner` | Fast local signer for web (JS crypto) | No (instant) |
+| `PlatformEventSigner` | Automatic platform selection (web/native) | No (instant) |
 | `Nip46EventSigner` | Remote signer via NIP-46 bunker | Yes |
 | `Nip07EventSigner` | Browser extension (NIP-07) | Yes |
 | `AmberEventSigner` | Android Amber app | Yes |
@@ -127,6 +129,39 @@ StreamBuilder<List<PendingSignerRequest>>(
   },
 )
 ```
+
+## Web Crypto
+
+On web platforms, pure Dart elliptic curve operations are slow. `WebEventSigner` uses `@noble/curves` and the Web Crypto API via JS interop for fast BIP-340 signing, NIP-04 and NIP-44 encryption.
+
+```dart
+import 'package:ndk_flutter/signers/web_event_signer.dart';
+
+final signer = WebEventSigner(
+  privateKey: myPrivkey,
+  publicKey: myPubkey,
+);
+```
+
+`WebEventSigner` is only available on web. Use `Bip340EventSigner` for native platforms.
+
+## Platform Selection
+
+`PlatformEventSigner` automatically picks the best implementation for the current platform:
+
+- **Web**: uses `WebEventSigner` (fast JS crypto)
+- **Native**: uses `Bip340EventSigner` (pure Dart)
+
+```dart
+import 'package:ndk_flutter/signers/platform_event_signer.dart';
+
+final signer = PlatformEventSigner(
+  privateKey: myPrivkey,
+  publicKey: myPubkey,
+);
+```
+
+This is the recommended signer for Flutter apps that target both mobile and web.
 
 ## Disposing Accounts
 

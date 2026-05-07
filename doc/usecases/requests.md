@@ -26,6 +26,7 @@ final account = Account(
   pubkey: myPubkey,
   type: AccountType.privateKey,
   signer: Bip340EventSigner(privateKey: myPrivkey, publicKey: myPubkey),
+  // Use PlatformEventSigner from ndk_flutter for automatic web/native selection
 );
 
 ndk.accounts.addAccount(pubkey: account.pubkey, type: account.type, signer: account.signer);
