@@ -1,7 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:ndk/ndk.dart';
 
-import 'web_event_verifier.dart';
+import 'platform_event_verifier_stub.dart'
+    if (dart.library.io) 'platform_event_verifier_native.dart'
+    if (dart.library.js_interop) 'platform_event_verifier_web.dart';
 
 /// A platform-aware event verifier that automatically selects the best
 /// implementation for the current platform.
@@ -24,12 +25,7 @@ import 'web_event_verifier.dart';
 class PlatformEventVerifier implements EventVerifier {
   final EventVerifier _delegate;
 
-  PlatformEventVerifier() : _delegate = _createVerifier();
-
-  static EventVerifier _createVerifier() {
-    if (kIsWeb) return WebEventVerifier();
-    return RustEventVerifier();
-  }
+  PlatformEventVerifier() : _delegate = createPlatformEventVerifier();
 
   @override
   Future<bool> verify(Nip01Event event) => _delegate.verify(event);
