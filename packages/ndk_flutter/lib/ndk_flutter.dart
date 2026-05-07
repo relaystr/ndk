@@ -7,5 +7,6 @@ export 'widgets/widgets.dart';
 export 'verifiers/platform_event_verifier.dart';
 export 'verifiers/web_event_verifier.dart';
 export 'signers/web_event_signer.dart';
+export 'signers/platform_event_signer.dart';
 export 'utils/nostr_kinds.dart';
 export 'package:amberflutter/amberflutter.dart';
