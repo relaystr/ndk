@@ -8,6 +8,13 @@ import '../../../shared/nips/nip01/bip340.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 import '../../../shared/nips/nip44/nip44.dart';
 
+/// Default factory for creating Bip340EventSigner instances
+EventSigner bip340EventSignerFactory({
+  String? privateKey,
+  required String publicKey,
+}) =>
+    Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+
 /// Pure Dart Event Signer
 class Bip340EventSigner implements EventSigner {
   /// hex private key

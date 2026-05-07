@@ -113,7 +113,7 @@ class Initialization {
     // Configure global WebSocket User-Agent on dart:io platforms
     configureDefaultUserAgent(ndkConfig.userAgent);
 
-    accounts = Accounts();
+    accounts = Accounts(_ndkConfig.eventSignerFactory);
 
     switch (_ndkConfig.engine) {
       case NdkEngine.RELAY_SETS:
@@ -219,6 +219,7 @@ class Initialization {
     bunkers = Bunkers(
       broadcast: broadcast,
       requests: requests,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
     );
 
     follows = Follows(
@@ -247,6 +248,7 @@ class Initialization {
       cacheManager: _ndkConfig.cache,
       broadcast: broadcast,
       accounts: accounts,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
     );
 
     relaySets = RelaySets(
@@ -285,6 +287,7 @@ class Initialization {
       blossomRepository: blossomRepository,
       accounts: accounts,
       blossomUserServerList: blossomUserServerList,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
     );
 
     files = Files(blossom: blossom);

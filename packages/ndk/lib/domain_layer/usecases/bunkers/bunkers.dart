@@ -3,8 +3,8 @@ import 'dart:convert';
 
 import 'package:ndk/domain_layer/usecases/bunkers/models/nostr_connect.dart';
 
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
+import '../../../domain_layer/repositories/event_signer.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
 import '../../../shared/nips/nip01/bip340.dart';
@@ -17,14 +17,17 @@ import '../requests/requests.dart';
 class Bunkers {
   final Broadcast _broadcast;
   final Requests _requests;
+  final EventSignerFactory _eventSignerFactory;
 
   static const int kMaxWaitingTimeForConnectionSeconds = 600;
 
   Bunkers({
     required Broadcast broadcast,
     required Requests requests,
+    required EventSignerFactory eventSignerFactory,
   })  : _broadcast = broadcast,
-        _requests = requests;
+        _requests = requests,
+        _eventSignerFactory = eventSignerFactory;
 
   /// Connects to a bunker using a bunker URL (bunker://)
   /// authCallback is called with the auth URL if the bunker requires authentication
@@ -50,7 +53,7 @@ class Bunkers {
     }
 
     final keyPair = Bip340.generatePrivateKey();
-    final localEventSigner = Bip340EventSigner(
+    final localEventSigner = _eventSignerFactory(
       privateKey: keyPair.privateKey,
       publicKey: keyPair.publicKey,
     );
@@ -66,7 +69,7 @@ class Bunkers {
     );
 
     final requestEvent = Nip01Event(
-      pubKey: localEventSigner.publicKey,
+      pubKey: localEventSigner.getPublicKey(),
       kind: BunkerRequest.kKind,
       tags: [
         ["p", remotePubkey],
@@ -83,7 +86,7 @@ class Bunkers {
       filter: Filter(
         authors: [remotePubkey],
         kinds: [BunkerRequest.kKind],
-        pTags: [localEventSigner.publicKey],
+        pTags: [localEventSigner.getPublicKey()],
         since: someTimeAgo(),
       ),
     );
@@ -116,7 +119,7 @@ class Bunkers {
 
       if (response["result"] == "ack") {
         result = BunkerConnection(
-          privateKey: localEventSigner.privateKey!,
+          privateKey: keyPair.privateKey!,
           remotePubkey: remotePubkey,
           relays: relays,
         );
@@ -141,7 +144,7 @@ class Bunkers {
     }
 
     final keyPair = nostrConnect.keyPair;
-    final localEventSigner = Bip340EventSigner(
+    final localEventSigner = _eventSignerFactory(
       privateKey: keyPair.privateKey,
       publicKey: keyPair.publicKey,
     );
@@ -150,7 +153,7 @@ class Bunkers {
       explicitRelays: relays,
       filter: Filter(
         kinds: [BunkerRequest.kKind],
-        pTags: [localEventSigner.publicKey],
+        pTags: [localEventSigner.getPublicKey()],
         since: someTimeAgo(),
       ),
     );
@@ -167,7 +170,7 @@ class Bunkers {
 
       if (response["result"] == secret) {
         result = BunkerConnection(
-          privateKey: localEventSigner.privateKey!,
+          privateKey: nostrConnect.keyPair.privateKey!,
           remotePubkey: event.pubKey,
           relays: relays,
         );
@@ -190,6 +193,7 @@ class Bunkers {
       requests: _requests,
       broadcast: _broadcast,
       authCallback: authCallback,
+      eventSignerFactory: _eventSignerFactory,
     );
   }
 }

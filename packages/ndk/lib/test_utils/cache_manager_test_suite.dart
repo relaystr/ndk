@@ -26,6 +26,7 @@ import 'package:test/test.dart';
 
 import '../entities.dart';
 import '../domain_layer/repositories/cache_manager.dart';
+import '../domain_layer/repositories/event_signer.dart';
 import '../shared/nips/nip01/bip340.dart';
 import '../data_layer/repositories/signers/bip340_event_signer.dart';
 
@@ -63,6 +64,12 @@ void runCacheManagerTestSuite({
   required CacheManagerFactory createCacheManager,
   CacheManagerTearDown? cleanUp,
 }) {
+  final eventSignerFactory = ({
+    String? privateKey,
+    required String publicKey,
+  }) =>
+      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+
   group('$name CacheManager Test Suite', () {
     late CacheManager cacheManager;
 
@@ -77,7 +84,7 @@ void runCacheManagerTestSuite({
     });
 
     group('Event Operations', () {
-      _runEventTests(() => cacheManager);
+      _runEventTests(() => cacheManager, eventSignerFactory);
     });
 
     group('Metadata Operations', () {
@@ -118,7 +125,8 @@ void runCacheManagerTestSuite({
 // Event Tests
 // ============================================================================
 
-void _runEventTests(CacheManager Function() getCacheManager) {
+void _runEventTests(CacheManager Function() getCacheManager,
+    EventSignerFactory eventSignerFactory) {
   test('saveEvent and loadEvent', () async {
     final cacheManager = getCacheManager();
     final event = Nip01Event(
@@ -388,11 +396,11 @@ void _runEventTests(CacheManager Function() getCacheManager) {
     final key1 = Bip340.generatePrivateKey();
     final key2 = Bip340.generatePrivateKey();
     final key3 = Bip340.generatePrivateKey();
-    final signer1 = Bip340EventSigner(
+    final signer1 = eventSignerFactory(
         privateKey: key1.privateKey, publicKey: key1.publicKey);
-    final signer2 = Bip340EventSigner(
+    final signer2 = eventSignerFactory(
         privateKey: key2.privateKey, publicKey: key2.publicKey);
-    final signer3 = Bip340EventSigner(
+    final signer3 = eventSignerFactory(
         privateKey: key3.privateKey, publicKey: key3.publicKey);
 
     final event1 = await signer1.sign(Nip01Event(

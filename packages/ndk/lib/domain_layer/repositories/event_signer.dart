@@ -1,6 +1,12 @@
 import '../entities/nip_01_event.dart';
 import '../entities/pending_signer_request.dart';
 
+/// Factory function type for creating EventSigner instances
+typedef EventSignerFactory = EventSigner Function({
+  String? privateKey,
+  required String publicKey,
+});
+
 abstract class EventSigner {
   /// Signs the given event and returns the signed event
   Future<Nip01Event> sign(Nip01Event event);
