@@ -143,7 +143,6 @@ class Initialization {
           eagerAuth: _ndkConfig.eagerAuth,
           authCallbackTimeout: _ndkConfig.authCallbackTimeout,
         );
-
         engine = JitEngine(
           cache: _ndkConfig.cache,
           ignoreRelays: _ndkConfig.ignoreRelays,

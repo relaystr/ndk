@@ -275,6 +275,7 @@ class Requests {
       trackingSet: state.returnedIds,
       outController: state.controller,
       eventOutFilters: _eventOutFilters,
+      cacheManager: _cacheWrite.cacheManager,
     )();
 
     // Record fetched ranges when network requests complete (EOSE received)
@@ -345,7 +346,7 @@ class Requests {
   }) {
     final requestId = '$name-paginated-${Helpers.getRandomString(10)}';
     final aggregatedController = ReplaySubject<Nip01Event>();
-    final seenEventIds = <String>{};
+    final seenEvents = <String, Set<String>>{}; // event_id -> sources
 
     Future<void> paginate() async {
       final since = filter.since;
@@ -373,9 +374,20 @@ class Requests {
       final relayState = <String, _RelayPaginationState>{};
 
       for (final event in initialEvents) {
-        if (!seenEventIds.contains(event.id)) {
-          seenEventIds.add(event.id);
+        final existingSources = seenEvents[event.id];
+        if (existingSources == null) {
+          // First time seeing this event
+          seenEvents[event.id] = event.sources.toSet();
           aggregatedController.add(event);
+        } else {
+          // Merge sources if this event has new sources
+          if (event.sources.isNotEmpty) {
+            final newSources = existingSources..addAll(event.sources);
+            if (newSources.length > (seenEvents[event.id]?.length ?? 0)) {
+              seenEvents[event.id] = newSources;
+              aggregatedController.add(event.copyWith(sources: newSources.toList()));
+            }
+          }
         }
 
         // Track oldest timestamp per relay
@@ -453,9 +465,20 @@ class Requests {
 
           int? oldestTimestamp;
           for (final event in pageEvents) {
-            if (!seenEventIds.contains(event.id)) {
-              seenEventIds.add(event.id);
+            final existingSources = seenEvents[event.id];
+            if (existingSources == null) {
+              // First time seeing this event
+              seenEvents[event.id] = event.sources.toSet();
               aggregatedController.add(event);
+            } else {
+              // Merge sources if this event has new sources
+              if (event.sources.isNotEmpty) {
+                final newSources = existingSources..addAll(event.sources);
+                if (newSources.length > (seenEvents[event.id]?.length ?? 0)) {
+                  seenEvents[event.id] = newSources;
+                  aggregatedController.add(event.copyWith(sources: newSources.toList()));
+                }
+              }
             }
             // Track oldest timestamp for this relay
             if (oldestTimestamp == null || event.createdAt < oldestTimestamp) {

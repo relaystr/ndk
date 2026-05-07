@@ -34,6 +34,7 @@ class MockRelay {
   bool sendMalformedEvents;
   String? customWelcomeMessage;
   int? maxEventsPerRequest;
+  String? bannedWord;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -59,6 +60,7 @@ class MockRelay {
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
     this.maxEventsPerRequest,
+    this.bannedWord,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -152,6 +154,16 @@ class MockRelay {
         if (eventJson[0] == "EVENT") {
           Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
+            // Check if event contains banned word
+            if (bannedWord != null && newEvent.content.contains(bannedWord!)) {
+              webSocket.add(jsonEncode([
+                "OK",
+                newEvent.id,
+                false,
+                "blocked: content contains banned word"
+              ]));
+              return;
+            }
             // Check auth for events if required (any authenticated user is OK)
             if (requireAuthForEvents && authenticatedPubkeys.isEmpty) {
               webSocket.add(jsonEncode([

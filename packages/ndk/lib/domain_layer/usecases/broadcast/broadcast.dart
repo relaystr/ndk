@@ -71,6 +71,25 @@ class Broadcast {
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
 
+    // Listen for broadcast responses to update cache sources
+    broadcastState.networkController.stream.listen((response) async {
+      if (response.broadcastSuccessful) {
+        final currentEvent = broadcastState.event;
+        if (currentEvent != null) {
+          final cachedEvent = await _cacheManager.loadEvent(currentEvent.id);
+          if (cachedEvent != null) {
+            final updatedSources = {
+              ...cachedEvent.sources,
+              response.relayUrl
+            }.toList();
+            final updatedEvent =
+                cachedEvent.copyWith(sources: updatedSources);
+            await _cacheManager.saveEvent(updatedEvent);
+          }
+        }
+      }
+    });
+
     // save event to cache if enabled
     if (mySaveToCache) {
       _cacheManager.saveEvent(nostrEvent);

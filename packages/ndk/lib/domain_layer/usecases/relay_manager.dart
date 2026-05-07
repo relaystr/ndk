@@ -500,6 +500,22 @@ class RelayManager<T> {
       if (globalState.inFlightBroadcasts[eventId] != null &&
           !globalState
               .inFlightBroadcasts[eventId]!.networkController.isClosed) {
+        // Update cache with source if broadcast was successful
+        if (success) {
+          final broadcastState = globalState.inFlightBroadcasts[eventId];
+          final event = broadcastState?.event;
+          if (event != null) {
+            // Merge existing sources with new relay URL, avoiding duplicates
+            final updatedSources = {
+              ...event.sources,
+              relayConnectivity.url
+            }.toList();
+            final updatedEvent = event.copyWith(sources: updatedSources);
+            // Update the event in broadcast state
+            broadcastState!.event = updatedEvent;
+          }
+        }
+        
         globalState.inFlightBroadcasts[eventId]?.networkController.add(
           RelayBroadcastResponse(
             relayUrl: relayConnectivity.url,
@@ -674,7 +690,7 @@ class RelayManager<T> {
       }
 
       final eventWithSources =
-          event.copyWith(sources: [...event.sources, connectivity.url]);
+          event.copyWith(sources: {...event.sources, connectivity.url}.toList());
 
       if (state.networkController.isClosed) {
         // this might happen because relays even after we send a CLOSE subscription.id, they'll still send more events
