@@ -43,7 +43,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 ### Account & Authentication
 
-- **Multiple signer support**: Built-in (BIP-340), Amber, NIP-07 (web), and NIP-46 (remote signing/bunkers)
+- **Multiple signer support**: Built-in (BIP-340), WebEventSigner (fast web crypto), Amber, NIP-07 (web), and NIP-46 (remote signing/bunkers)
 - **Account management** with state tracking and multiple account support
 - **Relay authentication** (NIP-42) for private relay access
 

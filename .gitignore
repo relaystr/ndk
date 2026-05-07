@@ -38,3 +38,7 @@ build/
 pubspec_overrides.yaml
 /packages/ndk/rust/target/
 /packages/ndk/wallets_db.db
+
+# Node.js build tools
+**/node_modules/
+**/package-lock.json
