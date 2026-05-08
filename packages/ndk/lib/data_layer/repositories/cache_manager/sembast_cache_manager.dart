@@ -1,22 +1,34 @@
-import 'dart:io';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
-import 'package:sembast/sembast_io.dart';
 import 'ndk_extensions.dart';
-import 'package:path/path.dart' as p;
+
+// Platform-specific imports
+import 'sembast_cache_manager_platform.dart';
 
 class SembastCacheManager extends CacheManager {
+  /// Creates a new [SembastCacheManager] instance.
+  ///
+  /// Platform-specific behavior:
+  /// - **Web platform**: [databasePath] is ignored. The database is stored in
+  ///   IndexedDB using [databaseName] as the database name.
+  /// - **Native platforms** (Android, iOS, macOS, Linux, Windows): [databasePath]
+  ///   is required. The database file is created at `{databasePath}/{databaseName}.db`.
+  ///
+  /// Parameters:
+  /// - [databasePath]: Required on native platforms, ignored on web.
+  /// - [databaseName]: Name of the database. Defaults to "sembast_cache_manager".
+  ///
+  /// Throws [ArgumentError] on native platforms if [databasePath] is null or empty.
   static Future<SembastCacheManager> create({
-    required String databasePath,
+    String? databasePath,
     String databaseName = "sembast_cache_manager",
   }) async {
-    final dbFileName = "$databaseName.db";
-    final dbPath = p.join(databasePath, dbFileName);
+    final database = await openDatabase(
+      databasePath: databasePath,
+      databaseName: databaseName,
+    );
 
-    await Directory(databasePath).create(recursive: true);
-
-    final database = await databaseFactoryIo.openDatabase(dbPath);
     return SembastCacheManager(database);
   }
 
