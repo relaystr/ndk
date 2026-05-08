@@ -270,10 +270,7 @@ class GiftWrap {
       pubKey: ephemeralKeys.publicKey,
     );
 
-    // Sign with ephemeral key
-    final signature = Bip340.sign(giftWrapEvent.id, ephemeralKeys.privateKey!);
-
-    final gWEventSigned = giftWrapEvent.copyWith(sig: signature);
+    final gWEventSigned = await ephemeralSigner.sign(giftWrapEvent);
 
     return gWEventSigned;
   }
