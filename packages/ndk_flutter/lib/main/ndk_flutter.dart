@@ -197,6 +197,7 @@ class NdkFlutter {
           ),
           requests: ndk.requests,
           broadcast: ndk.broadcast,
+          eventSignerFactory: ndk.config.eventSignerFactory,
           cachedPublicKey: account.pubkey,
         );
         ndk.accounts.addAccount(
@@ -211,7 +212,7 @@ class NdkFlutter {
         ndk.accounts.addAccount(
           pubkey: account.pubkey,
           type: AccountType.publicKey,
-          signer: Bip340EventSigner(
+          signer: ndk.config.eventSignerFactory(
             privateKey: null,
             publicKey: account.pubkey,
           ),
@@ -224,7 +225,7 @@ class NdkFlutter {
         ndk.accounts.addAccount(
           pubkey: pubkey,
           type: AccountType.privateKey,
-          signer: Bip340EventSigner(
+          signer: ndk.config.eventSignerFactory(
             privateKey: account.signerSeed!,
             publicKey: pubkey,
           ),

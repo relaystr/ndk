@@ -60,11 +60,12 @@ class NwcConnection {
   List<String> supportedEncryptions = ["nip04"];
 
   Set<String> permissions = {};
+  final EventSignerFactory eventSignerFactory;
 
-  NwcConnection(this.uri);
+  NwcConnection(this.uri, {required this.eventSignerFactory});
 
   EventSigner get signer {
-    _signer ??= Bip340EventSigner(
+    _signer ??= eventSignerFactory(
         privateKey: uri.secret, publicKey: getPublicKey(uri.secret));
     return _signer!;
   }

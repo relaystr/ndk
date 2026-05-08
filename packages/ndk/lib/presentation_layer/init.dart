@@ -193,7 +193,11 @@ class Initialization {
     );
 
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
-    nwc = Nwc(requests: requests, broadcast: broadcast);
+    nwc = Nwc(
+      requests: requests,
+      broadcast: broadcast,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
+    );
 
     if (_ndkConfig.walletsRepo == null) {
       // auto detect if the provided cache manager has wallets capabilities.
@@ -309,6 +313,7 @@ class Initialization {
     giftWrap = GiftWrap(
       accounts: accounts,
       eventVerifier: _ndkConfig.eventVerifier,
+      eventSignerFactory: _ndkConfig.eventSignerFactory,
     );
 
     connectivity = Connectivy(relayManager);
