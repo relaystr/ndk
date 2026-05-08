@@ -79,14 +79,15 @@ class Blossom {
     final dataSha256 = sha256.convert(data);
 
     final signer = _getSigner(customSigner);
+    final authType = serverMediaOptimisation ? "media" : "upload";
 
     final Nip01Event myAuthorization = Nip01Event(
-      content: "upload",
+      content: authType,
       pubKey: signer.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
-        ["t", "upload"],
+        ["t", authType],
         ["x", dataSha256.toString()],
         ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
       ],
@@ -160,13 +161,14 @@ class Blossom {
     }
 
     // Create authorization event with file hash
+    final authType = serverMediaOptimisation ? "media" : "upload";
     final Nip01Event myAuthorization = Nip01Utils.createEventCalculateId(
-      content: "upload",
+      content: authType,
       pubKey: signer.getPublicKey(),
       kind: kBlossom,
       createdAt: now,
       tags: [
-        ["t", "upload"],
+        ["t", authType],
         ["x", fileHash],
         ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
       ],

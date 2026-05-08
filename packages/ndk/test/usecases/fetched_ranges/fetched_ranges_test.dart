@@ -257,6 +257,55 @@ void main() {
 
       expect(optimized, isEmpty);
     });
+
+    test('returns full range as gap when cache is empty for specified relay', () async {
+      final filter = Filter(kinds: [1]);
+
+      // Don't add any ranges - cache is empty
+      final optimized = await fetchedRanges.getOptimizedFilters(
+        filter: filter,
+        since: 100,
+        until: 500,
+        relayUrls: ['wss://example.com'],
+      );
+
+      expect(optimized.containsKey('wss://example.com'), isTrue);
+      final filters = optimized['wss://example.com']!;
+      expect(filters.length, 1);
+      expect(filters[0].since, 100);
+      expect(filters[0].until, 500);
+      expect(filters[0].kinds, [1]);
+    });
+
+    test('respects relayUrls parameter and only checks specified relays', () async {
+      final filter = Filter(kinds: [1]);
+
+      await fetchedRanges.addRange(
+        filter: filter,
+        relayUrl: 'wss://relay1.example.com',
+        since: 200,
+        until: 300,
+      );
+
+      await fetchedRanges.addRange(
+        filter: filter,
+        relayUrl: 'wss://relay2.example.com',
+        since: 150,
+        until: 350,
+      );
+
+      // Only check relay1
+      final optimized = await fetchedRanges.getOptimizedFilters(
+        filter: filter,
+        since: 100,
+        until: 500,
+        relayUrls: ['wss://relay1.example.com'],
+      );
+
+      expect(optimized.length, 1);
+      expect(optimized.containsKey('wss://relay1.example.com'), isTrue);
+      expect(optimized.containsKey('wss://relay2.example.com'), isFalse);
+    });
   });
 
   group('FetchedRanges.reachedOldest', () {

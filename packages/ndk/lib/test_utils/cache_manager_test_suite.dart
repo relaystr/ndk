@@ -1,4 +1,4 @@
-﻿/// Shared test suite for CacheManager implementations.
+/// Shared test suite for CacheManager implementations.
 ///
 /// This library provides a reusable test suite that can be run against any
 /// [CacheManager] implementation to verify it correctly implements the
@@ -9,27 +9,27 @@
 /// In your test file, import this library and call [runCacheManagerTestSuite]:
 ///
 /// ```dart
-/// import 'package:ndk/shared/test_utils/cache_manager_test_suite.dart';
+/// import 'package:ndk/testing.dart';
 /// import 'package:test/test.dart';
 ///
 /// void main() {
 ///   runCacheManagerTestSuite(
 ///     name: 'MyCacheManager',
 ///     createCacheManager: () async => MyCacheManager(),
-///     tearDown: (cacheManager) async => await cacheManager.close(),
+///     cleanUp: (cacheManager) async => await cacheManager.close(),
 ///   );
 /// }
 /// ```
 library;
 
-import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
 
-import 'package:ndk/domain_layer/repositories/cache_manager.dart';
-import 'package:ndk/shared/nips/nip01/bip340.dart';
-import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import '../entities.dart';
+import '../domain_layer/repositories/cache_manager.dart';
+import '../shared/nips/nip01/bip340.dart';
+import '../data_layer/repositories/signers/bip340_event_signer.dart';
 
-part 'ndk_cache_manger_test_suite_cashu.dart';
+part 'cache_manager_test_suite_cashu.dart';
 
 /// A factory function that creates a new [CacheManager] instance for testing.
 typedef CacheManagerFactory = Future<CacheManager> Function();
@@ -42,8 +42,8 @@ typedef CacheManagerTearDown = Future<void> Function(CacheManager cacheManager);
 /// Parameters:
 /// - [name]: A descriptive name for the cache manager being tested.
 /// - [createCacheManager]: A factory function that creates a fresh instance
-///   of the cache manager for each test group.
-/// - [cleanUp]: An optional cleanup function called after each test group.
+///   of the cache manager for each test.
+/// - [cleanUp]: An optional cleanup function called after each test.
 ///   This should close/dispose the cache manager.
 ///
 /// Example:

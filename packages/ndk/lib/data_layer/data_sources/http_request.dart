@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:rxdart/rxdart.dart';
 
+bool _isSuccessStatus(int statusCode) => statusCode >= 200 && statusCode < 300;
+
 /// Upload progress information
 class UploadProgress {
   final int sentBytes;
@@ -36,7 +38,7 @@ class HttpRequestDS {
         Uri.parse(url).replace(scheme: 'https'),
         headers: {"Accept": "application/json"});
 
-    if (response.statusCode != 200) {
+    if (!_isSuccessStatus(response.statusCode)) {
       return throw Exception(
           "error fetching STATUS: ${response.statusCode}, ${response.body},Link: $url");
     }
@@ -54,7 +56,7 @@ class HttpRequestDS {
       headers: headers,
     );
 
-    if (response.statusCode != 200) {
+    if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
           "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
@@ -116,7 +118,7 @@ class HttpRequestDS {
         final streamedResponse = await _client.send(request);
         final response = await http.Response.fromStream(streamedResponse);
 
-        if (response.statusCode != 200) {
+        if (!_isSuccessStatus(response.statusCode)) {
           final error = Exception(
               "error fetching STATUS: ${response.statusCode}, Link: $url");
           progressSubject.addError(error);
@@ -154,7 +156,7 @@ class HttpRequestDS {
       headers: headers,
     );
 
-    if (response.statusCode != 200) {
+    if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
           "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url,  ");
     }
@@ -171,7 +173,7 @@ class HttpRequestDS {
       headers: headers,
     );
 
-    if (response.statusCode != 200) {
+    if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
           "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
@@ -188,7 +190,7 @@ class HttpRequestDS {
       headers: headers,
     );
 
-    if (response.statusCode != 200) {
+    if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
           "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }
@@ -209,7 +211,7 @@ class HttpRequestDS {
 
     final streamedResponse = await _client.send(request);
 
-    if (streamedResponse.statusCode != 200) {
+    if (!_isSuccessStatus(streamedResponse.statusCode)) {
       throw Exception(
           "error fetching STATUS: ${streamedResponse.statusCode}, Link: $url");
     }
@@ -226,7 +228,7 @@ class HttpRequestDS {
       headers: headers,
     );
 
-    if (response.statusCode != 200) {
+    if (!_isSuccessStatus(response.statusCode)) {
       throw Exception(
           "error fetching STATUS: ${response.statusCode}, ${response.body}, Link: $url");
     }

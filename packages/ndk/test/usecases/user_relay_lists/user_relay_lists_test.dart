@@ -60,6 +60,27 @@ void main() async {
       expect(cache0, isNot(equals(cache1)));
     });
 
+    test('readUrls and writeUrls', () {
+      final event = Nip01Event(
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        pubKey: key0.publicKey,
+        kind: Nip65.kKind,
+        content: "",
+        tags: [
+          ['r', 'wss://relay.read', 'read'],
+          ['r', 'wss://relay.write', 'write'],
+          ['r', 'wss://relay.readwrite'],
+        ],
+      );
+      final nip65 = Nip65.fromEvent(event);
+      final userRelayList = UserRelayList.fromNip65(nip65);
+
+      expect(userRelayList.readUrls.toList(),
+          ['wss://relay.read', 'wss://relay.readwrite']);
+      expect(userRelayList.writeUrls.toList(),
+          ['wss://relay.write', 'wss://relay.readwrite']);
+    });
+
     test('getSingleUserRelayList - cache', () async {
       final rcv =
           await ndk.userRelayLists.getSingleUserRelayList(key0.publicKey);

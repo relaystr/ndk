@@ -1,3 +1,23 @@
+## 0.2.11-dev.6
+
+ - **FIX**: delete pubspec.lock.
+
+## 0.2.11-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.2.11-dev.4
+
+ - Update a dependency to the latest release.
+
+## 0.2.11-dev.3
+
+ - Update a dependency to the latest release.
+
+## 0.2.11-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 0.2.11-dev.1
 
  - Update a dependency to the latest release.

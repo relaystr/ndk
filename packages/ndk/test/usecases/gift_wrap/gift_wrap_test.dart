@@ -27,7 +27,10 @@ void main() {
         .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
 
     // Create the service
-    giftWrapService = GiftWrap(accounts: ndk.accounts);
+    giftWrapService = GiftWrap(
+      accounts: ndk.accounts,
+      eventVerifier: MockEventVerifier(),
+    );
   });
 
   group('GiftWrapService', () {
@@ -179,6 +182,37 @@ void main() {
 
       // Verify the seal uses the custom signer's pubkey
       expect(seal.pubKey, equals(key3.publicKey));
+    });
+
+    test('Seal event should be signed (NIP-59 requirement)', () async {
+      // Create a rumor
+      final rumor = await giftWrapService.createRumor(
+        content: 'Test message',
+        kind: 1,
+        tags: [],
+      );
+
+      // Wrap the rumor in a gift wrap
+      final giftWrap = await giftWrapService.toGiftWrap(
+        rumor: rumor,
+        recipientPubkey: key2.publicKey,
+      );
+
+      // Login as recipient to unwrap
+      ndk.accounts
+          .loginPrivateKey(pubkey: key2.publicKey, privkey: key2.privateKey!);
+
+      // Unwrap the gift wrap to get the seal
+      final seal = await giftWrapService.unwrapEvent(wrappedEvent: giftWrap);
+
+      // Verify that the seal event is signed (NIP-59 requirement)
+      // According to NIP-59, the seal event (kind 13) must be signed
+      final isSealSigned = await Bip340EventVerifier().verify(seal);
+      expect(
+        isSealSigned,
+        isTrue,
+        reason: 'NIP-59 requires seal events (kind 13) to be signed',
+      );
     });
   });
 }

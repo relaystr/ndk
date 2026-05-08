@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
+import '../../utils/nip_avatar.dart';
 
 class NPicture extends StatelessWidget {
   final NdkFlutter ndkFlutter;
@@ -63,10 +64,10 @@ class NPicture extends StatelessWidget {
   ) {
     final picture = metadata?.picture;
     if (picture == null) {
-      return _buildDefaultPicture(context, metadata?.getName());
+      return _buildDefaultPicture(context, metadata);
     }
 
-    return _buildImagePicture(context, picture);
+    return _buildImagePicture(context, picture, metadata);
   }
 
   Widget _buildPictureContent(
@@ -74,23 +75,23 @@ class NPicture extends StatelessWidget {
     AsyncSnapshot<Metadata?> snapshot,
   ) {
     if (snapshot.connectionState == ConnectionState.waiting) {
-      return _buildDefaultPicture(context, snapshot.data?.getName());
+      return _buildDefaultPicture(context, snapshot.data);
     }
 
     final picture = snapshot.data?.picture;
     if (picture == null) {
-      return _buildDefaultPicture(context, snapshot.data?.getName());
+      return _buildDefaultPicture(context, snapshot.data);
     }
 
-    return _buildImagePicture(context, picture);
+    return _buildImagePicture(context, picture, snapshot.data);
   }
 
-  Widget _buildDefaultPicture(BuildContext context, String? name) {
-    final initial = name?.isNotEmpty == true ? name![0].toUpperCase() : '';
-    final color = NdkFlutter.getColorFromPubkey(_pubkey!);
+  Widget _buildDefaultPicture(BuildContext context, Metadata? metadata) {
+    final initial = NipAvatar.getInitial(_pubkey!, metadata);
+    final avatarColor = NipAvatar.getColor(_pubkey!);
 
     return Container(
-      color: color,
+      color: avatarColor.background,
       child: Center(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -100,7 +101,7 @@ class NPicture extends StatelessWidget {
             return Text(
               initial,
               style: TextStyle(
-                color: Colors.white,
+                color: avatarColor.text,
                 fontWeight: FontWeight.bold,
                 fontSize: fontSize,
               ),
@@ -111,17 +112,21 @@ class NPicture extends StatelessWidget {
     );
   }
 
-  Widget _buildImagePicture(BuildContext context, String pictureUrl) {
+  Widget _buildImagePicture(
+    BuildContext context,
+    String pictureUrl,
+    Metadata? metadata,
+  ) {
     return Image.network(
       pictureUrl,
       fit: BoxFit.cover,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
 
-        return ColoredBox(color: NdkFlutter.getColorFromPubkey(_pubkey!));
+        return _buildDefaultPicture(context, metadata);
       },
       errorBuilder: (context, error, stackTrace) {
-        return _buildDefaultPicture(context, null);
+        return _buildDefaultPicture(context, metadata);
       },
     );
   }

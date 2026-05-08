@@ -1,3 +1,23 @@
+## 0.1.1-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.4
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.3
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 0.1.1-dev.1
 
  - Update a dependency to the latest release.

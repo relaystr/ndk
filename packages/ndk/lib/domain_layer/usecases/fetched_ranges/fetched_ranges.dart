@@ -67,19 +67,38 @@ class FetchedRanges {
 
   /// Get optimized filters for each relay to fill gaps
   /// Returns a map of relay URL to list of filters covering only the gaps
+  /// If [relayUrls] is provided, only considers those relays
+  /// If a relay has no cached ranges, treats the entire [since, until] range as a gap
   Future<Map<String, List<Filter>>> getOptimizedFilters({
     required Filter filter,
     required int since,
     required int until,
+    List<String>? relayUrls,
   }) async {
     final fetchedRangesMap = await getForFilter(filter);
     final result = <String, List<Filter>>{};
 
-    for (final entry in fetchedRangesMap.entries) {
-      final relayUrl = entry.key;
-      final fetchedRanges = entry.value;
+    // If relayUrls is specified, only consider those relays
+    final relaysToCheck = relayUrls ?? fetchedRangesMap.keys.toList();
 
-      final gaps = fetchedRanges.findGaps(since, until);
+    for (final relayUrl in relaysToCheck) {
+      final fetchedRanges = fetchedRangesMap[relayUrl];
+
+      List<FetchedRangesGap> gaps;
+      if (fetchedRanges == null || fetchedRanges.ranges.isEmpty) {
+        // No cached ranges - entire range is a gap
+        gaps = [
+          FetchedRangesGap(
+            relayUrl: relayUrl,
+            since: since,
+            until: until,
+          )
+        ];
+      } else {
+        // Find gaps in existing ranges
+        gaps = fetchedRanges.getGaps(since, until);
+      }
+
       if (gaps.isNotEmpty) {
         result[relayUrl] = gaps.map((gap) {
           final gapFilter = filter.clone();

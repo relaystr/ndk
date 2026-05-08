@@ -279,6 +279,8 @@ class _NLoginState extends State<NLogin> {
   }
 
   Future<void> loginWithNpub(String npub) async {
+    if (!Nip19.isPubkey(npub)) return;
+
     String pubkey;
     try {
       pubkey = Nip19.decode(npub);
@@ -296,6 +298,8 @@ class _NLoginState extends State<NLogin> {
   }
 
   Future<void> loginWithNsec(String nsec) async {
+    if (!Nip19.isPrivateKey(nsec)) return;
+
     String privateKey;
     try {
       privateKey = Nip19.decode(nsec);
