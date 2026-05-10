@@ -1,13 +1,9 @@
 import 'dart:typed_data';
 
-int _parseSize(dynamic size) {
-  if (size is int) {
-    return size;
-  } else if (size is String) {
-    return int.tryParse(size) ?? 0;
-  } else {
-    return 0;
-  }
+int? _parseSize(dynamic size) {
+  if (size is int) return size;
+  if (size is String) return int.tryParse(size);
+  return null;
 }
 
 /// Descriptor of a blob - when getting a blob from a server
@@ -52,6 +48,17 @@ class BlobDescriptor {
       nip94: json['nip94'] != null ? BlobNip94.fromJson(json['nip94']) : null,
     );
   }
+
+  /// Inverse of [BlobDescriptor.fromJson]. `uploaded` is encoded as a
+  /// Unix timestamp in seconds to match the server-side BUD-02 format.
+  Map<String, dynamic> toJson() => {
+        'url': url,
+        'sha256': sha256,
+        'size': size,
+        'type': type,
+        'uploaded': uploaded.millisecondsSinceEpoch ~/ 1000,
+        'nip94': nip94?.toJson(),
+      };
 }
 
 /// Result of a blob upload
@@ -118,7 +125,7 @@ class BlobNip94 {
   final int? size;
 
   /// size of file in pixels as String in the form &lt;width&gt;x&lt;height&gt;
-  final String? dimenssions;
+  final String? dimensions;
 
   /// URI to torrent magnet
   final String? magnet;
@@ -162,7 +169,7 @@ class BlobNip94 {
     this.alt,
     this.fallback,
     this.service,
-    this.dimenssions,
+    this.dimensions,
   });
 
   /// converts json response to BlobNip94, \
@@ -176,7 +183,7 @@ class BlobNip94 {
       sha256: json['x'] ?? '',
       // parse int from string
       size: _parseSize(json['size']),
-      dimenssions: json['dim'].toString(),
+      dimensions: json['dim']?.toString(),
       magnet: json['magnet'],
       torrentInfoHash: json['i'],
       blurhash: json['blurhash'],
@@ -188,4 +195,31 @@ class BlobNip94 {
       service: json['service'],
     );
   }
+
+  /// Inverse of [BlobNip94.fromJson]. Uses BUD-08 / NIP-94 short tag
+  /// keys (`m`, `x`, `i`, `dim`, ...). `thumbnail`, `image` and
+  /// `fallback` are encoded as a single string (their first element)
+  /// since [BlobNip94.fromJson] only consumes one.
+  Map<String, dynamic> toJson() => {
+        'content': content,
+        'url': url,
+        'm': mimeType,
+        'x': sha256,
+        'size': size,
+        'dim': dimensions,
+        'magnet': magnet,
+        'i': torrentInfoHash,
+        'blurhash': blurhash,
+        'thumb': (thumbnail != null && thumbnail!.isNotEmpty)
+            ? thumbnail!.first
+            : null,
+        'image':
+            (image != null && image!.isNotEmpty) ? image!.first : null,
+        'summary': summary,
+        'alt': alt,
+        'fallback': (fallback != null && fallback!.isNotEmpty)
+            ? fallback!.first
+            : null,
+        'service': service,
+      };
 }
