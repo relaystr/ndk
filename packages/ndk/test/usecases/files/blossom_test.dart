@@ -38,6 +38,11 @@ void main() {
       NdkConfig(
         eventVerifier: MockEventVerifier(),
         cache: MemCacheManager(),
+        // These tests assert Blossom protocol behaviour (server fallback,
+        // per-server availability...) — disable the local blob cache so
+        // it never masks server-side state. Cache integration is
+        // covered separately in blossom_blob_cache_test.dart.
+        blobCache: const NoopBlobCacheManager(),
         engine: NdkEngine.JIT,
       ),
     );
@@ -276,20 +281,23 @@ void main() {
 
       final sha256 = server1Result.descriptor!.sha256;
 
-      final deadServer = client.getBlob(sha256: sha256, serverUrls: [
-        'http://dead.example.com',
-      ]);
+      final deadServer = client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://dead.example.com'],
+      );
       expect(deadServer, throwsException);
 
-      final server1 = await client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:${server2.port}',
-      ]);
+      final server1 = await client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:${server2.port}'],
+      );
 
       expect(utf8.decode(server1.data), equals('strategy test'));
 
-      final served2 = client.getBlob(sha256: sha256, serverUrls: [
-        'http://localhost:${server.port}',
-      ]);
+      final served2 = client.getBlob(
+        sha256: sha256,
+        serverUrls: ['http://localhost:${server.port}'],
+      );
 
       expect(served2, throwsException);
     });

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../../../config/blossom_config.dart';
+import '../../../data_layer/io/file_io.dart';
 import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../shared/nips/nip01/bip340.dart';
 import '../../entities/blob_upload_progress.dart';
@@ -9,6 +10,7 @@ import '../../entities/blossom_blobs.dart';
 import '../../entities/blossom_strategies.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/nip_01_utils.dart';
+import '../../repositories/blob_cache_manager.dart';
 import '../../repositories/blossom.dart';
 import '../../repositories/event_signer.dart';
 import '../accounts/accounts.dart';
@@ -32,14 +34,20 @@ class Blossom {
   final BlossomUserServerList _userServerList;
   final BlossomRepository _blossomImpl;
   final Accounts _accounts;
+  final BlobCacheManager _blobCache;
+  final FileIO _fileIO;
 
   Blossom({
     required BlossomUserServerList blossomUserServerList,
     required BlossomRepository blossomRepository,
     required Accounts accounts,
+    required BlobCacheManager blobCache,
+    required FileIO fileIO,
   })  : _accounts = accounts,
         _userServerList = blossomUserServerList,
-        _blossomImpl = blossomRepository;
+        _blossomImpl = blossomRepository,
+        _blobCache = blobCache,
+        _fileIO = fileIO;
 
   /// Gets the signer to use for blossom operations
   /// Priority: customSigner > logged in account signer > temporary signer
@@ -65,6 +73,17 @@ class Blossom {
   /// if no signer is available, a temporary signer is created \
   /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
   /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
+  /// \
+  /// When [cacheWrite] is true (the default) the local bytes are
+  /// written to the [BlobCacheManager] **before** the upload starts —
+  /// local-first: the cache reflects what the user has, regardless of
+  /// what any remote server eventually accepts. As a result a subsequent
+  /// [getBlob] for the same sha256 is served locally even if every
+  /// server rejected the upload. Set [cacheWrite] to `false` for
+  /// fire-and-forget uploads (sensitive data, very large media...) that
+  /// should not stay in the local store. Note that with
+  /// [serverMediaOptimisation] the server's returned hash differs from
+  /// the local one; the cache only knows about the original bytes.
   Future<List<BlobUploadResult>> uploadBlob({
     required Uint8List data,
     List<String>? serverUrls,
@@ -72,6 +91,7 @@ class Blossom {
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool serverMediaOptimisation = false,
     EventSigner? customSigner,
+    bool cacheWrite = true,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -102,6 +122,14 @@ class Blossom {
       throw Exception("User has no server list");
     }
 
+    if (cacheWrite) {
+      await _blobCache.saveBlob(
+        data: data,
+        sha256: dataSha256.toString(),
+        mimeType: contentType,
+      );
+    }
+
     final stream = _blossomImpl.uploadBlob(
       dataStreamFactory: () => Stream.value(data),
       contentLength: data.length,
@@ -113,7 +141,6 @@ class Blossom {
     );
 
     final done = await stream.last;
-
     return done.completedUploads;
   }
 
@@ -252,14 +279,24 @@ class Blossom {
 
   /// Gets a blob by trying servers sequentially until success (fallback) \
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
-  /// if the pukey has no UserServerList (kind: 10063), throws an error
+  /// if the pukey has no UserServerList (kind: 10063), throws an error \
+  /// \
+  /// The local [BlobCacheManager] is consulted first; on a cache miss the
+  /// download is performed and (when [cacheWrite] is true) the bytes are
+  /// written back to the cache. Set [cacheWrite] to `false` for one-off
+  /// fetches that should not pollute the local store. To opt out of
+  /// caching entirely use a `NoopBlobCacheManager` in [NdkConfig].
   Future<BlobResponse> getBlob({
     required String sha256,
     bool useAuth = false,
     List<String>? serverUrls,
     String? pubkeyToFetchUserServerList,
     EventSigner? customSigner,
+    bool cacheWrite = true,
   }) async {
+    final cached = await _blobCache.getBlob(sha256);
+    if (cached != null) return cached;
+
     Nip01Event? myAuthorization;
     Nip01Event? signedAuthorization;
 
@@ -296,11 +333,21 @@ class Blossom {
       throw Exception("User has no server list");
     }
 
-    return _blossomImpl.getBlob(
+    final response = await _blossomImpl.getBlob(
       sha256: sha256,
       authorization: signedAuthorization,
       serverUrls: serverUrls,
     );
+
+    if (cacheWrite) {
+      await _blobCache.saveBlob(
+        data: response.data,
+        sha256: sha256,
+        mimeType: response.mimeType,
+      );
+    }
+
+    return response;
   }
 
   /// Downloads a blob directly to a file path (without loading into memory)
@@ -308,7 +355,14 @@ class Blossom {
   /// For web: triggers browser download dialog to save the file
   ///
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
-  /// if the pubkey has no UserServerList (kind: 10063), throws an error
+  /// if the pubkey has no UserServerList (kind: 10063), throws an error \
+  /// \
+  /// On a cache hit the cached bytes are written to [outputPath] and no
+  /// network request is made. On a cache miss the file is streamed to
+  /// disk by the underlying repository and is **not** added to the cache
+  /// (would require reading the whole file back into memory). Use
+  /// [getBlob] when in-memory caching is desired. To opt out of caching
+  /// entirely use a `NoopBlobCacheManager` in [NdkConfig].
   Future<void> downloadBlobToFile({
     required String sha256,
     required String outputPath,
@@ -317,6 +371,12 @@ class Blossom {
     String? pubkeyToFetchUserServerList,
     EventSigner? customSigner,
   }) async {
+    final cached = await _blobCache.getBlob(sha256);
+    if (cached != null) {
+      await _fileIO.writeFile(outputPath, cached.data);
+      return;
+    }
+
     Nip01Event? myAuthorization;
     Nip01Event? signedAuthorization;
 
@@ -524,12 +584,17 @@ class Blossom {
   /// if [serverUrls] is null, the userServerList is fetched from nostr. \
   /// if the pukey has no UserServerList (kind: 10063), throws an error \
   /// the current signer is used to sign the request, or [customSigner] if provided \
-  /// if no signer is available, a temporary signer is created
+  /// if no signer is available, a temporary signer is created \
+  /// \
+  /// The local [BlobCacheManager] entry for this sha256 is also removed
+  /// so subsequent reads do not serve stale bytes.
   Future<List<BlobDeleteResult>> deleteBlob({
     required String sha256,
     List<String>? serverUrls,
     EventSigner? customSigner,
   }) async {
+    await _blobCache.removeBlob(sha256);
+
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     final signer = _getSigner(customSigner);
