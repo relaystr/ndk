@@ -270,21 +270,15 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   Future<void> saveEvent(Nip01Event event) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
-    final existingEvent = eventBox
-        .query(DbNip01Event_.nostrId.equals(event.id))
-        .build()
-        .findFirst();
-    if (existingEvent != null) {
-      eventBox.remove(existingEvent.dbId);
-    }
-    eventBox.put(DbNip01Event.fromNdk(event));
+    await eventBox.putAsync(DbNip01Event.fromNdk(event), mode: PutMode.put);
   }
 
   @override
   Future<void> saveEvents(List<Nip01Event> events) async {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
-    eventBox.putMany(events.map((e) => DbNip01Event.fromNdk(e)).toList());
+    await eventBox
+        .putManyAsync(events.map((e) => DbNip01Event.fromNdk(e)).toList());
   }
 
   @override
@@ -303,7 +297,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
         metadata.updatedAt! < existingMetadatas[0].updatedAt!) {
       return;
     }
-    metadataBox.put(DbMetadata.fromNdk(metadata));
+    metadataBox.putAsync(DbMetadata.fromNdk(metadata));
   }
 
   @override
@@ -608,7 +602,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
         nip05.networkFetchTime! < existing[0].networkFetchTime!) {
       return;
     }
-    box.put(DbNip05.fromNdk(nip05));
+    await box.putAsync(DbNip05.fromNdk(nip05));
   }
 
   @override
@@ -628,7 +622,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     if (existing != null) {
       box.remove(existing.dbId);
     }
-    box.put(DbRelaySet.fromNdk(relaySet));
+    await box.putAsync(DbRelaySet.fromNdk(relaySet));
   }
 
   @override
@@ -643,11 +637,12 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     if (existingUserRelayList != null) {
       userRelayListBox.remove(existingUserRelayList.dbId);
     }
-    userRelayListBox.put(DbUserRelayList.fromNdk(userRelayList));
+    await userRelayListBox.putAsync(DbUserRelayList.fromNdk(userRelayList));
   }
 
   @override
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists) async {
+    await dbRdy;
     final wait = <Future>[];
     for (final userRelayList in userRelayLists) {
       wait.add(saveUserRelayList(userRelayList));
@@ -714,7 +709,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       FilterFetchedRangeRecord record) async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
-    box.put(DbFilterFetchedRangeRecord.fromNdk(record));
+    await box.putAsync(DbFilterFetchedRangeRecord.fromNdk(record));
   }
 
   @override
@@ -722,7 +717,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       List<FilterFetchedRangeRecord> records) async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
-    box.putMany(
+    await box.putManyAsync(
         records.map((r) => DbFilterFetchedRangeRecord.fromNdk(r)).toList());
   }
 
@@ -810,7 +805,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   Future<void> removeAllFilterFetchedRangeRecords() async {
     await dbRdy;
     final box = _objectBox.store.box<DbFilterFetchedRangeRecord>();
-    box.removeAll();
+    await box.removeAll();
   }
 
   @override
@@ -911,7 +906,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveKeyset(CahsuKeyset keyset) async {
-    _objectBox.store.box<DbWalletCahsuKeyset>().put(
+    await _objectBox.store.box<DbWalletCahsuKeyset>().putAsync(
           DbWalletCahsuKeyset.fromNdk(keyset),
         );
     return Future.value();
