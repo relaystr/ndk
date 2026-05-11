@@ -12,7 +12,7 @@ import '../bunkers/models/nostr_connect.dart';
 /// A usecase that handles accounts
 class Accounts {
   /// Factory for creating EventSigner instances
-  final EventSignerFactory eventSignerFactory;
+  final LocalEventSignerFactory eventSignerFactory;
 
   /// pubKey -> Account
   final Map<String, Account> accounts = {};
@@ -36,7 +36,8 @@ class Accounts {
     addAccount(
         pubkey: pubkey,
         type: AccountType.privateKey,
-        signer: eventSignerFactory(privateKey: privkey, publicKey: pubkey));
+        signer:
+            eventSignerFactory.create(privateKey: privkey, publicKey: pubkey));
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
@@ -54,7 +55,7 @@ class Accounts {
     addAccount(
         pubkey: pubkey,
         type: AccountType.publicKey,
-        signer: eventSignerFactory(privateKey: null, publicKey: pubkey));
+        signer: eventSignerFactory.create(privateKey: null, publicKey: pubkey));
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }

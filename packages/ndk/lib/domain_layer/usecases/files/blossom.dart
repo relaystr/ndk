@@ -31,13 +31,13 @@ class Blossom {
   final BlossomUserServerList _userServerList;
   final BlossomRepository _blossomImpl;
   final Accounts _accounts;
-  final EventSignerFactory _eventSignerFactory;
+  final LocalEventSignerFactory _eventSignerFactory;
 
   Blossom({
     required BlossomUserServerList blossomUserServerList,
     required BlossomRepository blossomRepository,
     required Accounts accounts,
-    required EventSignerFactory eventSignerFactory,
+    required LocalEventSignerFactory eventSignerFactory,
   })  : _accounts = accounts,
         _userServerList = blossomUserServerList,
         _blossomImpl = blossomRepository,
@@ -54,8 +54,8 @@ class Blossom {
 
     // Create a temporary signer if no account is logged in
     final keyPair = Bip340.generatePrivateKey();
-    return _eventSignerFactory(
-      privateKey: keyPair.privateKey,
+    return _eventSignerFactory.create(
+      privateKey: keyPair.privateKey!,
       publicKey: keyPair.publicKey,
     );
   }

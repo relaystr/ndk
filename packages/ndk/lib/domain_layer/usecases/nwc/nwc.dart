@@ -43,13 +43,13 @@ class Nwc {
 
   final Requests _requests;
   final Broadcast _broadcast;
-  final EventSignerFactory _eventSignerFactory;
+  final LocalEventSignerFactory _eventSignerFactory;
 
   /// main constructor
   Nwc({
     required Requests requests,
     required Broadcast broadcast,
-    required EventSignerFactory eventSignerFactory,
+    required LocalEventSignerFactory eventSignerFactory,
   })  : _requests = requests,
         _broadcast = broadcast,
         _eventSignerFactory = eventSignerFactory;

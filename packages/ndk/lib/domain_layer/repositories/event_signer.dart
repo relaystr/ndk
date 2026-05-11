@@ -1,11 +1,32 @@
 import '../entities/nip_01_event.dart';
 import '../entities/pending_signer_request.dart';
 
-/// Factory function type for creating EventSigner instances
-typedef EventSignerFactory = EventSigner Function({
-  String? privateKey,
-  required String publicKey,
-});
+/// Factory function for creating EventSigner instances
+///! If pubklicKey is not provided, it must be derived from the privateKey!
+abstract class LocalEventSignerFactory {
+  /// Creates an EventSigner instance.
+  ///
+  /// If [publicKey] is null, implementations MUST derive it from [privateKey].
+  /// At least one of [privateKey] or [publicKey] must be provided!
+  EventSigner create({
+    String? privateKey,
+    String? publicKey,
+  });
+
+  /// Derives a public key from a private key.
+  /// Implementations MUST provide the derivation logic.
+  String derivePublicKey(String privateKey);
+
+  /// Generates a new keypair.
+  /// Returns a record with (privateKey, publicKey).
+  (String privateKey, String publicKey) generateKeyPair();
+
+  /// Generates a new EventSigner with a fresh keypair.
+  EventSigner createWithNewKeyPair() {
+    final (privateKey, publicKey) = generateKeyPair();
+    return create(privateKey: privateKey, publicKey: publicKey);
+  }
+}
 
 abstract class EventSigner {
   /// Signs the given event and returns the signed event

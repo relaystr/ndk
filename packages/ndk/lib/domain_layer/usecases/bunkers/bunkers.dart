@@ -7,7 +7,6 @@ import '../../../data_layer/repositories/signers/nip46_event_signer.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 import 'models/bunker_request.dart';
 import 'models/bunker_connection.dart';
-import '../../../shared/nips/nip01/bip340.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../broadcast/broadcast.dart';
@@ -17,14 +16,14 @@ import '../requests/requests.dart';
 class Bunkers {
   final Broadcast _broadcast;
   final Requests _requests;
-  final EventSignerFactory _eventSignerFactory;
+  final LocalEventSignerFactory _eventSignerFactory;
 
   static const int kMaxWaitingTimeForConnectionSeconds = 600;
 
   Bunkers({
     required Broadcast broadcast,
     required Requests requests,
-    required EventSignerFactory eventSignerFactory,
+    required LocalEventSignerFactory eventSignerFactory,
   })  : _broadcast = broadcast,
         _requests = requests,
         _eventSignerFactory = eventSignerFactory;
@@ -52,10 +51,11 @@ class Bunkers {
       throw ArgumentError('Secret parameter is required in bunker URL');
     }
 
-    final keyPair = Bip340.generatePrivateKey();
-    final localEventSigner = _eventSignerFactory(
-      privateKey: keyPair.privateKey,
-      publicKey: keyPair.publicKey,
+    final keyPair = _eventSignerFactory.generateKeyPair();
+
+    final localEventSigner = _eventSignerFactory.create(
+      privateKey: keyPair.$1,
+      publicKey: keyPair.$2,
     );
 
     final request = BunkerRequest(
@@ -119,7 +119,7 @@ class Bunkers {
 
       if (response["result"] == "ack") {
         result = BunkerConnection(
-          privateKey: keyPair.privateKey!,
+          privateKey: keyPair.$1,
           remotePubkey: remotePubkey,
           relays: relays,
         );
@@ -144,8 +144,8 @@ class Bunkers {
     }
 
     final keyPair = nostrConnect.keyPair;
-    final localEventSigner = _eventSignerFactory(
-      privateKey: keyPair.privateKey,
+    final localEventSigner = _eventSignerFactory.create(
+      privateKey: keyPair.privateKey!,
       publicKey: keyPair.publicKey,
     );
 

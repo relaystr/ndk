@@ -31,7 +31,7 @@ class Nip46EventSigner implements EventSigner {
   String? cachedPublicKey;
 
   late EventSigner localEventSigner;
-  final EventSignerFactory eventSignerFactory;
+  final LocalEventSignerFactory eventSignerFactory;
 
   Nip46EventSigner({
     required this.connection,
@@ -49,8 +49,8 @@ class Nip46EventSigner implements EventSigner {
 
     final keyPair = KeyPair(privKey, pubKey, privKeyHr, pubKeyHr);
 
-    localEventSigner = eventSignerFactory(
-      privateKey: keyPair.privateKey,
+    localEventSigner = eventSignerFactory.create(
+      privateKey: keyPair.privateKey!,
       publicKey: keyPair.publicKey,
     );
 

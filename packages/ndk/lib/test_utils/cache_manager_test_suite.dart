@@ -64,11 +64,7 @@ void runCacheManagerTestSuite({
   required CacheManagerFactory createCacheManager,
   CacheManagerTearDown? cleanUp,
 }) {
-  final eventSignerFactory = ({
-    String? privateKey,
-    required String publicKey,
-  }) =>
-      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+  final eventSignerFactory = Bip340EventSignerFactory();
 
   group('$name CacheManager Test Suite', () {
     late CacheManager cacheManager;
@@ -126,7 +122,7 @@ void runCacheManagerTestSuite({
 // ============================================================================
 
 void _runEventTests(CacheManager Function() getCacheManager,
-    EventSignerFactory eventSignerFactory) {
+    LocalEventSignerFactory eventSignerFactory) {
   test('saveEvent and loadEvent', () async {
     final cacheManager = getCacheManager();
     final event = Nip01Event(
@@ -396,11 +392,11 @@ void _runEventTests(CacheManager Function() getCacheManager,
     final key1 = Bip340.generatePrivateKey();
     final key2 = Bip340.generatePrivateKey();
     final key3 = Bip340.generatePrivateKey();
-    final signer1 = eventSignerFactory(
+    final signer1 = eventSignerFactory.create(
         privateKey: key1.privateKey, publicKey: key1.publicKey);
-    final signer2 = eventSignerFactory(
+    final signer2 = eventSignerFactory.create(
         privateKey: key2.privateKey, publicKey: key2.publicKey);
-    final signer3 = eventSignerFactory(
+    final signer3 = eventSignerFactory.create(
         privateKey: key3.privateKey, publicKey: key3.publicKey);
 
     final event1 = await signer1.sign(Nip01Event(

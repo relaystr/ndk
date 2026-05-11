@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:bip340/bip340.dart';
 import 'package:ndk/ndk.dart';
 import 'nwc_notification.dart';
 
@@ -60,13 +59,12 @@ class NwcConnection {
   List<String> supportedEncryptions = ["nip04"];
 
   Set<String> permissions = {};
-  final EventSignerFactory eventSignerFactory;
+  final LocalEventSignerFactory eventSignerFactory;
 
   NwcConnection(this.uri, {required this.eventSignerFactory});
 
   EventSigner get signer {
-    _signer ??= eventSignerFactory(
-        privateKey: uri.secret, publicKey: getPublicKey(uri.secret));
+    _signer ??= eventSignerFactory.create(privateKey: uri.secret);
     return _signer!;
   }
 

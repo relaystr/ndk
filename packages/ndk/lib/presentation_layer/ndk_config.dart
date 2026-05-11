@@ -28,7 +28,7 @@ class NdkConfig {
   WalletsRepo? walletsRepo;
 
   /// Factory for creating EventSigner instances. Defaults to Bip340EventSigner.
-  EventSignerFactory eventSignerFactory;
+  LocalEventSignerFactory eventSignerFactory;
 
   /// The engine mode to use for Nostr network operations (inbox/outbox mode).
   ///
@@ -104,7 +104,7 @@ class NdkConfig {
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
-    this.eventSignerFactory = bip340EventSignerFactory,
+    this.eventSignerFactory = const Bip340EventSignerFactory(),
     this.walletsRepo,
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],

@@ -20,7 +20,7 @@ class Lists {
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
   final Accounts _accounts;
-  final EventSignerFactory _eventSignerFactory;
+  final LocalEventSignerFactory _eventSignerFactory;
 
   /// Creates a Lists usecase instance.
   Lists({
@@ -28,7 +28,7 @@ class Lists {
     required CacheManager cacheManager,
     required Broadcast broadcast,
     required Accounts accounts,
-    required EventSignerFactory eventSignerFactory,
+    required LocalEventSignerFactory eventSignerFactory,
   })  : _cacheManager = cacheManager,
         _requests = requests,
         _broadcast = broadcast,
@@ -114,7 +114,8 @@ class Lists {
     bool forceRefresh = false,
     Duration timeout = const Duration(seconds: 5),
   }) async {
-    final signer = _eventSignerFactory(privateKey: null, publicKey: publicKey);
+    final signer =
+        _eventSignerFactory.create(privateKey: null, publicKey: publicKey);
 
     Nip51List? list =
         !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
@@ -385,7 +386,8 @@ class Lists {
       }
       mySigner = _eventSigner!;
     } else {
-      mySigner = _eventSignerFactory(privateKey: null, publicKey: publicKey);
+      mySigner =
+          _eventSignerFactory.create(privateKey: null, publicKey: publicKey);
     }
 
     return _getSets(kind, mySigner, forceRefresh: forceRefresh);
@@ -658,7 +660,7 @@ class Lists {
     bool forceRefresh = false,
   }) async {
     final mySigner =
-        _eventSignerFactory(privateKey: null, publicKey: publicKey);
+        _eventSignerFactory.create(privateKey: null, publicKey: publicKey);
     return getNip51RelaySets(kind, mySigner, forceRefresh: forceRefresh);
   }
 
