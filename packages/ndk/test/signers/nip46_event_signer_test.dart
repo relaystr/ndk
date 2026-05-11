@@ -6,11 +6,7 @@ import 'package:test/test.dart';
 import '../mocks/mock_relay.dart';
 
 void main() {
-  EventSigner eventSignerFactory({
-    String? privateKey,
-    required String publicKey,
-  }) =>
-      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+  final eventSignerFactory = Bip340EventSignerFactory();
 
   group('Nip46EventSigner with MockRelay', () {
     late Nip46EventSigner signer;
