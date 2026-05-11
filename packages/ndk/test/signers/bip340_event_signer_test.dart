@@ -236,10 +236,10 @@ void main() {
         await signer.dispose();
       });
 
-      test('throws exception when neither key is provided', () {
+      test('throws ArgumentError when neither key is provided', () {
         expect(
           () => factory.create(),
-          throwsException,
+          throwsArgumentError,
         );
       });
 

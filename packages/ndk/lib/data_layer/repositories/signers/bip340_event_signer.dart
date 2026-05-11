@@ -20,7 +20,7 @@ class Bip340EventSignerFactory implements LocalEventSignerFactory {
         publicKey ?? (privateKey != null ? derivePublicKey(privateKey) : null);
 
     if (derivedPublicKey == null) {
-      throw Exception('Either publicKey or privateKey must be provided');
+      throw ArgumentError('Either publicKey or privateKey must be provided');
     }
 
     return Bip340EventSigner(

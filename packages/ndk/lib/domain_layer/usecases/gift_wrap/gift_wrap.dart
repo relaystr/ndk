@@ -234,7 +234,6 @@ class GiftWrap {
     required LocalEventSignerFactory eventSignerFactory,
   }) async {
     // Generate a random one-time-use keypair
-    //final ephemeralKeys = Bip340.generatePrivateKey();
     final ephemeralSigner = eventSignerFactory.createWithNewKeyPair();
 
     final encryptedSeal = await ephemeralSigner.encryptNip44(
