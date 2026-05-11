@@ -2,7 +2,7 @@ import '../entities/nip_01_event.dart';
 import '../entities/pending_signer_request.dart';
 
 /// Factory function for creating EventSigner instances
-///! If pubklicKey is not provided, it must be derived from the privateKey!
+///! If publicKey is not provided, it must be derived from the privateKey!
 abstract class LocalEventSignerFactory {
   /// Creates an EventSigner instance.
   ///
