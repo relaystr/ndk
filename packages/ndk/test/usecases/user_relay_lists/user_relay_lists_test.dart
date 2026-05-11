@@ -88,6 +88,30 @@ void main() async {
       // cache
       expect(rcv, equals(cache0));
     });
+    test('getDmRelays - returns null when no kind 10050 found', () async {
+      final dmRelays =
+          await ndk.userRelayLists.getDmRelays(key1.publicKey);
+      expect(dmRelays, isNull);
+    });
+
+    test('getDmRelays - reads from cache', () async {
+      final event = Nip01Event(
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        pubKey: key0.publicKey,
+        kind: Nip51List.kDmRelays,
+        content: "",
+        tags: [
+          ['relay', 'wss://dm1.example'],
+          ['relay', 'wss://dm2.example'],
+        ],
+      );
+      await ndk.config.cache.saveEvent(event);
+
+      final dmRelays =
+          await ndk.userRelayLists.getDmRelays(key0.publicKey);
+      expect(dmRelays, ['wss://dm1.example', 'wss://dm2.example']);
+    });
+
     test('broadcastAdd/RemoveNip65Relay', () async {
       ndk.accounts
           .loginPrivateKey(pubkey: key3.publicKey, privkey: key3.privateKey!);

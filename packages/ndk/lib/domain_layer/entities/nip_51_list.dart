@@ -16,6 +16,7 @@ class Nip51List {
   static const int kSearchRelays = 10007;
   static const int kInterests = 10015;
   static const int kEmojis = 10030;
+  static const int kDmRelays = 10050;
 
   static const int kFollowSet = 30000;
   static const int kRelaySet = 30002;
@@ -50,6 +51,7 @@ class Nip51List {
     kSearchRelays,
     kInterests,
     kEmojis,
+    kDmRelays,
     kFollowSet,
     kRelaySet,
     kBookmarksSet,
