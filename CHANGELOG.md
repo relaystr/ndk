@@ -15,6 +15,72 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.8.2-dev.9`](#ndk---v082-dev9)
+ - [`ndk_drift` - `v0.1.1-dev.9`](#ndk_drift---v011-dev9)
+ - [`ndk_flutter` - `v0.8.2-dev.9`](#ndk_flutter---v082-dev9)
+ - [`ndk_objectbox` - `v0.2.11-dev.9`](#ndk_objectbox---v0211-dev9)
+ - [`nip07_event_signer` - `v1.0.10-dev.9`](#nip07_event_signer---v1010-dev9)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.10-dev.9`
+
+---
+
+#### `ndk` - `v0.8.2-dev.9`
+
+ - **REVERT**: seperate cache manger package.
+ - **REFACTOR**: use LocalEventSignerFactory for creating signers, keypairs.
+ - **REFACTOR**: event signer factory.
+ - **FIX**(test): avoid same-second collision in broadcast metadata test.
+ - **FIX**(test): apply NIP-01 replacement in MockRelay.
+ - **FIX**: use ephemeralSigner obj when available.
+ - **FIX**: use factory signer.
+ - **FIX**: return the complete signed event from remote signer.
+ - **FIX**: parse public tags on private list.
+ - **FIX**: update tearDown to cleanUp in cache manager test suite documentation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: remove test suite dependency from ndk (cycle).
+ - **FIX**: repeated listen breaks stream connection.
+ - **FEAT**: add getDmRelays for NIP-17 DM relay list (kind 10050).
+ - **FEAT**: add writeUrls getter to UserRelayList.
+ - **FEAT**: enhance Sembast support with platform-specific implementations and error handling.
+ - **FEAT**: add GiftWrapUnwrapResult for enhanced gift wrap unwrapping with signature verification.
+ - **FEAT**: implement conditional imports.
+ - **FEAT**: add web support to SembastCacheManager.
+
+#### `ndk_drift` - `v0.1.1-dev.9`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
+#### `ndk_flutter` - `v0.8.2-dev.9`
+
+ - **REFACTOR**: PlatformEventVerifier via conditional imports.
+ - **FIX**: use factory signer.
+ - **FEAT**(ndk_flutter): add PlatformEventVerifier.
+ - **FEAT**: implement NipAvatar utility to standardize initial generation and color selection for profiles and banners.
+
+#### `ndk_objectbox` - `v0.2.11-dev.9`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
+
+## 2026-05-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.8.2-dev.8`](#ndk---v082-dev8)
  - [`ndk_drift` - `v0.1.1-dev.8`](#ndk_drift---v011-dev8)
  - [`ndk_flutter` - `v0.8.2-dev.8`](#ndk_flutter---v082-dev8)

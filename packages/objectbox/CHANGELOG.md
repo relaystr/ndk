@@ -1,3 +1,8 @@
+## 0.2.11-dev.9
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
 ## 0.2.11-dev.8
 
  - **REVERT**: seperate cache manger package.
