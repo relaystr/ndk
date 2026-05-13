@@ -1,19 +1,25 @@
 import 'dart:convert';
 
 import '../../../data_layer/models/nip_01_event_model.dart';
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../../entities/gift_wrap_unwrap_result.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
+import '../../repositories/event_verifier.dart';
 import '../accounts/accounts.dart';
-import '../../../shared/nips/nip01/bip340.dart';
 
 class GiftWrap {
   static const int kSealEventKind = 13;
   static const int kGiftWrapEventkind = 1059;
 
   final Accounts accounts;
+  final EventVerifier eventVerifier;
+  final LocalEventSignerFactory eventSignerFactory;
 
-  GiftWrap({required this.accounts});
+  GiftWrap({
+    required this.accounts,
+    required this.eventVerifier,
+    required this.eventSignerFactory,
+  });
 
   /// Returns the signer to use for signing operations.
   /// Uses [customSigner] if provided, otherwise falls back to logged-in account's signer.
@@ -47,17 +53,20 @@ class GiftWrap {
     final giftWrap = await wrapEvent(
       recipientPublicKey: recipientPubkey,
       sealEvent: sealedRumor,
+      eventSignerFactory: eventSignerFactory,
     );
     return giftWrap;
   }
 
-  /// Unwraps a gift-wrapped event to retrieve the original rumor \
-  /// [giftWrap] the gift-wrapped event to unwrap \
-  /// [customSigner] optional signer to use instead of the logged-in account's signer \
+  /// Unwraps a gift-wrapped event to retrieve the original rumor
+  /// [giftWrap] the gift-wrapped event to unwrap
+  /// [customSigner] optional signer to use instead of the logged-in account's signer
+  /// [verifySignature] whether to verify the seal's signature (default: true)
   /// [returns] the original rumor event
   Future<Nip01Event> fromGiftWrap({
     required Nip01Event giftWrap,
     EventSigner? customSigner,
+    bool verifySignature = true,
   }) async {
     if (giftWrap.kind != kGiftWrapEventkind) {
       throw Exception("Event is not a gift wrap (kind:1059)");
@@ -70,9 +79,50 @@ class GiftWrap {
     final rumor = await unsealRumor(
       sealedEvent: sealEvent,
       customSigner: customSigner,
+      verifySignature: verifySignature,
     );
 
     return rumor;
+  }
+
+  /// Unwraps a gift-wrapped event with signature verification information
+  ///
+  /// This method returns a [GiftWrapUnwrapResult] containing the seal, rumor,
+  /// and verification status. Unlike [fromGiftWrap], this method does not throw
+  /// exceptions for signature verification failures - instead, it returns the
+  /// verification status in the result.
+  ///
+  /// [giftWrap] the gift-wrapped event to unwrap
+  /// [customSigner] optional signer to use instead of the logged-in account's signer
+  /// [returns] a [GiftWrapUnwrapResult] containing the seal, rumor, and verification status
+  Future<GiftWrapUnwrapResult> fromGiftWrapWithInfo({
+    required Nip01Event giftWrap,
+    EventSigner? customSigner,
+  }) async {
+    if (giftWrap.kind != kGiftWrapEventkind) {
+      throw Exception("Event is not a gift wrap (kind:1059)");
+    }
+
+    final sealEvent = await unwrapEvent(
+      wrappedEvent: giftWrap,
+      customSigner: customSigner,
+    );
+
+    // Always verify signature, but capture the result
+    final isSealSignatureValid = await eventVerifier.verify(sealEvent);
+
+    // Decrypt the rumor regardless of signature verification
+    final rumor = await unsealRumor(
+      sealedEvent: sealEvent,
+      customSigner: customSigner,
+      verifySignature: false, // Don't verify again
+    );
+
+    return GiftWrapUnwrapResult(
+      isSealSignatureValid: isSealSignatureValid,
+      seal: sealEvent,
+      rumor: rumor,
+    );
   }
 
   /// Creates a rumor (unsigned event)
@@ -126,16 +176,33 @@ class GiftWrap {
       content: encryptedContent,
     );
 
-    return sealEvent;
+    // Sign the seal event (required by NIP-59)
+    final signedSeal = await signer.sign(sealEvent);
+
+    return signedSeal;
   }
 
   /// Unseals a sealed event to retrieve the rumor
   ///
+  /// [sealedEvent] the sealed event (kind:13) to unseal
   /// [customSigner] optional signer to use instead of the logged-in account's signer
+  /// [verifySignature] whether to verify the seal's signature (default: true)
+  /// [returns] the original rumor event
+  ///
+  /// Throws [Exception] if signature verification fails and verifySignature is true
   Future<Nip01Event> unsealRumor({
     required Nip01Event sealedEvent,
     EventSigner? customSigner,
+    bool verifySignature = true,
   }) async {
+    // Verify seal signature if requested
+    if (verifySignature) {
+      final isValid = await eventVerifier.verify(sealedEvent);
+      if (!isValid) {
+        throw Exception("Seal event signature is invalid");
+      }
+    }
+
     final signer = _getSigner(customSigner: customSigner);
 
     // Now decrypt the seal to get the rumor
@@ -158,18 +225,16 @@ class GiftWrap {
   /// wraps a sealed msg \
   /// [recipientPublicKey] the reciever of the rumor \
   /// [sealEvent] not wrapped event \
+  /// [eventSignerFactory] factory to create event signers \
   /// [returns] giftWrapEvent
   static Future<Nip01Event> wrapEvent({
     required String recipientPublicKey,
     required Nip01Event sealEvent,
     List<List<String>>? additionalTags,
+    required LocalEventSignerFactory eventSignerFactory,
   }) async {
     // Generate a random one-time-use keypair
-    final ephemeralKeys = Bip340.generatePrivateKey();
-    final ephemeralSigner = Bip340EventSigner(
-      privateKey: ephemeralKeys.privateKey,
-      publicKey: ephemeralKeys.publicKey,
-    );
+    final ephemeralSigner = eventSignerFactory.createWithNewKeyPair();
 
     final encryptedSeal = await ephemeralSigner.encryptNip44(
       plaintext: Nip01EventModel.fromEntity(sealEvent).toJsonString(),
@@ -197,13 +262,10 @@ class GiftWrap {
       content: encryptedSeal,
       tags: tags,
       createdAt: now,
-      pubKey: ephemeralKeys.publicKey,
+      pubKey: ephemeralSigner.getPublicKey(),
     );
 
-    // Sign with ephemeral key
-    final signature = Bip340.sign(giftWrapEvent.id, ephemeralKeys.privateKey!);
-
-    final gWEventSigned = giftWrapEvent.copyWith(sig: signature);
+    final gWEventSigned = await ephemeralSigner.sign(giftWrapEvent);
 
     return gWEventSigned;
   }

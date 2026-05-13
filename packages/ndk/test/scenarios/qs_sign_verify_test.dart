@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print, non_constant_identifier_names
 
 import 'package:ndk/data_layer/repositories/signers/qs_rust_event_signer.dart';
-import 'package:ndk/data_layer/repositories/verifiers/qs_rust_event_verifier.dart';
+import 'package:ndk/data_layer/repositories/verifiers/qs_rust_event_verifier_native.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 

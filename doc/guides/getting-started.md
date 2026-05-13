@@ -27,7 +27,9 @@ If you code with AI then your AI must read https://github.com/relaystr/ndk/blob/
 !!!
 
 !!!
-We strongly recommend using `RustEventVerifier()` for client applications. It uses a separate thread for signature verification and is therefore more performant. \
+We strongly recommend using `RustEventVerifier()` for client applications. It uses a separate thread for signature verification and is therefore more performant.
+
+For **Flutter** apps, use `PlatformEventVerifier` from the `ndk_flutter` package. It automatically picks `WebEventVerifier` on web (native Web Crypto APIs) and `RustEventVerifier` on native platforms.
 !!!
 
 ### Prerequisites for using the rust verifier

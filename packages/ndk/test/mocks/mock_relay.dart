@@ -21,7 +21,8 @@ class MockRelay {
   Map<KeyPair, Nip01Event>? textNotes;
   Map<String, Nip01Event> _contactLists = {};
   Map<String, Nip01Event> _metadatas = {};
-  Map<String, Nip01Event> _nip85Assertions = {}; // NIP-85 assertions keyed by "author:dTag"
+  Map<String, Nip01Event> _nip85Assertions =
+      {}; // NIP-85 assertions keyed by "author:dTag"
   final Set<Nip01Event> _storedEvents = {}; // Store received events
 
   // Track all connected clients with their subscriptions
@@ -34,6 +35,8 @@ class MockRelay {
   bool sendMalformedEvents;
   String? customWelcomeMessage;
   int? maxEventsPerRequest;
+  int signEventCreatedAtOffsetSeconds;
+  String? signEventContentOverride;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -59,6 +62,8 @@ class MockRelay {
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
     this.maxEventsPerRequest,
+    this.signEventCreatedAtOffsetSeconds = 0,
+    this.signEventContentOverride,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -163,9 +168,15 @@ class MockRelay {
               return;
             }
             if (newEvent.kind == ContactList.kKind) {
-              _contactLists[newEvent.pubKey] = newEvent;
+              final existing = _contactLists[newEvent.pubKey];
+              if (existing == null || _shouldReplace(existing, newEvent)) {
+                _contactLists[newEvent.pubKey] = newEvent;
+              }
             } else if (newEvent.kind == Metadata.kKind) {
-              _metadatas[newEvent.pubKey] = newEvent;
+              final existing = _metadatas[newEvent.pubKey];
+              if (existing == null || _shouldReplace(existing, newEvent)) {
+                _metadatas[newEvent.pubKey] = newEvent;
+              }
             } else if (newEvent.kind == Deletion.kKind) {
               final eventIdsToDelete = newEvent.getTags("e");
               for (final idToDelete in eventIdsToDelete) {
@@ -185,6 +196,35 @@ class MockRelay {
               // Also handle NIP-46 if targeting our mock signer
               if (newEvent.kind == kNip46Kind) {
                 _handleNip46Request(newEvent, webSocket);
+              }
+            } else if (_isReplaceableKind(newEvent.kind)) {
+              // NIP-01 replaceable: only one event per (pubkey, kind)
+              final existing = _storedEvents.where((e) =>
+                  e.pubKey == newEvent.pubKey && e.kind == newEvent.kind);
+              if (existing.isEmpty) {
+                _storedEvents.add(newEvent);
+              } else {
+                final current = existing.first;
+                if (_shouldReplace(current, newEvent)) {
+                  _storedEvents.remove(current);
+                  _storedEvents.add(newEvent);
+                }
+              }
+            } else if (_isAddressableKind(newEvent.kind)) {
+              // NIP-01 addressable: only one event per (pubkey, kind, d-tag)
+              final dTag = newEvent.getDtag() ?? '';
+              final existing = _storedEvents.where((e) =>
+                  e.pubKey == newEvent.pubKey &&
+                  e.kind == newEvent.kind &&
+                  (e.getDtag() ?? '') == dTag);
+              if (existing.isEmpty) {
+                _storedEvents.add(newEvent);
+              } else {
+                final current = existing.first;
+                if (_shouldReplace(current, newEvent)) {
+                  _storedEvents.remove(current);
+                  _storedEvents.add(newEvent);
+                }
               }
             } else {
               _storedEvents.add(newEvent);
@@ -472,6 +512,24 @@ class MockRelay {
     return kind >= 20000 && kind < 30000;
   }
 
+  /// Check if a kind is replaceable (10000-19999) per NIP-01.
+  /// Kinds 0 and 3 are also replaceable but handled via dedicated maps.
+  bool _isReplaceableKind(int kind) {
+    return kind >= 10000 && kind < 20000;
+  }
+
+  /// Check if a kind is addressable (30000-39999) per NIP-01
+  bool _isAddressableKind(int kind) {
+    return kind >= 30000 && kind < 40000;
+  }
+
+  /// NIP-01 replacement rule: newer created_at wins; on tie, lower id wins.
+  bool _shouldReplace(Nip01Event existing, Nip01Event incoming) {
+    if (incoming.createdAt > existing.createdAt) return true;
+    if (incoming.createdAt < existing.createdAt) return false;
+    return incoming.id.compareTo(existing.id) < 0;
+  }
+
   /// Broadcast an event to all clients with matching subscriptions
   void _broadcastEventToSubscriptions(Nip01Event event) {
     for (var clientEntry in _clientSubscriptions.entries) {
@@ -678,9 +736,13 @@ class MockRelay {
           final Nip01Event eventToSign = Nip01Event(
             pubKey: remoteSignerPublicKey,
             kind: eventData["kind"] ?? 1,
-            tags: List<List<String>>.from(eventData["tags"] ?? []),
-            content: eventData["content"] ?? "",
-            createdAt: eventData["created_at"] ?? eventData["createdAt"] ?? 0,
+            tags: (eventData["tags"] as List<dynamic>? ?? [])
+                .map((tag) => List<String>.from(tag))
+                .toList(),
+            content: signEventContentOverride ?? eventData["content"] ?? "",
+            createdAt:
+                (eventData["created_at"] ?? eventData["createdAt"] ?? 0) +
+                    signEventCreatedAtOffsetSeconds,
           );
 
           final Nip01Event signedEvent = Nip01Utils.signWithPrivateKey(

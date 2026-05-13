@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'main.dart';
 
 class WalletsPage extends StatefulWidget {
-  const WalletsPage({super.key});
+  final String? initialUrl;
+
+  const WalletsPage({super.key, this.initialUrl});
 
   @override
   State<WalletsPage> createState() => WalletsPageState();
@@ -20,6 +23,11 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _appLifecycleState = WidgetsBinding.instance.lifecycleState;
+    if (widget.initialUrl != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        onProtocolUrlReceived(widget.initialUrl!);
+      });
+    }
   }
 
   @override
@@ -59,6 +67,7 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text(context.l10n.tabWallets)),
       body: NWallets(key: _walletsKey, ndkFlutter: ndkFlutter),
     );
   }

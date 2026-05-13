@@ -1,3 +1,29 @@
+## 0.8.2-dev.8
+
+ - **REFACTOR**: PlatformEventVerifier via conditional imports.
+ - **FIX**: use factory signer.
+ - **FEAT**(ndk_flutter): add PlatformEventVerifier.
+ - **FEAT**: implement NipAvatar utility to standardize initial generation and color selection for profiles and banners.
+
+## 0.8.2-dev.7
+
+ - **REFACTOR**: PlatformEventVerifier via conditional imports.
+ - **FIX**: use factory signer.
+ - **FEAT**(ndk_flutter): add PlatformEventVerifier.
+ - **FEAT**: implement NipAvatar utility to standardize initial generation and color selection for profiles and banners.
+
+## 0.8.2-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.8.2-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.8.2-dev.4
+
+ - Update a dependency to the latest release.
+
 ## 0.8.2-dev.3
 
  - **FIX**: validate nsec/npub prefix before decoding. ([ac682700](https://github.com/relaystr/ndk/commit/ac682700b92023de6da0c5e15c248145b13a82db))

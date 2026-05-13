@@ -1,3 +1,25 @@
+## 0.1.1-dev.8
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
+## 0.1.1-dev.7
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: circular dependency embed test suite.
+
+## 0.1.1-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.5
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.4
+
+ - Update a dependency to the latest release.
+
 ## 0.1.1-dev.3
 
  - Update a dependency to the latest release.

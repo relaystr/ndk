@@ -7,9 +7,7 @@ import 'main.dart';
 import 'pending_requests_page.dart';
 
 class AccountsPage extends StatefulWidget {
-  final VoidCallback? onAccountChanged;
-
-  const AccountsPage({super.key, this.onAccountChanged});
+  const AccountsPage({super.key});
 
   @override
   State<AccountsPage> createState() => _AccountsPageState();
@@ -27,7 +25,6 @@ class _AccountsPageState extends State<AccountsPage> {
       onLoggedIn: () {
         if (!mounted) return;
         setState(() {});
-        widget.onAccountChanged?.call();
       },
     );
   }
@@ -62,11 +59,9 @@ class _AccountsPageState extends State<AccountsPage> {
                   ndkFlutter: ndkFlutter,
                   onAccountSwitch: (pubkey) {
                     setState(() {});
-                    widget.onAccountChanged?.call();
                   },
                   onAccountRemove: (pubkey) {
                     setState(() {});
-                    widget.onAccountChanged?.call();
                   },
                 ),
               ),

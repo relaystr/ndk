@@ -2,11 +2,18 @@ import 'dart:convert';
 
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:test/test.dart';
 
 void main() {
+  EventSigner eventSignerFactory({
+    String? privateKey,
+    required String publicKey,
+  }) =>
+      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+
   group('Nip04', () {
     test('decrypt', () async {
       const priv =
@@ -14,7 +21,7 @@ void main() {
       const pub =
           "b1a5c93edcc8d586566fde53a20bdb50049a97b15483cb763854e57016e0fa3d";
 
-      Bip340EventSigner signer = Bip340EventSigner(
+      EventSigner signer = eventSignerFactory(
         privateKey: priv,
         publicKey: pub,
       );
@@ -45,7 +52,7 @@ void main() {
       const pub =
           "b1a5c93edcc8d586566fde53a20bdb50049a97b15483cb763854e57016e0fa3d";
 
-      Bip340EventSigner signer = Bip340EventSigner(
+      EventSigner signer = eventSignerFactory(
         privateKey: priv,
         publicKey: pub,
       );

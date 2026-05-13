@@ -4,6 +4,8 @@ import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/contact_list.dart';
 import '../../entities/filter.dart';
+import '../../entities/nip_01_event.dart';
+import '../../entities/nip_51_list.dart';
 import '../../entities/nip_65.dart';
 import '../../entities/read_write_marker.dart';
 import '../../entities/user_relay_list.dart';
@@ -159,6 +161,56 @@ class UserRelayLists {
       userRelayList = await _cacheManager.loadUserRelayList(pubKey);
     }
     return userRelayList;
+  }
+
+  /// Fetches the DM relay list (NIP-17, kind 10050) for a given user.
+  ///
+  /// Returns the list of relay URLs where the user has indicated they want
+  /// to receive direct messages.
+  ///
+  /// - Returns `null` if the user has not published a kind 10050 event.
+  ///
+  /// [pubKey] the public key of the user whose DM relays to fetch \
+  /// [forceRefresh] if true, bypass cache and query relays directly
+  Future<List<String>?> getDmRelays(
+    String pubKey, {
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh) {
+      final cached = await _cacheManager.loadEvents(
+        pubKeys: [pubKey],
+        kinds: [Nip51List.kDmRelays],
+      );
+      if (cached.isNotEmpty) {
+        cached.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return _extractDmRelayUrls(cached.first);
+      }
+    }
+
+    final events = await _requests.query(
+      name: "dm-relays",
+      filters: [
+        Filter(
+          authors: [pubKey],
+          kinds: [Nip51List.kDmRelays],
+          limit: 1,
+        ),
+      ],
+    ).future;
+
+    if (events.isEmpty) return null;
+
+    events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final latest = events.first;
+    await _cacheManager.saveEvent(latest);
+    return _extractDmRelayUrls(latest);
+  }
+
+  List<String> _extractDmRelayUrls(Nip01Event event) {
+    return event.tags
+        .where((tag) => tag.length >= 2 && tag[0] == Nip51List.kRelay)
+        .map((tag) => tag[1])
+        .toList();
   }
 
   /// *************************************************************************************************

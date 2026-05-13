@@ -1,73 +1,19 @@
-## 1.0.1-dev.12
+## 1.0.1-dev.14
 
- - **FEAT**: change removeEvents to support flexible filtering.
+ - **REVERT**: seperate cache manger package.
+ - **REFACTOR**: rename removeWallet.
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: delete pubspec.lock.
+ - **FIX**: merge assertions events.
+ - **FIX**: add changes to pub.dev changelog.
+ - **FIX**: separate wallets storage operations from cache manager.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: override ndk dependency.
+ - **FIX**: test remove # for tag.
+ - **FEAT**: cashu remove mint info.
+ - **FEAT**: update cache managers to support metadata tags and rawContent fields.
+ - **FEAT**: CashuKeyDerivation support keysets v2.
 
-## 1.0.1-dev.11
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.10
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.9
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.8
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.7
-
- - **FEAT**: add caching support for nip05.resolve() with identifier lookup.
-
-## 1.0.1-dev.6
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.5
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.4
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.3
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.2
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.1
-
- - Update a dependency to the latest release.
-
-## 1.0.1-dev.0
-
- - Update a dependency to the latest release.
-
-## 1.0.0
-
- - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
-
-## 1.0.0-dev.4
-
- - Update a dependency to the latest release.
-
-## 1.0.0-dev.3
-
- - **FIX**: mem cache test.
-
-## 1.0.0-dev.2
-
- - Update a dependency to the latest release.
-
-# Changelog
-
-## 1.0.0-dev.1
-
-- Initial release of ndk_cache_manager_test_suite
+## 1.0.1-dev.13
+ - pub.dev release

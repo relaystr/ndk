@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/data_layer/repositories/signers/qs_rust_event_signer.dart';
 import 'package:ndk/data_layer/repositories/verifiers/qs_rust_event_verifier.dart';
@@ -193,216 +194,248 @@ class _QuantumSecurePageState extends State<QuantumSecurePage> {
       appBar: AppBar(
         title: const Text('Quantum Secure Sign/Verify Demo'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Information text
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'This is an experiment to test the feasibility of Dilithium in Nostr.\n\n'
-                    'Please note that the ID is still generated the conventional way.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[700],
-                          height: 1.5,
-                        ),
-                  ),
+      body: kIsWeb
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        size: 64, color: Colors.orange),
+                    SizedBox(height: 16),
+                    Text(
+                      'Not supported on Web',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'The quantum-secure signer uses native Rust via FFI, '
+                      'which is not available on the web platform.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Configuration Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Configuration',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Level Selector
-                      DropdownButtonFormField<int>(
-                        initialValue: _level,
-                        items: [2, 3, 5].map((level) {
-                          return DropdownMenuItem(
-                            value: level,
-                            child: Text('Level $level'),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() => _level = value!);
-                        },
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Event Count Slider (steps of 1000)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Events to Process: $_eventCount'),
-                          if (_eventCount < 5000)
-                            TextButton(
-                              onPressed: () {
-                                setState(() => _eventCount += 1000);
-                              },
-                              child: const Text('+1000'),
-                            ),
-                        ],
-                      ),
-                      Slider(
-                        value: (_eventCount / 1000).toDouble(),
-                        min: 1,
-                        max: 5,
-                        divisions: 4,
-                        label: '$_eventCount events',
-                        onChanged: (value) {
-                          setState(() => _eventCount = (value * 1000).toInt());
-                        },
-                      ),
-
-                      // Message Input (optional)
-                      TextField(
-                        controller: _messageController,
-                        decoration: const InputDecoration(
-                          labelText:
-                              'Message content (leave empty for default)',
-                          border: OutlineInputBorder(),
+            )
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Information text
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'This is an experiment to test the feasibility of Dilithium in Nostr.\n\n'
+                          'Please note that the ID is still generated the conventional way.',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey[700],
+                                    height: 1.5,
+                                  ),
                         ),
-                        maxLines: 2,
                       ),
+                    ),
 
+                    const SizedBox(height: 16),
+
+                    // Configuration Section
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Configuration',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Level Selector
+                            DropdownButtonFormField<int>(
+                              initialValue: _level,
+                              items: [2, 3, 5].map((level) {
+                                return DropdownMenuItem(
+                                  value: level,
+                                  child: Text('Level $level'),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() => _level = value!);
+                              },
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // Event Count Slider (steps of 1000)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Events to Process: $_eventCount'),
+                                if (_eventCount < 5000)
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() => _eventCount += 1000);
+                                    },
+                                    child: const Text('+1000'),
+                                  ),
+                              ],
+                            ),
+                            Slider(
+                              value: (_eventCount / 1000).toDouble(),
+                              min: 1,
+                              max: 5,
+                              divisions: 4,
+                              label: '$_eventCount events',
+                              onChanged: (value) {
+                                setState(
+                                    () => _eventCount = (value * 1000).toInt());
+                              },
+                            ),
+
+                            // Message Input (optional)
+                            TextField(
+                              controller: _messageController,
+                              decoration: const InputDecoration(
+                                labelText:
+                                    'Message content (leave empty for default)',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 2,
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Generate Button
+                            ElevatedButton.icon(
+                              onPressed: _generateEvents,
+                              icon: const Icon(Icons.arrow_downward),
+                              label: const Text('Generate Events'),
+                            ),
+
+                            if (_hasSignature) const SizedBox(height: 12),
+
+                            // Verify Button
+                            ElevatedButton.icon(
+                              onPressed: _verifyEvents,
+                              icon: const Icon(Icons.arrow_upward),
+                              label: const Text('Verify Events'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Performance Results Section
+                    if (_signTimeMs != null || _verifyTimeMs != null) ...[
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Performance Results',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const Divider(),
+                              if (_signTimeMs != null) ...[
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('Sign Time:'),
+                                      Text(
+                                        '${_signTimeMs!.toStringAsFixed(2)} ms',
+                                        style: const TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              if (_verifyTimeMs != null) ...[
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('Verify Time:'),
+                                      Text(
+                                        '${_verifyTimeMs!.toStringAsFixed(2)} ms',
+                                        style: const TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              if (_failedVerifications != null &&
+                                  _failedVerifications! > 0) ...[
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  child: Text(
+                                    'Failed Verifications: $_failedVerifications',
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 16),
+                    ],
 
-                      // Generate Button
-                      ElevatedButton.icon(
-                        onPressed: _generateEvents,
-                        icon: const Icon(Icons.arrow_downward),
-                        label: const Text('Generate Events'),
-                      ),
-
-                      if (_hasSignature) const SizedBox(height: 12),
-
-                      // Verify Button
-                      ElevatedButton.icon(
-                        onPressed: _verifyEvents,
-                        icon: const Icon(Icons.arrow_upward),
-                        label: const Text('Verify Events'),
+                    // Results Section
+                    if (_lastEventJson != null) ...[
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Last Event JSON',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const Divider(),
+                              SelectableText(
+                                _lastEventJson!,
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Performance Results Section
-              if (_signTimeMs != null || _verifyTimeMs != null) ...[
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Performance Results',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const Divider(),
-                        if (_signTimeMs != null) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Sign Time:'),
-                                Text(
-                                  '${_signTimeMs!.toStringAsFixed(2)} ms',
-                                  style: const TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        if (_verifyTimeMs != null) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Verify Time:'),
-                                Text(
-                                  '${_verifyTimeMs!.toStringAsFixed(2)} ms',
-                                  style: const TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        if (_failedVerifications != null &&
-                            _failedVerifications! > 0) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
-                              'Failed Verifications: $_failedVerifications',
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Results Section
-              if (_lastEventJson != null) ...[
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Last Event JSON',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const Divider(),
-                        SelectableText(
-                          _lastEventJson!,
-                          style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }
