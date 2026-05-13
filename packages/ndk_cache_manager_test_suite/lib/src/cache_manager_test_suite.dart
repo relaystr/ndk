@@ -9,8 +9,7 @@
 /// In your test file, import this library and call [runCacheManagerTestSuite]:
 ///
 /// ```dart
-/// import 'package:ndk/testing.dart';
-/// import 'package:test/test.dart';
+/// import 'package:ndk_cache_manager_test_suite/ndk_cache_manager_test_suite.dart';
 ///
 /// void main() {
 ///   runCacheManagerTestSuite(
@@ -24,10 +23,10 @@ library;
 
 import 'package:test/test.dart';
 
-import '../entities.dart';
-import '../domain_layer/repositories/cache_manager.dart';
-import '../shared/nips/nip01/bip340.dart';
-import '../data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/domain_layer/repositories/cache_manager.dart';
+import 'package:ndk/shared/nips/nip01/bip340.dart';
+import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 
 part 'cache_manager_test_suite_cashu.dart';
 
