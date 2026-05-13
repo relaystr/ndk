@@ -1357,6 +1357,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   @override
   Future<void> removeTransactions(List<String>? transactionIds) async {
     if (transactionIds == null || transactionIds.isEmpty) {
+      _db.delete(_db.walletTransactions).go();
       return;
     }
 

@@ -122,6 +122,7 @@ class SembastWalletsRepo extends WalletsRepo {
   @override
   Future<void> removeTransactions(List<String>? transactionIds) async {
     if (transactionIds == null || transactionIds.isEmpty) {
+      await _transactionStore.delete(_database);
       return;
     }
 

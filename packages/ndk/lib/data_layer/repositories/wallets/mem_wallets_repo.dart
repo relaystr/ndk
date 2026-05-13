@@ -66,6 +66,7 @@ class MemWalletsRepo extends WalletsRepo {
   @override
   Future<void> removeTransactions(List<String>? transactionIds) {
     if (transactionIds == null || transactionIds.isEmpty) {
+      transactions.clear();
       return Future.value();
     }
 

@@ -51,5 +51,6 @@ abstract class WalletsRepo {
 
   /// Remove transactions by ID
   /// should only be used for deleting a wallet
+  /// if [transactionIds] is null, all transactions for the wallet should be removed!
   Future<void> removeTransactions(List<String>? transactionIds);
 }

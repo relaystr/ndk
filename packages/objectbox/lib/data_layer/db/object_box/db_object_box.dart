@@ -1039,12 +1039,14 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> removeTransactions(List<String>? transactionIds) async {
+    await dbRdy;
+    final transactionBox = _objectBox.store.box<DbWalletTransaction>();
+
     if (transactionIds == null || transactionIds.isEmpty) {
+      await transactionBox.removeAllAsync();
       return;
     }
 
-    await dbRdy;
-    final transactionBox = _objectBox.store.box<DbWalletTransaction>();
     final query = transactionBox
         .query(DbWalletTransaction_.id.oneOf(transactionIds))
         .build();

@@ -144,11 +144,13 @@ class FlutterSecureStorageWalletsRepo extends WalletsRepo {
 
   @override
   Future<void> removeTransactions(List<String>? transactionIds) async {
+    await _ensureInitialized();
     if (transactionIds == null || transactionIds.isEmpty) {
+      _transactionsByKey.clear();
+      await _persistState();
       return;
     }
 
-    await _ensureInitialized();
     _transactionsByKey.removeWhere(
       (_, transaction) => transactionIds.contains(transaction.id),
     );
