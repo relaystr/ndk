@@ -1,3 +1,8 @@
+## 0.8.2-dev.9
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
 ## 0.8.2-dev.8
 
  - **REFACTOR**: PlatformEventVerifier via conditional imports.

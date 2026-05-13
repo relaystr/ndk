@@ -15,6 +15,65 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.8.2-dev.9`](#ndk---v082-dev9)
+ - [`ndk_drift` - `v0.1.1-dev.9`](#ndk_drift---v011-dev9)
+ - [`ndk_flutter` - `v0.8.2-dev.9`](#ndk_flutter---v082-dev9)
+ - [`ndk_objectbox` - `v0.2.11-dev.9`](#ndk_objectbox---v0211-dev9)
+ - [`nip07_event_signer` - `v1.0.10-dev.9`](#nip07_event_signer---v1010-dev9)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.10-dev.9`
+
+---
+
+#### `ndk` - `v0.8.2-dev.9`
+
+ - **REFACTOR**: rename Negentropy to NegentropyEncoder.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: move NIP-77 cleanup into async allFutures in destroy().
+ - **FIX**: delete transactions.
+ - **FIX**: delete proofs.
+ - **FIX**: privatize Nip77Internal.
+ - **FIX**: timeout completion guards.
+ - **FIX**: improve NOTICE detection for NIP-77 errors.
+ - **FIX**: reject truncated varint in NIP-77 decoder.
+ - **FIX**: use full filter for local cache in NIP-77 reconciliation.
+ - **FIX**: verify relay origin on NEG-MSG and NEG-ERR.
+ - **FIX**: close NIP-77 sessions in Ndk.destroy().
+ - **FIX**: no-op test.
+ - **FEAT**: nip77.
+
+#### `ndk_drift` - `v0.1.1-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.2-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.11-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: objextbox delete transactions.
+
+
+## 2026-05-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.8.2-dev.8`](#ndk---v082-dev8)
  - [`ndk_drift` - `v0.1.1-dev.8`](#ndk_drift---v011-dev8)
  - [`ndk_flutter` - `v0.8.2-dev.8`](#ndk_flutter---v082-dev8)
