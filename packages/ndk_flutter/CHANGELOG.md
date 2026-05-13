@@ -1,3 +1,7 @@
+## 0.8.2-dev.9
+
+ - Update a dependency to the latest release.
+
 ## 0.8.2-dev.8
 
  - **REFACTOR**: PlatformEventVerifier via conditional imports.
