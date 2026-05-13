@@ -1,3 +1,10 @@
+## 0.8.2-dev.8
+
+ - **REFACTOR**: PlatformEventVerifier via conditional imports.
+ - **FIX**: use factory signer.
+ - **FEAT**(ndk_flutter): add PlatformEventVerifier.
+ - **FEAT**: implement NipAvatar utility to standardize initial generation and color selection for profiles and banners.
+
 ## 0.8.2-dev.7
 
  - **REFACTOR**: PlatformEventVerifier via conditional imports.
