@@ -16,8 +16,9 @@ import 'package:riverpod/riverpod.dart';
 
 final ndkProvider = Provider<Ndk>((ref) {
   final EventSigner eventSigner = Bip340EventSigner("privateKey", "publicKey");
-  // For Flutter apps targeting web, use PlatformEventSigner from ndk_flutter
-  // for automatic platform selection (fast JS crypto on web, pure Dart on native)
+  // For Flutter apps targeting web, use NdkEventSigner / NdkEventSignerFactory
+  // from ndk_flutter for automatic platform selection (fast JS crypto on web,
+  // pure Dart on native).
   final EventVerifier eventVerifier = RustEventVerifier();
   final CacheManager cache = MemCacheManager();
 

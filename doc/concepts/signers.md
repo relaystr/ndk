@@ -8,7 +8,7 @@ Signers are responsible for cryptographic operations: signing events, encrypting
 |------|-------------|------------------|
 | `Bip340EventSigner` | Local signer with private key (pure Dart) | No (instant) |
 | `WebEventSigner` | Fast local signer for web (JS crypto) | No (instant) |
-| `PlatformEventSigner` | Automatic platform selection (web/native) | No (instant) |
+| `NdkEventSigner` | Automatic platform selection (web/native) | No (instant) |
 | `Nip46EventSigner` | Remote signer via NIP-46 bunker | Yes |
 | `Nip07EventSigner` | Browser extension (NIP-07) | Yes |
 | `AmberEventSigner` | Android Amber app | Yes |
@@ -147,21 +147,34 @@ final signer = WebEventSigner(
 
 ## Platform Selection
 
-`PlatformEventSigner` automatically picks the best implementation for the current platform:
+`NdkEventSigner` automatically picks the best implementation for the current platform:
 
 - **Web**: uses `WebEventSigner` (fast JS crypto)
 - **Native**: uses `Bip340EventSigner` (pure Dart)
 
 ```dart
-import 'package:ndk_flutter/signers/platform_event_signer.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
-final signer = PlatformEventSigner(
+final signer = NdkEventSigner(
   privateKey: myPrivkey,
   publicKey: myPubkey,
 );
 ```
 
-This is the recommended signer for Flutter apps that target both mobile and web.
+To wire it into NDK so it is used everywhere internally (accounts, bunkers,
+ephemeral signers, etc.), pass the matching factory to `NdkConfig`:
+
+```dart
+final ndk = Ndk(
+  NdkConfig(
+    eventVerifier: NdkEventVerifier(),
+    cache: MemCacheManager(),
+    eventSignerFactory: const NdkEventSignerFactory(),
+  ),
+);
+```
+
+This is the recommended setup for Flutter apps that target both mobile and web.
 
 ## Disposing Accounts
 

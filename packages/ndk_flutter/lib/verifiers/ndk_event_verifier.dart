@@ -1,8 +1,8 @@
 import 'package:ndk/ndk.dart';
 
-import 'platform_event_verifier_stub.dart'
-    if (dart.library.io) 'platform_event_verifier_native.dart'
-    if (dart.library.js_interop) 'platform_event_verifier_web.dart';
+import 'ndk_event_verifier_stub.dart'
+    if (dart.library.io) 'ndk_event_verifier_native.dart'
+    if (dart.library.js_interop) 'ndk_event_verifier_web.dart';
 
 /// A platform-aware event verifier that automatically selects the best
 /// implementation for the current platform.
@@ -17,15 +17,15 @@ import 'platform_event_verifier_stub.dart'
 /// ```dart
 /// final ndk = Ndk(
 ///   NdkConfig(
-///     eventVerifier: PlatformEventVerifier(),
+///     eventVerifier: NdkEventVerifier(),
 ///     cache: MemCacheManager(),
 ///   ),
 /// );
 /// ```
-class PlatformEventVerifier implements EventVerifier {
+class NdkEventVerifier implements EventVerifier {
   final EventVerifier _delegate;
 
-  PlatformEventVerifier() : _delegate = createPlatformEventVerifier();
+  NdkEventVerifier() : _delegate = createNdkEventVerifier();
 
   @override
   Future<bool> verify(Nip01Event event) => _delegate.verify(event);

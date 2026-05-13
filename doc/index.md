@@ -64,7 +64,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 - **Pluggable architecture**: Bring your own cache, verifier, or signer, replace any component
 - **Multiple database options**: In-memory, ObjectBox, Sembast
-- **Event verification**: BIP-340, Rust-based (recommended for mobile/desktop), or `PlatformEventVerifier` from `ndk_flutter` (recommended for Flutter apps)
+- **Event verification**: BIP-340, Rust-based (recommended for mobile/desktop), or `NdkEventVerifier` from `ndk_flutter` (recommended for Flutter apps)
 - **Comprehensive logging** with configurable log levels and outputs
 - **Clean architecture** for maintainability and extensibility
 
