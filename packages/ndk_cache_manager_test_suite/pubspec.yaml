@@ -2,6 +2,7 @@ name: ndk_cache_manager_test_suite
 description: Shared test suite for NDK CacheManager implementations.
 version: 1.0.1-dev.14
 homepage: https://github.com/relaystr/ndk
+publish_to: 'none'
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
