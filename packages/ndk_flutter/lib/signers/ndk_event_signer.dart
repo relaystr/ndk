@@ -8,9 +8,9 @@
 /// wire it into NDK's account/signer creation flow.
 ///
 /// The conditional export below works like this:
-/// - Web compiler sees `dart.library.js_interop` → loads `ndk_event_signer_web.dart`
+/// - Web compiler sees `dart.library.js_interop` → loads `event_signer_web.dart`
 /// - Native compiler does not → falls back to `ndk_event_signer_native.dart`
 library;
 
 export 'src/ndk_event_signer_native.dart'
-    if (dart.library.js_interop) 'src/ndk_event_signer_web.dart';
+    if (dart.library.js_interop) 'src/event_signer_web.dart';

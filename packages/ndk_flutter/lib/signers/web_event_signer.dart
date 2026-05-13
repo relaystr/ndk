@@ -5,4 +5,4 @@
 library;
 
 export 'src/web_event_signer_stub.dart'
-    if (dart.library.js_interop) 'src/web_event_signer_web.dart';
+    if (dart.library.js_interop) 'src/event_signer_web.dart';
