@@ -32,8 +32,8 @@ class GetInfoResponse extends NwcResponse {
     }
 
     Map<String, dynamic> result = input['result'] as Map<String, dynamic>;
-    final methodsList = result["methods"] as List;
-    final notificationsList = result["notifications"] as List? ?? [];
+    final methodsList = (result["methods"] as List?) ?? const [];
+    final notificationsList = (result["notifications"] as List?) ?? const [];
 
     List<String> methods =
         methodsList.map((method) => method.toString()).toList();
@@ -43,8 +43,8 @@ class GetInfoResponse extends NwcResponse {
         .toList();
 
     return GetInfoResponse(
-        resultType: input['result_type'] as String,
-        alias: result['alias'] as String,
+        resultType: (input['result_type'] as String?) ?? '',
+        alias: (result['alias'] as String?) ?? '',
         color: result['color'] as String?,
         pubkey: result['pubkey'] as String?,
         network: BitcoinNetwork.fromPlaintext(result['network'] as String?),

@@ -27,7 +27,6 @@
   "readOnly": "Только чтение",
   "nsec": "Nsec",
   "extension": "Расширение",
-
   "userMetadata": "Метаданные пользователя",
   "shortTextNote": "Короткая заметка",
   "recommendRelay": "Рекомендовать реле",
@@ -202,5 +201,211 @@
   "starterPacks": "Стартовые паки",
   "mediaStarterPacks": "Медиа стартовые паки",
   "webBookmarks": "Веб-закладки",
-  "unknownEventKind": "Тип события {kind}"
+  "unknownEventKind": "Тип события {kind}",
+  "walletsTitle": "Кошельки",
+  "recentActivityTitle": "Недавняя Активность",
+  "addCashuWallet": "Добавить Кошелёк Cashu",
+  "addNwcWallet": "Добавить Кошелёк NWC",
+  "addLnurlWallet": "Добавить Кошелёк LNURL",
+  "addCashuTooltip": "Добавить Кошелёк Cashu",
+  "addNwcTooltip": "Добавить Кошелёк NWC",
+  "addLnurlTooltip": "Добавить Кошелёк LNURL",
+  "addCashuWalletTitle": "Добавить Кошелёк Cashu",
+  "enterMintUrl": "Введите URL минта для добавления кошелька Cashu.",
+  "mintUrl": "URL Минта",
+  "mintUrlHint": "https://mint.example.com",
+  "pleaseEnterMintUrl": "Пожалуйста, введите URL минта",
+  "cashuWalletAdded": "Кошелёк Cashu успешно добавлен!",
+  "failedToAddMint": "Не удалось добавить минт. Пожалуйста, проверьте URL и попробуйте снова.",
+  "addNwcWalletTitle": "Добавить Кошелёк NWC",
+  "faucet": "Кран",
+  "manual": "Вручную",
+  "nwcFaucetDescription": "Создайте тестовый кошелёк с сатами из крана NWC.",
+  "startingBalance": "Начальный Баланс",
+  "startingBalanceHint": "10000",
+  "nwcConnectionUri": "URI Подключения NWC",
+  "nwcConnectionUriHint": "nostr+walletconnect://...",
+  "nwcWalletAdded": "Кошелёк NWC успешно добавлен!",
+  "nwcFaucetWalletAdded": "Кошелёк крана NWC добавлен с {balance} сатами!",
+  "invalidFaucetResponse": "Неверный ответ от крана",
+  "errorCreatingWallet": "Ошибка создания кошелька",
+  "addLnurlWalletTitle": "Добавить Кошелёк LNURL",
+  "enterLnurlIdentifier": "Введите ваш LNURL идентификатор (user@domain.com).",
+  "lnurlIdentifierHint": "user@example.com",
+  "pleaseEnterValidIdentifier": "Пожалуйста, введите действительный идентификатор (user@domain.com)",
+  "lnurlWalletAdded": "Кошелёк LNURL успешно добавлен!",
+  "cancel": "Отмена",
+  "add": "Добавить",
+  "send": "Отправить",
+  "receive": "Получить",
+  "setAsDefaultForReceiving": "Сделать по умолчанию для получения",
+  "setAsDefaultForSending": "Сделать по умолчанию для отправки",
+  "defaultForReceiving": "По умолчанию для получения",
+  "defaultForSending": "По умолчанию для отправки",
+  "defaultWalletForReceivingTooltip": "Этот кошелёк используется по умолчанию для получения платежей.",
+  "defaultWalletForSendingTooltip": "Этот кошелёк используется по умолчанию для отправки платежей.",
+  "sendOptionsTitle": "Опции Отправки",
+  "sendByToken": "Отправить Токеном",
+  "sendByTokenDescription": "Создать токен Cashu для отправки",
+  "sendByLightning": "Отправить через Lightning",
+  "sendByLightningDescription": "Оплатить Lightning-счёт",
+  "payInvoiceTitle": "Оплатить Счёт",
+  "invoice": "Счёт",
+  "invoiceHint": "lnbc...",
+  "pleaseEnterInvoice": "Пожалуйста, введите счёт",
+  "invoicePaid": "Счёт оплачен!",
+  "paymentFailed": "Оплата не удалась: {message}",
+  "receiveOptionsTitle": "Опции Получения",
+  "receiveByToken": "Получить Токеном",
+  "receiveByTokenDescription": "Получить токен Cashu",
+  "receiveByLightning": "Получить через Lightning",
+  "receiveByLightningDescription": "Создать Lightning-счёт",
+  "receiveByTokenTitle": "Получить Токеном",
+  "token": "Токен",
+  "tokenHint": "Вставьте токен здесь...",
+  "pleaseEnterToken": "Пожалуйста, введите токен",
+  "tokenReceived": "Токен получен!",
+  "createInvoiceTitle": "Создать Счёт",
+  "amount": "Сумма",
+  "amountHint": "100",
+  "pleaseEnterValidAmount": "Пожалуйста, введите действительную сумму",
+  "tokenCopiedToClipboard": "Токен скопирован в буфер обмена!",
+  "invoiceCreatedAndCopied": "Счёт создан и скопирован!",
+  "invoiceTrackingTitle": "Lightning Счёт",
+  "invoiceCreatedMessage": "Счёт создан и скопирован!",
+  "close": "Закрыть",
+  "copyAgain": "Копировать Снова",
+  "copied": "Скопировано!",
+  "paymentReceived": "Платёж получен!",
+  "waitingForPayment": "Ожидание платежа...",
+  "paid": "Оплачено!",
+  "createToken": "Создать Токен",
+  "pay": "Оплатить",
+  "create": "Создать",
+  "pendingTransactions": "В Ожидании",
+  "recentTransactions": "Недавние Транзакции",
+  "noRecentTransactions": "Нет недавних транзакций",
+  "noWalletsYet": "Пока нет кошельков",
+  "noWalletsAvailable": "Нет доступных кошельков",
+  "tapToAddWallet": "Нажмите + чтобы добавить",
+  "delete": "Удалить",
+  "error": "Ошибка: {message}",
+  "unknownWalletType": "Неизвестно",
+  "cashuWallet": "Cashu",
+  "nwcWallet": "NWC",
+  "lnurlWallet": "LNURL",
+  "balance": "Баланс",
+  "sats": "саты",
+  "selected": "ВЫБРАНО",
+  "receiveOnlyWallet": "Кошелёк только для получения",
+  "receiveRange": "Получить: {min} - {max} сат",
+  "limitsUnavailable": "Лимиты недоступны",
+  "nwcWalletSubtitle": "Кошелёк NWC",
+  "tokenCopied": "Токен скопирован",
+  "deleteWalletConfirmation": "Удалить Кошелёк?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "Вы уверены, что хотите удалить этот кошелёк? Это действие нельзя отменить.",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "Добавить Кошелёк",
+  "chooseWalletType": "Выберите тип кошелька",
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "nwcWalletTypeSubtitle": "Подключиться к удаленному кошельку через NWC",
+  "lnurlWalletTypeTitle": "LNURL / Lightning-адрес",
+  "lnurlWalletTypeSubtitle": "Использовать кастодиальный кошелек с LNURL или Lightning-адресом",
+  "cashuWalletTypeTitle": "Cashu",
+  "cashuWalletTypeSubtitle": "Использовать ecash-кошелек на базе монетного двора Cashu",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "Подключить NWC",
+  "chooseNwcMethod": "Выберите способ подключения",
+  "albyGoOption": "Alby Go",
+  "manualOption": "Вручную",
+  "faucetOption": "Кран",
+  "invalidNwcQrCode": "Неверный QR-код NWC",
+  "scanNwcQrCodeTitle": "Сканировать QR-код NWC",
+  "cameraNotAvailable": "Камера недоступна",
+  "scanNwcInstructions": "Отсканируйте QR-код из приложения кошелька NWC",
+  "invalidNwcUri": "Неверный URI NWC",
+  "paste": "Вставить",
+  "fromYourProfile": "Из вашего профиля",
+  "orEnterManually": "Или введите вручную:",
+  "budgetUsedOf": "Бюджет: {used} / {total}",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "Обновление через {days} дн.",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "Ежедневно",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "Еженедельно",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "Ежемесячно",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "Ежегодно",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "Никогда",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "Переименовать",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "Выбрать цвет",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "Удалить",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "Название кошелька",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "Введите название кошелька",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "Сохранить",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "Кошелек переименован",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

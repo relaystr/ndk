@@ -21,8 +21,7 @@ RelayRankingResult rankRelays({
     if (direction.isRead) {
       relevantUrls = userRelay.readUrls;
     } else {
-      relevantUrls = userRelay.urls
-          .where((url) => userRelay.relays[url]?.isWrite ?? false);
+      relevantUrls = userRelay.writeUrls;
     }
 
     for (final relayUrl in relevantUrls) {

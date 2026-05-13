@@ -2,6 +2,21 @@
 
 import 'package:ndk/ndk.dart';
 
+String _formatPaidAt(int? paidAt) {
+  if (paidAt == null) {
+    return "unknown-time";
+  }
+
+  final dateTime = DateTime.fromMillisecondsSinceEpoch(paidAt * 1000).toLocal();
+  final year = dateTime.year.toString().padLeft(4, '0');
+  final month = dateTime.month.toString().padLeft(2, '0');
+  final day = dateTime.day.toString().padLeft(2, '0');
+  final hour = dateTime.hour.toString().padLeft(2, '0');
+  final minute = dateTime.minute.toString().padLeft(2, '0');
+
+  return "$year-$month-$day $hour:$minute";
+}
+
 void main() async {
   final ndk = Ndk.defaultConfig();
 
@@ -13,9 +28,8 @@ void main() async {
       )
       .toList();
 
-  // Sort profileReceipts by amountSats in descending order
-  profileReceipts
-      .sort((a, b) => (b.amountSats ?? 0).compareTo(a.amountSats ?? 0));
+  // Sort profileReceipts by paidAt (created_at) in descending order
+  profileReceipts.sort((a, b) => (b.paidAt ?? 0).compareTo(a.paidAt ?? 0));
 
   int profileSum = 0;
   for (var receipt in profileReceipts) {
@@ -24,8 +38,9 @@ void main() async {
       Metadata? metadata = await ndk.metadata.loadMetadata(receipt.sender!);
       sender = metadata?.name;
     }
+    final paidAtFormatted = _formatPaidAt(receipt.paidAt);
     print(
-        "${sender != null ? "from $sender " : ""} ${receipt.amountSats} sats ${receipt.comment}");
+        "$paidAtFormatted ${sender != null ? "from $sender " : ""} ${receipt.amountSats} sats ${receipt.comment}");
     profileSum += receipt.amountSats ?? 0;
   }
   print("${profileReceipts.length} receipts, total of $profileSum sats");

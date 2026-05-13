@@ -16,6 +16,7 @@ class Nip51List {
   static const int kSearchRelays = 10007;
   static const int kInterests = 10015;
   static const int kEmojis = 10030;
+  static const int kDmRelays = 10050;
 
   static const int kFollowSet = 30000;
   static const int kRelaySet = 30002;
@@ -50,6 +51,7 @@ class Nip51List {
     kSearchRelays,
     kInterests,
     kEmojis,
+    kDmRelays,
     kFollowSet,
     kRelaySet,
     kBookmarksSet,
@@ -287,6 +289,11 @@ class Nip51Set extends Nip51List {
       elements: [],
     );
     set.id = event.id;
+
+    // private sets can also have public tags (like title, description, image etc)
+    set.parseTags(event.tags, private: false);
+    set.parseSetTags(event.tags);
+
     if (Helpers.isNotBlank(event.content) &&
         signer != null &&
         signer.canSign()) {
@@ -305,14 +312,9 @@ class Nip51Set extends Nip51List {
               );
         List<dynamic> tags = jsonDecode(json ?? '');
         set.parseTags(tags, private: true);
-        set.parseSetTags(tags);
       } catch (e) {
-        set.name = "<invalid encrypted content>";
         Logger.log.d(() => e);
       }
-    } else {
-      set.parseTags(event.tags, private: false);
-      set.parseSetTags(event.tags);
     }
     return set;
   }

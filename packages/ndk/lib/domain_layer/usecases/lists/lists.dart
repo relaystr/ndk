@@ -1,6 +1,5 @@
 import 'package:rxdart/rxdart.dart';
 
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
@@ -21,6 +20,7 @@ class Lists {
   final CacheManager _cacheManager;
   final Broadcast _broadcast;
   final Accounts _accounts;
+  final LocalEventSignerFactory _eventSignerFactory;
 
   /// Creates a Lists usecase instance.
   Lists({
@@ -28,10 +28,12 @@ class Lists {
     required CacheManager cacheManager,
     required Broadcast broadcast,
     required Accounts accounts,
+    required LocalEventSignerFactory eventSignerFactory,
   })  : _cacheManager = cacheManager,
         _requests = requests,
         _broadcast = broadcast,
-        _accounts = accounts;
+        _accounts = accounts,
+        _eventSignerFactory = eventSignerFactory;
 
   EventSigner? get _eventSigner {
     return _accounts.getLoggedAccount()?.signer;
@@ -92,6 +94,48 @@ class Lists {
       return refreshedList;
     }
     return list;
+  }
+
+  /// Returns a NIP-51 list by kind for a given public key.
+  ///
+  /// Retrieves the most recent list event for the specified kind and public key.
+  /// Unlike [getSingleNip51List], this works with any public key, not just
+  /// the logged-in user.
+  ///
+  /// [kind] the kind of NIP-51 list to retrieve \
+  /// [publicKey] the public key of the user whose list to retrieve \
+  /// [forceRefresh] if true, bypass cache and query relays directly \
+  /// [timeout] maximum duration to wait for relay responses
+  ///
+  /// Returns the list if found, null otherwise.
+  Future<Nip51List?> getPublicList({
+    required int kind,
+    required String publicKey,
+    bool forceRefresh = false,
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    final signer =
+        _eventSignerFactory.create(privateKey: null, publicKey: publicKey);
+
+    Nip51List? list =
+        !forceRefresh ? await _getCachedNip51List(kind, signer) : null;
+
+    if (list != null) return list;
+
+    final events = await _requests.query(filters: [
+      Filter(
+        authors: [publicKey],
+        kinds: [kind],
+        limit: 1,
+      )
+    ], timeout: timeout).future;
+
+    if (events.isEmpty) return null;
+
+    events.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    await _cacheManager.saveEvent(events.last);
+    return await Nip51List.fromEvent(events.last, signer);
   }
 
   /// Adds an element to a NIP-51 list.
@@ -342,7 +386,8 @@ class Lists {
       }
       mySigner = _eventSigner!;
     } else {
-      mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+      mySigner =
+          _eventSignerFactory.create(privateKey: null, publicKey: publicKey);
     }
 
     return _getSets(kind, mySigner, forceRefresh: forceRefresh);
@@ -614,7 +659,8 @@ class Lists {
     required String publicKey,
     bool forceRefresh = false,
   }) async {
-    final mySigner = Bip340EventSigner(privateKey: null, publicKey: publicKey);
+    final mySigner =
+        _eventSignerFactory.create(privateKey: null, publicKey: publicKey);
     return getNip51RelaySets(kind, mySigner, forceRefresh: forceRefresh);
   }
 

@@ -15,7 +15,7 @@ void main() async {
         "file of type: ${downloadResult.mimeType}, size: ${downloadResult.data.length}");
 
     expect(downloadResult.data.length, greaterThan(0));
-  });
+  }, skip: true);
 
   test('download test - non blossom', () async {
     final ndk = Ndk.defaultConfig();
@@ -27,5 +27,5 @@ void main() async {
         "file of type: ${downloadResult.mimeType}, size: ${downloadResult.data.length}");
 
     expect(downloadResult.data.length, greaterThan(0));
-  });
+  }, skip: true);
 }

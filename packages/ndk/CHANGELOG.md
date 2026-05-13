@@ -1,3 +1,197 @@
+## 0.8.2-dev.7
+
+ - **REVERT**: seperate cache manger package.
+ - **REFACTOR**: use LocalEventSignerFactory for creating signers, keypairs.
+ - **REFACTOR**: event signer factory.
+ - **FIX**(test): avoid same-second collision in broadcast metadata test.
+ - **FIX**(test): apply NIP-01 replacement in MockRelay.
+ - **FIX**: use ephemeralSigner obj when available.
+ - **FIX**: use factory signer.
+ - **FIX**: return the complete signed event from remote signer.
+ - **FIX**: parse public tags on private list.
+ - **FIX**: update tearDown to cleanUp in cache manager test suite documentation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: remove test suite dependency from ndk (cycle).
+ - **FIX**: repeated listen breaks stream connection.
+ - **FEAT**: add getDmRelays for NIP-17 DM relay list (kind 10050).
+ - **FEAT**: add writeUrls getter to UserRelayList.
+ - **FEAT**: enhance Sembast support with platform-specific implementations and error handling.
+ - **FEAT**: add GiftWrapUnwrapResult for enhanced gift wrap unwrapping with signature verification.
+ - **FEAT**: implement conditional imports.
+ - **FEAT**: add web support to SembastCacheManager.
+
+## 0.8.2-dev.6
+
+ - **FIX**: delete pubspec.lock.
+ - **FIX**: stubs for qsVerifier/Signer.
+ - **FIX**: sign seal event.
+ - **FIX**: treat 2xx http statuses as success.
+ - **FEAT**: flatpack build.
+
+## 0.8.2-dev.5
+
+ - **FEAT**(experiment): qs dilithium singer, verifier. ([e680430b](https://github.com/relaystr/ndk/commit/e680430b5f4ae2826d5ec642688b0afbe49b0609))
+
+## 0.8.2-dev.4
+
+ - **FEAT**(experiment): qs dilithium singer, verifier. ([e680430b](https://github.com/relaystr/ndk/commit/e680430b5f4ae2826d5ec642688b0afbe49b0609))
+
+## 0.8.2-dev.3
+
+ - **FIX**: merge user metrics. ([624ae703](https://github.com/relaystr/ndk/commit/624ae70314a855787f15d3731c3edbb02532c8ec))
+ - **FIX**: merge assertions events. ([cff74ee1](https://github.com/relaystr/ndk/commit/cff74ee1b2df1bd6ab12a2579cc218ec6f702da2))
+ - **FIX**: use Bip340EventSigner to sign events in tests. ([7934063b](https://github.com/relaystr/ndk/commit/7934063bd5bdfc1fa798b11936291918068f88b9))
+ - **FEAT**: add optional relayUrls param to getOptimizedFilters and handle empty cache. ([d3e3a242](https://github.com/relaystr/ndk/commit/d3e3a24270afab6a1c0d4ababe9c067df5420e51))
+ - **FEAT**: default providers. ([26fc8faf](https://github.com/relaystr/ndk/commit/26fc8faf22e53a97f91fe05c7ff5988bdb46414c))
+ - **FEAT**: others trusted assertions. ([ada22c70](https://github.com/relaystr/ndk/commit/ada22c70bc7e75b9d404a5cc1356ec31ad6886a6))
+ - **FEAT**: user trusted assertions. ([04772612](https://github.com/relaystr/ndk/commit/04772612aad14f0f13fa3207c44ecce239f6b5d5))
+
+## 0.8.2-dev.2
+
+ - **FIX**: merge user metrics. ([624ae703](https://github.com/relaystr/ndk/commit/624ae70314a855787f15d3731c3edbb02532c8ec))
+ - **FIX**: merge assertions events. ([cff74ee1](https://github.com/relaystr/ndk/commit/cff74ee1b2df1bd6ab12a2579cc218ec6f702da2))
+ - **FIX**: use Bip340EventSigner to sign events in tests. ([7934063b](https://github.com/relaystr/ndk/commit/7934063bd5bdfc1fa798b11936291918068f88b9))
+ - **FEAT**: add optional relayUrls param to getOptimizedFilters and handle empty cache. ([d3e3a242](https://github.com/relaystr/ndk/commit/d3e3a24270afab6a1c0d4ababe9c067df5420e51))
+ - **FEAT**: default providers. ([26fc8faf](https://github.com/relaystr/ndk/commit/26fc8faf22e53a97f91fe05c7ff5988bdb46414c))
+ - **FEAT**: others trusted assertions. ([ada22c70](https://github.com/relaystr/ndk/commit/ada22c70bc7e75b9d404a5cc1356ec31ad6886a6))
+ - **FEAT**: user trusted assertions. ([04772612](https://github.com/relaystr/ndk/commit/04772612aad14f0f13fa3207c44ecce239f6b5d5))
+
+## 0.8.2-dev.1
+
+ - **FIX**: withCachedPermissions copy rest of fields. ([4a083f6f](https://github.com/relaystr/ndk/commit/4a083f6f3a8cbaa636158c44658d5bb769224019))
+ - **FIX**: not showing balance after alby go connect. ([74b7c456](https://github.com/relaystr/ndk/commit/74b7c456c198e5d5a8622cccc850c871ac10877c))
+
+## 0.8.1-dev.0+1
+
+ - **FIX**: nwc cached permissions. ([dd6a8892](https://github.com/relaystr/ndk/commit/dd6a8892963c04a62ee0c1eda5ea4db7e6bc42d3))
+
+## 0.8.1
+
+ - **FEAT**:  Wallets usecase
+ - **FEAT**:  Cashu support
+ - **FEAT**:  LNURL wallet receive only
+ - **FEAT**:  ndk CLI tool with install.sh script
+ - **FEAT**:  Drift cache manager
+ - **FEAT**:  Signer pending requests
+ - **FEAT**:  Paginated requests
+ - **FEAT**:  Rust event verifier using native assets in ndk core package
+ - **FEAT**:  Web event verifier using web crypto
+ - **FEAT**:  Implement RFC 3986 compliant relay URL normalization
+ - **FEAT**:  Move amber into ndk_flutter
+ - **FEAT**:  Move sembast to core
+ - **FIX**:  Fix: broadcast timeout
+ - **FIX**:  Remove deprecated isar package
+ - **FIX**: lints. ([6d60d87c](https://github.com/relaystr/ndk/commit/6d60d87c43e0f3455853a22ddf53523cfa64ddf4))
+
+## 0.7.2-dev.2
+
+ - **FIX**: min sdk 3.6 for hooks.
+
+## 0.7.2-dev.1
+
+ - **FIX**: cleanup.
+ - **FEAT**: cli.
+
+## 0.7.2-dev.0
+
+ - **FEAT**: paginated requests.
+
+## 0.7.1
+
+ - FEAT: cache known properties.
+ - FEAT: isolate manager with stream response.
+ - FEAT: improved upload progress report.
+ - FEAT: blossom mirrorToServers().
+ - FEAT: files api uploadFromFile(), downloadToFile().
+ - FEAT: blossom file stream.
+ - FEAT(broadcast): add NIP-09 compliant deletion with e, k, and a tags.
+ - FEAT: implement RFC 3986 compliant relay URL normalization.
+ - FEAT: expose signer API on Account entity.
+ - FEAT: add SignerRequestRejectedException for remote signer rejections.
+ - FEAT: add nip46 pending requests integration test.
+ - FEAT: add unified pending requests API.
+ - FEAT(cache): add removeEvents method for bulk event deletion.
+ - FEAT(cache): add clearAll() method to CacheManager.
+ - FEAT: add caching support for nip05.resolve() with identifier lookup.
+ - FEAT: add caching support for nip05.resolve() with identifier lookup.
+ - FEAT: add caching support for nip05.resolve() with identifier lookup.
+ - FEAT: add of() method to fetch NIP-05 data without pubkey.
+ - FEAT: add missing state field in lookup_invoice_response.dart.
+ - FEAT: add missing getPublicList.
+ - FEAT: change removeEvents to support flexible filtering.
+ - FEAT: gift wrap add custom signer parameter.
+ - FEAT: add saveToCache option for broadcast.
+ - FEAT: nip42 multi auth.
+ - REFACTOR: rename rawContent to content.
+ - REFACTOR: uploadBlob use dataStreamFactory.
+ - REFACTOR: extract URL normalization to separate file.
+ - REFACTOR: make dispose() async.
+ - REFACTOR: remove unused requestRelays method.
+ - REFACTOR: rename nip05.fetch() to nip05.resolve().
+ - REFACTOR: nip05 usecase.
+ - FIX: concurent list modification.
+ - FIX: allow blossom uploadBlob without login via temporary/custom signer.
+ - FIX: tests passes.
+ - FIX: toJson and fromJson.
+ - FIX: meme cache mock.
+ - FIX: tests.
+ - FIX: use setter for known properties + content never null.
+ - FIX: mem cache manager mock.
+ - FIX: preserve tags and custom fields in metadata.
+ - FIX: propagate signer exceptions through broadcast.
+ - FIX: getPublicList() reduce db calls by saving last event.
+ - FIX: getPublicList add limit.
+ - FIX: getPublicList only save latest event.
+ - FIX(broadcast): return immediately when all relays have responded.
+ - FIX: web init.
+ - FIX: use isolate manager for native hash calc.
+ - FIX: get file hash for uploadBlobFromFile().
+ - FIX: flanky blossom test depending on order.
+ - FIX(perf): lazy log.
+ - FIX: remove all event versions from cache on NIP-09 deletion.
+ - FIX: flanky test.
+ - FIX: close duplicate request when original completes.
+ - FIX: fail fast when all relays are offline.
+ - FIX: complete request when auth-required received without challenge.
+ - FIX: complete request when relay requires auth but client cannot sign.
+ - FIX: distinguish CLOSED from EOSE in relay request state.
+ - FIX: add destroy in tear down.
+ - FIX: ensure NIP-46 subscription is ready before sending remote requests.
+ - FIX: subscribe before broadcast in connectWithBunkerUrl to avoid missing NIP-46 responses.
+ - FIX: move authCallbackTimeout to NdkConfig.
+ - FIX: add timeout for pending AUTH callbacks.
+ - FIX: authenticate all accounts in authenticateAs for lazy auth mode.
+ - FIX: handle NIP-42 auth-required by re-sending REQ/EVENT after AUTH.
+ - FIX: rename stateChanges to authStateChanges.
+ - FIX: minIsolatePoolSize.
+ - FIX: use Accounts instead of pubkeys to authenticate.
+
+
+## 0.7.1-dev.20
+
+ - **REFACTOR**: rename rawContent to content.
+ - **FIX**: concurent list modification.
+ - **FIX**: allow blossom uploadBlob without login via temporary/custom signer.
+ - **FIX**: tests passes.
+ - **FIX**: toJson and fromJson.
+ - **FIX**: meme cache mock.
+ - **FIX**: tests.
+ - **FIX**: use setter for known properties + content never null.
+ - **FIX**: mem cache manager mock.
+ - **FIX**: preserve tags and custom fields in metadata.
+ - **FEAT**: cache known properties.
+
+## 0.7.1-dev.19
+
+ - **FIX**: propagate signer exceptions through broadcast.
+
+## 0.7.1-dev.18
+
+ - **FIX**: getPublicList() reduce db calls by saving last event.
+ - **FIX**: getPublicList add limit.
+ - **FIX**: getPublicList only save latest event.
+ - **FEAT**: add missing getPublicList.
+
 ## 0.7.1-dev.17
 
  - **FIX**(broadcast): return immediately when all relays have responded.

@@ -1,0 +1,259 @@
+{
+  "@@locale": "en",
+  "appName": "Nostr Developer Kit Demo",
+  "appBarTitle": "NDK Demo",
+  "tabAccounts": "Accounts",
+  "tabProfile": "Profile",
+  "tabRelays": "Relays",
+  "tabBlossom": "Blossom",
+  "tabWallets": "Wallets",
+  "tabWidgets": "Widgets",
+  "profileTooltip": "Profile",
+  "loginDialogDefaultTitle": "Log in",
+  "loginDialogAddAccountTitle": "Add account",
+  "closeTooltip": "Close",
+  "accountsHeading": "Accounts",
+  "accountsDescription": "Manage your logged accounts and add new ones.",
+  "addAnotherAccount": "Add Another Account",
+  "logIn": "Log In",
+  "profileNoAccount": "No account logged in.",
+  "profileAbout": "About",
+  "profileMetadataError": "Error fetching metadata: {error}",
+  "@profileMetadataError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "relaysLoginRequired": "Log in to view your relay list.",
+  "relaysFetchButton": "Fetch relay list",
+  "relayListHeading": "Relay List",
+  "relayConfiguredCount": "{count, plural, one{{count} configured relay} other{{count} configured relays}}",
+  "@relayConfiguredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relayConnection": "Connection: {state}",
+  "@relayConnection": {
+    "placeholders": {
+      "state": {}
+    }
+  },
+  "relayRead": "Read",
+  "relayWrite": "Write",
+  "relayStateConnecting": "Connecting",
+  "relayStateOnline": "Online",
+  "relayStateOffline": "Offline",
+  "relayStateUnknown": "Unknown",
+  "widgetsPageTitle": "NDK Flutter Widgets Demo",
+  "widgetsLoginHint": "Log in from the Accounts tab to see personalized widgets.",
+  "widgetsCurrentUser": "Current user: ",
+  "widgetsSizeDefault": "Default",
+  "widgetsSizeLarger": "Larger",
+  "widgetsSizeLarge": "Large",
+  "widgetsShowLoginWidget": "Show NLogin Widget",
+  "widgetsLoginWidgetTitle": "NLogin Widget",
+  "widgetsRequiresLogin": "{widgetName}\\n(requires login)",
+  "@widgetsRequiresLogin": {
+    "placeholders": {
+      "widgetName": {}
+    }
+  },
+  "widgetsSectionNNameDescription": "Displays user name from metadata, falls back to formatted npub.",
+  "widgetsSectionNPictureDescription": "Displays user profile picture with fallback to initials.",
+  "widgetsSectionNBannerDescription": "Displays user banner image with fallback to a colored container.",
+  "widgetsSectionNUserProfileDescription": "Complete user profile with banner, picture, name, and NIP-05.",
+  "widgetsSectionNSwitchAccountDescription": "Account management widget with switching and logout.",
+  "widgetsSectionNLoginDescription": "Login widget with multiple auth methods (NIP-05, npub, nsec, bunker, etc.).",
+  "widgetsSectionGetColorDescription": "Static method that generates deterministic colors from pubkeys.",
+  "blossomPageTitle": "Blossom Media & File Operations",
+  "blossomImageDemoTitle": "Image Demo (getBlob)",
+  "blossomVideoDemoTitle": "Video Demo (checkBlob)",
+  "blossomNoImageYet": "No image downloaded yet",
+  "blossomDownloadImage": "Download Image",
+  "blossomClearImage": "Clear Image",
+  "blossomMimeType": "Mime Type: {value}",
+  "@blossomMimeType": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "blossomFileSizeBytes": "Size: {value} bytes",
+  "@blossomFileSizeBytes": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "blossomNoVideoYet": "No video loaded yet",
+  "blossomLoadVideo": "Load Video",
+  "blossomClearVideo": "Clear Video",
+  "blossomVideoUrl": "Video URL: {value}",
+  "@blossomVideoUrl": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "blossomUploadTitle": "Upload File from Disk",
+  "blossomUploadDescription": "Demonstrates uploadFromFile() with streaming progress.",
+  "blossomUploadingProgress": "Uploading: {progress}%",
+  "@blossomUploadingProgress": {
+    "placeholders": {
+      "progress": {}
+    }
+  },
+  "blossomUploadSuccess": "Upload successful",
+  "blossomSha256": "SHA256: {value}",
+  "@blossomSha256": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "blossomUrl": "URL: {value}",
+  "@blossomUrl": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "blossomNoUploadedFileYet": "No file uploaded yet",
+  "blossomPickAndUploadFile": "Pick & Upload File",
+  "clear": "Clear",
+  "blossomDownloadTitle": "Download File to Disk",
+  "blossomDownloadDescription": "Demonstrates downloadToFile() and saves directly to disk.",
+  "blossomNoDownloadedFileYet": "No file downloaded yet",
+  "blossomDownloadUploadedFile": "Download Uploaded File",
+  "blossomSavedTo": "Saved to: {value}",
+  "@blossomSavedTo": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "blossomUploadFirstToEnableDownload": "Upload a file first to enable download.",
+  "blossomNoUploadedFileToDownload": "No file uploaded yet to download.",
+  "blossomDownloadedToBrowser": "Downloaded to browser",
+  "downloadSuccess": "Download successful",
+  "errorLabel": "Error: {error}",
+  "@errorLabel": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "pendingRequestsLoginRequired": "Please log in to see pending requests.",
+  "pendingNoRequests": "No pending requests",
+  "pendingUseButtons": "Use the buttons above to trigger requests.",
+  "pendingRequestCancelled": "Request cancelled",
+  "pendingRequestCancelFailed": "Failed to cancel request",
+  "pendingHeading": "Pending Signer Requests",
+  "pendingDescription": "Requests waiting for approval from your signer.",
+  "pendingTriggerRequests": "Trigger Requests",
+  "signEvent": "Sign Event",
+  "encrypt": "Encrypt",
+  "decrypt": "Decrypt",
+  "pendingSignedResult": "Signed! ID: {value}",
+  "@pendingSignedResult": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "pendingSignFailed": "Sign failed: {error}",
+  "@pendingSignFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "pendingEncryptFirst": "Encrypt first to get ciphertext.",
+  "pendingEncryptedResult": "Encrypted: {value}",
+  "@pendingEncryptedResult": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "pendingEncryptFailed": "Encrypt failed: {error}",
+  "@pendingEncryptFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "pendingDecryptedResult": "Decrypted: {value}",
+  "@pendingDecryptedResult": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "pendingDecryptFailed": "Decrypt failed: {error}",
+  "@pendingDecryptFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "pendingMethodSignEvent": "Sign Event",
+  "pendingMethodGetPublicKey": "Get Public Key",
+  "pendingMethodNip04Encrypt": "NIP-04 Encrypt",
+  "pendingMethodNip04Decrypt": "NIP-04 Decrypt",
+  "pendingMethodNip44Encrypt": "NIP-44 Encrypt",
+  "pendingMethodNip44Decrypt": "NIP-44 Decrypt",
+  "pendingMethodPing": "Ping",
+  "pendingMethodConnect": "Connect",
+  "pendingSecondsAgo": "{count}s ago",
+  "@pendingSecondsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingMinutesAgo": "{count}m ago",
+  "@pendingMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingHoursAgo": "{count}h ago",
+  "@pendingHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingEventKind": "Event Kind: {value}",
+  "@pendingEventKind": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "pendingContent": "Content: {value}",
+  "@pendingContent": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "pendingCounterparty": "Counterparty: {value}...",
+  "@pendingCounterparty": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "pendingPlaintext": "Plaintext: {value}",
+  "@pendingPlaintext": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "pendingCiphertext": "Ciphertext: {value}...",
+  "@pendingCiphertext": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "pendingId": "ID: {value}",
+  "@pendingId": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "cancel": "Cancel"
+}

@@ -1,0 +1,3 @@
+const int MAX_UINT32 = 0xFFFFFFFF;
+final BigInt MAX_UINT64 =
+    BigInt.parse('18446744073709551615'); // 0xFFFFFFFFFFFFFFFF

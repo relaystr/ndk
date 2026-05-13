@@ -1,0 +1,266 @@
+import 'package:http/http.dart' as http;
+import 'package:ndk/data_layer/data_sources/http_request.dart';
+import 'package:ndk/data_layer/repositories/cashu/cashu_repo_impl.dart';
+import 'package:ndk/data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
+import 'package:ndk/data_layer/repositories/wallets/mem_wallets_repo.dart';
+import 'package:ndk/entities.dart';
+import 'package:ndk/ndk.dart';
+import 'package:test/test.dart';
+
+import 'cashu_test_tools.dart';
+
+const devMintUrl = 'https://dev.mint.camelus.app';
+const failingMintUrl = 'https://mint.example.com';
+const mockMintUrl = "https://mock.mint";
+
+void main() {
+  setUp(() {});
+
+  group('spend tests - exceptions ', () {
+    test("spend - offline mint should fail immediately", () async {
+      final cache = MemCacheManager();
+
+      await cache.saveKeyset(
+        CahsuKeyset(
+          id: 'testKeyset',
+          mintUrl: 'https://offline.mint.example.com',
+          unit: 'sat',
+          active: true,
+          inputFeePPK: 0,
+          mintKeyPairs: {
+            CahsuMintKeyPair(
+              amount: 1,
+              pubkey: 'testPubKey-1',
+            ),
+            CahsuMintKeyPair(
+              amount: 2,
+              pubkey: 'testPubKey-2',
+            ),
+            CahsuMintKeyPair(
+              amount: 4,
+              pubkey: 'testPubKey-4',
+            ),
+          },
+        ),
+      );
+
+      await cache.saveProofs(
+        proofs: [
+          CashuProof(
+            keysetId: 'testKeyset',
+            amount: 1,
+            secret: 'testSecret-1',
+            unblindedSig: '',
+          ),
+          CashuProof(
+            keysetId: 'testKeyset',
+            amount: 2,
+            secret: 'testSecret-2',
+            unblindedSig: '',
+          ),
+          CashuProof(
+            keysetId: 'testKeyset',
+            amount: 4,
+            secret: 'testSecret-4',
+            unblindedSig: '',
+          ),
+        ],
+        mintUrl: 'https://offline.mint.example.com',
+      );
+
+      final cashu = CashuTestTools.mockHttpCashu(
+        customCache: cache,
+        seedPhrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+      );
+
+      // This should throw an exception quickly (not hang)
+      expect(
+        () async => await cashu.initiateSpend(
+          mintUrl: 'https://offline.mint.example.com',
+          amount: 3,
+          unit: 'sat',
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test("spend - amount", () {
+      final ndk = Ndk.emptyBootstrapRelaysConfig();
+
+      expect(
+        () async => await ndk.cashu.initiateSpend(
+          mintUrl: mockMintUrl,
+          amount: -54444,
+          unit: 'sat',
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test("spend - no unit for mint", () {
+      final cashu = CashuTestTools.mockHttpCashu(
+        seedPhrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+      );
+
+      expect(
+        () async => await cashu.initiateSpend(
+          mintUrl: mockMintUrl,
+          amount: 50,
+          unit: 'voidunit',
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test("spend - not enouth funds", () async {
+      final cache = MemCacheManager();
+
+      await cache.saveKeyset(
+        CahsuKeyset(
+          id: 'testKeyset',
+          mintUrl: mockMintUrl,
+          unit: 'sat',
+          active: true,
+          inputFeePPK: 0,
+          mintKeyPairs: {
+            CahsuMintKeyPair(
+              amount: 1,
+              pubkey: 'testPubKey-1',
+            ),
+            CahsuMintKeyPair(
+              amount: 2,
+              pubkey: 'testPubKey-2',
+            ),
+            CahsuMintKeyPair(
+              amount: 4,
+              pubkey: 'testPubKey-2',
+            ),
+          },
+        ),
+      );
+
+      await cache.saveProofs(
+        proofs: [
+          CashuProof(
+            keysetId: 'testKeyset',
+            amount: 1,
+            secret: 'testSecret-32',
+            unblindedSig: '',
+          )
+        ],
+        mintUrl: mockMintUrl,
+      );
+
+      final cashu = CashuTestTools.mockHttpCashu(
+        customCache: cache,
+        seedPhrase: CashuUserSeedphrase(
+            seedPhrase:
+                "reduce invest lunch step couch traffic measure civil want steel trip jar"),
+      );
+
+      expect(
+        () async => await cashu.initiateSpend(
+          mintUrl: mockMintUrl,
+          amount: 4,
+          unit: 'sat',
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
+  });
+
+  group('spend', () {
+    test("spend - initiateSpend", () async {
+      // Generate unique seed phrases for each test run to ensure unique blinded messages
+      // This prevents "Blinded Message is already signed" errors from the mint
+      final seedPhrase1 = CashuSeed.generateSeedPhrase();
+      final seedPhrase2 = CashuSeed.generateSeedPhrase();
+
+      final cache = MemCacheManager();
+      final cache2 = MemCacheManager();
+
+      final client = HttpRequestDS(http.Client());
+      final cashuRepo = CashuRepoImpl(client: client);
+      final cashuRepo2 = CashuRepoImpl(client: client);
+      final derivation = DartCashuKeyDerivation();
+      final cashu = Cashu(
+        cashuRepo: cashuRepo,
+        walletsRepo: MemWalletsRepo(),
+        cacheManager: cache,
+        cashuKeyDerivation: derivation,
+        cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: seedPhrase1),
+      );
+
+      final cashu2 = Cashu(
+        cashuRepo: cashuRepo2,
+        walletsRepo: MemWalletsRepo(),
+        cacheManager: cache2,
+        cashuKeyDerivation: derivation,
+        cashuUserSeedphrase: CashuUserSeedphrase(seedPhrase: seedPhrase2),
+      );
+
+      const fundAmount = 32;
+      const fundUnit = "sat";
+
+      final draftTransaction = await cashu.initiateFund(
+        mintUrl: devMintUrl,
+        amount: fundAmount,
+        unit: fundUnit,
+        method: "bolt11",
+      );
+      final transactionStream =
+          cashu.retrieveFunds(draftTransaction: draftTransaction);
+
+      final transaction = await transactionStream.last;
+      expect(transaction.state, WalletTransactionState.completed);
+
+      final spendWithoutSplit = await cashu.initiateSpend(
+        mintUrl: devMintUrl,
+        amount: 3,
+        unit: fundUnit,
+      );
+
+      final spendwithSplit = await cashu.initiateSpend(
+        mintUrl: devMintUrl,
+        amount: 1,
+        unit: fundUnit,
+      );
+
+      expect(spendWithoutSplit.token.toV4TokenString(), isNotEmpty);
+      expect(spendwithSplit.token.toV4TokenString(), isNotEmpty);
+
+      /// rcv on other party
+
+      final rcvStream = cashu2.receive(spendwithSplit.token.toV4TokenString());
+      await rcvStream.last;
+
+      /// check transaction completion on rcv
+
+      final myCompletedTransaction = await cashu.latestTransactions.stream
+          // first is the funding
+          .where((transactions) => transactions.length >= 2)
+          .take(1)
+          .first;
+
+      expect(myCompletedTransaction, isNotEmpty);
+      expect(
+          myCompletedTransaction.last.state, WalletTransactionState.completed);
+      expect(myCompletedTransaction.last.transactionDate, isNotNull);
+
+      final balance =
+          await cashu.getBalanceMintUnit(unit: "sat", mintUrl: devMintUrl);
+      expect(balance, equals(fundAmount - 4));
+
+      final pendingProofs =
+          await cache.getProofs(state: CashuProofState.pending);
+      expect(pendingProofs, isEmpty);
+
+      final spendProofs = await cache.getProofs(state: CashuProofState.spend);
+      expect(spendProofs, isNotEmpty);
+    });
+  });
+}

@@ -617,4 +617,441 @@ class AppLocalizationsJa extends AppLocalizations {
   String unknownEventKind(int kind) {
     return 'イベント種別 $kind';
   }
+
+  @override
+  String get walletsTitle => 'ウォレット';
+
+  @override
+  String get recentActivityTitle => '最近のアクティビティ';
+
+  @override
+  String get addCashuWallet => 'Cashuウォレットを追加';
+
+  @override
+  String get addNwcWallet => 'NWCウォレットを追加';
+
+  @override
+  String get addLnurlWallet => 'LNURLウォレットを追加';
+
+  @override
+  String get addCashuTooltip => 'Cashuウォレットを追加';
+
+  @override
+  String get addNwcTooltip => 'NWCウォレットを追加';
+
+  @override
+  String get addLnurlTooltip => 'LNURLウォレットを追加';
+
+  @override
+  String get addCashuWalletTitle => 'Cashuウォレットを追加';
+
+  @override
+  String get enterMintUrl => 'Cashuウォレットを追加するにはミントURLを入力してください。';
+
+  @override
+  String get mintUrl => 'ミントURL';
+
+  @override
+  String get mintUrlHint => 'https://mint.example.com';
+
+  @override
+  String get pleaseEnterMintUrl => 'ミントURLを入力してください';
+
+  @override
+  String get cashuWalletAdded => 'Cashuウォレットが正常に追加されました！';
+
+  @override
+  String get failedToAddMint => 'ミントの追加に失敗しました。URLを確認して再試行してください。';
+
+  @override
+  String get addNwcWalletTitle => 'NWCウォレットを追加';
+
+  @override
+  String get faucet => 'フォーセット';
+
+  @override
+  String get manual => '手動';
+
+  @override
+  String get nwcFaucetDescription => 'NWCフォーセットからsatsを使ってテストウォレットを作成します。';
+
+  @override
+  String get startingBalance => '開始残高';
+
+  @override
+  String get startingBalanceHint => '10000';
+
+  @override
+  String get nwcConnectionUri => 'NWC接続URI';
+
+  @override
+  String get nwcConnectionUriHint => 'nostr+walletconnect://...';
+
+  @override
+  String get nwcWalletAdded => 'NWCウォレットが正常に追加されました！';
+
+  @override
+  String nwcFaucetWalletAdded(int balance) {
+    return '$balance satsのNWCフォーセットウォレットが追加されました！';
+  }
+
+  @override
+  String get invalidFaucetResponse => 'フォーセットからの無効な応答';
+
+  @override
+  String get errorCreatingWallet => 'ウォレットの作成エラー';
+
+  @override
+  String get addLnurlWalletTitle => 'LNURLウォレットを追加';
+
+  @override
+  String get enterLnurlIdentifier => 'LNURL識別子（user@domain.com）を入力してください。';
+
+  @override
+  String get lnurlIdentifierHint => 'user@example.com';
+
+  @override
+  String get pleaseEnterValidIdentifier => '有効な識別子（user@domain.com）を入力してください';
+
+  @override
+  String get lnurlWalletAdded => 'LNURLウォレットが正常に追加されました！';
+
+  @override
+  String get cancel => 'キャンセル';
+
+  @override
+  String get add => '追加';
+
+  @override
+  String get send => '送信';
+
+  @override
+  String get receive => '受信';
+
+  @override
+  String get setAsDefaultForReceiving => '受信のデフォルトに設定';
+
+  @override
+  String get setAsDefaultForSending => '送信のデフォルトに設定';
+
+  @override
+  String get defaultForReceiving => '受信のデフォルト';
+
+  @override
+  String get defaultForSending => '送信のデフォルト';
+
+  @override
+  String get defaultWalletForReceivingTooltip => 'このウォレットは受信のデフォルトです。';
+
+  @override
+  String get defaultWalletForSendingTooltip => 'このウォレットは送信のデフォルトです。';
+
+  @override
+  String get sendOptionsTitle => '送信オプション';
+
+  @override
+  String get sendByToken => 'トークンで送信';
+
+  @override
+  String get sendByTokenDescription => '送信するCashuトークンを作成';
+
+  @override
+  String get sendByLightning => 'Lightningで送信';
+
+  @override
+  String get sendByLightningDescription => 'Lightning請求書を支払う';
+
+  @override
+  String get payInvoiceTitle => '請求書を支払う';
+
+  @override
+  String get invoice => '請求書';
+
+  @override
+  String get invoiceHint => 'lnbc...';
+
+  @override
+  String get pleaseEnterInvoice => '請求書を入力してください';
+
+  @override
+  String get invoicePaid => '請求書が支払われました！';
+
+  @override
+  String paymentFailed(String message) {
+    return '支払い失敗：$message';
+  }
+
+  @override
+  String get receiveOptionsTitle => '受信オプション';
+
+  @override
+  String get receiveByToken => 'トークンで受信';
+
+  @override
+  String get receiveByTokenDescription => 'Cashuトークンを受信';
+
+  @override
+  String get receiveByLightning => 'Lightningで受信';
+
+  @override
+  String get receiveByLightningDescription => 'Lightning請求書を作成';
+
+  @override
+  String get receiveByTokenTitle => 'トークンで受信';
+
+  @override
+  String get token => 'トークン';
+
+  @override
+  String get tokenHint => 'トークンをここに貼り付け...';
+
+  @override
+  String get pleaseEnterToken => 'トークンを入力してください';
+
+  @override
+  String get tokenReceived => 'トークンを受信しました！';
+
+  @override
+  String get createInvoiceTitle => '請求書を作成';
+
+  @override
+  String get amount => '金額';
+
+  @override
+  String get amountHint => '100';
+
+  @override
+  String get pleaseEnterValidAmount => '有効な金額を入力してください';
+
+  @override
+  String get tokenCopiedToClipboard => 'トークンをクリップボードにコピーしました！';
+
+  @override
+  String get invoiceCreatedAndCopied => '請求書を作成してコピーしました！';
+
+  @override
+  String get invoiceTrackingTitle => 'Lightning請求書';
+
+  @override
+  String get invoiceCreatedMessage => '請求書を作成してコピーしました！';
+
+  @override
+  String get close => '閉じる';
+
+  @override
+  String get copyAgain => '再度コピー';
+
+  @override
+  String get copied => 'コピーしました！';
+
+  @override
+  String get paymentReceived => '支払いを受信しました！';
+
+  @override
+  String get waitingForPayment => '支払いを待っています...';
+
+  @override
+  String get paid => '支払い完了！';
+
+  @override
+  String get createToken => 'トークンを作成';
+
+  @override
+  String get pay => '支払う';
+
+  @override
+  String get create => '作成';
+
+  @override
+  String get pendingTransactions => '保留中';
+
+  @override
+  String get recentTransactions => '最近の取引';
+
+  @override
+  String get noRecentTransactions => '最近の取引はありません';
+
+  @override
+  String get noWalletsYet => 'ウォレットはまだありません';
+
+  @override
+  String get noWalletsAvailable => '利用可能なウォレットがありません';
+
+  @override
+  String get tapToAddWallet => '+をタップして追加';
+
+  @override
+  String get delete => '削除';
+
+  @override
+  String error(String message) {
+    return 'エラー：$message';
+  }
+
+  @override
+  String get unknownWalletType => '不明';
+
+  @override
+  String get cashuWallet => 'Cashu';
+
+  @override
+  String get nwcWallet => 'NWC';
+
+  @override
+  String get lnurlWallet => 'LNURL';
+
+  @override
+  String get nwcWalletSubtitle => 'NWCウォレット';
+
+  @override
+  String get balance => '残高';
+
+  @override
+  String get sats => 'sats';
+
+  @override
+  String get selected => '選択済み';
+
+  @override
+  String get receiveOnlyWallet => '受信専用ウォレット';
+
+  @override
+  String receiveRange(int min, int max) {
+    return '受信：$min - $max sats';
+  }
+
+  @override
+  String get limitsUnavailable => '制限情報は利用できません';
+
+  @override
+  String get tokenCopied => 'トークンをコピーしました';
+
+  @override
+  String get deleteWalletConfirmation => 'ウォレットを削除しますか?';
+
+  @override
+  String get deleteWalletConfirmationMessage => 'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
+
+  @override
+  String get addWalletTitle => 'ウォレットを追加';
+
+  @override
+  String get chooseWalletType => 'ウォレットタイプを選択';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => 'NWCでリモートウォレットに接続';
+
+  @override
+  String get lnurlWalletTypeTitle => 'LNURL / Lightning Address';
+
+  @override
+  String get lnurlWalletTypeSubtitle => 'LNURLまたはLightning Address対応ウォレットを使う';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle => 'Cashuミント対応のecashウォレットを使う';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get connectNwcTitle => 'NWCを接続';
+
+  @override
+  String get chooseNwcMethod => '接続方法を選択';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get manualOption => '手動';
+
+  @override
+  String get faucetOption => 'Faucet';
+
+  @override
+  String get invalidNwcQrCode => '無効なNWC QRコード';
+
+  @override
+  String get scanNwcQrCodeTitle => 'NWC QRコードをスキャン';
+
+  @override
+  String get cameraNotAvailable => 'カメラが利用できません';
+
+  @override
+  String get scanNwcInstructions => 'NWCウォレットアプリからQRコードをスキャンしてください';
+
+  @override
+  String get invalidNwcUri => '無効なNWC URI';
+
+  @override
+  String get paste => '貼り付け';
+
+  @override
+  String get fromYourProfile => 'プロフィールから';
+
+  @override
+  String get orEnterManually => 'または手動で入力:';
+
+  @override
+  String get renameWallet => '名前を変更';
+
+  @override
+  String get pickColor => '色を選択';
+
+  @override
+  String get deleteWallet => '削除';
+
+  @override
+  String get walletName => 'ウォレット名';
+
+  @override
+  String get walletNameHint => 'ウォレット名を入力';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get walletRenamed => 'ウォレット名を変更しました';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '予算: $usedString / $totalString';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return '$days 日後に更新';
+  }
+
+  @override
+  String get budgetDaily => '毎日';
+
+  @override
+  String get budgetWeekly => '毎週';
+
+  @override
+  String get budgetMonthly => '毎月';
+
+  @override
+  String get budgetYearly => '毎年';
+
+  @override
+  String get budgetNever => 'なし';
 }

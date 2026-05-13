@@ -617,4 +617,441 @@ class AppLocalizationsZh extends AppLocalizations {
   String unknownEventKind(int kind) {
     return '事件类型 $kind';
   }
+
+  @override
+  String get walletsTitle => '钱包';
+
+  @override
+  String get recentActivityTitle => '最近活动';
+
+  @override
+  String get addCashuWallet => '添加 Cashu 钱包';
+
+  @override
+  String get addNwcWallet => '添加 NWC 钱包';
+
+  @override
+  String get addLnurlWallet => '添加 LNURL 钱包';
+
+  @override
+  String get addCashuTooltip => '添加 Cashu 钱包';
+
+  @override
+  String get addNwcTooltip => '添加 NWC 钱包';
+
+  @override
+  String get addLnurlTooltip => '添加 LNURL 钱包';
+
+  @override
+  String get addCashuWalletTitle => '添加 Cashu 钱包';
+
+  @override
+  String get enterMintUrl => '输入 mint URL 以添加 Cashu 钱包。';
+
+  @override
+  String get mintUrl => 'Mint URL';
+
+  @override
+  String get mintUrlHint => 'https://mint.example.com';
+
+  @override
+  String get pleaseEnterMintUrl => '请输入 mint URL';
+
+  @override
+  String get cashuWalletAdded => 'Cashu 钱包添加成功！';
+
+  @override
+  String get failedToAddMint => '添加 mint 失败。请检查 URL 后重试。';
+
+  @override
+  String get addNwcWalletTitle => '添加 NWC 钱包';
+
+  @override
+  String get faucet => '水龙头';
+
+  @override
+  String get manual => '手动';
+
+  @override
+  String get nwcFaucetDescription => '使用 NWC 水龙头的 sats 创建测试钱包。';
+
+  @override
+  String get startingBalance => '起始余额';
+
+  @override
+  String get startingBalanceHint => '10000';
+
+  @override
+  String get nwcConnectionUri => 'NWC 连接 URI';
+
+  @override
+  String get nwcConnectionUriHint => 'nostr+walletconnect://...';
+
+  @override
+  String get nwcWalletAdded => 'NWC 钱包添加成功！';
+
+  @override
+  String nwcFaucetWalletAdded(int balance) {
+    return '已添加 $balance sats 的 NWC 水龙头钱包！';
+  }
+
+  @override
+  String get invalidFaucetResponse => '水龙头响应无效';
+
+  @override
+  String get errorCreatingWallet => '创建钱包时出错';
+
+  @override
+  String get addLnurlWalletTitle => '添加 LNURL 钱包';
+
+  @override
+  String get enterLnurlIdentifier => '输入您的 LNURL 标识符 (user@domain.com)。';
+
+  @override
+  String get lnurlIdentifierHint => 'user@example.com';
+
+  @override
+  String get pleaseEnterValidIdentifier => '请输入有效的标识符 (user@domain.com)';
+
+  @override
+  String get lnurlWalletAdded => 'LNURL 钱包添加成功！';
+
+  @override
+  String get cancel => '取消';
+
+  @override
+  String get add => '添加';
+
+  @override
+  String get send => '发送';
+
+  @override
+  String get receive => '接收';
+
+  @override
+  String get setAsDefaultForReceiving => '设为接收默认钱包';
+
+  @override
+  String get setAsDefaultForSending => '设为发送默认钱包';
+
+  @override
+  String get defaultForReceiving => '接收默认钱包';
+
+  @override
+  String get defaultForSending => '发送默认钱包';
+
+  @override
+  String get defaultWalletForReceivingTooltip => '该钱包是接收付款的默认钱包。';
+
+  @override
+  String get defaultWalletForSendingTooltip => '该钱包是发送付款的默认钱包。';
+
+  @override
+  String get sendOptionsTitle => '发送选项';
+
+  @override
+  String get sendByToken => '通过 Token 发送';
+
+  @override
+  String get sendByTokenDescription => '创建要发送的 Cashu token';
+
+  @override
+  String get sendByLightning => '通过 Lightning 发送';
+
+  @override
+  String get sendByLightningDescription => '支付 Lightning 发票';
+
+  @override
+  String get payInvoiceTitle => '支付发票';
+
+  @override
+  String get invoice => '发票';
+
+  @override
+  String get invoiceHint => 'lnbc...';
+
+  @override
+  String get pleaseEnterInvoice => '请输入发票';
+
+  @override
+  String get invoicePaid => '发票已支付！';
+
+  @override
+  String paymentFailed(String message) {
+    return '支付失败：$message';
+  }
+
+  @override
+  String get receiveOptionsTitle => '接收选项';
+
+  @override
+  String get receiveByToken => '通过 Token 接收';
+
+  @override
+  String get receiveByTokenDescription => '接收 Cashu token';
+
+  @override
+  String get receiveByLightning => '通过 Lightning 接收';
+
+  @override
+  String get receiveByLightningDescription => '创建 Lightning 发票';
+
+  @override
+  String get receiveByTokenTitle => '通过 Token 接收';
+
+  @override
+  String get token => 'Token';
+
+  @override
+  String get tokenHint => '在此处粘贴 token...';
+
+  @override
+  String get pleaseEnterToken => '请输入 token';
+
+  @override
+  String get tokenReceived => 'Token 已接收！';
+
+  @override
+  String get createInvoiceTitle => '创建发票';
+
+  @override
+  String get amount => '金额';
+
+  @override
+  String get amountHint => '100';
+
+  @override
+  String get pleaseEnterValidAmount => '请输入有效金额';
+
+  @override
+  String get tokenCopiedToClipboard => 'Token 已复制到剪贴板！';
+
+  @override
+  String get invoiceCreatedAndCopied => '发票已创建并复制！';
+
+  @override
+  String get invoiceTrackingTitle => 'Lightning 发票';
+
+  @override
+  String get invoiceCreatedMessage => '发票已创建并复制！';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get copyAgain => '再次复制';
+
+  @override
+  String get copied => '已复制！';
+
+  @override
+  String get paymentReceived => '付款已接收！';
+
+  @override
+  String get waitingForPayment => '等待付款...';
+
+  @override
+  String get paid => '已支付！';
+
+  @override
+  String get createToken => '创建 Token';
+
+  @override
+  String get pay => '支付';
+
+  @override
+  String get create => '创建';
+
+  @override
+  String get pendingTransactions => '待处理';
+
+  @override
+  String get recentTransactions => '最近交易';
+
+  @override
+  String get noRecentTransactions => '无最近交易';
+
+  @override
+  String get noWalletsYet => '尚无钱包';
+
+  @override
+  String get noWalletsAvailable => '无可用钱包';
+
+  @override
+  String get tapToAddWallet => '点击 + 添加';
+
+  @override
+  String get delete => '删除';
+
+  @override
+  String error(String message) {
+    return '错误：$message';
+  }
+
+  @override
+  String get unknownWalletType => '未知';
+
+  @override
+  String get cashuWallet => 'Cashu';
+
+  @override
+  String get nwcWallet => 'NWC';
+
+  @override
+  String get lnurlWallet => 'LNURL';
+
+  @override
+  String get nwcWalletSubtitle => 'NWC 钱包';
+
+  @override
+  String get balance => '余额';
+
+  @override
+  String get sats => 'sats';
+
+  @override
+  String get selected => '已选择';
+
+  @override
+  String get receiveOnlyWallet => '仅接收钱包';
+
+  @override
+  String receiveRange(int min, int max) {
+    return '接收：$min - $max sats';
+  }
+
+  @override
+  String get limitsUnavailable => '限制不可用';
+
+  @override
+  String get tokenCopied => 'Token 已复制';
+
+  @override
+  String get deleteWalletConfirmation => '删除钱包?';
+
+  @override
+  String get deleteWalletConfirmationMessage => '您确定要删除此钱包吗? 此操作无法撤销。';
+
+  @override
+  String get addWalletTitle => '添加钱包';
+
+  @override
+  String get chooseWalletType => '选择钱包类型';
+
+  @override
+  String get nwcWalletTypeTitle => 'Nostr Wallet Connect';
+
+  @override
+  String get nwcWalletTypeSubtitle => '通过 NWC 连接远程钱包';
+
+  @override
+  String get lnurlWalletTypeTitle => 'LNURL / Lightning 地址';
+
+  @override
+  String get lnurlWalletTypeSubtitle => '使用支持 LNURL 或 Lightning 地址的托管钱包';
+
+  @override
+  String get cashuWalletTypeTitle => 'Cashu';
+
+  @override
+  String get cashuWalletTypeSubtitle => '使用由 Cashu mint 支持的 ecash 钱包';
+
+  @override
+  String get cashuOption => 'Cashu';
+
+  @override
+  String get nwcOption => 'NWC';
+
+  @override
+  String get lnurlOption => 'LNURL';
+
+  @override
+  String get connectNwcTitle => '连接 NWC';
+
+  @override
+  String get chooseNwcMethod => '选择连接方式';
+
+  @override
+  String get albyGoOption => 'Alby Go';
+
+  @override
+  String get manualOption => '手动';
+
+  @override
+  String get faucetOption => '水龙头';
+
+  @override
+  String get invalidNwcQrCode => '无效的NWC二维码';
+
+  @override
+  String get scanNwcQrCodeTitle => '扫描NWC二维码';
+
+  @override
+  String get cameraNotAvailable => '相机不可用';
+
+  @override
+  String get scanNwcInstructions => '从您的NWC钱包应用扫描二维码';
+
+  @override
+  String get invalidNwcUri => '无效的NWC URI';
+
+  @override
+  String get paste => '粘贴';
+
+  @override
+  String get fromYourProfile => '来自您的个人资料';
+
+  @override
+  String get orEnterManually => '或手动输入:';
+
+  @override
+  String get renameWallet => '重命名';
+
+  @override
+  String get pickColor => '选择颜色';
+
+  @override
+  String get deleteWallet => '删除';
+
+  @override
+  String get walletName => '钱包名称';
+
+  @override
+  String get walletNameHint => '输入钱包名称';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get walletRenamed => '钱包已重命名';
+
+  @override
+  String budgetUsedOf(int used, int total) {
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String usedString = usedNumberFormat.format(used);
+    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '预算：$usedString / $totalString';
+  }
+
+  @override
+  String budgetRenewsIn(int days) {
+    return '$days 天后更新';
+  }
+
+  @override
+  String get budgetDaily => '每日';
+
+  @override
+  String get budgetWeekly => '每周';
+
+  @override
+  String get budgetMonthly => '每月';
+
+  @override
+  String get budgetYearly => '每年';
+
+  @override
+  String get budgetNever => '从不';
 }

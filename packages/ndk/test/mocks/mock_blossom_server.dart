@@ -12,12 +12,20 @@ class MockBlossomServer {
   // In-memory storage for blobs
   final Map<String, _BlobEntry> _blobs = {};
   final int port;
+  final int uploadStatusCode;
+  final int mirrorStatusCode;
+  final int deleteStatusCode;
   HttpServer? _server;
 
   /// report kind
   static const int kReport = 1984;
 
-  MockBlossomServer({this.port = 3000});
+  MockBlossomServer({
+    this.port = 3000,
+    this.uploadStatusCode = 200,
+    this.mirrorStatusCode = 200,
+    this.deleteStatusCode = 200,
+  });
 
   Router _createRouter() {
     final router = Router();
@@ -61,6 +69,53 @@ class MockBlossomServer {
         final authEvent =
             json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
         if (!_verifyAuthEvent(authEvent, 'upload')) {
+          return Response.forbidden('Invalid authorization event');
+        }
+      } catch (e) {
+        return Response.forbidden('Invalid authorization format');
+      }
+
+      // Read the request body
+      final bytes = await request.read().expand((chunk) => chunk).toList();
+      final data = Uint8List.fromList(bytes);
+
+      final sha256 = _computeSha256(data);
+      final contentType =
+          request.headers['content-type'] ?? 'application/octet-stream';
+
+      _blobs[sha256] = _BlobEntry(
+        data: data,
+        contentType: contentType,
+        uploader: 'test_pubkey',
+        uploadedAt: DateTime.now(),
+      );
+
+      return Response(
+        uploadStatusCode,
+        body: json.encode({
+          'url': 'http://localhost:$port/$sha256',
+          'sha256': sha256,
+          'size': data.length,
+          'type': contentType,
+          'uploaded': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // PUT /media - Upload Media Blob
+    router.put('/media', (Request request) async {
+      // Check for authorization header
+      final authHeader = request.headers['authorization'];
+
+      if (authHeader == null) {
+        return Response.forbidden('Missing authorization');
+      }
+
+      try {
+        final authEvent =
+            json.decode(utf8.decode(base64Decode(authHeader.split(' ')[1])));
+        if (!_verifyAuthEvent(authEvent, 'media')) {
           return Response.forbidden('Invalid authorization event');
         }
       } catch (e) {
@@ -163,7 +218,7 @@ class MockBlossomServer {
       }
 
       _blobs.remove(sha256);
-      return Response(200);
+      return Response(deleteStatusCode);
     });
 
     router.put('/mirror', (Request request) async {
@@ -231,8 +286,9 @@ class MockBlossomServer {
 
         httpClient.close();
         // Return the same descriptor format as upload
-        return Response.ok(
-          json.encode({
+        return Response(
+          mirrorStatusCode,
+          body: json.encode({
             'url': 'http://localhost:$port/$computedSha256',
             'sha256': computedSha256,
             'size': data.length,

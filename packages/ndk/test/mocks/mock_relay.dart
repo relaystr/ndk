@@ -21,6 +21,8 @@ class MockRelay {
   Map<KeyPair, Nip01Event>? textNotes;
   Map<String, Nip01Event> _contactLists = {};
   Map<String, Nip01Event> _metadatas = {};
+  Map<String, Nip01Event> _nip85Assertions =
+      {}; // NIP-85 assertions keyed by "author:dTag"
   final Set<Nip01Event> _storedEvents = {}; // Store received events
 
   // Track all connected clients with their subscriptions
@@ -32,6 +34,9 @@ class MockRelay {
   bool allwaysSendBadJson;
   bool sendMalformedEvents;
   String? customWelcomeMessage;
+  int? maxEventsPerRequest;
+  int signEventCreatedAtOffsetSeconds;
+  String? signEventContentOverride;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -56,6 +61,9 @@ class MockRelay {
     this.allwaysSendBadJson = false,
     this.sendMalformedEvents = false,
     this.customWelcomeMessage,
+    this.maxEventsPerRequest,
+    this.signEventCreatedAtOffsetSeconds = 0,
+    this.signEventContentOverride,
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -71,6 +79,7 @@ class MockRelay {
     Map<KeyPair, Nip01Event>? textNotes,
     Map<String, Nip01Event>? contactLists,
     Map<String, Nip01Event>? metadatas,
+    Map<String, Nip01Event>? nip85Assertions,
     Duration? delayResponse,
   }) async {
     var myPromise = Completer<void>();
@@ -87,13 +96,17 @@ class MockRelay {
     if (metadatas != null) {
       _metadatas = metadatas;
     }
+    if (nip85Assertions != null) {
+      _nip85Assertions = nip85Assertions;
+    }
 
     var server = await HttpServer.bind(InternetAddress.loopbackIPv4, _port!,
         shared: true);
     this.server = server;
     var stream = server.transform(WebSocketTransformer());
 
-    String challenge = '';
+    // Generate challenge once for the entire server lifetime (fixes race condition on reconnect)
+    final String challenge = Helpers.getRandomString(10);
     Set<String> authenticatedPubkeys = {};
 
     stream.listen((webSocket) {
@@ -105,7 +118,6 @@ class MockRelay {
       }
       if ((requireAuthForRequests || requireAuthForEvents) &&
           sendAuthChallenge) {
-        challenge = Helpers.getRandomString(10);
         webSocket.add(jsonEncode(["AUTH", challenge]));
       }
       webSocket.listen((message) async {
@@ -156,9 +168,15 @@ class MockRelay {
               return;
             }
             if (newEvent.kind == ContactList.kKind) {
-              _contactLists[newEvent.pubKey] = newEvent;
+              final existing = _contactLists[newEvent.pubKey];
+              if (existing == null || _shouldReplace(existing, newEvent)) {
+                _contactLists[newEvent.pubKey] = newEvent;
+              }
             } else if (newEvent.kind == Metadata.kKind) {
-              _metadatas[newEvent.pubKey] = newEvent;
+              final existing = _metadatas[newEvent.pubKey];
+              if (existing == null || _shouldReplace(existing, newEvent)) {
+                _metadatas[newEvent.pubKey] = newEvent;
+              }
             } else if (newEvent.kind == Deletion.kKind) {
               final eventIdsToDelete = newEvent.getTags("e");
               for (final idToDelete in eventIdsToDelete) {
@@ -178,6 +196,35 @@ class MockRelay {
               // Also handle NIP-46 if targeting our mock signer
               if (newEvent.kind == kNip46Kind) {
                 _handleNip46Request(newEvent, webSocket);
+              }
+            } else if (_isReplaceableKind(newEvent.kind)) {
+              // NIP-01 replaceable: only one event per (pubkey, kind)
+              final existing = _storedEvents.where((e) =>
+                  e.pubKey == newEvent.pubKey && e.kind == newEvent.kind);
+              if (existing.isEmpty) {
+                _storedEvents.add(newEvent);
+              } else {
+                final current = existing.first;
+                if (_shouldReplace(current, newEvent)) {
+                  _storedEvents.remove(current);
+                  _storedEvents.add(newEvent);
+                }
+              }
+            } else if (_isAddressableKind(newEvent.kind)) {
+              // NIP-01 addressable: only one event per (pubkey, kind, d-tag)
+              final dTag = newEvent.getDtag() ?? '';
+              final existing = _storedEvents.where((e) =>
+                  e.pubKey == newEvent.pubKey &&
+                  e.kind == newEvent.kind &&
+                  (e.getDtag() ?? '') == dTag);
+              if (existing.isEmpty) {
+                _storedEvents.add(newEvent);
+              } else {
+                final current = existing.first;
+                if (_shouldReplace(current, newEvent)) {
+                  _storedEvents.remove(current);
+                  _storedEvents.add(newEvent);
+                }
               }
             } else {
               _storedEvents.add(newEvent);
@@ -277,7 +324,9 @@ class MockRelay {
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
         eventsForThisFilter.addAll(_contactLists.values
-            .where((e) => filter.authors!.contains(e.pubKey))
+            .where((e) =>
+                filter.authors!.contains(e.pubKey) &&
+                _matchesTimeFilter(e, filter))
             .toList());
       }
       // Match against metadatas
@@ -286,8 +335,24 @@ class MockRelay {
           filter.authors != null &&
           filter.authors!.isNotEmpty) {
         eventsForThisFilter.addAll(_metadatas.values
-            .where((e) => filter.authors!.contains(e.pubKey))
+            .where((e) =>
+                filter.authors!.contains(e.pubKey) &&
+                _matchesTimeFilter(e, filter))
             .toList());
+      }
+      // Match against NIP-85 assertions (kinds 30382-30385)
+      else if (filter.kinds != null &&
+          filter.kinds!.any((k) => k >= 30382 && k <= 30385) &&
+          filter.authors != null &&
+          filter.authors!.isNotEmpty) {
+        eventsForThisFilter.addAll(_nip85Assertions.values.where((e) {
+          bool kindMatches = filter.kinds!.contains(e.kind);
+          bool authorMatches = filter.authors!.contains(e.pubKey);
+          bool dTagMatches = filter.dTags == null ||
+              filter.dTags!.isEmpty ||
+              filter.dTags!.contains(e.getDtag());
+          return kindMatches && authorMatches && dTagMatches;
+        }).toList());
       }
       // General event matching (storedEvents and textNotes)
       else {
@@ -298,8 +363,8 @@ class MockRelay {
               filter.authors == null || filter.authors!.contains(event.pubKey);
           bool idsMatches =
               filter.ids == null || filter.ids!.contains(event.id);
-          // Add other tag-based filtering if necessary, e.g., #e, #p tags
-          return kindMatches && authorMatches && idsMatches;
+          bool timeMatches = _matchesTimeFilter(event, filter);
+          return kindMatches && authorMatches && idsMatches && timeMatches;
         }).toList());
 
         if (textNotes != null) {
@@ -310,8 +375,8 @@ class MockRelay {
                 filter.authors!.contains(event.pubKey);
             bool idsMatches =
                 filter.ids == null || filter.ids!.contains(event.id);
-            // Add other tag-based filtering if necessary
-            return kindMatches && authorMatches && idsMatches;
+            bool timeMatches = _matchesTimeFilter(event, filter);
+            return kindMatches && authorMatches && idsMatches && timeMatches;
           }).toList());
         }
       }
@@ -324,6 +389,7 @@ class MockRelay {
               (filter.kinds == null || filter.kinds!.contains(Nip65.kKind))) {
             Nip01Event eventToAdd =
                 entry.value.toEvent(); // Creates a new event instance
+            if (!_matchesTimeFilter(eventToAdd, filter)) continue;
             final Nip01Event? eventToAddSigned;
             if (signEvents && entry.key.privateKey != null) {
               // Sign the new instance, not the one in _nip65s
@@ -354,8 +420,9 @@ class MockRelay {
               (filter.kinds!.any((k) =>
                   Nip51List.kPossibleKinds.contains(k) &&
                   Nip51List.kPossibleKinds.contains(entry.value.kind)));
+          bool timeMatches = _matchesTimeFilter(entry.value, filter);
 
-          if (authorsMatch && kindsMatch) {
+          if (authorsMatch && kindsMatch && timeMatches) {
             // Clone the event from the map before signing to avoid mutating the stored original
             Nip01Event eventToAdd = entry.value.copyWith();
             Nip01Event? eventToAddSigned;
@@ -369,15 +436,41 @@ class MockRelay {
           }
         }
       }
+
+      // Apply limit per filter - sort by created_at desc and take limit
+      if (filter.limit != null && eventsForThisFilter.length > filter.limit!) {
+        eventsForThisFilter.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        eventsForThisFilter = eventsForThisFilter.take(filter.limit!).toList();
+      }
+
       allMatchingEvents.addAll(eventsForThisFilter);
     }
 
-    for (final event in allMatchingEvents) {
+    // Apply global relay limit if configured
+    List<Nip01Event> eventsToSend = allMatchingEvents.toList();
+    if (maxEventsPerRequest != null &&
+        eventsToSend.length > maxEventsPerRequest!) {
+      eventsToSend.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      eventsToSend = eventsToSend.take(maxEventsPerRequest!).toList();
+    }
+
+    for (final event in eventsToSend) {
       webSocket.add(jsonEncode(
           ["EVENT", requestId, Nip01EventModel.fromEntity(event).toJson()]));
     }
 
     webSocket.add(jsonEncode(["EOSE", requestId]));
+  }
+
+  /// Check if event matches since/until time filters
+  bool _matchesTimeFilter(Nip01Event event, Filter filter) {
+    if (filter.since != null && event.createdAt < filter.since!) {
+      return false;
+    }
+    if (filter.until != null && event.createdAt > filter.until!) {
+      return false;
+    }
+    return true;
   }
 
   /// Sends event to all connected clients
@@ -419,6 +512,24 @@ class MockRelay {
     return kind >= 20000 && kind < 30000;
   }
 
+  /// Check if a kind is replaceable (10000-19999) per NIP-01.
+  /// Kinds 0 and 3 are also replaceable but handled via dedicated maps.
+  bool _isReplaceableKind(int kind) {
+    return kind >= 10000 && kind < 20000;
+  }
+
+  /// Check if a kind is addressable (30000-39999) per NIP-01
+  bool _isAddressableKind(int kind) {
+    return kind >= 30000 && kind < 40000;
+  }
+
+  /// NIP-01 replacement rule: newer created_at wins; on tie, lower id wins.
+  bool _shouldReplace(Nip01Event existing, Nip01Event incoming) {
+    if (incoming.createdAt > existing.createdAt) return true;
+    if (incoming.createdAt < existing.createdAt) return false;
+    return incoming.id.compareTo(existing.id) < 0;
+  }
+
   /// Broadcast an event to all clients with matching subscriptions
   void _broadcastEventToSubscriptions(Nip01Event event) {
     for (var clientEntry in _clientSubscriptions.entries) {
@@ -457,6 +568,16 @@ class MockRelay {
 
     // Check ids filter
     if (filter.ids != null && !filter.ids!.contains(event.id)) {
+      return false;
+    }
+
+    // Check since filter
+    if (filter.since != null && event.createdAt < filter.since!) {
+      return false;
+    }
+
+    // Check until filter
+    if (filter.until != null && event.createdAt > filter.until!) {
       return false;
     }
 
@@ -615,9 +736,13 @@ class MockRelay {
           final Nip01Event eventToSign = Nip01Event(
             pubKey: remoteSignerPublicKey,
             kind: eventData["kind"] ?? 1,
-            tags: List<List<String>>.from(eventData["tags"] ?? []),
-            content: eventData["content"] ?? "",
-            createdAt: eventData["created_at"] ?? eventData["createdAt"] ?? 0,
+            tags: (eventData["tags"] as List<dynamic>? ?? [])
+                .map((tag) => List<String>.from(tag))
+                .toList(),
+            content: signEventContentOverride ?? eventData["content"] ?? "",
+            createdAt:
+                (eventData["created_at"] ?? eventData["createdAt"] ?? 0) +
+                    signEventCreatedAtOffsetSeconds,
           );
 
           final Nip01Event signedEvent = Nip01Utils.signWithPrivateKey(

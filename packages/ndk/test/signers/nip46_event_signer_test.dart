@@ -6,6 +6,8 @@ import 'package:test/test.dart';
 import '../mocks/mock_relay.dart';
 
 void main() {
+  final eventSignerFactory = Bip340EventSignerFactory();
+
   group('Nip46EventSigner with MockRelay', () {
     late Nip46EventSigner signer;
     late BunkerConnection connection;
@@ -41,7 +43,8 @@ void main() {
       signer = Nip46EventSigner(
           connection: connection,
           requests: ndk.requests,
-          broadcast: ndk.broadcast);
+          broadcast: ndk.broadcast,
+          eventSignerFactory: eventSignerFactory);
     });
 
     tearDown(() async {
@@ -69,6 +72,32 @@ void main() {
       expect(signedEvent.sig, isNotNull);
     });
 
+    test('sign should use event body returned by remote signer', () async {
+      mockRelay.signEventCreatedAtOffsetSeconds = 11;
+      mockRelay.signEventContentOverride = 'mutated by remote signer';
+
+      final event = Nip01Event(
+        pubKey: MockRelay.remoteSignerPublicKey,
+        kind: 1,
+        tags: [
+          ['t', 'test']
+        ],
+        content: 'requested content',
+        createdAt: 1234567890,
+      );
+
+      final signedEvent = await signer.sign(event);
+
+      // Remote signer is allowed to modify the event before signing.
+      expect(signedEvent.content, equals('mutated by remote signer'));
+      expect(signedEvent.createdAt, equals(event.createdAt + 11));
+      expect(Nip01Utils.isIdValid(signedEvent), isTrue);
+      expect(
+        await Bip340EventVerifier(useIsolate: false).verify(signedEvent),
+        isTrue,
+      );
+    });
+
     test('getPublicKey should throw when not cached', () {
       expect(() => signer.getPublicKey(), throwsException);
     });
@@ -93,6 +122,7 @@ void main() {
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
       );
 
       final bunkerConnection = await bunkers.connectWithBunkerUrl(
@@ -113,6 +143,7 @@ void main() {
         connection: bunkerConnection,
         requests: ndk.requests,
         broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
       );
 
       final testEvent = Nip01Event(
@@ -140,9 +171,10 @@ void main() {
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
       );
 
-      final accounts = Accounts();
+      final accounts = Accounts(eventSignerFactory);
 
       // Login with the bunker URL
       final connection = await accounts.loginWithBunkerUrl(
@@ -193,9 +225,10 @@ void main() {
       final bunkers = Bunkers(
         requests: ndk.requests,
         broadcast: ndk.broadcast,
+        eventSignerFactory: eventSignerFactory,
       );
 
-      final accounts = Accounts();
+      final accounts = Accounts(eventSignerFactory);
 
       // Login with the bunker connection
       await accounts.loginWithBunkerConnection(

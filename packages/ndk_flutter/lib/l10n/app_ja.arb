@@ -27,7 +27,6 @@
   "readOnly": "読み取り専用",
   "nsec": "Nsec",
   "extension": "拡張機能",
-
   "userMetadata": "ユーザーメタデータ",
   "shortTextNote": "短いテキストノート",
   "recommendRelay": "リレー推奨",
@@ -202,5 +201,211 @@
   "starterPacks": "スターターパック",
   "mediaStarterPacks": "メディアスターターパック",
   "webBookmarks": "ウェブブックマーク",
-  "unknownEventKind": "イベント種別 {kind}"
+  "unknownEventKind": "イベント種別 {kind}",
+  "walletsTitle": "ウォレット",
+  "recentActivityTitle": "最近のアクティビティ",
+  "addCashuWallet": "Cashuウォレットを追加",
+  "addNwcWallet": "NWCウォレットを追加",
+  "addLnurlWallet": "LNURLウォレットを追加",
+  "addCashuTooltip": "Cashuウォレットを追加",
+  "addNwcTooltip": "NWCウォレットを追加",
+  "addLnurlTooltip": "LNURLウォレットを追加",
+  "addCashuWalletTitle": "Cashuウォレットを追加",
+  "enterMintUrl": "Cashuウォレットを追加するにはミントURLを入力してください。",
+  "mintUrl": "ミントURL",
+  "mintUrlHint": "https://mint.example.com",
+  "pleaseEnterMintUrl": "ミントURLを入力してください",
+  "cashuWalletAdded": "Cashuウォレットが正常に追加されました！",
+  "failedToAddMint": "ミントの追加に失敗しました。URLを確認して再試行してください。",
+  "addNwcWalletTitle": "NWCウォレットを追加",
+  "faucet": "フォーセット",
+  "manual": "手動",
+  "nwcFaucetDescription": "NWCフォーセットからsatsを使ってテストウォレットを作成します。",
+  "startingBalance": "開始残高",
+  "startingBalanceHint": "10000",
+  "nwcConnectionUri": "NWC接続URI",
+  "nwcConnectionUriHint": "nostr+walletconnect://...",
+  "nwcWalletAdded": "NWCウォレットが正常に追加されました！",
+  "nwcFaucetWalletAdded": "{balance} satsのNWCフォーセットウォレットが追加されました！",
+  "invalidFaucetResponse": "フォーセットからの無効な応答",
+  "errorCreatingWallet": "ウォレットの作成エラー",
+  "addLnurlWalletTitle": "LNURLウォレットを追加",
+  "enterLnurlIdentifier": "LNURL識別子（user@domain.com）を入力してください。",
+  "lnurlIdentifierHint": "user@example.com",
+  "pleaseEnterValidIdentifier": "有効な識別子（user@domain.com）を入力してください",
+  "lnurlWalletAdded": "LNURLウォレットが正常に追加されました！",
+  "cancel": "キャンセル",
+  "add": "追加",
+  "send": "送信",
+  "receive": "受信",
+  "setAsDefaultForReceiving": "受信のデフォルトに設定",
+  "setAsDefaultForSending": "送信のデフォルトに設定",
+  "defaultForReceiving": "受信のデフォルト",
+  "defaultForSending": "送信のデフォルト",
+  "defaultWalletForReceivingTooltip": "このウォレットは受信のデフォルトです。",
+  "defaultWalletForSendingTooltip": "このウォレットは送信のデフォルトです。",
+  "sendOptionsTitle": "送信オプション",
+  "sendByToken": "トークンで送信",
+  "sendByTokenDescription": "送信するCashuトークンを作成",
+  "sendByLightning": "Lightningで送信",
+  "sendByLightningDescription": "Lightning請求書を支払う",
+  "payInvoiceTitle": "請求書を支払う",
+  "invoice": "請求書",
+  "invoiceHint": "lnbc...",
+  "pleaseEnterInvoice": "請求書を入力してください",
+  "invoicePaid": "請求書が支払われました！",
+  "paymentFailed": "支払い失敗：{message}",
+  "receiveOptionsTitle": "受信オプション",
+  "receiveByToken": "トークンで受信",
+  "receiveByTokenDescription": "Cashuトークンを受信",
+  "receiveByLightning": "Lightningで受信",
+  "receiveByLightningDescription": "Lightning請求書を作成",
+  "receiveByTokenTitle": "トークンで受信",
+  "token": "トークン",
+  "tokenHint": "トークンをここに貼り付け...",
+  "pleaseEnterToken": "トークンを入力してください",
+  "tokenReceived": "トークンを受信しました！",
+  "createInvoiceTitle": "請求書を作成",
+  "amount": "金額",
+  "amountHint": "100",
+  "pleaseEnterValidAmount": "有効な金額を入力してください",
+  "tokenCopiedToClipboard": "トークンをクリップボードにコピーしました！",
+  "invoiceCreatedAndCopied": "請求書を作成してコピーしました！",
+  "invoiceTrackingTitle": "Lightning請求書",
+  "invoiceCreatedMessage": "請求書を作成してコピーしました！",
+  "close": "閉じる",
+  "copyAgain": "再度コピー",
+  "copied": "コピーしました！",
+  "paymentReceived": "支払いを受信しました！",
+  "waitingForPayment": "支払いを待っています...",
+  "paid": "支払い完了！",
+  "createToken": "トークンを作成",
+  "pay": "支払う",
+  "create": "作成",
+  "pendingTransactions": "保留中",
+  "recentTransactions": "最近の取引",
+  "noRecentTransactions": "最近の取引はありません",
+  "noWalletsYet": "ウォレットはまだありません",
+  "noWalletsAvailable": "利用可能なウォレットがありません",
+  "tapToAddWallet": "+をタップして追加",
+  "delete": "削除",
+  "error": "エラー：{message}",
+  "unknownWalletType": "不明",
+  "cashuWallet": "Cashu",
+  "nwcWallet": "NWC",
+  "lnurlWallet": "LNURL",
+  "balance": "残高",
+  "sats": "sats",
+  "selected": "選択済み",
+  "receiveOnlyWallet": "受信専用ウォレット",
+  "receiveRange": "受信：{min} - {max} sats",
+  "limitsUnavailable": "制限情報は利用できません",
+  "nwcWalletSubtitle": "NWCウォレット",
+  "tokenCopied": "トークンをコピーしました",
+  "deleteWalletConfirmation": "ウォレットを削除しますか?",
+  "@deleteWalletConfirmation": {
+    "description": "Title for delete wallet confirmation dialog"
+  },
+  "deleteWalletConfirmationMessage": "このウォレットを削除してもよろしいですか? この操作は元に戻せません。",
+  "@deleteWalletConfirmationMessage": {
+    "description": "Message for delete wallet confirmation dialog"
+  },
+  "addWalletTitle": "ウォレットを追加",
+  "chooseWalletType": "ウォレットタイプを選択",
+  "nwcWalletTypeTitle": "Nostr Wallet Connect",
+  "nwcWalletTypeSubtitle": "NWCでリモートウォレットに接続",
+  "lnurlWalletTypeTitle": "LNURL / Lightning Address",
+  "lnurlWalletTypeSubtitle": "LNURLまたはLightning Address対応ウォレットを使う",
+  "cashuWalletTypeTitle": "Cashu",
+  "cashuWalletTypeSubtitle": "Cashuミント対応のecashウォレットを使う",
+  "cashuOption": "Cashu",
+  "nwcOption": "NWC",
+  "lnurlOption": "LNURL",
+  "connectNwcTitle": "NWCを接続",
+  "chooseNwcMethod": "接続方法を選択",
+  "albyGoOption": "Alby Go",
+  "manualOption": "手動",
+  "faucetOption": "Faucet",
+  "invalidNwcQrCode": "無効なNWC QRコード",
+  "scanNwcQrCodeTitle": "NWC QRコードをスキャン",
+  "cameraNotAvailable": "カメラが利用できません",
+  "scanNwcInstructions": "NWCウォレットアプリからQRコードをスキャンしてください",
+  "invalidNwcUri": "無効なNWC URI",
+  "paste": "貼り付け",
+  "fromYourProfile": "プロフィールから",
+  "orEnterManually": "または手動で入力:",
+  "budgetUsedOf": "予算: {used} / {total}",
+  "@budgetUsedOf": {
+    "description": "Budget information showing used and total amount",
+    "placeholders": {
+      "used": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Amount already used"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Total budget amount"
+      }
+    }
+  },
+  "budgetRenewsIn": "{days} 日後に更新",
+  "@budgetRenewsIn": {
+    "description": "Budget renewal information showing days until renewal",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until budget renews"
+      }
+    }
+  },
+  "budgetDaily": "毎日",
+  "@budgetDaily": {
+    "description": "Daily budget renewal period"
+  },
+  "budgetWeekly": "毎週",
+  "@budgetWeekly": {
+    "description": "Weekly budget renewal period"
+  },
+  "budgetMonthly": "毎月",
+  "@budgetMonthly": {
+    "description": "Monthly budget renewal period"
+  },
+  "budgetYearly": "毎年",
+  "@budgetYearly": {
+    "description": "Yearly budget renewal period"
+  },
+  "budgetNever": "なし",
+  "@budgetNever": {
+    "description": "Never renews budget"
+  },
+  "renameWallet": "名前を変更",
+  "@renameWallet": {
+    "description": "Label for rename wallet option"
+  },
+  "pickColor": "色を選択",
+  "@pickColor": {
+    "description": "Label for pick color option"
+  },
+  "deleteWallet": "削除",
+  "@deleteWallet": {
+    "description": "Label for delete wallet option"
+  },
+  "walletName": "ウォレット名",
+  "@walletName": {
+    "description": "Label for wallet name input"
+  },
+  "walletNameHint": "ウォレット名を入力",
+  "@walletNameHint": {
+    "description": "Hint for wallet name input"
+  },
+  "save": "保存",
+  "@save": {
+    "description": "Label for save action"
+  },
+  "walletRenamed": "ウォレット名を変更しました",
+  "@walletRenamed": {
+    "description": "Message shown when wallet is renamed"
+  }
 }

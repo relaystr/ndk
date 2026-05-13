@@ -93,6 +93,11 @@ void main() async {
           await ndk.metadata.loadMetadata(key0.publicKey, forceRefresh: true);
       expect(result!.pubKey, metadata.pubKey);
 
+      // NIP-01 replacement uses created_at (1s resolution); on a tie the
+      // lower-id event wins. Wait so the second broadcast lands in a later
+      // second and replaces deterministically.
+      await Future.delayed(const Duration(seconds: 1));
+
       metadata.name = "my name";
       await ndk.metadata.broadcastMetadata(metadata);
       result =

@@ -1,11 +1,16 @@
-import 'package:ndk/config/broadcast_defaults.dart';
-
 import '../config/bootstrap_relays.dart';
+import '../config/nip85_defaults.dart';
+import '../config/broadcast_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
+import '../data_layer/repositories/signers/bip340_event_signer.dart';
+import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
+import '../domain_layer/entities/nip_85.dart';
 import '../domain_layer/repositories/cache_manager.dart';
+import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
+import '../domain_layer/repositories/wallets_repo.dart';
 import '../shared/logger/log_level.dart';
 
 /// Configuration class for the Nostr Development Kit (NDK)
@@ -18,6 +23,12 @@ class NdkConfig {
 
   /// The cache manager (DB) used to store and retrieve Nostr data. E.g MemCacheManager()
   CacheManager cache;
+
+  /// The wallets repository used to manage wallet data. E.g MemWalletsRepo()
+  WalletsRepo? walletsRepo;
+
+  /// Factory for creating EventSigner instances. Defaults to Bip340EventSigner.
+  LocalEventSignerFactory eventSignerFactory;
 
   /// The engine mode to use for Nostr network operations (inbox/outbox mode).
   ///
@@ -47,6 +58,11 @@ class NdkConfig {
   /// value between 0.0 and 1.0
   double defaultBroadcastConsiderDonePercent;
 
+  /// cashu user seed phrase, required for using cashu features \
+  /// you can use CashuSeed.generateSeedPhrase() to generate a new seed phrase \
+  /// Store this securely! Seed phrase allow full access to cashu funds!
+  final CashuUserSeedphrase? cashuUserSeedphrase;
+
   /// whether to save broadcasted events to cache by default
   bool defaultBroadcastSaveToCache;
 
@@ -70,19 +86,26 @@ class NdkConfig {
   /// Defaults to 30 seconds.
   Duration authCallbackTimeout;
 
+  /// Default trusted providers for NIP-85 trusted assertions.
+  List<Nip85TrustedProvider> defaultTrustedProviders;
+
   /// Creates a new instance of [NdkConfig].
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
   /// [cache] The cache manager for storing and retrieving Nostr data. \
+  /// [eventSignerFactory] Factory for creating EventSigner instances (defaults to Bip340EventSigner). \
   /// [engine] The engine mode to use (defaults to RELAY_SETS). \
   /// [ignoreRelays] A list of relay URLs to ignore (defaults to an empty list). \
   /// [bootstrapRelays] A list of initial relay URLs (defaults to DEFAULT_BOOTSTRAP_RELAYS). \
   /// [eventOutFilters] A list of filters to apply to the output stream (defaults to an empty list). \
   /// [defaultQueryTimeout] The default timeout for queries (defaults to DEFAULT_QUERY_TIMEOUT). \
   /// [logLevel] The log level for the NDK (defaults to warning).
+  /// [cashuUserSeedphrase] The cashu user seed phrase, required for using cashu features
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
+    this.eventSignerFactory = const Bip340EventSignerFactory(),
+    this.walletsRepo,
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],
     this.bootstrapRelays = DEFAULT_BOOTSTRAP_RELAYS,
@@ -94,9 +117,11 @@ class NdkConfig {
     this.defaultBroadcastSaveToCache = BroadcastDefaults.SAVE_TO_CACHE,
     this.logLevel = defaultLogLevel,
     this.userAgent = RequestDefaults.DEFAULT_USER_AGENT,
+    this.cashuUserSeedphrase,
     this.fetchedRangesEnabled = false,
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
+    this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,
   });
 }
 

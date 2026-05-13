@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/account.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
@@ -12,12 +11,18 @@ import '../bunkers/models/nostr_connect.dart';
 
 /// A usecase that handles accounts
 class Accounts {
+  /// Factory for creating EventSigner instances
+  final LocalEventSignerFactory eventSignerFactory;
+
   /// pubKey -> Account
   final Map<String, Account> accounts = {};
   String? _loggedPubkey;
 
   /// Stream controller for authentication state changes
   final _stateController = BehaviorSubject<Account?>();
+
+  /// Creates a new Accounts instance with the given event signer factory
+  Accounts(this.eventSignerFactory);
 
   /// Stream of authentication state changes
   /// Emits the current Account when logged in, or null when logged out
@@ -31,7 +36,8 @@ class Accounts {
     addAccount(
         pubkey: pubkey,
         type: AccountType.privateKey,
-        signer: Bip340EventSigner(privateKey: privkey, publicKey: pubkey));
+        signer:
+            eventSignerFactory.create(privateKey: privkey, publicKey: pubkey));
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }
@@ -49,7 +55,7 @@ class Accounts {
     addAccount(
         pubkey: pubkey,
         type: AccountType.publicKey,
-        signer: Bip340EventSigner(privateKey: null, publicKey: pubkey));
+        signer: eventSignerFactory.create(privateKey: null, publicKey: pubkey));
     _loggedPubkey = pubkey;
     _notifyAuthStateChange();
   }

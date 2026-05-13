@@ -1,0 +1,17 @@
+name: cli
+on: [workflow_dispatch]
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/ndk
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: Build
+        run: dart build cli

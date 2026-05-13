@@ -155,7 +155,7 @@ class Metadatas {
     Nip01Event? event = await _refreshMetadataEvent();
     if (event != null) {
       Map<String, dynamic> map = json.decode(event.content);
-      map.addAll(metadata.toJson());
+      map.addAll(metadata.content);
       event = Nip01Event(
           pubKey: event.pubKey,
           kind: event.kind,

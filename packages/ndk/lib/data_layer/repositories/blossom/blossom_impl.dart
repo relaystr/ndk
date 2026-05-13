@@ -15,6 +15,8 @@ import '../../data_sources/http_request.dart';
 import '../../io/file_io.dart';
 import '../../models/nip_01_event_model.dart';
 
+bool _isSuccessStatus(int statusCode) => statusCode >= 200 && statusCode < 300;
+
 class BlossomRepositoryImpl implements BlossomRepository {
   final HttpRequestDS client;
   final FileIO fileIO;
@@ -473,7 +475,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
         },
       );
 
-      if (response.statusCode != 200) {
+      if (!_isSuccessStatus(response.statusCode)) {
         return BlobUploadResult(
           serverUrl: serverUrl,
           success: false,
@@ -565,7 +567,7 @@ class BlossomRepositoryImpl implements BlossomRepository {
           url: Uri.parse('$url/$sha256'),
         );
 
-        if (response.statusCode == 200) {
+        if (_isSuccessStatus(response.statusCode)) {
           return '$url/$sha256';
         }
         lastError = Exception('HTTP ${response.statusCode}');
@@ -732,9 +734,10 @@ class BlossomRepositoryImpl implements BlossomRepository {
 
       return BlobDeleteResult(
         serverUrl: serverUrl,
-        success: response.statusCode == 200,
-        error:
-            response.statusCode != 200 ? 'HTTP ${response.statusCode}' : null,
+        success: _isSuccessStatus(response.statusCode),
+        error: !_isSuccessStatus(response.statusCode)
+            ? 'HTTP ${response.statusCode}'
+            : null,
       );
     } catch (e) {
       return BlobDeleteResult(
