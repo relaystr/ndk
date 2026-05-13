@@ -69,6 +69,32 @@ void main() {
       expect(signedEvent.sig, isNotNull);
     });
 
+    test('sign should use event body returned by remote signer', () async {
+      mockRelay.signEventCreatedAtOffsetSeconds = 11;
+      mockRelay.signEventContentOverride = 'mutated by remote signer';
+
+      final event = Nip01Event(
+        pubKey: MockRelay.remoteSignerPublicKey,
+        kind: 1,
+        tags: [
+          ['t', 'test']
+        ],
+        content: 'requested content',
+        createdAt: 1234567890,
+      );
+
+      final signedEvent = await signer.sign(event);
+
+      // Remote signer is allowed to modify the event before signing.
+      expect(signedEvent.content, equals('mutated by remote signer'));
+      expect(signedEvent.createdAt, equals(event.createdAt + 11));
+      expect(Nip01Utils.isIdValid(signedEvent), isTrue);
+      expect(
+        await Bip340EventVerifier(useIsolate: false).verify(signedEvent),
+        isTrue,
+      );
+    });
+
     test('getPublicKey should throw when not cached', () {
       expect(() => signer.getPublicKey(), throwsException);
     });
