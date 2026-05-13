@@ -3,7 +3,18 @@ icon: database
 order: 98
 ---
 
-Ndk comes with several database offerings. The simplest is the `MemCacheManager` which is an in-memory cache. This is useful for testing and small applications.
+NDK keeps two local stores side by side:
+
+- the **event cache** (`CacheManager`) — Nostr events, contact lists, metadata, NIP-05 records, relay sets, fetched ranges, etc.
+- the **blob cache** (`BlobCacheManager`) — binary payloads from Blossom servers, content-addressed by SHA-256.
+
+Both are pluggable: pick the backend that fits your platform, or supply your own.
+
+> **Tip:** keep these databases dedicated to NDK and spin up a secondary database for your own app data.
+
+## Event cache
+
+The simplest backend is `MemCacheManager`, an in-memory cache useful for testing and small apps.
 
 Available databases:
 
@@ -12,9 +23,7 @@ Available databases:
 - [`SembastCacheManager`](https://pub.dev/packages/sembast_cache_manager)
 - [`DriftCacheManager`](https://pub.dev/packages/ndk_drift)
 
-If you want your own database, you need to implement the `CacheManager` interface. Contributions for more database implementations are welcome!
-
-Its recommended to use the database only for ndk and spin up a secondary db for your own app data.
+If you want your own database, implement the `CacheManager` interface. Contributions for more backends are welcome.
 
 ```dart objectbox example
 import 'package:ndk/ndk.dart';
@@ -103,3 +112,100 @@ class NostrNoteModel extends NostrNote {
   ...
 }
 ```
+
+## Blob cache
+
+Conceptually a *local Blossom server* without the network layer: the API mirrors a remote Blossom server's surface (`saveBlob`, `getBlob`, `hasBlob`, `listBlobs`, `removeBlob`) and reuses the same entities (`BlobDescriptor`, `BlobResponse`).
+
+If you don't configure `blobCache`, NDK falls back to an in-memory `IdbBlobCacheManager` (one per `Ndk`, lost on process exit). Pass your own factory for persistence.
+
+### Native: persistent cache
+
+Use `idb_io` (or [`idb_sqflite`](https://pub.dev/packages/idb_sqflite) for cross-process safety):
+
+```dart
+import 'package:idb_shim/idb_io.dart';
+import 'package:ndk/ndk.dart';
+
+final ndk = Ndk(
+  NdkConfig(
+    eventVerifier: Bip340EventVerifier(),
+    cache: MemCacheManager(),
+    blobCache: IdbBlobCacheManager(
+      factory: getIdbFactoryIo()!,
+      dbName: 'my_app_blob_cache',
+    ),
+  ),
+);
+```
+
+### Web: persistent cache
+
+```dart
+import 'package:idb_shim/idb_browser.dart';
+import 'package:ndk/ndk.dart';
+
+final ndk = Ndk(
+  NdkConfig(
+    eventVerifier: Bip340EventVerifier(),
+    cache: MemCacheManager(),
+    blobCache: IdbBlobCacheManager(
+      factory: getIdbFactory()!,
+      dbName: 'my_app_blob_cache',
+    ),
+  ),
+);
+```
+
+### Opting out
+
+```dart
+final ndk = Ndk(
+  NdkConfig(
+    eventVerifier: Bip340EventVerifier(),
+    cache: MemCacheManager(),
+    blobCache: const NoopBlobCacheManager(),
+  ),
+);
+```
+
+### How Blossom uses the cache
+
+Once configured, the cache is consulted automatically by [Blossom](/usecases/blossom.md):
+
+| Operation | Cache behaviour |
+|---|---|
+| `getBlob(sha256)` | check cache → on miss, fetch from server → save to cache |
+| `downloadBlobToFile(...)` | check cache → on hit write bytes to file ; on miss stream from server (no auto-cache, would defeat streaming) |
+| `uploadBlob(data)` | save to cache **before** the upload (local-first — the cache reflects what the user has, regardless of server outcome) |
+| `uploadBlobFromFile(...)` | no auto-cache (streaming) |
+| `deleteBlob(sha256)` | invalidates the cached entry |
+
+`getBlob` and `uploadBlob` accept `cacheWrite: false` to skip the save step for one-off operations:
+
+```dart
+await ndk.blossom.getBlob(
+  sha256: hash,
+  serverUrls: [...],
+  cacheWrite: false,
+);
+```
+
+### Direct cache access
+
+The cache is exposed via `ndk.config.blobCache`:
+
+```dart
+final cache = ndk.config.blobCache!;
+
+await cache.saveBlob(data: bytes, mimeType: 'image/png');
+final all = await cache.listBlobs();
+final size = await cache.getTotalSize();
+await cache.removeBlob(sha);
+```
+
+### Implementing your own backend
+
+Implement `BlobCacheManager` directly and pass it as `blobCache`.
+
+> **Heads up:** the cache has no eviction or quota — it grows indefinitely. Apps caching large media should plan their own cleanup.

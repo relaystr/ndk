@@ -1,5 +1,7 @@
 import 'package:http/http.dart' as http;
+import 'package:idb_shim/idb_client_memory.dart';
 
+import '../data_layer/repositories/blob_cache/idb_blob_cache_manager.dart';
 import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
 import '../data_layer/repositories/wallets/wallets_repo_stub.dart';
 import '../shared/net/user_agent.dart';
@@ -15,6 +17,7 @@ import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
+import '../domain_layer/repositories/blob_cache_manager.dart';
 import '../domain_layer/repositories/blossom.dart';
 import '../domain_layer/repositories/cashu_repo.dart';
 import '../domain_layer/repositories/lnurl_transport.dart';
@@ -73,6 +76,7 @@ class Initialization {
   /// use cases
 
   late RelayManager relayManager;
+  late BlobCacheManager blobCache;
   late CacheWrite cacheWrite;
   late CacheRead cacheRead;
   late Requests requests;
@@ -158,10 +162,19 @@ class Initialization {
     final Nip05Repository nip05repository =
         Nip05HttpRepositoryImpl(httpDS: _httpRequestDS);
 
+    final fileIO = createFileIO();
+
     final BlossomRepository blossomRepository = BlossomRepositoryImpl(
       client: _httpRequestDS,
-      fileIO: createFileIO(),
+      fileIO: fileIO,
     );
+
+    // Fresh in-memory factory per Ndk instance, otherwise the
+    // process-wide `idbFactoryMemory` singleton would leak cached
+    // blobs across instances (and across tests).
+    blobCache = _ndkConfig.blobCache ??
+        IdbBlobCacheManager(factory: newIdbFactoryMemory());
+    _ndkConfig.blobCache = blobCache;
 
     final CashuRepo cashuRepo = CashuRepoImpl(
       client: _httpRequestDS,
@@ -285,6 +298,8 @@ class Initialization {
       blossomRepository: blossomRepository,
       accounts: accounts,
       blossomUserServerList: blossomUserServerList,
+      blobCache: blobCache,
+      fileIO: fileIO,
     );
 
     files = Files(blossom: blossom);

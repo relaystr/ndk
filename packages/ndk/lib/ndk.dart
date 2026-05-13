@@ -45,6 +45,9 @@ export 'domain_layer/entities/blossom_blobs.dart';
 export 'domain_layer/entities/blossom_strategies.dart';
 export 'domain_layer/entities/blob_upload_progress.dart';
 export 'domain_layer/entities/file_hash_progress.dart';
+export 'domain_layer/repositories/blob_cache_manager.dart';
+export 'data_layer/repositories/blob_cache/idb_blob_cache_manager.dart';
+export 'data_layer/repositories/blob_cache/noop_blob_cache_manager.dart';
 export '';
 
 export 'domain_layer/entities/account.dart';

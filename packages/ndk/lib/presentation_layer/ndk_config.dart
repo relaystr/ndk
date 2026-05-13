@@ -6,6 +6,7 @@ import '../config/request_defaults.dart';
 import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/entities/nip_85.dart';
+import '../domain_layer/repositories/blob_cache_manager.dart';
 import '../domain_layer/repositories/cache_manager.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../domain_layer/repositories/wallets_repo.dart';
@@ -21,6 +22,16 @@ class NdkConfig {
 
   /// The cache manager (DB) used to store and retrieve Nostr data. E.g MemCacheManager()
   CacheManager cache;
+
+  /// Local store for binary blobs, content-addressed by SHA-256.
+  ///
+  /// Conceptually a local Blossom server: cached blobs are exposed via
+  /// the same vocabulary as remote ones (BlobDescriptor, BlobResponse).
+  /// When `null`, [Initialization] falls back to an in-memory
+  /// [IdbBlobCacheManager] (lost on process exit). Provide your own
+  /// instance — typically `IdbBlobCacheManager(factory: getIdbFactoryIo())`
+  /// on native or `getIdbFactory()` on web — for persistent storage.
+  BlobCacheManager? blobCache;
 
   /// The wallets repository used to manage wallet data. E.g MemWalletsRepo()
   WalletsRepo? walletsRepo;
@@ -98,6 +109,7 @@ class NdkConfig {
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
+    this.blobCache,
     this.walletsRepo,
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],
