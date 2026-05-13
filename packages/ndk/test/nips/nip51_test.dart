@@ -1,12 +1,19 @@
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
 import 'package:ndk/domain_layer/entities/nip_01_event.dart';
+import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/shared/nips/nip01/helpers.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/domain_layer/entities/nip_51_list.dart';
 import 'package:test/test.dart';
 
 void main() {
+  EventSigner eventSignerFactory({
+    String? privateKey,
+    required String publicKey,
+  }) =>
+      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+
   group('Nip51 Relay Sets', () {
     test('fromEvent public', () async {
       final event = Nip01Event(
@@ -35,7 +42,7 @@ void main() {
     });
     test('fromEvent private', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
-      Bip340EventSigner signer = Bip340EventSigner(
+      EventSigner signer = eventSignerFactory(
         privateKey: key1.privateKey,
         publicKey: key1.publicKey,
       );
@@ -80,7 +87,7 @@ void main() {
     });
     test('fromEvent private', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
-      Bip340EventSigner signer = Bip340EventSigner(
+      EventSigner signer = eventSignerFactory(
         privateKey: key1.privateKey,
         publicKey: key1.publicKey,
       );
@@ -99,7 +106,7 @@ void main() {
 
     test('toEvent, fromEvent set metadata', () async {
       KeyPair key1 = Bip340.generatePrivateKey();
-      Bip340EventSigner signer = Bip340EventSigner(
+      EventSigner signer = eventSignerFactory(
         privateKey: key1.privateKey,
         publicKey: key1.publicKey,
       );

@@ -30,6 +30,7 @@ void main() {
     giftWrapService = GiftWrap(
       accounts: ndk.accounts,
       eventVerifier: MockEventVerifier(),
+      eventSignerFactory: ndk.config.eventSignerFactory,
     );
   });
 
@@ -102,6 +103,7 @@ void main() {
         recipientPublicKey: key2.publicKey,
         sealEvent: seal,
         additionalTags: additionalTags,
+        eventSignerFactory: ndk.config.eventSignerFactory,
       );
 
       // Verify additional tags were included

@@ -30,7 +30,8 @@ class Nip46EventSigner implements EventSigner {
 
   String? cachedPublicKey;
 
-  late Bip340EventSigner localEventSigner;
+  late EventSigner localEventSigner;
+  final LocalEventSignerFactory eventSignerFactory;
 
   Nip46EventSigner({
     required this.connection,
@@ -38,6 +39,7 @@ class Nip46EventSigner implements EventSigner {
     required this.broadcast,
     this.authCallback,
     this.cachedPublicKey,
+    required this.eventSignerFactory,
   }) {
     final privKey = connection.privateKey;
     final pubKey = Bip340.getPublicKey(privKey);
@@ -47,8 +49,8 @@ class Nip46EventSigner implements EventSigner {
 
     final keyPair = KeyPair(privKey, pubKey, privKeyHr, pubKeyHr);
 
-    localEventSigner = Bip340EventSigner(
-      privateKey: keyPair.privateKey,
+    localEventSigner = eventSignerFactory.create(
+      privateKey: keyPair.privateKey!,
       publicKey: keyPair.publicKey,
     );
 
@@ -61,7 +63,7 @@ class Nip46EventSigner implements EventSigner {
       filter: Filter(
         authors: [connection.remotePubkey],
         kinds: [BunkerRequest.kKind],
-        pTags: [localEventSigner.publicKey],
+        pTags: [localEventSigner.getPublicKey()],
       ),
     );
 
@@ -134,7 +136,7 @@ class Nip46EventSigner implements EventSigner {
 
     final requestEvent = Nip01Event(
       createdAt: 0,
-      pubKey: localEventSigner.publicKey,
+      pubKey: localEventSigner.getPublicKey(),
       kind: BunkerRequest.kKind,
       tags: [
         ["p", connection.remotePubkey],
