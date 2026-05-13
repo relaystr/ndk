@@ -21,6 +21,7 @@
 /// ```
 library;
 
+import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
 import 'package:ndk/entities.dart';
