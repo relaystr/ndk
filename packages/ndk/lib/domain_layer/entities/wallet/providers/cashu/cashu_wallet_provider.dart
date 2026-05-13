@@ -64,7 +64,7 @@ class CashuWalletProvider implements WalletProvider {
       throw ArgumentError('Expected a CashuWallet');
     }
 
-    _cashuUseCase.deleteKnownMint(mintUrl: wallet.mintUrl);
+    await _cashuUseCase.deleteKnownMint(mintUrl: wallet.mintUrl);
   }
 
   @override
