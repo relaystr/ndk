@@ -1,3 +1,25 @@
+## 0.8.2-dev.8
+
+ - **REVERT**: seperate cache manger package.
+ - **REFACTOR**: use LocalEventSignerFactory for creating signers, keypairs.
+ - **REFACTOR**: event signer factory.
+ - **FIX**(test): avoid same-second collision in broadcast metadata test.
+ - **FIX**(test): apply NIP-01 replacement in MockRelay.
+ - **FIX**: use ephemeralSigner obj when available.
+ - **FIX**: use factory signer.
+ - **FIX**: return the complete signed event from remote signer.
+ - **FIX**: parse public tags on private list.
+ - **FIX**: update tearDown to cleanUp in cache manager test suite documentation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: remove test suite dependency from ndk (cycle).
+ - **FIX**: repeated listen breaks stream connection.
+ - **FEAT**: add getDmRelays for NIP-17 DM relay list (kind 10050).
+ - **FEAT**: add writeUrls getter to UserRelayList.
+ - **FEAT**: enhance Sembast support with platform-specific implementations and error handling.
+ - **FEAT**: add GiftWrapUnwrapResult for enhanced gift wrap unwrapping with signature verification.
+ - **FEAT**: implement conditional imports.
+ - **FEAT**: add web support to SembastCacheManager.
+
 ## 0.8.2-dev.7
 
  - **REVERT**: seperate cache manger package.
