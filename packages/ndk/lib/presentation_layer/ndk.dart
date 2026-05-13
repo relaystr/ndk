@@ -17,6 +17,7 @@ import '../domain_layer/usecases/gift_wrap/gift_wrap.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/nip_05.dart';
+import '../domain_layer/usecases/nip77/nip77.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/relay_manager.dart';
@@ -167,6 +168,11 @@ class Ndk {
   @experimental
   FetchedRanges get fetchedRanges => _initialization.fetchedRanges;
 
+  /// NIP-77 Negentropy sync
+  /// Efficient set reconciliation for syncing events between client and relay
+  @experimental
+  Nip77 get nip77 => _initialization.nip77;
+
   /// Trusted Assertions (NIP-85)
   ///
   /// Fetch pre-computed metrics from trusted service providers.
@@ -183,6 +189,7 @@ class Ndk {
   /// Close all transports on relay manager
   Future<void> destroy() async {
     final allFutures = [
+      Future(() => _initialization.closeAllNip77Negotiations()),
       nwc.disconnectAll(),
       _initialization.requests.closeAllSubscription(),
       _initialization.relayManager.closeAllTransports(),
