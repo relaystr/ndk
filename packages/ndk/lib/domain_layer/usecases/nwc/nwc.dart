@@ -43,13 +43,16 @@ class Nwc {
 
   final Requests _requests;
   final Broadcast _broadcast;
+  final LocalEventSignerFactory _eventSignerFactory;
 
   /// main constructor
   Nwc({
     required Requests requests,
     required Broadcast broadcast,
+    required LocalEventSignerFactory eventSignerFactory,
   })  : _requests = requests,
-        _broadcast = broadcast;
+        _broadcast = broadcast,
+        _eventSignerFactory = eventSignerFactory;
 
   final Map<String, Completer<NwcResponse>> _inflighRequests = {};
   final Map<String, Timer> _inflighRequestTimers = {};
@@ -87,7 +90,10 @@ class Nwc {
         .future;
     if (infoEvent.isNotEmpty) {
       final event = infoEvent.first;
-      final connection = NwcConnection(parsedUri);
+      final connection = NwcConnection(
+        parsedUri,
+        eventSignerFactory: _eventSignerFactory,
+      );
       connection.useETagForEachRequest = useETagForEachRequest;
       connection.ignoreCapabilitiesCheck = ignoreCapabilitiesCheck;
 
@@ -125,7 +131,10 @@ class Nwc {
       completer.complete(connection);
     } else {
       onError?.call("not found");
-      completer.complete(NwcConnection(parsedUri));
+      completer.complete(NwcConnection(
+        parsedUri,
+        eventSignerFactory: _eventSignerFactory,
+      ));
     }
     return completer.future;
   }

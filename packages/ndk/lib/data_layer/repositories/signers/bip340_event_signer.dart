@@ -8,6 +8,46 @@ import '../../../shared/nips/nip01/bip340.dart';
 import '../../../domain_layer/repositories/event_signer.dart';
 import '../../../shared/nips/nip44/nip44.dart';
 
+/// Default factory for creating Bip340EventSigner instances
+class Bip340EventSignerFactory implements LocalEventSignerFactory {
+  const Bip340EventSignerFactory();
+  @override
+  EventSigner create({
+    String? privateKey,
+    String? publicKey,
+  }) {
+    final derivedPublicKey =
+        publicKey ?? (privateKey != null ? derivePublicKey(privateKey) : null);
+
+    if (derivedPublicKey == null) {
+      throw ArgumentError('Either publicKey or privateKey must be provided');
+    }
+
+    return Bip340EventSigner(
+      privateKey: privateKey,
+      publicKey: derivedPublicKey,
+    );
+  }
+
+  @override
+  String derivePublicKey(String privateKey) {
+    return Bip340.getPublicKey(privateKey);
+  }
+
+  @override
+  (String, String) generateKeyPair() {
+    final keyPair = Bip340.generatePrivateKey();
+
+    return (keyPair.privateKey!, keyPair.publicKey);
+  }
+
+  @override
+  EventSigner createWithNewKeyPair() {
+    final (privateKey, publicKey) = generateKeyPair();
+    return create(privateKey: privateKey, publicKey: publicKey);
+  }
+}
+
 /// Pure Dart Event Signer
 class Bip340EventSigner implements EventSigner {
   /// hex private key

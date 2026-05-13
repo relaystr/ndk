@@ -1,13 +1,11 @@
 import 'dart:convert';
 
 import '../../../data_layer/models/nip_01_event_model.dart';
-import '../../../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../../entities/gift_wrap_unwrap_result.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../../repositories/event_verifier.dart';
 import '../accounts/accounts.dart';
-import '../../../shared/nips/nip01/bip340.dart';
 
 class GiftWrap {
   static const int kSealEventKind = 13;
@@ -15,8 +13,13 @@ class GiftWrap {
 
   final Accounts accounts;
   final EventVerifier eventVerifier;
+  final LocalEventSignerFactory eventSignerFactory;
 
-  GiftWrap({required this.accounts, required this.eventVerifier});
+  GiftWrap({
+    required this.accounts,
+    required this.eventVerifier,
+    required this.eventSignerFactory,
+  });
 
   /// Returns the signer to use for signing operations.
   /// Uses [customSigner] if provided, otherwise falls back to logged-in account's signer.
@@ -50,6 +53,7 @@ class GiftWrap {
     final giftWrap = await wrapEvent(
       recipientPublicKey: recipientPubkey,
       sealEvent: sealedRumor,
+      eventSignerFactory: eventSignerFactory,
     );
     return giftWrap;
   }
@@ -221,18 +225,16 @@ class GiftWrap {
   /// wraps a sealed msg \
   /// [recipientPublicKey] the reciever of the rumor \
   /// [sealEvent] not wrapped event \
+  /// [eventSignerFactory] factory to create event signers \
   /// [returns] giftWrapEvent
   static Future<Nip01Event> wrapEvent({
     required String recipientPublicKey,
     required Nip01Event sealEvent,
     List<List<String>>? additionalTags,
+    required LocalEventSignerFactory eventSignerFactory,
   }) async {
     // Generate a random one-time-use keypair
-    final ephemeralKeys = Bip340.generatePrivateKey();
-    final ephemeralSigner = Bip340EventSigner(
-      privateKey: ephemeralKeys.privateKey,
-      publicKey: ephemeralKeys.publicKey,
-    );
+    final ephemeralSigner = eventSignerFactory.createWithNewKeyPair();
 
     final encryptedSeal = await ephemeralSigner.encryptNip44(
       plaintext: Nip01EventModel.fromEntity(sealEvent).toJsonString(),
@@ -260,13 +262,10 @@ class GiftWrap {
       content: encryptedSeal,
       tags: tags,
       createdAt: now,
-      pubKey: ephemeralKeys.publicKey,
+      pubKey: ephemeralSigner.getPublicKey(),
     );
 
-    // Sign with ephemeral key
-    final signature = Bip340.sign(giftWrapEvent.id, ephemeralKeys.privateKey!);
-
-    final gWEventSigned = giftWrapEvent.copyWith(sig: signature);
+    final gWEventSigned = await ephemeralSigner.sign(giftWrapEvent);
 
     return gWEventSigned;
   }

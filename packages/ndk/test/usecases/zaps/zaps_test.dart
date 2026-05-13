@@ -6,6 +6,7 @@ import 'package:mockito/mockito.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/lnurl_http_impl.dart';
 import 'package:ndk/data_layer/repositories/signers/bip340_event_signer.dart';
+import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/lnurl/lnurl.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zap_request.dart';
 import 'package:ndk/domain_layer/usecases/zaps/zaps.dart';
@@ -19,6 +20,12 @@ import '../lnurl/lnurl_test.mocks.dart';
 // Mock classes
 @GenerateMocks([http.Client])
 void main() {
+  EventSigner eventSignerFactory({
+    String? privateKey,
+    required String publicKey,
+  }) =>
+      Bip340EventSigner(privateKey: privateKey, publicKey: publicKey);
+
   group('Zaps', () {
     KeyPair key = Bip340.generatePrivateKey();
 
@@ -64,7 +71,7 @@ void main() {
           amountSats: amount,
           eventId: 'eventId',
           comment: 'comment',
-          signer: Bip340EventSigner(
+          signer: eventSignerFactory(
               privateKey: key.privateKey, publicKey: key.publicKey),
           pubKey: 'pubKey',
           relays: ['relay1', 'relay2']);
@@ -99,7 +106,7 @@ void main() {
         amountSats: amount,
         eventId: eventId,
         comment: comment,
-        signer: Bip340EventSigner(
+        signer: eventSignerFactory(
             privateKey: key.privateKey, publicKey: key.publicKey),
         pubKey: pubKey,
         relays: relays,
@@ -126,7 +133,7 @@ void main() {
           amountSats: -1000,
           eventId: 'eventId',
           comment: 'comment',
-          signer: Bip340EventSigner(
+          signer: eventSignerFactory(
               privateKey: key.privateKey, publicKey: key.publicKey),
           pubKey: 'pubKey',
           relays: ['relay1', 'relay2'],
@@ -142,7 +149,7 @@ void main() {
         amountSats: 1000,
         eventId: 'eventId',
         comment: 'comment',
-        signer: Bip340EventSigner(
+        signer: eventSignerFactory(
             privateKey: key.privateKey, publicKey: key.publicKey),
         pubKey: 'pubKey',
         relays: [],

@@ -3,10 +3,12 @@ import '../config/nip85_defaults.dart';
 import '../config/broadcast_defaults.dart';
 import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
+import '../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/entities/nip_85.dart';
 import '../domain_layer/repositories/cache_manager.dart';
+import '../domain_layer/repositories/event_signer.dart';
 import '../domain_layer/repositories/event_verifier.dart';
 import '../domain_layer/repositories/wallets_repo.dart';
 import '../shared/logger/log_level.dart';
@@ -24,6 +26,9 @@ class NdkConfig {
 
   /// The wallets repository used to manage wallet data. E.g MemWalletsRepo()
   WalletsRepo? walletsRepo;
+
+  /// Factory for creating EventSigner instances. Defaults to Bip340EventSigner.
+  LocalEventSignerFactory eventSignerFactory;
 
   /// The engine mode to use for Nostr network operations (inbox/outbox mode).
   ///
@@ -88,6 +93,7 @@ class NdkConfig {
   ///
   /// [eventVerifier] The verifier used to validate Nostr events. \
   /// [cache] The cache manager for storing and retrieving Nostr data. \
+  /// [eventSignerFactory] Factory for creating EventSigner instances (defaults to Bip340EventSigner). \
   /// [engine] The engine mode to use (defaults to RELAY_SETS). \
   /// [ignoreRelays] A list of relay URLs to ignore (defaults to an empty list). \
   /// [bootstrapRelays] A list of initial relay URLs (defaults to DEFAULT_BOOTSTRAP_RELAYS). \
@@ -98,6 +104,7 @@ class NdkConfig {
   NdkConfig({
     required this.eventVerifier,
     required this.cache,
+    this.eventSignerFactory = const Bip340EventSignerFactory(),
     this.walletsRepo,
     this.engine = NdkEngine.RELAY_SETS,
     this.ignoreRelays = const [],
