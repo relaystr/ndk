@@ -341,7 +341,6 @@ class Initialization {
       defaultProviders: _ndkConfig.defaultTrustedProviders,
     );
 
-
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
   }

@@ -258,7 +258,8 @@ void main() {
       expect(optimized, isEmpty);
     });
 
-    test('returns full range as gap when cache is empty for specified relay', () async {
+    test('returns full range as gap when cache is empty for specified relay',
+        () async {
       final filter = Filter(kinds: [1]);
 
       // Don't add any ranges - cache is empty
@@ -277,7 +278,8 @@ void main() {
       expect(filters[0].kinds, [1]);
     });
 
-    test('respects relayUrls parameter and only checks specified relays', () async {
+    test('respects relayUrls parameter and only checks specified relays',
+        () async {
       final filter = Filter(kinds: [1]);
 
       await fetchedRanges.addRange(

@@ -25,10 +25,7 @@ class NdkEventSignerFactory implements LocalEventSignerFactory {
       throw ArgumentError('Either publicKey or privateKey must be provided');
     }
 
-    return WebEventSigner(
-      privateKey: privateKey,
-      publicKey: derivedPublicKey,
-    );
+    return WebEventSigner(privateKey: privateKey, publicKey: derivedPublicKey);
   }
 
   @override
@@ -60,10 +57,7 @@ class WebEventSigner implements EventSigner {
   static bool _jsInjected = false;
 
   /// Get a new web event signer with the given keys
-  WebEventSigner({
-    required this.privateKey,
-    required this.publicKey,
-  }) {
+  WebEventSigner({required this.privateKey, required this.publicKey}) {
     _init();
   }
 

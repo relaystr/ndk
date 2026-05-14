@@ -930,7 +930,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get deleteWalletConfirmation => 'ウォレットを削除しますか?';
 
   @override
-  String get deleteWalletConfirmationMessage => 'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
+  String get deleteWalletConfirmationMessage =>
+      'このウォレットを削除してもよろしいですか? この操作は元に戻せません。';
 
   @override
   String get addWalletTitle => 'ウォレットを追加';
@@ -1027,9 +1028,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
     final String usedString = usedNumberFormat.format(used);
-    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
     return '予算: $usedString / $totalString';

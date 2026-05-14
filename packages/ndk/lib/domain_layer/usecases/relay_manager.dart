@@ -525,8 +525,7 @@ class RelayManager<T> {
     if (nostrMsg.type == NostrMessageRawType.notice) {
       final eventJson = nostrMsg.otherData;
       final noticeMsg = eventJson[1] as String? ?? '';
-      Logger.log
-          .w(() => "NOTICE from ${relayConnectivity.url}: $noticeMsg");
+      Logger.log.w(() => "NOTICE from ${relayConnectivity.url}: $noticeMsg");
       _logActiveRequests();
 
       // Check if this is a negentropy-related error

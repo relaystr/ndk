@@ -9,10 +9,7 @@ class WebEventSigner implements EventSigner {
   /// hex public key
   String publicKey;
 
-  WebEventSigner({
-    required this.privateKey,
-    required this.publicKey,
-  }) {
+  WebEventSigner({required this.privateKey, required this.publicKey}) {
     throw UnsupportedError(
       'WebEventSigner is only available on web platforms. '
       'Use Bip340EventSigner for native platforms.',

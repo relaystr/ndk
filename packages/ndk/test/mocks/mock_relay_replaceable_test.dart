@@ -188,8 +188,7 @@ void main() {
       expect(
         received.length,
         equals(1),
-        reason:
-            'NIP-01 addressable events should keep only the latest '
+        reason: 'NIP-01 addressable events should keep only the latest '
             '(pubkey, kind, d-tag); mock currently returns every version sent.',
       );
       expect(
