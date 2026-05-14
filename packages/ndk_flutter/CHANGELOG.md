@@ -1,3 +1,8 @@
+## 0.8.2-dev.0+1
+
+ - **REFACTOR**: remove unnecessary comments in saveAccountsState method.
+ - **FIX**: support WebEventSigner in saveAccountsState on web.
+
 ## 0.8.2
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
