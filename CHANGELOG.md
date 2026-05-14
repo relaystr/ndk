@@ -11,6 +11,31 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_objectbox` - `v0.2.11-dev.0+1`](#ndk_objectbox---v0211-dev01)
+
+---
+
+#### `ndk_objectbox` - `v0.2.11-dev.0+1`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete pubspec.lock.
+ - **FIX**: objextbox delete transactions.
+
+
+## 2026-05-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`ndk` - `v0.8.2`](#ndk---v082)
  - [`ndk_drift` - `v0.1.1`](#ndk_drift---v011)
  - [`ndk_flutter` - `v0.8.2`](#ndk_flutter---v082)
