@@ -129,9 +129,6 @@ class NdkFlutter {
       }
 
       if (account.type == AccountType.privateKey) {
-        // Both Bip340EventSigner and WebEventSigner have a public privateKey field,
-        // but there is no common interface exposing it. Use dynamic to handle
-        // both local signer implementations regardless of platform.
         final privateKey = (account.signer as dynamic).privateKey as String?;
         if (privateKey == null) continue;
         accounts.accounts.add(
