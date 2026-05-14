@@ -15,6 +15,47 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_flutter` - `v0.8.2-dev.1`](#ndk_flutter---v082-dev1)
+ - [`ndk_objectbox` - `v0.2.11-dev.1`](#ndk_objectbox---v0211-dev1)
+
+---
+
+#### `ndk_flutter` - `v0.8.2-dev.1`
+
+ - **REFACTOR**: remove unnecessary comments in saveAccountsState method.
+ - **REFACTOR**: merge ndk_event_signer_web and web_event_signer_web.
+ - **REFACTOR**(signers,verifiers): rename to NdkEventSigner/Verifier and add factory.
+ - **REFACTOR**(signers): rename platform stub to native and clarify conditional export.
+ - **FIX**: support WebEventSigner in saveAccountsState on web.
+ - **FIX**: use constant-time MAC comparison in NIP-44.
+ - **FIX**(web): fix WebEventSigner stub and JS crypto, add tests.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+ - **FEAT**: add PlatformEventSigner for automatic platform selection.
+ - **FEAT**: add web crypto benchmark.
+ - **FEAT**: add WebEventSigner for fast web crypto.
+
+#### `ndk_objectbox` - `v0.2.11-dev.1`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete pubspec.lock.
+ - **FIX**: objextbox delete transactions.
+
+
+## 2026-05-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk_flutter` - `v0.8.2-dev.0+1`](#ndk_flutter---v082-dev01)
  - [`ndk_objectbox` - `v0.2.11-dev.0+1`](#ndk_objectbox---v0211-dev01)
 

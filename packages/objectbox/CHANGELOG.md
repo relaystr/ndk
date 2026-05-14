@@ -1,3 +1,11 @@
+## 0.2.11-dev.1
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete pubspec.lock.
+ - **FIX**: objextbox delete transactions.
+
 ## 0.2.11-dev.0+1
 
  - **REVERT**: seperate cache manger package.
