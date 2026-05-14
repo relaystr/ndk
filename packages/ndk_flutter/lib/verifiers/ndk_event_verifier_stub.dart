@@ -1,8 +1,8 @@
 import 'package:ndk/ndk.dart';
 
 /// Stub implementation used when neither `dart:io` nor web interop is available.
-EventVerifier createPlatformEventVerifier() {
+EventVerifier createNdkEventVerifier() {
   throw UnsupportedError(
-    'PlatformEventVerifier is not available on this platform.',
+    'NdkEventVerifier is not available on this platform.',
   );
 }
