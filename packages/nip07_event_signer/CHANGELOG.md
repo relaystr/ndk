@@ -1,3 +1,7 @@
+## 1.0.10
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 1.0.10-dev.9
 
  - Update a dependency to the latest release.

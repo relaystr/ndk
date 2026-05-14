@@ -11,6 +11,44 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - [`ndk` - `v0.8.2`](#ndk---v082)
+ - [`ndk_drift` - `v0.1.1`](#ndk_drift---v011)
+ - [`ndk_flutter` - `v0.8.2`](#ndk_flutter---v082)
+ - [`ndk_objectbox` - `v0.2.11`](#ndk_objectbox---v0211)
+
+Packages with other changes:
+
+ - [`nip07_event_signer` - `v1.0.10`](#nip07_event_signer---v1010)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.8.2`
+ - `ndk_drift` - `v0.1.1`
+ - `ndk_flutter` - `v0.8.2`
+ - `ndk_objectbox` - `v0.2.11`
+ - `nip07_event_signer` - `v1.0.10`
+
+---
+
+#### `ndk` - `v0.8.2`
+
+#### `ndk_drift` - `v0.1.1`
+
+#### `ndk_flutter` - `v0.8.2`
+
+#### `ndk_objectbox` - `v0.2.11`
+
+#### `nip07_event_signer` - `v1.0.10`
+
+
+## 2026-05-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - There are no breaking changes in this release.
 
 Packages with other changes:

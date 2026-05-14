@@ -1,3 +1,7 @@
+## 0.2.11
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.2.11-dev.9
 
  - **FIX**: update code doc, remove implementation.

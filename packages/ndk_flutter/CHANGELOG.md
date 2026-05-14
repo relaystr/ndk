@@ -1,3 +1,7 @@
+## 0.8.2
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 0.8.2-dev.9
 
  - **REFACTOR**: merge ndk_event_signer_web and web_event_signer_web.
