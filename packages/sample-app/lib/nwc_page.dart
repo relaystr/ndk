@@ -201,7 +201,7 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
         //   _pendingAppPubkeyForAuth = null;
         // });
 
-         if (nwcAppKey == null || nwcAppKey!.privateKey == null) {
+        if (nwcAppKey == null || nwcAppKey!.privateKey == null) {
           print(
               'NIP-47 Error: nwcAppKey or its private key is null. Cannot construct NWC URI.');
           ScaffoldMessenger.of(context).showSnackBar(

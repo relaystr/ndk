@@ -89,8 +89,7 @@ void main() async {
       expect(rcv, equals(cache0));
     });
     test('getDmRelays - returns null when no kind 10050 found', () async {
-      final dmRelays =
-          await ndk.userRelayLists.getDmRelays(key1.publicKey);
+      final dmRelays = await ndk.userRelayLists.getDmRelays(key1.publicKey);
       expect(dmRelays, isNull);
     });
 
@@ -107,8 +106,7 @@ void main() async {
       );
       await ndk.config.cache.saveEvent(event);
 
-      final dmRelays =
-          await ndk.userRelayLists.getDmRelays(key0.publicKey);
+      final dmRelays = await ndk.userRelayLists.getDmRelays(key0.publicKey);
       expect(dmRelays, ['wss://dm1.example', 'wss://dm2.example']);
     });
 

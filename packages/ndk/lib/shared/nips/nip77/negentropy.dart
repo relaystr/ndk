@@ -71,7 +71,8 @@ class NegentropyEncoder {
     // Check if we reached end of data with continuation bit still set
     final lastByte = data[offset + bytesConsumed - 1];
     if ((lastByte & 0x80) != 0) {
-      throw ArgumentError('Truncated varint: data ends with continuation bit set');
+      throw ArgumentError(
+          'Truncated varint: data ends with continuation bit set');
     }
 
     return (value, bytesConsumed);
@@ -117,8 +118,8 @@ class NegentropyEncoder {
       [int offset = 0]) {
     final (timestamp, tsBytes) = decodeVarint(data, offset);
     final prefixLength = data[offset + tsBytes];
-    final idPrefix = Uint8List.fromList(
-        data.sublist(offset + tsBytes + 1, offset + tsBytes + 1 + prefixLength));
+    final idPrefix = Uint8List.fromList(data.sublist(
+        offset + tsBytes + 1, offset + tsBytes + 1 + prefixLength));
     return (timestamp, idPrefix, tsBytes + 1 + prefixLength);
   }
 
@@ -226,8 +227,8 @@ class NegentropyEncoder {
           if (offset + fingerprintSize > message.length) {
             throw ArgumentError('Not enough data for fingerprint');
           }
-          final theirFingerprint =
-              Uint8List.fromList(message.sublist(offset, offset + fingerprintSize));
+          final theirFingerprint = Uint8List.fromList(
+              message.sublist(offset, offset + fingerprintSize));
           offset += fingerprintSize;
 
           // Calculate our fingerprint for this range
@@ -276,13 +277,13 @@ class NegentropyEncoder {
             if (offset + idSize > message.length) {
               throw ArgumentError('Not enough data for ID');
             }
-            theirIds.add(Uint8List.fromList(message.sublist(offset, offset + idSize)));
+            theirIds.add(
+                Uint8List.fromList(message.sublist(offset, offset + idSize)));
             offset += idSize;
           }
 
           // Find differences
-          final ourIdSet =
-              rangeItems.map((i) => bytesToHex(i.id)).toSet();
+          final ourIdSet = rangeItems.map((i) => bytesToHex(i.id)).toSet();
           final theirIdSet = theirIds.map(bytesToHex).toSet();
 
           // We need IDs they have that we don't
@@ -332,8 +333,7 @@ class NegentropyEncoder {
     return true;
   }
 
-  static bool _isInRange(
-      NegentropyItem item, _Bound lower, _Bound upper) {
+  static bool _isInRange(NegentropyItem item, _Bound lower, _Bound upper) {
     // item >= lower AND item < upper
     return _compareWithBound(item, lower) >= 0 &&
         _compareWithBound(item, upper) < 0;
@@ -361,7 +361,8 @@ class NegentropyItem {
 
   NegentropyItem({required this.timestamp, required this.id});
 
-  factory NegentropyItem.fromHex({required int timestamp, required String idHex}) {
+  factory NegentropyItem.fromHex(
+      {required int timestamp, required String idHex}) {
     return NegentropyItem(
       timestamp: timestamp,
       id: NegentropyEncoder.hexToBytes(idHex),
