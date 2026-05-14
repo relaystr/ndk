@@ -1,3 +1,20 @@
+## 0.8.2
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.8.2-dev.9
+
+ - **REFACTOR**: merge ndk_event_signer_web and web_event_signer_web.
+ - **REFACTOR**(signers,verifiers): rename to NdkEventSigner/Verifier and add factory.
+ - **REFACTOR**(signers): rename platform stub to native and clarify conditional export.
+ - **FIX**: use constant-time MAC comparison in NIP-44.
+ - **FIX**(web): fix WebEventSigner stub and JS crypto, add tests.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+ - **FEAT**: add PlatformEventSigner for automatic platform selection.
+ - **FEAT**: add web crypto benchmark.
+ - **FEAT**: add WebEventSigner for fast web crypto.
+
 ## 0.8.2-dev.8
 
  - **REFACTOR**: PlatformEventVerifier via conditional imports.

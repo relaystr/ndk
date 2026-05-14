@@ -1,3 +1,24 @@
+## 0.8.2
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 0.8.2-dev.9
+
+ - **REFACTOR**: rename Negentropy to NegentropyEncoder.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: move NIP-77 cleanup into async allFutures in destroy().
+ - **FIX**: delete transactions.
+ - **FIX**: delete proofs.
+ - **FIX**: privatize Nip77Internal.
+ - **FIX**: timeout completion guards.
+ - **FIX**: improve NOTICE detection for NIP-77 errors.
+ - **FIX**: reject truncated varint in NIP-77 decoder.
+ - **FIX**: use full filter for local cache in NIP-77 reconciliation.
+ - **FIX**: verify relay origin on NEG-MSG and NEG-ERR.
+ - **FIX**: close NIP-77 sessions in Ndk.destroy().
+ - **FIX**: no-op test.
+ - **FEAT**: nip77.
+
 ## 0.8.2-dev.8
 
  - **REVERT**: seperate cache manger package.

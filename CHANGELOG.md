@@ -3,6 +3,111 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-05-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`ndk` - `v0.8.2`](#ndk---v082)
+ - [`ndk_drift` - `v0.1.1`](#ndk_drift---v011)
+ - [`ndk_flutter` - `v0.8.2`](#ndk_flutter---v082)
+ - [`ndk_objectbox` - `v0.2.11`](#ndk_objectbox---v0211)
+
+Packages with other changes:
+
+ - [`nip07_event_signer` - `v1.0.10`](#nip07_event_signer---v1010)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `ndk` - `v0.8.2`
+ - `ndk_drift` - `v0.1.1`
+ - `ndk_flutter` - `v0.8.2`
+ - `ndk_objectbox` - `v0.2.11`
+ - `nip07_event_signer` - `v1.0.10`
+
+---
+
+#### `ndk` - `v0.8.2`
+
+#### `ndk_drift` - `v0.1.1`
+
+#### `ndk_flutter` - `v0.8.2`
+
+#### `ndk_objectbox` - `v0.2.11`
+
+#### `nip07_event_signer` - `v1.0.10`
+
+
+## 2026-05-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.2-dev.9`](#ndk---v082-dev9)
+ - [`ndk_drift` - `v0.1.1-dev.9`](#ndk_drift---v011-dev9)
+ - [`ndk_flutter` - `v0.8.2-dev.9`](#ndk_flutter---v082-dev9)
+ - [`ndk_objectbox` - `v0.2.11-dev.9`](#ndk_objectbox---v0211-dev9)
+ - [`nip07_event_signer` - `v1.0.10-dev.9`](#nip07_event_signer---v1010-dev9)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `nip07_event_signer` - `v1.0.10-dev.9`
+
+---
+
+#### `ndk` - `v0.8.2-dev.9`
+
+ - **REFACTOR**: rename Negentropy to NegentropyEncoder.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: move NIP-77 cleanup into async allFutures in destroy().
+ - **FIX**: delete transactions.
+ - **FIX**: delete proofs.
+ - **FIX**: privatize Nip77Internal.
+ - **FIX**: timeout completion guards.
+ - **FIX**: improve NOTICE detection for NIP-77 errors.
+ - **FIX**: reject truncated varint in NIP-77 decoder.
+ - **FIX**: use full filter for local cache in NIP-77 reconciliation.
+ - **FIX**: verify relay origin on NEG-MSG and NEG-ERR.
+ - **FIX**: close NIP-77 sessions in Ndk.destroy().
+ - **FIX**: no-op test.
+ - **FEAT**: nip77.
+
+#### `ndk_drift` - `v0.1.1-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.2-dev.9`
+
+ - **REFACTOR**: merge ndk_event_signer_web and web_event_signer_web.
+ - **REFACTOR**(signers,verifiers): rename to NdkEventSigner/Verifier and add factory.
+ - **REFACTOR**(signers): rename platform stub to native and clarify conditional export.
+ - **FIX**: use constant-time MAC comparison in NIP-44.
+ - **FIX**(web): fix WebEventSigner stub and JS crypto, add tests.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+ - **FEAT**: add PlatformEventSigner for automatic platform selection.
+ - **FEAT**: add web crypto benchmark.
+ - **FEAT**: add WebEventSigner for fast web crypto.
+
+#### `ndk_objectbox` - `v0.2.11-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: objextbox delete transactions.
+
+
 ## 2026-05-13
 
 ### Changes
