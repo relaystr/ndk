@@ -53,10 +53,6 @@ dependencies:
   http: ^1.2.0
   qr_flutter: ^4.1.0
   amberflutter: any
-  zaplab_design:
-    git:
-      url: https://github.com/NielLiesmons/zaplab_design
-
 
 dev_dependencies:
   flutter_test:
