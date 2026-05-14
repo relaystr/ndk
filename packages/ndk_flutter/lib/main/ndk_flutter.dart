@@ -129,13 +129,13 @@ class NdkFlutter {
       }
 
       if (account.type == AccountType.privateKey) {
-        final signer = account.signer as Bip340EventSigner;
-        if (signer.privateKey == null) continue;
+        final privateKey = (account.signer as dynamic).privateKey as String?;
+        if (privateKey == null) continue;
         accounts.accounts.add(
           NostrAccount(
             kind: AccountKinds.privkey,
             pubkey: account.pubkey,
-            signerSeed: signer.privateKey!,
+            signerSeed: privateKey,
           ),
         );
         continue;
