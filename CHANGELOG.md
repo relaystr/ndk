@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-05-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.3-dev.0`](#ndk---v083-dev0)
+
+---
+
+#### `ndk` - `v0.8.3-dev.0`
+
+
 ## 2026-05-14
 
 ### Changes
