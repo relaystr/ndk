@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.8.3`](#ndk---v083)
+
+---
+
+#### `ndk` - `v0.8.3`
+
+ - sync versions
+
+
+## 2026-05-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.8.3-dev.0`](#ndk---v083-dev0)
 
 ---
