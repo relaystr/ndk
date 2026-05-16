@@ -141,6 +141,12 @@ class Nip46EventSigner
     _notifyPendingRequestsChange();
 
     return runThrottled(() async {
+      // If the request was cancelled while queued, bail out before touching
+      // the relay so we don't broadcast an event the caller no longer wants.
+      if (!_pendingRequests.containsKey(request.id)) {
+        throw SignerRequestCancelledException(request.id);
+      }
+
       final encryptedRequest = await localEventSigner.encryptNip44(
         plaintext: jsonEncode(request),
         recipientPubKey: connection.remotePubkey,

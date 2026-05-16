@@ -126,6 +126,42 @@ void main() {
       expect(signer.queuedRequests, 0);
     });
 
+    test('a queued task that detects cancellation can skip its work entirely',
+        () async {
+      // Mirrors the pattern each remote signer uses: the lambda passed to
+      // runThrottled checks shared state when it gets a slot and bails out
+      // before touching the network if the caller no longer wants the call.
+      final limiter = _Limiter(1);
+      final cancelled = <int>{};
+      final executed = <int>[];
+
+      final blocker = Completer<void>();
+      final inFlight = limiter.runThrottled(() async {
+        executed.add(0);
+        await blocker.future;
+      });
+
+      await Future<void>.delayed(Duration.zero);
+
+      final queued = limiter.runThrottled(() async {
+        if (cancelled.contains(1)) {
+          throw StateError('cancelled before execution');
+        }
+        executed.add(1);
+      });
+
+      await Future<void>.delayed(Duration.zero);
+      cancelled.add(1);
+      blocker.complete();
+
+      await expectLater(queued, throwsA(isA<StateError>()));
+      await inFlight;
+
+      expect(executed, [0],
+          reason: 'cancelled task must not run when its slot frees');
+      expect(limiter.inFlightRequests, 0);
+    });
+
     test('cancelAllQueued rejects pending waiters but spares in-flight tasks',
         () async {
       final limiter = _Limiter(1);

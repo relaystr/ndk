@@ -75,8 +75,14 @@ class Nip07EventSigner
     _notifyPendingRequestsChange();
 
     // Throttle the actual call to the extension; queued requests still
-    // appear in `pendingRequests` so the UI sees the full backlog.
-    runThrottled(operation)
+    // appear in `pendingRequests` so the UI sees the full backlog. If the
+    // request was cancelled while queued, skip the extension call entirely.
+    runThrottled(() async {
+      if (!_pendingRequests.containsKey(requestId)) {
+        throw SignerRequestCancelledException(requestId);
+      }
+      return await operation();
+    })
         .then((result) {
           if (!completer.isCompleted) {
             completer.complete(result);

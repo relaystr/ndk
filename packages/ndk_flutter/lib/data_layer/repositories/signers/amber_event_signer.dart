@@ -91,8 +91,14 @@ class AmberEventSigner
     _notifyPendingRequestsChange();
 
     // Throttle the actual call to Amber; queued requests still appear in
-    // `pendingRequests` so the UI sees the full backlog.
-    runThrottled(operation)
+    // `pendingRequests` so the UI sees the full backlog. If the request was
+    // cancelled while queued, skip the Amber call entirely.
+    runThrottled(() async {
+      if (!_pendingRequests.containsKey(requestId)) {
+        throw SignerRequestCancelledException(requestId);
+      }
+      return await operation();
+    })
         .then((result) {
           if (!completer.isCompleted) {
             completer.complete(result);
