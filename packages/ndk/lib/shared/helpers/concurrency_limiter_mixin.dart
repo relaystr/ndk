@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
 
-/// Limits how many remote operations a signer keeps in flight at once.
+/// Limits how many operations can be in flight at once.
 ///
-/// Remote signers (NIP-07, NIP-46, Amber) talk to an external actor — a
-/// browser extension, a bunker over relays, or an Android app — that can be
-/// overwhelmed by a flood of parallel requests. Wrap each remote call with
-/// [runThrottled]: up to [maxConcurrentRequests] run in parallel, the rest
-/// queue FIFO and start as slots free up.
-mixin ConcurrencyLimitedSignerMixin {
+/// Wrap each operation with [runThrottled]: up to [maxConcurrentRequests]
+/// run in parallel, the rest queue FIFO and start as slots free up.
+mixin ConcurrencyLimiterMixin {
   /// Maximum number of operations that can be in flight simultaneously.
   /// Implementers typically expose this via their constructor.
   int get maxConcurrentRequests;
@@ -58,7 +55,7 @@ mixin ConcurrencyLimitedSignerMixin {
   /// keep running. Call from `dispose()` to drain pending work.
   void cancelAllQueued([Object? error]) {
     final reason =
-        error ?? StateError('Signer is no longer accepting requests');
+        error ?? StateError('This instance is no longer accepting requests');
     while (_waitQueue.isNotEmpty) {
       final waiter = _waitQueue.removeFirst();
       if (!waiter.isCompleted) {

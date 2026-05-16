@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
-class _Limiter with ConcurrencyLimitedSignerMixin {
+class _Limiter with ConcurrencyLimiterMixin {
   @override
   final int maxConcurrentRequests;
   _Limiter(this.maxConcurrentRequests)
@@ -14,7 +14,7 @@ class _Limiter with ConcurrencyLimitedSignerMixin {
 /// Mimics the way a real signer (NIP-07, Amber, NIP-46) drives the mixin:
 /// each operation is wrapped in `runThrottled`, and we observe the number
 /// of operations that are *actually* executing at the same time.
-class _PeakTrackingSigner with ConcurrencyLimitedSignerMixin {
+class _PeakTrackingSigner with ConcurrencyLimiterMixin {
   @override
   final int maxConcurrentRequests;
   int _active = 0;
@@ -36,7 +36,7 @@ class _PeakTrackingSigner with ConcurrencyLimitedSignerMixin {
 }
 
 void main() {
-  group('ConcurrencyLimitedSignerMixin', () {
+  group('ConcurrencyLimiterMixin', () {
     test('runs immediately when below the limit', () async {
       final limiter = _Limiter(3);
       final result = await limiter.runThrottled(() async => 42);

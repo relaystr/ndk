@@ -12,7 +12,7 @@ class _PendingRequestEntry {
 }
 
 class Nip07EventSigner
-    with ConcurrencyLimitedSignerMixin
+    with ConcurrencyLimiterMixin
     implements EventSigner {
   String? cachedPublicKey;
 

@@ -14,7 +14,7 @@ class _PendingRequestEntry {
 
 /// amber (external app) https://github.com/greenart7c3/Amber singer
 class AmberEventSigner
-    with ConcurrencyLimitedSignerMixin
+    with ConcurrencyLimiterMixin
     implements EventSigner {
   final AmberFlutterDS amberFlutterDS;
 

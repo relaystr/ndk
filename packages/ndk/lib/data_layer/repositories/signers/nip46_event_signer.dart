@@ -17,7 +17,7 @@ class _PendingRequestEntry {
 }
 
 class Nip46EventSigner
-    with ConcurrencyLimitedSignerMixin
+    with ConcurrencyLimiterMixin
     implements EventSigner {
   BunkerConnection connection;
   Requests requests;
