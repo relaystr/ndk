@@ -7,7 +7,9 @@ class Nip07EventSigner implements EventSigner {
   final _pendingRequestsController =
       BehaviorSubject<List<PendingSignerRequest>>.seeded([]);
 
-  Nip07EventSigner({this.cachedPublicKey});
+  Nip07EventSigner({this.cachedPublicKey, int maxConcurrentRequests = 100})
+    : assert(maxConcurrentRequests > 0,
+          'maxConcurrentRequests must be > 0');
 
   @override
   bool canSign() {

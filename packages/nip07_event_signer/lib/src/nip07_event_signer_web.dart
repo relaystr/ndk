@@ -11,7 +11,9 @@ class _PendingRequestEntry {
   _PendingRequestEntry(this.completer, this.request);
 }
 
-class Nip07EventSigner implements EventSigner {
+class Nip07EventSigner
+    with ConcurrencyLimitedSignerMixin
+    implements EventSigner {
   String? cachedPublicKey;
 
   final _pendingRequests = <String, _PendingRequestEntry>{};
@@ -20,7 +22,19 @@ class Nip07EventSigner implements EventSigner {
 
   int _requestCounter = 0;
 
-  Nip07EventSigner({this.cachedPublicKey});
+  @override
+  final int maxConcurrentRequests;
+
+  /// Default browser-extension concurrency. Modern extensions (nos2x, Alby)
+  /// queue requests internally, so we allow real parallelism. Lower this if
+  /// you target an extension that prompts for every operation.
+  static const int defaultMaxConcurrentRequests = 100;
+
+  Nip07EventSigner({
+    this.cachedPublicKey,
+    this.maxConcurrentRequests = defaultMaxConcurrentRequests,
+  }) : assert(maxConcurrentRequests > 0,
+            'maxConcurrentRequests must be > 0');
 
   String _generateRequestId() {
     return 'nip07_${DateTime.now().millisecondsSinceEpoch}_${_requestCounter++}';
@@ -60,8 +74,9 @@ class Nip07EventSigner implements EventSigner {
     );
     _notifyPendingRequestsChange();
 
-    // Run operation and complete the completer when done
-    operation()
+    // Throttle the actual call to the extension; queued requests still
+    // appear in `pendingRequests` so the UI sees the full backlog.
+    runThrottled(operation)
         .then((result) {
           if (!completer.isCompleted) {
             completer.complete(result);
@@ -235,6 +250,7 @@ class Nip07EventSigner implements EventSigner {
 
   @override
   Future<void> dispose() async {
+    cancelAllQueued();
     await _pendingRequestsController.close();
   }
 }
