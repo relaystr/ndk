@@ -1,3 +1,9 @@
+## 0.8.4-dev.0
+
+ - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.
+ - **FIX**: skip remote call when a queued request is cancelled.
+ - **FEAT**: implement ConcurrencyLimitedSignerMixin for managing concurrent requests in signers.
+
 ## 0.8.3
 
  - **FIX**: support WebEventSigner in saveAccountsState on web.

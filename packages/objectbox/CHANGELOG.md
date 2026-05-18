@@ -1,3 +1,7 @@
+## 0.2.12-dev.0+1
+
+ - Update a dependency to the latest release.
+
 ## 0.2.12
 
  - **REVERT**: seperate cache manger package.
