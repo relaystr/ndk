@@ -13,7 +13,9 @@ class _PendingRequestEntry {
 }
 
 /// amber (external app) https://github.com/greenart7c3/Amber singer
-class AmberEventSigner implements EventSigner {
+class AmberEventSigner
+    with ConcurrencyLimiterMixin
+    implements EventSigner {
   final AmberFlutterDS amberFlutterDS;
 
   final String publicKey;
@@ -24,8 +26,20 @@ class AmberEventSigner implements EventSigner {
 
   int _requestCounter = 0;
 
+  @override
+  final int maxConcurrentRequests;
+
+  /// Default Amber concurrency. Lower this if you target a flow that
+  /// prompts the user via Android intents for every request.
+  static const int defaultMaxConcurrentRequests = 100;
+
   /// get a amber event signer
-  AmberEventSigner({required this.publicKey, required this.amberFlutterDS});
+  AmberEventSigner({
+    required this.publicKey,
+    required this.amberFlutterDS,
+    this.maxConcurrentRequests = defaultMaxConcurrentRequests,
+  }) : assert(maxConcurrentRequests > 0,
+            'maxConcurrentRequests must be > 0');
 
   String get _npub =>
       publicKey.startsWith('npub') ? publicKey : Nip19.encodePubKey(publicKey);
@@ -76,7 +90,15 @@ class AmberEventSigner implements EventSigner {
     );
     _notifyPendingRequestsChange();
 
-    operation()
+    // Throttle the actual call to Amber; queued requests still appear in
+    // `pendingRequests` so the UI sees the full backlog. If the request was
+    // cancelled while queued, skip the Amber call entirely.
+    runThrottled(() async {
+      if (!_pendingRequests.containsKey(requestId)) {
+        throw SignerRequestCancelledException(requestId);
+      }
+      return await operation();
+    })
         .then((result) {
           if (!completer.isCompleted) {
             completer.complete(result);
@@ -215,6 +237,7 @@ class AmberEventSigner implements EventSigner {
 
   @override
   Future<void> dispose() async {
+    cancelAllQueued();
     await _pendingRequestsController.close();
   }
 }
