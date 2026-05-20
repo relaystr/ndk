@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
@@ -215,6 +216,14 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                           },
                           enableNip07Login: false,
                           enableAmberLogin: false,
+                          nostrConnect: NostrConnect(
+                            appName: 'NDK sample app',
+                            relays: [
+                              "wss://relay.damus.io",
+                              "wss://relay.primal.net",
+                              "wss://relay.nmail.li",
+                            ],
+                          ),
                         ),
                       ],
                     ],
