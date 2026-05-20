@@ -16,9 +16,7 @@ class _PendingRequestEntry {
   _PendingRequestEntry(this.completer, this.request);
 }
 
-class Nip46EventSigner
-    with ConcurrencyLimiterMixin
-    implements EventSigner {
+class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   BunkerConnection connection;
   Requests requests;
   Broadcast broadcast;
