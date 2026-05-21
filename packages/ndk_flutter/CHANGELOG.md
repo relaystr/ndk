@@ -1,3 +1,7 @@
+## 0.8.4-dev.1
+
+ - Update a dependency to the latest release.
+
 ## 0.8.4-dev.0
 
  - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.

@@ -3,6 +3,50 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-05-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.1`](#ndk_drift---v011-dev1)
+ - [`ndk_objectbox` - `v0.2.12-dev.1`](#ndk_objectbox---v0212-dev1)
+ - [`nip07_event_signer` - `v1.1.0-dev.1`](#nip07_event_signer---v110-dev1)
+ - [`ndk_flutter` - `v0.8.4-dev.1`](#ndk_flutter---v084-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_flutter` - `v0.8.4-dev.1`
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.1`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_objectbox` - `v0.2.12-dev.1`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: objextbox delete transactions.
+
+#### `nip07_event_signer` - `v1.1.0-dev.1`
+
+ - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.
+ - **FIX**: skip remote call when a queued request is cancelled.
+ - **FEAT**: implement ConcurrencyLimitedSignerMixin for managing concurrent requests in signers.
+
+
 ## 2026-05-18
 
 ### Changes

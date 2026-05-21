@@ -1,3 +1,8 @@
+## 0.2.12-dev.1
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: objextbox delete transactions.
+
 ## 0.2.12-dev.0+1
 
  - Update a dependency to the latest release.
