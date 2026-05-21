@@ -135,7 +135,7 @@ class NwcWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice) async {
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice, {Duration? timeout}) async {
     final nwcWallet = wallet as NwcWallet;
 
     await initialize(wallet);
@@ -144,6 +144,7 @@ class NwcWalletProvider implements WalletProvider {
     final response = await _nwcUseCase.payInvoice(
       connection,
       invoice: invoice,
+      timeout: timeout
     );
     await _refreshAll(nwcWallet);
     return response;

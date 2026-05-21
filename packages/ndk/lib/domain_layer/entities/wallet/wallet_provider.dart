@@ -40,7 +40,7 @@ abstract class WalletProvider {
 
   /// Pays a Lightning invoice using this wallet
   /// Returns payment result with preimage and fees
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice);
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice, {Duration? timeout});
 
   /// Receive by creating a Lightning Invoice
   Future<String> receive(Wallet wallet, int amountSats);
