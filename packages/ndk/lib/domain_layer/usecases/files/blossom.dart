@@ -67,6 +67,8 @@ class Blossom {
   /// if no signer is available, a temporary signer is created \
   /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
   /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
+  /// [precomputedSha256] optional hex sha256 of [data]; if provided, skips local hashing. \
+  /// Caller is responsible for correctness: a mismatched hash will cause the server to reject the upload.
   Future<List<BlobUploadResult>> uploadBlob({
     required Uint8List data,
     List<String>? serverUrls,
@@ -74,11 +76,12 @@ class Blossom {
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool serverMediaOptimisation = false,
     EventSigner? customSigner,
+    String? precomputedSha256,
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     /// sha256 of the data
-    final dataSha256 = sha256.convert(data);
+    final dataSha256 = precomputedSha256 ?? sha256.convert(data).toString();
 
     final signer = _getSigner(customSigner);
     final authType = serverMediaOptimisation ? "media" : "upload";
@@ -90,7 +93,7 @@ class Blossom {
       createdAt: now,
       tags: [
         ["t", authType],
-        ["x", dataSha256.toString()],
+        ["x", dataSha256],
         ["expiration", "${now + BLOSSOM_AUTH_EXPIRATION.inMilliseconds}"],
       ],
     );
@@ -128,7 +131,9 @@ class Blossom {
   /// the current signer is used to sign the request, or [customSigner] if provided \
   /// if no signer is available, a temporary signer is created \
   /// [strategy] is the upload strategy, default is mirrorAfterSuccess \
-  /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different
+  /// [serverMediaOptimisation] is whether the server should optimise the media [BUD-05], IMPORTANT: the server hash will be different \
+  /// [precomputedSha256] optional hex sha256 of the file; if provided, skips the [UploadPhase.hashing] phase entirely. \
+  /// Caller is responsible for correctness: a mismatched hash will cause the server to reject the upload.
   Stream<BlobUploadProgress> uploadBlobFromFile({
     required String filePath,
     List<String>? serverUrls,
@@ -136,30 +141,34 @@ class Blossom {
     UploadStrategy strategy = UploadStrategy.mirrorAfterSuccess,
     bool serverMediaOptimisation = false,
     EventSigner? customSigner,
+    String? precomputedSha256,
   }) async* {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     final signer = _getSigner(customSigner);
 
-    // Compute file hash without loading entire file into memory
-    String? fileHash;
-    await for (final hashProgress in _blossomImpl.computeFileHash(filePath)) {
-      yield BlobUploadProgress(
-        currentServer: '',
-        sentBytes: hashProgress.processedBytes,
-        totalBytes: hashProgress.totalBytes,
-        completedUploads: const [],
-        phase: UploadPhase.hashing,
-        progressPhase: hashProgress.progress,
-      );
-
-      if (hashProgress.isComplete && hashProgress.hash != null) {
-        fileHash = hashProgress.hash;
-      }
-    }
+    String? fileHash = precomputedSha256;
 
     if (fileHash == null) {
-      throw Exception('Failed to compute file hash');
+      // Compute file hash without loading entire file into memory
+      await for (final hashProgress in _blossomImpl.computeFileHash(filePath)) {
+        yield BlobUploadProgress(
+          currentServer: '',
+          sentBytes: hashProgress.processedBytes,
+          totalBytes: hashProgress.totalBytes,
+          completedUploads: const [],
+          phase: UploadPhase.hashing,
+          progressPhase: hashProgress.progress,
+        );
+
+        if (hashProgress.isComplete && hashProgress.hash != null) {
+          fileHash = hashProgress.hash;
+        }
+      }
+
+      if (fileHash == null) {
+        throw Exception('Failed to compute file hash');
+      }
     }
 
     // Create authorization event with file hash
