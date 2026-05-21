@@ -1,3 +1,9 @@
+## 1.1.0-dev.0
+
+ - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.
+ - **FIX**: skip remote call when a queued request is cancelled.
+ - **FEAT**: implement ConcurrencyLimitedSignerMixin for managing concurrent requests in signers.
+
 ## 1.0.10
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
