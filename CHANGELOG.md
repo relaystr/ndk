@@ -15,6 +15,49 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.8.4-dev.2`](#ndk---v084-dev2)
+ - [`ndk_drift` - `v0.1.1-dev.2`](#ndk_drift---v011-dev2)
+ - [`ndk_flutter` - `v0.8.4-dev.2`](#ndk_flutter---v084-dev2)
+ - [`ndk_objectbox` - `v0.2.12-dev.2`](#ndk_objectbox---v0212-dev2)
+ - [`nip07_event_signer` - `v1.1.0-dev.2`](#nip07_event_signer---v110-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.2`
+ - `nip07_event_signer` - `v1.1.0-dev.2`
+
+---
+
+#### `ndk` - `v0.8.4-dev.2`
+
+ - **FEAT**(ndk): allow precomputed sha256 for blossom uploads.
+
+#### `ndk_drift` - `v0.1.1-dev.2`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.2`
+
+ - **FIX**(ndk_flutter): prevent QR code overflow in nostr connect dialog.
+
+
+## 2026-05-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.8.4-dev.1`](#ndk---v084-dev1)
  - [`ndk_drift` - `v0.1.1-dev.1`](#ndk_drift---v011-dev1)
  - [`ndk_flutter` - `v0.8.4-dev.1`](#ndk_flutter---v084-dev1)
