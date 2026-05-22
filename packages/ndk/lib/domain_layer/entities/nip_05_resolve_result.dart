@@ -7,9 +7,9 @@ import 'nip_05.dart';
 /// - [Nip05NotFound] - the `.well-known/nostr.json` file was reachable but
 ///   does not contain the requested user (no entry under the username and no
 ///   fallback `_` entry).
-/// - [Nip05ResolveError] - we could not determine whether the user exists:
-///   network failure, non-2xx HTTP status, malformed body, or unexpected
-///   schema. Inspect [Nip05ResolveError.cause] for the underlying error.
+/// - [Nip05ResolveError] - we could not determine whether the user exists.
+///   Switch on its subtypes ([Nip05ResolveNetworkError],
+///   [Nip05ResolveInvalidResponse]) to react accordingly.
 sealed class Nip05ResolveResult {
   const Nip05ResolveResult();
 }
@@ -25,10 +25,33 @@ class Nip05NotFound extends Nip05ResolveResult {
   const Nip05NotFound();
 }
 
-/// We could not determine whether the user exists. Covers network failures
-/// (DNS, timeout, connection refused), non-2xx HTTP responses (e.g. 404 / 500),
-/// malformed JSON bodies, and unexpected response schemas.
-class Nip05ResolveError extends Nip05ResolveResult {
+/// We could not determine whether the user exists.
+///
+/// Sealed: switch on [Nip05ResolveNetworkError] vs
+/// [Nip05ResolveInvalidResponse] to tell a transient transport failure
+/// from a server returning a body we cannot parse.
+sealed class Nip05ResolveError extends Nip05ResolveResult {
+  /// The underlying error that caused the resolution to fail.
+  Object get cause;
+  const Nip05ResolveError();
+}
+
+/// We could not fetch the `.well-known/nostr.json` file.
+///
+/// Covers DNS failures, timeouts, connection refused, and non-2xx HTTP
+/// responses. Often transient - safe to retry later.
+class Nip05ResolveNetworkError extends Nip05ResolveError {
+  @override
   final Object cause;
-  const Nip05ResolveError(this.cause);
+  const Nip05ResolveNetworkError(this.cause);
+}
+
+/// The file was fetched but could not be interpreted as a valid nostr.json.
+///
+/// Covers malformed JSON bodies and unexpected response schemas (e.g.
+/// missing `names` field, wrong types). The server is misconfigured.
+class Nip05ResolveInvalidResponse extends Nip05ResolveError {
+  @override
+  final Object cause;
+  const Nip05ResolveInvalidResponse(this.cause);
 }

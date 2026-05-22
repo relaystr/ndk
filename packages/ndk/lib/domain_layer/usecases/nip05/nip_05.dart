@@ -127,8 +127,12 @@ class Nip05Usecase {
       }
       await _database.saveNip05(result);
       return Nip05Found(result);
+    } on FormatException catch (e) {
+      return Nip05ResolveInvalidResponse(e);
+    } on TypeError catch (e) {
+      return Nip05ResolveInvalidResponse(e);
     } catch (e) {
-      return Nip05ResolveError(e);
+      return Nip05ResolveNetworkError(e);
     }
   }
 }
