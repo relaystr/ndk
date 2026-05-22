@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
@@ -26,12 +27,22 @@ Future<void> showNLoginPopup({
         ),
         content: SizedBox(
           width: 420,
-          child: NLogin(
-            ndkFlutter: ndkFlutter,
-            onLoggedIn: () {
-              Navigator.of(dialogContext).pop();
-              onLoggedIn();
-            },
+          child: SingleChildScrollView(
+            child: NLogin(
+              ndkFlutter: ndkFlutter,
+              nostrConnect: NostrConnect(
+                appName: 'NDK sample app',
+                relays: [
+                  "wss://relay.damus.io",
+                  "wss://relay.primal.net",
+                  "wss://relay.nmail.li",
+                ],
+              ),
+              onLoggedIn: () {
+                Navigator.of(dialogContext).pop();
+                onLoggedIn();
+              },
+            ),
           ),
         ),
       );

@@ -13,22 +13,22 @@ class NostrConnectDialogView extends StatelessWidget {
     return Theme(
       data: ThemeData.light(),
       child: AlertDialog(
+        backgroundColor: Colors.white,
         title: Text(AppLocalizations.of(context)!.nostrConnectUrl),
-        content: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Spacer(),
-            AspectRatio(
-              aspectRatio: 1,
-              child: PrettyQrView.data(
-                data: nostrConnectURL,
-                decoration: const PrettyQrDecoration(
-                  shape: PrettyQrShape.custom(PrettyQrDotsSymbol()),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 300, maxHeight: 300),
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: PrettyQrView.data(
+              data: nostrConnectURL,
+              decoration: const PrettyQrDecoration(
+                quietZone: PrettyQrQuietZone.standard,
+                shape: PrettyQrSmoothSymbol(
+                  roundFactor: 0,
                 ),
               ),
             ),
-            Spacer(),
-          ],
+          ),
         ),
         actions: [
           FilledButton(
