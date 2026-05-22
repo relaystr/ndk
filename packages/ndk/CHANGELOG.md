@@ -1,3 +1,7 @@
+## 0.8.4-dev.1
+
+ - **FEAT**(ndk): allow precomputed sha256 for blossom uploads.
+
 ## 0.8.4-dev.0
 
  - **REFACTOR**: rename ConcurrencyLimitedSignerMixin to ConcurrencyLimiterMixin.

@@ -1,3 +1,10 @@
+## 0.1.1-dev.1
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
 ## 0.1.1
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
