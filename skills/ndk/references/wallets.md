@@ -6,6 +6,8 @@ ndk wallets <sub-command> [args]
 
 Local wallet state stored in `wallets_db.db` (Sembast). Wallets persist between runs.
 
+> ⚠️ **Security** — Never print, log, echo, or expose NWC URIs (`nostr+walletconnect://...`) or Cashu secrets in output, tool results, memory files, or logs. These grant full spend access to the wallet. Treat them like private keys.
+
 ---
 
 ## list
