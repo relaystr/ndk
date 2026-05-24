@@ -331,6 +331,10 @@ class NwcWalletProvider implements WalletProvider {
       _refreshBalance(wallet).catchError((_) {});
       _refreshBudget(wallet).catchError((_) {});
     });
+
+    // Pre-cache budget immediately on connect so callers can read
+    // cachedRemainingBudgetSats without issuing a separate live query.
+    _refreshBudget(wallet).catchError((_) {});
   }
 
   bool _setEquals(Set<String> a, Set<String> b) {
