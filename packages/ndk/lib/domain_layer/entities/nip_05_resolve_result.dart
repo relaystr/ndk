@@ -32,7 +32,7 @@ class Nip05NotFound extends Nip05ResolveResult {
 /// from a server returning a body we cannot parse.
 sealed class Nip05ResolveError extends Nip05ResolveResult {
   /// The underlying error that caused the resolution to fail.
-  Object get cause;
+  Exception get cause;
   const Nip05ResolveError();
 }
 
@@ -40,18 +40,27 @@ sealed class Nip05ResolveError extends Nip05ResolveResult {
 ///
 /// Covers DNS failures, timeouts, connection refused, and non-2xx HTTP
 /// responses. Often transient - safe to retry later.
-class Nip05ResolveNetworkError extends Nip05ResolveError {
+class Nip05ResolveNetworkError extends Nip05ResolveError implements Exception {
   @override
-  final Object cause;
+  final Exception cause;
   const Nip05ResolveNetworkError(this.cause);
+
+  @override
+  String toString() =>
+      'Nip05ResolveNetworkError: failed to fetch nostr.json: $cause';
 }
 
 /// The file was fetched but could not be interpreted as a valid nostr.json.
 ///
 /// Covers malformed JSON bodies and unexpected response schemas (e.g.
 /// missing `names` field, wrong types). The server is misconfigured.
-class Nip05ResolveInvalidResponse extends Nip05ResolveError {
+class Nip05ResolveInvalidResponse extends Nip05ResolveError
+    implements Exception {
   @override
-  final Object cause;
+  final Exception cause;
   const Nip05ResolveInvalidResponse(this.cause);
+
+  @override
+  String toString() =>
+      'Nip05ResolveInvalidResponse: invalid nostr.json response: $cause';
 }

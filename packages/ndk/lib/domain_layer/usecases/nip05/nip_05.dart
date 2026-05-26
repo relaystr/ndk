@@ -130,9 +130,13 @@ class Nip05Usecase {
     } on FormatException catch (e) {
       return Nip05ResolveInvalidResponse(e);
     } on TypeError catch (e) {
-      return Nip05ResolveInvalidResponse(e);
+      return Nip05ResolveInvalidResponse(
+        Exception(e.toString()),
+      );
     } catch (e) {
-      return Nip05ResolveNetworkError(e);
+      return Nip05ResolveNetworkError(
+        e is Exception ? e : Exception(e.toString()),
+      );
     }
   }
 }
