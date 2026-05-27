@@ -1,15 +1,15 @@
 ---
 name: ndk
-description: Nostr Development Kit CLI — wallet management (NWC/Cashu) and relay event queries over the Nostr network.
-license: MIT
+description: NDK CLI tool — wallet management (NWC/Cashu) and relay event queries via the `ndk` binary. For library/package development see ndk-core and ndk-flutter skills.
 metadata:
   author: relaystr
-  version: "0.8.4"
 ---
 
-# NDK CLI Skill
+# NDK CLI Tool Skill
 
-Nostr wallet operations + relay queries. Supports NWC and Cashu wallets. Local state persists between runs.
+Executes the `ndk` binary for wallet operations + relay queries. Supports NWC and Cashu wallets. Local state persists between runs.
+
+> **Scope:** CLI tool only. Library/package development → `ndk-core` skill. Flutter widgets → `ndk-flutter` skill.
 
 ## Quick Reference
 
