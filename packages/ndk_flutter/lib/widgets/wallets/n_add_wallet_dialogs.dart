@@ -430,8 +430,8 @@ Future<CashuWallet?> showAddCashuWalletDialog(
 
                 await ndkFlutter.ndk.wallets.addWallet(cashuWallet);
 
-                if (context.mounted) {
-                  Navigator.of(context).pop(cashuWallet);
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop(cashuWallet);
                 }
                 scaffoldMessenger.showSnackBar(
                   SnackBar(
