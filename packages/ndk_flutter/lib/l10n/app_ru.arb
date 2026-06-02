@@ -303,13 +303,7 @@
   "nwcWalletSubtitle": "Кошелёк NWC",
   "tokenCopied": "Токен скопирован",
   "deleteWalletConfirmation": "Удалить Кошелёк?",
-  "@deleteWalletConfirmation": {
-    "description": "Title for delete wallet confirmation dialog"
-  },
   "deleteWalletConfirmationMessage": "Вы уверены, что хотите удалить этот кошелёк? Это действие нельзя отменить.",
-  "@deleteWalletConfirmationMessage": {
-    "description": "Message for delete wallet confirmation dialog"
-  },
   "addWalletTitle": "Добавить Кошелёк",
   "chooseWalletType": "Выберите тип кошелька",
   "nwcWalletTypeTitle": "Nostr Wallet Connect",
@@ -361,51 +355,15 @@
     }
   },
   "budgetDaily": "Ежедневно",
-  "@budgetDaily": {
-    "description": "Daily budget renewal period"
-  },
   "budgetWeekly": "Еженедельно",
-  "@budgetWeekly": {
-    "description": "Weekly budget renewal period"
-  },
   "budgetMonthly": "Ежемесячно",
-  "@budgetMonthly": {
-    "description": "Monthly budget renewal period"
-  },
   "budgetYearly": "Ежегодно",
-  "@budgetYearly": {
-    "description": "Yearly budget renewal period"
-  },
   "budgetNever": "Никогда",
-  "@budgetNever": {
-    "description": "Never renews budget"
-  },
   "renameWallet": "Переименовать",
-  "@renameWallet": {
-    "description": "Label for rename wallet option"
-  },
   "pickColor": "Выбрать цвет",
-  "@pickColor": {
-    "description": "Label for pick color option"
-  },
   "deleteWallet": "Удалить",
-  "@deleteWallet": {
-    "description": "Label for delete wallet option"
-  },
   "walletName": "Название кошелька",
-  "@walletName": {
-    "description": "Label for wallet name input"
-  },
   "walletNameHint": "Введите название кошелька",
-  "@walletNameHint": {
-    "description": "Hint for wallet name input"
-  },
   "save": "Сохранить",
-  "@save": {
-    "description": "Label for save action"
-  },
-  "walletRenamed": "Кошелек переименован",
-  "@walletRenamed": {
-    "description": "Message shown when wallet is renamed"
-  }
+  "walletRenamed": "Кошелек переименован"
 }

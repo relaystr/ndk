@@ -303,13 +303,7 @@
   "nwcWalletSubtitle": "Cartera NWC",
   "tokenCopied": "Token copiado",
   "deleteWalletConfirmation": "¿Eliminar Cartera?",
-  "@deleteWalletConfirmation": {
-    "description": "Title for delete wallet confirmation dialog"
-  },
   "deleteWalletConfirmationMessage": "¿Está seguro de que desea eliminar esta cartera? Esta acción no se puede deshacer.",
-  "@deleteWalletConfirmationMessage": {
-    "description": "Message for delete wallet confirmation dialog"
-  },
   "addWalletTitle": "Añadir Cartera",
   "chooseWalletType": "Elegir tipo de cartera",
   "nwcWalletTypeTitle": "Nostr Wallet Connect",
@@ -361,51 +355,15 @@
     }
   },
   "budgetDaily": "Diario",
-  "@budgetDaily": {
-    "description": "Daily budget renewal period"
-  },
   "budgetWeekly": "Semanal",
-  "@budgetWeekly": {
-    "description": "Weekly budget renewal period"
-  },
   "budgetMonthly": "Mensual",
-  "@budgetMonthly": {
-    "description": "Monthly budget renewal period"
-  },
   "budgetYearly": "Anual",
-  "@budgetYearly": {
-    "description": "Yearly budget renewal period"
-  },
   "budgetNever": "Nunca",
-  "@budgetNever": {
-    "description": "Never renews budget"
-  },
   "renameWallet": "Renombrar",
-  "@renameWallet": {
-    "description": "Label for rename wallet option"
-  },
   "pickColor": "Elegir color",
-  "@pickColor": {
-    "description": "Label for pick color option"
-  },
   "deleteWallet": "Eliminar",
-  "@deleteWallet": {
-    "description": "Label for delete wallet option"
-  },
   "walletName": "Nombre de la cartera",
-  "@walletName": {
-    "description": "Label for wallet name input"
-  },
   "walletNameHint": "Ingrese el nombre de la cartera",
-  "@walletNameHint": {
-    "description": "Hint for wallet name input"
-  },
   "save": "Guardar",
-  "@save": {
-    "description": "Label for save action"
-  },
-  "walletRenamed": "Cartera renombrada",
-  "@walletRenamed": {
-    "description": "Message shown when wallet is renamed"
-  }
+  "walletRenamed": "Cartera renombrada"
 }

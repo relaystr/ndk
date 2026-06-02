@@ -122,8 +122,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get chatMessage => 'Messaggio in chat';
 
   @override
-  String get groupChatThreadedReply =>
-      'Risposta in thread nella chat di gruppo';
+  String get groupChatThreadedReply => 'Risposta in thread nella chat di gruppo';
 
   @override
   String get thread => 'Thread';
@@ -647,8 +646,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get addCashuWalletTitle => 'Aggiungi portafoglio Cashu';
 
   @override
-  String get enterMintUrl =>
-      'Inserisci l\'URL della zecca per aggiungere un portafoglio Cashu.';
+  String get enterMintUrl => 'Inserisci l\'URL della zecca per aggiungere un portafoglio Cashu.';
 
   @override
   String get mintUrl => 'URL zecca';
@@ -663,8 +661,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get cashuWalletAdded => 'Portafoglio Cashu aggiunto con successo!';
 
   @override
-  String get failedToAddMint =>
-      'Impossibile aggiungere la zecca. Controlla l\'URL e riprova.';
+  String get failedToAddMint => 'Impossibile aggiungere la zecca. Controlla l\'URL e riprova.';
 
   @override
   String get addNwcWalletTitle => 'Aggiungi portafoglio NWC';
@@ -676,8 +673,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get manual => 'Manuale';
 
   @override
-  String get nwcFaucetDescription =>
-      'Crea un portafoglio di test con sats dal faucet NWC.';
+  String get nwcFaucetDescription => 'Crea un portafoglio di test con sats dal faucet NWC.';
 
   @override
   String get startingBalance => 'Saldo iniziale';
@@ -703,22 +699,19 @@ class AppLocalizationsIt extends AppLocalizations {
   String get invalidFaucetResponse => 'Risposta non valida dal faucet';
 
   @override
-  String get errorCreatingWallet =>
-      'Errore durante la creazione del portafoglio';
+  String get errorCreatingWallet => 'Errore durante la creazione del portafoglio';
 
   @override
   String get addLnurlWalletTitle => 'Aggiungi portafoglio LNURL';
 
   @override
-  String get enterLnurlIdentifier =>
-      'Inserisci il tuo identificatore LNURL (utente@dominio.com).';
+  String get enterLnurlIdentifier => 'Inserisci il tuo identificatore LNURL (utente@dominio.com).';
 
   @override
   String get lnurlIdentifierHint => 'user@example.com';
 
   @override
-  String get pleaseEnterValidIdentifier =>
-      'Inserisci un identificatore valido (utente@dominio.com)';
+  String get pleaseEnterValidIdentifier => 'Inserisci un identificatore valido (utente@dominio.com)';
 
   @override
   String get lnurlWalletAdded => 'Portafoglio LNURL aggiunto con successo!';
@@ -736,8 +729,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get receive => 'Ricevi';
 
   @override
-  String get setAsDefaultForReceiving =>
-      'Imposta come predefinito per ricevere';
+  String get setAsDefaultForReceiving => 'Imposta come predefinito per ricevere';
 
   @override
   String get setAsDefaultForSending => 'Imposta come predefinito per inviare';
@@ -749,12 +741,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get defaultForSending => 'Predefinito per inviare';
 
   @override
-  String get defaultWalletForReceivingTooltip =>
-      'Questo portafoglio e il predefinito per ricevere pagamenti.';
+  String get defaultWalletForReceivingTooltip => 'Questo portafoglio e il predefinito per ricevere pagamenti.';
 
   @override
-  String get defaultWalletForSendingTooltip =>
-      'Questo portafoglio e il predefinito per inviare pagamenti.';
+  String get defaultWalletForSendingTooltip => 'Questo portafoglio e il predefinito per inviare pagamenti.';
 
   @override
   String get sendOptionsTitle => 'Opzioni di invio';
@@ -940,8 +930,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get deleteWalletConfirmation => 'Eliminare Portafoglio?';
 
   @override
-  String get deleteWalletConfirmationMessage =>
-      'Sei sicuro di voler eliminare questo portafoglio? Questa azione non può essere annullata.';
+  String get deleteWalletConfirmationMessage => 'Sei sicuro di voler eliminare questo portafoglio? Questa azione non può essere annullata.';
 
   @override
   String get addWalletTitle => 'Aggiungi Portafoglio';
@@ -959,15 +948,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get lnurlWalletTypeTitle => 'LNURL / Indirizzo Lightning';
 
   @override
-  String get lnurlWalletTypeSubtitle =>
-      'Usa un portafoglio custodial con LNURL o un indirizzo Lightning';
+  String get lnurlWalletTypeSubtitle => 'Usa un portafoglio custodial con LNURL o un indirizzo Lightning';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
 
   @override
-  String get cashuWalletTypeSubtitle =>
-      'Usa un portafoglio ecash basato su una mint Cashu';
+  String get cashuWalletTypeSubtitle => 'Usa un portafoglio ecash basato su una mint Cashu';
 
   @override
   String get cashuOption => 'Cashu';
@@ -1003,8 +990,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get cameraNotAvailable => 'Fotocamera non disponibile';
 
   @override
-  String get scanNwcInstructions =>
-      'Scansiona il codice QR dalla tua app di portafoglio NWC';
+  String get scanNwcInstructions => 'Scansiona il codice QR dalla tua app di portafoglio NWC';
 
   @override
   String get invalidNwcUri => 'URI NWC non valido';
@@ -1041,12 +1027,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
     final String usedString = usedNumberFormat.format(used);
-    final intl.NumberFormat totalNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
     return 'Bilancio: $usedString / $totalString';
