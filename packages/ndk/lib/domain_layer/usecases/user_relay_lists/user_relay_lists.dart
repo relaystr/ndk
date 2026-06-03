@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import '../../../config/user_relay_list_defaults.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/contact_list.dart';
 import '../../entities/filter.dart';
+import '../../entities/nip_37.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/nip_51_list.dart';
 import '../../entities/nip_65.dart';
@@ -210,6 +213,76 @@ class UserRelayLists {
     return event.tags
         .where((tag) => tag.length >= 2 && tag[0] == Nip51List.kRelay)
         .map((tag) => tag[1])
+        .toList();
+  }
+
+  /// Fetches the private storage relay list (NIP-37, kind 10013) for the
+  /// logged-in user.
+  ///
+  /// Returns the list of relay URLs where the user stores private content,
+  /// such as draft wraps.
+  ///
+  /// - Returns `null` if the user has not published a kind 10013 event.
+  ///
+  /// [forceRefresh] if true, bypass cache and query relays directly.
+  Future<List<String>?> getPrivateStorageRelays({
+    bool forceRefresh = false,
+  }) async {
+    final signer = _signer;
+    if (!signer.canSign()) {
+      throw "cannot decrypt private storage relay list without a signer";
+    }
+
+    final pubKey = signer.getPublicKey();
+    List<Nip01Event> events = [];
+
+    if (!forceRefresh) {
+      events = await _cacheManager.loadEvents(
+        pubKeys: [pubKey],
+        kinds: [Nip37.kPrivateStorageRelays],
+      );
+    }
+
+    if (events.isEmpty) {
+      events = await _requests
+          .query(
+            filter: Filter(
+              authors: [pubKey],
+              kinds: [Nip37.kPrivateStorageRelays],
+              limit: 1,
+            ),
+          )
+          .future;
+    }
+
+    if (events.isEmpty) return null;
+
+    events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final latest = events.first;
+    await _cacheManager.saveEvent(latest);
+    try {
+      return await _extractPrivateStorageRelayUrls(latest, signer);
+    } catch (e) {
+      Logger.log.w(() => e);
+      return null;
+    }
+  }
+
+  Future<List<String>> _extractPrivateStorageRelayUrls(
+    Nip01Event event,
+    EventSigner signer,
+  ) async {
+    final json = await signer.decryptNip44(
+      ciphertext: event.content,
+      senderPubKey: event.pubKey,
+    );
+    final tags = jsonDecode(json ?? '') as List<dynamic>;
+
+    return tags
+        .whereType<List<dynamic>>()
+        .where((tag) => tag.length >= 2 && tag[0] == Nip51List.kRelay)
+        .map((tag) => tag[1])
+        .whereType<String>()
         .toList();
   }
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
@@ -108,6 +110,45 @@ void main() async {
 
       final dmRelays = await ndk.userRelayLists.getDmRelays(key0.publicKey);
       expect(dmRelays, ['wss://dm1.example', 'wss://dm2.example']);
+    });
+
+    test('getPrivateStorageRelays - returns null when no kind 10013 found',
+        () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      final privateStorageRelays =
+          await ndk.userRelayLists.getPrivateStorageRelays();
+
+      expect(privateStorageRelays, isNull);
+    });
+
+    test('getPrivateStorageRelays - reads encrypted relays from cache',
+        () async {
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      final signer = ndk.accounts.getLoggedAccount()!.signer;
+      final encryptedContent = await signer.encryptNip44(
+        plaintext: jsonEncode([
+          ['relay', 'wss://private1.example'],
+          ['relay', 'wss://private2.example'],
+        ]),
+        recipientPubKey: key1.publicKey,
+      );
+      final event = await signer.sign(Nip01Event(
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        pubKey: key1.publicKey,
+        kind: Nip37.kPrivateStorageRelays,
+        content: encryptedContent!,
+        tags: [],
+      ));
+      await ndk.config.cache.saveEvent(event);
+
+      final privateStorageRelays =
+          await ndk.userRelayLists.getPrivateStorageRelays();
+
+      expect(privateStorageRelays,
+          ['wss://private1.example', 'wss://private2.example']);
     });
 
     test('broadcastAdd/RemoveNip65Relay', () async {

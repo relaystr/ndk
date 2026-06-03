@@ -22,6 +22,7 @@ export 'domain_layer/entities/broadcast_response.dart';
 export 'domain_layer/entities/nip_01_event.dart';
 export 'data_layer/models/nip_01_event_model.dart';
 export 'domain_layer/entities/filter.dart';
+export 'domain_layer/entities/nip_37.dart';
 export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/read_write.dart';
