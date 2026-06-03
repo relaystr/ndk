@@ -11,9 +11,7 @@ class _PendingRequestEntry {
   _PendingRequestEntry(this.completer, this.request);
 }
 
-class Nip07EventSigner
-    with ConcurrencyLimiterMixin
-    implements EventSigner {
+class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   String? cachedPublicKey;
 
   final _pendingRequests = <String, _PendingRequestEntry>{};
@@ -33,8 +31,7 @@ class Nip07EventSigner
   Nip07EventSigner({
     this.cachedPublicKey,
     this.maxConcurrentRequests = defaultMaxConcurrentRequests,
-  }) : assert(maxConcurrentRequests > 0,
-            'maxConcurrentRequests must be > 0');
+  }) : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0');
 
   String _generateRequestId() {
     return 'nip07_${DateTime.now().millisecondsSinceEpoch}_${_requestCounter++}';
@@ -78,11 +75,11 @@ class Nip07EventSigner
     // appear in `pendingRequests` so the UI sees the full backlog. If the
     // request was cancelled while queued, skip the extension call entirely.
     runThrottled(() async {
-      if (!_pendingRequests.containsKey(requestId)) {
-        throw SignerRequestCancelledException(requestId);
-      }
-      return await operation();
-    })
+          if (!_pendingRequests.containsKey(requestId)) {
+            throw SignerRequestCancelledException(requestId);
+          }
+          return await operation();
+        })
         .then((result) {
           if (!completer.isCompleted) {
             completer.complete(result);
