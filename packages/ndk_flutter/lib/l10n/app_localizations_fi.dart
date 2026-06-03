@@ -425,7 +425,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String get nostrConnectEvent => 'Nostr Connect';
 
   @override
-  String get blobsStoredOnMediaservers => 'Mediapalvelimille tallennetut blobit';
+  String get blobsStoredOnMediaservers =>
+      'Mediapalvelimille tallennetut blobit';
 
   @override
   String get httpAuth => 'HTTP-todennus';
@@ -536,7 +537,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String get feed => 'Syöte';
 
   @override
-  String get dateBasedCalendarEvent => 'Päivämäärään perustuva kalenteritapahtuma';
+  String get dateBasedCalendarEvent =>
+      'Päivämäärään perustuva kalenteritapahtuma';
 
   @override
   String get timeBasedCalendarEvent => 'Aikaan perustuva kalenteritapahtuma';
@@ -661,7 +663,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String get cashuWalletAdded => 'Cashu-lompakko lisätty onnistuneesti!';
 
   @override
-  String get failedToAddMint => 'Mintin lisääminen epäonnistui. Tarkista URL ja yritä uudelleen.';
+  String get failedToAddMint =>
+      'Mintin lisääminen epäonnistui. Tarkista URL ja yritä uudelleen.';
 
   @override
   String get addNwcWalletTitle => 'Lisää NWC-lompakko';
@@ -705,13 +708,15 @@ class AppLocalizationsFi extends AppLocalizations {
   String get addLnurlWalletTitle => 'Lisää LNURL-lompakko';
 
   @override
-  String get enterLnurlIdentifier => 'Anna LNURL-tunnisteesi (kayttaja@domain.com).';
+  String get enterLnurlIdentifier =>
+      'Anna LNURL-tunnisteesi (kayttaja@domain.com).';
 
   @override
   String get lnurlIdentifierHint => 'kayttaja@esimerkki.com';
 
   @override
-  String get pleaseEnterValidIdentifier => 'Anna kelvollinen tunniste (kayttaja@domain.com)';
+  String get pleaseEnterValidIdentifier =>
+      'Anna kelvollinen tunniste (kayttaja@domain.com)';
 
   @override
   String get lnurlWalletAdded => 'LNURL-lompakko lisätty onnistuneesti!';
@@ -741,10 +746,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get defaultForSending => 'Oletus lähettämiseen';
 
   @override
-  String get defaultWalletForReceivingTooltip => 'Tämä lompakko on oletus vastaanottaessa maksuja.';
+  String get defaultWalletForReceivingTooltip =>
+      'Tämä lompakko on oletus vastaanottaessa maksuja.';
 
   @override
-  String get defaultWalletForSendingTooltip => 'Tämä lompakko on oletus lähettäessä maksuja.';
+  String get defaultWalletForSendingTooltip =>
+      'Tämä lompakko on oletus lähettäessä maksuja.';
 
   @override
   String get sendOptionsTitle => 'Lähetysvaihtoehdot';
@@ -930,7 +937,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String get deleteWalletConfirmation => 'Poista lompakko?';
 
   @override
-  String get deleteWalletConfirmationMessage => 'Oletko varma, että haluat poistaa tämän lompakon? Tätä toimintoa ei voi kumota.';
+  String get deleteWalletConfirmationMessage =>
+      'Oletko varma, että haluat poistaa tämän lompakon? Tätä toimintoa ei voi kumota.';
 
   @override
   String get addWalletTitle => 'Lisää lompakko';
@@ -948,13 +956,15 @@ class AppLocalizationsFi extends AppLocalizations {
   String get lnurlWalletTypeTitle => 'LNURL / Lightning-osoite';
 
   @override
-  String get lnurlWalletTypeSubtitle => 'Käytä hallinnoitua lompakkoa LNURL:llä tai Lightning-osoitteella';
+  String get lnurlWalletTypeSubtitle =>
+      'Käytä hallinnoitua lompakkoa LNURL:llä tai Lightning-osoitteella';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
 
   @override
-  String get cashuWalletTypeSubtitle => 'Käytä ecash-lompakkoa Cashu-mintin tukemana';
+  String get cashuWalletTypeSubtitle =>
+      'Käytä ecash-lompakkoa Cashu-mintin tukemana';
 
   @override
   String get cashuOption => 'Cashu';
@@ -990,7 +1000,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String get cameraNotAvailable => 'Kamera ei saatavilla';
 
   @override
-  String get scanNwcInstructions => 'Skannaa QR-koodi NWC-lompakkosovelluksestasi';
+  String get scanNwcInstructions =>
+      'Skannaa QR-koodi NWC-lompakkosovelluksestasi';
 
   @override
   String get invalidNwcUri => 'Virheellinen NWC URI';
@@ -1027,9 +1038,12 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
     final String usedString = usedNumberFormat.format(used);
-    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
     return 'Budjetti: $usedString / $totalString';

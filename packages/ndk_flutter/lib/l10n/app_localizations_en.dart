@@ -661,7 +661,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cashuWalletAdded => 'Cashu wallet added successfully!';
 
   @override
-  String get failedToAddMint => 'Failed to add mint. Please check the URL and try again.';
+  String get failedToAddMint =>
+      'Failed to add mint. Please check the URL and try again.';
 
   @override
   String get addNwcWalletTitle => 'Add NWC Wallet';
@@ -673,7 +674,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manual => 'Manual';
 
   @override
-  String get nwcFaucetDescription => 'Create a test wallet with sats from the NWC faucet.';
+  String get nwcFaucetDescription =>
+      'Create a test wallet with sats from the NWC faucet.';
 
   @override
   String get startingBalance => 'Starting Balance';
@@ -705,13 +707,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addLnurlWalletTitle => 'Add LNURL Wallet';
 
   @override
-  String get enterLnurlIdentifier => 'Enter your LNURL identifier (user@domain.com).';
+  String get enterLnurlIdentifier =>
+      'Enter your LNURL identifier (user@domain.com).';
 
   @override
   String get lnurlIdentifierHint => 'user@example.com';
 
   @override
-  String get pleaseEnterValidIdentifier => 'Please enter a valid identifier (user@domain.com)';
+  String get pleaseEnterValidIdentifier =>
+      'Please enter a valid identifier (user@domain.com)';
 
   @override
   String get lnurlWalletAdded => 'LNURL wallet added successfully!';
@@ -741,10 +745,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultForSending => 'Default for sending';
 
   @override
-  String get defaultWalletForReceivingTooltip => 'This wallet is the default one for receiving payments.';
+  String get defaultWalletForReceivingTooltip =>
+      'This wallet is the default one for receiving payments.';
 
   @override
-  String get defaultWalletForSendingTooltip => 'This wallet is the default one for sending payments.';
+  String get defaultWalletForSendingTooltip =>
+      'This wallet is the default one for sending payments.';
 
   @override
   String get sendOptionsTitle => 'Send Options';
@@ -930,7 +936,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteWalletConfirmation => 'Delete Wallet?';
 
   @override
-  String get deleteWalletConfirmationMessage => 'Are you sure you want to delete this wallet? This action cannot be undone.';
+  String get deleteWalletConfirmationMessage =>
+      'Are you sure you want to delete this wallet? This action cannot be undone.';
 
   @override
   String get addWalletTitle => 'Add Wallet';
@@ -948,13 +955,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lnurlWalletTypeTitle => 'LNURL / Lightning Address';
 
   @override
-  String get lnurlWalletTypeSubtitle => 'Use a custodial wallet with LNURL or a Lightning address';
+  String get lnurlWalletTypeSubtitle =>
+      'Use a custodial wallet with LNURL or a Lightning address';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
 
   @override
-  String get cashuWalletTypeSubtitle => 'Use an ecash wallet backed by a Cashu mint';
+  String get cashuWalletTypeSubtitle =>
+      'Use an ecash wallet backed by a Cashu mint';
 
   @override
   String get cashuOption => 'Cashu';
@@ -1027,9 +1036,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String budgetUsedOf(int used, int total) {
-    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat usedNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
     final String usedString = usedNumberFormat.format(used);
-    final intl.NumberFormat totalNumberFormat = intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
     return 'Budget: $usedString / $totalString';
