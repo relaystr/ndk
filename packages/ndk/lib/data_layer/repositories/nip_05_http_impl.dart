@@ -53,7 +53,15 @@ class Nip05HttpRepositoryImpl implements Nip05Repository {
 
     String myUrl = "https://$url/.well-known/nostr.json?name=$username";
 
-    final json = await httpDS.jsonRequest(myUrl);
+    final Map<String, dynamic> json;
+    try {
+      json = await httpDS.jsonRequest(myUrl);
+    } on HttpRequestException catch (e) {
+      if (e.statusCode == 404) {
+        return null;
+      }
+      rethrow;
+    }
 
     Map names = json["names"];
     Map relays = json["relays"] ?? {};

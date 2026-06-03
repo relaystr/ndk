@@ -338,6 +338,25 @@ void main() {
       expect(result, isA<Nip05NotFound>());
     });
 
+    test('resolve() returns Nip05NotFound on HTTP 404', () async {
+      Future<http.Response> notFoundHandler(http.Request request) async {
+        return http.Response('', 404);
+      }
+
+      final client = MockClient(notFoundHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('ghost@example.com');
+
+      expect(result, isA<Nip05NotFound>());
+    });
+
     test('resolve() returns Nip05ResolveError on HTTP error', () async {
       final client = MockClient(requestHandlerErr);
 
