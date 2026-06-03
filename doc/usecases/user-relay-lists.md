@@ -8,6 +8,15 @@ icon: list-ordered
 
 :::code source="../../packages/ndk/example/user_relay_list_test.dart" language="dart" range="23-29" title="" :::
 
+## Private storage relays
+
+NIP-37 private storage relays are exposed through the same usecase.
+The kind `10013` event is encrypted, so this requires a logged-in signer.
+
+```dart
+final relays = await ndk.userRelayLists.getPrivateStorageRelays();
+```
+
 ## When to use
 
 User relay lists provides you with the relays for a given user. \
