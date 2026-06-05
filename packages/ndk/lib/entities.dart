@@ -14,6 +14,7 @@ export 'domain_layer/entities/global_state.dart';
 export 'domain_layer/entities/metadata.dart';
 export 'domain_layer/entities/nip_01_event.dart';
 export 'domain_layer/entities/nip_05.dart';
+export 'domain_layer/entities/nip_05_resolve_result.dart';
 export 'domain_layer/entities/nip_51_list.dart';
 export 'domain_layer/entities/nip_65.dart';
 export 'domain_layer/entities/pubkey_mapping.dart';

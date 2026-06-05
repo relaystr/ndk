@@ -6,6 +6,7 @@ import 'package:ndk/config/nip_05_defaults.dart';
 import 'package:ndk/data_layer/data_sources/http_request.dart';
 import 'package:ndk/data_layer/repositories/nip_05_http_impl.dart';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
+import 'package:ndk/domain_layer/entities/nip_05_resolve_result.dart';
 import 'package:ndk/domain_layer/usecases/nip05/nip_05.dart';
 import 'package:ndk/ndk.dart';
 
@@ -296,7 +297,7 @@ void main() {
       expect(result.relays, equals(['relay1', 'relay2']));
     });
 
-    test('resolve() returns pubkey without validation', () async {
+    test('resolve() returns Nip05Found on success', () async {
       final client = MockClient(requestHandler);
 
       final cache = MemCacheManager();
@@ -308,13 +309,55 @@ void main() {
 
       final result = await nip05Usecase.resolve('username@example.com');
 
-      expect(result, isNotNull);
-      expect(result!.pubKey, equals('pubkey'));
-      expect(result.nip05, equals('username@example.com'));
-      expect(result.relays, equals(['relay1', 'relay2']));
+      expect(result, isA<Nip05Found>());
+      final found = result as Nip05Found;
+      expect(found.data.pubKey, equals('pubkey'));
+      expect(found.data.nip05, equals('username@example.com'));
+      expect(found.data.relays, equals(['relay1', 'relay2']));
     });
 
-    test('resolve() returns null on error', () async {
+    test('resolve() returns Nip05NotFound when user is absent from nostr.json',
+        () async {
+      // Server replies 200 with an empty `names` map: the file exists but
+      // the requested user is not in it.
+      Future<http.Response> notFoundHandler(http.Request request) async {
+        return http.Response('{"names": {}}', 200);
+      }
+
+      final client = MockClient(notFoundHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('ghost@example.com');
+
+      expect(result, isA<Nip05NotFound>());
+    });
+
+    test('resolve() returns Nip05NotFound on HTTP 404', () async {
+      Future<http.Response> notFoundHandler(http.Request request) async {
+        return http.Response('', 404);
+      }
+
+      final client = MockClient(notFoundHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('ghost@example.com');
+
+      expect(result, isA<Nip05NotFound>());
+    });
+
+    test('resolve() returns Nip05ResolveError on HTTP error', () async {
       final client = MockClient(requestHandlerErr);
 
       final cache = MemCacheManager();
@@ -326,7 +369,27 @@ void main() {
 
       final result = await nip05Usecase.resolve('username@example.com');
 
-      expect(result, isNull);
+      expect(result, isA<Nip05ResolveError>());
+      expect((result as Nip05ResolveError).cause, isNotNull);
+    });
+
+    test('resolve() returns Nip05ResolveError on malformed JSON', () async {
+      Future<http.Response> malformedHandler(http.Request request) async {
+        return http.Response('not json', 200);
+      }
+
+      final client = MockClient(malformedHandler);
+
+      final cache = MemCacheManager();
+      final nip05Repos = Nip05HttpRepositoryImpl(httpDS: HttpRequestDS(client));
+      Nip05Usecase nip05Usecase = Nip05Usecase(
+        database: cache,
+        nip05Repository: nip05Repos,
+      );
+
+      final result = await nip05Usecase.resolve('username@example.com');
+
+      expect(result, isA<Nip05ResolveError>());
     });
 
     test('resolve() throws if nip05 is empty', () async {
@@ -358,7 +421,7 @@ void main() {
 
       final results = await Future.wait([resolve1, resolve2, resolve3]);
 
-      expect(results[0]!.pubKey, equals('pubkey'));
+      expect(results[0], isA<Nip05Found>());
       expect(results[0].hashCode, equals(results[1].hashCode));
       expect(results[1].hashCode, equals(results[2].hashCode));
     });
@@ -389,15 +452,14 @@ void main() {
 
       // resolve() should refetch because cache is expired
       final result = await nip05Usecase.resolve('username@example.com');
-      expect(result, isNotNull);
-      expect(
-          result!.pubKey, equals('pubkey')); // From network, not 'old_pubkey'
+      expect(result, isA<Nip05Found>());
+      // From network, not 'old_pubkey'
+      expect((result as Nip05Found).data.pubKey, equals('pubkey'));
 
       // Second call should return cached result (now valid)
       final result2 = await nip05Usecase.resolve('username@example.com');
-      expect(result2, isNotNull);
-      expect(result2!.pubKey, equals('pubkey'));
-      expect(result.hashCode, equals(result2.hashCode)); // Same cached object
+      expect(result2, isA<Nip05Found>());
+      expect((result2 as Nip05Found).data.pubKey, equals('pubkey'));
     });
   });
 }

@@ -5,6 +5,22 @@ import 'package:rxdart/rxdart.dart';
 
 bool _isSuccessStatus(int statusCode) => statusCode >= 200 && statusCode < 300;
 
+/// Exception thrown when an HTTP request completes with a non-2xx status code.
+class HttpRequestException implements Exception {
+  final int statusCode;
+  final String body;
+  final String url;
+
+  const HttpRequestException({
+    required this.statusCode,
+    required this.body,
+    required this.url,
+  });
+
+  @override
+  String toString() => "error fetching STATUS: $statusCode, $body, Link: $url";
+}
+
 /// Upload progress information
 class UploadProgress {
   final int sentBytes;
@@ -39,8 +55,11 @@ class HttpRequestDS {
         headers: {"Accept": "application/json"});
 
     if (!_isSuccessStatus(response.statusCode)) {
-      return throw Exception(
-          "error fetching STATUS: ${response.statusCode}, ${response.body},Link: $url");
+      throw HttpRequestException(
+        statusCode: response.statusCode,
+        body: response.body,
+        url: url,
+      );
     }
     return jsonDecode(response.body);
   }
