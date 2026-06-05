@@ -1,3 +1,12 @@
+## 0.8.4-dev.3
+
+> Note: This release has breaking changes.
+
+ - **FIX**: resolve 404 responses as not found.
+ - **FEAT**: errors as exception.
+ - **BREAKING** **FEAT**(nip05): split Nip05ResolveError into typed subtypes.
+ - **BREAKING** **FEAT**(nip05): return Nip05ResolveResult from resolve().
+
 ## 0.8.4-dev.2
 
 > Note: This release has breaking changes.
