@@ -1,3 +1,7 @@
+## 0.8.4-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 0.8.4-dev.1
 
  - **FIX**(ndk_flutter): prevent QR code overflow in nostr connect dialog.
