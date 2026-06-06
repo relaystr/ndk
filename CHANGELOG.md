@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-06-06
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.3`](#ndk_drift---v011-dev3)
+ - [`ndk_flutter` - `v0.8.4-dev.3`](#ndk_flutter---v084-dev3)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.3`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.3`
+
+ - **FEAT**: add Portuguese and Brazilian Portuguese translations.
+ - **FEAT**: add localization configuration for Flutter.
+ - **FEAT**: add Finnish (fi) and Portuguese (pt) locales.
+
+
 ## 2026-06-05
 
 ### Changes
