@@ -303,13 +303,7 @@
   "nwcWalletSubtitle": "NWCウォレット",
   "tokenCopied": "トークンをコピーしました",
   "deleteWalletConfirmation": "ウォレットを削除しますか?",
-  "@deleteWalletConfirmation": {
-    "description": "Title for delete wallet confirmation dialog"
-  },
   "deleteWalletConfirmationMessage": "このウォレットを削除してもよろしいですか? この操作は元に戻せません。",
-  "@deleteWalletConfirmationMessage": {
-    "description": "Message for delete wallet confirmation dialog"
-  },
   "addWalletTitle": "ウォレットを追加",
   "chooseWalletType": "ウォレットタイプを選択",
   "nwcWalletTypeTitle": "Nostr Wallet Connect",
@@ -361,51 +355,15 @@
     }
   },
   "budgetDaily": "毎日",
-  "@budgetDaily": {
-    "description": "Daily budget renewal period"
-  },
   "budgetWeekly": "毎週",
-  "@budgetWeekly": {
-    "description": "Weekly budget renewal period"
-  },
   "budgetMonthly": "毎月",
-  "@budgetMonthly": {
-    "description": "Monthly budget renewal period"
-  },
   "budgetYearly": "毎年",
-  "@budgetYearly": {
-    "description": "Yearly budget renewal period"
-  },
   "budgetNever": "なし",
-  "@budgetNever": {
-    "description": "Never renews budget"
-  },
   "renameWallet": "名前を変更",
-  "@renameWallet": {
-    "description": "Label for rename wallet option"
-  },
   "pickColor": "色を選択",
-  "@pickColor": {
-    "description": "Label for pick color option"
-  },
   "deleteWallet": "削除",
-  "@deleteWallet": {
-    "description": "Label for delete wallet option"
-  },
   "walletName": "ウォレット名",
-  "@walletName": {
-    "description": "Label for wallet name input"
-  },
   "walletNameHint": "ウォレット名を入力",
-  "@walletNameHint": {
-    "description": "Hint for wallet name input"
-  },
   "save": "保存",
-  "@save": {
-    "description": "Label for save action"
-  },
-  "walletRenamed": "ウォレット名を変更しました",
-  "@walletRenamed": {
-    "description": "Message shown when wallet is renamed"
-  }
+  "walletRenamed": "ウォレット名を変更しました"
 }

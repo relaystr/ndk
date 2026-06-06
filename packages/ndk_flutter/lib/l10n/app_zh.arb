@@ -303,13 +303,7 @@
   "nwcWalletSubtitle": "NWC 钱包",
   "tokenCopied": "Token 已复制",
   "deleteWalletConfirmation": "删除钱包?",
-  "@deleteWalletConfirmation": {
-    "description": "Title for delete wallet confirmation dialog"
-  },
   "deleteWalletConfirmationMessage": "您确定要删除此钱包吗? 此操作无法撤销。",
-  "@deleteWalletConfirmationMessage": {
-    "description": "Message for delete wallet confirmation dialog"
-  },
   "addWalletTitle": "添加钱包",
   "chooseWalletType": "选择钱包类型",
   "nwcWalletTypeTitle": "Nostr Wallet Connect",
@@ -361,51 +355,15 @@
     }
   },
   "budgetDaily": "每日",
-  "@budgetDaily": {
-    "description": "Daily budget renewal period"
-  },
   "budgetWeekly": "每周",
-  "@budgetWeekly": {
-    "description": "Weekly budget renewal period"
-  },
   "budgetMonthly": "每月",
-  "@budgetMonthly": {
-    "description": "Monthly budget renewal period"
-  },
   "budgetYearly": "每年",
-  "@budgetYearly": {
-    "description": "Yearly budget renewal period"
-  },
   "budgetNever": "从不",
-  "@budgetNever": {
-    "description": "Never renews budget"
-  },
   "renameWallet": "重命名",
-  "@renameWallet": {
-    "description": "Label for rename wallet option"
-  },
   "pickColor": "选择颜色",
-  "@pickColor": {
-    "description": "Label for pick color option"
-  },
   "deleteWallet": "删除",
-  "@deleteWallet": {
-    "description": "Label for delete wallet option"
-  },
   "walletName": "钱包名称",
-  "@walletName": {
-    "description": "Label for wallet name input"
-  },
   "walletNameHint": "输入钱包名称",
-  "@walletNameHint": {
-    "description": "Hint for wallet name input"
-  },
   "save": "保存",
-  "@save": {
-    "description": "Label for save action"
-  },
-  "walletRenamed": "钱包已重命名",
-  "@walletRenamed": {
-    "description": "Message shown when wallet is renamed"
-  }
+  "walletRenamed": "钱包已重命名"
 }
