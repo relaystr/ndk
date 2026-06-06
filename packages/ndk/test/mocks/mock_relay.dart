@@ -157,6 +157,8 @@ class MockRelay {
         if (eventJson[0] == "EVENT") {
           Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
+            bool shouldBroadcastToSubscriptions = true;
+
             // Check auth for events if required (any authenticated user is OK)
             if (requireAuthForEvents && authenticatedPubkeys.isEmpty) {
               webSocket.add(jsonEncode([
@@ -171,11 +173,15 @@ class MockRelay {
               final existing = _contactLists[newEvent.pubKey];
               if (existing == null || _shouldReplace(existing, newEvent)) {
                 _contactLists[newEvent.pubKey] = newEvent;
+              } else {
+                shouldBroadcastToSubscriptions = false;
               }
             } else if (newEvent.kind == Metadata.kKind) {
               final existing = _metadatas[newEvent.pubKey];
               if (existing == null || _shouldReplace(existing, newEvent)) {
                 _metadatas[newEvent.pubKey] = newEvent;
+              } else {
+                shouldBroadcastToSubscriptions = false;
               }
             } else if (newEvent.kind == Deletion.kKind) {
               final eventIdsToDelete = newEvent.getTags("e");
@@ -192,7 +198,6 @@ class MockRelay {
               }
             } else if (_isEphemeralKind(newEvent.kind)) {
               // Ephemeral events (kinds 20000-29999) are broadcast but NOT stored
-              _broadcastEventToSubscriptions(newEvent);
               // Also handle NIP-46 if targeting our mock signer
               if (newEvent.kind == kNip46Kind) {
                 _handleNip46Request(newEvent, webSocket);
@@ -208,6 +213,8 @@ class MockRelay {
                 if (_shouldReplace(current, newEvent)) {
                   _storedEvents.remove(current);
                   _storedEvents.add(newEvent);
+                } else {
+                  shouldBroadcastToSubscriptions = false;
                 }
               }
             } else if (_isAddressableKind(newEvent.kind)) {
@@ -224,10 +231,15 @@ class MockRelay {
                 if (_shouldReplace(current, newEvent)) {
                   _storedEvents.remove(current);
                   _storedEvents.add(newEvent);
+                } else {
+                  shouldBroadcastToSubscriptions = false;
                 }
               }
             } else {
               _storedEvents.add(newEvent);
+            }
+            if (shouldBroadcastToSubscriptions) {
+              _broadcastEventToSubscriptions(newEvent);
             }
             webSocket.add(jsonEncode(["OK", newEvent.id, true, ""]));
           } else {
