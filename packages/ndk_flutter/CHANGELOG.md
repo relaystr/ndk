@@ -1,3 +1,9 @@
+## 0.8.4-dev.4
+
+ - **FEAT**: add Portuguese and Brazilian Portuguese translations.
+ - **FEAT**: add localization configuration for Flutter.
+ - **FEAT**: add Finnish (fi) and Portuguese (pt) locales.
+
 ## 0.8.4-dev.3
 
  - **FEAT**: add Portuguese and Brazilian Portuguese translations.
