@@ -204,8 +204,8 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
             Future<void> generate() async {
               setDialogState(() => generating = true);
               try {
-                final json =
-                    await ndkFlutter.ndk.cashu.exportBackupJsonString();
+                final json = await ndkFlutter.ndk.cashu
+                    .exportCashuStateJsonString();
                 setDialogState(() {
                   backupJson = json;
                   generating = false;
@@ -281,9 +281,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                 else
                   TextButton(
                     onPressed: () async {
-                      await Clipboard.setData(
-                        ClipboardData(text: backupJson!),
-                      );
+                      await Clipboard.setData(ClipboardData(text: backupJson!));
                       displaySuccess(l10n.backupCopiedToClipboard);
                     },
                     child: Text(l10n.copyBackup),
@@ -340,7 +338,7 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                           setDialogState(() => restoring = true);
                           try {
                             final result = await ndkFlutter.ndk.cashu
-                                .importBackupJsonString(json);
+                                .importCashuStateJsonString(json);
 
                             // Close via the dialog's own navigator and report
                             // through the captured messenger so teardown does
@@ -600,10 +598,9 @@ mixin WalletActionDialogsMixin<T extends StatefulWidget> on State<T> {
                           method: 'bolt11',
                         );
 
-                    await for (final transaction
-                        in ndkFlutter.ndk.cashu.redeem(
-                          draftRedeemTransaction: draftTransaction,
-                        )) {
+                    await for (final transaction in ndkFlutter.ndk.cashu.redeem(
+                      draftRedeemTransaction: draftTransaction,
+                    )) {
                       if (transaction.state ==
                           WalletTransactionState.completed) {
                         if (!mounted) return;

@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import '../../../shared/logger/logger.dart';
+import '../../../data_layer/models/wallet_transaction_model.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
-import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_repo.dart';
 import 'cashu_cache_decorator.dart';
@@ -121,7 +121,8 @@ class CashuStateExportImport {
       final transactions = await _walletsRepo.getTransactions(
         walletType: WalletType.CASHU,
       );
-      export['transactions'] = transactions.map(_transactionToJson).toList();
+      export['transactions'] =
+          transactions.map(WalletTransactionModel.toJson).toList();
     }
 
     return export;
@@ -236,7 +237,8 @@ class CashuStateExportImport {
     if (restoreTransactions) {
       final transactions = (json['transactions'] as List?) ?? const [];
       final parsed = transactions
-          .map((t) => _transactionFromJson(t as Map<String, dynamic>))
+          .map(
+              (t) => WalletTransactionModel.fromJson(t as Map<String, dynamic>))
           .toList();
       if (parsed.isNotEmpty) {
         await _walletsRepo.saveTransactions(parsed);
@@ -270,36 +272,6 @@ class CashuStateExportImport {
       decoded,
       restoreSeedPhrase: restoreSeedPhrase,
       restoreTransactions: restoreTransactions,
-    );
-  }
-
-  Map<String, dynamic> _transactionToJson(WalletTransaction tx) {
-    return {
-      'id': tx.id,
-      'walletId': tx.walletId,
-      'changeAmount': tx.changeAmount,
-      'unit': tx.unit,
-      'walletType': tx.walletType.value,
-      'state': tx.state.value,
-      'completionMsg': tx.completionMsg,
-      'transactionDate': tx.transactionDate,
-      'initiatedDate': tx.initiatedDate,
-      'metadata': tx.metadata,
-    };
-  }
-
-  WalletTransaction _transactionFromJson(Map<String, dynamic> json) {
-    return WalletTransaction.toTransactionType(
-      id: json['id'] as String,
-      walletId: json['walletId'] as String,
-      changeAmount: json['changeAmount'] as int,
-      unit: json['unit'] as String,
-      walletType: WalletType.fromValue(json['walletType'] as String),
-      state: WalletTransactionState.fromValue(json['state'] as String),
-      metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? {},
-      completionMsg: json['completionMsg'] as String?,
-      transactionDate: json['transactionDate'] as int?,
-      initiatedDate: json['initiatedDate'] as int?,
     );
   }
 }
