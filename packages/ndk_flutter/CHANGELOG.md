@@ -1,3 +1,7 @@
+## 0.8.4-dev.4
+
+ - **FIX**: ecash wallet adding navigation bug.
+
 ## 0.8.4-dev.3
 
  - **FEAT**: add Portuguese and Brazilian Portuguese translations.
