@@ -531,7 +531,7 @@ class Wallets {
 
   /// Send payment
   Future<PayInvoiceResponse> send(
-      {String? walletId, required String invoice}) async {
+      {String? walletId, required String invoice, Duration? timeout}) async {
     await _initializationFuture;
     walletId ??= _repository.getDefaultWalletIdForSending();
     if (walletId == null) {
@@ -542,7 +542,7 @@ class Wallets {
     if (provider == null) {
       throw ArgumentError('No provider for wallet type: ${wallet.type}');
     }
-    return provider.send(wallet, invoice);
+    return provider.send(wallet, invoice, timeout: timeout);
   }
 
   /// Create a Lightning invoice to receive funds

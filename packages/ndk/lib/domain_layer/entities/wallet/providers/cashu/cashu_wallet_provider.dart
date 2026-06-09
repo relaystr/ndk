@@ -106,7 +106,7 @@ class CashuWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice) async {
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice, {Duration? timeout}) async {
     if (wallet is! CashuWallet) {
       throw ArgumentError('Expected a CashuWallet');
     }

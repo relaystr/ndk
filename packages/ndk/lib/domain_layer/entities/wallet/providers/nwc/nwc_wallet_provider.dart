@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
+import '../../../../usecases/nwc/consts/nwc_method.dart';
 import '../../../../usecases/nwc/nwc.dart';
 import '../../../../usecases/nwc/nwc_connection.dart';
 import '../../../../usecases/nwc/responses/pay_invoice_response.dart';
@@ -20,6 +21,10 @@ class NwcWalletProvider implements WalletProvider {
 
   /// Track in-flight connection attempts to prevent concurrent connections for the same wallet
   final Map<String, Completer<void>> _connectionInProgress = {};
+
+  /// Subscriptions to NWC notification streams, one per wallet.
+  /// Cancelled in [removeWallet].
+  final Map<String, StreamSubscription<dynamic>> _notificationSubscriptions = {};
 
   NwcWalletProvider(this._nwcUseCase);
 
@@ -50,6 +55,9 @@ class NwcWalletProvider implements WalletProvider {
   @override
   Future<void> removeWallet(Wallet wallet) async {
     final nwcWallet = wallet as NwcWallet;
+    // Cancel notification listener before disconnecting.
+    await _notificationSubscriptions[nwcWallet.id]?.cancel();
+    _notificationSubscriptions.remove(nwcWallet.id);
     if (nwcWallet.connection != null) {
       await _nwcUseCase.disconnect(nwcWallet.connection!);
       await nwcWallet.balanceSubject?.close();
@@ -135,7 +143,7 @@ class NwcWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice) async {
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice, {Duration? timeout}) async {
     final nwcWallet = wallet as NwcWallet;
 
     await initialize(wallet);
@@ -144,6 +152,7 @@ class NwcWalletProvider implements WalletProvider {
     final response = await _nwcUseCase.payInvoice(
       connection,
       invoice: invoice,
+      timeout: timeout
     );
     await _refreshAll(nwcWallet);
     return response;
@@ -185,6 +194,28 @@ class NwcWalletProvider implements WalletProvider {
       ]);
     } finally {
       _refreshInFlight[wallet.id] = false;
+    }
+  }
+
+  /// Fetches and caches the remaining NWC budget for [wallet].
+  /// No-op if the connection is gone or the wallet lacks get_budget permission.
+  Future<void> _refreshBudget(NwcWallet wallet) async {
+    final connection = wallet.connection;
+    if (connection == null) return;
+    final perms = connection.permissions.isNotEmpty
+        ? connection.permissions
+        : wallet.cachedPermissions;
+    if (!perms.contains(NwcMethod.GET_BUDGET.name)) return;
+    try {
+      final budget = await _nwcUseCase
+          .getBudget(connection)
+          .timeout(const Duration(seconds: 10));
+      // totalBudget == 0 means no spending limit configured → null (unlimited).
+      wallet.cachedRemainingBudgetSats = budget.totalBudget > 0
+          ? budget.totalBudgetSats - budget.userBudgetSats
+          : null;
+    } catch (_) {
+      // Leave existing cached value on error.
     }
   }
 
@@ -290,6 +321,20 @@ class NwcWalletProvider implements WalletProvider {
       wallet.nwcUrl,
       doGetInfoMethod: true,
     );
+
+    // Auto-refresh balance whenever the wallet reports a payment notification
+    // (payment_sent, payment_received, hold_invoice_accepted).
+    // This keeps ndk.wallets.getBalance() accurate without polling.
+    _notificationSubscriptions[wallet.id]?.cancel();
+    _notificationSubscriptions[wallet.id] =
+        wallet.connection!.notificationStream.stream.listen((_) {
+      _refreshBalance(wallet).catchError((_) {});
+      _refreshBudget(wallet).catchError((_) {});
+    });
+
+    // Pre-cache budget immediately on connect so callers can read
+    // cachedRemainingBudgetSats without issuing a separate live query.
+    _refreshBudget(wallet).catchError((_) {});
   }
 
   bool _setEquals(Set<String> a, Set<String> b) {
