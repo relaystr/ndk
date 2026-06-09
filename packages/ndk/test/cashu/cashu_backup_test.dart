@@ -5,8 +5,9 @@ import 'package:ndk/domain_layer/usecases/cashu/cashu_cache_decorator.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
-CashuBackup _backup(CacheManager cache, MemWalletsRepo wallets, CashuSeed seed) {
-  return CashuBackup(
+CashuStateExportImport _backup(
+    CacheManager cache, MemWalletsRepo wallets, CashuSeed seed) {
+  return CashuStateExportImport(
     cacheManagerCashu: CashuCacheDecorator(cacheManager: cache),
     cacheManager: cache,
     walletsRepo: wallets,
@@ -59,7 +60,7 @@ void main() {
     final exported = await _backup(srcCache, srcWallets, seed)
         .exportToMap(includeSeedPhrase: true);
 
-    expect(exported['type'], equals(CashuBackup.backupType));
+    expect(exported['type'], equals(CashuStateExportImport.backupType));
     expect(exported['seedPhrase'], equals(seed.getSeedPhrase().sentence));
     expect((exported['proofs'] as List).length, equals(2));
     expect((exported['counters'] as List).single['counter'], equals(42));
@@ -111,8 +112,7 @@ void main() {
       mintUrl: mintUrl,
     );
 
-    final jsonString =
-        await _backup(cache, wallets, seed).exportToJsonString();
+    final jsonString = await _backup(cache, wallets, seed).exportToJsonString();
 
     final dstCache = MemCacheManager();
     final result = await _backup(dstCache, MemWalletsRepo(), CashuSeed())
@@ -127,8 +127,7 @@ void main() {
     final seed = CashuSeed();
     await seed.setSeedPhrase(seedPhrase: CashuSeed.generateSeedPhrase());
 
-    final exported =
-        await _backup(cache, MemWalletsRepo(), seed).exportToMap();
+    final exported = await _backup(cache, MemWalletsRepo(), seed).exportToMap();
 
     expect(exported.containsKey('seedPhrase'), isFalse);
   });

@@ -40,7 +40,7 @@ class Cashu {
 
   late final CashuSeed _cashuSeed;
 
-  late final CashuBackup _cashuBackup;
+  late final CashuStateExportImport _cashuBackup;
 
   final CashuKeyDerivation _cashuKeyDerivation;
 
@@ -67,7 +67,7 @@ class Cashu {
     _cashuSeed = CashuSeed(
       userSeedPhrase: cashuUserSeedphrase,
     );
-    _cashuBackup = CashuBackup(
+    _cashuBackup = CashuStateExportImport(
       cacheManagerCashu: _cacheManagerCashu,
       cacheManager: _cacheManager,
       walletsRepo: _walletsRepo,
@@ -115,7 +115,7 @@ class Cashu {
   /// The global seed phrase is NOT included by default — it is wallet
   /// independent and should be backed up separately. Set [includeSeedPhrase]
   /// true only for a single self-contained backup, and then treat the result
-  /// like a private key. See [CashuBackup].
+  /// like a private key. See [CashuStateExportImport].
   Future<Map<String, dynamic>> exportBackup({
     bool includeSeedPhrase = false,
     bool includeTransactions = true,
@@ -145,7 +145,7 @@ class Cashu {
   /// NOTE: the restored seed phrase is only loaded into memory; persist
   /// [CashuBackupRestoreResult.seedPhrase] to secure storage to finish the
   /// restore. After restoring you may want to call [restore] to re-sync proofs
-  /// from each mint. See [CashuBackup].
+  /// from each mint. See [CashuStateExportImport].
   Future<CashuBackupRestoreResult> importBackup(
     Map<String, dynamic> json, {
     bool restoreSeedPhrase = true,

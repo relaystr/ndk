@@ -25,7 +25,7 @@ import 'cashu_seed.dart';
 /// the funds. Treat the exported document like a private key. Set
 /// [includeSeedPhrase] to false to produce a non-custodial backup that still
 /// needs the original seed to spend.
-class CashuBackup {
+class CashuStateExportImport {
   /// bump when the on-disk format changes incompatibly
   static const int backupVersion = 1;
   static const String backupType = 'ndk-cashu-backup';
@@ -35,7 +35,7 @@ class CashuBackup {
   final WalletsRepo _walletsRepo;
   final CashuSeed _cashuSeed;
 
-  CashuBackup({
+  CashuStateExportImport({
     required CashuCacheDecorator cacheManagerCashu,
     required CacheManager cacheManager,
     required WalletsRepo walletsRepo,
@@ -59,7 +59,8 @@ class CashuBackup {
     bool includeSeedPhrase = false,
     bool includeTransactions = true,
   }) async {
-    final mintInfos = await _cacheManager.getMintInfos() ?? <CashuMintInfo>[];
+    final mintInfos =
+        await _cacheManagerCashu.getMintInfos() ?? <CashuMintInfo>[];
     final keysets = await _cacheManagerCashu.getKeysets();
 
     // mints we have any local state for: derived from keysets and mint infos
@@ -127,8 +128,7 @@ class CashuBackup {
       final transactions = await _walletsRepo.getTransactions(
         walletType: WalletType.CASHU,
       );
-      backup['transactions'] =
-          transactions.map(_transactionToJson).toList();
+      backup['transactions'] = transactions.map(_transactionToJson).toList();
     }
 
     return backup;
@@ -213,7 +213,8 @@ class CashuBackup {
           amount: map['amount'] as int,
           secret: map['secret'] as String,
           unblindedSig: map['C'] as String,
-          state: CashuProofState.fromValue(map['state'] as String? ?? 'UNSPENT'),
+          state:
+              CashuProofState.fromValue(map['state'] as String? ?? 'UNSPENT'),
         ),
       );
     }
@@ -310,7 +311,7 @@ class CashuBackup {
   }
 }
 
-/// Summary of what [CashuBackup.importFromMap] restored.
+/// Summary of what [CashuStateExportImport.importFromMap] restored.
 class CashuBackupRestoreResult {
   /// the seed phrase contained in the backup, if any. The caller should
   /// persist this to secure storage to complete the restore.
