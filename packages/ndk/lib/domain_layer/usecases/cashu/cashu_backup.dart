@@ -6,7 +6,6 @@ import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
-import '../../repositories/cache_manager.dart';
 import '../../repositories/wallets_repo.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';
@@ -31,17 +30,15 @@ class CashuStateExportImport {
   static const String backupType = 'ndk-cashu-backup';
 
   final CashuCacheDecorator _cacheManagerCashu;
-  final CacheManager _cacheManager;
+
   final WalletsRepo _walletsRepo;
   final CashuSeed _cashuSeed;
 
   CashuStateExportImport({
     required CashuCacheDecorator cacheManagerCashu,
-    required CacheManager cacheManager,
     required WalletsRepo walletsRepo,
     required CashuSeed cashuSeed,
   })  : _cacheManagerCashu = cacheManagerCashu,
-        _cacheManager = cacheManager,
         _walletsRepo = walletsRepo,
         _cashuSeed = cashuSeed;
 
@@ -94,7 +91,7 @@ class CashuStateExportImport {
     // NUT-13 derivation counters, one per keyset
     final countersJson = <Map<String, dynamic>>[];
     for (final keyset in keysets) {
-      final counter = await _cacheManager.getCashuSecretCounter(
+      final counter = await _cacheManagerCashu.getCashuSecretCounter(
         mintUrl: keyset.mintUrl,
         keysetId: keyset.id,
       );
@@ -188,7 +185,7 @@ class CashuStateExportImport {
     // mint infos
     final mintInfos = (json['mintInfos'] as List?) ?? const [];
     for (final m in mintInfos) {
-      await _cacheManager.saveMintInfo(
+      await _cacheManagerCashu.saveMintInfo(
         mintInfo: CashuMintInfo.fromJson(m as Map<String, dynamic>),
       );
     }
@@ -231,7 +228,7 @@ class CashuStateExportImport {
     final counters = (json['counters'] as List?) ?? const [];
     for (final c in counters) {
       final map = c as Map<String, dynamic>;
-      await _cacheManager.setCashuSecretCounter(
+      await _cacheManagerCashu.setCashuSecretCounter(
         mintUrl: map['mintUrl'] as String,
         keysetId: map['keysetId'] as String,
         counter: map['counter'] as int,

@@ -69,7 +69,6 @@ class Cashu {
     );
     _cashuBackup = CashuStateExportImport(
       cacheManagerCashu: _cacheManagerCashu,
-      cacheManager: _cacheManager,
       walletsRepo: _walletsRepo,
       cashuSeed: _cashuSeed,
     );
