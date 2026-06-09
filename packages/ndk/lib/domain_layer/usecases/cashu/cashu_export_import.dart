@@ -77,14 +77,9 @@ class CashuStateExportImport {
           state: state,
         );
         for (final proof in proofs) {
-          proofsJson.add({
-            'id': proof.keysetId,
-            'amount': proof.amount,
-            'secret': proof.secret,
-            'C': proof.unblindedSig,
-            'state': proof.state.value,
-            'mintUrl': mintUrl,
-          });
+          proofsJson.add(proof.toJson()
+            ..['mintUrl'] = mintUrl
+            ..['state'] = state.value);
         }
       }
     }
