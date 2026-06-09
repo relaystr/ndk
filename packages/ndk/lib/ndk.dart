@@ -97,7 +97,7 @@ export 'domain_layer/usecases/search/search.dart';
 export 'domain_layer/usecases/gift_wrap/gift_wrap.dart';
 export 'domain_layer/usecases/cashu/cashu.dart';
 export 'domain_layer/usecases/cashu/cashu_seed.dart';
-export 'domain_layer/usecases/cashu/cashu_backup.dart';
+export 'domain_layer/usecases/cashu/cashu_export_import.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_message.dart';
 export 'domain_layer/entities/cashu/cashu_blinded_signature.dart';
 export 'domain_layer/entities/cashu/cashu_restore_result.dart';

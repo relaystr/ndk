@@ -10,9 +10,11 @@ import '../../repositories/wallets_repo.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_seed.dart';
 
-/// Full backup / restore of all local cashu state.
+/// Full export / import of all local cashu state.
 ///
-/// A backup is a plain JSON document containing everything required to restore
+/// IMPORTANT: Used as a last resort! To setup a new device use [restore()] using the seed phrase and mint urls.
+///
+/// An export is a plain JSON document containing everything required to import
 /// a wallet on a fresh device:
 ///  - the BIP39 seed phrase (controls all funds, derives deterministic secrets)
 ///  - unspent (and optionally spent/pending) proofs (the actual ecash)
@@ -20,14 +22,13 @@ import 'cashu_seed.dart';
 ///  - cached keysets and mint infos (re-fetchable, kept for offline restore)
 ///  - transaction history (not recoverable from the network)
 ///
-/// SECURITY: a backup that includes the seed phrase grants full control over
-/// the funds. Treat the exported document like a private key. Set
-/// [includeSeedPhrase] to false to produce a non-custodial backup that still
-/// needs the original seed to spend.
+/// SECURITY: an export grants full control over the funds.
+/// Treat the exported document like a private key. Set
+/// [includeSeedPhrase] to include the seed phrase in the export, and [restoreSeedPhrase] to load it on import.
 class CashuStateExportImport {
   /// bump when the on-disk format changes incompatibly
-  static const int backupVersion = 1;
-  static const String backupType = 'ndk-cashu-backup';
+  static const int exportVersion = 1;
+  static const String exportType = 'ndk-cashu-export';
 
   final CashuCacheDecorator _cacheManagerCashu;
 
@@ -48,7 +49,7 @@ class CashuStateExportImport {
   /// seed is a global, wallet-independent secret managed separately (e.g. via
   /// [CashuSeed] / secure storage); it is normally backed up on its own and not
   /// bundled with the per-mint cashu database. Enable only if you explicitly
-  /// want a single self-contained backup, and treat the result like a private
+  /// want a single self-contained export, and treat the result like a private
   /// key.
   /// [includeTransactions] - include the cashu transaction history (default
   /// true). History is informational and not required to recover funds.
@@ -102,9 +103,9 @@ class CashuStateExportImport {
       });
     }
 
-    final backup = <String, dynamic>{
-      'type': backupType,
-      'version': backupVersion,
+    final export = <String, dynamic>{
+      'type': exportType,
+      'version': exportVersion,
       'createdAt': DateTime.now().millisecondsSinceEpoch ~/ 1000,
       'mintInfos': mintInfos.map((m) => m.toJson()).toList(),
       'keysets': keysets.map((k) => k.toJson()).toList(),
@@ -114,10 +115,10 @@ class CashuStateExportImport {
 
     if (includeSeedPhrase) {
       try {
-        backup['seedPhrase'] = _cashuSeed.getSeedPhrase().sentence;
+        export['seedPhrase'] = _cashuSeed.getSeedPhrase().sentence;
       } catch (_) {
         Logger.log.w(() =>
-            'Cashu backup: no seed phrase set, exporting without it. The backup will not be restorable on a new device.');
+            'Cashu export: no seed phrase set, exporting without it. The export will not be restorable on a new device.');
       }
     }
 
@@ -125,10 +126,10 @@ class CashuStateExportImport {
       final transactions = await _walletsRepo.getTransactions(
         walletType: WalletType.CASHU,
       );
-      backup['transactions'] = transactions.map(_transactionToJson).toList();
+      export['transactions'] = transactions.map(_transactionToJson).toList();
     }
 
-    return backup;
+    return export;
   }
 
   /// Export all cashu state as a JSON string. See [exportToMap].
@@ -147,7 +148,7 @@ class CashuStateExportImport {
     return jsonEncode(map);
   }
 
-  /// Restore cashu state from a backup [json] produced by [exportToMap].
+  /// Restore cashu state from a export [json] produced by [exportToMap].
   ///
   /// Restored data is merged into the existing local state (saves overwrite by
   /// key, they do not wipe other mints first).
@@ -155,22 +156,22 @@ class CashuStateExportImport {
   /// [restoreSeedPhrase] - load the backed-up seed phrase into the running
   /// [CashuSeed] (default true). NOTE: this only sets the in-memory seed; the
   /// caller is responsible for persisting it to secure storage. The seed phrase
-  /// is also returned in [CashuBackupRestoreResult] for that purpose.
+  /// is also returned in [CashuStateImportResult] for that purpose.
   /// [restoreTransactions] - restore the transaction history (default true).
-  Future<CashuBackupRestoreResult> importFromMap(
+  Future<CashuStateImportResult> importFromMap(
     Map<String, dynamic> json, {
     bool restoreSeedPhrase = true,
     bool restoreTransactions = true,
   }) async {
     final type = json['type'];
-    if (type != backupType) {
+    if (type != exportType) {
       throw ArgumentError(
-          'Not a cashu backup: expected type "$backupType", got "$type"');
+          'Not a cashu state export: expected type "$exportType", got "$type"');
     }
     final version = json['version'];
-    if (version is! int || version > backupVersion) {
+    if (version is! int || version > exportVersion) {
       throw ArgumentError(
-          'Unsupported backup version: $version (this build supports up to $backupVersion)');
+          'Unsupported cashu state export version: $version (this build supports up to $exportVersion)');
     }
 
     String? restoredSeedPhrase;
@@ -249,9 +250,9 @@ class CashuStateExportImport {
     }
 
     Logger.log.i(() =>
-        'Cashu backup restored: $restoredProofs proofs, ${keysets.length} keysets, ${mintInfos.length} mint infos, $restoredTransactions transactions');
+        'Cashu state export imported: $restoredProofs proofs, ${keysets.length} keysets, ${mintInfos.length} mint infos, $restoredTransactions transactions');
 
-    return CashuBackupRestoreResult(
+    return CashuStateImportResult(
       seedPhrase: restoredSeedPhrase,
       restoredProofs: restoredProofs,
       restoredKeysets: keysets.length,
@@ -260,15 +261,15 @@ class CashuStateExportImport {
     );
   }
 
-  /// Restore cashu state from a backup JSON string. See [importFromMap].
-  Future<CashuBackupRestoreResult> importFromJsonString(
+  /// Restore cashu state from a export JSON string. See [importFromMap].
+  Future<CashuStateImportResult> importFromJsonString(
     String jsonString, {
     bool restoreSeedPhrase = true,
     bool restoreTransactions = true,
   }) {
     final decoded = jsonDecode(jsonString);
     if (decoded is! Map<String, dynamic>) {
-      throw ArgumentError('Backup JSON must be an object');
+      throw ArgumentError('Export JSON must be an object');
     }
     return importFromMap(
       decoded,
@@ -309,8 +310,8 @@ class CashuStateExportImport {
 }
 
 /// Summary of what [CashuStateExportImport.importFromMap] restored.
-class CashuBackupRestoreResult {
-  /// the seed phrase contained in the backup, if any. The caller should
+class CashuStateImportResult {
+  /// the seed phrase contained in the import, if any. The caller should
   /// persist this to secure storage to complete the restore.
   final String? seedPhrase;
   final int restoredProofs;
@@ -318,7 +319,7 @@ class CashuBackupRestoreResult {
   final int restoredMintInfos;
   final int restoredTransactions;
 
-  CashuBackupRestoreResult({
+  CashuStateImportResult({
     required this.seedPhrase,
     required this.restoredProofs,
     required this.restoredKeysets,

@@ -5,11 +5,10 @@ import 'package:ndk/domain_layer/usecases/cashu/cashu_cache_decorator.dart';
 import 'package:ndk/ndk.dart';
 import 'package:test/test.dart';
 
-CashuStateExportImport _backup(
+CashuStateExportImport _export(
     CacheManager cache, MemWalletsRepo wallets, CashuSeed seed) {
   return CashuStateExportImport(
     cacheManagerCashu: CashuCacheDecorator(cacheManager: cache),
-    cacheManager: cache,
     walletsRepo: wallets,
     cashuSeed: seed,
   );
@@ -57,10 +56,10 @@ void main() {
       counter: 42,
     );
 
-    final exported = await _backup(srcCache, srcWallets, seed)
+    final exported = await _export(srcCache, srcWallets, seed)
         .exportToMap(includeSeedPhrase: true);
 
-    expect(exported['type'], equals(CashuStateExportImport.backupType));
+    expect(exported['type'], equals(CashuStateExportImport.exportType));
     expect(exported['seedPhrase'], equals(seed.getSeedPhrase().sentence));
     expect((exported['proofs'] as List).length, equals(2));
     expect((exported['counters'] as List).single['counter'], equals(42));
@@ -71,7 +70,7 @@ void main() {
     final dstSeed = CashuSeed();
 
     final result =
-        await _backup(dstCache, dstWallets, dstSeed).importFromMap(exported);
+        await _export(dstCache, dstWallets, dstSeed).importFromMap(exported);
 
     expect(result.restoredProofs, equals(2));
     expect(result.restoredKeysets, equals(1));
@@ -112,10 +111,10 @@ void main() {
       mintUrl: mintUrl,
     );
 
-    final jsonString = await _backup(cache, wallets, seed).exportToJsonString();
+    final jsonString = await _export(cache, wallets, seed).exportToJsonString();
 
     final dstCache = MemCacheManager();
-    final result = await _backup(dstCache, MemWalletsRepo(), CashuSeed())
+    final result = await _export(dstCache, MemWalletsRepo(), CashuSeed())
         .importFromJsonString(jsonString);
 
     expect(result.restoredProofs, equals(1));
@@ -127,13 +126,13 @@ void main() {
     final seed = CashuSeed();
     await seed.setSeedPhrase(seedPhrase: CashuSeed.generateSeedPhrase());
 
-    final exported = await _backup(cache, MemWalletsRepo(), seed).exportToMap();
+    final exported = await _export(cache, MemWalletsRepo(), seed).exportToMap();
 
     expect(exported.containsKey('seedPhrase'), isFalse);
   });
 
   test('rejects non-backup json', () async {
-    final backup = _backup(MemCacheManager(), MemWalletsRepo(), CashuSeed());
+    final backup = _export(MemCacheManager(), MemWalletsRepo(), CashuSeed());
     expect(
       () => backup.importFromMap({'type': 'something-else', 'version': 1}),
       throwsArgumentError,

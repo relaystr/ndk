@@ -19,7 +19,7 @@ import '../../repositories/cache_manager.dart';
 import '../../repositories/cashu_key_derivation.dart';
 import '../../repositories/cashu_repo.dart';
 import '../../repositories/wallets_repo.dart';
-import 'cashu_backup.dart';
+import 'cashu_export_import.dart';
 import 'cashu_bdhke.dart';
 import 'cashu_cache_decorator.dart';
 import 'cashu_keysets.dart';
@@ -40,7 +40,7 @@ class Cashu {
 
   late final CashuSeed _cashuSeed;
 
-  late final CashuStateExportImport _cashuBackup;
+  late final CashuStateExportImport _cashuExportImport;
 
   final CashuKeyDerivation _cashuKeyDerivation;
 
@@ -67,7 +67,7 @@ class Cashu {
     _cashuSeed = CashuSeed(
       userSeedPhrase: cashuUserSeedphrase,
     );
-    _cashuBackup = CashuStateExportImport(
+    _cashuExportImport = CashuStateExportImport(
       cacheManagerCashu: _cacheManagerCashu,
       walletsRepo: _walletsRepo,
       cashuSeed: _cashuSeed,
@@ -115,42 +115,42 @@ class Cashu {
   /// independent and should be backed up separately. Set [includeSeedPhrase]
   /// true only for a single self-contained backup, and then treat the result
   /// like a private key. See [CashuStateExportImport].
-  Future<Map<String, dynamic>> exportBackup({
+  Future<Map<String, dynamic>> exportCashuState({
     bool includeSeedPhrase = false,
     bool includeTransactions = true,
   }) {
-    return _cashuBackup.exportToMap(
+    return _cashuExportImport.exportToMap(
       includeSeedPhrase: includeSeedPhrase,
       includeTransactions: includeTransactions,
     );
   }
 
   /// Export a full backup of all local cashu state as a JSON string.
-  /// See [exportBackup].
-  Future<String> exportBackupJsonString({
+  /// See [exportCashuState].
+  Future<String> exportCashuStateJsonString({
     bool includeSeedPhrase = false,
     bool includeTransactions = true,
     bool pretty = true,
   }) {
-    return _cashuBackup.exportToJsonString(
+    return _cashuExportImport.exportToJsonString(
       includeSeedPhrase: includeSeedPhrase,
       includeTransactions: includeTransactions,
       pretty: pretty,
     );
   }
 
-  /// Restore cashu state from a backup map produced by [exportBackup].
+  /// Restore cashu state from a backup map produced by [exportCashuState].
   ///
   /// NOTE: the restored seed phrase is only loaded into memory; persist
-  /// [CashuBackupRestoreResult.seedPhrase] to secure storage to finish the
+  /// [CashuStateImportResult.seedPhrase] to secure storage to finish the
   /// restore. After restoring you may want to call [restore] to re-sync proofs
   /// from each mint. See [CashuStateExportImport].
-  Future<CashuBackupRestoreResult> importBackup(
+  Future<CashuStateImportResult> importCashuState(
     Map<String, dynamic> json, {
     bool restoreSeedPhrase = true,
     bool restoreTransactions = true,
   }) async {
-    final result = await _cashuBackup.importFromMap(
+    final result = await _cashuExportImport.importFromMap(
       json,
       restoreSeedPhrase: restoreSeedPhrase,
       restoreTransactions: restoreTransactions,
@@ -159,13 +159,13 @@ class Cashu {
     return result;
   }
 
-  /// Restore cashu state from a backup JSON string. See [importBackup].
-  Future<CashuBackupRestoreResult> importBackupJsonString(
+  /// Restore cashu state from a backup JSON string. See [importCashuState].
+  Future<CashuStateImportResult> importCashuStateJsonString(
     String jsonString, {
     bool restoreSeedPhrase = true,
     bool restoreTransactions = true,
   }) async {
-    final result = await _cashuBackup.importFromJsonString(
+    final result = await _cashuExportImport.importFromJsonString(
       jsonString,
       restoreSeedPhrase: restoreSeedPhrase,
       restoreTransactions: restoreTransactions,
