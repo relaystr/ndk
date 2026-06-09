@@ -968,10 +968,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get nwcWalletTypeSubtitle => 'NWCでリモートウォレットに接続';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Lightning Address';
+  String get lnurlWalletTypeTitle => 'Lightningアドレス（LNURL）';
 
   @override
-  String get lnurlWalletTypeSubtitle => 'LNURLまたはLightning Address対応ウォレットを使う';
+  String get lnurlWalletTypeSubtitle => '受信専用にLightningアドレス（LNURL）を使う';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

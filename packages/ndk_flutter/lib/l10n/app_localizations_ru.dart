@@ -977,11 +977,11 @@ class AppLocalizationsRu extends AppLocalizations {
       'Подключиться к удаленному кошельку через NWC';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Lightning-адрес';
+  String get lnurlWalletTypeTitle => 'Lightning-адрес (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Использовать кастодиальный кошелек с LNURL или Lightning-адресом';
+      'Использовать Lightning-адрес (LNURL) только для получения';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

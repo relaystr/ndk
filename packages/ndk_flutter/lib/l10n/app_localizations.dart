@@ -2010,13 +2010,13 @@ abstract class AppLocalizations {
   /// Title for the LNURL wallet type option
   ///
   /// In en, this message translates to:
-  /// **'LNURL / Lightning Address'**
+  /// **'Lightning Address (LNURL)'**
   String get lnurlWalletTypeTitle;
 
   /// Subtitle for the LNURL wallet type option
   ///
   /// In en, this message translates to:
-  /// **'Use a custodial wallet with LNURL or a Lightning address'**
+  /// **'Use a Lightning address (LNURL) for receiving only'**
   String get lnurlWalletTypeSubtitle;
 
   /// Title for the Cashu wallet type option

@@ -980,11 +980,11 @@ class AppLocalizationsIt extends AppLocalizations {
   String get nwcWalletTypeSubtitle => 'Connetti un portafoglio remoto con NWC';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Indirizzo Lightning';
+  String get lnurlWalletTypeTitle => 'Indirizzo Lightning (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Usa un portafoglio custodial con LNURL o un indirizzo Lightning';
+      'Usa un indirizzo Lightning (LNURL) solo per ricevere';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

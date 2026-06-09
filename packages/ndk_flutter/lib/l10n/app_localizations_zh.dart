@@ -967,10 +967,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nwcWalletTypeSubtitle => '通过 NWC 连接远程钱包';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Lightning 地址';
+  String get lnurlWalletTypeTitle => 'Lightning 地址（LNURL）';
 
   @override
-  String get lnurlWalletTypeSubtitle => '使用支持 LNURL 或 Lightning 地址的托管钱包';
+  String get lnurlWalletTypeSubtitle => '仅使用 Lightning 地址（LNURL）接收';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

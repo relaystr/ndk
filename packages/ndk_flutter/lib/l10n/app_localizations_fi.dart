@@ -976,11 +976,11 @@ class AppLocalizationsFi extends AppLocalizations {
   String get nwcWalletTypeSubtitle => 'Yhdistä etälompakkoon NWC:llä';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Lightning-osoite';
+  String get lnurlWalletTypeTitle => 'Lightning-osoite (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Käytä hallinnoitua lompakkoa LNURL:llä tai Lightning-osoitteella';
+      'Käytä Lightning-osoitetta (LNURL) vain vastaanottamiseen';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

@@ -975,11 +975,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nwcWalletTypeSubtitle => 'Connect to a remote wallet with NWC';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Lightning Address';
+  String get lnurlWalletTypeTitle => 'Lightning Address (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Use a custodial wallet with LNURL or a Lightning address';
+      'Use a Lightning address (LNURL) for receiving only';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

@@ -1285,11 +1285,11 @@
   "@nwcWalletTypeSubtitle": {
     "description": "Subtitle for the NWC wallet type option"
   },
-  "lnurlWalletTypeTitle": "LNURL / Lightning Address",
+  "lnurlWalletTypeTitle": "Lightning Address (LNURL)",
   "@lnurlWalletTypeTitle": {
     "description": "Title for the LNURL wallet type option"
   },
-  "lnurlWalletTypeSubtitle": "Use a custodial wallet with LNURL or a Lightning address",
+  "lnurlWalletTypeSubtitle": "Use a Lightning address (LNURL) for receiving only",
   "@lnurlWalletTypeSubtitle": {
     "description": "Subtitle for the LNURL wallet type option"
   },

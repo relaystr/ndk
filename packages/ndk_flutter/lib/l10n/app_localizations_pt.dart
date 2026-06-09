@@ -982,11 +982,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get nwcWalletTypeSubtitle => 'Ligar a uma carteira remota com NWC';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Endereço Lightning';
+  String get lnurlWalletTypeTitle => 'Endereço Lightning (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Use uma carteira custodial com LNURL ou um endereço Lightning';
+      'Use um endereço Lightning (LNURL) apenas para receber';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
@@ -2118,11 +2118,11 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get nwcWalletTypeSubtitle => 'Conectar a uma carteira remota com NWC';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Endereço Lightning';
+  String get lnurlWalletTypeTitle => 'Endereço Lightning (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Use uma carteira custodial com LNURL ou um endereço Lightning';
+      'Use um endereço Lightning (LNURL) apenas para receber';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

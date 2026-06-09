@@ -979,11 +979,11 @@ class AppLocalizationsPl extends AppLocalizations {
   String get nwcWalletTypeSubtitle => 'Polacz z portfelem zdalnym przez NWC';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Adres Lightning';
+  String get lnurlWalletTypeTitle => 'Adres Lightning (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Uzyj portfela custodial z LNURL lub adresem Lightning';
+      'Uzyj adresu Lightning (LNURL) tylko do odbierania';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

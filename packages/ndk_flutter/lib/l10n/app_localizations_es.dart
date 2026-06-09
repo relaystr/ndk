@@ -979,11 +979,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nwcWalletTypeSubtitle => 'Conectarse a una cartera remota con NWC';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Direccion Lightning';
+  String get lnurlWalletTypeTitle => 'Direccion Lightning (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Usar una cartera custodial con LNURL o una direccion Lightning';
+      'Usar una direccion Lightning (LNURL) solo para recibir';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';

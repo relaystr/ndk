@@ -978,11 +978,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Mit einer entfernten Wallet über NWC verbinden';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Lightning-Adresse';
+  String get lnurlWalletTypeTitle => 'Lightning-Adresse (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Eine custodial Wallet mit LNURL oder einer Lightning-Adresse verwenden';
+      'Eine Lightning-Adresse (LNURL) nur zum Empfangen verwenden';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
