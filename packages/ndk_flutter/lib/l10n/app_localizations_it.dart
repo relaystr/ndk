@@ -876,6 +876,30 @@ class AppLocalizationsIt extends AppLocalizations {
   String get pendingTransactions => 'In sospeso';
 
   @override
+  String get backupSeedWarning =>
+      'Esegui il backup della frase di recupero cashu';
+
+  @override
+  String get backupSeedTitle => 'Backup della frase di recupero cashu';
+
+  @override
+  String get backupSeedInstructions =>
+      'Annota queste parole in ordine e conservale in un luogo sicuro. Sono l\'unico modo per recuperare i tuoi fondi cashu se perdi questo dispositivo.';
+
+  @override
+  String get backupSeedConfirm =>
+      'Ho annotato la mia frase di recupero e l\'ho conservata in modo sicuro';
+
+  @override
+  String get backupSeedDone => 'Ho fatto il backup';
+
+  @override
+  String get reclaimPendingFunds => 'Recupera fondi in sospeso';
+
+  @override
+  String get reclaimPendingTitle => 'Recupera fondi in sospeso';
+
+  @override
   String get recentTransactions => 'Transazioni recenti';
 
   @override
@@ -1071,4 +1095,46 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get budgetNever => 'Mai';
+
+  @override
+  String get backup => 'Backup';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get cashuBackupTitle => 'Cashu Backup';
+
+  @override
+  String get cashuBackupWarning =>
+      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+
+  @override
+  String get generatingBackup => 'Generating backup...';
+
+  @override
+  String get copyBackup => 'Copy backup';
+
+  @override
+  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+
+  @override
+  String get cashuRestoreTitle => 'Restore Cashu Backup';
+
+  @override
+  String get backupJson => 'Backup JSON';
+
+  @override
+  String get backupJsonHint => 'Paste your backup JSON here';
+
+  @override
+  String get pleaseEnterBackup => 'Please enter a backup';
+
+  @override
+  String get restoringBackup => 'Restoring backup...';
+
+  @override
+  String restoreSuccess(int count) {
+    return 'Restored $count proofs from backup';
+  }
 }

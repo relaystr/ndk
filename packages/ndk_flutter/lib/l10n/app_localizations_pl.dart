@@ -876,6 +876,29 @@ class AppLocalizationsPl extends AppLocalizations {
   String get pendingTransactions => 'Oczekujące';
 
   @override
+  String get backupSeedWarning => 'Utwórz kopię frazy odzyskiwania cashu';
+
+  @override
+  String get backupSeedTitle => 'Kopia frazy odzyskiwania cashu';
+
+  @override
+  String get backupSeedInstructions =>
+      'Zapisz te słowa w kolejności i przechowuj je w bezpiecznym miejscu. To jedyny sposób na odzyskanie środków cashu w razie utraty tego urządzenia.';
+
+  @override
+  String get backupSeedConfirm =>
+      'Zapisałem moją frazę odzyskiwania i bezpiecznie ją przechowuję';
+
+  @override
+  String get backupSeedDone => 'Utworzyłem kopię';
+
+  @override
+  String get reclaimPendingFunds => 'Odzyskaj oczekujące środki';
+
+  @override
+  String get reclaimPendingTitle => 'Odzyskaj oczekujące środki';
+
+  @override
   String get recentTransactions => 'Ostatnie transakcje';
 
   @override
@@ -1070,4 +1093,46 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get budgetNever => 'Nigdy';
+
+  @override
+  String get backup => 'Backup';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get cashuBackupTitle => 'Cashu Backup';
+
+  @override
+  String get cashuBackupWarning =>
+      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+
+  @override
+  String get generatingBackup => 'Generating backup...';
+
+  @override
+  String get copyBackup => 'Copy backup';
+
+  @override
+  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+
+  @override
+  String get cashuRestoreTitle => 'Restore Cashu Backup';
+
+  @override
+  String get backupJson => 'Backup JSON';
+
+  @override
+  String get backupJsonHint => 'Paste your backup JSON here';
+
+  @override
+  String get pleaseEnterBackup => 'Please enter a backup';
+
+  @override
+  String get restoringBackup => 'Restoring backup...';
+
+  @override
+  String restoreSuccess(int count) {
+    return 'Restored $count proofs from backup';
+  }
 }

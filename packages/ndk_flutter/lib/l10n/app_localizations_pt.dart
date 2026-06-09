@@ -878,6 +878,30 @@ class AppLocalizationsPt extends AppLocalizations {
   String get pendingTransactions => 'Pendentes';
 
   @override
+  String get backupSeedWarning =>
+      'Faça backup da sua frase de recuperação cashu';
+
+  @override
+  String get backupSeedTitle => 'Backup da frase de recuperação cashu';
+
+  @override
+  String get backupSeedInstructions =>
+      'Anote estas palavras em ordem e guarde-as em um lugar seguro. Elas são a única forma de recuperar seus fundos cashu se você perder este dispositivo.';
+
+  @override
+  String get backupSeedConfirm =>
+      'Anotei minha frase de recuperação e a guardei com segurança';
+
+  @override
+  String get backupSeedDone => 'Já fiz o backup';
+
+  @override
+  String get reclaimPendingFunds => 'Recuperar fundos pendentes';
+
+  @override
+  String get reclaimPendingTitle => 'Recuperar fundos pendentes';
+
+  @override
   String get recentTransactions => 'Transações recentes';
 
   @override
@@ -1073,6 +1097,48 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get budgetNever => 'Nunca';
+
+  @override
+  String get backup => 'Backup';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get cashuBackupTitle => 'Cashu Backup';
+
+  @override
+  String get cashuBackupWarning =>
+      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+
+  @override
+  String get generatingBackup => 'Generating backup...';
+
+  @override
+  String get copyBackup => 'Copy backup';
+
+  @override
+  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+
+  @override
+  String get cashuRestoreTitle => 'Restore Cashu Backup';
+
+  @override
+  String get backupJson => 'Backup JSON';
+
+  @override
+  String get backupJsonHint => 'Paste your backup JSON here';
+
+  @override
+  String get pleaseEnterBackup => 'Please enter a backup';
+
+  @override
+  String get restoringBackup => 'Restoring backup...';
+
+  @override
+  String restoreSuccess(int count) {
+    return 'Restored $count proofs from backup';
+  }
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -1946,6 +2012,30 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get pendingTransactions => 'Pendentes';
+
+  @override
+  String get backupSeedWarning =>
+      'Faça backup da sua frase de recuperação cashu';
+
+  @override
+  String get backupSeedTitle => 'Backup da frase de recuperação cashu';
+
+  @override
+  String get backupSeedInstructions =>
+      'Anote estas palavras em ordem e guarde-as em um lugar seguro. Elas são a única forma de recuperar seus fundos cashu se você perder este dispositivo.';
+
+  @override
+  String get backupSeedConfirm =>
+      'Anotei minha frase de recuperação e a guardei com segurança';
+
+  @override
+  String get backupSeedDone => 'Já fiz o backup';
+
+  @override
+  String get reclaimPendingFunds => 'Recuperar fundos pendentes';
+
+  @override
+  String get reclaimPendingTitle => 'Recuperar fundos pendentes';
 
   @override
   String get recentTransactions => 'Transações recentes';

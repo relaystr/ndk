@@ -1153,6 +1153,19 @@
     "description": "Label for create button"
   },
   "pendingTransactions": "Pending",
+  "backupSeedWarning": "Back up your cashu recovery phrase",
+  "backupSeedTitle": "Back up cashu recovery phrase",
+  "backupSeedInstructions": "Write down these words in order and store them somewhere safe. They are the only way to recover your cashu funds if you lose this device.",
+  "backupSeedConfirm": "I have written down my recovery phrase and stored it safely",
+  "backupSeedDone": "I've backed it up",
+  "reclaimPendingFunds": "Reclaim pending funds",
+  "reclaimPendingTitle": "Reclaim Pending Funds",
+  "@reclaimPendingFunds": {
+    "description": "Label for the action that retries minting tokens for pending funding transactions"
+  },
+  "@reclaimPendingTitle": {
+    "description": "Title for the reclaim pending funds dialog"
+  },
   "@pendingTransactions": {
     "description": "Title for pending transactions section"
   },
@@ -1425,5 +1438,63 @@
   "budgetNever": "Never",
   "@budgetNever": {
     "description": "Never renews budget"
+  },
+  "backup": "Backup",
+  "@backup": {
+    "description": "Label for the wallet backup action"
+  },
+  "restore": "Restore",
+  "@restore": {
+    "description": "Label for the wallet restore action"
+  },
+  "cashuBackupTitle": "Cashu Backup",
+  "@cashuBackupTitle": {
+    "description": "Title of the cashu backup dialog"
+  },
+  "cashuBackupWarning": "This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.",
+  "@cashuBackupWarning": {
+    "description": "Security warning shown in the cashu backup dialog"
+  },
+  "generatingBackup": "Generating backup...",
+  "@generatingBackup": {
+    "description": "Shown while the cashu backup is being generated"
+  },
+  "copyBackup": "Copy backup",
+  "@copyBackup": {
+    "description": "Button to copy the cashu backup to the clipboard"
+  },
+  "backupCopiedToClipboard": "Backup copied to clipboard",
+  "@backupCopiedToClipboard": {
+    "description": "Confirmation that the backup was copied"
+  },
+  "cashuRestoreTitle": "Restore Cashu Backup",
+  "@cashuRestoreTitle": {
+    "description": "Title of the cashu restore dialog"
+  },
+  "backupJson": "Backup JSON",
+  "@backupJson": {
+    "description": "Label for the backup JSON input field"
+  },
+  "backupJsonHint": "Paste your backup JSON here",
+  "@backupJsonHint": {
+    "description": "Hint for the backup JSON input field"
+  },
+  "pleaseEnterBackup": "Please enter a backup",
+  "@pleaseEnterBackup": {
+    "description": "Validation message when the backup field is empty"
+  },
+  "restoringBackup": "Restoring backup...",
+  "@restoringBackup": {
+    "description": "Shown while a cashu backup is being restored"
+  },
+  "restoreSuccess": "Restored {count} proofs from backup",
+  "@restoreSuccess": {
+    "description": "Confirmation after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of restored proofs"
+      }
+    }
   }
 }
