@@ -587,7 +587,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.8.4-dev.1"
+    version: "0.8.4-dev.2"
   ndk_bip32_keys:
     dependency: transitive
     description:
@@ -602,14 +602,14 @@ packages:
       path: "../drift"
       relative: true
     source: path
-    version: "0.1.1-dev.1"
+    version: "0.1.1-dev.3"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.8.4-dev.1"
+    version: "0.8.4-dev.3"
   nested:
     dependency: transitive
     description:
@@ -624,7 +624,7 @@ packages:
       path: "../nip07_event_signer"
       relative: true
     source: path
-    version: "1.1.0-dev.1"
+    version: "1.1.0-dev.2"
   objective_c:
     dependency: transitive
     description:

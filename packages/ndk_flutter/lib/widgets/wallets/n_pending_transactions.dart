@@ -6,7 +6,7 @@ import '../../l10n/app_localizations.dart';
 
 /// Horizontal list of pending wallet transactions for a specific wallet when
 /// provided.
-class NPendingTransactions extends StatelessWidget {
+class NPendingTransactions extends StatefulWidget {
   final NdkFlutter ndkFlutter;
   final String? walletId;
 
@@ -25,11 +25,61 @@ class NPendingTransactions extends StatelessWidget {
   });
 
   @override
+  State<NPendingTransactions> createState() => _NPendingTransactionsState();
+}
+
+class _NPendingTransactionsState extends State<NPendingTransactions> {
+  final Map<String, CashuWalletTransaction> _updatedTransactions = {};
+  final Map<String, bool> _isRetrieving = {};
+  final Map<String, String?> _errorMessages = {};
+
+  Future<void> _retrieveFunds(CashuWalletTransaction transaction) async {
+    setState(() {
+      _isRetrieving[transaction.id] = true;
+      _errorMessages[transaction.id] = null;
+      _updatedTransactions[transaction.id] = transaction;
+    });
+
+    try {
+      final stream = widget.ndkFlutter.ndk.cashu.retrieveFunds(
+        draftTransaction: transaction,
+      );
+
+      await for (final event in stream) {
+        setState(() {
+          _updatedTransactions[transaction.id] = event;
+        });
+
+        if (event.state == WalletTransactionState.completed) {
+          setState(() {
+            _isRetrieving[transaction.id] = false;
+          });
+          break;
+        } else if (event.state == WalletTransactionState.failed) {
+          setState(() {
+            _isRetrieving[transaction.id] = false;
+            _errorMessages[transaction.id] =
+                event.completionMsg ?? 'Failed to retrieve funds';
+          });
+          break;
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isRetrieving[transaction.id] = false;
+        _errorMessages[transaction.id] = e.toString();
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final stream = walletId == null
-        ? ndkFlutter.ndk.wallets.combinedPendingTransactions
-        : ndkFlutter.ndk.wallets.getPendingTransactionsStream(walletId!);
+    final stream = widget.walletId == null
+        ? widget.ndkFlutter.ndk.wallets.combinedPendingTransactions
+        : widget.ndkFlutter.ndk.wallets.getPendingTransactionsStream(
+            widget.walletId!,
+          );
     return StreamBuilder<List<WalletTransaction>>(
       stream: stream,
       builder: (context, snapshot) {
@@ -42,7 +92,7 @@ class NPendingTransactions extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                title ?? l10n.pendingTransactions,
+                widget.title ?? l10n.pendingTransactions,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
@@ -60,17 +110,21 @@ class NPendingTransactions extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              title ?? l10n.pendingTransactions,
+              widget.title ?? l10n.pendingTransactions,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             SizedBox(
-              height: height,
+              height: 200,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: transactions.length,
                 itemBuilder: (context, index) {
-                  final tx = transactions[index];
+                  final originalTx = transactions[index];
+                  final tx = _updatedTransactions[originalTx.id] ?? originalTx;
+                  final isRetrieving = _isRetrieving[tx.id] == true;
+                  final errorMessage = _errorMessages[tx.id];
+
                   return Card(
                     margin: const EdgeInsets.only(right: 8),
                     child: SizedBox(
@@ -120,6 +174,43 @@ class NPendingTransactions extends StatelessWidget {
                                     : Colors.grey,
                               ),
                             ),
+                            if (tx is CashuWalletTransaction &&
+                                tx.state == WalletTransactionState.pending)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextButton(
+                                        onPressed: isRetrieving
+                                            ? null
+                                            : () => _retrieveFunds(tx),
+                                        child: isRetrieving
+                                            ? const SizedBox(
+                                                height: 16,
+                                                width: 16,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                              )
+                                            : const Text('Retrieve'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (errorMessage != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  errorMessage,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
