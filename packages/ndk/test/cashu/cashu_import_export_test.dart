@@ -107,6 +107,12 @@ void main() {
           secret: 'secret-c',
           unblindedSig: 'sig-c',
         ),
+        CashuProof(
+          keysetId: 'keyset1',
+          amount: 2,
+          secret: 'secret-c-2',
+          unblindedSig: 'sig-c-2',
+        ),
       ],
       mintUrl: mintUrl,
     );
@@ -117,8 +123,15 @@ void main() {
     final result = await _export(dstCache, MemWalletsRepo(), CashuSeed())
         .importFromJsonString(jsonString);
 
-    expect(result.restoredProofs, equals(1));
-    expect((await dstCache.getProofs(mintUrl: mintUrl)).length, equals(1));
+    expect(result.restoredProofs, equals(2));
+    expect((await dstCache.getProofs(mintUrl: mintUrl)).length, equals(2));
+    expect((await dstCache.getKeysets(mintUrl: mintUrl)).first.id,
+        equals('keyset1'));
+
+    // check that the secret amount and unblinded sig round-tripped correctly (they are the most sensitive fields to get wrong in the serialization)
+    final restoredProof = (await dstCache.getProofs(mintUrl: mintUrl)).first;
+    expect(restoredProof.secret, equals('secret-c'));
+    expect(restoredProof.unblindedSig, equals('sig-c'));
   });
 
   test('seed phrase is excluded by default', () async {
