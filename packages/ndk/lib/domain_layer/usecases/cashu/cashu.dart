@@ -156,6 +156,7 @@ class Cashu {
       restoreTransactions: restoreTransactions,
     );
     await _updateBalances();
+    await _updateTransactions();
     return result;
   }
 
@@ -171,6 +172,7 @@ class Cashu {
       restoreTransactions: restoreTransactions,
     );
     await _updateBalances();
+    await _updateTransactions();
     return result;
   }
 
@@ -344,6 +346,20 @@ class Cashu {
     _balanceSubject ??=
         BehaviorSubject<List<CashuMintBalance>>.seeded(balances);
     _balanceSubject!.add(balances);
+  }
+
+  Future<void> _updateTransactions() async {
+    final latestTransactions = await _getLatestTransactionsDb();
+    _latestTransactions
+      ..clear()
+      ..addAll(latestTransactions);
+    _latestTransactionsSubject?.add(_latestTransactions);
+
+    final pendingTransactions = await _getPendingTransactionsDb();
+    _pendingTransactions
+      ..clear()
+      ..addAll(pendingTransactions);
+    _pendingTransactionsSubject?.add(_pendingTransactions.toList());
   }
 
   /// list of balances for all mints
