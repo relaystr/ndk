@@ -100,7 +100,7 @@ class Cashu {
     return _cashuSeed;
   }
 
-  /// cheks to run for any cashu operation that modifies state \
+  /// cheks to run for any cashu operation that modifies state
   void _preflightChecks() {
     if (!getCashuSeed().isSeedPhraseSet) {
       final logMsg =
