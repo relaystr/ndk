@@ -20,12 +20,12 @@ class NCashuSeedBackupWarning extends StatefulWidget {
 
   /// Store used to read the backed-up flag. Defaults to [CashuSeedStore] with
   /// the default key — pass a custom one if the app configured a custom key.
-  final CashuSeedStore? seedStore;
+  final CashuSeedStore seedStore;
 
   const NCashuSeedBackupWarning({
     super.key,
     required this.ndkFlutter,
-    this.seedStore,
+    this.seedStore = const CashuSeedStore(),
   });
 
   @override
@@ -34,7 +34,7 @@ class NCashuSeedBackupWarning extends StatefulWidget {
 }
 
 class _NCashuSeedBackupWarningState extends State<NCashuSeedBackupWarning> {
-  late final CashuSeedStore _seedStore = widget.seedStore ?? CashuSeedStore();
+  late final CashuSeedStore _seedStore = widget.seedStore;
 
   /// null = loading, true = backed up (hide), false = needs backup (show).
   bool? _backedUp;
@@ -54,7 +54,9 @@ class _NCashuSeedBackupWarningState extends State<NCashuSeedBackupWarning> {
   /// list when no seed is configured.
   List<String> _seedWords() {
     try {
-      final mnemonic = widget.ndkFlutter.ndk.cashu.getCashuSeed().getSeedPhrase();
+      final mnemonic = widget.ndkFlutter.ndk.cashu
+          .getCashuSeed()
+          .getSeedPhrase();
       return mnemonic.sentence.trim().split(RegExp(r'\s+'));
     } catch (_) {
       return const [];
@@ -118,9 +120,9 @@ class _NCashuSeedBackupWarningState extends State<NCashuSeedBackupWarning> {
                             ClipboardData(text: words.join(' ')),
                           );
                           if (!dialogContext.mounted) return;
-                          ScaffoldMessenger.of(dialogContext).showSnackBar(
-                            SnackBar(content: Text(l10n.copied)),
-                          );
+                          ScaffoldMessenger.of(
+                            dialogContext,
+                          ).showSnackBar(SnackBar(content: Text(l10n.copied)));
                         },
                       ),
                     ),
