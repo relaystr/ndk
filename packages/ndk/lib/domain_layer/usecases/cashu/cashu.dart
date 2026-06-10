@@ -100,10 +100,11 @@ class Cashu {
     return _cashuSeed;
   }
 
+  /// cheks to run for any cashu operation that modifies state \
   void _preflightChecks() {
     if (!getCashuSeed().isSeedPhraseSet) {
       final logMsg =
-          'Cashu seed phrase is not set. Please set it using Cashu.setCashuSeedPhrase() or in NdkConfig';
+          'Cashu seed phrase is not set. Please set it using .setCashuSeedPhrase() or in NdkConfig';
       Logger.log.f(() => logMsg);
 
       throw Exception(logMsg);
