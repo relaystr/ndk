@@ -5,6 +5,7 @@ import '../../../data_layer/models/wallet_transaction_model.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
+import '../../entities/wallet/wallet_transaction.dart';
 import '../../entities/wallet/wallet_type.dart';
 import '../../repositories/wallets_repo.dart';
 import 'cashu_cache_decorator.dart';
@@ -159,6 +160,7 @@ class CashuStateExportImport {
     bool restoreSeedPhrase = true,
     bool restoreTransactions = true,
   }) async {
+    // Phase 1: Validate header
     final type = json['type'];
     if (type != exportType) {
       throw ArgumentError(
@@ -170,35 +172,31 @@ class CashuStateExportImport {
           'Unsupported cashu state export version: $version (this build supports up to $exportVersion)');
     }
 
+    // Phase 2: Parse all data into memory structures (no mutations yet)
     String? restoredSeedPhrase;
     final seedPhrase = json['seedPhrase'];
     if (seedPhrase is String && seedPhrase.trim().isNotEmpty) {
       restoredSeedPhrase = seedPhrase;
-      if (restoreSeedPhrase) {
-        await _cashuSeed.setSeedPhrase(seedPhrase: seedPhrase);
-      }
     }
 
-    // mint infos
-    final mintInfos = (json['mintInfos'] as List?) ?? const [];
-    for (final m in mintInfos) {
-      await _cacheManagerCashu.saveMintInfo(
-        mintInfo: CashuMintInfo.fromJson(m as Map<String, dynamic>),
-      );
+    // Parse mint infos
+    final parsedMintInfos = <CashuMintInfo>[];
+    final mintInfosJson = (json['mintInfos'] as List?) ?? const [];
+    for (final m in mintInfosJson) {
+      parsedMintInfos.add(CashuMintInfo.fromJson(m as Map<String, dynamic>));
     }
 
-    // keysets
-    final keysets = (json['keysets'] as List?) ?? const [];
-    for (final k in keysets) {
-      await _cacheManagerCashu.saveKeyset(
-        CahsuKeyset.fromJson(k as Map<String, dynamic>),
-      );
+    // Parse keysets
+    final parsedKeysets = <CahsuKeyset>[];
+    final keysetsJson = (json['keysets'] as List?) ?? const [];
+    for (final k in keysetsJson) {
+      parsedKeysets.add(CahsuKeyset.fromJson(k as Map<String, dynamic>));
     }
 
-    // proofs, grouped by mint url (saveProofs is per mint)
-    final proofs = (json['proofs'] as List?) ?? const [];
+    // Parse proofs
     final proofsByMint = <String, List<CashuProof>>{};
-    for (final p in proofs) {
+    final proofsJson = (json['proofs'] as List?) ?? const [];
+    for (final p in proofsJson) {
       final map = p as Map<String, dynamic>;
       final mintUrl = map['mintUrl'] as String;
       (proofsByMint[mintUrl] ??= []).add(
@@ -212,49 +210,67 @@ class CashuStateExportImport {
         ),
       );
     }
-    var restoredProofs = 0;
+
+    // Parse counters
+    final parsedCounters = <Map<String, dynamic>>[];
+    final countersJson = (json['counters'] as List?) ?? const [];
+    for (final c in countersJson) {
+      parsedCounters.add(c as Map<String, dynamic>);
+    }
+
+    // Parse transactions
+    List<WalletTransaction> parsedTransactions = [];
+    if (restoreTransactions) {
+      final transactionsJson = (json['transactions'] as List?) ?? const [];
+      parsedTransactions = transactionsJson
+          .map(
+              (t) => WalletTransactionModel.fromJson(t as Map<String, dynamic>))
+          .toList();
+    }
+
+    // Phase 3: All parsing succeeded; apply mutations in order
+    if (restoreSeedPhrase && restoredSeedPhrase != null) {
+      await _cashuSeed.setSeedPhrase(seedPhrase: restoredSeedPhrase);
+    }
+
+    for (final mintInfo in parsedMintInfos) {
+      await _cacheManagerCashu.saveMintInfo(mintInfo: mintInfo);
+    }
+
+    for (final keyset in parsedKeysets) {
+      await _cacheManagerCashu.saveKeyset(keyset);
+    }
+
     for (final entry in proofsByMint.entries) {
       await _cacheManagerCashu.saveProofs(
         proofs: entry.value,
         mintUrl: entry.key,
       );
-      restoredProofs += entry.value.length;
     }
 
-    // NUT-13 derivation counters
-    final counters = (json['counters'] as List?) ?? const [];
-    for (final c in counters) {
-      final map = c as Map<String, dynamic>;
+    for (final counter in parsedCounters) {
       await _cacheManagerCashu.setCashuSecretCounter(
-        mintUrl: map['mintUrl'] as String,
-        keysetId: map['keysetId'] as String,
-        counter: map['counter'] as int,
+        mintUrl: counter['mintUrl'] as String,
+        keysetId: counter['keysetId'] as String,
+        counter: counter['counter'] as int,
       );
     }
 
-    // transactions
-    var restoredTransactions = 0;
-    if (restoreTransactions) {
-      final transactions = (json['transactions'] as List?) ?? const [];
-      final parsed = transactions
-          .map(
-              (t) => WalletTransactionModel.fromJson(t as Map<String, dynamic>))
-          .toList();
-      if (parsed.isNotEmpty) {
-        await _walletsRepo.saveTransactions(parsed);
-        restoredTransactions = parsed.length;
-      }
+    if (parsedTransactions.isNotEmpty) {
+      await _walletsRepo.saveTransactions(parsedTransactions);
     }
 
+    final totalRestoredProofs =
+        proofsByMint.values.fold<int>(0, (sum, list) => sum + list.length);
     Logger.log.i(() =>
-        'Cashu state export imported: $restoredProofs proofs, ${keysets.length} keysets, ${mintInfos.length} mint infos, $restoredTransactions transactions');
+        'Cashu state export imported: $totalRestoredProofs proofs, ${parsedKeysets.length} keysets, ${parsedMintInfos.length} mint infos, ${parsedTransactions.length} transactions');
 
     return CashuStateImportResult(
       seedPhrase: restoredSeedPhrase,
-      restoredProofs: restoredProofs,
-      restoredKeysets: keysets.length,
-      restoredMintInfos: mintInfos.length,
-      restoredTransactions: restoredTransactions,
+      restoredProofs: totalRestoredProofs,
+      restoredKeysets: parsedKeysets.length,
+      restoredMintInfos: parsedMintInfos.length,
+      restoredTransactions: parsedTransactions.length,
     );
   }
 
