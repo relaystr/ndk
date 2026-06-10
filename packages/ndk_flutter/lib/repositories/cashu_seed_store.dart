@@ -20,7 +20,7 @@ class CashuSeedStore {
   final String _seedKey;
 
   static const String _defaultSeedKey = 'ndk_flutter_cashu_seed_phrase';
-  static const String _backedUpKey = 'ndk_flutter_cashu_seed_backed_up';
+  static const String _backedUpKey = '${_defaultSeedKey}_backed_up';
 
   /// Returns the stored seed phrase, or generates, persists and returns a new
   /// one if none exists yet.
