@@ -86,9 +86,9 @@
   "@showNostrConnectQrcode": {
     "description": "Button text to show nostr connect QR code"
   },
-  "loginWithAmber": "Login with amber",
-  "@loginWithAmber": {
-    "description": "Button text to login with Amber"
+  "loginWithSignerApp": "Login with signer app",
+  "@loginWithSignerApp": {
+    "description": "Button text to login with an external Nostr signer app"
   },
   "nostrConnectUrl": "Nostr connect URL",
   "@nostrConnectUrl": {

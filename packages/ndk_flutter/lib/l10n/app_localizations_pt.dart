@@ -71,7 +71,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get showNostrConnectQrcode => 'Mostrar código QR do Nostr Connect';
 
   @override
-  String get loginWithAmber => 'Iniciar sessão com Amber';
+  String get loginWithSignerApp => 'Iniciar sessão com app de assinatura';
 
   @override
   String get nostrConnectUrl => 'URL de ligação Nostr';
@@ -1142,7 +1142,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get showNostrConnectQrcode => 'Mostrar QR code de conexão Nostr';
 
   @override
-  String get loginWithAmber => 'Entrar com Amber';
+  String get loginWithSignerApp => 'Entrar com app de assinatura';
 
   @override
   String get nostrConnectUrl => 'URL de conexão Nostr';

@@ -20,7 +20,7 @@
   "bunkerAuthentication": "Autenticação Bunker",
   "tapToOpen": "Toque para abrir: {url}",
   "showNostrConnectQrcode": "Mostrar código QR do Nostr Connect",
-  "loginWithAmber": "Iniciar sessão com Amber",
+  "loginWithSignerApp": "Iniciar sessão com app de assinatura",
   "nostrConnectUrl": "URL de ligação Nostr",
   "copy": "Copiar",
   "addAccount": "Adicionar conta",

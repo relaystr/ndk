@@ -7,7 +7,7 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 /// State of the pending requests widget
 enum NPendingRequestsState { hidden, collapsed, expanded }
 
-/// A widget that displays pending signer requests (for Amber, bunker, extension).
+/// A widget that displays pending signer requests (for signer app, bunker, extension).
 ///
 /// This widget shows a floating panel at the bottom of the screen when there are
 /// pending requests waiting for user approval on external signers.
@@ -115,7 +115,7 @@ class _NPendingRequestsState extends State<NPendingRequests> {
     final signer = account.signer;
     final signerType = signer.runtimeType.toString();
 
-    if (signerType.contains('Amber')) return 'Amber';
+    if (signerType.contains('Nip55')) return 'signer app';
     if (signerType.contains('Nip46')) return 'bunker';
     if (signerType.contains('Nip07')) return 'extension';
 

@@ -20,7 +20,7 @@
   "bunkerAuthentication": "Bunker 身份验证",
   "tapToOpen": "点击打开：{url}",
   "showNostrConnectQrcode": "显示 nostr connect 二维码",
-  "loginWithAmber": "使用 Amber 登录",
+  "loginWithSignerApp": "使用签名应用登录",
   "nostrConnectUrl": "Nostr 连接 URL",
   "copy": "复制",
   "addAccount": "添加账户",

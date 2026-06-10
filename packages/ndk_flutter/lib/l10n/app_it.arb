@@ -29,7 +29,7 @@
     }
   },
   "showNostrConnectQrcode": "Mostra QR code Nostr Connect",
-  "loginWithAmber": "Accedi con Amber",
+  "loginWithSignerApp": "Accedi con app di firma",
   "nostrConnectUrl": "URL Nostr Connect",
   "copy": "Copia",
   "addAccount": "Aggiungi account",

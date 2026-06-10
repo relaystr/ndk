@@ -1,4 +1,3 @@
-import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
@@ -40,10 +39,10 @@ class LoginController extends ChangeNotifier {
   bool isNostrConnectDialogOpen = false;
   List<ToastificationItem> challengeToasts = [];
 
-  bool _isWaitingForAmber = false;
-  bool get isWaitingForAmber => _isWaitingForAmber;
-  set isWaitingForAmber(bool value) {
-    _isWaitingForAmber = value;
+  bool _isWaitingForExternalSigner = false;
+  bool get isWaitingForExternalSigner => _isWaitingForExternalSigner;
+  set isWaitingForExternalSigner(bool value) {
+    _isWaitingForExternalSigner = value;
     notifyListeners();
   }
 
@@ -95,33 +94,34 @@ class LoginController extends ChangeNotifier {
     }
   }
 
-  Future<void> loginWithAmber() async {
-    isWaitingForAmber = true;
+  Future<void> loginWithExternalSigner() async {
+    isWaitingForExternalSigner = true;
 
-    final amber = Amberflutter();
+    const signer = Nip55Signer();
 
-    final isAmberInstalled = await amber.isAppInstalled();
+    final isInstalled = await signer.isAppInstalled();
 
-    if (!isAmberInstalled) {
+    if (!isInstalled) {
+      isWaitingForExternalSigner = false;
       launchUrl(Uri.parse('https://github.com/greenart7c3/Amber'));
       return;
     }
 
-    final amberFlutterDS = AmberFlutterDS(amber);
+    final loginResult = await signer.login();
+    if (loginResult == null) {
+      isWaitingForExternalSigner = false;
+      return;
+    }
 
-    final amberResponse = await amber.getPublicKey();
-
-    final npub = amberResponse['signature'];
-    final pubkey = Nip19.decode(npub);
-
-    final amberSigner = AmberEventSigner(
-      publicKey: pubkey,
-      amberFlutterDS: amberFlutterDS,
+    final externalSigner = Nip55EventSigner(
+      publicKey: loginResult.pubkey,
+      // pin the signer captured at login so later requests can be silent
+      nip55Signer: Nip55Signer(package: loginResult.package),
     );
 
-    ndk.accounts.loginExternalSigner(signer: amberSigner);
+    ndk.accounts.loginExternalSigner(signer: externalSigner);
 
-    isWaitingForAmber = false;
+    isWaitingForExternalSigner = false;
 
     await loggedIn();
   }

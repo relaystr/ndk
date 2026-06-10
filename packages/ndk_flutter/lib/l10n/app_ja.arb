@@ -20,7 +20,7 @@
   "bunkerAuthentication": "バンカー認証",
   "tapToOpen": "タップして開く：{url}",
   "showNostrConnectQrcode": "nostr connect QRコードを表示",
-  "loginWithAmber": "Amberでログイン",
+  "loginWithSignerApp": "署名アプリでログイン",
   "nostrConnectUrl": "Nostr接続URL",
   "copy": "コピー",
   "addAccount": "アカウントを追加",
