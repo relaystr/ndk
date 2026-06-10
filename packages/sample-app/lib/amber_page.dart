@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
 class AmberPage extends StatefulWidget {
   const AmberPage({super.key});
@@ -16,7 +16,7 @@ class _AmberPageState extends State<AmberPage> {
   String _pubkeyHex = '';
   String _text = '';
   String _cipherText = '';
-  final amber = Amberflutter();
+  final amber = const Nip55Signer();
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +27,10 @@ class _AmberPageState extends State<AmberPage> {
           onPressed: () async {
             amber.getPublicKey(
               permissions: [
-                const Permission(
+                const Nip55Permission(
                   type: "nip04_encrypt",
                 ),
-                const Permission(
+                const Nip55Permission(
                   type: "nip04_decrypt",
                 ),
               ],
