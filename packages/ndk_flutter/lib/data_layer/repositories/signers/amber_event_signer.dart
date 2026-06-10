@@ -13,9 +13,7 @@ class _PendingRequestEntry {
 }
 
 /// amber (external app) https://github.com/greenart7c3/Amber singer
-class AmberEventSigner
-    with ConcurrencyLimiterMixin
-    implements EventSigner {
+class AmberEventSigner with ConcurrencyLimiterMixin implements EventSigner {
   final AmberFlutterDS amberFlutterDS;
 
   final String publicKey;
@@ -38,8 +36,7 @@ class AmberEventSigner
     required this.publicKey,
     required this.amberFlutterDS,
     this.maxConcurrentRequests = defaultMaxConcurrentRequests,
-  }) : assert(maxConcurrentRequests > 0,
-            'maxConcurrentRequests must be > 0');
+  }) : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0');
 
   String get _npub =>
       publicKey.startsWith('npub') ? publicKey : Nip19.encodePubKey(publicKey);
@@ -94,11 +91,11 @@ class AmberEventSigner
     // `pendingRequests` so the UI sees the full backlog. If the request was
     // cancelled while queued, skip the Amber call entirely.
     runThrottled(() async {
-      if (!_pendingRequests.containsKey(requestId)) {
-        throw SignerRequestCancelledException(requestId);
-      }
-      return await operation();
-    })
+          if (!_pendingRequests.containsKey(requestId)) {
+            throw SignerRequestCancelledException(requestId);
+          }
+          return await operation();
+        })
         .then((result) {
           if (!completer.isCompleted) {
             completer.complete(result);
