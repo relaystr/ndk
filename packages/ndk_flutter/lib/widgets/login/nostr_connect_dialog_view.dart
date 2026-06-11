@@ -23,9 +23,7 @@ class NostrConnectDialogView extends StatelessWidget {
               data: nostrConnectURL,
               decoration: const PrettyQrDecoration(
                 quietZone: PrettyQrQuietZone.standard,
-                shape: PrettyQrSmoothSymbol(
-                  roundFactor: 0,
-                ),
+                shape: PrettyQrSmoothSymbol(roundFactor: 0),
               ),
             ),
           ),
