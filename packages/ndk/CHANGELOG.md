@@ -1,3 +1,7 @@
+## 0.8.4-dev.3
+
+ - **FIX**: add missing timeout to wallets.sendaa.
+
 ## 0.8.4-dev.2
 
 > Note: This release has breaking changes.
