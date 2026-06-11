@@ -100,7 +100,7 @@ class Cashu {
     return _cashuSeed;
   }
 
-  /// cheks to run for any cashu operation that modifies state
+  /// checks to run for any cashu operation that modifies state
   void _preflightChecks() {
     if (!getCashuSeed().isSeedPhraseSet) {
       final logMsg =
@@ -450,6 +450,7 @@ class Cashu {
     required String mintUrl,
     bool deleteState = true,
   }) async {
+    _preflightChecks();
     // Remove from cache
     await _cacheManager.removeMintInfo(mintUrl: mintUrl);
 
@@ -1162,7 +1163,7 @@ class Cashu {
   /// todo: restore pending transaction from cache
   /// todo: recover funds
   /// todo: timeout
-  void checkSpendingState({
+  Future<void> checkSpendingState({
     required CashuWalletTransaction transaction,
   }) async {
     _preflightChecks();
