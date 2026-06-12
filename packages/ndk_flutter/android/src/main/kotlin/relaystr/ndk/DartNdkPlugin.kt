@@ -127,7 +127,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     isExternalSignerInstalled(_context)
                 } else {
                     isPackageInstalled(_context, packageName)
-                } || isExternalSignerInstalled(_context)
+                }
                 result.success(isInstalled)
             }
 
