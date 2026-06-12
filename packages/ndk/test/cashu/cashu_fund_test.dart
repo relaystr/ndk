@@ -35,6 +35,23 @@ void main() {
         throwsA(isA<Exception>()),
       );
     });
+
+    test('fund - missing seed phrase throws exception', () async {
+      final cashu = CashuTestTools.mockHttpCashu(
+        customMockClient: MockCashuHttpClient(),
+      );
+
+      expect(
+        () async => await cashu.initiateFund(
+          mintUrl: devMintUrl,
+          amount: 52,
+          unit: 'sat',
+          method: 'bolt11',
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
+
     test('fund - no keyset throws exception', () async {
       final ndk = _ndk();
 

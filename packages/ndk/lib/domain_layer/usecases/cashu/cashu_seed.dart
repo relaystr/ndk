@@ -75,8 +75,10 @@ class CashuSeed {
     return seed.sentence;
   }
 
+  bool get isSeedPhraseSet => _userSeedPhrase != null;
+
   void _seedCheck() {
-    if (_userSeedPhrase == null) {
+    if (!isSeedPhraseSet) {
       throw Exception('Seed phrase is not set');
     }
     if (_cachedSeed.isEmpty) {
