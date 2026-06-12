@@ -1,3 +1,9 @@
+## 0.8.4-dev.5
+
+ - **FIX**: ecash wallet adding navigation bug.
+ - **FEAT**: use StringColor for avatar and banner colors.
+ - **FEAT**: add StringColor deterministic color utility.
+
 ## 0.8.4-dev.4
 
  - **FIX**: ecash wallet adding navigation bug.
