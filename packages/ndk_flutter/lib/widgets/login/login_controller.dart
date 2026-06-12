@@ -96,34 +96,37 @@ class LoginController extends ChangeNotifier {
 
   Future<void> loginWithExternalSigner() async {
     isWaitingForExternalSigner = true;
+    try {
+      const signer = Nip55Signer();
 
-    const signer = Nip55Signer();
+      final isInstalled = await signer.isAppInstalled();
 
-    final isInstalled = await signer.isAppInstalled();
+      if (!isInstalled) {
+        isWaitingForExternalSigner = false;
+        launchUrl(Uri.parse('https://github.com/greenart7c3/Amber'));
+        return;
+      }
 
-    if (!isInstalled) {
+      final loginResult = await signer.login();
+      if (loginResult == null) {
+        isWaitingForExternalSigner = false;
+        return;
+      }
+
+      final externalSigner = Nip55EventSigner(
+        publicKey: loginResult.pubkey,
+        // pin the signer captured at login so later requests can be silent
+        nip55Signer: Nip55Signer(package: loginResult.package),
+      );
+
+      ndk.accounts.loginExternalSigner(signer: externalSigner);
+
       isWaitingForExternalSigner = false;
-      launchUrl(Uri.parse('https://github.com/greenart7c3/Amber'));
-      return;
-    }
 
-    final loginResult = await signer.login();
-    if (loginResult == null) {
+      await loggedIn();
+    } finally {
       isWaitingForExternalSigner = false;
-      return;
     }
-
-    final externalSigner = Nip55EventSigner(
-      publicKey: loginResult.pubkey,
-      // pin the signer captured at login so later requests can be silent
-      nip55Signer: Nip55Signer(package: loginResult.package),
-    );
-
-    ndk.accounts.loginExternalSigner(signer: externalSigner);
-
-    isWaitingForExternalSigner = false;
-
-    await loggedIn();
   }
 
   Future<void> loggedIn() async {
