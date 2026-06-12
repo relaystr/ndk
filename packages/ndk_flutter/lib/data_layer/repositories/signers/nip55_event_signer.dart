@@ -15,12 +15,9 @@ class _PendingRequestEntry {
 /// Event signer backed by a NIP-55 external signer application.
 ///
 /// NIP-55 is a protocol implemented by several external signer apps
-/// (Amber https://github.com/greenart7c3/Amber, Primal, Aegis, ...). This
-/// signer delegates all cryptographic operations to whichever compatible
-/// signer is installed via [Nip55Signer].
-class Nip55EventSigner
-    with ConcurrencyLimiterMixin
-    implements EventSigner {
+/// (Amber, Primal, Aegis, ...). This signer delegates all cryptographic
+/// operations to whichever compatible signer is installed via [Nip55Signer].
+class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   final Nip55Signer nip55Signer;
 
   final String publicKey;
@@ -43,8 +40,7 @@ class Nip55EventSigner
     required this.publicKey,
     required this.nip55Signer,
     this.maxConcurrentRequests = defaultMaxConcurrentRequests,
-  }) : assert(maxConcurrentRequests > 0,
-            'maxConcurrentRequests must be > 0');
+  }) : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0');
 
   /// NIP-55 expects pubkeys in hex format ("All pubkeys in this NIP are in hex
   /// format"), so `current_user` is always sent as hex.
@@ -101,11 +97,11 @@ class Nip55EventSigner
     // `pendingRequests` so the UI sees the full backlog. If the request was
     // cancelled while queued, skip the signer call entirely.
     runThrottled(() async {
-      if (!_pendingRequests.containsKey(requestId)) {
-        throw SignerRequestCancelledException(requestId);
-      }
-      return await operation();
-    })
+          if (!_pendingRequests.containsKey(requestId)) {
+            throw SignerRequestCancelledException(requestId);
+          }
+          return await operation();
+        })
         .then((result) {
           if (!completer.isCompleted) {
             completer.complete(result);

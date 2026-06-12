@@ -188,7 +188,7 @@ class NdkFlutter {
           signer: Nip55EventSigner(
             publicKey: account.pubkey,
             // restore the signer app package captured at login (null for
-            // legacy accounts -> falls back to Amber + app chooser).
+            // legacy accounts -> Android routes through a compatible signer).
             nip55Signer: Nip55Signer(package: account.signerSeed),
           ),
         );

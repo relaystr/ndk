@@ -8,10 +8,7 @@ import 'package:ndk/ndk.dart';
 ///
 /// See https://github.com/nostr-protocol/nips/blob/master/55.md
 class Nip55Permission {
-  const Nip55Permission({
-    required this.type,
-    this.kind,
-  });
+  const Nip55Permission({required this.type, this.kind});
 
   /// The request type to authorize, e.g. `sign_event`, `nip04_encrypt`.
   final String type;
@@ -20,10 +17,7 @@ class Nip55Permission {
   final int? kind;
 
   Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      if (kind != null) 'kind': kind,
-    };
+    return {'type': type, if (kind != null) 'kind': kind};
   }
 }
 
@@ -44,8 +38,7 @@ class Nip55LoginResult {
 /// NIP-55 is a protocol implemented by several external signer apps
 /// (Amber, Primal, Aegis, ...). This class talks to whichever compatible
 /// signer is installed through the native `ndk` method channel
-/// ([DartNdkPlugin]). Amber is only the reference app used for installation
-/// detection / linking.
+/// ([DartNdkPlugin]).
 ///
 /// Every method resolves to a `Map` that contains (at least) a `signature`
 /// key with the result, mirroring the historical `amberflutter` API.
@@ -65,17 +58,15 @@ class Nip55Signer {
 
   /// The signer app package (e.g. Amber, Primal), captured at login. Used to
   /// target the right signer for both the ContentResolver and the Intent.
-  /// When `null`, the native side falls back to Amber and an app chooser.
+  /// When `null`, the native side lets Android route through a compatible
+  /// signer app.
   final String? package;
 
   const Nip55Signer({this.package});
 
   /// Whether a NIP-55 compatible external signer is installed.
   Future<bool> isAppInstalled() async {
-    final data = await _channel.invokeMethod<bool>(
-      'isAppInstalled',
-      {'packageName': 'com.greenart7c3.nostrsigner'},
-    );
+    final data = await _channel.invokeMethod<bool>('isAppInstalled');
     return data ?? false;
   }
 
@@ -111,8 +102,9 @@ class Nip55Signer {
   /// (defaults to [defaultPermissions]), and captures the signer app package.
   /// Returns `null` if the user rejected or no key was returned.
   Future<Nip55LoginResult?> login({List<Nip55Permission>? permissions}) async {
-    final response =
-        await getPublicKey(permissions: permissions ?? defaultPermissions);
+    final response = await getPublicKey(
+      permissions: permissions ?? defaultPermissions,
+    );
     final raw = (response['result'] ?? response['signature']) as String?;
     if (raw == null || raw.isEmpty) return null;
     final pubkey = raw.startsWith('npub') ? Nip19.decode(raw) : raw;
@@ -142,7 +134,9 @@ class Nip55Signer {
     required String pubKey,
     String? id,
   }) {
-    return _invoke(_encryptArgs('nip04_encrypt', plaintext, currentUser, pubKey, id));
+    return _invoke(
+      _encryptArgs('nip04_encrypt', plaintext, currentUser, pubKey, id),
+    );
   }
 
   Future<Map<dynamic, dynamic>> nip04Decrypt({
@@ -151,7 +145,9 @@ class Nip55Signer {
     required String pubKey,
     String? id,
   }) {
-    return _invoke(_encryptArgs('nip04_decrypt', ciphertext, currentUser, pubKey, id));
+    return _invoke(
+      _encryptArgs('nip04_decrypt', ciphertext, currentUser, pubKey, id),
+    );
   }
 
   Future<Map<dynamic, dynamic>> nip44Encrypt({
@@ -160,7 +156,9 @@ class Nip55Signer {
     required String pubKey,
     String? id,
   }) {
-    return _invoke(_encryptArgs('nip44_encrypt', plaintext, currentUser, pubKey, id));
+    return _invoke(
+      _encryptArgs('nip44_encrypt', plaintext, currentUser, pubKey, id),
+    );
   }
 
   Future<Map<dynamic, dynamic>> nip44Decrypt({
@@ -169,7 +167,9 @@ class Nip55Signer {
     required String pubKey,
     String? id,
   }) {
-    return _invoke(_encryptArgs('nip44_decrypt', ciphertext, currentUser, pubKey, id));
+    return _invoke(
+      _encryptArgs('nip44_decrypt', ciphertext, currentUser, pubKey, id),
+    );
   }
 
   Future<Map<dynamic, dynamic>> decryptZapEvent({
