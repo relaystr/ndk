@@ -8,7 +8,7 @@ import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk_flutter/main/config.dart';
 import 'package:ndk_flutter/models/accounts.dart';
 import 'package:ndk_flutter/models/nip_05_result.dart';
-import 'package:nip07_event_signer/nip07_event_signer.dart';
+import 'package:ndk_flutter/signers/nip07_event_signer.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 

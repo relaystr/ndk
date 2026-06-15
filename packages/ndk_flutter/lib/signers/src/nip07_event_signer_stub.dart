@@ -8,8 +8,7 @@ class Nip07EventSigner implements EventSigner {
       BehaviorSubject<List<PendingSignerRequest>>.seeded([]);
 
   Nip07EventSigner({this.cachedPublicKey, int maxConcurrentRequests = 100})
-    : assert(maxConcurrentRequests > 0,
-          'maxConcurrentRequests must be > 0');
+    : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0');
 
   @override
   bool canSign() {
@@ -56,7 +55,6 @@ class Nip07EventSigner implements EventSigner {
     throw UnsupportedError('NIP-07 is not available on this platform');
   }
 
-  // Stub implementation - always returns empty since NIP-07 is not available
   @override
   Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
       _pendingRequestsController.stream;

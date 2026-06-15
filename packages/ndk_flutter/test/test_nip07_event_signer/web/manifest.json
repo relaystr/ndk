@@ -1,0 +1,11 @@
+{
+    "name": "test_nip07_event_signer",
+    "short_name": "test_nip07_event_signer",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0175C2",
+    "theme_color": "#0175C2",
+    "description": "Manual NIP-07 signer test app.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false
+}

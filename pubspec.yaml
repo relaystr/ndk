@@ -13,7 +13,6 @@ workspace:
   - packages/ndk
   - packages/ndk_cache_manager_test_suite
   - packages/objectbox
-  - packages/nip07_event_signer
   # - packages/sembast_cache_manager
   - packages/drift
   - packages/ndk_flutter
@@ -73,4 +72,3 @@ melos:
           preCommit: |
             melos exec --fail-fast --scope="ndk" -- "dart run build_runner build --delete-conflicting-outputs"
             git add packages/ndk/lib/src/version.dart
-
