@@ -89,6 +89,55 @@ void main() {
     await relay.stopServer();
   });
 
+  test('gift wrap broadcast on auth-required relay should authenticate as sender',
+      timeout: const Timeout(Duration(seconds: 5)), () async {
+    final senderKey = Bip340.generatePrivateKey();
+    final recipientKey = Bip340.generatePrivateKey();
+    final relay = MockRelay(
+      name: "gift wrap auth relay",
+      explicitPort: 5107,
+      requireAuthForEvents: true,
+    );
+
+    await relay.startServer();
+
+    final ndk = Ndk(NdkConfig(
+      eventVerifier: MockEventVerifier(),
+      cache: MemCacheManager(),
+      bootstrapRelays: [relay.url],
+      defaultBroadcastTimeout: const Duration(milliseconds: 300),
+    ));
+
+    addTearDown(() async {
+      await ndk.destroy();
+      await relay.stopServer();
+    });
+
+    ndk.accounts.loginPrivateKey(
+      pubkey: senderKey.publicKey,
+      privkey: senderKey.privateKey!,
+    );
+
+    final rumor = await ndk.giftWrap.createRumor(
+      content: "gift wrap auth-required broadcast",
+      kind: Nip01Event.kTextNodeKind,
+      tags: [
+        ["p", recipientKey.publicKey]
+      ],
+    );
+    final giftWrap = await ndk.giftWrap.toGiftWrap(
+      rumor: rumor,
+      recipientPubkey: recipientKey.publicKey,
+    );
+
+    final result = await ndk.broadcast.broadcast(
+      nostrEvent: giftWrap,
+      specificRelays: [relay.url],
+    ).broadcastDoneFuture;
+
+    expect(result.any((r) => r.broadcastSuccessful), isTrue);
+  });
+
   test(
       'request should complete when relay requires auth but sends no challenge',
       timeout: const Timeout(Duration(seconds: 5)), () async {
