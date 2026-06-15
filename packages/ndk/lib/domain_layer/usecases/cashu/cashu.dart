@@ -100,6 +100,17 @@ class Cashu {
     return _cashuSeed;
   }
 
+  /// checks to run for any cashu operation that modifies state
+  Future<void> preflightChecks() async {
+    if (!getCashuSeed().isSeedPhraseSet) {
+      final logMsg =
+          'Cashu seed phrase is not set. Please set it using .setCashuSeedPhrase() or in NdkConfig';
+      Logger.log.f(() => logMsg);
+
+      throw Exception(logMsg);
+    }
+  }
+
   /// Restores proofs from a mint using the wallet's seed phrase.
   ///
   /// This implements NUT-09 (Restore) using NUT-13 (Deterministic Secrets).
@@ -120,6 +131,7 @@ class Cashu {
     int batchSize = 100,
     int gapLimit = 2,
   }) async* {
+    await preflightChecks();
     Logger.log.i(() => 'Starting restore from $mintUrl');
 
     // Get keysets for this mint and unit
@@ -407,6 +419,7 @@ class Cashu {
   Future<bool> addMintToKnownMints({
     required String mintUrl,
   }) async {
+    await preflightChecks();
     final result = await _checkIfMintIsKnown(mintUrl);
     return !result;
   }
@@ -437,6 +450,7 @@ class Cashu {
     required String mintUrl,
     bool deleteState = true,
   }) async {
+    await preflightChecks();
     // Remove from cache
     await _cacheManager.removeMintInfo(mintUrl: mintUrl);
 
@@ -478,6 +492,7 @@ class Cashu {
     required String method,
     String? memo,
   }) async {
+    await preflightChecks();
     await _checkIfMintIsKnown(mintUrl);
     final keysets = await _cashuKeysets.getKeysetsFromMint(mintUrl);
 
@@ -528,6 +543,7 @@ class Cashu {
   Stream<CashuWalletTransaction> retrieveFunds({
     required CashuWalletTransaction draftTransaction,
   }) async* {
+    await preflightChecks();
     if (draftTransaction.qoute == null) {
       throw Exception("Quote is not available in the transaction");
     }
@@ -690,6 +706,8 @@ class Cashu {
     required String unit,
     required String method,
   }) async {
+    await preflightChecks();
+
     final meltQuote = await _cashuRepo.getMeltQuote(
       mintUrl: mintUrl,
       request: request,
@@ -717,6 +735,7 @@ class Cashu {
   Stream<CashuWalletTransaction> redeem({
     required CashuWalletTransaction draftRedeemTransaction,
   }) async* {
+    await preflightChecks();
     if (draftRedeemTransaction.qouteMelt == null) {
       throw Exception("Melt Quote is not available in the transaction");
     }
@@ -965,6 +984,7 @@ class Cashu {
     required String unit,
     String? memo,
   }) async {
+    await preflightChecks();
     if (amount <= 0) {
       throw Exception('Amount must be greater than zero');
     }
@@ -1143,9 +1163,10 @@ class Cashu {
   /// todo: restore pending transaction from cache
   /// todo: recover funds
   /// todo: timeout
-  void checkSpendingState({
+  Future<void> checkSpendingState({
     required CashuWalletTransaction transaction,
   }) async {
+    await preflightChecks();
     if (transaction.proofPubKeys == null || transaction.proofPubKeys!.isEmpty) {
       throw Exception('No proof public keys provided for checking state');
     }
@@ -1211,6 +1232,8 @@ class Cashu {
   /// [token] - the Cashu token string to receive \
   /// returns a stream of [CashuWalletTransaction] that emits the transaction state as it progresses.
   Stream<CashuWalletTransaction> receive(String token) async* {
+    await preflightChecks();
+
     final rcvToken = CashuTokenEncoder.decodedToken(token);
     if (rcvToken == null) {
       throw Exception('Invalid Cashu token format');

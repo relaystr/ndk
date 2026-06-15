@@ -884,7 +884,7 @@ class _NWalletCardState extends State<NWalletCard> {
         final updatedMetadata = Map<String, dynamic>.from(
           widget.wallet.metadata,
         );
-        updatedMetadata['cardColor'] = result.value;
+        updatedMetadata['cardColor'] = result.toARGB32();
 
         Wallet updatedWallet;
         if (widget.wallet is CashuWallet) {
@@ -925,7 +925,7 @@ class _NWalletCardState extends State<NWalletCard> {
 
         await widget.ndkFlutter.ndk.wallets.addWallet(updatedWallet);
       } catch (e) {
-        if (mounted) {
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to save color: ${e.toString()}'),

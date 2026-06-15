@@ -152,6 +152,11 @@ class LoginController extends ChangeNotifier {
         // authCallback: (challenge) => showBunkerAuthToast(challenge),
       );
 
+      if (!context.mounted) {
+        isNostrConnectDialogOpen = false;
+        return;
+      }
+
       if (isNostrConnectDialogOpen) {
         Navigator.of(context).pop();
         isNostrConnectDialogOpen = false;
@@ -161,6 +166,11 @@ class LoginController extends ChangeNotifier {
 
       await loggedIn();
     } catch (e) {
+      if (!context.mounted) {
+        isNostrConnectDialogOpen = false;
+        return;
+      }
+
       if (isNostrConnectDialogOpen) {
         Navigator.of(context).pop();
         isNostrConnectDialogOpen = false;

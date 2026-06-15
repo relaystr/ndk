@@ -1,3 +1,17 @@
+## 0.8.4-dev.4
+
+ - **FIX**: add cashu preflight checks to wallet init.
+ - **FIX**: typo, return type.
+ - **FIX**: add missing timeout to wallets.sendaa.
+ - **FEAT**: cashu preflight checks.
+
+## 0.8.4-dev.3
+
+ - **FIX**: add cashu preflight checks to wallet init.
+ - **FIX**: typo, return type.
+ - **FIX**: add missing timeout to wallets.sendaa.
+ - **FEAT**: cashu preflight checks.
+
 ## 0.8.4-dev.2
 
 > Note: This release has breaking changes.
