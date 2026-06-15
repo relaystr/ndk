@@ -22,7 +22,6 @@ environment:
 resolution: workspace
 
 dependencies:
-  amberflutter: ^0.0.9
   android_intent_plus: ^6.0.0
   crypto: ">=3.0.0 <4.0.0"
   flutter:
@@ -50,5 +49,10 @@ dev_dependencies:
 
 flutter:
   generate: true
+  plugin:
+    platforms:
+      android:
+        package: relaystr.ndk
+        pluginClass: DartNdkPlugin
   assets:
     - assets/images/

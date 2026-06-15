@@ -29,7 +29,7 @@
     }
   },
   "showNostrConnectQrcode": "Näytä Nostr Connect -QR-koodi",
-  "loginWithAmber": "Kirjaudu Amberilla",
+  "loginWithSignerApp": "Kirjaudu allekirjoitussovelluksella",
   "nostrConnectUrl": "Nostr Connect -URL",
   "copy": "Kopioi",
   "addAccount": "Lisää tili",

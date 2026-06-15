@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ndk/data_layer/repositories/signers/nip46_event_signer.dart';
@@ -13,8 +12,8 @@ import 'package:nip07_event_signer/nip07_event_signer.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
-import '../data_layer/data_sources/amber_flutter.dart';
-import '../data_layer/repositories/signers/amber_event_signer.dart';
+import '../data_layer/data_sources/nip55_signer.dart';
+import '../data_layer/repositories/signers/nip55_event_signer.dart';
 
 class NdkFlutter {
   final Ndk ndk;
@@ -109,9 +108,16 @@ class NdkFlutter {
         continue;
       }
 
-      if (account.signer is AmberEventSigner) {
+      if (account.signer is Nip55EventSigner) {
+        // `signerSeed` holds the signer app package (Amber, Primal, ...) so
+        // silent signing keeps working after restart.
+        final signer = account.signer as Nip55EventSigner;
         accounts.accounts.add(
-          NostrAccount(kind: AccountKinds.amber, pubkey: account.pubkey),
+          NostrAccount(
+            kind: AccountKinds.nip55,
+            pubkey: account.pubkey,
+            signerSeed: signer.nip55Signer.package,
+          ),
         );
         continue;
       }
@@ -175,16 +181,15 @@ class NdkFlutter {
         continue;
       }
 
-      if (account.kind == AccountKinds.amber) {
-        final amber = Amberflutter();
-        final amberFlutterDS = AmberFlutterDS(amber);
-
+      if (account.kind == AccountKinds.nip55) {
         ndk.accounts.addAccount(
           pubkey: account.pubkey,
           type: AccountType.externalSigner,
-          signer: AmberEventSigner(
+          signer: Nip55EventSigner(
             publicKey: account.pubkey,
-            amberFlutterDS: amberFlutterDS,
+            // restore the signer app package captured at login (null for
+            // legacy accounts -> Android routes through a compatible signer).
+            nip55Signer: Nip55Signer(package: account.signerSeed),
           ),
         );
         continue;
@@ -236,6 +241,11 @@ class NdkFlutter {
 
     if (accounts.loggedAccount == null) return;
     if (!ndk.accounts.hasAccount(accounts.loggedAccount!)) return;
-    ndk.accounts.switchAccount(pubkey: accounts.loggedAccount!);
+    try {
+      ndk.accounts.switchAccount(pubkey: accounts.loggedAccount!);
+    } catch (_) {
+      // stored logged account could not be restored (e.g. stale/corrupted
+      // state); ignore rather than crash app startup.
+    }
   }
 }

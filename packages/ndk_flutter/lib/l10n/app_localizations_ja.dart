@@ -71,7 +71,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get showNostrConnectQrcode => 'nostr connect QRコードを表示';
 
   @override
-  String get loginWithAmber => 'Amberでログイン';
+  String get loginWithSignerApp => '署名アプリでログイン';
 
   @override
   String get nostrConnectUrl => 'Nostr接続URL';

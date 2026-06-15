@@ -17,7 +17,8 @@ Main package: [🔗 Dart Nostr Development Kit (NDK)](https://pub.dev/packages/n
 
 4. start app `flutter run`
 
-## Amber
+## NIP-55 signer
 
-Amber is a external nostr signer. Its not required in order to run this application. \
-You can read more about it here: [https://github.com/greenart7c3/Amber](https://github.com/greenart7c3/Amber)
+A NIP-55 compatible external Nostr signer is optional for running this
+application. Amber is one app that implements NIP-55, but the sample app is not
+specific to Amber.

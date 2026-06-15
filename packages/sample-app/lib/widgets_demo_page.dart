@@ -215,7 +215,7 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
                             setState(() => _showLogin = false);
                           },
                           enableNip07Login: false,
-                          enableAmberLogin: false,
+                          enableSignerAppLogin: false,
                           nostrConnect: NostrConnect(
                             appName: 'NDK sample app',
                             relays: [
