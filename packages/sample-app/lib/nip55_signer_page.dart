@@ -1,22 +1,22 @@
 import 'dart:convert';
 
-import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
-class AmberPage extends StatefulWidget {
-  const AmberPage({super.key});
+class Nip55SignerPage extends StatefulWidget {
+  const Nip55SignerPage({super.key});
 
   @override
-  State<AmberPage> createState() => _AmberPageState();
+  State<Nip55SignerPage> createState() => _Nip55SignerPageState();
 }
 
-class _AmberPageState extends State<AmberPage> {
+class _Nip55SignerPageState extends State<Nip55SignerPage> {
   String _npub = '';
   String _pubkeyHex = '';
   String _text = '';
   String _cipherText = '';
-  final amber = Amberflutter();
+  final nip55Signer = const Nip55Signer();
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +25,12 @@ class _AmberPageState extends State<AmberPage> {
       children: <Widget>[
         FilledButton(
           onPressed: () async {
-            amber.getPublicKey(
+            nip55Signer.getPublicKey(
               permissions: [
-                const Permission(
+                const Nip55Permission(
                   type: "nip04_encrypt",
                 ),
-                const Permission(
+                const Nip55Permission(
                   type: "nip04_decrypt",
                 ),
               ],
@@ -50,14 +50,14 @@ class _AmberPageState extends State<AmberPage> {
               'id': '',
               'pubkey': Nip19.decode(_npub),
               'kind': 1,
-              'content': 'Hello from Amber Flutter!',
+              'content': 'Hello from NDK Flutter!',
               'created_at':
                   (DateTime.now().millisecondsSinceEpoch / 1000).round(),
               'tags': [],
               'sig': '',
             });
 
-            amber
+            nip55Signer
                 .signEvent(
               currentUser: _npub,
               eventJson: eventJson,
@@ -76,14 +76,14 @@ class _AmberPageState extends State<AmberPage> {
               'id': '',
               'pubkey': Nip19.decode(_npub),
               'kind': 1,
-              'content': 'Hello from Amber Flutter!',
+              'content': 'Hello from NDK Flutter!',
               'created_at':
                   (DateTime.now().millisecondsSinceEpoch / 1000).round(),
               'tags': [],
               'sig': '',
             });
 
-            var value = await amber.signEvent(
+            var value = await nip55Signer.signEvent(
               currentUser: _npub,
               eventJson: eventJson,
             );
@@ -100,9 +100,9 @@ class _AmberPageState extends State<AmberPage> {
         ),
         FilledButton(
           onPressed: () {
-            amber
+            nip55Signer
                 .nip04Encrypt(
-              plaintext: "Hello from Amber Flutter, Nip 04!",
+              plaintext: "Hello from NDK Flutter, Nip 04!",
               currentUser: _npub,
               pubKey: _pubkeyHex,
             )
@@ -117,7 +117,7 @@ class _AmberPageState extends State<AmberPage> {
         ),
         FilledButton(
           onPressed: () async {
-            amber
+            nip55Signer
                 .nip04Decrypt(
               ciphertext: _cipherText,
               currentUser: _npub,
@@ -129,7 +129,7 @@ class _AmberPageState extends State<AmberPage> {
               });
             });
             // ;
-            amber
+            nip55Signer
                 .nip04Decrypt(
               ciphertext: _cipherText,
               currentUser: _npub,
@@ -141,7 +141,7 @@ class _AmberPageState extends State<AmberPage> {
               });
             });
             //   ,
-            amber
+            nip55Signer
                 .nip04Decrypt(
               ciphertext: _cipherText,
               currentUser: _npub,
@@ -157,9 +157,9 @@ class _AmberPageState extends State<AmberPage> {
         ),
         FilledButton(
           onPressed: () {
-            amber
+            nip55Signer
                 .nip44Encrypt(
-              plaintext: "Hello from Amber Flutter, Nip 44!",
+              plaintext: "Hello from NDK Flutter, Nip 44!",
               currentUser: _npub,
               pubKey: _pubkeyHex,
             )
@@ -174,7 +174,7 @@ class _AmberPageState extends State<AmberPage> {
         ),
         FilledButton(
           onPressed: () {
-            amber
+            nip55Signer
                 .nip44Decrypt(
               ciphertext: _cipherText,
               currentUser: _npub,

@@ -588,13 +588,13 @@ class _NWalletActionsState extends State<NWalletActions> {
             children: [
               Text(l10n.invoiceCreatedMessage),
               const SizedBox(height: 12),
-              Container(
+              SizedBox(
                 width: 200,
                 child: PrettyQrView.data(
                   data: invoice.toUpperCase(),
                   errorCorrectLevel: QrErrorCorrectLevel.M,
                   decoration: const PrettyQrDecoration(
-                    quietZone: PrettyQrQuietZone.standart,
+                    quietZone: PrettyQrQuietZone.standard,
                     background: Colors.white,
                     shape: PrettyQrSmoothSymbol(
                       color: Colors.black,
@@ -705,13 +705,13 @@ class _NWalletActionsState extends State<NWalletActions> {
             children: [
               Text(l10n.invoiceCreatedMessage),
               const SizedBox(height: 12),
-              Container(
+              SizedBox(
                 width: 200,
                 child: PrettyQrView.data(
                   data: invoice.toUpperCase(),
                   errorCorrectLevel: QrErrorCorrectLevel.M,
                   decoration: const PrettyQrDecoration(
-                    quietZone: PrettyQrQuietZone.standart,
+                    quietZone: PrettyQrQuietZone.standard,
                     background: Colors.white,
                     shape: PrettyQrSmoothSymbol(
                       color: Colors.black,

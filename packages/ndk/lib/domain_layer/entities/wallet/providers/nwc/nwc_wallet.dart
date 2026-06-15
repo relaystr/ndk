@@ -14,6 +14,11 @@ class NwcWallet extends Wallet {
   final String nwcUrl;
   final Set<String> cachedPermissions;
   NwcConnection? connection;
+
+  /// Remaining NWC budget in sats, cached after the last `get_budget` call.
+  /// null = wallet doesn't support get_budget, or not yet fetched.
+  int? cachedRemainingBudgetSats;
+
   BehaviorSubject<List<WalletBalance>>? balanceSubject;
   BehaviorSubject<List<WalletTransaction>>? transactionsSubject;
   BehaviorSubject<List<WalletTransaction>>? pendingTransactionsSubject;
@@ -73,6 +78,7 @@ class NwcWallet extends Wallet {
       metadata: metadata,
     );
     wallet.connection = connection;
+    wallet.cachedRemainingBudgetSats = cachedRemainingBudgetSats;
     wallet.balanceSubject = balanceSubject;
     wallet.transactionsSubject = transactionsSubject;
     wallet.pendingTransactionsSubject = pendingTransactionsSubject;

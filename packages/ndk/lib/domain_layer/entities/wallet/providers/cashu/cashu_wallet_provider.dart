@@ -53,6 +53,8 @@ class CashuWalletProvider implements WalletProvider {
       throw ArgumentError('Expected a CashuWallet');
     }
 
+    await _cashuUseCase.preflightChecks();
+
     // Ensure mint info is cached
     await _cashuUseCase.getMintInfoNetwork(mintUrl: wallet.mintUrl);
     return null; // No wallet update needed
@@ -106,7 +108,8 @@ class CashuWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice) async {
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice,
+      {Duration? timeout}) async {
     if (wallet is! CashuWallet) {
       throw ArgumentError('Expected a CashuWallet');
     }

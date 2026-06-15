@@ -20,7 +20,7 @@
   "bunkerAuthentication": "Authentification Bunker",
   "tapToOpen": "Appuyez pour ouvrir: {url}",
   "showNostrConnectQrcode": "Afficher le code QR nostr connect",
-  "loginWithAmber": "Se connecter avec Amber",
+  "loginWithSignerApp": "Se connecter avec une app de signature",
   "nostrConnectUrl": "URL de connexion Nostr",
   "copy": "Copier",
   "addAccount": "Ajouter un compte",
@@ -303,13 +303,7 @@
   "nwcWalletSubtitle": "Portefeuille NWC",
   "tokenCopied": "Token copié",
   "deleteWalletConfirmation": "Supprimer le Portefeuille?",
-  "@deleteWalletConfirmation": {
-    "description": "Title for delete wallet confirmation dialog"
-  },
   "deleteWalletConfirmationMessage": "Êtes-vous sûr de vouloir supprimer ce portefeuille? Cette action ne peut pas être annulée.",
-  "@deleteWalletConfirmationMessage": {
-    "description": "Message for delete wallet confirmation dialog"
-  },
   "addWalletTitle": "Ajouter un Portefeuille",
   "chooseWalletType": "Choisir le type de portefeuille",
   "nwcWalletTypeTitle": "Nostr Wallet Connect",
@@ -361,51 +355,15 @@
     }
   },
   "budgetDaily": "Quotidien",
-  "@budgetDaily": {
-    "description": "Daily budget renewal period"
-  },
   "budgetWeekly": "Hebdomadaire",
-  "@budgetWeekly": {
-    "description": "Weekly budget renewal period"
-  },
   "budgetMonthly": "Mensuel",
-  "@budgetMonthly": {
-    "description": "Monthly budget renewal period"
-  },
   "budgetYearly": "Annuel",
-  "@budgetYearly": {
-    "description": "Yearly budget renewal period"
-  },
   "budgetNever": "Jamais",
-  "@budgetNever": {
-    "description": "Never renews budget"
-  },
   "renameWallet": "Renommer",
-  "@renameWallet": {
-    "description": "Label for rename wallet option"
-  },
   "pickColor": "Choisir une couleur",
-  "@pickColor": {
-    "description": "Label for pick color option"
-  },
   "deleteWallet": "Supprimer",
-  "@deleteWallet": {
-    "description": "Label for delete wallet option"
-  },
   "walletName": "Nom du portefeuille",
-  "@walletName": {
-    "description": "Label for wallet name input"
-  },
   "walletNameHint": "Saisir le nom du portefeuille",
-  "@walletNameHint": {
-    "description": "Hint for wallet name input"
-  },
   "save": "Enregistrer",
-  "@save": {
-    "description": "Label for save action"
-  },
-  "walletRenamed": "Portefeuille renommé",
-  "@walletRenamed": {
-    "description": "Message shown when wallet is renamed"
-  }
+  "walletRenamed": "Portefeuille renommé"
 }

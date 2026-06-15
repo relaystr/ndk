@@ -8,10 +8,12 @@ import 'package:intl/intl.dart' as intl;
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
+import 'app_localizations_fi.dart';
 import 'app_localizations_fr.dart';
 import 'app_localizations_it.dart';
 import 'app_localizations_ja.dart';
 import 'app_localizations_pl.dart';
+import 'app_localizations_pt.dart';
 import 'app_localizations_ru.dart';
 import 'app_localizations_zh.dart';
 
@@ -104,10 +106,13 @@ abstract class AppLocalizations {
     Locale('de'),
     Locale('en'),
     Locale('es'),
+    Locale('fi'),
     Locale('fr'),
     Locale('it'),
     Locale('ja'),
     Locale('pl'),
+    Locale('pt'),
+    Locale('pt', 'BR'),
     Locale('ru'),
     Locale('zh'),
   ];
@@ -232,11 +237,11 @@ abstract class AppLocalizations {
   /// **'Show nostr connect qrcode'**
   String get showNostrConnectQrcode;
 
-  /// Button text to login with Amber
+  /// Button text to login with an external Nostr signer app
   ///
   /// In en, this message translates to:
-  /// **'Login with amber'**
-  String get loginWithAmber;
+  /// **'Login with signer app'**
+  String get loginWithSignerApp;
 
   /// Title for nostr connect URL dialog
   ///
@@ -2179,10 +2184,12 @@ class _AppLocalizationsDelegate
     'de',
     'en',
     'es',
+    'fi',
     'fr',
     'it',
     'ja',
     'pl',
+    'pt',
     'ru',
     'zh',
   ].contains(locale.languageCode);
@@ -2192,6 +2199,18 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'pt':
+      {
+        switch (locale.countryCode) {
+          case 'BR':
+            return AppLocalizationsPtBr();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'de':
@@ -2200,6 +2219,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEn();
     case 'es':
       return AppLocalizationsEs();
+    case 'fi':
+      return AppLocalizationsFi();
     case 'fr':
       return AppLocalizationsFr();
     case 'it':
@@ -2208,6 +2229,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsJa();
     case 'pl':
       return AppLocalizationsPl();
+    case 'pt':
+      return AppLocalizationsPt();
     case 'ru':
       return AppLocalizationsRu();
     case 'zh':

@@ -17,7 +17,7 @@ class NLogin extends StatefulWidget {
   final bool enableNsecLogin;
   final bool enableNip07Login;
   final bool enableBunkerLogin;
-  final bool enableAmberLogin;
+  final bool enableSignerAppLogin;
   final bool enablePubkeyLogin;
   final NostrConnect? nostrConnect;
   final String? nsecLabelText;
@@ -36,7 +36,7 @@ class NLogin extends StatefulWidget {
     this.enableNsecLogin = true,
     this.enableNip07Login = true,
     this.enableBunkerLogin = true,
-    this.enableAmberLogin = true,
+    this.enableSignerAppLogin = true,
     this.enablePubkeyLogin = true,
     this.nostrConnect,
     this.nsecLabelText,
@@ -250,14 +250,13 @@ class _NLoginState extends State<NLogin> {
       ),
     );
 
-    final amberView = Padding(
+    final signerAppView = Padding(
       padding: EdgeInsetsGeometry.only(bottom: bottomPadding),
-      child: FilledButton.icon(
-        onPressed: controller.isWaitingForAmber
+      child: FilledButton(
+        onPressed: controller.isWaitingForExternalSigner
             ? null
-            : controller.loginWithAmber,
-        label: Text(AppLocalizations.of(context)!.loginWithAmber),
-        icon: Icon(Icons.diamond),
+            : controller.loginWithExternalSigner,
+        child: Text(AppLocalizations.of(context)!.loginWithSignerApp),
       ),
     );
 
@@ -272,7 +271,7 @@ class _NLoginState extends State<NLogin> {
         if (widget.enableNip07Login && kIsWeb) nip07View,
         if (widget.enableBunkerLogin || widget.enableNostrConnectLogin)
           bunkerView,
-        if (widget.enableAmberLogin && isAndroid) amberView,
+        if (widget.enableSignerAppLogin && isAndroid) signerAppView,
         if (widget.enableAccountCreation) createAccountView,
       ],
     );

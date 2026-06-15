@@ -1,3 +1,28 @@
+## 0.8.4-dev.6
+
+ - **FIX**(ndk_flutter): correct logic for external signer installation check.
+ - **FIX**(ndk_flutter): detect NIP-55 signers generically.
+ - **FIX**: reset state on fail.
+ - **FEAT**: vendor NIP-55 external signer, drop dead amberflutter dep.
+
+## 0.8.4-dev.5
+
+ - **FIX**: ecash wallet adding navigation bug.
+ - **FEAT**: use StringColor for avatar and banner colors.
+ - **FEAT**: add StringColor deterministic color utility.
+
+## 0.8.4-dev.4
+
+ - **FIX**: ecash wallet adding navigation bug.
+ - **FEAT**: use StringColor for avatar and banner colors.
+ - **FEAT**: add StringColor deterministic color utility.
+
+## 0.8.4-dev.3
+
+ - **FEAT**: add Portuguese and Brazilian Portuguese translations.
+ - **FEAT**: add localization configuration for Flutter.
+ - **FEAT**: add Finnish (fi) and Portuguese (pt) locales.
+
 ## 0.8.4-dev.2
 
  - Update a dependency to the latest release.
