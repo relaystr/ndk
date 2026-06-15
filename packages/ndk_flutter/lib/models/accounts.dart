@@ -23,7 +23,7 @@ class NostrWidgetsAccounts {
   }
 }
 
-enum AccountKinds { nip07, amber, bunker, pubkey, privkey }
+enum AccountKinds { nip07, nip55, bunker, pubkey, privkey }
 
 class NostrAccount {
   AccountKinds kind;
@@ -41,9 +41,12 @@ class NostrAccount {
   }
 
   factory NostrAccount.fromJson(Map<String, dynamic> json) {
+    // Legacy: NIP-55 external-signer accounts were stored as 'amber' before
+    // the rename to the protocol-generic 'nip55'.
+    final kindName = json['kind'] == 'amber' ? 'nip55' : json['kind'];
     return NostrAccount(
       kind: AccountKinds.values.firstWhere(
-        (e) => e.toString().split('.').last == json['kind'],
+        (e) => e.toString().split('.').last == kindName,
       ),
       pubkey: json['pubkey'],
       signerSeed: json['signerSeed'],

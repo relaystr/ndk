@@ -71,7 +71,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get showNostrConnectQrcode => 'Mostra QR code Nostr Connect';
 
   @override
-  String get loginWithAmber => 'Accedi con Amber';
+  String get loginWithSignerApp => 'Accedi con app di firma';
 
   @override
   String get nostrConnectUrl => 'URL Nostr Connect';

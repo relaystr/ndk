@@ -16,7 +16,7 @@ import 'package:protocol_handler/protocol_handler.dart';
 import 'l10n/generated/sample_app_localizations.dart';
 
 
-bool amberAvailable = false;
+bool signerAppAvailable = false;
 
 late Ndk ndk;
 final ndkFlutter = NdkFlutter(ndk: ndk);
@@ -32,10 +32,10 @@ Future<void> main() async {
   }
 
   try {
-    final amber = Amberflutter();
-    amberAvailable = await amber.isAppInstalled();
+    const signer = Nip55Signer();
+    signerAppAvailable = await signer.isAppInstalled();
   } catch (e) {
-    // not on android or amber not installed
+    // not on android or no signer app installed
   }
 
   final cacheManager = kIsWeb

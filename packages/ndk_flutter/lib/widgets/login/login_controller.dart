@@ -1,4 +1,3 @@
-import 'package:amberflutter/amberflutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
@@ -40,10 +39,10 @@ class LoginController extends ChangeNotifier {
   bool isNostrConnectDialogOpen = false;
   List<ToastificationItem> challengeToasts = [];
 
-  bool _isWaitingForAmber = false;
-  bool get isWaitingForAmber => _isWaitingForAmber;
-  set isWaitingForAmber(bool value) {
-    _isWaitingForAmber = value;
+  bool _isWaitingForExternalSigner = false;
+  bool get isWaitingForExternalSigner => _isWaitingForExternalSigner;
+  set isWaitingForExternalSigner(bool value) {
+    _isWaitingForExternalSigner = value;
     notifyListeners();
   }
 
@@ -95,35 +94,39 @@ class LoginController extends ChangeNotifier {
     }
   }
 
-  Future<void> loginWithAmber() async {
-    isWaitingForAmber = true;
+  Future<void> loginWithExternalSigner() async {
+    isWaitingForExternalSigner = true;
+    try {
+      const signer = Nip55Signer();
 
-    final amber = Amberflutter();
+      final isInstalled = await signer.isAppInstalled();
 
-    final isAmberInstalled = await amber.isAppInstalled();
+      if (!isInstalled) {
+        isWaitingForExternalSigner = false;
+        launchUrl(Uri.parse('https://github.com/greenart7c3/Amber'));
+        return;
+      }
 
-    if (!isAmberInstalled) {
-      launchUrl(Uri.parse('https://github.com/greenart7c3/Amber'));
-      return;
+      final loginResult = await signer.login();
+      if (loginResult == null) {
+        isWaitingForExternalSigner = false;
+        return;
+      }
+
+      final externalSigner = Nip55EventSigner(
+        publicKey: loginResult.pubkey,
+        // pin the signer captured at login so later requests can be silent
+        nip55Signer: Nip55Signer(package: loginResult.package),
+      );
+
+      ndk.accounts.loginExternalSigner(signer: externalSigner);
+
+      isWaitingForExternalSigner = false;
+
+      await loggedIn();
+    } finally {
+      isWaitingForExternalSigner = false;
     }
-
-    final amberFlutterDS = AmberFlutterDS(amber);
-
-    final amberResponse = await amber.getPublicKey();
-
-    final npub = amberResponse['signature'];
-    final pubkey = Nip19.decode(npub);
-
-    final amberSigner = AmberEventSigner(
-      publicKey: pubkey,
-      amberFlutterDS: amberFlutterDS,
-    );
-
-    ndk.accounts.loginExternalSigner(signer: amberSigner);
-
-    isWaitingForAmber = false;
-
-    await loggedIn();
   }
 
   Future<void> loggedIn() async {
@@ -149,6 +152,11 @@ class LoginController extends ChangeNotifier {
         // authCallback: (challenge) => showBunkerAuthToast(challenge),
       );
 
+      if (!context.mounted) {
+        isNostrConnectDialogOpen = false;
+        return;
+      }
+
       if (isNostrConnectDialogOpen) {
         Navigator.of(context).pop();
         isNostrConnectDialogOpen = false;
@@ -158,6 +166,11 @@ class LoginController extends ChangeNotifier {
 
       await loggedIn();
     } catch (e) {
+      if (!context.mounted) {
+        isNostrConnectDialogOpen = false;
+        return;
+      }
+
       if (isNostrConnectDialogOpen) {
         Navigator.of(context).pop();
         isNostrConnectDialogOpen = false;

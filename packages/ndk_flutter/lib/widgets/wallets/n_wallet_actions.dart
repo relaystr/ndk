@@ -135,7 +135,9 @@ class _NWalletActionsState extends State<NWalletActions>
                         icon: const Icon(Icons.send),
                         label: Text(l10n.send),
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: buttonPadding),
+                          padding: EdgeInsets.symmetric(
+                            vertical: buttonPadding,
+                          ),
                         ),
                       ),
                     ),
@@ -148,7 +150,9 @@ class _NWalletActionsState extends State<NWalletActions>
                         icon: const Icon(Icons.download),
                         label: Text(l10n.receive),
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: buttonPadding),
+                          padding: EdgeInsets.symmetric(
+                            vertical: buttonPadding,
+                          ),
                         ),
                       ),
                     ),

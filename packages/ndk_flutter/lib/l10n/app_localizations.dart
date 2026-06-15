@@ -237,11 +237,11 @@ abstract class AppLocalizations {
   /// **'Show nostr connect qrcode'**
   String get showNostrConnectQrcode;
 
-  /// Button text to login with Amber
+  /// Button text to login with an external Nostr signer app
   ///
   /// In en, this message translates to:
-  /// **'Login with amber'**
-  String get loginWithAmber;
+  /// **'Login with signer app'**
+  String get loginWithSignerApp;
 
   /// Title for nostr connect URL dialog
   ///

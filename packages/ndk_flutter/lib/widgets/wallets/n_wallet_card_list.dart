@@ -3,7 +3,6 @@ import 'package:ndk/entities.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
-import 'n_wallet_card.dart';
 
 /// Reorderable list of wallet cards backed by `ndk.wallets.walletsStream`.
 class NWalletCardList extends StatefulWidget {
@@ -170,9 +169,6 @@ class _NWalletCardListState extends State<NWalletCardList> {
     if (widget.showAddWalletCard && newIndex == walletCount) {
       newIndex = walletCount - 1;
     }
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
     if (newIndex < 0 || newIndex >= walletCount || oldIndex == newIndex) {
       return;
     }
@@ -231,7 +227,7 @@ class _NWalletCardListState extends State<NWalletCardList> {
           itemCount: itemCount,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           buildDefaultDragHandles: false,
-          onReorder: (oldIndex, newIndex) =>
+          onReorderItem: (oldIndex, newIndex) =>
               _handleReorder(oldIndex, newIndex, orderedWallets),
           itemBuilder: (context, index) {
             if (widget.showAddWalletCard && index == orderedWallets.length) {

@@ -71,7 +71,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showNostrConnectQrcode => '显示 nostr connect 二维码';
 
   @override
-  String get loginWithAmber => '使用 Amber 登录';
+  String get loginWithSignerApp => '使用签名应用登录';
 
   @override
   String get nostrConnectUrl => 'Nostr 连接 URL';

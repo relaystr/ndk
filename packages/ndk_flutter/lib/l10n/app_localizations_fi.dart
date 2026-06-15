@@ -71,7 +71,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get showNostrConnectQrcode => 'Näytä Nostr Connect -QR-koodi';
 
   @override
-  String get loginWithAmber => 'Kirjaudu Amberilla';
+  String get loginWithSignerApp => 'Kirjaudu allekirjoitussovelluksella';
 
   @override
   String get nostrConnectUrl => 'Nostr Connect -URL';
