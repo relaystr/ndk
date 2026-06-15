@@ -911,14 +911,15 @@ class RelayManager<T> {
       return;
     }
 
-    // Get account to authenticate (use the event's author)
-    Account? account;
+    // Prefer authenticating as the event author. Gift wraps and other
+    // ephemeral-author events may not have a matching account, so fall back to
+    // the currently logged-in account when needed.
+    Account? account = _accounts?.accounts[eventToResend.pubKey];
     final loggedAccount = _accounts?.getLoggedAccount();
-    if (loggedAccount != null && loggedAccount.pubkey == eventToResend.pubKey) {
+    if ((account == null || !account.signer.canSign()) &&
+        loggedAccount != null &&
+        loggedAccount.pubkey != account?.pubkey) {
       account = loggedAccount;
-    } else {
-      // Try to find an account that matches the event author
-      account = _accounts?.accounts[eventToResend.pubKey];
     }
 
     if (account == null || !account.signer.canSign()) {
