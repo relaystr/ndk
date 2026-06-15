@@ -15,6 +15,38 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk_drift` - `v0.1.1-dev.7`](#ndk_drift---v011-dev7)
+ - [`ndk_flutter` - `v0.8.4-dev.7`](#ndk_flutter---v084-dev7)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.7`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.7`
+
+ - **FIX**(ndk_flutter): correct logic for external signer installation check.
+ - **FIX**(ndk_flutter): detect NIP-55 signers generically.
+ - **FIX**: reset state on fail.
+ - **FEAT**: vendor NIP-55 external signer, drop dead amberflutter dep.
+
+
+## 2026-06-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk_drift` - `v0.1.1-dev.6`](#ndk_drift---v011-dev6)
  - [`ndk_flutter` - `v0.8.4-dev.6`](#ndk_flutter---v084-dev6)
 

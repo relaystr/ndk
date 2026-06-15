@@ -1,3 +1,10 @@
+## 0.8.4-dev.7
+
+ - **FIX**(ndk_flutter): correct logic for external signer installation check.
+ - **FIX**(ndk_flutter): detect NIP-55 signers generically.
+ - **FIX**: reset state on fail.
+ - **FEAT**: vendor NIP-55 external signer, drop dead amberflutter dep.
+
 ## 0.8.4-dev.6
 
  - **FIX**(ndk_flutter): correct logic for external signer installation check.
