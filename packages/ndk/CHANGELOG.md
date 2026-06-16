@@ -1,3 +1,7 @@
+## 0.8.4-dev.5
+
+ - **FIX**: broadcast mock relay events to live subscriptions.
+
 ## 0.8.4-dev.4
 
  - **FIX**: add cashu preflight checks to wallet init.
