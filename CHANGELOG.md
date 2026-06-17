@@ -3,6 +3,50 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-06-17
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.5`](#ndk---v084-dev5)
+ - [`ndk_drift` - `v0.1.1-dev.7`](#ndk_drift---v011-dev7)
+ - [`ndk_flutter` - `v0.8.4-dev.7`](#ndk_flutter---v084-dev7)
+ - [`ndk_objectbox` - `v0.2.12-dev.5`](#ndk_objectbox---v0212-dev5)
+ - [`nip07_event_signer` - `v1.1.0-dev.5`](#nip07_event_signer---v110-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.5`
+ - `nip07_event_signer` - `v1.1.0-dev.5`
+
+---
+
+#### `ndk` - `v0.8.4-dev.5`
+
+ - **FIX**: fallback to logged account for broadcast auth.
+ - **FIX**: broadcast mock relay events to live subscriptions.
+
+#### `ndk_drift` - `v0.1.1-dev.7`
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.7`
+
+ - **FIX**(ndk_flutter): require pretty_qr_code 3.6.0.
+
+
 ## 2026-06-15
 
 ### Changes

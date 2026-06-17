@@ -1,3 +1,7 @@
+## 0.8.4-dev.7
+
+ - **FIX**(ndk_flutter): require pretty_qr_code 3.6.0.
+
 ## 0.8.4-dev.6
 
  - **FIX**(ndk_flutter): correct logic for external signer installation check.

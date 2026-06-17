@@ -1,3 +1,8 @@
+## 0.8.4-dev.5
+
+ - **FIX**: fallback to logged account for broadcast auth.
+ - **FIX**: broadcast mock relay events to live subscriptions.
+
 ## 0.8.4-dev.4
 
  - **FIX**: add cashu preflight checks to wallet init.
