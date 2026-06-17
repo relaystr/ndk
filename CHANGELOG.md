@@ -15,6 +15,48 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.8.4-dev.6`](#ndk---v084-dev6)
+ - [`ndk_drift` - `v0.1.1-dev.8`](#ndk_drift---v011-dev8)
+ - [`ndk_flutter` - `v0.8.4-dev.8`](#ndk_flutter---v084-dev8)
+ - [`ndk_objectbox` - `v0.2.12-dev.6`](#ndk_objectbox---v0212-dev6)
+ - [`nip07_event_signer` - `v1.1.0-dev.6`](#nip07_event_signer---v110-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.6`
+ - `nip07_event_signer` - `v1.1.0-dev.6`
+
+---
+
+#### `ndk` - `v0.8.4-dev.6`
+
+ - **FIX**: fallback to logged account for broadcast auth.
+ - **FIX**: broadcast mock relay events to live subscriptions.
+
+#### `ndk_drift` - `v0.1.1-dev.8`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.8`
+
+ - **FIX**(ndk_flutter): require pretty_qr_code 3.6.0.
+
+
+## 2026-06-17
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.8.4-dev.5`](#ndk---v084-dev5)
  - [`ndk_drift` - `v0.1.1-dev.7`](#ndk_drift---v011-dev7)
  - [`ndk_flutter` - `v0.8.4-dev.7`](#ndk_flutter---v084-dev7)

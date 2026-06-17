@@ -1,3 +1,8 @@
+## 0.1.1-dev.8
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
 ## 0.1.1-dev.7
 
  - **REVERT**: seperate cache manger package.
