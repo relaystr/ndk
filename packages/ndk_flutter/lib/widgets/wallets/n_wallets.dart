@@ -64,6 +64,9 @@ class NWallets extends StatefulWidget {
   /// Optional coordinator for handling the Alby Go NWC connection flow.
   final NwcWalletAuthCoordinator? nwcWalletAuthCoordinator;
 
+  /// Optional host-provided scanner for NWC QR codes.
+  final NwcUriScanner? nwcUriScanner;
+
   /// Custom icon configuration for Cashu wallets
   final WalletIconConfig? cashuIcon;
 
@@ -94,6 +97,7 @@ class NWallets extends StatefulWidget {
     this.onWalletSelected,
     this.albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
     this.nwcWalletAuthCoordinator,
+    this.nwcUriScanner,
     this.cashuIcon,
     this.nwcIcon,
     this.lnurlIcon,
@@ -262,6 +266,7 @@ class NWalletsState extends State<NWallets> {
       widget.ndkFlutter,
       albyGoConnectConfig: widget.albyGoConnectConfig,
       nwcWalletAuthCoordinator: _nwcWalletAuthCoordinator,
+      nwcUriScanner: widget.nwcUriScanner,
     );
   }
 }
