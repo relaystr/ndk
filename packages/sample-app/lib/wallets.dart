@@ -3,6 +3,7 @@ import 'package:ndk_demo/l10n/app_localizations_context.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import 'main.dart';
+import 'nwc_qr_scanner.dart';
 
 class WalletsPage extends StatefulWidget {
   final String? initialUrl;
@@ -68,7 +69,11 @@ class WalletsPageState extends State<WalletsPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.tabWallets)),
-      body: NWallets(key: _walletsKey, ndkFlutter: ndkFlutter),
+      body: NWallets(
+        key: _walletsKey,
+        ndkFlutter: ndkFlutter,
+        nwcUriScanner: scanNwcUri,
+      ),
     );
   }
 }
