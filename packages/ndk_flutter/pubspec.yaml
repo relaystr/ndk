@@ -17,7 +17,7 @@ platforms:
 
 environment:
   sdk: ^3.9.0
-  flutter: ">=1.17.0"
+  flutter: ">=1.20.0"
 
 resolution: workspace
 
