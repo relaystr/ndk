@@ -449,6 +449,10 @@ class MockRelay {
         }
       }
 
+      eventsForThisFilter = eventsForThisFilter
+          .where((event) => _matchesTagFilters(event, filter))
+          .toList();
+
       // Apply limit per filter - sort by created_at desc and take limit
       if (filter.limit != null && eventsForThisFilter.length > filter.limit!) {
         eventsForThisFilter.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -593,29 +597,22 @@ class MockRelay {
       return false;
     }
 
-    // Check #p tag filter
-    if (filter.pTags != null) {
-      List<String> eventPTags = event.tags
-          .where((tag) => tag.isNotEmpty && tag[0] == 'p')
-          .map((tag) => tag[1])
-          .toList();
-      if (!filter.pTags!.any((pTag) => eventPTags.contains(pTag))) {
-        return false;
-      }
-    }
+    return _matchesTagFilters(event, filter);
+  }
 
-    // Check #e tag filter
-    if (filter.eTags != null) {
-      List<String> eventETags = event.tags
-          .where((tag) => tag.isNotEmpty && tag[0] == 'e')
-          .map((tag) => tag[1])
-          .toList();
-      if (!filter.eTags!.any((eTag) => eventETags.contains(eTag))) {
-        return false;
-      }
-    }
+  bool _matchesTagFilters(Nip01Event event, Filter filter) {
+    if (filter.tags == null) return true;
 
-    return true;
+    return filter.tags!.entries.every((filterTag) {
+      final tagName = filterTag.key.startsWith('#')
+          ? filterTag.key.substring(1)
+          : filterTag.key;
+
+      return event.tags.any((eventTag) =>
+          eventTag.length > 1 &&
+          eventTag[0] == tagName &&
+          filterTag.value.contains(eventTag[1]));
+    });
   }
 
   Future<void> stopServer() async {
