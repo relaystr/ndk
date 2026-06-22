@@ -1,0 +1,161 @@
+import 'package:ndk/entities.dart';
+import 'package:test/test.dart';
+
+void main() {
+  group('CachedEventRecord', () {
+    test('derives replaceable coordinate and expiration fields', () {
+      final event = Nip01Event(
+        id: 'event-1',
+        pubKey: 'pubkey-1',
+        createdAt: 1700000000,
+        kind: 30023,
+        tags: const [
+          ['d', 'article-1'],
+          ['expiration', '1700009999'],
+        ],
+        content: 'hello',
+        sig: 'sig-1',
+        sources: ['wss://b', 'wss://a'],
+      );
+
+      final record = CachedEventRecord.fromEvent(
+        event,
+        seenAt: 1700000100,
+      );
+
+      expect(record.eventId, event.id);
+      expect(record.dTag, 'article-1');
+      expect(record.coordinateKey, '30023:pubkey-1:article-1');
+      expect(record.isReplaceable, isTrue);
+      expect(record.isAddressable, isTrue);
+      expect(record.expirationAt, 1700009999);
+      expect(record.sourceRelays, ['wss://a', 'wss://b']);
+      expect(record.firstSeenAt, 1700000100);
+      expect(record.lastSeenAt, 1700000100);
+    });
+
+    test('round trips through json', () {
+      final event = Nip01Event(
+        id: 'event-2',
+        pubKey: 'pubkey-2',
+        createdAt: 1700000001,
+        kind: 1,
+        tags: const [],
+        content: 'hi',
+        sig: 'sig-2',
+      );
+
+      final original = CachedEventRecord.fromEvent(
+        event,
+        sourceRelays: const ['wss://relay.example'],
+        seenAt: 1700000200,
+        localOrigin: true,
+        localCreatedAt: 1700000190,
+      ).copyWith(
+        deletedByEventId: 'delete-1',
+        deletedAt: 1700000300,
+      );
+
+      final restored = CachedEventRecord.fromJson(original.toJson());
+
+      expect(restored.toJson(), original.toJson());
+      expect(restored.isDeleted, isTrue);
+    });
+
+    test('uses lower event id as tie breaker for replaceable events', () {
+      final older = CachedEventRecord.fromEvent(
+        Nip01Event(
+          id: 'bbbb',
+          pubKey: 'pubkey-3',
+          createdAt: 1700000002,
+          kind: 10002,
+          tags: const [],
+          content: 'older',
+          sig: 'sig-3',
+        ),
+      );
+
+      final newer = CachedEventRecord.fromEvent(
+        Nip01Event(
+          id: 'aaaa',
+          pubKey: 'pubkey-3',
+          createdAt: 1700000002,
+          kind: 10002,
+          tags: const [],
+          content: 'newer',
+          sig: 'sig-4',
+        ),
+      );
+
+      expect(CachedEventRecord.isMoreRecentThan(newer, older), isTrue);
+      expect(CachedEventRecord.isMoreRecentThan(older, newer), isFalse);
+    });
+  });
+
+  group('EventDeliveryRecord', () {
+    test('tracks pending targets and target updates', () {
+      final record = EventDeliveryRecord(
+        eventId: 'event-3',
+        createdAt: 1700001000,
+        updatedAt: 1700001000,
+        targets: const [
+          RelayDeliveryTarget(
+            relayUrl: 'wss://write.example',
+            reason: RelayDeliveryReason.authorWrite,
+          ),
+          RelayDeliveryTarget(
+            relayUrl: 'wss://read.example',
+            reason: RelayDeliveryReason.replyAuthorRead,
+          ),
+        ],
+      );
+
+      final updated = record.updateTarget(
+        'wss://write.example',
+        (target) => target.copyWith(
+          state: RelayDeliveryState.acked,
+          attemptCount: 1,
+          lastOkMessage: 'duplicate: already have this event',
+        ),
+        updatedAt: 1700001010,
+      );
+
+      expect(updated.targets.first.state, RelayDeliveryState.acked);
+      expect(updated.targets.last.state, RelayDeliveryState.pending);
+      expect(updated.hasPendingTargets, isTrue);
+      expect(updated.updatedAt, 1700001010);
+    });
+
+    test('round trips through json', () {
+      final original = EventDeliveryRecord(
+        eventId: 'event-4',
+        status: EventDeliveryStatus.partiallyDelivered,
+        createdAt: 1700002000,
+        updatedAt: 1700002010,
+        signedAt: 1700002005,
+        requiresNetworkSigner: true,
+        targets: const [
+          RelayDeliveryTarget(
+            relayUrl: 'wss://relay.one',
+            reason: RelayDeliveryReason.authorWrite,
+            state: RelayDeliveryState.acked,
+            attemptCount: 1,
+          ),
+          RelayDeliveryTarget(
+            relayUrl: 'wss://relay.two',
+            reason: RelayDeliveryReason.explicit,
+            state: RelayDeliveryState.transientFailure,
+            attemptCount: 2,
+            nextRetryAt: 1700003000,
+            lastError: 'timeout',
+          ),
+        ],
+      );
+
+      final restored = EventDeliveryRecord.fromJson(original.toJson());
+
+      expect(restored.toJson(), original.toJson());
+      expect(restored.isComplete, isFalse);
+    });
+  });
+}
