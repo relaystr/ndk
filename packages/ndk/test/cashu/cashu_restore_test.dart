@@ -12,7 +12,8 @@ const mockMintUrl = 'http://mock.mint';
 
 void main() {
   group('Cashu Restore Tests', () {
-    test('restore - fund wallet1 and restore to wallet2 with real mint',
+    // cannot test real external mints on tests
+    test(skip:true, 'restore - fund wallet1 and restore to wallet2 with real mint',
         () async {
       // Create a shared seed phrase for both wallets
       final seedPhrase = CashuSeed.generateSeedPhrase();
@@ -186,6 +187,6 @@ void main() {
 
       httpClient1.close();
       httpClient2.close();
-    }, skip: false);
+    });
   });
 }

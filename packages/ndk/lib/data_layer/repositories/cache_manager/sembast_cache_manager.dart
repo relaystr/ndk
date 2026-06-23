@@ -2,6 +2,7 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
 import '../../../shared/nips/nip01/event_kind_classification.dart';
+import '../../../shared/nips/nip01/helpers.dart';
 import 'ndk_extensions.dart';
 
 // Platform-specific imports
@@ -81,6 +82,14 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<ContactList?> loadContactList(String pubKey) async {
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: ContactList.kKind,
+    );
+    if (event != null) {
+      return ContactList.fromEvent(event);
+    }
+
     final data = await _contactListStore.record(pubKey).get(_database);
     if (data == null) return null;
     return ContactListExtension.fromJsonStorage(data);
@@ -400,6 +409,16 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<Metadata?> loadMetadata(String pubKey) async {
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: Metadata.kKind,
+    );
+    if (event != null) {
+      final metadata = Metadata.fromEvent(event);
+      metadata.refreshedTimestamp = Helpers.now;
+      return metadata;
+    }
+
     final data = await _metadataStore.record(pubKey).get(_database);
     if (data == null) return null;
     return MetadataExtension.fromJsonStorage(data);
@@ -407,11 +426,7 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
-    final snapshots = await _metadataStore.records(pubKeys).get(_database);
-    return snapshots.map((data) {
-      if (data == null) return null;
-      return MetadataExtension.fromJsonStorage(data);
-    }).toList();
+    return Future.wait(pubKeys.map(loadMetadata));
   }
 
   @override
@@ -452,13 +467,20 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<UserRelayList?> loadUserRelayList(String pubKey) async {
     final data = await _relayListStore.record(pubKey).get(_database);
-    if (data == null) return null;
-    return UserRelayListExtension.fromJsonStorage(data);
+    if (data != null) {
+      return UserRelayListExtension.fromJsonStorage(data);
+    }
+
+    await _refreshUserRelayListProjection(pubKey);
+    final refreshed = await _relayListStore.record(pubKey).get(_database);
+    if (refreshed == null) return null;
+    return UserRelayListExtension.fromJsonStorage(refreshed);
   }
 
   @override
   Future<void> removeAllContactLists() async {
     await _contactListStore.delete(_database);
+    await removeEvents(kinds: [ContactList.kKind]);
   }
 
   @override
@@ -467,6 +489,7 @@ class SembastCacheManager extends CacheManager {
     await _eventSourceStore.delete(_database);
     await _eventDeliveryStore.delete(_database);
     await _relayDeliveryTargetStore.delete(_database);
+    await _relayListStore.delete(_database);
   }
 
   @override
@@ -488,11 +511,15 @@ class SembastCacheManager extends CacheManager {
       await removeEventDeliveryRecord(eventId);
       await removeRelayDeliveryTargets(eventId);
     }
+    await _contactListStore.record(pubKey).delete(_database);
+    await _metadataStore.record(pubKey).delete(_database);
+    await _refreshUserRelayListProjection(pubKey);
   }
 
   @override
   Future<void> removeAllMetadatas() async {
     await _metadataStore.delete(_database);
+    await removeEvents(kinds: [Metadata.kKind]);
   }
 
   @override
@@ -513,14 +540,19 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<void> removeContactList(String pubKey) async {
     await _contactListStore.record(pubKey).delete(_database);
+    await removeEvents(pubKeys: [pubKey], kinds: [ContactList.kKind]);
   }
 
   @override
   Future<void> removeEvent(String id) async {
+    final removed = await loadEvent(id);
     await _eventsStore.record(id).delete(_database);
     await removeEventSources(id);
     await removeEventDeliveryRecord(id);
     await removeRelayDeliveryTargets(id);
+    if (removed != null) {
+      await _refreshDerivedStateForEvent(removed);
+    }
   }
 
   @override
@@ -605,6 +637,9 @@ class SembastCacheManager extends CacheManager {
         await removeEventDeliveryRecord(event.id);
         await removeRelayDeliveryTargets(event.id);
       }
+      await _refreshDerivedStateForPubKeys(
+        matchingEvents.map((event) => event.pubKey).toSet(),
+      );
     } else {
       // No tags filter, delete directly with finder
       final matchingEvents = await _loadEventsInternal(
@@ -625,12 +660,16 @@ class SembastCacheManager extends CacheManager {
         await removeEventDeliveryRecord(event.id);
         await removeRelayDeliveryTargets(event.id);
       }
+      await _refreshDerivedStateForPubKeys(
+        matchingEvents.map((event) => event.pubKey).toSet(),
+      );
     }
   }
 
   @override
   Future<void> removeMetadata(String pubKey) async {
     await _metadataStore.record(pubKey).delete(_database);
+    await removeEvents(pubKeys: [pubKey], kinds: [Metadata.kKind]);
   }
 
   @override
@@ -651,16 +690,18 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveContactList(ContactList contactList) async {
+    final event = contactList.toEvent();
+    await saveEvent(event);
     await _contactListStore
         .record(contactList.pubKey)
-        .put(_database, contactList.toJsonForStorage());
+        .put(_database, ContactList.fromEvent(event).toJsonForStorage());
   }
 
   @override
   Future<void> saveContactLists(List<ContactList> contactLists) async {
-    final keys = contactLists.map((c) => c.pubKey).toList();
-    final values = contactLists.map((c) => c.toJsonForStorage()).toList();
-    await _contactListStore.records(keys).put(_database, values);
+    for (final contactList in contactLists) {
+      await saveContactList(contactList);
+    }
   }
 
   @override
@@ -668,6 +709,7 @@ class SembastCacheManager extends CacheManager {
     await _eventsStore
         .record(event.id)
         .put(_database, event.toJsonForStorage());
+    await _refreshDerivedStateForEvent(event);
   }
 
   @override
@@ -675,20 +717,27 @@ class SembastCacheManager extends CacheManager {
     final keys = events.map((e) => e.id).toList();
     final values = events.map((e) => e.toJsonForStorage()).toList();
     await _eventsStore.records(keys).put(_database, values);
+    await _refreshDerivedStateForPubKeys(
+      events.map((event) => event.pubKey).toSet(),
+    );
   }
 
   @override
   Future<void> saveMetadata(Metadata metadata) async {
+    final event = metadata.toEvent();
+    await saveEvent(event);
+    final normalized = Metadata.fromEvent(event);
+    normalized.refreshedTimestamp = metadata.refreshedTimestamp;
     await _metadataStore
         .record(metadata.pubKey)
-        .put(_database, metadata.toJsonForStorage());
+        .put(_database, normalized.toJsonForStorage());
   }
 
   @override
   Future<void> saveMetadatas(List<Metadata> metadatas) async {
-    final keys = metadatas.map((m) => m.pubKey).toList();
-    final values = metadatas.map((m) => m.toJsonForStorage()).toList();
-    await _metadataStore.records(keys).put(_database, values);
+    for (final metadata in metadatas) {
+      await saveMetadata(metadata);
+    }
   }
 
   @override
@@ -833,31 +882,138 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
-    sembast.Filter? filter;
-    if (search.isNotEmpty) {
-      final pattern = RegExp.escape(search);
-      filter = sembast.Filter.or([
-        sembast.Filter.matchesRegExp(
-            'name', RegExp(pattern, caseSensitive: false)),
-        sembast.Filter.matchesRegExp(
-            'displayName', RegExp(pattern, caseSensitive: false)),
-        sembast.Filter.matchesRegExp(
-            'about', RegExp(pattern, caseSensitive: false)),
-        sembast.Filter.matchesRegExp(
-            'nip05', RegExp(pattern, caseSensitive: false)),
-      ]);
+    final events = await loadEvents(kinds: [Metadata.kKind]);
+    final normalizedSearch = search.trim().toLowerCase();
+    final matches = events
+        .map((event) => Metadata.fromEvent(event))
+        .where((metadata) {
+          if (normalizedSearch.isEmpty) return true;
+          return metadata.matchesSearch(normalizedSearch) ||
+              (metadata.about?.toLowerCase().contains(normalizedSearch) ??
+                  false) ||
+              (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
+        })
+        .toList()
+      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    return matches.take(limit);
+  }
+
+  Future<Nip01Event?> _loadLatestVisibleEvent({
+    required String pubKey,
+    required int kind,
+  }) async {
+    final events = await loadEvents(pubKeys: [pubKey], kinds: [kind], limit: 1);
+    if (events.isEmpty) return null;
+    return events.first;
+  }
+
+  Future<void> _refreshDerivedStateForEvent(Nip01Event event) async {
+    if (event.kind == ContactList.kKind) {
+      final latest = await _loadLatestVisibleEvent(
+        pubKey: event.pubKey,
+        kind: ContactList.kKind,
+      );
+      if (latest == null) {
+        await _contactListStore.record(event.pubKey).delete(_database);
+      } else {
+        await _contactListStore
+            .record(event.pubKey)
+            .put(_database, ContactList.fromEvent(latest).toJsonForStorage());
+      }
+    } else if (event.kind == Metadata.kKind) {
+      final latest = await _loadLatestVisibleEvent(
+        pubKey: event.pubKey,
+        kind: Metadata.kKind,
+      );
+      if (latest == null) {
+        await _metadataStore.record(event.pubKey).delete(_database);
+      } else {
+        final metadata = Metadata.fromEvent(latest);
+        metadata.refreshedTimestamp = Helpers.now;
+        await _metadataStore
+            .record(event.pubKey)
+            .put(_database, metadata.toJsonForStorage());
+      }
     }
 
-    final finder = sembast.Finder(
-      filter: filter,
-      limit: limit,
-      sortOrders: [sembast.SortOrder('updatedAt', false)],
+    if (_affectsUserRelayListProjection(event.kind)) {
+      await _refreshUserRelayListProjection(event.pubKey);
+    }
+  }
+
+  Future<void> _refreshDerivedStateForPubKeys(Set<String> pubKeys) async {
+    for (final pubKey in pubKeys) {
+      final metadataEvent = await _loadLatestVisibleEvent(
+        pubKey: pubKey,
+        kind: Metadata.kKind,
+      );
+      if (metadataEvent == null) {
+        await _metadataStore.record(pubKey).delete(_database);
+      } else {
+        final metadata = Metadata.fromEvent(metadataEvent);
+        metadata.refreshedTimestamp = Helpers.now;
+        await _metadataStore
+            .record(pubKey)
+            .put(_database, metadata.toJsonForStorage());
+      }
+
+      final contactListEvent = await _loadLatestVisibleEvent(
+        pubKey: pubKey,
+        kind: ContactList.kKind,
+      );
+      if (contactListEvent == null) {
+        await _contactListStore.record(pubKey).delete(_database);
+      } else {
+        await _contactListStore.record(pubKey).put(
+              _database,
+              ContactList.fromEvent(contactListEvent).toJsonForStorage(),
+            );
+      }
+
+      await _refreshUserRelayListProjection(pubKey);
+    }
+  }
+
+  bool _affectsUserRelayListProjection(int kind) {
+    return kind == ContactList.kKind || kind == Nip65.kKind;
+  }
+
+  Future<void> _refreshUserRelayListProjection(String pubKey) async {
+    final events = await loadEvents(
+      pubKeys: [pubKey],
+      kinds: [Nip65.kKind, ContactList.kKind],
     );
 
-    final records = await _metadataStore.find(_database, finder: finder);
-    return records
-        .map((record) => MetadataExtension.fromJsonStorage(record.value))
-        .toList();
+    Nip01Event? latestNip65;
+    Nip01Event? latestContactListWithRelays;
+    for (final event in events) {
+      if (event.kind == Nip65.kKind) {
+        latestNip65 ??= event;
+      } else if (event.kind == ContactList.kKind &&
+          ContactList.relaysFromContent(event).isNotEmpty) {
+        latestContactListWithRelays ??= event;
+      }
+    }
+
+    if (latestNip65 != null) {
+      await _relayListStore.record(pubKey).put(
+            _database,
+            UserRelayList.fromNip65(Nip65.fromEvent(latestNip65))
+                .toJsonForStorage(),
+          );
+      return;
+    }
+
+    if (latestContactListWithRelays != null) {
+      await _relayListStore.record(pubKey).put(
+            _database,
+            UserRelayList.fromNip02EventContent(latestContactListWithRelays)
+                .toJsonForStorage(),
+          );
+      return;
+    }
+
+    await _relayListStore.record(pubKey).delete(_database);
   }
 
   // =====================

@@ -110,16 +110,34 @@ abstract class CacheManager {
   Future<void> removeRelaySet(String name, String pubKey);
   Future<void> removeAllRelaySets();
 
+  @Deprecated(
+    'Use saveEvent()/saveEvents() with kind 3 events; ContactList is now a convenience view over the generic event cache.',
+  )
   Future<void> saveContactList(ContactList contactList);
+  @Deprecated(
+    'Use saveEvent()/saveEvents() with kind 3 events; ContactList is now a convenience view over the generic event cache.',
+  )
   Future<void> saveContactLists(List<ContactList> contactLists);
   Future<ContactList?> loadContactList(String pubKey);
+  @Deprecated(
+    'Use removeEvents(pubKeys: ..., kinds: [ContactList.kKind]); ContactList is now a convenience view over the generic event cache.',
+  )
   Future<void> removeContactList(String pubKey);
   Future<void> removeAllContactLists();
 
+  @Deprecated(
+    'Use saveEvent()/saveEvents() with kind 0 events; Metadata is now a convenience view over the generic event cache.',
+  )
   Future<void> saveMetadata(Metadata metadata);
+  @Deprecated(
+    'Use saveEvent()/saveEvents() with kind 0 events; Metadata is now a convenience view over the generic event cache.',
+  )
   Future<void> saveMetadatas(List<Metadata> metadatas);
   Future<Metadata?> loadMetadata(String pubKey);
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys);
+  @Deprecated(
+    'Use removeEvents(pubKeys: ..., kinds: [Metadata.kKind]); Metadata is now a convenience view over the generic event cache.',
+  )
   Future<void> removeMetadata(String pubKey);
   Future<void> removeAllMetadatas();
 

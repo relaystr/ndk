@@ -49,7 +49,7 @@ class Metadatas {
     Duration idleTimeout = METADATA_IDLE_TIMEOUT,
   }) async {
     Metadata? metadata =
-        !forceRefresh ? await _cacheManager.loadMetadata(pubKey) : null;
+        !forceRefresh ? await _loadCachedMetadata(pubKey) : null;
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
@@ -74,10 +74,10 @@ class Metadatas {
           (metadata == null ||
               loadedMetadata.updatedAt == null ||
               metadata.updatedAt == null ||
-              loadedMetadata.updatedAt! < metadata.updatedAt! ||
+              loadedMetadata.updatedAt! > metadata.updatedAt! ||
               forceRefresh)) {
         loadedMetadata.refreshedTimestamp = Helpers.now;
-        await _cacheManager.saveMetadata(loadedMetadata);
+        await _cacheManager.saveEvent(loadedMetadata.toEvent());
         metadata = loadedMetadata;
       }
     }
@@ -90,7 +90,7 @@ class Metadatas {
     List<String> missingPubKeys = [];
     Map<String, Metadata> metadatas = {};
     for (var pubKey in pubKeys) {
-      Metadata? userMetadata = await _cacheManager.loadMetadata(pubKey);
+      Metadata? userMetadata = await _loadCachedMetadata(pubKey);
       if (userMetadata == null) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
@@ -117,7 +117,7 @@ class Metadatas {
               metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
-            await _cacheManager.saveMetadata(metadatas[event.pubKey]!);
+            await _cacheManager.saveEvent(event);
             if (onLoad != null) {
               onLoad(metadatas[event.pubKey]!);
             }
@@ -174,8 +174,21 @@ class Metadatas {
 
     metadata.updatedAt = Helpers.now;
     metadata.refreshedTimestamp = Helpers.now;
-    await _cacheManager.saveMetadata(metadata);
+    await _cacheManager.saveEvent(metadata.toEvent());
 
+    return metadata;
+  }
+
+  Future<Metadata?> _loadCachedMetadata(String pubKey) async {
+    final events = await _cacheManager.loadEvents(
+      pubKeys: [pubKey],
+      kinds: [Metadata.kKind],
+      limit: 1,
+    );
+    if (events.isEmpty) return null;
+
+    final metadata = Metadata.fromEvent(events.first);
+    metadata.refreshedTimestamp = Helpers.now;
     return metadata;
   }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' show Random;
 
 import 'package:bip340/bip340.dart';
 import 'package:ndk/domain_layer/usecases/bunkers/models/bunker_request.dart';
@@ -14,8 +15,12 @@ import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
 class MockRelay {
+  static final Random _random = Random.secure();
+  static final Set<int> _reservedPorts = <int>{};
+
   String name;
   int? _port;
+  final int? _explicitPort;
   HttpServer? server;
   Map<KeyPair, Nip65>? _nip65s;
   Map<KeyPair, Nip01Event>? textNotes;
@@ -49,10 +54,16 @@ class MockRelay {
       "e7158a4379e743889f8ea8cfcdf4bd904cdfde4ff8a1c545aad4590d8a3acccc";
   static const String remoteSignerPublicKey =
       "52f58988d7aaea17936581db7ff19074633557fad37f354323cea579b1025cef";
-
-  static int _startPort = 4040;
-
   String get url => "ws://localhost:$_port";
+
+  static int _pickRandomPort() {
+    while (true) {
+      final candidate = 20000 + _random.nextInt(40000);
+      if (_reservedPorts.add(candidate)) {
+        return candidate;
+      }
+    }
+  }
 
   List<Nip01Event> matchingEvents(Filter filter) {
     final events = <Nip01Event>{};
@@ -107,14 +118,9 @@ class MockRelay {
     this.rejectFirstEventPublishes = 0,
     this.rejectEventMessage = 'rate-limited: retry later',
     int? explicitPort,
-  }) : _nip65s = nip65s {
-    if (explicitPort != null) {
-      _port = explicitPort;
-    } else {
-      _port = _startPort;
-      _startPort++;
-    }
-  }
+  })  : _nip65s = nip65s,
+        _explicitPort = explicitPort,
+        _port = explicitPort ?? _pickRandomPort();
 
   Future<void> startServer({
     Map<KeyPair, Nip65>? nip65s,
@@ -142,8 +148,11 @@ class MockRelay {
       _nip85Assertions = nip85Assertions;
     }
 
-    var server = await HttpServer.bind(InternetAddress.loopbackIPv4, _port!,
-        shared: true);
+    var server = await HttpServer.bind(
+      InternetAddress.loopbackIPv4,
+      _port!,
+      shared: false,
+    );
     this.server = server;
     var stream = server.transform(WebSocketTransformer());
 
@@ -675,7 +684,9 @@ class MockRelay {
   Future<void> stopServer() async {
     if (server != null) {
       log('Closing server on localhost:$url');
-      await server!.close();
+      await server!.close(force: true);
+      server = null;
+      _clientSubscriptions.clear();
     }
   }
 

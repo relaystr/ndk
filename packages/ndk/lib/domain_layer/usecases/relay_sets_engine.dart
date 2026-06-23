@@ -58,10 +58,13 @@ class RelaySetsEngine implements NetworkEngine {
       return false;
     }
 
-    final connected = await _relayManager.reconnectRelay(request.url,
-        connectionSource:
-            ConnectionSource.explicit // TODO improve this connection source
-        );
+    final explicitRelays = _globalState.inFlightRequests[id]?.request.explicitRelays;
+    final connected = await _relayManager.reconnectRelay(
+      request.url,
+      connectionSource:
+          ConnectionSource.explicit, // TODO improve this connection source
+      force: explicitRelays != null && explicitRelays.contains(request.url),
+    );
     if (connected) {
       RelayConnectivity? relay = _globalState.relays[request.url];
       if (relay != null) {
@@ -172,7 +175,10 @@ class RelaySetsEngine implements NetworkEngine {
 
   @override
   Future<void> handleRequest(RequestState state) async {
-    await _relayManager.seedRelaysConnected;
+    if (state.request.explicitRelays == null ||
+        state.request.explicitRelays!.isEmpty) {
+      await _relayManager.seedRelaysConnected;
+    }
 
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
@@ -358,6 +364,8 @@ class RelaySetsEngine implements NetworkEngine {
       publishEvent: nostrEvent,
       broadcastDoneStream: broadcastState.stateUpdates
           .map((state) => state.broadcasts.values.toList()),
+      broadcastDoneFuture: broadcastState.publishDoneFuture
+          .then((state) => state.broadcasts.values.toList()),
     );
   }
 }

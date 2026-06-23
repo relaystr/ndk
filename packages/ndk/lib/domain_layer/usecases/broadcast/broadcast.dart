@@ -42,6 +42,10 @@ class Broadcast {
     _pendingDelivery = pendingDelivery;
   }
 
+  bool isEventInFlight(String eventId) {
+    return _globalState.inFlightBroadcasts.containsKey(eventId);
+  }
+
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
   EventSigner _checkSinger({EventSigner? customSigner}) {
@@ -76,6 +80,19 @@ class Broadcast {
     );
     // register broadcast state
     _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
+    void cleanupInFlightBroadcastState() {
+      if (identical(
+        _globalState.inFlightBroadcasts[nostrEvent.id],
+        broadcastState,
+      )) {
+        _globalState.inFlightBroadcasts.remove(nostrEvent.id);
+      }
+    }
+
+    broadcastState.publishDoneFuture.then(
+      (_) => cleanupInFlightBroadcastState(),
+      onError: (_, __) => cleanupInFlightBroadcastState(),
+    );
 
     // save event to cache if enabled
     if (mySaveToCache) {
@@ -100,6 +117,7 @@ class Broadcast {
       );
       broadcastState.publishDoneFuture.then(
         pendingDelivery.persistSpecificRelayBroadcastResult,
+        onError: (_, __) {},
       );
     }
 

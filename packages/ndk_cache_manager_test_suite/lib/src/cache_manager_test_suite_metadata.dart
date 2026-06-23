@@ -118,6 +118,27 @@ void _runMetadataTests(CacheManager Function() getCacheManager) {
     expect(loaded!.name, equals('Updated Name'));
   });
 
+  test('loadMetadata reads latest visible generic metadata event', () async {
+    final cacheManager = getCacheManager();
+    final older = Metadata(
+      pubKey: 'metadata_from_event',
+      name: 'Older Name',
+      updatedAt: 1000,
+    ).toEvent();
+    final newer = Metadata(
+      pubKey: 'metadata_from_event',
+      name: 'Newer Name',
+      updatedAt: 2000,
+    ).toEvent();
+
+    await cacheManager.saveEvents([older, newer]);
+
+    final loaded = await cacheManager.loadMetadata('metadata_from_event');
+    expect(loaded, isNotNull);
+    expect(loaded!.name, equals('Newer Name'));
+    expect(loaded.updatedAt, equals(2000));
+  });
+
   test('metadata preserves tags and content', () async {
     final cacheManager = getCacheManager();
     final metadata = Metadata(

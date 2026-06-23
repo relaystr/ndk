@@ -13,6 +13,7 @@ import '../data_layer/repositories/lnurl_http_impl.dart';
 import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
+import '../domain_layer/entities/connection_source.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
 import '../domain_layer/entities/relay_connectivity.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
@@ -213,6 +214,11 @@ class Initialization {
     pendingBroadcastDelivery.startPeriodicRetry(
       connectedRelayUrls: () => relayManager.connectedRelays.map(
         (relay) => relay.url,
+      ),
+      reconnectRelay: (relayUrl) => relayManager.reconnectRelay(
+        relayUrl,
+        connectionSource: ConnectionSource.explicit,
+        force: true,
       ),
       retryInterval: _ndkConfig.pendingDeliveryRetryInterval,
     );

@@ -274,14 +274,15 @@ void main() async {
       final subscription = ndk.requests.subscription(filters: [filter]);
 
       final receivedEvents = <Nip01Event>[];
+      final allReceived = Completer<void>();
       final streamSubscription = subscription.stream.listen((event) {
         receivedEvents.add(event);
+        if (receivedEvents.length >= 4 && !allReceived.isCompleted) {
+          allReceived.complete();
+        }
       });
 
-      // Wait for events to be processed
-      // Previous implementation would fail to process events from subscription
-      // because they would get stuck in the verification buffer
-      await Future.delayed(Duration(milliseconds: 300));
+      await allReceived.future.timeout(const Duration(seconds: 3));
 
       expect(receivedEvents.length, equals(4),
           reason:

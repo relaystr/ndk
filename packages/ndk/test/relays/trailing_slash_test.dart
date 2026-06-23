@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
@@ -9,7 +11,7 @@ void main() {
     late MockRelay relay;
 
     setUp(() async {
-      relay = MockRelay(name: 'test');
+      relay = MockRelay(name: 'test', explicitPort: await _reservePort());
       await relay.startServer();
 
       final ndk = Ndk.emptyBootstrapRelaysConfig();
@@ -336,4 +338,11 @@ void main() {
       ndk.destroy();
     });
   });
+}
+
+Future<int> _reservePort() async {
+  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  final port = socket.port;
+  await socket.close();
+  return port;
 }

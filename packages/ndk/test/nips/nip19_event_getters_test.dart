@@ -96,9 +96,9 @@ void main() {
         final event = Nip01Event(
           pubKey:
               '460c25e682fda7832b52d1f22d3d22b3176d972f60dcdc3212ed8c92ef85065c',
-          kind: 0,
+          kind: 30001,
           tags: [
-            ['d', ''],
+            ['d', 'bla'],
           ],
           content: '{"name":"Alice"}',
           createdAt: 1234567890,
@@ -109,8 +109,8 @@ void main() {
 
         expect(naddr, isNotNull);
         final decoded = Nip19.decodeNaddr(naddr!);
-        expect(decoded.identifier, '');
-        expect(decoded.kind, 0);
+        expect(decoded.identifier, event.getDtag());
+        expect(decoded.kind, event.kind);
       });
 
       test('should return null for non-addressable event', () {
@@ -194,7 +194,7 @@ void main() {
       });
 
       test('should recognize parameterized replaceable event kinds', () {
-        final kinds = [10000, 15000, 19999, 30000, 35000, 39999];
+        final kinds = [30000, 35000, 39999];
         for (final kind in kinds) {
           final event = Nip01Event(
             pubKey: testPubkey,

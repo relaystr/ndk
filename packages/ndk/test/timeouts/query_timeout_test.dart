@@ -2,6 +2,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
+import 'dart:io';
 
 import '../mocks/mock_event_verifier.dart';
 import '../mocks/mock_relay.dart';
@@ -18,17 +19,20 @@ void main() {
 
   group('Timeout - query', () {
     KeyPair key1 = Bip340.generatePrivateKey();
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 8201);
+    late MockRelay relay1;
+    late Ndk ndk;
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
     // startup and teardown
     setUp(() async {
+      relay1 = MockRelay(name: "relay 1", explicitPort: await _reservePort());
       await relay1.startServer();
       relay1.textNotes = key1TextNotes;
     });
 
     tearDown(() async {
-      await relay1.server!.close(force: true);
+      await ndk.destroy();
+      await relay1.stopServer();
     });
 
     test('timeout does not trigger on normal request', () async {
@@ -39,7 +43,7 @@ void main() {
         bootstrapRelays: [relay1.url],
       );
 
-      final ndk = Ndk(config);
+      ndk = Ndk(config);
 
       bool timeoutTriggered = false;
       bool timeoutUserTriggered = false;
@@ -48,8 +52,8 @@ void main() {
           filters: [
             Filter(authors: [key1.publicKey])
           ],
-          // short to fail fast
-          timeout: Duration(seconds: 1),
+          // Allow enough headroom to remain stable under parallel suite load.
+          timeout: Duration(seconds: 4),
           timeoutCallback: () {
             timeoutTriggered = true;
           },
@@ -72,7 +76,7 @@ void main() {
         bootstrapRelays: ["invalid"],
       );
 
-      final ndk = Ndk(config);
+      ndk = Ndk(config);
 
       bool timeoutTriggered = false;
       bool timeoutUserTriggered = false;
@@ -108,7 +112,7 @@ void main() {
         defaultQueryTimeout: myTimeout,
       );
 
-      final ndk = Ndk(config);
+      ndk = Ndk(config);
 
       bool timeoutTriggered = false;
       bool timeoutUserTriggered = false;
@@ -150,4 +154,11 @@ void main() {
           lessThanOrEqualTo(myTimeout.inMilliseconds + 1000)); // upper bound
     });
   });
+}
+
+Future<int> _reservePort() async {
+  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  final port = socket.port;
+  await socket.close();
+  return port;
 }

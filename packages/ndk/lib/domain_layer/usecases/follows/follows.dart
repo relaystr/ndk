@@ -38,7 +38,7 @@ class Follows {
     bool forceRefresh = false,
     Duration idleTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
   }) async {
-    ContactList? contactList = await _cacheManager.loadContactList(pubKey);
+    ContactList? contactList = await _loadCachedContactList(pubKey);
 
     if (contactList != null && !forceRefresh) {
       return contactList;
@@ -66,7 +66,7 @@ class Follows {
             contactList.createdAt < loadedContactList.createdAt)) {
       loadedContactList.loadedTimestamp =
           DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      await _cacheManager.saveContactList(loadedContactList);
+      await _cacheManager.saveEvent(loadedContactList.toEvent());
       contactList = loadedContactList;
     }
 
@@ -79,14 +79,13 @@ class Follows {
   Future<ContactList> _ensureUpToDateContactListOrEmpty(
     String pubkey,
   ) async {
-    ContactList? contactList = await _cacheManager.loadContactList(pubkey);
+    ContactList? contactList = await _loadCachedContactList(pubkey);
     int sometimeAgo = DateTime.now()
             .subtract(kRefreshContactListDuration)
             .millisecondsSinceEpoch ~/
         1000;
     bool refresh = contactList == null ||
-        contactList.loadedTimestamp == null ||
-        contactList.loadedTimestamp! < sometimeAgo;
+        contactList.createdAt < sometimeAgo;
     if (refresh) {
       contactList = await getContactList(pubkey, forceRefresh: true);
     }
@@ -106,14 +105,14 @@ class Follows {
     if (!collection.contains(toAdd)) {
       collection.add(toAdd);
       contactList.loadedTimestamp = Helpers.now;
-      contactList.createdAt = Helpers.now;
+      contactList.createdAt = _nextReplaceableTimestamp(contactList.createdAt);
 
       final bResult = _broadcast.broadcast(
         nostrEvent: contactList.toEvent(),
         specificRelays: customRelays,
       );
       await bResult.broadcastDoneFuture;
-      await _cacheManager.saveContactList(contactList);
+      await _cacheManager.saveEvent(contactList.toEvent());
     }
     return contactList;
   }
@@ -123,14 +122,14 @@ class Follows {
   /// [createdAt] and [loadedTimestamp] are set to the current time
   Future<ContactList> broadcastSetContactList(ContactList contactList) async {
     contactList.loadedTimestamp = Helpers.now;
-    contactList.createdAt = Helpers.now;
+    contactList.createdAt = _nextReplaceableTimestamp(contactList.createdAt);
 
     final bResult = _broadcast.broadcast(
       nostrEvent: contactList.toEvent(),
     );
     await bResult.broadcastDoneFuture;
 
-    await _cacheManager.saveContactList(contactList);
+    await _cacheManager.saveEvent(contactList.toEvent());
     return contactList;
   }
 
@@ -182,16 +181,37 @@ class Follows {
     if (collection.contains(toRemove)) {
       collection.remove(toRemove);
       contactList.loadedTimestamp = Helpers.now;
-      contactList.createdAt = Helpers.now;
+      contactList.createdAt = _nextReplaceableTimestamp(contactList.createdAt);
 
       final bResult = _broadcast.broadcast(
         nostrEvent: contactList.toEvent(),
         specificRelays: customRelays,
       );
       await bResult.broadcastDoneFuture;
-      await _cacheManager.saveContactList(contactList);
+      await _cacheManager.saveEvent(contactList.toEvent());
     }
     return contactList;
+  }
+
+  Future<ContactList?> _loadCachedContactList(String pubKey) async {
+    final events = await _cacheManager.loadEvents(
+      pubKeys: [pubKey],
+      kinds: [ContactList.kKind],
+      limit: 1,
+    );
+    if (events.isEmpty) return null;
+
+    final contactList = ContactList.fromEvent(events.first);
+    contactList.loadedTimestamp = Helpers.now;
+    return contactList;
+  }
+
+  int _nextReplaceableTimestamp(int currentCreatedAt) {
+    final now = Helpers.now;
+    if (now > currentCreatedAt) {
+      return now;
+    }
+    return currentCreatedAt + 1;
   }
 
   /// broadcast removal of contact

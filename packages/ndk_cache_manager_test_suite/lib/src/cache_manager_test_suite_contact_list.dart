@@ -66,4 +66,27 @@ void _runContactListTests(CacheManager Function() getCacheManager) {
       expect(await cacheManager.loadContactList(contactList.pubKey), isNull);
     }
   });
+
+  test('loadContactList reads latest visible generic contact list event',
+      () async {
+    final cacheManager = getCacheManager();
+    final older = ContactList(
+      pubKey: 'contact_from_event',
+      contacts: ['old-contact'],
+    )..createdAt = 1000;
+    final newer = ContactList(
+      pubKey: 'contact_from_event',
+      contacts: ['new-contact'],
+    )
+      ..createdAt = 2000
+      ..followedTags = ['nostr'];
+
+    await cacheManager.saveEvents([older.toEvent(), newer.toEvent()]);
+
+    final loaded = await cacheManager.loadContactList('contact_from_event');
+    expect(loaded, isNotNull);
+    expect(loaded!.contacts, equals(['new-contact']));
+    expect(loaded.followedTags, equals(['nostr']));
+    expect(loaded.createdAt, equals(2000));
+  });
 }

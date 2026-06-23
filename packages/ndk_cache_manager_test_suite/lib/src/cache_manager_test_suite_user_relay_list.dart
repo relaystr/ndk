@@ -95,4 +95,66 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
           await cacheManager.loadUserRelayList(userRelayList.pubKey), isNull);
     }
   });
+
+  test('kind 10002 event recomputes user relay list projection', () async {
+    final cacheManager = getCacheManager();
+    final event = Nip65(
+      pubKey: 'relay_projection_pubkey',
+      createdAt: 2000,
+      relays: {
+        'wss://relay1.com': ReadWriteMarker.readWrite,
+        'wss://relay2.com': ReadWriteMarker.readOnly,
+      },
+    ).toEvent();
+
+    await cacheManager.saveEvent(event);
+
+    final loaded = await cacheManager.loadUserRelayList(
+      'relay_projection_pubkey',
+    );
+    expect(loaded, isNotNull);
+    expect(loaded!.createdAt, equals(2000));
+    expect(
+      loaded.relays['wss://relay1.com'],
+      equals(ReadWriteMarker.readWrite),
+    );
+    expect(
+      loaded.relays['wss://relay2.com'],
+      equals(ReadWriteMarker.readOnly),
+    );
+  });
+
+  test('kind 10002 takes precedence over kind 3 relay projection', () async {
+    final cacheManager = getCacheManager();
+    final kind3 = Nip01Event(
+      pubKey: 'relay_precedence_pubkey',
+      kind: ContactList.kKind,
+      createdAt: 1000,
+      tags: const [],
+      content:
+          '{"wss://legacy-relay.com":{"read":true,"write":true}}',
+    );
+    final kind10002 = Nip65(
+      pubKey: 'relay_precedence_pubkey',
+      createdAt: 2000,
+      relays: {
+        'wss://preferred-relay.com': ReadWriteMarker.writeOnly,
+      },
+    ).toEvent();
+
+    await cacheManager.saveEvents([kind3, kind10002]);
+
+    final loaded = await cacheManager.loadUserRelayList(
+      'relay_precedence_pubkey',
+    );
+    expect(loaded, isNotNull);
+    expect(
+      loaded!.relays.keys,
+      equals(['wss://preferred-relay.com']),
+    );
+    expect(
+      loaded.relays['wss://preferred-relay.com'],
+      equals(ReadWriteMarker.writeOnly),
+    );
+  });
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
@@ -11,7 +13,7 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay",
-      explicitPort: 5099,
+      explicitPort: await _reservePort(),
       requireAuthForRequests: true,
     );
 
@@ -54,7 +56,7 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay",
-      explicitPort: 5100,
+      explicitPort: await _reservePort(),
       requireAuthForEvents: true,
     );
 
@@ -95,7 +97,7 @@ void main() {
     final recipientKey = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "gift wrap auth relay",
-      explicitPort: 5107,
+      explicitPort: await _reservePort(),
       requireAuthForEvents: true,
     );
 
@@ -105,7 +107,7 @@ void main() {
       eventVerifier: MockEventVerifier(),
       cache: MemCacheManager(),
       bootstrapRelays: [relay.url],
-      defaultBroadcastTimeout: const Duration(milliseconds: 300),
+      defaultBroadcastTimeout: const Duration(seconds: 2),
     ));
 
     addTearDown(() async {
@@ -144,7 +146,7 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay auth no challenge",
-      explicitPort: 5101,
+      explicitPort: await _reservePort(),
       requireAuthForRequests: true,
       sendAuthChallenge: false,
     );
@@ -171,4 +173,11 @@ void main() {
     await ndk.destroy();
     await relay.stopServer();
   });
+}
+
+Future<int> _reservePort() async {
+  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  final port = socket.port;
+  await socket.close();
+  return port;
 }

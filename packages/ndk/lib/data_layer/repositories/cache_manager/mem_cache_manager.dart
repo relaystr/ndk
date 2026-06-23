@@ -7,6 +7,7 @@ import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/event_cache_records.dart';
 import '../../../domain_layer/entities/filter_fetched_ranges.dart';
 import '../../../domain_layer/entities/metadata.dart';
+import '../../../domain_layer/entities/nip_65.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import '../../../domain_layer/entities/nip_05.dart';
 import '../../../domain_layer/entities/relay_set.dart';
@@ -75,6 +76,11 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<UserRelayList?> loadUserRelayList(String pubKey) async {
+    final existing = userRelayLists[pubKey];
+    if (existing != null) {
+      return existing;
+    }
+    await _refreshUserRelayListProjection(pubKey);
     return userRelayLists[pubKey];
   }
 
@@ -160,35 +166,57 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<ContactList?> loadContactList(String pubKey) async {
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: ContactList.kKind,
+    );
+    if (event != null) {
+      return ContactList.fromEvent(event);
+    }
     return contactLists[pubKey];
   }
 
   @override
   Future<void> saveContactList(ContactList contactList) async {
-    contactLists[contactList.pubKey] = contactList;
+    final event = contactList.toEvent();
+    await saveEvent(event);
+    contactLists[contactList.pubKey] = ContactList.fromEvent(event);
   }
 
   @override
   Future<void> saveContactLists(List<ContactList> list) async {
     for (var contactList in list) {
-      contactLists[contactList.pubKey] = contactList;
+      await saveContactList(contactList);
     }
   }
 
   @override
   Future<Metadata?> loadMetadata(String pubKey) async {
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: Metadata.kKind,
+    );
+    if (event != null) {
+      final metadata = Metadata.fromEvent(event);
+      metadata.refreshedTimestamp = Nip01Event.secondsSinceEpoch();
+      return metadata;
+    }
     return metadatas[pubKey];
   }
 
   @override
   Future<void> saveMetadata(Metadata metadata) async {
-    metadatas[metadata.pubKey] = metadata;
+    final event = metadata.toEvent();
+    await saveEvent(event);
+    final normalized = Metadata.fromEvent(event);
+    normalized.refreshedTimestamp = metadata.refreshedTimestamp;
+    metadatas[metadata.pubKey] = normalized;
   }
 
   @override
   Future<void> saveMetadatas(List<Metadata> list) async {
     for (var metadata in list) {
-      metadatas[metadata.pubKey] = metadata;
+      await saveMetadata(metadata);
     }
   }
 
@@ -200,11 +228,13 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeAllContactLists() async {
     contactLists.clear();
+    await removeEvents(kinds: [ContactList.kKind]);
   }
 
   @override
   Future<void> removeAllMetadatas() async {
     metadatas.clear();
+    await removeEvents(kinds: [Metadata.kKind]);
   }
 
   @override
@@ -215,18 +245,20 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeContactList(String pubKey) async {
     contactLists.remove(pubKey);
+    await removeEvents(pubKeys: [pubKey], kinds: [ContactList.kKind]);
   }
 
   @override
   Future<void> removeMetadata(String pubKey) async {
     metadatas.remove(pubKey);
+    await removeEvents(pubKeys: [pubKey], kinds: [Metadata.kKind]);
   }
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
     List<Metadata?> result = [];
     for (String pubKey in pubKeys) {
-      result.add(metadatas[pubKey]);
+      result.add(await loadMetadata(pubKey));
     }
     return result;
   }
@@ -234,21 +266,20 @@ class MemCacheManager implements CacheManager {
   /// Search for metadata by name, nip05
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
-    // Use a Set to track unique Metadata objects
-    final Set<Metadata> uniqueResults = {};
-
-    for (final metadata in metadatas.values) {
-      if ((metadata.name != null && metadata.name!.contains(search)) ||
-          (metadata.nip05 != null && metadata.nip05!.contains(search))) {
-        uniqueResults.add(metadata);
-      }
-    }
-
-    // Convert to list, sort by updatedAt, and take the limit
-    final sortedResults = uniqueResults.toList()
+    final events = await loadEvents(kinds: [Metadata.kKind]);
+    final normalizedSearch = search.trim().toLowerCase();
+    final matches = events
+        .map((event) => Metadata.fromEvent(event))
+        .where((metadata) {
+          if (normalizedSearch.isEmpty) return true;
+          return metadata.matchesSearch(normalizedSearch) ||
+              (metadata.about?.toLowerCase().contains(normalizedSearch) ??
+                  false) ||
+              (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
+        })
+        .toList()
       ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
-
-    return sortedResults.take(limit);
+    return matches.take(limit);
   }
 
   @override
@@ -558,6 +589,9 @@ class MemCacheManager implements CacheManager {
       await removeEventDeliveryRecord(eventId);
       await removeRelayDeliveryTargets(eventId);
     }
+    contactLists.remove(pubKey);
+    metadatas.remove(pubKey);
+    await _refreshUserRelayListProjection(pubKey);
   }
 
   @override
@@ -566,14 +600,18 @@ class MemCacheManager implements CacheManager {
     eventSources.clear();
     eventDeliveryRecords.clear();
     relayDeliveryTargets.clear();
+    userRelayLists.clear();
   }
 
   @override
   Future<void> removeEvent(String id) async {
-    events.remove(id);
+    final removed = events.remove(id);
     await removeEventSources(id);
     await removeEventDeliveryRecord(id);
     await removeRelayDeliveryTargets(id);
+    if (removed != null) {
+      await _refreshDerivedStateForEvent(removed);
+    }
   }
 
   @override
@@ -610,11 +648,15 @@ class MemCacheManager implements CacheManager {
       await removeEventDeliveryRecord(event.id);
       await removeRelayDeliveryTargets(event.id);
     }
+    await _refreshDerivedStateForPubKeys(
+      rawEventsToRemove.map((event) => event.pubKey).toSet(),
+    );
   }
 
   @override
   Future<void> saveEvent(Nip01Event event) async {
     events[event.id] = event;
+    await _refreshDerivedStateForEvent(event);
   }
 
   @override
@@ -622,6 +664,9 @@ class MemCacheManager implements CacheManager {
     for (var event in events) {
       this.events[event.id] = event;
     }
+    await _refreshDerivedStateForPubKeys(
+      events.map((event) => event.pubKey).toSet(),
+    );
   }
 
   @override
@@ -909,5 +954,109 @@ class MemCacheManager implements CacheManager {
     }
 
     return candidate.id.compareTo(current.id) < 0;
+  }
+
+  Future<Nip01Event?> _loadLatestVisibleEvent({
+    required String pubKey,
+    required int kind,
+  }) async {
+    final events = await loadEvents(pubKeys: [pubKey], kinds: [kind], limit: 1);
+    if (events.isEmpty) return null;
+    return events.first;
+  }
+
+  Future<void> _refreshDerivedStateForEvent(Nip01Event event) async {
+    if (event.kind == ContactList.kKind) {
+      final latest = await _loadLatestVisibleEvent(
+        pubKey: event.pubKey,
+        kind: ContactList.kKind,
+      );
+      if (latest == null) {
+        contactLists.remove(event.pubKey);
+      } else {
+        contactLists[event.pubKey] = ContactList.fromEvent(latest);
+      }
+    } else if (event.kind == Metadata.kKind) {
+      final latest = await _loadLatestVisibleEvent(
+        pubKey: event.pubKey,
+        kind: Metadata.kKind,
+      );
+      if (latest == null) {
+        metadatas.remove(event.pubKey);
+      } else {
+        final metadata = Metadata.fromEvent(latest);
+        metadata.refreshedTimestamp = Nip01Event.secondsSinceEpoch();
+        metadatas[event.pubKey] = metadata;
+      }
+    }
+
+    if (_affectsUserRelayListProjection(event.kind)) {
+      await _refreshUserRelayListProjection(event.pubKey);
+    }
+  }
+
+  Future<void> _refreshDerivedStateForPubKeys(Set<String> pubKeys) async {
+    for (final pubKey in pubKeys) {
+      final metadataEvent = await _loadLatestVisibleEvent(
+        pubKey: pubKey,
+        kind: Metadata.kKind,
+      );
+      if (metadataEvent == null) {
+        metadatas.remove(pubKey);
+      } else {
+        final metadata = Metadata.fromEvent(metadataEvent);
+        metadata.refreshedTimestamp = Nip01Event.secondsSinceEpoch();
+        metadatas[pubKey] = metadata;
+      }
+
+      final contactListEvent = await _loadLatestVisibleEvent(
+        pubKey: pubKey,
+        kind: ContactList.kKind,
+      );
+      if (contactListEvent == null) {
+        contactLists.remove(pubKey);
+      } else {
+        contactLists[pubKey] = ContactList.fromEvent(contactListEvent);
+      }
+
+      await _refreshUserRelayListProjection(pubKey);
+    }
+  }
+
+  bool _affectsUserRelayListProjection(int kind) {
+    return kind == ContactList.kKind || kind == Nip65.kKind;
+  }
+
+  Future<void> _refreshUserRelayListProjection(String pubKey) async {
+    final events = await loadEvents(
+      pubKeys: [pubKey],
+      kinds: [Nip65.kKind, ContactList.kKind],
+    );
+
+    Nip01Event? latestNip65;
+    Nip01Event? latestContactListWithRelays;
+    for (final event in events) {
+      if (event.kind == Nip65.kKind) {
+        latestNip65 ??= event;
+      } else if (event.kind == ContactList.kKind &&
+          ContactList.relaysFromContent(event).isNotEmpty) {
+        latestContactListWithRelays ??= event;
+      }
+    }
+
+    if (latestNip65 != null) {
+      userRelayLists[pubKey] = UserRelayList.fromNip65(
+        Nip65.fromEvent(latestNip65),
+      );
+      return;
+    }
+
+    if (latestContactListWithRelays != null) {
+      userRelayLists[pubKey] =
+          UserRelayList.fromNip02EventContent(latestContactListWithRelays);
+      return;
+    }
+
+    userRelayLists.remove(pubKey);
   }
 }

@@ -241,6 +241,13 @@ class RelayManager<T> {
     bool force = false,
   }) async {
     RelayConnectivity? relayConnectivity = globalState.relays[url];
+    if (force &&
+        relayConnectivity != null &&
+        relayConnectivity.relayTransport != null &&
+        !relayConnectivity.relayTransport!.isOpen()) {
+      await closeTransport(url);
+      relayConnectivity = globalState.relays[url];
+    }
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
       await relayConnectivity.relayTransport!.ready
           .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))

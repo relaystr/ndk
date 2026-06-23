@@ -227,6 +227,8 @@ class JitEngine with Logger implements NetworkEngine {
       publishEvent: nostrEvent,
       broadcastDoneStream: broadcastState.stateUpdates
           .map((state) => state.broadcasts.values.toList()),
+      broadcastDoneFuture: broadcastState.publishDoneFuture
+          .then((state) => state.broadcasts.values.toList()),
     );
   }
 

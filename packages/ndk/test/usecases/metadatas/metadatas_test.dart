@@ -45,7 +45,7 @@ void main() async {
       ndk = Ndk(config);
 
       await ndk.relays.seedRelaysConnected;
-      cache.saveMetadata(cache0Metadata);
+      await cache.saveEvent(cache0Metadata.toEvent());
       //cache.saveContactList(cache1ContactList);
     });
 
@@ -63,7 +63,9 @@ void main() async {
       final rcvMetadata = await ndk.metadata.loadMetadata(key0.publicKey);
 
       // cache
-      expect(rcvMetadata, equals(cache0Metadata));
+      expect(rcvMetadata, isNotNull);
+      expect(rcvMetadata!.pubKey, equals(cache0Metadata.pubKey));
+      expect(rcvMetadata.name, equals(cache0Metadata.name));
     });
 
     test('getMetadata- network', () async {

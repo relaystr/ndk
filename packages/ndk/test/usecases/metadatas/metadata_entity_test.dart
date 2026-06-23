@@ -505,7 +505,7 @@ void main() {
 
     final metadata = Metadata.fromEvent(signedMetadataEvent);
 
-    await cache.saveMetadata(metadata);
+    await cache.saveEvent(signedMetadataEvent);
 
     final savedMetadata = await cache.loadMetadata(keypair.publicKey);
 

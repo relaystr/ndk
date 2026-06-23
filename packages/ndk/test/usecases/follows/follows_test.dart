@@ -75,7 +75,7 @@ void main() async {
 
       await ndk.relays.seedRelaysConnected;
 
-      cache.saveContactList(cache0ContactList);
+      await cache.saveEvent(cache0ContactList.toEvent());
       //cache.saveContactList(cache1ContactList);
     });
 
@@ -93,7 +93,13 @@ void main() async {
       final rcvContactList = await ndk.follows.getContactList(key0.publicKey);
 
       // cache
-      expect(rcvContactList, equals(cache0ContactList));
+      expect(rcvContactList, isNotNull);
+      expect(rcvContactList!.pubKey, equals(cache0ContactList.pubKey));
+      expect(rcvContactList.contacts, equals(cache0ContactList.contacts));
+      expect(
+        rcvContactList.followedTags,
+        equals(cache0ContactList.followedTags),
+      );
     });
 
     test('getContactList- network', () async {

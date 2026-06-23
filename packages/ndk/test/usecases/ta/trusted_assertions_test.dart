@@ -189,7 +189,7 @@ void main() {
         publicKey: provider2Key.publicKey,
       );
 
-      final relay2 = MockRelay(name: 'nip85-relay-2', explicitPort: 5197);
+      final relay2 = MockRelay(name: 'nip85-relay-2', explicitPort: 5299);
 
       final assertionEvent2 = await provider2Signer.sign(
         createNip85UserAssertion(
@@ -267,7 +267,7 @@ void main() {
         publicKey: provider2Key.publicKey,
       );
 
-      final relay2 = MockRelay(name: 'nip85-event-relay', explicitPort: 5198);
+      final relay2 = MockRelay(name: 'nip85-event-relay', explicitPort: 5300);
 
       final eventAssertion1 = await provider1Signer.sign(
         createNip85EventAssertion(

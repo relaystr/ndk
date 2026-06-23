@@ -24,20 +24,23 @@ class PendingBroadcastDelivery {
 
   void startPeriodicRetry({
     required Iterable<String> Function() connectedRelayUrls,
+    required Future<bool> Function(String relayUrl) reconnectRelay,
     Duration retryInterval = defaultRetryInterval,
   }) {
     _retryTimer?.cancel();
     _retryTimer = Timer.periodic(
       retryInterval,
       (_) => unawaited(
-        retryDueForConnectedRelays(
+        retryDueDeliveries(
           connectedRelayUrls: connectedRelayUrls,
+          reconnectRelay: reconnectRelay,
         ),
       ),
     );
     unawaited(
-      retryDueForConnectedRelays(
+      retryDueDeliveries(
         connectedRelayUrls: connectedRelayUrls,
+        reconnectRelay: reconnectRelay,
       ),
     );
   }
@@ -47,19 +50,33 @@ class PendingBroadcastDelivery {
     _retryTimer = null;
   }
 
-  Future<void> retryDueForConnectedRelays({
+  Future<void> retryDueDeliveries({
     required Iterable<String> Function() connectedRelayUrls,
+    required Future<bool> Function(String relayUrl) reconnectRelay,
   }) async {
-    final relayUrls = connectedRelayUrls().toSet().toList()..sort();
+    final connectedRelayUrlSet = connectedRelayUrls().toSet();
+    final dueRelayUrlSet = await _relayUrlsWithDuePendingTargets();
+    final relayUrls = dueRelayUrlSet.toList()..sort();
 
-    await Future.wait(
-      relayUrls.map(
-        (relayUrl) => flushForRelay(
+    for (final relayUrl in relayUrls) {
+      if (connectedRelayUrlSet.contains(relayUrl)) {
+        await flushForRelay(
           relayUrl,
           onlyDue: true,
-        ),
-      ),
-    );
+        );
+        continue;
+      }
+
+      final connected = await reconnectRelay(relayUrl);
+      if (!connected) {
+        continue;
+      }
+
+      await flushForRelay(
+        relayUrl,
+        onlyDue: true,
+      );
+    }
   }
 
   Future<void> enqueueSpecificRelayBroadcast({
@@ -187,23 +204,30 @@ class PendingBroadcastDelivery {
     }
 
     try {
-      final allTargets = await _cacheManager.loadRelayDeliveryTargets(
+      final persistedTargets = await _cacheManager.loadRelayDeliveryTargets(
         relayUrl: relayUrl,
         excludeAcked: true,
       );
       final now = Nip01Event.secondsSinceEpoch();
-      final targets = onlyDue
-          ? allTargets
-              .where(
-                (target) =>
-                    target.nextRetryAt == null || target.nextRetryAt! <= now,
-              )
-              .toList()
-          : allTargets;
+      final targets = persistedTargets.where((target) {
+        if (target.state == RelayDeliveryState.permanentFailure) {
+          return false;
+        }
+
+        if (!onlyDue) {
+          return true;
+        }
+
+        return target.nextRetryAt == null || target.nextRetryAt! <= now;
+      }).toList();
       Logger.log.d(() =>
           'flush pending delivery for $relayUrl${onlyDue ? " (due only)" : ""} -> ${targets.map((t) => t.eventId).toList()}');
 
       for (final target in targets) {
+        if (_broadcast.isEventInFlight(target.eventId)) {
+          continue;
+        }
+
         final event = await _cacheManager.loadEvent(target.eventId);
         if (event == null) {
           await _cacheManager.removeRelayDeliveryTarget(
@@ -214,8 +238,8 @@ class PendingBroadcastDelivery {
         }
 
         if (await _isObsoleteReplaceableOrAddressableEvent(event)) {
-          Logger.log.d(() =>
-              'drop obsolete pending delivery ${event.id} for $relayUrl');
+          Logger.log.d(
+              () => 'drop obsolete pending delivery ${event.id} for $relayUrl');
           await _discardEventDelivery(event.id);
           continue;
         }
@@ -242,7 +266,8 @@ class PendingBroadcastDelivery {
     }
   }
 
-  Future<bool> _isObsoleteReplaceableOrAddressableEvent(Nip01Event event) async {
+  Future<bool> _isObsoleteReplaceableOrAddressableEvent(
+      Nip01Event event) async {
     final policy = DeliveryPolicy.forEvent(event);
     if (!policy.retainsOnlyLatest) {
       return false;
@@ -269,6 +294,26 @@ class PendingBroadcastDelivery {
   Future<void> _discardEventDelivery(String eventId) async {
     await _cacheManager.removeRelayDeliveryTargets(eventId);
     await _cacheManager.removeEventDeliveryRecord(eventId);
+  }
+
+  Future<Set<String>> _relayUrlsWithDuePendingTargets() async {
+    final now = Nip01Event.secondsSinceEpoch();
+    final targets = await _cacheManager.loadRelayDeliveryTargets(
+      excludeAcked: true,
+    );
+
+    final relayUrls = <String>{};
+    for (final target in targets) {
+      if (target.state == RelayDeliveryState.permanentFailure) {
+        continue;
+      }
+      if (target.nextRetryAt != null && target.nextRetryAt! > now) {
+        continue;
+      }
+      relayUrls.add(target.relayUrl);
+    }
+
+    return relayUrls;
   }
 
   bool _isAddressableKind(int kind) {

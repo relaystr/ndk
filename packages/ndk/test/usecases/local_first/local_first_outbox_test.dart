@@ -32,8 +32,15 @@ void main() {
     test(
         'offline publish is locally readable and eventually reaches relay when relay comes online',
         () async {
-      final relay = MockRelay(name: 'local-first-relay', explicitPort: 5301);
-      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+      final relay = MockRelay(
+        name: 'local-first-relay',
+        explicitPort: await _reservePort(),
+      );
+      ndk = await _createNdk(
+        tempDir.path,
+        bootstrapRelays: [relay.url],
+        pendingDeliveryRetryInterval: const Duration(seconds: 1),
+      );
 
       ndk.accounts.loginPrivateKey(
         pubkey: authorKey.publicKey,
@@ -55,7 +62,7 @@ void main() {
           .broadcast(
             nostrEvent: event,
             specificRelays: [relay.url],
-            timeout: const Duration(milliseconds: 300),
+            timeout: const Duration(seconds: 1),
           )
           .broadcastDoneFuture;
 
@@ -71,11 +78,16 @@ void main() {
       expect(localWhileOffline.map((e) => e.id), contains(event.id));
 
       await relay.startServer();
-      await Future<void>.delayed(const Duration(seconds: 1));
+      await _waitForRelayConnected(
+        ndk: ndk,
+        relayUrl: relay.url,
+        timeout: const Duration(seconds: 20),
+      );
 
       final relayAfterReconnect = await _waitForRelayEvents(
         relay: relay,
         filter: Filter(ids: [event.id]),
+        timeout: const Duration(seconds: 15),
       );
 
       expect(
@@ -91,8 +103,14 @@ void main() {
     test(
         'partial success keeps local visibility and should later deliver only to relays that were offline',
         () async {
-      final relayOnline = MockRelay(name: 'relay-online', explicitPort: 5302);
-      final relayOffline = MockRelay(name: 'relay-offline', explicitPort: 5303);
+      final relayOnline = MockRelay(
+        name: 'relay-online',
+        explicitPort: await _reservePort(),
+      );
+      final relayOffline = MockRelay(
+        name: 'relay-offline',
+        explicitPort: await _reservePort(),
+      );
       ndk = await _createNdk(
         tempDir.path,
         bootstrapRelays: [relayOnline.url, relayOffline.url],
@@ -141,11 +159,11 @@ void main() {
       expect(onlineRelayEvents.map((e) => e.id), contains(event.id));
 
       await relayOffline.startServer();
-      await Future<void>.delayed(const Duration(seconds: 1));
 
       final offlineRelayEventually = await _waitForRelayEvents(
         relay: relayOffline,
         filter: Filter(ids: [event.id]),
+        timeout: const Duration(seconds: 8),
       );
 
       expect(
@@ -162,7 +180,10 @@ void main() {
     test(
         'offline reaction to a cached root is locally visible and should later reach the relay',
         () async {
-      final relay = MockRelay(name: 'reaction-relay', explicitPort: 5304);
+      final relay = MockRelay(
+        name: 'reaction-relay',
+        explicitPort: await _reservePort(),
+      );
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -217,7 +238,6 @@ void main() {
       expect(localReaction.map((e) => e.content), contains('♡'));
 
       await relay.startServer(textNotes: {remoteAuthor: rootEvent});
-      await Future<void>.delayed(const Duration(seconds: 1));
 
       final relayReaction = await _waitForRelayEvents(
         relay: relay,
@@ -225,6 +245,7 @@ void main() {
           authors: [authorKey.publicKey],
           kinds: [Reaction.kKind],
         ),
+        timeout: const Duration(seconds: 8),
       );
 
       expect(
@@ -240,7 +261,10 @@ void main() {
     test(
         'offline replaceable supersession shows latest locally and should later deliver only the newest version',
         () async {
-      final relay = MockRelay(name: 'replaceable-relay', explicitPort: 5305);
+      final relay = MockRelay(
+        name: 'replaceable-relay',
+        explicitPort: await _reservePort(),
+      );
       ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
 
       ndk.accounts.loginPrivateKey(
@@ -308,7 +332,6 @@ void main() {
       expect(localCurrent.single.content, 'version 2');
 
       await relay.startServer();
-      await Future<void>.delayed(const Duration(seconds: 1));
 
       final relayCurrent = await _waitForRelayEvents(
         relay: relay,
@@ -319,6 +342,7 @@ void main() {
             'd': ['article-1']
           },
         ),
+        timeout: const Duration(seconds: 8),
       );
 
       expect(
@@ -352,7 +376,10 @@ void main() {
     test(
         'offline publish survives ndk restart and is later delivered after relay comes online',
         () async {
-      final relay = MockRelay(name: 'restart-relay', explicitPort: 5308);
+      final relay = MockRelay(
+        name: 'restart-relay',
+        explicitPort: await _reservePort(),
+      );
       ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
 
       ndk.accounts.loginPrivateKey(
@@ -403,11 +430,11 @@ void main() {
       expect(localAfterRestart.map((e) => e.id), contains(event.id));
 
       await relay.startServer();
-      await Future<void>.delayed(const Duration(seconds: 1));
 
       final relayAfterReconnect = await _waitForRelayEvents(
         relay: relay,
         filter: Filter(ids: [event.id]),
+        timeout: const Duration(seconds: 8),
       );
 
       expect(
@@ -424,7 +451,10 @@ void main() {
         'incoming deletion hides a previously cached foreign event from app queries',
         () async {
       final relay =
-          MockRelay(name: 'incoming-deletion-relay', explicitPort: 5309);
+          MockRelay(
+            name: 'incoming-deletion-relay',
+            explicitPort: await _reservePort(),
+          );
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -499,7 +529,10 @@ void main() {
     test(
         'deletion received before target should keep the later foreign target suppressed locally',
         () async {
-      final relay = MockRelay(name: 'deletion-first-relay', explicitPort: 5310);
+      final relay = MockRelay(
+        name: 'deletion-first-relay',
+        explicitPort: await _reservePort(),
+      );
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -582,7 +615,10 @@ void main() {
         'relay refresh replaces stale cached metadata with the newest remote version',
         () async {
       final relay =
-          MockRelay(name: 'metadata-convergence-relay', explicitPort: 5311);
+          MockRelay(
+            name: 'metadata-convergence-relay',
+            explicitPort: await _reservePort(),
+          );
       final remoteAuthor = Bip340.generatePrivateKey();
       final oldMetadataEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -644,7 +680,7 @@ void main() {
         () async {
       final relay = MockRelay(
         name: 'retry-relay',
-        explicitPort: 5306,
+        explicitPort: await _reservePort(),
         rejectFirstEventPublishes: 1,
         rejectEventMessage: 'rate-limited: retry later',
       );
@@ -729,7 +765,7 @@ void main() {
         () async {
       final relay = MockRelay(
         name: 'permanent-failure-relay',
-        explicitPort: 5307,
+        explicitPort: await _reservePort(),
         rejectFirstEventPublishes: 99,
         rejectEventMessage: 'policy violation: forbidden kind',
       );
@@ -889,4 +925,26 @@ Future<List<Nip01Event>> _waitForRelayEvents({
   }
 
   return relay.matchingEvents(filter);
+}
+
+Future<void> _waitForRelayConnected({
+  required Ndk ndk,
+  required String relayUrl,
+  Duration timeout = const Duration(seconds: 10),
+}) async {
+  final current = ndk.relays.getRelayConnectivity(relayUrl);
+  if (current?.isConnected == true) {
+    return;
+  }
+
+  await ndk.connectivity.relayConnectivityChanges.firstWhere(
+    (relays) => relays[relayUrl]?.isConnected == true,
+  ).timeout(timeout);
+}
+
+Future<int> _reservePort() async {
+  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  final port = socket.port;
+  await socket.close();
+  return port;
 }
