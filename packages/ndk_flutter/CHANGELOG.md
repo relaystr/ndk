@@ -1,3 +1,10 @@
+## 0.8.4-dev.10
+
+ - **REFACTOR**: centralized json serialisation for WalletTransaction.
+ - **FIX**: scope backup key to seed key.
+ - **FIX**: better lnurl messages.
+ - **FEAT**: add FlutterSecuredStorage Cashu Seed Store impl.
+
 ## 0.8.4-dev.9
 
  - **REFACTOR**: centralized json serialisation for WalletTransaction.
