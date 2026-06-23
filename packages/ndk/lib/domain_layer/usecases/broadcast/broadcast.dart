@@ -3,48 +3,31 @@ import 'package:ndk/ndk.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
-import '../../entities/broadcast_state.dart';
-import '../../entities/global_state.dart';
-import '../engines/network_engine.dart';
+import 'broadcast_sender.dart';
 import 'pending_broadcast_delivery.dart';
 
-/// class for low level nostr broadcasts / publish \
-/// wraps the engines to inject singer
+/// Public-facing broadcast facade. \
+/// Delegates immediate sending to [BroadcastSender] and coordinates pending
+/// delivery enrollment for specific-relay broadcasts. \
+/// The retry path in [PendingBroadcastDelivery] calls [BroadcastSender] directly,
+/// so it never re-enters this facade's enrollment logic.
 class Broadcast {
-  final NetworkEngine _engine;
+  final BroadcastSender _sender;
   final Accounts _accounts;
   final CacheManager _cacheManager;
-  final GlobalState _globalState;
-  final double _considerDonePercent;
-  final Duration _timeout;
-  final bool _saveToCache;
-  PendingBroadcastDelivery? _pendingDelivery;
+  final PendingBroadcastDelivery? _pendingDelivery;
 
-  /// creates a new [Broadcast] instance
+  /// creates a new [Broadcast] facade instance
   ///
   Broadcast({
-    required GlobalState globalState,
-    required CacheManager cacheManager,
-    required NetworkEngine networkEngine,
+    required BroadcastSender broadcastSender,
     required Accounts accounts,
-    required double considerDonePercent,
-    required Duration timeout,
-    required bool saveToCache,
-  })  : _accounts = accounts,
+    required CacheManager cacheManager,
+    required PendingBroadcastDelivery pendingDelivery,
+  })  : _sender = broadcastSender,
+        _accounts = accounts,
         _cacheManager = cacheManager,
-        _engine = networkEngine,
-        _globalState = globalState,
-        _considerDonePercent = considerDonePercent,
-        _timeout = timeout,
-        _saveToCache = saveToCache;
-
-  set pendingDelivery(PendingBroadcastDelivery? pendingDelivery) {
-    _pendingDelivery = pendingDelivery;
-  }
-
-  bool isEventInFlight(String eventId) {
-    return _globalState.inFlightBroadcasts.containsKey(eventId);
-  }
+        _pendingDelivery = pendingDelivery;
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
@@ -70,43 +53,26 @@ class Broadcast {
     Duration? timeout,
     bool? saveToCache,
   }) {
-    final myConsiderDonePercent = considerDonePercent ?? _considerDonePercent;
-    final myTimeout = timeout ?? _timeout;
-    final mySaveToCache = saveToCache ?? _saveToCache;
-
-    final broadcastState = BroadcastState(
-      considerDonePercent: myConsiderDonePercent,
-      timeout: myTimeout,
-    );
-    // register broadcast state
-    _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
-    void cleanupInFlightBroadcastState() {
-      if (identical(
-        _globalState.inFlightBroadcasts[nostrEvent.id],
-        broadcastState,
-      )) {
-        _globalState.inFlightBroadcasts.remove(nostrEvent.id);
-      }
-    }
-
-    broadcastState.publishDoneFuture.then(
-      (_) => cleanupInFlightBroadcastState(),
-      onError: (_, __) => cleanupInFlightBroadcastState(),
-    );
-
-    // save event to cache if enabled
-    if (mySaveToCache) {
-      _cacheManager.saveEvent(nostrEvent);
-    }
-
+    // prep for pending delivery enrollment
+    final cleanedSpecificRelays = specificRelays != null
+        ? cleanRelayUrls(specificRelays.toList())
+        : null;
     final signer = nostrEvent.sig == null
         ? _checkSinger(customSigner: customSigner)
         : null;
 
-    final cleanedSpecificRelays =
-        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
-    final pendingDelivery = _pendingDelivery;
+    // delegate immediate send to the sender
+    final response = _sender.broadcast(
+      nostrEvent: nostrEvent,
+      specificRelays: specificRelays,
+      customSigner: customSigner,
+      considerDonePercent: considerDonePercent,
+      timeout: timeout,
+      saveToCache: saveToCache,
+    );
 
+    // enroll in pending delivery for specific-relay broadcasts
+    final pendingDelivery = _pendingDelivery;
     if (pendingDelivery != null &&
         cleanedSpecificRelays != null &&
         cleanedSpecificRelays.isNotEmpty) {
@@ -115,18 +81,16 @@ class Broadcast {
         relayUrls: cleanedSpecificRelays,
         requiresNetworkSigner: signer != null && !signer.canSign(),
       );
-      broadcastState.publishDoneFuture.then(
-        pendingDelivery.persistSpecificRelayBroadcastResult,
+      response.broadcastDoneFuture.then(
+        (responses) => pendingDelivery.persistSpecificRelayBroadcastResult(
+          nostrEvent,
+          responses,
+        ),
         onError: (_, __) {},
       );
     }
 
-    return _engine.handleEventBroadcast(
-      nostrEvent: nostrEvent,
-      signer: signer,
-      specificRelays: cleanedSpecificRelays,
-      broadcastState: broadcastState,
-    );
+    return response;
   }
 
   /// **********************************************************************************************************

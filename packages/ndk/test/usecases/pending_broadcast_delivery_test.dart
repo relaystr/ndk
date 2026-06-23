@@ -9,7 +9,7 @@ import 'package:ndk/domain_layer/entities/nip_01_event.dart';
 import 'package:ndk/domain_layer/entities/pending_signer_request.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 import 'package:ndk/domain_layer/usecases/accounts/accounts.dart';
-import 'package:ndk/domain_layer/usecases/broadcast/broadcast.dart';
+import 'package:ndk/domain_layer/usecases/broadcast/broadcast_sender.dart';
 import 'package:ndk/domain_layer/usecases/broadcast/pending_broadcast_delivery.dart';
 import 'package:ndk/domain_layer/usecases/engines/network_engine.dart';
 import 'package:test/test.dart';
@@ -17,17 +17,17 @@ import 'package:test/test.dart';
 void main() {
   group('PendingBroadcastDelivery', () {
     late MemCacheManager cacheManager;
-    late RecordingBroadcast broadcast;
+    late RecordingBroadcastSender broadcast;
     late PendingBroadcastDelivery pendingDelivery;
     late Nip01Event event;
     late List<String> reconnectAttempts;
 
     setUp(() async {
       cacheManager = MemCacheManager();
-      broadcast = RecordingBroadcast(cacheManager: cacheManager);
+      broadcast = RecordingBroadcastSender(cacheManager: cacheManager);
       pendingDelivery = PendingBroadcastDelivery(
         cacheManager: cacheManager,
-        broadcast: broadcast,
+        broadcastSender: broadcast,
       );
       reconnectAttempts = [];
       event = Nip01Event(
@@ -153,10 +153,10 @@ void main() {
   });
 }
 
-class RecordingBroadcast extends Broadcast {
+class RecordingBroadcastSender extends BroadcastSender {
   final List<Nip01Event> broadcastedEvents = [];
 
-  RecordingBroadcast({required MemCacheManager cacheManager})
+  RecordingBroadcastSender({required MemCacheManager cacheManager})
       : super(
           globalState: GlobalState(),
           cacheManager: cacheManager,

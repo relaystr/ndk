@@ -26,6 +26,7 @@ import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/repositories/wallets_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/broadcast/broadcast_sender.dart';
 import '../domain_layer/usecases/broadcast/pending_broadcast_delivery.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
@@ -193,7 +194,7 @@ class Initialization {
       eventOutFilters: _ndkConfig.eventOutFilters,
     );
 
-    broadcast = Broadcast(
+    final broadcastSender = BroadcastSender(
       globalState: _globalState,
       networkEngine: engine,
       cacheManager: _ndkConfig.cache,
@@ -204,9 +205,14 @@ class Initialization {
     );
     pendingBroadcastDelivery = PendingBroadcastDelivery(
       cacheManager: _ndkConfig.cache,
-      broadcast: broadcast,
+      broadcastSender: broadcastSender,
     );
-    broadcast.pendingDelivery = pendingBroadcastDelivery;
+    broadcast = Broadcast(
+      broadcastSender: broadcastSender,
+      accounts: accounts,
+      cacheManager: _ndkConfig.cache,
+      pendingDelivery: pendingBroadcastDelivery,
+    );
     _relayConnectivitySubscription =
         relayManager.relayConnectivityChanges.listen(
       _handleRelayConnectivityUpdate,

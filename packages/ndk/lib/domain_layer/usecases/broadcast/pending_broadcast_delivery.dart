@@ -6,21 +6,21 @@ import '../../entities/nip_01_event.dart';
 import '../../repositories/cache_manager.dart';
 import '../../../shared/logger/logger.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
-import 'broadcast.dart';
+import 'broadcast_sender.dart';
 import 'delivery_policy.dart';
 
 class PendingBroadcastDelivery {
   static const Duration defaultRetryInterval = Duration(seconds: 15);
   final CacheManager _cacheManager;
-  final Broadcast _broadcast;
+  final BroadcastSender _sender;
   final Set<String> _flushInProgress = {};
   Timer? _retryTimer;
 
   PendingBroadcastDelivery({
     required CacheManager cacheManager,
-    required Broadcast broadcast,
+    required BroadcastSender broadcastSender,
   })  : _cacheManager = cacheManager,
-        _broadcast = broadcast;
+        _sender = broadcastSender;
 
   void startPeriodicRetry({
     required Iterable<String> Function() connectedRelayUrls,
@@ -122,13 +122,12 @@ class PendingBroadcastDelivery {
     );
   }
 
-  Future<void> persistSpecificRelayBroadcastResult(BroadcastState state) async {
-    final event = state.event;
-    if (event == null) {
-      return;
-    }
+  Future<void> persistSpecificRelayBroadcastResult(
+    Nip01Event event,
+    List<RelayBroadcastResponse> responses,
+  ) async {
     Logger.log.d(() =>
-        'persist broadcast result ${event.id} -> ${state.broadcasts.keys.toList()}');
+        'persist broadcast result ${event.id} -> ${responses.map((r) => r.relayUrl).toList()}');
 
     final existing = await _cacheManager.loadEventDeliveryRecord(event.id);
     if (existing == null) {
@@ -143,7 +142,7 @@ class PendingBroadcastDelivery {
 
     final updatedTargets = <RelayDeliveryTargetRecord>[];
     final policy = DeliveryPolicy.forEvent(event);
-    for (final response in state.broadcasts.values) {
+    for (final response in responses) {
       final current = targetsByRelay[response.relayUrl];
       if (current == null) {
         continue;
@@ -224,7 +223,7 @@ class PendingBroadcastDelivery {
           'flush pending delivery for $relayUrl${onlyDue ? " (due only)" : ""} -> ${targets.map((t) => t.eventId).toList()}');
 
       for (final target in targets) {
-        if (_broadcast.isEventInFlight(target.eventId)) {
+        if (_sender.isEventInFlight(target.eventId)) {
           continue;
         }
 
@@ -256,7 +255,7 @@ class PendingBroadcastDelivery {
           continue;
         }
 
-        await _broadcast.broadcast(
+        await _sender.broadcast(
           nostrEvent: event,
           specificRelays: [relayUrl],
         ).broadcastDoneFuture;
