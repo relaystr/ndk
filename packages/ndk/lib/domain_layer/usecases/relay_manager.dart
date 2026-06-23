@@ -381,16 +381,24 @@ class RelayManager<T> {
 
   /// use this to signal a failed broadcast
   void failBroadcast(String nostrEventId, String relay, String msg) {
-    if (globalState.inFlightBroadcasts.containsKey(nostrEventId)) {
-      globalState.inFlightBroadcasts[nostrEventId]?.networkController.add(
-        RelayBroadcastResponse(
-          relayUrl: relay,
-          okReceived: false,
-          broadcastSuccessful: false,
-          msg: msg,
-        ),
-      );
+    final broadcastState = globalState.inFlightBroadcasts[nostrEventId];
+    if (broadcastState == null) {
+      return;
     }
+    if (broadcastState.networkController.isClosed) {
+      Logger.log.w(() =>
+          "Ignoring late failed broadcast for $nostrEventId on $relay because the broadcast controller is already closed");
+      return;
+    }
+
+    broadcastState.networkController.add(
+      RelayBroadcastResponse(
+        relayUrl: relay,
+        okReceived: false,
+        broadcastSuccessful: false,
+        msg: msg,
+      ),
+    );
   }
 
   void _startListeningToSocket(RelayConnectivity relayConnectivity) {
@@ -423,14 +431,10 @@ class RelayManager<T> {
           globalState.relays[relayConnectivity.url] != null &&
           globalState.relays[relayConnectivity.url]!.relayTransport != null) {
         Logger.log.i(() => "closed ${relayConnectivity.url}. Reconnecting");
-        reconnectRelay(relayConnectivity.url,
-                connectionSource: relayConnectivity.relay.connectionSource)
-            .then((connected) {
-          updateRelayConnectivity();
-          if (connected) {
-            reSubscribeInFlightSubscriptions(relayConnectivity);
-          }
-        });
+        reconnectRelay(
+          relayConnectivity.url,
+          connectionSource: relayConnectivity.relay.connectionSource,
+        );
       }
     });
   }

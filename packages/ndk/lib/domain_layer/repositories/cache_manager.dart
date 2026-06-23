@@ -2,12 +2,13 @@ import '../entities/cashu/cashu_keyset.dart';
 import '../entities/cashu/cashu_mint_info.dart';
 import '../entities/cashu/cashu_proof.dart';
 import '../entities/contact_list.dart';
+import '../entities/event_cache_records.dart';
 import '../entities/filter_fetched_ranges.dart';
+import '../entities/metadata.dart';
 import '../entities/nip_01_event.dart';
 import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
-import '../entities/metadata.dart';
 
 abstract class CacheManager {
   /// closes the cache manger \
@@ -17,6 +18,45 @@ abstract class CacheManager {
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
   Future<Nip01Event?> loadEvent(String id);
+  Future<void> addEventSource({
+    required String eventId,
+    required String relayUrl,
+  });
+  Future<void> addEventSources({
+    required String eventId,
+    required Iterable<String> relayUrls,
+  });
+  Future<List<String>> loadEventSources(String eventId);
+  Future<void> removeEventSources(String eventId);
+  Future<void> saveEventDeliveryRecord(EventDeliveryRecord record);
+  Future<void> saveEventDeliveryRecords(List<EventDeliveryRecord> records);
+  Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId);
+  Future<List<EventDeliveryRecord>> loadEventDeliveryRecords({
+    EventDeliveryStatus? status,
+    int? limit,
+  });
+  Future<void> removeEventDeliveryRecord(String eventId);
+  Future<void> removeAllEventDeliveryRecords();
+  Future<void> saveRelayDeliveryTarget(RelayDeliveryTargetRecord record);
+  Future<void> saveRelayDeliveryTargets(
+      List<RelayDeliveryTargetRecord> records);
+  Future<RelayDeliveryTargetRecord?> loadRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  });
+  Future<List<RelayDeliveryTargetRecord>> loadRelayDeliveryTargets({
+    String? eventId,
+    String? relayUrl,
+    RelayDeliveryState? state,
+    bool excludeAcked = false,
+    int? limit,
+  });
+  Future<void> removeRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  });
+  Future<void> removeRelayDeliveryTargets(String eventId);
+  Future<void> removeAllRelayDeliveryTargets();
 
   /// Load events from cache with flexible filtering \
   /// [ids] - list of event ids \

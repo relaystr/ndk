@@ -6,6 +6,7 @@ import '../../../shared/nips/nip25/reactions.dart';
 import '../../entities/broadcast_state.dart';
 import '../../entities/global_state.dart';
 import '../engines/network_engine.dart';
+import 'pending_broadcast_delivery.dart';
 
 /// class for low level nostr broadcasts / publish \
 /// wraps the engines to inject singer
@@ -17,6 +18,7 @@ class Broadcast {
   final double _considerDonePercent;
   final Duration _timeout;
   final bool _saveToCache;
+  PendingBroadcastDelivery? _pendingDelivery;
 
   /// creates a new [Broadcast] instance
   ///
@@ -35,6 +37,10 @@ class Broadcast {
         _considerDonePercent = considerDonePercent,
         _timeout = timeout,
         _saveToCache = saveToCache;
+
+  set pendingDelivery(PendingBroadcastDelivery? pendingDelivery) {
+    _pendingDelivery = pendingDelivery;
+  }
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
@@ -82,6 +88,20 @@ class Broadcast {
 
     final cleanedSpecificRelays =
         specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
+    final pendingDelivery = _pendingDelivery;
+
+    if (pendingDelivery != null &&
+        cleanedSpecificRelays != null &&
+        cleanedSpecificRelays.isNotEmpty) {
+      pendingDelivery.enqueueSpecificRelayBroadcast(
+        event: nostrEvent,
+        relayUrls: cleanedSpecificRelays,
+        requiresNetworkSigner: signer != null && !signer.canSign(),
+      );
+      broadcastState.publishDoneFuture.then(
+        pendingDelivery.persistSpecificRelayBroadcastResult,
+      );
+    }
 
     return _engine.handleEventBroadcast(
       nostrEvent: nostrEvent,

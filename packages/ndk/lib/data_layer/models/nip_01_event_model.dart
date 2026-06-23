@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../domain_layer/entities/nip_01_event.dart';
 import '../../shared/helpers/list_casting.dart';
+import '../../shared/nips/nip01/event_kind_classification.dart';
 import '../../shared/nips/nip19/nip19.dart';
 
 /// Data model for NIP-01 Event
@@ -160,22 +161,11 @@ class Nip01EventModel extends Nip01Event {
     return base64Encode(utf8.encode(json.encode(toJson())));
   }
 
-  /// Check if an event kind is addressable/replaceable
+  /// Check if an event kind is addressable
   ///
   /// According to NIP-01:
-  /// - Replaceable events: 0, 3, 41
-  /// - Parameterized replaceable events: 10000-19999, 30000-39999
+  /// - Addressable events are parameterized replaceable events (30000-39999)
   bool _isAddressableKind(int kind) {
-    // Replaceable events
-    if (kind == 0 || kind == 3 || kind == 41) {
-      return true;
-    }
-
-    // Parameterized replaceable events
-    if ((kind >= 10000 && kind <= 19999) || (kind >= 30000 && kind <= 39999)) {
-      return true;
-    }
-
-    return false;
+    return EventKindClassification.isAddressableKind(kind);
   }
 }

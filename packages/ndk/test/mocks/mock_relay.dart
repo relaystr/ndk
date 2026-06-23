@@ -24,6 +24,7 @@ class MockRelay {
   Map<String, Nip01Event> _nip85Assertions =
       {}; // NIP-85 assertions keyed by "author:dTag"
   final Set<Nip01Event> _storedEvents = {}; // Store received events
+  final List<Nip01Event> _receivedEvents = [];
 
   // Track all connected clients with their subscriptions
   final Map<WebSocket, Map<String, List<Filter>>> _clientSubscriptions = {};
@@ -37,6 +38,8 @@ class MockRelay {
   int? maxEventsPerRequest;
   int signEventCreatedAtOffsetSeconds;
   String? signEventContentOverride;
+  int rejectFirstEventPublishes;
+  String rejectEventMessage;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -51,6 +54,43 @@ class MockRelay {
 
   String get url => "ws://localhost:$_port";
 
+  List<Nip01Event> matchingEvents(Filter filter) {
+    final events = <Nip01Event>{};
+    events.addAll(_storedEvents);
+    if (textNotes != null) {
+      events.addAll(textNotes!.values);
+    }
+
+    return events.where((event) {
+      if (filter.ids != null &&
+          filter.ids!.isNotEmpty &&
+          !filter.ids!.contains(event.id)) {
+        return false;
+      }
+      if (filter.authors != null &&
+          filter.authors!.isNotEmpty &&
+          !filter.authors!.contains(event.pubKey)) {
+        return false;
+      }
+      if (filter.kinds != null &&
+          filter.kinds!.isNotEmpty &&
+          !filter.kinds!.contains(event.kind)) {
+        return false;
+      }
+      if (filter.tags != null && filter.tags!.isNotEmpty) {
+        for (final entry in filter.tags!.entries) {
+          final eventValues = event.getTags(entry.key);
+          if (!entry.value.any((value) => eventValues.contains(value))) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  List<Nip01Event> get receivedEvents => List.unmodifiable(_receivedEvents);
+
   MockRelay({
     required this.name,
     Map<KeyPair, Nip65>? nip65s,
@@ -64,6 +104,8 @@ class MockRelay {
     this.maxEventsPerRequest,
     this.signEventCreatedAtOffsetSeconds = 0,
     this.signEventContentOverride,
+    this.rejectFirstEventPublishes = 0,
+    this.rejectEventMessage = 'rate-limited: retry later',
     int? explicitPort,
   }) : _nip65s = nip65s {
     if (explicitPort != null) {
@@ -157,6 +199,17 @@ class MockRelay {
         if (eventJson[0] == "EVENT") {
           Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
+            _receivedEvents.add(newEvent);
+            if (rejectFirstEventPublishes > 0) {
+              rejectFirstEventPublishes--;
+              webSocket.add(jsonEncode([
+                "OK",
+                newEvent.id,
+                false,
+                rejectEventMessage,
+              ]));
+              return;
+            }
             bool shouldBroadcastToSubscriptions = true;
 
             // Check auth for events if required (any authenticated user is OK)

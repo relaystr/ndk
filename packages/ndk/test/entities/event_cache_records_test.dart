@@ -90,72 +90,69 @@ void main() {
       expect(CachedEventRecord.isMoreRecentThan(newer, older), isTrue);
       expect(CachedEventRecord.isMoreRecentThan(older, newer), isFalse);
     });
+
   });
 
   group('EventDeliveryRecord', () {
-    test('tracks pending targets and target updates', () {
-      final record = EventDeliveryRecord(
-        eventId: 'event-3',
-        createdAt: 1700001000,
-        updatedAt: 1700001000,
-        targets: const [
-          RelayDeliveryTarget(
-            relayUrl: 'wss://write.example',
-            reason: RelayDeliveryReason.authorWrite,
-          ),
-          RelayDeliveryTarget(
-            relayUrl: 'wss://read.example',
-            reason: RelayDeliveryReason.replyAuthorRead,
-          ),
-        ],
-      );
-
-      final updated = record.updateTarget(
-        'wss://write.example',
-        (target) => target.copyWith(
-          state: RelayDeliveryState.acked,
-          attemptCount: 1,
-          lastOkMessage: 'duplicate: already have this event',
-        ),
-        updatedAt: 1700001010,
-      );
-
-      expect(updated.targets.first.state, RelayDeliveryState.acked);
-      expect(updated.targets.last.state, RelayDeliveryState.pending);
-      expect(updated.hasPendingTargets, isTrue);
-      expect(updated.updatedAt, 1700001010);
-    });
-
     test('round trips through json', () {
       final original = EventDeliveryRecord(
-        eventId: 'event-4',
+        eventId: 'event-3',
         status: EventDeliveryStatus.partiallyDelivered,
-        createdAt: 1700002000,
-        updatedAt: 1700002010,
-        signedAt: 1700002005,
+        createdAt: 1700001000,
+        updatedAt: 1700001010,
+        signedAt: 1700001005,
         requiresNetworkSigner: true,
-        targets: const [
-          RelayDeliveryTarget(
-            relayUrl: 'wss://relay.one',
-            reason: RelayDeliveryReason.authorWrite,
-            state: RelayDeliveryState.acked,
-            attemptCount: 1,
-          ),
-          RelayDeliveryTarget(
-            relayUrl: 'wss://relay.two',
-            reason: RelayDeliveryReason.explicit,
-            state: RelayDeliveryState.transientFailure,
-            attemptCount: 2,
-            nextRetryAt: 1700003000,
-            lastError: 'timeout',
-          ),
-        ],
       );
 
       final restored = EventDeliveryRecord.fromJson(original.toJson());
 
       expect(restored.toJson(), original.toJson());
       expect(restored.isComplete, isFalse);
+    });
+  });
+
+  group('RelayDeliveryTargetRecord', () {
+    test('round trips through json', () {
+      const original = RelayDeliveryTargetRecord(
+        eventId: 'event-4',
+        target: RelayDeliveryTarget(
+          relayUrl: 'wss://relay.two',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.transientFailure,
+          attemptCount: 2,
+          nextRetryAt: 1700003000,
+          lastError: 'timeout',
+        ),
+      );
+
+      final restored = RelayDeliveryTargetRecord.fromJson(original.toJson());
+
+      expect(restored.toJson(), original.toJson());
+      expect(restored.key, 'event-4|wss://relay.two');
+    });
+
+    test('copyWith can clear nullable retry metadata fields', () {
+      const original = RelayDeliveryTarget(
+        relayUrl: 'wss://relay.two',
+        reason: RelayDeliveryReason.explicit,
+        state: RelayDeliveryState.transientFailure,
+        attemptCount: 2,
+        lastAttemptAt: 1700002000,
+        nextRetryAt: 1700003000,
+        lastError: 'timeout',
+        lastOkMessage: 'ok',
+      );
+
+      final cleared = original.copyWith(
+        nextRetryAt: null,
+        lastError: null,
+        lastOkMessage: null,
+      );
+
+      expect(cleared.nextRetryAt, isNull);
+      expect(cleared.lastError, isNull);
+      expect(cleared.lastOkMessage, isNull);
+      expect(cleared.lastAttemptAt, original.lastAttemptAt);
     });
   });
 }

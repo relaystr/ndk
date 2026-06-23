@@ -4,6 +4,7 @@ import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
 import '../../../domain_layer/entities/cashu/cashu_mint_info.dart';
 import '../../../domain_layer/entities/cashu/cashu_proof.dart';
 import '../../../domain_layer/entities/contact_list.dart';
+import '../../../domain_layer/entities/event_cache_records.dart';
 import '../../../domain_layer/entities/filter_fetched_ranges.dart';
 import '../../../domain_layer/entities/metadata.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
@@ -12,6 +13,7 @@ import '../../../domain_layer/entities/relay_set.dart';
 import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
+import '../../../shared/nips/nip01/event_kind_classification.dart';
 
 /// In memory database implementation
 /// benefits: very fast
@@ -37,6 +39,15 @@ class MemCacheManager implements CacheManager {
 
   /// In memory storage
   Map<String, Nip01Event> events = {};
+
+  /// In memory provenance storage keyed by "$eventId|$relayUrl"
+  Map<String, String> eventSources = {};
+
+  /// In memory event delivery storage keyed by eventId
+  Map<String, EventDeliveryRecord> eventDeliveryRecords = {};
+
+  /// In memory relay delivery target storage keyed by "$eventId|$relayUrl"
+  Map<String, RelayDeliveryTargetRecord> relayDeliveryTargets = {};
 
   /// String for mint Url
   Map<String, Set<CahsuKeyset>> cashuKeysets = {};
@@ -270,6 +281,165 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<void> addEventSource({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    eventSources[_eventSourceKey(eventId, relayUrl)] = relayUrl;
+  }
+
+  @override
+  Future<void> addEventSources({
+    required String eventId,
+    required Iterable<String> relayUrls,
+  }) async {
+    for (final relayUrl in relayUrls) {
+      eventSources[_eventSourceKey(eventId, relayUrl)] = relayUrl;
+    }
+  }
+
+  @override
+  Future<List<String>> loadEventSources(String eventId) async {
+    final prefix = '$eventId|';
+    final result = eventSources.entries
+        .where((entry) => entry.key.startsWith(prefix))
+        .map((entry) => entry.value)
+        .toList()
+      ..sort();
+    return result;
+  }
+
+  @override
+  Future<void> removeEventSources(String eventId) async {
+    final prefix = '$eventId|';
+    eventSources.removeWhere((key, value) => key.startsWith(prefix));
+  }
+
+  @override
+  Future<void> saveEventDeliveryRecord(EventDeliveryRecord record) async {
+    eventDeliveryRecords[record.eventId] = record;
+  }
+
+  @override
+  Future<void> saveEventDeliveryRecords(
+      List<EventDeliveryRecord> records) async {
+    for (final record in records) {
+      eventDeliveryRecords[record.eventId] = record;
+    }
+  }
+
+  @override
+  Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId) async {
+    return eventDeliveryRecords[eventId];
+  }
+
+  @override
+  Future<List<EventDeliveryRecord>> loadEventDeliveryRecords({
+    EventDeliveryStatus? status,
+    int? limit,
+  }) async {
+    var records = eventDeliveryRecords.values.where((record) {
+      return status == null || record.status == status;
+    }).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    if (limit != null && limit < records.length) {
+      records = records.take(limit).toList();
+    }
+
+    return records;
+  }
+
+  @override
+  Future<void> removeEventDeliveryRecord(String eventId) async {
+    eventDeliveryRecords.remove(eventId);
+  }
+
+  @override
+  Future<void> removeAllEventDeliveryRecords() async {
+    eventDeliveryRecords.clear();
+  }
+
+  @override
+  Future<void> saveRelayDeliveryTarget(RelayDeliveryTargetRecord record) async {
+    relayDeliveryTargets[record.key] = record;
+  }
+
+  @override
+  Future<void> saveRelayDeliveryTargets(
+      List<RelayDeliveryTargetRecord> records) async {
+    for (final record in records) {
+      relayDeliveryTargets[record.key] = record;
+    }
+  }
+
+  @override
+  Future<RelayDeliveryTargetRecord?> loadRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    return relayDeliveryTargets[_eventSourceKey(eventId, relayUrl)];
+  }
+
+  @override
+  Future<List<RelayDeliveryTargetRecord>> loadRelayDeliveryTargets({
+    String? eventId,
+    String? relayUrl,
+    RelayDeliveryState? state,
+    bool excludeAcked = false,
+    int? limit,
+  }) async {
+    var records = relayDeliveryTargets.values.where((record) {
+      if (eventId != null && record.eventId != eventId) {
+        return false;
+      }
+      if (relayUrl != null && record.relayUrl != relayUrl) {
+        return false;
+      }
+      if (state != null && record.state != state) {
+        return false;
+      }
+      if (excludeAcked && record.state == RelayDeliveryState.acked) {
+        return false;
+      }
+      return true;
+    }).toList()
+      ..sort((a, b) {
+        final retryA = a.nextRetryAt ?? 0;
+        final retryB = b.nextRetryAt ?? 0;
+        if (retryA != retryB) {
+          return retryA.compareTo(retryB);
+        }
+        return a.key.compareTo(b.key);
+      });
+
+    if (limit != null && limit < records.length) {
+      records = records.take(limit).toList();
+    }
+
+    return records;
+  }
+
+  @override
+  Future<void> removeRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    relayDeliveryTargets.remove(_eventSourceKey(eventId, relayUrl));
+  }
+
+  @override
+  Future<void> removeRelayDeliveryTargets(String eventId) async {
+    final prefix = '$eventId|';
+    relayDeliveryTargets.removeWhere((key, value) => key.startsWith(prefix));
+  }
+
+  @override
+  Future<void> removeAllRelayDeliveryTargets() async {
+    relayDeliveryTargets.clear();
+  }
+
+  @override
   Future<List<Nip01Event>> loadEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -279,6 +449,30 @@ class MemCacheManager implements CacheManager {
     int? until,
     String? search,
     int? limit,
+  }) async {
+    return _loadEventsInternal(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+      applyVisibilityRules: true,
+    );
+  }
+
+  Future<List<Nip01Event>> _loadEventsInternal({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+    required bool applyVisibilityRules,
   }) async {
     List<Nip01Event> result = [];
     for (var event in events.values) {
@@ -339,6 +533,10 @@ class MemCacheManager implements CacheManager {
       result.add(event);
     }
 
+    if (applyVisibilityRules) {
+      result = _applyEventVisibilityRules(result);
+    }
+
     result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     if (limit != null && limit > 0 && result.length > limit) {
@@ -350,17 +548,32 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> removeAllEventsByPubKey(String pubKey) async {
+    final eventIds = events.values
+        .where((event) => event.pubKey == pubKey)
+        .map((event) => event.id)
+        .toList();
     events.removeWhere((key, value) => value.pubKey == pubKey);
+    for (final eventId in eventIds) {
+      await removeEventSources(eventId);
+      await removeEventDeliveryRecord(eventId);
+      await removeRelayDeliveryTargets(eventId);
+    }
   }
 
   @override
   Future<void> removeAllEvents() async {
     events.clear();
+    eventSources.clear();
+    eventDeliveryRecords.clear();
+    relayDeliveryTargets.clear();
   }
 
   @override
   Future<void> removeEvent(String id) async {
     events.remove(id);
+    await removeEventSources(id);
+    await removeEventDeliveryRecord(id);
+    await removeRelayDeliveryTargets(id);
   }
 
   @override
@@ -382,16 +595,20 @@ class MemCacheManager implements CacheManager {
       return;
     }
 
-    final eventsToRemove = await loadEvents(
+    final rawEventsToRemove = await _loadEventsInternal(
       ids: ids,
       pubKeys: pubKeys,
       kinds: kinds,
       tags: tags,
       since: since,
       until: until,
+      applyVisibilityRules: false,
     );
-    for (final event in eventsToRemove) {
+    for (final event in rawEventsToRemove) {
       events.remove(event.id);
+      await removeEventSources(event.id);
+      await removeEventDeliveryRecord(event.id);
+      await removeRelayDeliveryTargets(event.id);
     }
   }
 
@@ -610,6 +827,9 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> clearAll() async {
     events.clear();
+    eventSources.clear();
+    eventDeliveryRecords.clear();
+    relayDeliveryTargets.clear();
     userRelayLists.clear();
     relaySets.clear();
     contactLists.clear();
@@ -620,5 +840,74 @@ class MemCacheManager implements CacheManager {
     cashuMintInfos.clear();
     nip05sByIdentifier.clear();
     filterFetchedRangeRecords.clear();
+  }
+
+  String _eventSourceKey(String eventId, String relayUrl) {
+    return '$eventId|$relayUrl';
+  }
+
+  List<Nip01Event> _applyEventVisibilityRules(List<Nip01Event> events) {
+    final visible = <Nip01Event>[];
+    final replaceableWinners = <String, Nip01Event>{};
+    final now = Nip01Event.secondsSinceEpoch();
+
+    for (final event in events) {
+      if (_isExpired(event, now)) continue;
+      if (_isDeletedByAuthor(event)) continue;
+
+      final coordinateKey = _coordinateKey(event);
+      if (coordinateKey == null) {
+        visible.add(event);
+        continue;
+      }
+
+      final current = replaceableWinners[coordinateKey];
+      if (current == null || _isMoreRecentReplaceable(event, current)) {
+        replaceableWinners[coordinateKey] = event;
+      }
+    }
+
+    visible.addAll(replaceableWinners.values);
+    return visible;
+  }
+
+  bool _isDeletedByAuthor(Nip01Event target) {
+    if (target.kind == 5) return false;
+
+    for (final event in events.values) {
+      if (event.kind != 5) continue;
+      if (event.pubKey != target.pubKey) continue;
+      if (event.getTags('e').contains(target.id.toLowerCase())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool _isExpired(Nip01Event event, int now) {
+    final expirationValue = event.getFirstTag('expiration');
+    if (expirationValue == null) return false;
+    final expiration = int.tryParse(expirationValue);
+    if (expiration == null) return false;
+    return expiration <= now;
+  }
+
+  String? _coordinateKey(Nip01Event event) {
+    if (!_isReplaceableKind(event.kind)) return null;
+    final dTag = event.getDtag() ?? '';
+    return '${event.kind}:${event.pubKey}:$dTag';
+  }
+
+  bool _isReplaceableKind(int kind) {
+    return EventKindClassification.isReplaceableKind(kind);
+  }
+
+  bool _isMoreRecentReplaceable(Nip01Event candidate, Nip01Event current) {
+    if (candidate.createdAt != current.createdAt) {
+      return candidate.createdAt > current.createdAt;
+    }
+
+    return candidate.id.compareTo(current.id) < 0;
   }
 }

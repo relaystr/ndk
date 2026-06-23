@@ -86,6 +86,9 @@ class NdkConfig {
   /// Defaults to 30 seconds.
   Duration authCallbackTimeout;
 
+  /// Interval for retrying pending broadcast deliveries while relays remain connected.
+  Duration pendingDeliveryRetryInterval;
+
   /// Default trusted providers for NIP-85 trusted assertions.
   List<Nip85TrustedProvider> defaultTrustedProviders;
 
@@ -121,6 +124,7 @@ class NdkConfig {
     this.fetchedRangesEnabled = false,
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
+    this.pendingDeliveryRetryInterval = const Duration(seconds: 15),
     this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,
   });
 }

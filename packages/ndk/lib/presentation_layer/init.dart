@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:http/http.dart' as http;
 
 import '../data_layer/repositories/cashu_seed_secret_generator/dart_cashu_key_derivation.dart';
@@ -12,6 +14,7 @@ import '../data_layer/repositories/nip_05_http_impl.dart';
 import '../data_layer/repositories/nostr_transport/websocket_client_nostr_transport_factory.dart';
 import '../domain_layer/entities/global_state.dart';
 import '../domain_layer/entities/jit_engine_relay_connectivity_data.dart';
+import '../domain_layer/entities/relay_connectivity.dart';
 import '../domain_layer/entities/wallet/providers/cashu/cashu_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/nwc/nwc_wallet_provider.dart';
 import '../domain_layer/entities/wallet/providers/lnurl/lnurl_wallet_provider.dart';
@@ -22,6 +25,7 @@ import '../domain_layer/repositories/nip_05_repo.dart';
 import '../domain_layer/repositories/wallets_repo.dart';
 import '../domain_layer/usecases/accounts/accounts.dart';
 import '../domain_layer/usecases/broadcast/broadcast.dart';
+import '../domain_layer/usecases/broadcast/pending_broadcast_delivery.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
@@ -85,6 +89,7 @@ class Initialization {
   late Lists lists;
   late RelaySets relaySets;
   late Broadcast broadcast;
+  late PendingBroadcastDelivery pendingBroadcastDelivery;
   late Nwc nwc;
   late Zaps zaps;
   late Lnurl lnurl;
@@ -99,6 +104,9 @@ class Initialization {
   late FetchedRanges fetchedRanges;
   late ProofOfWork proofOfWork;
   late TrustedAssertions trustedAssertions;
+  StreamSubscription<Map<String, RelayConnectivity>>?
+      _relayConnectivitySubscription;
+  final Map<String, bool> _relayOpenStates = {};
 
   late Nip05Usecase nip05;
   late Nip77 nip77;
@@ -192,6 +200,21 @@ class Initialization {
       considerDonePercent: _ndkConfig.defaultBroadcastConsiderDonePercent,
       timeout: _ndkConfig.defaultBroadcastTimeout,
       saveToCache: _ndkConfig.defaultBroadcastSaveToCache,
+    );
+    pendingBroadcastDelivery = PendingBroadcastDelivery(
+      cacheManager: _ndkConfig.cache,
+      broadcast: broadcast,
+    );
+    broadcast.pendingDelivery = pendingBroadcastDelivery;
+    _relayConnectivitySubscription =
+        relayManager.relayConnectivityChanges.listen(
+      _handleRelayConnectivityUpdate,
+    );
+    pendingBroadcastDelivery.startPeriodicRetry(
+      connectedRelayUrls: () => relayManager.connectedRelays.map(
+        (relay) => relay.url,
+      ),
+      retryInterval: _ndkConfig.pendingDeliveryRetryInterval,
     );
 
     // Initialize nwc and cashu before walletsOperationsRepo since they are dependencies
@@ -348,5 +371,30 @@ class Initialization {
   /// Close all active NIP-77 negotiations
   void closeAllNip77Negotiations() {
     nip77.closeAll();
+  }
+
+  Future<void> dispose() async {
+    await pendingBroadcastDelivery.stop();
+    await _relayConnectivitySubscription?.cancel();
+  }
+
+  void _handleRelayConnectivityUpdate(Map<String, RelayConnectivity> relays) {
+    for (final entry in relays.entries) {
+      final relayUrl = entry.key;
+      final isOpen = entry.value.relayTransport?.isOpen() ?? false;
+      final wasOpen = _relayOpenStates[relayUrl] ?? false;
+      _relayOpenStates[relayUrl] = isOpen;
+
+      if (isOpen && !wasOpen) {
+        unawaited(pendingBroadcastDelivery.flushForRelay(relayUrl));
+      }
+    }
+
+    final removedUrls = _relayOpenStates.keys
+        .where((relayUrl) => !relays.containsKey(relayUrl))
+        .toList();
+    for (final relayUrl in removedUrls) {
+      _relayOpenStates.remove(relayUrl);
+    }
   }
 }

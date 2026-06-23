@@ -1,4 +1,7 @@
 import 'nip_01_event.dart';
+import '../../shared/nips/nip01/event_kind_classification.dart';
+
+const _noChange = Object();
 
 enum EventDeliveryStatus {
   pending,
@@ -53,20 +56,28 @@ class RelayDeliveryTarget {
     RelayDeliveryReason? reason,
     RelayDeliveryState? state,
     int? attemptCount,
-    int? lastAttemptAt,
-    int? nextRetryAt,
-    String? lastError,
-    String? lastOkMessage,
+    Object? lastAttemptAt = _noChange,
+    Object? nextRetryAt = _noChange,
+    Object? lastError = _noChange,
+    Object? lastOkMessage = _noChange,
   }) {
     return RelayDeliveryTarget(
       relayUrl: relayUrl ?? this.relayUrl,
       reason: reason ?? this.reason,
       state: state ?? this.state,
       attemptCount: attemptCount ?? this.attemptCount,
-      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
-      nextRetryAt: nextRetryAt ?? this.nextRetryAt,
-      lastError: lastError ?? this.lastError,
-      lastOkMessage: lastOkMessage ?? this.lastOkMessage,
+      lastAttemptAt: identical(lastAttemptAt, _noChange)
+          ? this.lastAttemptAt
+          : lastAttemptAt as int?,
+      nextRetryAt: identical(nextRetryAt, _noChange)
+          ? this.nextRetryAt
+          : nextRetryAt as int?,
+      lastError: identical(lastError, _noChange)
+          ? this.lastError
+          : lastError as String?,
+      lastOkMessage: identical(lastOkMessage, _noChange)
+          ? this.lastOkMessage
+          : lastOkMessage as String?,
     );
   }
 
@@ -97,6 +108,50 @@ class RelayDeliveryTarget {
   }
 }
 
+class RelayDeliveryTargetRecord {
+  final String eventId;
+  final RelayDeliveryTarget target;
+
+  const RelayDeliveryTargetRecord({
+    required this.eventId,
+    required this.target,
+  });
+
+  String get relayUrl => target.relayUrl;
+  RelayDeliveryReason get reason => target.reason;
+  RelayDeliveryState get state => target.state;
+  int get attemptCount => target.attemptCount;
+  int? get lastAttemptAt => target.lastAttemptAt;
+  int? get nextRetryAt => target.nextRetryAt;
+  String? get lastError => target.lastError;
+  String? get lastOkMessage => target.lastOkMessage;
+  String get key => '$eventId|${target.relayUrl}';
+
+  RelayDeliveryTargetRecord copyWith({
+    String? eventId,
+    RelayDeliveryTarget? target,
+  }) {
+    return RelayDeliveryTargetRecord(
+      eventId: eventId ?? this.eventId,
+      target: target ?? this.target,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'eventId': eventId,
+      ...target.toJson(),
+    };
+  }
+
+  factory RelayDeliveryTargetRecord.fromJson(Map<String, dynamic> json) {
+    return RelayDeliveryTargetRecord(
+      eventId: json['eventId'] as String,
+      target: RelayDeliveryTarget.fromJson(json),
+    );
+  }
+}
+
 class EventDeliveryRecord {
   final String eventId;
   final EventDeliveryStatus status;
@@ -105,7 +160,6 @@ class EventDeliveryRecord {
   final int? signedAt;
   final int? completedAt;
   final bool requiresNetworkSigner;
-  final List<RelayDeliveryTarget> targets;
 
   const EventDeliveryRecord({
     required this.eventId,
@@ -115,13 +169,9 @@ class EventDeliveryRecord {
     this.signedAt,
     this.completedAt,
     this.requiresNetworkSigner = false,
-    this.targets = const [],
   });
 
   bool get isComplete => status == EventDeliveryStatus.delivered;
-
-  bool get hasPendingTargets =>
-      targets.any((target) => target.state != RelayDeliveryState.acked);
 
   EventDeliveryRecord copyWith({
     String? eventId,
@@ -131,7 +181,6 @@ class EventDeliveryRecord {
     int? signedAt,
     int? completedAt,
     bool? requiresNetworkSigner,
-    List<RelayDeliveryTarget>? targets,
   }) {
     return EventDeliveryRecord(
       eventId: eventId ?? this.eventId,
@@ -142,21 +191,6 @@ class EventDeliveryRecord {
       completedAt: completedAt ?? this.completedAt,
       requiresNetworkSigner:
           requiresNetworkSigner ?? this.requiresNetworkSigner,
-      targets: targets ?? this.targets,
-    );
-  }
-
-  EventDeliveryRecord updateTarget(
-    String relayUrl,
-    RelayDeliveryTarget Function(RelayDeliveryTarget current) update, {
-    int? updatedAt,
-  }) {
-    final newTargets = targets
-        .map((target) => target.relayUrl == relayUrl ? update(target) : target)
-        .toList();
-    return copyWith(
-      updatedAt: updatedAt ?? this.updatedAt,
-      targets: newTargets,
     );
   }
 
@@ -169,7 +203,6 @@ class EventDeliveryRecord {
       'signedAt': signedAt,
       'completedAt': completedAt,
       'requiresNetworkSigner': requiresNetworkSigner,
-      'targets': targets.map((target) => target.toJson()).toList(),
     };
   }
 
@@ -182,10 +215,6 @@ class EventDeliveryRecord {
       signedAt: json['signedAt'] as int?,
       completedAt: json['completedAt'] as int?,
       requiresNetworkSigner: json['requiresNetworkSigner'] as bool? ?? false,
-      targets: ((json['targets'] as List?) ?? [])
-          .map((target) => RelayDeliveryTarget.fromJson(
-              Map<String, dynamic>.from(target as Map)))
-          .toList(),
     );
   }
 }
@@ -382,19 +411,11 @@ class CachedEventRecord {
   }
 
   static bool _isAddressableKind(int kind) {
-    if (kind == 0 || kind == 3 || kind == 41) {
-      return true;
-    }
-
-    return (kind >= 10000 && kind <= 19999) || (kind >= 30000 && kind <= 39999);
+    return EventKindClassification.isAddressableKind(kind);
   }
 
   static bool _isReplaceableKind(int kind) {
-    if (kind == 0 || kind == 3 || kind == 41) {
-      return true;
-    }
-
-    return (kind >= 10000 && kind <= 19999) || (kind >= 30000 && kind <= 39999);
+    return EventKindClassification.isReplaceableKind(kind);
   }
 
   static Map<String, dynamic> _eventToJson(Nip01Event event) {
