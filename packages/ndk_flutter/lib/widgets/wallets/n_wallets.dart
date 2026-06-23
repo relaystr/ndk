@@ -157,6 +157,7 @@ class NWalletsState extends State<NWallets> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             widget.header ?? _buildHeader(),
+            NCashuSeedBackupWarning(ndkFlutter: widget.ndkFlutter),
             const SizedBox(height: 16),
             Expanded(
               child: NWalletCardList(
@@ -190,6 +191,7 @@ class NWalletsState extends State<NWallets> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             widget.header ?? _buildHeader(),
+            NCashuSeedBackupWarning(ndkFlutter: widget.ndkFlutter),
             const SizedBox(height: 16),
             SizedBox(
               height: widget.walletCardsHeight,

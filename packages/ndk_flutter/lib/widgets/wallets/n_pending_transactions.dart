@@ -3,6 +3,7 @@ import 'package:ndk/entities.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'wallet_action_dialogs.dart';
 
 /// Horizontal list of pending wallet transactions for a specific wallet when
 /// provided.
@@ -56,12 +57,29 @@ class NPendingTransactions extends StatelessWidget {
         }
 
         final transactions = snapshot.data!;
+        final reclaimable = reclaimablePending(transactions);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title ?? l10n.pendingTransactions,
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title ?? l10n.pendingTransactions,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (reclaimable.isNotEmpty)
+                  IconButton(
+                    onPressed: () =>
+                        showReclaimDialog(context, ndkFlutter, reclaimable),
+                    icon: const Icon(Icons.replay),
+                    tooltip: l10n.reclaimPendingFunds,
+                    visualDensity: VisualDensity.compact,
+                  ),
+              ],
             ),
             const SizedBox(height: 8),
             SizedBox(
@@ -71,57 +89,80 @@ class NPendingTransactions extends StatelessWidget {
                 itemCount: transactions.length,
                 itemBuilder: (context, index) {
                   final tx = transactions[index];
+                  // Single-element reclaimable list: non-empty only for cashu
+                  // funding transactions carrying a quote/method/keysets.
+                  final reclaimableTx = reclaimablePending([tx]);
                   return Card(
                     margin: const EdgeInsets.only(right: 8),
                     child: SizedBox(
                       width: 200,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Row(
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  tx.changeAmount > 0
-                                      ? Icons.download
-                                      : Icons.send,
-                                  size: 16,
-                                  color: tx.changeAmount > 0
-                                      ? Colors.green
-                                      : Colors.orange,
+                                Row(
+                                  children: [
+                                    Icon(
+                                      tx.changeAmount > 0
+                                          ? Icons.download
+                                          : Icons.send,
+                                      size: 16,
+                                      color: tx.changeAmount > 0
+                                          ? Colors.green
+                                          : Colors.orange,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${tx.changeAmount.abs()} ${tx.unit}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(height: 4),
                                 Text(
-                                  '${tx.changeAmount.abs()} ${tx.unit}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                  tx.walletType.name,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  tx.state.value,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color:
+                                        tx.state ==
+                                            WalletTransactionState.pending
+                                        ? Colors.orange
+                                        : Colors.grey,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              tx.walletType.name,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
+                          ),
+                          if (reclaimableTx.isNotEmpty)
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: IconButton(
+                                icon: const Icon(Icons.replay, size: 18),
+                                tooltip: l10n.reclaimPendingFunds,
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () => showReclaimDialog(
+                                  context,
+                                  ndkFlutter,
+                                  reclaimableTx,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              tx.state.value,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color:
-                                    tx.state == WalletTransactionState.pending
-                                    ? Colors.orange
-                                    : Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
                     ),
                   );
