@@ -1,3 +1,12 @@
+## 0.8.4-dev.6
+
+ - **REFACTOR**: centralized json serialisation for WalletTransaction.
+ - **FIX**: update transactions after state import.
+ - **FIX**: import mutating before validating.
+ - **FIX**: add missing methods to cashu cache decorator.
+ - **FIX**: remove direct cache access in cashu import/export.
+ - **FEAT**: add FlutterSecuredStorage Cashu Seed Store impl.
+
 ## 0.8.4-dev.5
 
  - **FIX**: fallback to logged account for broadcast auth.
