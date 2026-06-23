@@ -237,6 +237,7 @@ class MockRelay {
                 shouldBroadcastToSubscriptions = false;
               }
             } else if (newEvent.kind == Deletion.kKind) {
+              _storedEvents.add(newEvent);
               final eventIdsToDelete = newEvent.getTags("e");
               for (final idToDelete in eventIdsToDelete) {
                 _storedEvents.removeWhere((e) => idToDelete == e.id);

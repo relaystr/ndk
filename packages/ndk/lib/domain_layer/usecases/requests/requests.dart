@@ -69,6 +69,41 @@ class Requests {
         _eventOutFilters = eventOutFilters,
         _defaultQueryTimeout = defaultQueryTimeout;
 
+  Stream<Nip01Event> _prepareNetworkStream(
+    Stream<Nip01Event> verifiedNetworkStream, {
+    required bool writeToCache,
+  }) {
+    if (!writeToCache) {
+      return verifiedNetworkStream;
+    }
+
+    return verifiedNetworkStream
+        .flatMap(
+          (event) => Stream.fromFuture(
+            _persistAndFilterVisibleNetworkEvent(event),
+          ),
+        )
+        .whereType<Nip01Event>()
+        .shareReplay(maxSize: 1);
+  }
+
+  Future<Nip01Event?> _persistAndFilterVisibleNetworkEvent(
+    Nip01Event event,
+  ) async {
+    await _cacheWrite.cacheManager.saveEvent(event);
+
+    if (event.kind == 5) {
+      return event;
+    }
+
+    final visible = await _cacheWrite.cacheManager.loadEvents(
+      ids: [event.id],
+      limit: 1,
+    );
+
+    return visible.any((candidate) => candidate.id == event.id) ? event : null;
+  }
+
   /// Set the fetched ranges tracker for automatic range recording
   set fetchedRanges(FetchedRanges? fetchedRanges) =>
       _fetchedRanges = fetchedRanges;
@@ -260,16 +295,15 @@ class Requests {
       eventVerifier: _eventVerifier,
     )();
 
-    /// register cache new responses
-    _cacheWrite.saveNetworkResponse(
+    final preparedNetworkStream = _prepareNetworkStream(
+      verifiedNetworkStream,
       writeToCache: request.cacheWrite,
-      inputStream: verifiedNetworkStream,
     );
 
     // register listener
     StreamResponseCleaner(
       inputStreams: [
-        verifiedNetworkStream,
+        preparedNetworkStream,
         state.cacheController.stream,
       ],
       trackingSet: state.returnedIds,

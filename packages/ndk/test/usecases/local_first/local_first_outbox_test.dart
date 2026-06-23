@@ -1,11 +1,12 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:ndk/data_layer/repositories/cache_manager/sembast_cache_manager.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/logger/logger.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
+import 'package:ndk/shared/nips/nip09/deletion.dart';
 import 'package:ndk/shared/nips/nip25/reactions.dart';
 import 'package:test/test.dart';
 
@@ -349,6 +350,296 @@ void main() {
     });
 
     test(
+        'offline publish survives ndk restart and is later delivered after relay comes online',
+        () async {
+      final relay = MockRelay(name: 'restart-relay', explicitPort: 5308);
+      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+
+      ndk.accounts.loginPrivateKey(
+        pubkey: authorKey.publicKey,
+        privkey: authorKey.privateKey!,
+      );
+
+      final event = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: authorKey.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: const [],
+          content: 'restart persistence note',
+          createdAt: 1_700_000_035,
+        ),
+        privateKey: authorKey.privateKey!,
+      );
+
+      await ndk.broadcast
+          .broadcast(
+            nostrEvent: event,
+            specificRelays: [relay.url],
+            timeout: const Duration(milliseconds: 300),
+          )
+          .broadcastDoneFuture;
+
+      final localBeforeRestart = await ndk.requests
+          .query(
+            filter: Filter(ids: [event.id]),
+            cacheRead: true,
+            cacheWrite: false,
+            timeout: const Duration(milliseconds: 300),
+          )
+          .future;
+      expect(localBeforeRestart.map((e) => e.id), contains(event.id));
+
+      await ndk.destroy();
+      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+
+      final localAfterRestart = await ndk.requests
+          .query(
+            filter: Filter(ids: [event.id]),
+            cacheRead: true,
+            cacheWrite: false,
+            timeout: const Duration(milliseconds: 300),
+          )
+          .future;
+      expect(localAfterRestart.map((e) => e.id), contains(event.id));
+
+      await relay.startServer();
+      await Future<void>.delayed(const Duration(seconds: 1));
+
+      final relayAfterReconnect = await _waitForRelayEvents(
+        relay: relay,
+        filter: Filter(ids: [event.id]),
+      );
+
+      expect(
+        relayAfterReconnect.map((e) => e.id),
+        contains(event.id),
+        reason:
+            'A locally queued event should survive process restart and still be delivered once the relay becomes reachable.',
+      );
+
+      await relay.stopServer();
+    });
+
+    test(
+        'incoming deletion hides a previously cached foreign event from app queries',
+        () async {
+      final relay =
+          MockRelay(name: 'incoming-deletion-relay', explicitPort: 5309);
+      final remoteAuthor = Bip340.generatePrivateKey();
+      final rootEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: const [],
+          content: 'event later deleted',
+          createdAt: 1_700_000_050,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      final deletionEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Deletion.kKind,
+          tags: [
+            ['e', rootEvent.id],
+            ['k', rootEvent.kind.toString()],
+          ],
+          content: 'delete root event',
+          createdAt: 1_700_000_051,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+
+      await relay.startServer(textNotes: {remoteAuthor: rootEvent});
+
+      final cachedRoot = await ndk.requests
+          .query(
+            filter: Filter(ids: [rootEvent.id]),
+            explicitRelays: [relay.url],
+            timeout: const Duration(seconds: 1),
+          )
+          .future;
+      expect(cachedRoot.map((e) => e.id), contains(rootEvent.id));
+
+      await _publishFixtureEventToRelay(relay.url, deletionEvent);
+
+      final fetchedDeletion = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [remoteAuthor.publicKey],
+              kinds: [Deletion.kKind],
+              ids: [deletionEvent.id],
+            ),
+            explicitRelays: [relay.url],
+            timeout: const Duration(seconds: 1),
+          )
+          .future;
+      expect(fetchedDeletion.map((e) => e.id), contains(deletionEvent.id));
+
+      final localAfterDeletion = await ndk.requests
+          .query(
+            filter: Filter(ids: [rootEvent.id]),
+            cacheRead: true,
+            cacheWrite: false,
+            timeout: const Duration(milliseconds: 300),
+          )
+          .future;
+
+      expect(
+        localAfterDeletion.map((e) => e.id),
+        isNot(contains(rootEvent.id)),
+        reason:
+            'After a valid remote deletion is seen, app-level local-first reads should stop returning the deleted foreign event.',
+      );
+
+      await relay.stopServer();
+    });
+
+    test(
+        'deletion received before target should keep the later foreign target suppressed locally',
+        () async {
+      final relay = MockRelay(name: 'deletion-first-relay', explicitPort: 5310);
+      final remoteAuthor = Bip340.generatePrivateKey();
+      final rootEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Nip01Event.kTextNodeKind,
+          tags: const [],
+          content: 'event that should stay tombstoned',
+          createdAt: 1_700_000_060,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      final deletionEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Deletion.kKind,
+          tags: [
+            ['e', rootEvent.id],
+            ['k', rootEvent.kind.toString()],
+          ],
+          content: 'delete before target arrives',
+          createdAt: 1_700_000_061,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+
+      await relay.startServer();
+
+      await _publishFixtureEventToRelay(relay.url, deletionEvent);
+
+      final fetchedDeletion = await ndk.requests
+          .query(
+            filter: Filter(
+              authors: [remoteAuthor.publicKey],
+              kinds: [Deletion.kKind],
+              ids: [deletionEvent.id],
+            ),
+            explicitRelays: [relay.url],
+            timeout: const Duration(seconds: 1),
+          )
+          .future;
+      expect(fetchedDeletion.map((e) => e.id), contains(deletionEvent.id));
+
+      await _publishFixtureEventToRelay(relay.url, rootEvent);
+
+      final targetFetch = await ndk.requests
+          .query(
+            filter: Filter(ids: [rootEvent.id]),
+            explicitRelays: [relay.url],
+            timeout: const Duration(seconds: 1),
+          )
+          .future;
+      expect(
+        targetFetch.map((e) => e.id),
+        isNot(contains(rootEvent.id)),
+        reason:
+            'Once a tombstone is known locally, a later fetch of that foreign target should already be suppressed at the public query layer.',
+      );
+
+      final localAfterLateTarget = await ndk.requests
+          .query(
+            filter: Filter(ids: [rootEvent.id]),
+            cacheRead: true,
+            cacheWrite: false,
+            timeout: const Duration(milliseconds: 300),
+          )
+          .future;
+
+      expect(
+        localAfterLateTarget.map((e) => e.id),
+        isNot(contains(rootEvent.id)),
+        reason:
+            'If the deletion arrived first, later sync of the deleted foreign target should remain suppressed instead of resurrecting locally.',
+      );
+
+      await relay.stopServer();
+    });
+
+    test(
+        'relay refresh replaces stale cached metadata with the newest remote version',
+        () async {
+      final relay =
+          MockRelay(name: 'metadata-convergence-relay', explicitPort: 5311);
+      final remoteAuthor = Bip340.generatePrivateKey();
+      final oldMetadataEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Metadata.kKind,
+          tags: const [],
+          content: jsonEncode({'name': 'old-name'}),
+          createdAt: 1_700_000_070,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      final newMetadataEvent = Nip01Utils.signWithPrivateKey(
+        event: Nip01Event(
+          pubKey: remoteAuthor.publicKey,
+          kind: Metadata.kKind,
+          tags: const [],
+          content: jsonEncode({'name': 'new-name'}),
+          createdAt: 1_700_000_071,
+        ),
+        privateKey: remoteAuthor.privateKey!,
+      );
+      ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+
+      await relay
+          .startServer(metadatas: {remoteAuthor.publicKey: oldMetadataEvent});
+
+      final cachedOldMetadata = await ndk.metadata.loadMetadata(
+        remoteAuthor.publicKey,
+        forceRefresh: true,
+        idleTimeout: const Duration(seconds: 1),
+      );
+      expect(cachedOldMetadata?.name, 'old-name');
+
+      await relay.stopServer();
+      await relay
+          .startServer(metadatas: {remoteAuthor.publicKey: newMetadataEvent});
+
+      final refreshedMetadata = await ndk.metadata.loadMetadata(
+        remoteAuthor.publicKey,
+        forceRefresh: true,
+        idleTimeout: const Duration(seconds: 1),
+      );
+      expect(
+        refreshedMetadata?.name,
+        'new-name',
+        reason:
+            'A newer replaceable metadata event from the relay should overwrite the stale cached materialized view.',
+      );
+
+      final localCurrentMetadata =
+          await ndk.metadata.loadMetadata(remoteAuthor.publicKey);
+      expect(localCurrentMetadata?.name, 'new-name');
+
+      await relay.stopServer();
+    });
+
+    test(
         'connected relay rejecting first should keep local visibility and later succeed via periodic retry',
         () async {
       final relay = MockRelay(
@@ -530,6 +821,57 @@ Future<Ndk> _createNdk(
       ),
     ),
   );
+}
+
+Future<void> _publishFixtureEventToRelay(
+  String relayUrl,
+  Nip01Event event,
+) async {
+  final socket = await WebSocket.connect(relayUrl);
+  final completer = Completer<void>();
+
+  late final StreamSubscription<dynamic> subscription;
+  subscription = socket.listen(
+    (message) {
+      if (message is! String) {
+        return;
+      }
+
+      final decoded = jsonDecode(message);
+      if (decoded is! List || decoded.isEmpty || decoded[0] != 'OK') {
+        return;
+      }
+      if (decoded.length < 4 || decoded[1] != event.id) {
+        return;
+      }
+
+      if (decoded[2] == true) {
+        completer.complete();
+      } else {
+        completer.completeError(
+          StateError('Fixture relay rejected event ${event.id}: ${decoded[3]}'),
+        );
+      }
+    },
+    onError: completer.completeError,
+  );
+
+  socket.add(jsonEncode([
+    'EVENT',
+    {
+      'id': event.id,
+      'pubkey': event.pubKey,
+      'created_at': event.createdAt,
+      'kind': event.kind,
+      'tags': event.tags,
+      'content': event.content,
+      'sig': event.sig,
+    },
+  ]));
+
+  await completer.future.timeout(const Duration(seconds: 2));
+  await subscription.cancel();
+  await socket.close();
 }
 
 Future<List<Nip01Event>> _waitForRelayEvents({

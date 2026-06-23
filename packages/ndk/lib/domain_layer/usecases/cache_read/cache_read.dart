@@ -63,14 +63,10 @@ class CacheRead {
       }
 
       if (filter.ids != null) {
-        final foundIdEvents = <Nip01Event>[];
-        for (final id in filter.ids!) {
-          final foundId = await cacheManager.loadEvent(id);
-          if (foundId == null) {
-            continue;
-          }
-          foundIdEvents.add(foundId);
-        }
+        final foundIdEvents = await cacheManager.loadEvents(
+          ids: filter.ids!,
+          limit: filter.ids!.length,
+        );
 
         filter.ids!.removeWhere((id) {
           return foundIdEvents.any((event) => event.id == id);
