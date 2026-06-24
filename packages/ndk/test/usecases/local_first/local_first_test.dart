@@ -14,7 +14,7 @@ import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
 
 void main() {
-  group('local first outbox public api', () {
+  group('local first', () {
     late Directory tempDir;
     late KeyPair authorKey;
     late Ndk ndk;
@@ -94,7 +94,7 @@ void main() {
         relayAfterReconnect.map((e) => e.id),
         contains(event.id),
         reason:
-            'Local-first outbox should auto-deliver the unpublished event after the relay becomes reachable.',
+            'Local-first should auto-deliver the unpublished event after the relay becomes reachable.',
       );
 
       await relay.stopServer();
