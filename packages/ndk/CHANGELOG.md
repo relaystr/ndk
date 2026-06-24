@@ -1,3 +1,7 @@
+## 0.8.4-dev.7
+
+ - **FIX**: randomize NIP-59 gift wrap timestamps.
+
 ## 0.8.4-dev.6
 
  - **REFACTOR**: centralized json serialisation for WalletTransaction.
