@@ -13,7 +13,6 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay",
-      explicitPort: await _reservePort(),
       requireAuthForRequests: true,
     );
 
@@ -56,7 +55,6 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay",
-      explicitPort: await _reservePort(),
       requireAuthForEvents: true,
     );
 
@@ -97,7 +95,6 @@ void main() {
     final recipientKey = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "gift wrap auth relay",
-      explicitPort: await _reservePort(),
       requireAuthForEvents: true,
     );
 
@@ -146,7 +143,6 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay auth no challenge",
-      explicitPort: await _reservePort(),
       requireAuthForRequests: true,
       sendAuthChallenge: false,
     );
@@ -173,11 +169,4 @@ void main() {
     await ndk.destroy();
     await relay.stopServer();
   });
-}
-
-Future<int> _reservePort() async {
-  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-  final port = socket.port;
-  await socket.close();
-  return port;
 }
