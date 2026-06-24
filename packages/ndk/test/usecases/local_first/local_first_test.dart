@@ -392,6 +392,10 @@ void main() {
 
       await ndk.destroy();
       ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
+      ndk.accounts.loginPrivateKey(
+        pubkey: authorKey.publicKey,
+        privkey: authorKey.privateKey!,
+      );
 
       final localAfterRestart = await ndk.requests
           .query(
