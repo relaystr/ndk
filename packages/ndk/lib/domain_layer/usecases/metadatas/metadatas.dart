@@ -49,7 +49,7 @@ class Metadatas {
     Duration idleTimeout = METADATA_IDLE_TIMEOUT,
   }) async {
     Metadata? metadata =
-        !forceRefresh ? await _loadCachedMetadata(pubKey) : null;
+        !forceRefresh ? await _cacheManager.loadMetadata(pubKey) : null;
     if (metadata == null || forceRefresh) {
       Metadata? loadedMetadata;
       try {
@@ -90,7 +90,7 @@ class Metadatas {
     List<String> missingPubKeys = [];
     Map<String, Metadata> metadatas = {};
     for (var pubKey in pubKeys) {
-      Metadata? userMetadata = await _loadCachedMetadata(pubKey);
+      Metadata? userMetadata = await _cacheManager.loadMetadata(pubKey);
       if (userMetadata == null) {
         // TODO check if not too old (time passed since last refreshed timestamp)
         missingPubKeys.add(pubKey);
@@ -176,19 +176,6 @@ class Metadatas {
     metadata.refreshedTimestamp = Helpers.now;
     await _cacheManager.saveEvent(metadata.toEvent());
 
-    return metadata;
-  }
-
-  Future<Metadata?> _loadCachedMetadata(String pubKey) async {
-    final events = await _cacheManager.loadEvents(
-      pubKeys: [pubKey],
-      kinds: [Metadata.kKind],
-      limit: 1,
-    );
-    if (events.isEmpty) return null;
-
-    final metadata = Metadata.fromEvent(events.first);
-    metadata.refreshedTimestamp = Helpers.now;
     return metadata;
   }
 

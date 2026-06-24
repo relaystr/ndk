@@ -38,7 +38,10 @@ class Follows {
     bool forceRefresh = false,
     Duration idleTimeout = RequestDefaults.DEFAULT_QUERY_TIMEOUT,
   }) async {
-    ContactList? contactList = await _loadCachedContactList(pubKey);
+    ContactList? contactList = await _cacheManager.loadContactList(pubKey);
+    if (contactList != null) {
+      contactList.loadedTimestamp = Helpers.now;
+    }
 
     if (contactList != null && !forceRefresh) {
       return contactList;
@@ -79,7 +82,10 @@ class Follows {
   Future<ContactList> _ensureUpToDateContactListOrEmpty(
     String pubkey,
   ) async {
-    ContactList? contactList = await _loadCachedContactList(pubkey);
+    ContactList? contactList = await _cacheManager.loadContactList(pubkey);
+    if (contactList != null) {
+      contactList.loadedTimestamp = Helpers.now;
+    }
     int sometimeAgo = DateTime.now()
             .subtract(kRefreshContactListDuration)
             .millisecondsSinceEpoch ~/
@@ -190,19 +196,6 @@ class Follows {
       await bResult.broadcastDoneFuture;
       await _cacheManager.saveEvent(contactList.toEvent());
     }
-    return contactList;
-  }
-
-  Future<ContactList?> _loadCachedContactList(String pubKey) async {
-    final events = await _cacheManager.loadEvents(
-      pubKeys: [pubKey],
-      kinds: [ContactList.kKind],
-      limit: 1,
-    );
-    if (events.isEmpty) return null;
-
-    final contactList = ContactList.fromEvent(events.first);
-    contactList.loadedTimestamp = Helpers.now;
     return contactList;
   }
 

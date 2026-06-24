@@ -26,12 +26,6 @@ class MemCacheManager implements CacheManager {
   /// In memory storage
   Map<String, RelaySet> relaySets = {};
 
-  /// In memory storage
-  Map<String, ContactList> contactLists = {};
-
-  /// In memory storage
-  Map<String, Metadata> metadatas = {};
-
   /// In memory storage indexed by pubKey
   Map<String, Nip05> nip05s = {};
 
@@ -173,14 +167,12 @@ class MemCacheManager implements CacheManager {
     if (event != null) {
       return ContactList.fromEvent(event);
     }
-    return contactLists[pubKey];
+    return null;
   }
 
   @override
   Future<void> saveContactList(ContactList contactList) async {
-    final event = contactList.toEvent();
-    await saveEvent(event);
-    contactLists[contactList.pubKey] = ContactList.fromEvent(event);
+    await saveEvent(contactList.toEvent());
   }
 
   @override
@@ -201,16 +193,12 @@ class MemCacheManager implements CacheManager {
       metadata.refreshedTimestamp = Nip01Event.secondsSinceEpoch();
       return metadata;
     }
-    return metadatas[pubKey];
+    return null;
   }
 
   @override
   Future<void> saveMetadata(Metadata metadata) async {
-    final event = metadata.toEvent();
-    await saveEvent(event);
-    final normalized = Metadata.fromEvent(event);
-    normalized.refreshedTimestamp = metadata.refreshedTimestamp;
-    metadatas[metadata.pubKey] = normalized;
+    await saveEvent(metadata.toEvent());
   }
 
   @override
@@ -227,13 +215,11 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> removeAllContactLists() async {
-    contactLists.clear();
     await removeEvents(kinds: [ContactList.kKind]);
   }
 
   @override
   Future<void> removeAllMetadatas() async {
-    metadatas.clear();
     await removeEvents(kinds: [Metadata.kKind]);
   }
 
@@ -244,13 +230,11 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<void> removeContactList(String pubKey) async {
-    contactLists.remove(pubKey);
     await removeEvents(pubKeys: [pubKey], kinds: [ContactList.kKind]);
   }
 
   @override
   Future<void> removeMetadata(String pubKey) async {
-    metadatas.remove(pubKey);
     await removeEvents(pubKeys: [pubKey], kinds: [Metadata.kKind]);
   }
 
@@ -589,8 +573,6 @@ class MemCacheManager implements CacheManager {
       await removeEventDeliveryRecord(eventId);
       await removeRelayDeliveryTargets(eventId);
     }
-    contactLists.remove(pubKey);
-    metadatas.remove(pubKey);
     await _refreshUserRelayListProjection(pubKey);
   }
 
@@ -877,8 +859,6 @@ class MemCacheManager implements CacheManager {
     relayDeliveryTargets.clear();
     userRelayLists.clear();
     relaySets.clear();
-    contactLists.clear();
-    metadatas.clear();
     nip05s.clear();
     cashuKeysets.clear();
     cashuProofs.clear();
@@ -966,30 +946,6 @@ class MemCacheManager implements CacheManager {
   }
 
   Future<void> _refreshDerivedStateForEvent(Nip01Event event) async {
-    if (event.kind == ContactList.kKind) {
-      final latest = await _loadLatestVisibleEvent(
-        pubKey: event.pubKey,
-        kind: ContactList.kKind,
-      );
-      if (latest == null) {
-        contactLists.remove(event.pubKey);
-      } else {
-        contactLists[event.pubKey] = ContactList.fromEvent(latest);
-      }
-    } else if (event.kind == Metadata.kKind) {
-      final latest = await _loadLatestVisibleEvent(
-        pubKey: event.pubKey,
-        kind: Metadata.kKind,
-      );
-      if (latest == null) {
-        metadatas.remove(event.pubKey);
-      } else {
-        final metadata = Metadata.fromEvent(latest);
-        metadata.refreshedTimestamp = Nip01Event.secondsSinceEpoch();
-        metadatas[event.pubKey] = metadata;
-      }
-    }
-
     if (_affectsUserRelayListProjection(event.kind)) {
       await _refreshUserRelayListProjection(event.pubKey);
     }
@@ -997,28 +953,6 @@ class MemCacheManager implements CacheManager {
 
   Future<void> _refreshDerivedStateForPubKeys(Set<String> pubKeys) async {
     for (final pubKey in pubKeys) {
-      final metadataEvent = await _loadLatestVisibleEvent(
-        pubKey: pubKey,
-        kind: Metadata.kKind,
-      );
-      if (metadataEvent == null) {
-        metadatas.remove(pubKey);
-      } else {
-        final metadata = Metadata.fromEvent(metadataEvent);
-        metadata.refreshedTimestamp = Nip01Event.secondsSinceEpoch();
-        metadatas[pubKey] = metadata;
-      }
-
-      final contactListEvent = await _loadLatestVisibleEvent(
-        pubKey: pubKey,
-        kind: ContactList.kKind,
-      );
-      if (contactListEvent == null) {
-        contactLists.remove(pubKey);
-      } else {
-        contactLists[pubKey] = ContactList.fromEvent(contactListEvent);
-      }
-
       await _refreshUserRelayListProjection(pubKey);
     }
   }
