@@ -11,7 +11,7 @@ void main() {
     late MockRelay relay;
 
     setUp(() async {
-      relay = MockRelay(name: 'test', explicitPort: await _reservePort());
+      relay = MockRelay(name: 'test');
       await relay.startServer();
 
       final ndk = Ndk.emptyBootstrapRelaysConfig();
@@ -338,11 +338,4 @@ void main() {
       ndk.destroy();
     });
   });
-}
-
-Future<int> _reservePort() async {
-  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-  final port = socket.port;
-  await socket.close();
-  return port;
 }
