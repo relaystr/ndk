@@ -1,6 +1,4 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// NIP-07 browser-extension signer for Nostr.
 library;
 
 export 'src/nip07_event_signer_stub.dart'

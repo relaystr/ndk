@@ -5,6 +5,7 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'wallet_action_dialogs.dart';
 
 /// Configuration for wallet type icons
 class WalletIconConfig {
@@ -78,10 +79,14 @@ class NWalletCard extends StatefulWidget {
   State<NWalletCard> createState() => _NWalletCardState();
 }
 
-class _NWalletCardState extends State<NWalletCard> {
+class _NWalletCardState extends State<NWalletCard>
+    with WalletActionDialogsMixin {
   List<Color>? _customGradientColors;
   GetBudgetResponse? _budgetResponse;
   bool _isFetchingBudget = false;
+
+  @override
+  NdkFlutter get ndkFlutter => widget.ndkFlutter;
 
   Set<String> _nwcPermissions(NwcWallet wallet) {
     final livePermissions = wallet.connection?.permissions;
@@ -488,6 +493,76 @@ class _NWalletCardState extends State<NWalletCard> {
               child: PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.white70),
                 itemBuilder: (context) {
+                  final bool isCashuWallet = widget.wallet is CashuWallet;
+                  final reclaimable = isCashuWallet
+                      ? reclaimablePending(
+                          widget.ndkFlutter.ndk.cashu.pendingTransactions
+                                  .valueOrNull ??
+                              const <CashuWalletTransaction>[],
+                          mintUrl: (widget.wallet as CashuWallet).mintUrl,
+                        )
+                      : const <CashuWalletTransaction>[];
+
+                  // Send / Receive / Reclaim section, enabled per capability.
+                  final actionItems = <PopupMenuEntry<String>>[
+                    PopupMenuItem(
+                      value: 'send',
+                      enabled: widget.wallet.canSend,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.send, size: 20),
+                          const SizedBox(width: 8),
+                          Text(l10n.send),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'receive',
+                      enabled: widget.wallet.canReceive,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.download, size: 20),
+                          const SizedBox(width: 8),
+                          Text(l10n.receive),
+                        ],
+                      ),
+                    ),
+                    if (isCashuWallet)
+                      PopupMenuItem(
+                        value: 'reclaim',
+                        enabled: reclaimable.isNotEmpty,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.replay, size: 20),
+                            const SizedBox(width: 8),
+                            Text(l10n.reclaimPendingFunds),
+                          ],
+                        ),
+                      ),
+                    if (isCashuWallet)
+                      PopupMenuItem(
+                        value: 'backup',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.backup, size: 20),
+                            const SizedBox(width: 8),
+                            Text(l10n.backup),
+                          ],
+                        ),
+                      ),
+                    if (isCashuWallet)
+                      PopupMenuItem(
+                        value: 'restore',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.settings_backup_restore, size: 20),
+                            const SizedBox(width: 8),
+                            Text(l10n.restore),
+                          ],
+                        ),
+                      ),
+                  ];
+
                   final defaultItems = <PopupMenuEntry<String>>[
                     if (widget.wallet.canReceive)
                       PopupMenuItem(
@@ -540,6 +615,8 @@ class _NWalletCardState extends State<NWalletCard> {
                   ];
 
                   return [
+                    ...actionItems,
+                    const PopupMenuDivider(),
                     ...defaultItems,
                     if (defaultItems.isNotEmpty) const PopupMenuDivider(),
                     PopupMenuItem(
@@ -586,6 +663,30 @@ class _NWalletCardState extends State<NWalletCard> {
                 },
                 onSelected: (value) async {
                   switch (value) {
+                    case 'send':
+                      showSendDialog(context, widget.wallet);
+                      break;
+                    case 'receive':
+                      showReceiveFlow(context, widget.wallet);
+                      break;
+                    case 'reclaim':
+                      await showReclaimPending(
+                        context,
+                        widget.wallet as CashuWallet,
+                      );
+                      break;
+                    case 'backup':
+                      showBackupDialog(
+                        context,
+                        widget.wallet as CashuWallet,
+                      );
+                      break;
+                    case 'restore':
+                      showRestoreDialog(
+                        context,
+                        widget.wallet as CashuWallet,
+                      );
+                      break;
                     case 'set_default_receive':
                       widget.ndkFlutter.ndk.wallets
                           .setDefaultWalletForReceiving(widget.wallet.id);

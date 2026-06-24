@@ -3,6 +3,113 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-06-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.7`](#ndk---v084-dev7)
+ - [`ndk_drift` - `v0.1.1-dev.9`](#ndk_drift---v011-dev9)
+ - [`ndk_flutter` - `v0.8.4-dev.10`](#ndk_flutter---v084-dev10)
+ - [`ndk_objectbox` - `v0.2.12-dev.7`](#ndk_objectbox---v0212-dev7)
+ - [`nip07_event_signer` - `v1.1.0-dev.7`](#nip07_event_signer---v110-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.7`
+ - `nip07_event_signer` - `v1.1.0-dev.7`
+
+---
+
+#### `ndk` - `v0.8.4-dev.7`
+
+ - **FIX**: randomize NIP-59 gift wrap timestamps.
+
+#### `ndk_drift` - `v0.1.1-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.10`
+
+ - **FIX**: dynamic sdk constraints.
+
+
+## 2026-06-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.6`](#ndk---v084-dev6)
+ - [`ndk_flutter` - `v0.8.4-dev.9`](#ndk_flutter---v084-dev9)
+ - [`ndk_objectbox` - `v0.2.12-dev.6`](#ndk_objectbox---v0212-dev6)
+ - [`nip07_event_signer` - `v1.1.0-dev.6`](#nip07_event_signer---v110-dev6)
+ - [`ndk_drift` - `v0.1.1-dev.8`](#ndk_drift---v011-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.6`
+ - `nip07_event_signer` - `v1.1.0-dev.6`
+ - `ndk_drift` - `v0.1.1-dev.8`
+
+---
+
+#### `ndk` - `v0.8.4-dev.6`
+
+ - **REFACTOR**: centralized json serialisation for WalletTransaction.
+ - **FIX**: update transactions after state import.
+ - **FIX**: import mutating before validating.
+ - **FIX**: add missing methods to cashu cache decorator.
+ - **FIX**: remove direct cache access in cashu import/export.
+ - **FEAT**: add FlutterSecuredStorage Cashu Seed Store impl.
+
+#### `ndk_flutter` - `v0.8.4-dev.9`
+
+ - **REFACTOR**: centralized json serialisation for WalletTransaction.
+ - **FIX**: scope backup key to seed key.
+ - **FIX**: better lnurl messages.
+ - **FEAT**: add FlutterSecuredStorage Cashu Seed Store impl.
+
+
+## 2026-06-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_flutter` - `v0.8.4-dev.8`](#ndk_flutter---v084-dev8)
+
+---
+
+#### `ndk_flutter` - `v0.8.4-dev.8`
+
+ - **FIX**(ndk_flutter): require Flutter 1.20 for pub.dev publish.
+
+
 ## 2026-06-17
 
 ### Changes
