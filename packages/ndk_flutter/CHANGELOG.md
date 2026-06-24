@@ -1,3 +1,7 @@
+## 0.8.4-dev.10
+
+ - **FIX**: dynamic sdk constraints.
+
 ## 0.8.4-dev.9
 
  - **REFACTOR**: centralized json serialisation for WalletTransaction.

@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-06-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk_drift` - `v0.1.1-dev.9`](#ndk_drift---v011-dev9)
+ - [`ndk_flutter` - `v0.8.4-dev.10`](#ndk_flutter---v084-dev10)
+
+---
+
+#### `ndk_drift` - `v0.1.1-dev.9`
+
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: delete transactions.
+
+#### `ndk_flutter` - `v0.8.4-dev.10`
+
+ - **FIX**: dynamic sdk constraints.
+
+
 ## 2026-06-23
 
 ### Changes
