@@ -119,6 +119,46 @@ void main() {
     });
 
     test(
+        'NIP-17 DM gift wrap and seal timestamps should be randomized in the 2 days before the rumor createdAt',
+        () async {
+      const twoDaysInSeconds = 172800;
+
+      final rumor = Nip01Event(
+        pubKey: key1.publicKey,
+        content: 'Test NIP-17 direct message',
+        kind: 14,
+        tags: [
+          ['p', key2.publicKey],
+        ],
+      );
+      final baseCreatedAt = rumor.createdAt;
+
+      final giftWrap = await giftWrapService.toGiftWrap(
+        rumor: rumor,
+        recipientPubkey: key2.publicKey,
+      );
+
+      expect(giftWrap.createdAt,
+          greaterThanOrEqualTo(baseCreatedAt - twoDaysInSeconds));
+      expect(giftWrap.createdAt, lessThan(baseCreatedAt));
+
+      ndk.accounts
+          .loginPrivateKey(pubkey: key2.publicKey, privkey: key2.privateKey!);
+
+      final seal = await giftWrapService.unwrapEvent(wrappedEvent: giftWrap);
+
+      expect(seal.createdAt,
+          greaterThanOrEqualTo(baseCreatedAt - twoDaysInSeconds));
+      expect(seal.createdAt, lessThan(baseCreatedAt));
+      expect(seal.createdAt, isNot(equals(giftWrap.createdAt)));
+
+      final unwrappedRumor = await giftWrapService.fromGiftWrap(
+        giftWrap: giftWrap,
+      );
+      expect(unwrappedRumor.createdAt, equals(rumor.createdAt));
+    });
+
+    test(
         'Can use custom signer instead of logged-in account for wrap and unwrap',
         () async {
       // Create a custom signer with key3 (different from logged-in key1)
