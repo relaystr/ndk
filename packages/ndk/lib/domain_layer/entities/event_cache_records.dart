@@ -31,6 +31,7 @@ enum RelayDeliveryReason {
 }
 
 class RelayDeliveryTarget {
+  final String eventId;
   final String relayUrl;
   final RelayDeliveryReason reason;
   final RelayDeliveryState state;
@@ -41,6 +42,7 @@ class RelayDeliveryTarget {
   final String? lastOkMessage;
 
   const RelayDeliveryTarget({
+    required this.eventId,
     required this.relayUrl,
     required this.reason,
     this.state = RelayDeliveryState.pending,
@@ -51,7 +53,10 @@ class RelayDeliveryTarget {
     this.lastOkMessage,
   });
 
+  String get key => '$eventId|$relayUrl';
+
   RelayDeliveryTarget copyWith({
+    String? eventId,
     String? relayUrl,
     RelayDeliveryReason? reason,
     RelayDeliveryState? state,
@@ -62,6 +67,7 @@ class RelayDeliveryTarget {
     Object? lastOkMessage = _noChange,
   }) {
     return RelayDeliveryTarget(
+      eventId: eventId ?? this.eventId,
       relayUrl: relayUrl ?? this.relayUrl,
       reason: reason ?? this.reason,
       state: state ?? this.state,
@@ -83,6 +89,7 @@ class RelayDeliveryTarget {
 
   Map<String, dynamic> toJson() {
     return {
+      'eventId': eventId,
       'relayUrl': relayUrl,
       'reason': reason.name,
       'state': state.name,
@@ -96,6 +103,7 @@ class RelayDeliveryTarget {
 
   factory RelayDeliveryTarget.fromJson(Map<String, dynamic> json) {
     return RelayDeliveryTarget(
+      eventId: json['eventId'] as String,
       relayUrl: json['relayUrl'] as String,
       reason: RelayDeliveryReason.values.byName(json['reason'] as String),
       state: RelayDeliveryState.values.byName(json['state'] as String),
@@ -104,50 +112,6 @@ class RelayDeliveryTarget {
       nextRetryAt: json['nextRetryAt'] as int?,
       lastError: json['lastError'] as String?,
       lastOkMessage: json['lastOkMessage'] as String?,
-    );
-  }
-}
-
-class RelayDeliveryTargetRecord {
-  final String eventId;
-  final RelayDeliveryTarget target;
-
-  const RelayDeliveryTargetRecord({
-    required this.eventId,
-    required this.target,
-  });
-
-  String get relayUrl => target.relayUrl;
-  RelayDeliveryReason get reason => target.reason;
-  RelayDeliveryState get state => target.state;
-  int get attemptCount => target.attemptCount;
-  int? get lastAttemptAt => target.lastAttemptAt;
-  int? get nextRetryAt => target.nextRetryAt;
-  String? get lastError => target.lastError;
-  String? get lastOkMessage => target.lastOkMessage;
-  String get key => '$eventId|${target.relayUrl}';
-
-  RelayDeliveryTargetRecord copyWith({
-    String? eventId,
-    RelayDeliveryTarget? target,
-  }) {
-    return RelayDeliveryTargetRecord(
-      eventId: eventId ?? this.eventId,
-      target: target ?? this.target,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'eventId': eventId,
-      ...target.toJson(),
-    };
-  }
-
-  factory RelayDeliveryTargetRecord.fromJson(Map<String, dynamic> json) {
-    return RelayDeliveryTargetRecord(
-      eventId: json['eventId'] as String,
-      target: RelayDeliveryTarget.fromJson(json),
     );
   }
 }

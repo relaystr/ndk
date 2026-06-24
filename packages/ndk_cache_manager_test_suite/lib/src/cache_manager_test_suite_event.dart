@@ -907,27 +907,23 @@ void _runEventTests(CacheManager Function() getCacheManager,
     final cacheManager = getCacheManager();
     await cacheManager.removeAllRelayDeliveryTargets();
 
-    const targetA = RelayDeliveryTargetRecord(
+    const targetA = RelayDeliveryTarget(
       eventId: 'delivery-target-event',
-      target: RelayDeliveryTarget(
-        relayUrl: 'wss://relay-a.example',
-        reason: RelayDeliveryReason.authorWrite,
-        state: RelayDeliveryState.acked,
-        attemptCount: 1,
-        lastOkMessage: 'ok',
-      ),
+      relayUrl: 'wss://relay-a.example',
+      reason: RelayDeliveryReason.authorWrite,
+      state: RelayDeliveryState.acked,
+      attemptCount: 1,
+      lastOkMessage: 'ok',
     );
 
-    const targetB = RelayDeliveryTargetRecord(
+    const targetB = RelayDeliveryTarget(
       eventId: 'delivery-target-event',
-      target: RelayDeliveryTarget(
-        relayUrl: 'wss://relay-b.example',
-        reason: RelayDeliveryReason.replyAuthorRead,
-        state: RelayDeliveryState.transientFailure,
-        attemptCount: 2,
-        nextRetryAt: 3000,
-        lastError: 'timeout',
-      ),
+      relayUrl: 'wss://relay-b.example',
+      reason: RelayDeliveryReason.replyAuthorRead,
+      state: RelayDeliveryState.transientFailure,
+      attemptCount: 2,
+      nextRetryAt: 3000,
+      lastError: 'timeout',
     );
 
     await cacheManager.saveRelayDeliveryTargets([targetA, targetB]);
@@ -957,22 +953,18 @@ void _runEventTests(CacheManager Function() getCacheManager,
     final cacheManager = getCacheManager();
     await cacheManager.removeAllRelayDeliveryTargets();
 
-    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTargetRecord(
+    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTarget(
       eventId: 'race-safe-event',
-      target: RelayDeliveryTarget(
-        relayUrl: 'wss://relay-a.example',
-        reason: RelayDeliveryReason.authorWrite,
-        state: RelayDeliveryState.acked,
-      ),
+      relayUrl: 'wss://relay-a.example',
+      reason: RelayDeliveryReason.authorWrite,
+      state: RelayDeliveryState.acked,
     ));
-    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTargetRecord(
+    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTarget(
       eventId: 'race-safe-event',
-      target: RelayDeliveryTarget(
-        relayUrl: 'wss://relay-b.example',
-        reason: RelayDeliveryReason.explicit,
-        state: RelayDeliveryState.transientFailure,
-        attemptCount: 1,
-      ),
+      relayUrl: 'wss://relay-b.example',
+      reason: RelayDeliveryReason.explicit,
+      state: RelayDeliveryState.transientFailure,
+      attemptCount: 1,
     ));
 
     final loaded = await cacheManager.loadRelayDeliveryTargets(
@@ -992,26 +984,20 @@ void _runEventTests(CacheManager Function() getCacheManager,
     await cacheManager.removeAllRelayDeliveryTargets();
 
     await cacheManager.saveRelayDeliveryTargets(const [
-      RelayDeliveryTargetRecord(
+      RelayDeliveryTarget(
         eventId: 'target-remove-event',
-        target: RelayDeliveryTarget(
-          relayUrl: 'wss://relay-a.example',
-          reason: RelayDeliveryReason.authorWrite,
-        ),
+        relayUrl: 'wss://relay-a.example',
+        reason: RelayDeliveryReason.authorWrite,
       ),
-      RelayDeliveryTargetRecord(
+      RelayDeliveryTarget(
         eventId: 'target-remove-event',
-        target: RelayDeliveryTarget(
-          relayUrl: 'wss://relay-b.example',
-          reason: RelayDeliveryReason.explicit,
-        ),
+        relayUrl: 'wss://relay-b.example',
+        reason: RelayDeliveryReason.explicit,
       ),
-      RelayDeliveryTargetRecord(
+      RelayDeliveryTarget(
         eventId: 'other-target-remove-event',
-        target: RelayDeliveryTarget(
-          relayUrl: 'wss://relay-c.example',
-          reason: RelayDeliveryReason.hint,
-        ),
+        relayUrl: 'wss://relay-c.example',
+        reason: RelayDeliveryReason.hint,
       ),
     ]);
 
@@ -1067,12 +1053,10 @@ void _runEventTests(CacheManager Function() getCacheManager,
       createdAt: 1000,
       updatedAt: 1001,
     ));
-    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTargetRecord(
+    await cacheManager.saveRelayDeliveryTarget(const RelayDeliveryTarget(
       eventId: 'event-with-associated-state',
-      target: RelayDeliveryTarget(
-        relayUrl: 'wss://relay-a.example',
-        reason: RelayDeliveryReason.authorWrite,
-      ),
+      relayUrl: 'wss://relay-a.example',
+      reason: RelayDeliveryReason.authorWrite,
     ));
 
     await cacheManager.removeEvent(event.id);

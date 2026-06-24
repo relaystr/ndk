@@ -111,12 +111,10 @@ class PendingBroadcastDelivery {
       relayUrlList.map((relayUrl) {
         final existingTarget = existingByRelay[relayUrl];
         return existingTarget ??
-            RelayDeliveryTargetRecord(
+            RelayDeliveryTarget(
               eventId: event.id,
-              target: RelayDeliveryTarget(
-                relayUrl: relayUrl,
-                reason: RelayDeliveryReason.explicit,
-              ),
+              relayUrl: relayUrl,
+              reason: RelayDeliveryReason.explicit,
             );
       }).toList(),
     );
@@ -140,7 +138,7 @@ class PendingBroadcastDelivery {
       for (final target in existingTargets) target.relayUrl: target,
     };
 
-    final updatedTargets = <RelayDeliveryTargetRecord>[];
+    final updatedTargets = <RelayDeliveryTarget>[];
     final policy = DeliveryPolicy.forEvent(event);
     for (final response in responses) {
       final current = targetsByRelay[response.relayUrl];
@@ -163,14 +161,12 @@ class PendingBroadcastDelivery {
 
       updatedTargets.add(
         current.copyWith(
-          target: current.target.copyWith(
-            state: nextState,
-            attemptCount: current.attemptCount + 1,
-            lastAttemptAt: attemptTimestamp,
-            nextRetryAt: nextRetryAt,
-            lastOkMessage: isAcked ? response.msg : current.lastOkMessage,
-            lastError: isAcked ? null : response.msg,
-          ),
+          state: nextState,
+          attemptCount: current.attemptCount + 1,
+          lastAttemptAt: attemptTimestamp,
+          nextRetryAt: nextRetryAt,
+          lastOkMessage: isAcked ? response.msg : current.lastOkMessage,
+          lastError: isAcked ? null : response.msg,
         ),
       );
     }
@@ -320,7 +316,7 @@ class PendingBroadcastDelivery {
   }
 
   EventDeliveryStatus _resolveDeliveryStatus(
-    List<RelayDeliveryTargetRecord> targets,
+    List<RelayDeliveryTarget> targets,
   ) {
     if (targets.isEmpty) {
       return EventDeliveryStatus.pending;

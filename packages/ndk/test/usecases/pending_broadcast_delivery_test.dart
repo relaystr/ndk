@@ -53,15 +53,13 @@ void main() {
 
     test('does not rebroadcast permanent failures during due flush', () async {
       await cacheManager.saveRelayDeliveryTarget(
-        RelayDeliveryTargetRecord(
+        RelayDeliveryTarget(
           eventId: event.id,
-          target: RelayDeliveryTarget(
-            relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-            state: RelayDeliveryState.permanentFailure,
-            attemptCount: 1,
-            lastAttemptAt: 1700000001,
-          ),
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.permanentFailure,
+          attemptCount: 1,
+          lastAttemptAt: 1700000001,
         ),
       );
 
@@ -77,16 +75,14 @@ void main() {
         () async {
       final now = Nip01Event.secondsSinceEpoch();
       await cacheManager.saveRelayDeliveryTarget(
-        RelayDeliveryTargetRecord(
+        RelayDeliveryTarget(
           eventId: event.id,
-          target: RelayDeliveryTarget(
-            relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-            state: RelayDeliveryState.authRequired,
-            attemptCount: 1,
-            lastAttemptAt: now,
-            nextRetryAt: now + 60,
-          ),
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.authRequired,
+          attemptCount: 1,
+          lastAttemptAt: now,
+          nextRetryAt: now + 60,
         ),
       );
 
@@ -101,16 +97,14 @@ void main() {
     test('rebroadcasts auth-required targets once they are due', () async {
       final now = Nip01Event.secondsSinceEpoch();
       await cacheManager.saveRelayDeliveryTarget(
-        RelayDeliveryTargetRecord(
+        RelayDeliveryTarget(
           eventId: event.id,
-          target: RelayDeliveryTarget(
-            relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-            state: RelayDeliveryState.authRequired,
-            attemptCount: 1,
-            lastAttemptAt: now - 60,
-            nextRetryAt: now - 1,
-          ),
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.authRequired,
+          attemptCount: 1,
+          lastAttemptAt: now - 60,
+          nextRetryAt: now - 1,
         ),
       );
 
@@ -126,16 +120,14 @@ void main() {
         () async {
       final now = Nip01Event.secondsSinceEpoch();
       await cacheManager.saveRelayDeliveryTarget(
-        RelayDeliveryTargetRecord(
+        RelayDeliveryTarget(
           eventId: event.id,
-          target: RelayDeliveryTarget(
-            relayUrl: 'wss://relay.example',
-            reason: RelayDeliveryReason.explicit,
-            state: RelayDeliveryState.pending,
-            attemptCount: 0,
-            lastAttemptAt: now - 60,
-            nextRetryAt: now - 1,
-          ),
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.pending,
+          attemptCount: 0,
+          lastAttemptAt: now - 60,
+          nextRetryAt: now - 1,
         ),
       );
 

@@ -111,21 +111,19 @@ void main() {
     });
   });
 
-  group('RelayDeliveryTargetRecord', () {
+  group('RelayDeliveryTarget', () {
     test('round trips through json', () {
-      const original = RelayDeliveryTargetRecord(
+      const original = RelayDeliveryTarget(
         eventId: 'event-4',
-        target: RelayDeliveryTarget(
-          relayUrl: 'wss://relay.two',
-          reason: RelayDeliveryReason.explicit,
-          state: RelayDeliveryState.transientFailure,
-          attemptCount: 2,
-          nextRetryAt: 1700003000,
-          lastError: 'timeout',
-        ),
+        relayUrl: 'wss://relay.two',
+        reason: RelayDeliveryReason.explicit,
+        state: RelayDeliveryState.transientFailure,
+        attemptCount: 2,
+        nextRetryAt: 1700003000,
+        lastError: 'timeout',
       );
 
-      final restored = RelayDeliveryTargetRecord.fromJson(original.toJson());
+      final restored = RelayDeliveryTarget.fromJson(original.toJson());
 
       expect(restored.toJson(), original.toJson());
       expect(restored.key, 'event-4|wss://relay.two');
@@ -133,6 +131,7 @@ void main() {
 
     test('copyWith can clear nullable retry metadata fields', () {
       const original = RelayDeliveryTarget(
+        eventId: 'event-4',
         relayUrl: 'wss://relay.two',
         reason: RelayDeliveryReason.explicit,
         state: RelayDeliveryState.transientFailure,

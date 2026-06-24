@@ -42,7 +42,7 @@ class MemCacheManager implements CacheManager {
   Map<String, EventDeliveryRecord> eventDeliveryRecords = {};
 
   /// In memory relay delivery target storage keyed by "$eventId|$relayUrl"
-  Map<String, RelayDeliveryTargetRecord> relayDeliveryTargets = {};
+  Map<String, RelayDeliveryTarget> relayDeliveryTargets = {};
 
   /// String for mint Url
   Map<String, Set<CahsuKeyset>> cashuKeysets = {};
@@ -376,20 +376,20 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<void> saveRelayDeliveryTarget(RelayDeliveryTargetRecord record) async {
-    relayDeliveryTargets[record.key] = record;
+  Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target) async {
+    relayDeliveryTargets[target.key] = target;
   }
 
   @override
   Future<void> saveRelayDeliveryTargets(
-      List<RelayDeliveryTargetRecord> records) async {
-    for (final record in records) {
-      relayDeliveryTargets[record.key] = record;
+      List<RelayDeliveryTarget> targets) async {
+    for (final target in targets) {
+      relayDeliveryTargets[target.key] = target;
     }
   }
 
   @override
-  Future<RelayDeliveryTargetRecord?> loadRelayDeliveryTarget({
+  Future<RelayDeliveryTarget?> loadRelayDeliveryTarget({
     required String eventId,
     required String relayUrl,
   }) async {
@@ -397,24 +397,24 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
-  Future<List<RelayDeliveryTargetRecord>> loadRelayDeliveryTargets({
+  Future<List<RelayDeliveryTarget>> loadRelayDeliveryTargets({
     String? eventId,
     String? relayUrl,
     RelayDeliveryState? state,
     bool excludeAcked = false,
     int? limit,
   }) async {
-    var records = relayDeliveryTargets.values.where((record) {
-      if (eventId != null && record.eventId != eventId) {
+    var records = relayDeliveryTargets.values.where((target) {
+      if (eventId != null && target.eventId != eventId) {
         return false;
       }
-      if (relayUrl != null && record.relayUrl != relayUrl) {
+      if (relayUrl != null && target.relayUrl != relayUrl) {
         return false;
       }
-      if (state != null && record.state != state) {
+      if (state != null && target.state != state) {
         return false;
       }
-      if (excludeAcked && record.state == RelayDeliveryState.acked) {
+      if (excludeAcked && target.state == RelayDeliveryState.acked) {
         return false;
       }
       return true;

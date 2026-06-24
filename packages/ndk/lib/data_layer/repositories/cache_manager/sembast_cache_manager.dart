@@ -204,24 +204,24 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
-  Future<void> saveRelayDeliveryTarget(RelayDeliveryTargetRecord record) async {
+  Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target) async {
     await _relayDeliveryTargetStore
-        .record(record.key)
-        .put(_database, record.toJson().cast<String, Object?>());
+        .record(target.key)
+        .put(_database, target.toJson().cast<String, Object?>());
   }
 
   @override
   Future<void> saveRelayDeliveryTargets(
-      List<RelayDeliveryTargetRecord> records) async {
-    final keys = records.map((record) => record.key).toList();
-    final values = records
-        .map((record) => record.toJson().cast<String, Object?>())
+      List<RelayDeliveryTarget> targets) async {
+    final keys = targets.map((target) => target.key).toList();
+    final values = targets
+        .map((target) => target.toJson().cast<String, Object?>())
         .toList();
     await _relayDeliveryTargetStore.records(keys).put(_database, values);
   }
 
   @override
-  Future<RelayDeliveryTargetRecord?> loadRelayDeliveryTarget({
+  Future<RelayDeliveryTarget?> loadRelayDeliveryTarget({
     required String eventId,
     required String relayUrl,
   }) async {
@@ -229,11 +229,11 @@ class SembastCacheManager extends CacheManager {
         .record(_eventSourceKey(eventId, relayUrl))
         .get(_database);
     if (data == null) return null;
-    return RelayDeliveryTargetRecord.fromJson(data);
+    return RelayDeliveryTarget.fromJson(data);
   }
 
   @override
-  Future<List<RelayDeliveryTargetRecord>> loadRelayDeliveryTargets({
+  Future<List<RelayDeliveryTarget>> loadRelayDeliveryTargets({
     String? eventId,
     String? relayUrl,
     RelayDeliveryState? state,
@@ -267,7 +267,7 @@ class SembastCacheManager extends CacheManager {
     final records =
         await _relayDeliveryTargetStore.find(_database, finder: finder);
     return records
-        .map((record) => RelayDeliveryTargetRecord.fromJson(record.value))
+        .map((record) => RelayDeliveryTarget.fromJson(record.value))
         .toList();
   }
 

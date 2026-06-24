@@ -37,14 +37,14 @@ abstract class CacheManager {
   });
   Future<void> removeEventDeliveryRecord(String eventId);
   Future<void> removeAllEventDeliveryRecords();
-  Future<void> saveRelayDeliveryTarget(RelayDeliveryTargetRecord record);
+  Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target);
   Future<void> saveRelayDeliveryTargets(
-      List<RelayDeliveryTargetRecord> records);
-  Future<RelayDeliveryTargetRecord?> loadRelayDeliveryTarget({
+      List<RelayDeliveryTarget> targets);
+  Future<RelayDeliveryTarget?> loadRelayDeliveryTarget({
     required String eventId,
     required String relayUrl,
   });
-  Future<List<RelayDeliveryTargetRecord>> loadRelayDeliveryTargets({
+  Future<List<RelayDeliveryTarget>> loadRelayDeliveryTargets({
     String? eventId,
     String? relayUrl,
     RelayDeliveryState? state,
