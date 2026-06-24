@@ -6,6 +6,7 @@ import 'package:ndk/domain_layer/entities/cashu/cashu_keyset.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_mint_info.dart';
 import 'package:ndk/domain_layer/entities/cashu/cashu_proof.dart';
 import 'package:ndk/domain_layer/entities/nip_05.dart';
+import 'package:ndk/domain_layer/entities/nip_65.dart';
 import 'package:ndk/domain_layer/entities/pubkey_mapping.dart';
 import 'package:ndk/domain_layer/entities/read_write_marker.dart';
 import 'package:ndk/domain_layer/entities/user_relay_list.dart';
@@ -17,6 +18,7 @@ import 'package:ndk/domain_layer/entities/wallet/wallet_transaction.dart';
 import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
+import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
 
 import 'database/database.dart';
 
@@ -152,10 +154,6 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       })
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
 
-    if (limit != null) {
-      query = query..limit(limit);
-    }
-
     final rows = await query.get();
     var events = rows.map(_eventFromRow).toList();
 
@@ -185,12 +183,34 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       }).toList();
     }
 
+    final deletionRows = await (_db.select(_db.events)
+          ..where((t) => t.kind.equals(5)))
+        .get();
+    final deletions = deletionRows.map(_eventFromRow).toList();
+
+    events = _applyEventVisibilityRules(events, deletions);
+    events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (limit != null && limit > 0 && events.length > limit) {
+      events = events.take(limit).toList();
+    }
+
     return events;
   }
 
   @override
   Future<void> removeEvent(String id) async {
-    await (_db.delete(_db.events)..where((t) => t.id.equals(id))).go();
+    await Future.wait([
+      (_db.delete(_db.events)..where((t) => t.id.equals(id))).go(),
+      (_db.delete(_db.eventSourcesTable)..where((t) => t.eventId.equals(id)))
+          .go(),
+      (_db.delete(_db.eventDeliveryRecordsTable)
+            ..where((t) => t.eventId.equals(id)))
+          .go(),
+      (_db.delete(_db.relayDeliveryTargetsTable)
+            ..where((t) => t.eventId.equals(id)))
+          .go(),
+    ]);
   }
 
   @override
@@ -286,153 +306,136 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     );
   }
 
+  List<Nip01Event> _applyEventVisibilityRules(
+    List<Nip01Event> events,
+    List<Nip01Event> deletions,
+  ) {
+    final visible = <Nip01Event>[];
+    final replaceableWinners = <String, Nip01Event>{};
+    final now = Nip01Event.secondsSinceEpoch();
+
+    for (final event in events) {
+      if (_isExpired(event, now)) continue;
+      if (_isDeletedByAuthor(event, deletions)) continue;
+
+      final coordinateKey = _coordinateKey(event);
+      if (coordinateKey == null) {
+        visible.add(event);
+        continue;
+      }
+
+      final current = replaceableWinners[coordinateKey];
+      if (current == null || _isMoreRecentReplaceable(event, current)) {
+        replaceableWinners[coordinateKey] = event;
+      }
+    }
+
+    visible.addAll(replaceableWinners.values);
+    return visible;
+  }
+
+  bool _isDeletedByAuthor(Nip01Event target, List<Nip01Event> deletions) {
+    if (target.kind == 5) return false;
+
+    for (final deletion in deletions) {
+      if (deletion.pubKey != target.pubKey) continue;
+      if (deletion.getTags('e').contains(target.id.toLowerCase())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool _isExpired(Nip01Event event, int now) {
+    final expirationValue = event.getFirstTag('expiration');
+    if (expirationValue == null) return false;
+    final expiration = int.tryParse(expirationValue);
+    if (expiration == null) return false;
+    return expiration <= now;
+  }
+
+  String? _coordinateKey(Nip01Event event) {
+    if (!EventKindClassification.isReplaceableKind(event.kind)) return null;
+    final dTag = event.getDtag() ?? '';
+    return '${event.kind}:${event.pubKey}:$dTag';
+  }
+
+  bool _isMoreRecentReplaceable(Nip01Event candidate, Nip01Event current) {
+    if (candidate.createdAt != current.createdAt) {
+      return candidate.createdAt > current.createdAt;
+    }
+
+    return candidate.id.compareTo(current.id) < 0;
+  }
+
+  Future<Nip01Event?> _loadLatestVisibleEvent({
+    required String pubKey,
+    required int kind,
+  }) async {
+    final events = await loadEvents(pubKeys: [pubKey], kinds: [kind], limit: 1);
+    if (events.isEmpty) return null;
+    return events.first;
+  }
+
   // =====================
   // Metadata
   // =====================
 
   @override
   Future<void> saveMetadata(Metadata metadata) async {
-    await _db
-        .into(_db.metadatas)
-        .insertOnConflictUpdate(
-          MetadatasCompanion.insert(
-            pubKey: metadata.pubKey,
-            name: Value(metadata.name),
-            displayName: Value(metadata.displayName),
-            picture: Value(metadata.picture),
-            banner: Value(metadata.banner),
-            website: Value(metadata.website),
-            about: Value(metadata.about),
-            nip05: Value(metadata.nip05),
-            lud16: Value(metadata.lud16),
-            lud06: Value(metadata.lud06),
-            updatedAt: Value(metadata.updatedAt),
-            refreshedTimestamp: Value(metadata.refreshedTimestamp),
-            sourcesJson: jsonEncode(metadata.sources),
-            tagsJson: Value(jsonEncode(metadata.tags)),
-            rawContentJson: Value(
-              metadata.content.isNotEmpty ? jsonEncode(metadata.content) : null,
-            ),
-          ),
-        );
+    await saveEvent(metadata.toEvent());
   }
 
   @override
   Future<void> saveMetadatas(List<Metadata> metadatas) async {
-    await _db.batch((batch) {
-      batch.insertAllOnConflictUpdate(
-        _db.metadatas,
-        metadatas
-            .map(
-              (metadata) => MetadatasCompanion.insert(
-                pubKey: metadata.pubKey,
-                name: Value(metadata.name),
-                displayName: Value(metadata.displayName),
-                picture: Value(metadata.picture),
-                banner: Value(metadata.banner),
-                website: Value(metadata.website),
-                about: Value(metadata.about),
-                nip05: Value(metadata.nip05),
-                lud16: Value(metadata.lud16),
-                lud06: Value(metadata.lud06),
-                updatedAt: Value(metadata.updatedAt),
-                refreshedTimestamp: Value(metadata.refreshedTimestamp),
-                sourcesJson: jsonEncode(metadata.sources),
-                tagsJson: Value(jsonEncode(metadata.tags)),
-                rawContentJson: Value(
-                  metadata.content.isNotEmpty
-                      ? jsonEncode(metadata.content)
-                      : null,
-                ),
-              ),
-            )
-            .toList(),
-      );
-    });
+    await saveEvents(metadatas.map((metadata) => metadata.toEvent()).toList());
   }
 
   @override
   Future<Metadata?> loadMetadata(String pubKey) async {
-    final row = await (_db.select(
-      _db.metadatas,
-    )..where((t) => t.pubKey.equals(pubKey))).getSingleOrNull();
-    if (row == null) return null;
-    return _metadataFromRow(row);
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: Metadata.kKind,
+    );
+    if (event == null) return null;
+    final metadata = Metadata.fromEvent(event);
+    metadata.refreshedTimestamp = Nip01Event.secondsSinceEpoch();
+    return metadata;
   }
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
-    final rows = await (_db.select(
-      _db.metadatas,
-    )..where((t) => t.pubKey.isIn(pubKeys))).get();
-
-    final map = {for (var row in rows) row.pubKey: _metadataFromRow(row)};
-    return pubKeys.map((pk) => map[pk]).toList();
+    return Future.wait(pubKeys.map(loadMetadata));
   }
 
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
-    final rows =
-        await (_db.select(_db.metadatas)
-              ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)])
-              ..limit(limit))
-            .get();
+    final events = await loadEvents(kinds: [Metadata.kKind]);
+    final normalizedSearch = search.trim().toLowerCase();
+    final matches = events
+        .map((event) => Metadata.fromEvent(event))
+        .where((metadata) {
+          if (normalizedSearch.isEmpty) return true;
+          return metadata.matchesSearch(normalizedSearch) ||
+              (metadata.about?.toLowerCase().contains(normalizedSearch) ??
+                  false) ||
+              (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
+        })
+        .toList()
+      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
 
-    final metadatas = rows.map(_metadataFromRow).toList();
-
-    if (search.isNotEmpty) {
-      final searchLower = search.toLowerCase();
-      return metadatas.where((metadata) {
-        return (metadata.name?.toLowerCase().contains(searchLower) ?? false) ||
-            (metadata.displayName?.toLowerCase().contains(searchLower) ??
-                false) ||
-            (metadata.about?.toLowerCase().contains(searchLower) ?? false) ||
-            (metadata.nip05?.toLowerCase().contains(searchLower) ?? false);
-      });
-    }
-
-    return metadatas;
+    return matches.take(limit);
   }
 
   @override
   Future<void> removeMetadata(String pubKey) async {
-    await (_db.delete(
-      _db.metadatas,
-    )..where((t) => t.pubKey.equals(pubKey))).go();
+    await removeEvents(pubKeys: [pubKey], kinds: [Metadata.kKind]);
   }
 
   @override
   Future<void> removeAllMetadatas() async {
-    await _db.delete(_db.metadatas).go();
-  }
-
-  Metadata _metadataFromRow(DbMetadata row) {
-    final tags = (jsonDecode(row.tagsJson) as List)
-        .map((e) => (e as List).map((item) => item.toString()).toList())
-        .toList();
-
-    final metadata = Metadata(
-      pubKey: row.pubKey,
-      name: row.name,
-      displayName: row.displayName,
-      picture: row.picture,
-      banner: row.banner,
-      website: row.website,
-      about: row.about,
-      nip05: row.nip05,
-      lud16: row.lud16,
-      lud06: row.lud06,
-      updatedAt: row.updatedAt,
-      refreshedTimestamp: row.refreshedTimestamp,
-      tags: tags,
-      content: row.rawContentJson != null
-          ? jsonDecode(row.rawContentJson!) as Map<String, dynamic>
-          : null,
-    );
-    metadata.sources = (jsonDecode(row.sourcesJson) as List)
-        .map((e) => e.toString())
-        .toList();
-    return metadata;
+    await removeEvents(kinds: [Metadata.kKind]);
   }
 
   // =====================
@@ -441,103 +444,34 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveContactList(ContactList contactList) async {
-    await _db
-        .into(_db.contactLists)
-        .insertOnConflictUpdate(
-          ContactListsCompanion.insert(
-            pubKey: contactList.pubKey,
-            contactsJson: jsonEncode(contactList.contacts),
-            contactRelaysJson: jsonEncode(contactList.contactRelays),
-            petnamesJson: jsonEncode(contactList.petnames),
-            followedTagsJson: jsonEncode(contactList.followedTags),
-            followedCommunitiesJson: jsonEncode(
-              contactList.followedCommunities,
-            ),
-            followedEventsJson: jsonEncode(contactList.followedEvents),
-            createdAt: contactList.createdAt,
-            loadedTimestamp: Value(contactList.loadedTimestamp),
-            sourcesJson: jsonEncode(contactList.sources),
-          ),
-        );
+    await saveEvent(contactList.toEvent());
   }
 
   @override
   Future<void> saveContactLists(List<ContactList> contactLists) async {
-    await _db.batch((batch) {
-      batch.insertAllOnConflictUpdate(
-        _db.contactLists,
-        contactLists
-            .map(
-              (contactList) => ContactListsCompanion.insert(
-                pubKey: contactList.pubKey,
-                contactsJson: jsonEncode(contactList.contacts),
-                contactRelaysJson: jsonEncode(contactList.contactRelays),
-                petnamesJson: jsonEncode(contactList.petnames),
-                followedTagsJson: jsonEncode(contactList.followedTags),
-                followedCommunitiesJson: jsonEncode(
-                  contactList.followedCommunities,
-                ),
-                followedEventsJson: jsonEncode(contactList.followedEvents),
-                createdAt: contactList.createdAt,
-                loadedTimestamp: Value(contactList.loadedTimestamp),
-                sourcesJson: jsonEncode(contactList.sources),
-              ),
-            )
-            .toList(),
-      );
-    });
+    await saveEvents(
+      contactLists.map((contactList) => contactList.toEvent()).toList(),
+    );
   }
 
   @override
   Future<ContactList?> loadContactList(String pubKey) async {
-    final row = await (_db.select(
-      _db.contactLists,
-    )..where((t) => t.pubKey.equals(pubKey))).getSingleOrNull();
-    if (row == null) return null;
-    return _contactListFromRow(row);
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: ContactList.kKind,
+    );
+    if (event == null) return null;
+    return ContactList.fromEvent(event);
   }
 
   @override
   Future<void> removeContactList(String pubKey) async {
-    await (_db.delete(
-      _db.contactLists,
-    )..where((t) => t.pubKey.equals(pubKey))).go();
+    await removeEvents(pubKeys: [pubKey], kinds: [ContactList.kKind]);
   }
 
   @override
   Future<void> removeAllContactLists() async {
-    await _db.delete(_db.contactLists).go();
-  }
-
-  ContactList _contactListFromRow(DbContactList row) {
-    final contactList = ContactList(
-      pubKey: row.pubKey,
-      contacts: (jsonDecode(row.contactsJson) as List)
-          .map((e) => e.toString())
-          .toList(),
-    );
-    contactList.contactRelays = (jsonDecode(row.contactRelaysJson) as List)
-        .map((e) => e.toString())
-        .toList();
-    contactList.petnames = (jsonDecode(row.petnamesJson) as List)
-        .map((e) => e.toString())
-        .toList();
-    contactList.followedTags = (jsonDecode(row.followedTagsJson) as List)
-        .map((e) => e.toString())
-        .toList();
-    contactList.followedCommunities =
-        (jsonDecode(row.followedCommunitiesJson) as List)
-            .map((e) => e.toString())
-            .toList();
-    contactList.followedEvents = (jsonDecode(row.followedEventsJson) as List)
-        .map((e) => e.toString())
-        .toList();
-    contactList.createdAt = row.createdAt;
-    contactList.loadedTimestamp = row.loadedTimestamp;
-    contactList.sources = (jsonDecode(row.sourcesJson) as List)
-        .map((e) => e.toString())
-        .toList();
-    return contactList;
+    await removeEvents(kinds: [ContactList.kKind]);
   }
 
   // =====================
@@ -579,11 +513,44 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<UserRelayList?> loadUserRelayList(String pubKey) async {
+    final fromEvents = await _deriveUserRelayListFromEvents(pubKey);
+    if (fromEvents != null) {
+      return fromEvents;
+    }
+
     final row = await (_db.select(
       _db.userRelayLists,
     )..where((t) => t.pubKey.equals(pubKey))).getSingleOrNull();
     if (row == null) return null;
     return _userRelayListFromRow(row);
+  }
+
+  Future<UserRelayList?> _deriveUserRelayListFromEvents(String pubKey) async {
+    final events = await loadEvents(
+      pubKeys: [pubKey],
+      kinds: [Nip65.kKind, ContactList.kKind],
+    );
+
+    Nip01Event? latestNip65;
+    Nip01Event? latestContactListWithRelays;
+    for (final event in events) {
+      if (event.kind == Nip65.kKind) {
+        latestNip65 ??= event;
+      } else if (event.kind == ContactList.kKind &&
+          ContactList.relaysFromContent(event).isNotEmpty) {
+        latestContactListWithRelays ??= event;
+      }
+    }
+
+    if (latestNip65 != null) {
+      return UserRelayList.fromNip65(Nip65.fromEvent(latestNip65));
+    }
+
+    if (latestContactListWithRelays != null) {
+      return UserRelayList.fromNip02EventContent(latestContactListWithRelays);
+    }
+
+    return null;
   }
 
   @override
@@ -977,6 +944,280 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       until: until,
       search: search,
       limit: limit,
+    );
+  }
+
+  // =====================
+  // Event Sources
+  // =====================
+
+  @override
+  Future<void> addEventSource({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    await _db.into(_db.eventSourcesTable).insertOnConflictUpdate(
+          EventSourcesTableCompanion.insert(
+            eventId: eventId,
+            relayUrl: relayUrl,
+          ),
+        );
+  }
+
+  @override
+  Future<void> addEventSources({
+    required String eventId,
+    required Iterable<String> relayUrls,
+  }) async {
+    await _db.batch((batch) {
+      for (final relayUrl in relayUrls) {
+        batch.insert(
+          _db.eventSourcesTable,
+          EventSourcesTableCompanion.insert(
+            eventId: eventId,
+            relayUrl: relayUrl,
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+      }
+    });
+  }
+
+  @override
+  Future<List<String>> loadEventSources(String eventId) async {
+    final rows = await (_db.select(_db.eventSourcesTable)
+          ..where((t) => t.eventId.equals(eventId)))
+        .get();
+    return rows.map((r) => r.relayUrl).toList();
+  }
+
+  @override
+  Future<void> removeEventSources(String eventId) async {
+    await (_db.delete(_db.eventSourcesTable)
+          ..where((t) => t.eventId.equals(eventId)))
+        .go();
+  }
+
+  // =====================
+  // Event Delivery Records
+  // =====================
+
+  @override
+  Future<void> saveEventDeliveryRecord(EventDeliveryRecord record) async {
+    await _db.into(_db.eventDeliveryRecordsTable).insertOnConflictUpdate(
+          EventDeliveryRecordsTableCompanion.insert(
+            eventId: record.eventId,
+            status: record.status.name,
+            createdAt: record.createdAt,
+            updatedAt: record.updatedAt,
+            signedAt: Value(record.signedAt),
+            completedAt: Value(record.completedAt),
+            requiresNetworkSigner: Value(record.requiresNetworkSigner),
+          ),
+        );
+  }
+
+  @override
+  Future<void> saveEventDeliveryRecords(List<EventDeliveryRecord> records) async {
+    await _db.batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        _db.eventDeliveryRecordsTable,
+        records
+            .map((record) => EventDeliveryRecordsTableCompanion.insert(
+                  eventId: record.eventId,
+                  status: record.status.name,
+                  createdAt: record.createdAt,
+                  updatedAt: record.updatedAt,
+                  signedAt: Value(record.signedAt),
+                  completedAt: Value(record.completedAt),
+                  requiresNetworkSigner: Value(record.requiresNetworkSigner),
+                ))
+            .toList(),
+      );
+    });
+  }
+
+  @override
+  Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId) async {
+    final row = await (_db.select(_db.eventDeliveryRecordsTable)
+          ..where((t) => t.eventId.equals(eventId)))
+        .getSingleOrNull();
+    if (row == null) return null;
+    return _eventDeliveryRecordFromRow(row);
+  }
+
+  @override
+  Future<List<EventDeliveryRecord>> loadEventDeliveryRecords({
+    EventDeliveryStatus? status,
+    int? limit,
+  }) async {
+    var query = _db.select(_db.eventDeliveryRecordsTable);
+    if (status != null) {
+      query = query..where((t) => t.status.equals(status.name));
+    }
+    if (limit != null) {
+      query = query..limit(limit);
+    }
+    final rows = await query.get();
+    return rows.map(_eventDeliveryRecordFromRow).toList();
+  }
+
+  @override
+  Future<void> removeEventDeliveryRecord(String eventId) async {
+    await (_db.delete(_db.eventDeliveryRecordsTable)
+          ..where((t) => t.eventId.equals(eventId)))
+        .go();
+  }
+
+  @override
+  Future<void> removeAllEventDeliveryRecords() async {
+    await _db.delete(_db.eventDeliveryRecordsTable).go();
+  }
+
+  EventDeliveryRecord _eventDeliveryRecordFromRow(DbEventDeliveryRecord row) {
+    return EventDeliveryRecord(
+      eventId: row.eventId,
+      status: EventDeliveryStatus.values.byName(row.status),
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      signedAt: row.signedAt,
+      completedAt: row.completedAt,
+      requiresNetworkSigner: row.requiresNetworkSigner,
+    );
+  }
+
+  // =====================
+  // Relay Delivery Targets
+  // =====================
+
+  @override
+  Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target) async {
+    await _db.into(_db.relayDeliveryTargetsTable).insertOnConflictUpdate(
+          RelayDeliveryTargetsTableCompanion.insert(
+            eventId: target.eventId,
+            relayUrl: target.relayUrl,
+            reason: target.reason.name,
+            state: target.state.name,
+            attemptCount: Value(target.attemptCount),
+            lastAttemptAt: Value(target.lastAttemptAt),
+            nextRetryAt: Value(target.nextRetryAt),
+            lastError: Value(target.lastError),
+            lastOkMessage: Value(target.lastOkMessage),
+          ),
+        );
+  }
+
+  @override
+  Future<void> saveRelayDeliveryTargets(List<RelayDeliveryTarget> targets) async {
+    await _db.batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        _db.relayDeliveryTargetsTable,
+        targets
+            .map((target) => RelayDeliveryTargetsTableCompanion.insert(
+                  eventId: target.eventId,
+                  relayUrl: target.relayUrl,
+                  reason: target.reason.name,
+                  state: target.state.name,
+                  attemptCount: Value(target.attemptCount),
+                  lastAttemptAt: Value(target.lastAttemptAt),
+                  nextRetryAt: Value(target.nextRetryAt),
+                  lastError: Value(target.lastError),
+                  lastOkMessage: Value(target.lastOkMessage),
+                ))
+            .toList(),
+      );
+    });
+  }
+
+  @override
+  Future<RelayDeliveryTarget?> loadRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    final row = await (_db.select(_db.relayDeliveryTargetsTable)
+          ..where(
+              (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl)))
+        .getSingleOrNull();
+    if (row == null) return null;
+    return _relayDeliveryTargetFromRow(row);
+  }
+
+  @override
+  Future<List<RelayDeliveryTarget>> loadRelayDeliveryTargets({
+    String? eventId,
+    String? relayUrl,
+    RelayDeliveryState? state,
+    bool excludeAcked = false,
+    int? limit,
+  }) async {
+    var query = _db.select(_db.relayDeliveryTargetsTable);
+
+    query = query
+      ..where((t) {
+        final conditions = <Expression<bool>>[];
+        if (eventId != null) {
+          conditions.add(t.eventId.equals(eventId));
+        }
+        if (relayUrl != null) {
+          conditions.add(t.relayUrl.equals(relayUrl));
+        }
+        if (state != null) {
+          conditions.add(t.state.equals(state.name));
+        }
+        if (excludeAcked) {
+          conditions.add(t.state.equals(RelayDeliveryState.acked.name).not());
+        }
+        if (conditions.isEmpty) return const Constant(true);
+        return conditions.reduce((a, b) => a & b);
+      })
+      ..orderBy([
+        (t) => OrderingTerm.asc(t.nextRetryAt),
+        (t) => OrderingTerm.asc(t.eventId),
+        (t) => OrderingTerm.asc(t.relayUrl),
+      ]);
+
+    if (limit != null) {
+      query = query..limit(limit);
+    }
+
+    final rows = await query.get();
+    return rows.map(_relayDeliveryTargetFromRow).toList();
+  }
+
+  @override
+  Future<void> removeRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    await (_db.delete(_db.relayDeliveryTargetsTable)
+          ..where(
+              (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl)))
+        .go();
+  }
+
+  @override
+  Future<void> removeRelayDeliveryTargets(String eventId) async {
+    await (_db.delete(_db.relayDeliveryTargetsTable)
+          ..where((t) => t.eventId.equals(eventId)))
+        .go();
+  }
+
+  @override
+  Future<void> removeAllRelayDeliveryTargets() async {
+    await _db.delete(_db.relayDeliveryTargetsTable).go();
+  }
+
+  RelayDeliveryTarget _relayDeliveryTargetFromRow(DbRelayDeliveryTarget row) {
+    return RelayDeliveryTarget(
+      eventId: row.eventId,
+      relayUrl: row.relayUrl,
+      reason: RelayDeliveryReason.values.byName(row.reason),
+      state: RelayDeliveryState.values.byName(row.state),
+      attemptCount: row.attemptCount,
+      lastAttemptAt: row.lastAttemptAt,
+      nextRetryAt: row.nextRetryAt,
+      lastError: row.lastError,
+      lastOkMessage: row.lastOkMessage,
     );
   }
 
@@ -1425,12 +1666,13 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> clearAll() async {
     await Future.wait([
       _db.delete(_db.events).go(),
-      _db.delete(_db.metadatas).go(),
-      _db.delete(_db.contactLists).go(),
       _db.delete(_db.userRelayLists).go(),
       _db.delete(_db.relaySets).go(),
       _db.delete(_db.nip05s).go(),
       _db.delete(_db.filterFetchedRangeRecords).go(),
+      _db.delete(_db.eventSourcesTable).go(),
+      _db.delete(_db.eventDeliveryRecordsTable).go(),
+      _db.delete(_db.relayDeliveryTargetsTable).go(),
       // Cashu tables
       _db.delete(_db.cashuProofs).go(),
       _db.delete(_db.cashuKeysets).go(),

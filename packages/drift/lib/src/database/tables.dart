@@ -17,50 +17,6 @@ class Events extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// Table for storing user metadata (NIP-01 kind 0)
-@DataClassName('DbMetadata')
-class Metadatas extends Table {
-  TextColumn get pubKey => text()();
-  TextColumn get name => text().nullable()();
-  TextColumn get displayName => text().nullable()();
-  TextColumn get picture => text().nullable()();
-  TextColumn get banner => text().nullable()();
-  TextColumn get website => text().nullable()();
-  TextColumn get about => text().nullable()();
-  TextColumn get nip05 => text().nullable()();
-  TextColumn get lud16 => text().nullable()();
-  TextColumn get lud06 => text().nullable()();
-  IntColumn get updatedAt => integer().nullable()();
-  IntColumn get refreshedTimestamp => integer().nullable()();
-  TextColumn get sourcesJson => text()(); // JSON encoded sources
-  TextColumn get tagsJson =>
-      text().withDefault(const Constant('[]'))(); // JSON encoded tags
-  TextColumn get rawContentJson =>
-      text().nullable()(); // JSON encoded rawContent
-
-  @override
-  Set<Column> get primaryKey => {pubKey};
-}
-
-/// Table for storing contact lists (NIP-02)
-@DataClassName('DbContactList')
-class ContactLists extends Table {
-  TextColumn get pubKey => text()();
-  TextColumn get contactsJson => text()(); // JSON encoded contacts
-  TextColumn get contactRelaysJson => text()(); // JSON encoded contact relays
-  TextColumn get petnamesJson => text()(); // JSON encoded petnames
-  TextColumn get followedTagsJson => text()(); // JSON encoded followed tags
-  TextColumn get followedCommunitiesJson =>
-      text()(); // JSON encoded followed communities
-  TextColumn get followedEventsJson => text()(); // JSON encoded followed events
-  IntColumn get createdAt => integer()();
-  IntColumn get loadedTimestamp => integer().nullable()();
-  TextColumn get sourcesJson => text()(); // JSON encoded sources
-
-  @override
-  Set<Column> get primaryKey => {pubKey};
-}
-
 /// Table for storing user relay lists (NIP-65)
 @DataClassName('DbUserRelayList')
 class UserRelayLists extends Table {
@@ -115,6 +71,48 @@ class FilterFetchedRangeRecords extends Table {
 
   @override
   Set<Column> get primaryKey => {key};
+}
+
+/// Table for storing event source provenance
+@DataClassName('DbEventSource')
+class EventSourcesTable extends Table {
+  TextColumn get eventId => text()();
+  TextColumn get relayUrl => text()();
+
+  @override
+  Set<Column> get primaryKey => {eventId, relayUrl};
+}
+
+/// Table for storing event delivery records
+@DataClassName('DbEventDeliveryRecord')
+class EventDeliveryRecordsTable extends Table {
+  TextColumn get eventId => text()();
+  TextColumn get status => text()();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+  IntColumn get signedAt => integer().nullable()();
+  IntColumn get completedAt => integer().nullable()();
+  BoolColumn get requiresNetworkSigner => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {eventId};
+}
+
+/// Table for storing relay delivery targets
+@DataClassName('DbRelayDeliveryTarget')
+class RelayDeliveryTargetsTable extends Table {
+  TextColumn get eventId => text()();
+  TextColumn get relayUrl => text()();
+  TextColumn get reason => text()();
+  TextColumn get state => text()();
+  IntColumn get attemptCount => integer().withDefault(const Constant(0))();
+  IntColumn get lastAttemptAt => integer().nullable()();
+  IntColumn get nextRetryAt => integer().nullable()();
+  TextColumn get lastError => text().nullable()();
+  TextColumn get lastOkMessage => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {eventId, relayUrl};
 }
 
 // =====================

@@ -10,12 +10,13 @@ part 'database.g.dart';
 @DriftDatabase(
   tables: [
     Events,
-    Metadatas,
-    ContactLists,
     UserRelayLists,
     RelaySets,
     Nip05s,
     FilterFetchedRangeRecords,
+    EventSourcesTable,
+    EventDeliveryRecordsTable,
+    RelayDeliveryTargetsTable,
     // Cashu tables
     CashuProofs,
     CashuKeysets,
@@ -37,7 +38,7 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
   NdkCacheDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -46,11 +47,6 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        if (from < 2) {
-          // Add new columns for metadata tags and rawContent
-          await m.addColumn(metadatas, metadatas.tagsJson);
-          await m.addColumn(metadatas, metadatas.rawContentJson);
-        }
         if (from < 3) {
           // Add Cashu tables
           await m.createTable(cashuProofs);
@@ -63,6 +59,16 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
         if (from < 4) {
           // Add key-value table for settings
           await m.createTable(keyValues);
+        }
+        if (from < 5) {
+          // Add event source provenance and delivery tracking tables
+          await m.createTable(eventSourcesTable);
+          await m.createTable(eventDeliveryRecordsTable);
+          await m.createTable(relayDeliveryTargetsTable);
+        }
+        if (from < 6) {
+          // Metadata and contact-list projections are derived from generic events.
+          // Legacy tables may remain on disk but are no longer used.
         }
       },
     );
