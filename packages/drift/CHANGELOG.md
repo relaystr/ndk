@@ -1,3 +1,14 @@
+## 0.1.1-dev.8
+
+ - Update a dependency to the latest release.
+
+## 0.1.1-dev.7
+
+ - **REVERT**: seperate cache manger package.
+ - **FIX**: update code doc, remove implementation.
+ - **FIX**: circular dependency embed test suite.
+ - **FIX**: delete transactions.
+
 ## 0.1.1-dev.6
 
  - **REVERT**: seperate cache manger package.

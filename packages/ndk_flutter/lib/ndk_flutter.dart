@@ -1,6 +1,7 @@
 export 'main/config.dart';
 export 'main/ndk_flutter.dart';
 export 'repositories/flutter_secure_storage_wallets_repo.dart';
+export 'repositories/cashu_seed_store.dart';
 export 'data_layer/repositories/signers/nip55_event_signer.dart';
 export 'data_layer/data_sources/nip55_signer.dart';
 export 'widgets/widgets.dart';

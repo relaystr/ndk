@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import '../../../data_layer/models/nip_01_event_model.dart';
 import '../../entities/gift_wrap_unwrap_result.dart';
@@ -10,6 +11,8 @@ import '../accounts/accounts.dart';
 class GiftWrap {
   static const int kSealEventKind = 13;
   static const int kGiftWrapEventkind = 1059;
+  static const int _createdAtRandomizationWindowSeconds = 172800;
+  static final Random _random = Random.secure();
 
   final Accounts accounts;
   final EventVerifier eventVerifier;
@@ -44,16 +47,20 @@ class GiftWrap {
     required String recipientPubkey,
     EventSigner? customSigner,
   }) async {
+    final sealCreatedAt = _randomCreatedAtBefore(rumor.createdAt);
+
     final sealedRumor = await sealRumor(
       rumor: rumor,
       recipientPubkey: recipientPubkey,
       customSigner: customSigner,
+      createdAt: sealCreatedAt,
     );
 
     final giftWrap = await wrapEvent(
       recipientPublicKey: recipientPubkey,
       sealEvent: sealedRumor,
       eventSignerFactory: eventSignerFactory,
+      randomizeCreatedAtBefore: rumor.createdAt,
     );
     return giftWrap;
   }
@@ -157,6 +164,7 @@ class GiftWrap {
     required Nip01Event rumor,
     required String recipientPubkey,
     EventSigner? customSigner,
+    int? createdAt,
   }) async {
     final signer = _getSigner(customSigner: customSigner);
 
@@ -174,6 +182,7 @@ class GiftWrap {
       kind: kSealEventKind,
       tags: [],
       content: encryptedContent,
+      createdAt: createdAt ?? _randomCreatedAtBefore(rumor.createdAt),
     );
 
     // Sign the seal event (required by NIP-59)
@@ -226,12 +235,16 @@ class GiftWrap {
   /// [recipientPublicKey] the reciever of the rumor \
   /// [sealEvent] not wrapped event \
   /// [eventSignerFactory] factory to create event signers \
+  /// [createdAt] exact created_at timestamp to use for the gift wrap \
+  /// [randomizeCreatedAtBefore] randomizes created_at in the 2 days before this timestamp \
   /// [returns] giftWrapEvent
   static Future<Nip01Event> wrapEvent({
     required String recipientPublicKey,
     required Nip01Event sealEvent,
     List<List<String>>? additionalTags,
     required LocalEventSignerFactory eventSignerFactory,
+    int? createdAt,
+    int? randomizeCreatedAtBefore,
   }) async {
     // Generate a random one-time-use keypair
     final ephemeralSigner = eventSignerFactory.createWithNewKeyPair();
@@ -254,14 +267,17 @@ class GiftWrap {
       tags.addAll(additionalTags);
     }
 
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final giftWrapCreatedAt = createdAt ??
+        (randomizeCreatedAtBefore != null
+            ? _randomCreatedAtBefore(randomizeCreatedAtBefore)
+            : sealEvent.createdAt);
 
     // Create the gift wrap event with ephemeral keys
     final giftWrapEvent = Nip01Event(
       kind: kGiftWrapEventkind,
       content: encryptedSeal,
       tags: tags,
-      createdAt: now,
+      createdAt: giftWrapCreatedAt,
       pubKey: ephemeralSigner.getPublicKey(),
     );
 
@@ -292,5 +308,11 @@ class GiftWrap {
     final Map<String, dynamic> sealJson = jsonDecode(decryptedEventJson);
     final event = Nip01EventModel.fromJson(sealJson);
     return event;
+  }
+
+  static int _randomCreatedAtBefore(int referenceCreatedAt) {
+    return referenceCreatedAt -
+        _random.nextInt(_createdAtRandomizationWindowSeconds) -
+        1;
   }
 }

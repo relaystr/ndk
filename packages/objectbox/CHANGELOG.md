@@ -1,3 +1,15 @@
+## 0.2.12-dev.7
+
+ - Update a dependency to the latest release.
+
+## 0.2.12-dev.6
+
+ - Update a dependency to the latest release.
+
+## 0.2.12-dev.5
+
+ - Update a dependency to the latest release.
+
 ## 0.2.12-dev.4
 
  - Update a dependency to the latest release.

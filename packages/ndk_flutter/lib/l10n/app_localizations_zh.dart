@@ -866,6 +866,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pendingTransactions => '待处理';
 
   @override
+  String get backupSeedWarning => '备份你的 cashu 恢复短语';
+
+  @override
+  String get backupSeedTitle => '备份 cashu 恢复短语';
+
+  @override
+  String get backupSeedInstructions =>
+      '请按顺序写下这些单词并保存在安全的地方。如果你丢失此设备，这是恢复 cashu 资金的唯一方法。';
+
+  @override
+  String get backupSeedConfirm => '我已写下恢复短语并安全保存';
+
+  @override
+  String get backupSeedDone => '我已备份';
+
+  @override
+  String get reclaimPendingFunds => '找回待处理资金';
+
+  @override
+  String get reclaimPendingTitle => '找回待处理资金';
+
+  @override
   String get recentTransactions => '最近交易';
 
   @override
@@ -945,10 +967,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nwcWalletTypeSubtitle => '通过 NWC 连接远程钱包';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Lightning 地址';
+  String get lnurlWalletTypeTitle => 'Lightning 地址（LNURL）';
 
   @override
-  String get lnurlWalletTypeSubtitle => '使用支持 LNURL 或 Lightning 地址的托管钱包';
+  String get lnurlWalletTypeSubtitle => '仅使用 Lightning 地址（LNURL）接收';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
@@ -1057,4 +1079,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get budgetNever => '从不';
+
+  @override
+  String get backup => 'Backup';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get cashuBackupTitle => 'Cashu Backup';
+
+  @override
+  String get cashuBackupWarning =>
+      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+
+  @override
+  String get generatingBackup => 'Generating backup...';
+
+  @override
+  String get copyBackup => 'Copy backup';
+
+  @override
+  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+
+  @override
+  String get cashuRestoreTitle => 'Restore Cashu Backup';
+
+  @override
+  String get backupJson => 'Backup JSON';
+
+  @override
+  String get backupJsonHint => 'Paste your backup JSON here';
+
+  @override
+  String get pleaseEnterBackup => 'Please enter a backup';
+
+  @override
+  String get restoringBackup => 'Restoring backup...';
+
+  @override
+  String restoreSuccess(int count) {
+    return 'Restored $count proofs from backup';
+  }
 }

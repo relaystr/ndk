@@ -160,6 +160,11 @@ void main() {
       const fundAmount = 5;
       const fundUnit = "sat";
 
+      final seedPhrase = CashuUserSeedphrase(
+        seedPhrase: CashuSeed.generateSeedPhrase(),
+      );
+      ndk.cashu.setCashuSeedPhrase(seedPhrase);
+
       final draftTransaction = await ndk.cashu.initiateFund(
         mintUrl: devMintUrl,
         amount: fundAmount,

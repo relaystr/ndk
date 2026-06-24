@@ -875,6 +875,30 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pendingTransactions => 'Pendientes';
 
   @override
+  String get backupSeedWarning =>
+      'Haz una copia de tu frase de recuperación cashu';
+
+  @override
+  String get backupSeedTitle => 'Copia de la frase de recuperación cashu';
+
+  @override
+  String get backupSeedInstructions =>
+      'Escribe estas palabras en orden y guárdalas en un lugar seguro. Son la única forma de recuperar tus fondos cashu si pierdes este dispositivo.';
+
+  @override
+  String get backupSeedConfirm =>
+      'He anotado mi frase de recuperación y la he guardado de forma segura';
+
+  @override
+  String get backupSeedDone => 'Ya hice la copia';
+
+  @override
+  String get reclaimPendingFunds => 'Recuperar fondos pendientes';
+
+  @override
+  String get reclaimPendingTitle => 'Recuperar fondos pendientes';
+
+  @override
   String get recentTransactions => 'Transacciones Recientes';
 
   @override
@@ -955,11 +979,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nwcWalletTypeSubtitle => 'Conectarse a una cartera remota con NWC';
 
   @override
-  String get lnurlWalletTypeTitle => 'LNURL / Direccion Lightning';
+  String get lnurlWalletTypeTitle => 'Direccion Lightning (LNURL)';
 
   @override
   String get lnurlWalletTypeSubtitle =>
-      'Usar una cartera custodial con LNURL o una direccion Lightning';
+      'Usar una direccion Lightning (LNURL) solo para recibir';
 
   @override
   String get cashuWalletTypeTitle => 'Cashu';
@@ -1070,4 +1094,46 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetNever => 'Nunca';
+
+  @override
+  String get backup => 'Backup';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get cashuBackupTitle => 'Cashu Backup';
+
+  @override
+  String get cashuBackupWarning =>
+      'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.';
+
+  @override
+  String get generatingBackup => 'Generating backup...';
+
+  @override
+  String get copyBackup => 'Copy backup';
+
+  @override
+  String get backupCopiedToClipboard => 'Backup copied to clipboard';
+
+  @override
+  String get cashuRestoreTitle => 'Restore Cashu Backup';
+
+  @override
+  String get backupJson => 'Backup JSON';
+
+  @override
+  String get backupJsonHint => 'Paste your backup JSON here';
+
+  @override
+  String get pleaseEnterBackup => 'Please enter a backup';
+
+  @override
+  String get restoringBackup => 'Restoring backup...';
+
+  @override
+  String restoreSuccess(int count) {
+    return 'Restored $count proofs from backup';
+  }
 }
