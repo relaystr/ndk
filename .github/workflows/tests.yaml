@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./packages/nip07_event_signer
+        working-directory: ./packages/ndk_flutter
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
