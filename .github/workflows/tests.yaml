@@ -48,4 +48,4 @@ jobs:
           architecture: x64 # optional, x64 or arm
       - run: dart pub get
       - run: dart analyze --no-fatal-warnings
-      - run: dart test -p chrome
+      - run: flutter test --platform chrome
