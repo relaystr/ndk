@@ -9,5 +9,6 @@ export 'verifiers/ndk_event_verifier.dart';
 export 'verifiers/web_event_verifier.dart';
 export 'signers/web_event_signer.dart';
 export 'signers/ndk_event_signer.dart';
+export 'signers/nip07_event_signer.dart';
 export 'utils/nostr_kinds.dart';
 export 'utils/string_color.dart';
