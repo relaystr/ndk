@@ -25,7 +25,7 @@ void main() {
 
     // startup and teardown
     setUp(() async {
-      relay1 = MockRelay(name: "relay 1", explicitPort: await _reservePort());
+      relay1 = MockRelay(name: "relay 1");
       await relay1.startServer();
       relay1.textNotes = key1TextNotes;
     });
@@ -101,8 +101,7 @@ void main() {
       expect(timeoutTriggered, isTrue);
     });
 
-    test('timeout triggers default ndk values within expected time window',
-        () async {
+    test('timeout triggers default ndk values within expected time window', () async {
       const Duration myTimeout = Duration(seconds: 1);
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
@@ -148,17 +147,8 @@ void main() {
 
       // Assert that the timeout occurred within the expected time window
       // Adjust these values based on your expected timeout duration
-      expect(elapsedMilliseconds,
-          greaterThanOrEqualTo(myTimeout.inMilliseconds - 1000)); // lower bound
-      expect(elapsedMilliseconds,
-          lessThanOrEqualTo(myTimeout.inMilliseconds + 1000)); // upper bound
+      expect(elapsedMilliseconds, greaterThanOrEqualTo(myTimeout.inMilliseconds - 1000)); // lower bound
+      expect(elapsedMilliseconds, lessThanOrEqualTo(myTimeout.inMilliseconds + 1000)); // upper bound
     });
   });
-}
-
-Future<int> _reservePort() async {
-  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-  final port = socket.port;
-  await socket.close();
-  return port;
 }

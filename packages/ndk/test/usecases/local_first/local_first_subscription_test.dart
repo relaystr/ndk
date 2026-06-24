@@ -26,13 +26,8 @@ void main() {
       await tempDir.delete(recursive: true);
     });
 
-    test(
-        'cache-backed subscription emits cached event first and later continues with live relay updates',
-        () async {
-      final relay = MockRelay(
-        name: 'subscription-relay',
-        explicitPort: await _reservePort(),
-      );
+    test('cache-backed subscription emits cached event first and later continues with live relay updates', () async {
+      final relay = MockRelay(name: 'subscription-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final cachedEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -101,14 +96,8 @@ void main() {
       await relay.stopServer();
     });
 
-    test(
-        'cache-backed subscription does not emit tombstoned foreign events or resurrect them later',
-        () async {
-      final relay =
-          MockRelay(
-            name: 'subscription-delete-relay',
-            explicitPort: await _reservePort(),
-          );
+    test('cache-backed subscription does not emit tombstoned foreign events or resurrect them later', () async {
+      final relay = MockRelay(name: 'subscription-delete-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final targetEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -185,11 +174,7 @@ void main() {
     test(
         'cache-backed subscription emits cached replaceable winner then newer live replacement but not stale late event',
         () async {
-      final relay =
-          MockRelay(
-            name: 'subscription-replaceable-relay',
-            explicitPort: await _reservePort(),
-          );
+      final relay = MockRelay(name: 'subscription-replaceable-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final writerNdk = Ndk(
         NdkConfig(
@@ -298,13 +283,6 @@ void main() {
       await relay.stopServer();
     });
   });
-}
-
-Future<int> _reservePort() async {
-  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-  final port = socket.port;
-  await socket.close();
-  return port;
 }
 
 Future<Ndk> _createNdk(

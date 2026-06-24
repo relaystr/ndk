@@ -30,10 +30,7 @@ void main() {
     });
 
     test('offline publish is locally readable and eventually reaches relay when relay comes online', () async {
-      final relay = MockRelay(
-        name: 'local-first-relay',
-        explicitPort: await _reservePort(),
-      );
+      final relay = MockRelay(name: 'local-first-relay');
       ndk = await _createNdk(
         tempDir.path,
         bootstrapRelays: [relay.url],
@@ -95,14 +92,8 @@ void main() {
     });
 
     test('partial success keeps local visibility and should later deliver only to relays that were offline', () async {
-      final relayOnline = MockRelay(
-        name: 'relay-online',
-        explicitPort: await _reservePort(),
-      );
-      final relayOffline = MockRelay(
-        name: 'relay-offline',
-        explicitPort: await _reservePort(),
-      );
+      final relayOnline = MockRelay(name: 'relay-online');
+      final relayOffline = MockRelay(name: 'relay-offline');
       ndk = await _createNdk(
         tempDir.path,
         bootstrapRelays: [relayOnline.url, relayOffline.url],
@@ -167,10 +158,7 @@ void main() {
     });
 
     test('offline reaction to a cached root is locally visible and should later reach the relay', () async {
-      final relay = MockRelay(
-        name: 'reaction-relay',
-        explicitPort: await _reservePort(),
-      );
+      final relay = MockRelay(name: 'reaction-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -247,10 +235,7 @@ void main() {
 
     test('offline replaceable supersession shows latest locally and should later deliver only the newest version',
         () async {
-      final relay = MockRelay(
-        name: 'replaceable-relay',
-        explicitPort: await _reservePort(),
-      );
+      final relay = MockRelay(name: 'replaceable-relay');
       ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
 
       ndk.accounts.loginPrivateKey(
@@ -353,10 +338,7 @@ void main() {
     });
 
     test('offline publish survives ndk restart and is later delivered after relay comes online', () async {
-      final relay = MockRelay(
-        name: 'restart-relay',
-        explicitPort: await _reservePort(),
-      );
+      final relay = MockRelay(name: 'restart-relay');
       ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
 
       ndk.accounts.loginPrivateKey(
@@ -426,10 +408,7 @@ void main() {
     });
 
     test('incoming deletion hides a previously cached foreign event from app queries', () async {
-      final relay = MockRelay(
-        name: 'incoming-deletion-relay',
-        explicitPort: await _reservePort(),
-      );
+      final relay = MockRelay(name: 'incoming-deletion-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -502,10 +481,7 @@ void main() {
     });
 
     test('deletion received before target should keep the later foreign target suppressed locally', () async {
-      final relay = MockRelay(
-        name: 'deletion-first-relay',
-        explicitPort: await _reservePort(),
-      );
+      final relay = MockRelay(name: 'deletion-first-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -585,10 +561,7 @@ void main() {
     });
 
     test('relay refresh replaces stale cached metadata with the newest remote version', () async {
-      final relay = MockRelay(
-        name: 'metadata-convergence-relay',
-        explicitPort: await _reservePort(),
-      );
+      final relay = MockRelay(name: 'metadata-convergence-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final oldMetadataEvent = Nip01Utils.signWithPrivateKey(
         event: Nip01Event(
@@ -645,7 +618,6 @@ void main() {
     test('connected relay rejecting first should keep local visibility and later succeed via periodic retry', () async {
       final relay = MockRelay(
         name: 'retry-relay',
-        explicitPort: await _reservePort(),
         rejectFirstEventPublishes: 1,
         rejectEventMessage: 'rate-limited: retry later',
       );
@@ -723,7 +695,6 @@ void main() {
         () async {
       final relay = MockRelay(
         name: 'permanent-failure-relay',
-        explicitPort: await _reservePort(),
         rejectFirstEventPublishes: 99,
         rejectEventMessage: 'policy violation: forbidden kind',
       );
@@ -893,11 +864,4 @@ Future<void> _waitForRelayConnected({
         (relays) => relays[relayUrl]?.isConnected == true,
       )
       .timeout(timeout);
-}
-
-Future<int> _reservePort() async {
-  final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-  final port = socket.port;
-  await socket.close();
-  return port;
 }
