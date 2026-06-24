@@ -11,7 +11,7 @@ import '../../mocks/mock_event_verifier.dart';
 import '../../mocks/mock_relay.dart';
 
 void main() {
-  group('local first subscription public api', () {
+  group('local first subscription', () {
     late Directory tempDir;
     late Ndk ndk;
 
