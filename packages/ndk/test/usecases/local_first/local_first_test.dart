@@ -390,6 +390,11 @@ void main() {
       expect(localAfterRestart.map((e) => e.id), contains(event.id));
 
       await relay.startServer();
+      await _waitForRelayConnected(
+        ndk: ndk,
+        relayUrl: relay.url,
+        timeout: const Duration(seconds: 20),
+      );
 
       final relayAfterReconnect = await _waitForRelayEvents(
         relay: relay,

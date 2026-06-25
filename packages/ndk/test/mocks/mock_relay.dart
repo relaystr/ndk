@@ -65,6 +65,12 @@ class MockRelay {
     }
   }
 
+  static void _releaseReservedPort(int? port) {
+    if (port != null) {
+      _reservedPorts.remove(port);
+    }
+  }
+
   List<Nip01Event> matchingEvents(Filter filter) {
     final events = <Nip01Event>{};
     events.addAll(_storedEvents);
@@ -148,11 +154,39 @@ class MockRelay {
       _nip85Assertions = nip85Assertions;
     }
 
-    var server = await HttpServer.bind(
-      InternetAddress.loopbackIPv4,
-      _port!,
-      shared: false,
-    );
+    HttpServer? server;
+    Object? lastBindError;
+    StackTrace? lastBindStackTrace;
+
+    for (var attempt = 0; attempt < 10; attempt++) {
+      try {
+        server = await HttpServer.bind(
+          InternetAddress.loopbackIPv4,
+          _port!,
+          shared: false,
+        );
+        break;
+      } on SocketException catch (e, stackTrace) {
+        lastBindError = e;
+        lastBindStackTrace = stackTrace;
+
+        if (_explicitPort != null) {
+          rethrow;
+        }
+
+        _releaseReservedPort(_port);
+        _port = _pickRandomPort();
+      }
+    }
+
+    if (server == null) {
+      Error.throwWithStackTrace(
+        lastBindError ??
+            StateError('Failed to bind mock relay server after retries'),
+        lastBindStackTrace ?? StackTrace.current,
+      );
+    }
+
     this.server = server;
     var stream = server.transform(WebSocketTransformer());
 
@@ -688,6 +722,7 @@ class MockRelay {
       server = null;
       _clientSubscriptions.clear();
     }
+    _releaseReservedPort(_port);
   }
 
   /// Handle NIP-46 remote signer requests

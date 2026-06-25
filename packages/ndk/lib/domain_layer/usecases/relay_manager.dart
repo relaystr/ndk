@@ -243,10 +243,14 @@ class RelayManager<T> {
     RelayConnectivity? relayConnectivity = globalState.relays[url];
     if (force &&
         relayConnectivity != null &&
-        relayConnectivity.relayTransport != null &&
-        !relayConnectivity.relay.connecting &&
-        !relayConnectivity.relayTransport!.isOpen()) {
-      await resetTransport(url);
+        relayConnectivity.relay.connecting &&
+        (relayConnectivity.relayTransport == null ||
+            !relayConnectivity.relayTransport!.isOpen())) {
+      if (relayConnectivity.relayTransport != null) {
+        await resetTransport(url);
+      } else {
+        relayConnectivity.relay.failedToConnect();
+      }
       relayConnectivity = globalState.relays[url];
     }
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
@@ -296,6 +300,7 @@ class RelayManager<T> {
     final connectivity = globalState.relays[url];
     if (connectivity != null) {
       Logger.log.d(() => "Resetting transport for $url...");
+      connectivity.relay.failedToConnect();
       _lastChallengePerRelay.remove(url);
       await connectivity.close();
       updateRelayConnectivity();
@@ -317,6 +322,11 @@ class RelayManager<T> {
   }
 
   void reSubscribeInFlightSubscriptions(RelayConnectivity relayConnectivity) {
+    final transport = relayConnectivity.relayTransport;
+    if (transport == null || !transport.isOpen()) {
+      return;
+    }
+
     globalState.inFlightRequests.forEach((key, state) {
       state.requests.values
           .where((req) => req.url == relayConnectivity.url)
@@ -326,28 +336,59 @@ class RelayManager<T> {
           list.addAll(req.filters.map((filter) => filter.toMap()));
 
           relayConnectivity.stats.activeRequests++;
-          _sendRaw(relayConnectivity, jsonEncode(list));
+          _sendRaw(relayConnectivity, transport, jsonEncode(list));
         }
       });
     });
   }
 
-  void _sendRaw(RelayConnectivity relayConnectivity, dynamic data) {
-    relayConnectivity.relayTransport!.send(data);
+  void _sendRaw(
+    RelayConnectivity relayConnectivity,
+    NostrTransport transport,
+    dynamic data,
+  ) {
+    if (!identical(relayConnectivity.relayTransport, transport) ||
+        !transport.isOpen()) {
+      Logger.log.t(() =>
+          "skip send to ${relayConnectivity.url}: transport changed or closed");
+      return;
+    }
+    transport.send(data);
     Logger.log.d(() => "send message to ${relayConnectivity.url}: $data");
   }
 
   /// sends a [ClientMsg] to relay transport sink, throw an error if relay not connected
   void send(RelayConnectivity relayConnectivity, ClientMsg msg) async {
-    if (relayConnectivity.relayTransport == null) {
-      throw Exception("relay not connected");
+    NostrTransport? transport = relayConnectivity.relayTransport;
+    if (transport == null) {
+      Logger.log.t(() => "skip send to ${relayConnectivity.url}: relay not connected");
+      return;
     }
 
     /// wait until rdy
-    await relayConnectivity.relayTransport!.ready;
+    await transport.ready;
+
+    if (!identical(relayConnectivity.relayTransport, transport) ||
+        !transport.isOpen()) {
+      transport = relayConnectivity.relayTransport;
+      if (transport == null) {
+        Logger.log.t(() =>
+            "skip send to ${relayConnectivity.url}: transport changed while waiting");
+        return;
+      }
+
+      await transport.ready;
+
+      if (!identical(relayConnectivity.relayTransport, transport) ||
+          !transport.isOpen()) {
+        Logger.log.t(() =>
+            "skip send to ${relayConnectivity.url}: transport changed while waiting");
+        return;
+      }
+    }
 
     final String encodedMsg = jsonEncode(msg.toJson());
-    _sendRaw(relayConnectivity, encodedMsg);
+    _sendRaw(relayConnectivity, transport, encodedMsg);
   }
 
   /// use this to register your request against a relay, \
@@ -891,7 +932,10 @@ class RelayManager<T> {
                 "All AUTH OK received, re-sending REQ $reqId to ${relayConnectivity.url}");
             List<dynamic> list = ["REQ", reqId];
             list.addAll(request.filters.map((filter) => filter.toMap()));
-            _sendRaw(relayConnectivity, jsonEncode(list));
+            final transport = relayConnectivity.relayTransport;
+            if (transport != null && transport.isOpen()) {
+              _sendRaw(relayConnectivity, transport, jsonEncode(list));
+            }
           }
         };
 

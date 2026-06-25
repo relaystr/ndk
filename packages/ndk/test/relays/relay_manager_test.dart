@@ -74,7 +74,7 @@ void main() async {
         // success
       }
     });
-    test('Try to connect to wss://brb.io', () async {
+    test('Try to connect to wss://brb.io', skip: true, () async {
       RelayManager manager = RelayManager(
         nostrTransportFactory: webSocketNostrTransportFactory,
         bootstrapRelays: [],

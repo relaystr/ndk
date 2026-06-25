@@ -8,23 +8,31 @@ void main() {
     late RustEventVerifier verifier;
     late KeyPair keyPair;
 
+    String _mutateHex(String value) {
+      final first = value[0].toLowerCase();
+      final replacement = first == 'a' ? 'b' : 'a';
+      return '$replacement${value.substring(1)}';
+    }
+
     setUp(() {
       verifier = RustEventVerifier();
       keyPair = Bip340.generatePrivateKey();
     });
 
     test('verifies valid event', () async {
+      final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
       // Create an event (id is calculated automatically in constructor)
       final event = Nip01Event(
         pubKey: keyPair.publicKey,
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        createdAt: createdAt,
         kind: 1,
         tags: [],
         content: 'hello world',
         sig: Bip340.sign(
           Nip01Utils.calculateEventIdSync(
             pubKey: keyPair.publicKey,
-            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+            createdAt: createdAt,
             kind: 1,
             tags: [],
             content: 'hello world',
@@ -38,10 +46,12 @@ void main() {
     });
 
     test('rejects event with invalid signature', () async {
+      final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
       final validSig = Bip340.sign(
         Nip01Utils.calculateEventIdSync(
           pubKey: keyPair.publicKey,
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          createdAt: createdAt,
           kind: 1,
           tags: [],
           content: 'hello world',
@@ -51,12 +61,11 @@ void main() {
 
       final event = Nip01Event(
         pubKey: keyPair.publicKey,
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        createdAt: createdAt,
         kind: 1,
         tags: [],
         content: 'hello world',
-        // Invalid signature - just change first char
-        sig: 'a${validSig.substring(1)}',
+        sig: _mutateHex(validSig),
       );
 
       final result = await verifier.verify(event);
@@ -64,9 +73,11 @@ void main() {
     });
 
     test('rejects event with wrong id', () async {
+      final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
       final correctId = Nip01Utils.calculateEventIdSync(
         pubKey: keyPair.publicKey,
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        createdAt: createdAt,
         kind: 1,
         tags: [],
         content: 'hello world',
@@ -74,7 +85,7 @@ void main() {
 
       final event = Nip01Event(
         pubKey: keyPair.publicKey,
-        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        createdAt: createdAt,
         kind: 1,
         tags: [],
         content: 'hello world',

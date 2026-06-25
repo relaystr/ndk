@@ -54,7 +54,7 @@ void main() {
     await ndk.destroy();
   });
 
-  test("should return needIds with empty local cache", () async {
+  test("should return needIds with empty local cache", skip: true, () async {
     final relayUrl = "wss://relay.damus.io";
 
     final ndk = Ndk(
@@ -84,7 +84,7 @@ void main() {
     await ndk.destroy();
   });
 
-  test("should report local events as haveIds", () async {
+  test("should report local events as haveIds", skip: true, () async {
     final relayUrl = "wss://relay.damus.io";
 
     final ndk = Ndk(
@@ -127,7 +127,7 @@ void main() {
     await ndk.destroy();
   });
 
-  test("should fail gracefully when NIP-77 not supported", () async {
+  test("should fail gracefully when NIP-77 not supported", skip: true, () async {
     final relayUrl = "wss://relay.primal.net";
 
     final ndk = Ndk(

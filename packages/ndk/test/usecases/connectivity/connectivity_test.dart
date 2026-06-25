@@ -78,42 +78,51 @@ void main() async {
         relay1.url
       ]);
 
-      // Ensure connected
-      await Future.delayed(Duration(milliseconds: 500));
-      expect(
-          ndk.connectivity.relayConnectivityChanges,
-          emitsInAnyOrder([
-            predicate<Map<String, RelayConnectivity>>((event) {
-              expect(event[relay0.url]?.isConnected, true);
-              expect(event[relay1.url]?.isConnected, true);
-              return true;
-            }),
-          ]));
+      await _waitForRelayConnectionState(
+        ndk,
+        relay1.url,
+        true,
+      );
+      expect(ndk.relays.globalState.relays[relay0.url]?.isConnected, true);
+      expect(ndk.relays.globalState.relays[relay1.url]?.isConnected, true);
 
-      // Disconnect relay 0
-      await ndk.relays.globalState.relays[relay1.url]?.close();
+      await ndk.relays.resetTransport(relay1.url);
 
-      expect(
-          ndk.connectivity.relayConnectivityChanges,
-          emitsInAnyOrder([
-            predicate<Map<String, RelayConnectivity>>((event) {
-              expect(event[relay0.url]?.isConnected, true);
-              expect(event[relay1.url]?.isConnected, false);
-              return true;
-            }),
-          ]));
+      await _waitForRelayConnectionState(
+        ndk,
+        relay1.url,
+        false,
+      );
+      expect(ndk.relays.globalState.relays[relay0.url]?.isConnected, true);
+      expect(ndk.relays.globalState.relays[relay1.url]?.isConnected, false);
 
-      // Reconnect relay 0
       await ndk.connectivity.tryReconnect();
-      expect(
-          ndk.connectivity.relayConnectivityChanges,
-          emitsInAnyOrder([
-            predicate<Map<String, RelayConnectivity>>((event) {
-              expect(event[relay0.url]?.isConnected, true);
-              expect(event[relay1.url]?.isConnected, true);
-              return true;
-            }),
-          ]));
+      await _waitForRelayConnectionState(
+        ndk,
+        relay1.url,
+        true,
+      );
+      expect(ndk.relays.globalState.relays[relay0.url]?.isConnected, true);
+      expect(ndk.relays.globalState.relays[relay1.url]?.isConnected, true);
     });
   });
+}
+
+Future<void> _waitForRelayConnectionState(
+  Ndk ndk,
+  String relayUrl,
+  bool expectedState,
+) async {
+  final deadline = DateTime.now().add(const Duration(seconds: 5));
+
+  while (DateTime.now().isBefore(deadline)) {
+    if (ndk.relays.globalState.relays[relayUrl]?.isConnected == expectedState) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+  }
+
+  throw TimeoutException(
+    'Relay $relayUrl did not reach expected connection state $expectedState',
+  );
 }
