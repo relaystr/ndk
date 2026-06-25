@@ -34,10 +34,10 @@ void main() async {
     Map<KeyPair, Nip01Event> key3TextNotes = {key3: textNote(key3)};
     Map<KeyPair, Nip01Event> key4TextNotes = {key4: textNote(key4)};
 
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 4340);
-    MockRelay relay2 = MockRelay(name: "relay 2", explicitPort: 4341);
-    MockRelay relay3 = MockRelay(name: "relay 3", explicitPort: 4342);
-    MockRelay relay4 = MockRelay(name: "relay 4", explicitPort: 4343);
+    MockRelay relay1 = MockRelay(name: "relay 1");
+    MockRelay relay2 = MockRelay(name: "relay 2");
+    MockRelay relay3 = MockRelay(name: "relay 3");
+    MockRelay relay4 = MockRelay(name: "relay 4");
 
     final myRelayUrls = [relay1.url, relay2.url, relay3.url, relay4.url];
 
@@ -56,7 +56,7 @@ void main() async {
     });
 
     test('test if events get replayed on concurrency requests',
-        timeout: const Timeout(Duration(seconds: 3)), () async {
+        timeout: const Timeout(Duration(seconds: 10)), () async {
       final ndkJit = Ndk(
         NdkConfig(
           eventVerifier: MockEventVerifier(),
@@ -67,6 +67,7 @@ void main() async {
       );
       ndkJit.accounts
           .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+      await ndkJit.relays.seedRelaysConnected;
 
       final myfilter = Filter(
           kinds: [Nip01Event.kTextNodeKind],
