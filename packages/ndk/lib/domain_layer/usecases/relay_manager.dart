@@ -244,8 +244,9 @@ class RelayManager<T> {
     if (force &&
         relayConnectivity != null &&
         relayConnectivity.relayTransport != null &&
+        !relayConnectivity.relay.connecting &&
         !relayConnectivity.relayTransport!.isOpen()) {
-      await closeTransport(url);
+      await resetTransport(url);
       relayConnectivity = globalState.relays[url];
     }
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
@@ -287,6 +288,18 @@ class RelayManager<T> {
       }
     }
     return true;
+  }
+
+  /// Closes and clears only transport-scoped state for a relay, while keeping
+  /// the relay entry and relay-scoped metadata in memory.
+  Future<void> resetTransport(String url) async {
+    final connectivity = globalState.relays[url];
+    if (connectivity != null) {
+      Logger.log.d(() => "Resetting transport for $url...");
+      _lastChallengePerRelay.remove(url);
+      await connectivity.close();
+      updateRelayConnectivity();
+    }
   }
 
   /// Reconnects all given relays
