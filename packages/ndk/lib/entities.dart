@@ -36,6 +36,8 @@ export 'domain_layer/entities/blob_upload_progress.dart';
 export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/account.dart';
 export 'domain_layer/entities/gift_wrap_unwrap_result.dart';
+export 'domain_layer/entities/nip_17_message.dart';
+export 'domain_layer/entities/nip_17_conversation.dart';
 export 'domain_layer/entities/nip_85.dart';
 
 /// Cashu entities

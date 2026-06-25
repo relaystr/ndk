@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:math';
 
 import '../../../data_layer/models/nip_01_event_model.dart';
+import '../../entities/event_cache_records.dart';
 import '../../entities/gift_wrap_unwrap_result.dart';
 import '../../entities/nip_01_event.dart';
 import '../../repositories/event_signer.dart';
 import '../../repositories/event_verifier.dart';
 import '../accounts/accounts.dart';
+import '../decrypted_event_payloads/decrypted_event_payloads.dart';
 
 class GiftWrap {
   static const int kSealEventKind = 13;
@@ -17,11 +19,13 @@ class GiftWrap {
   final Accounts accounts;
   final EventVerifier eventVerifier;
   final LocalEventSignerFactory eventSignerFactory;
+  final DecryptedEventPayloads decryptedEventPayloads;
 
   GiftWrap({
     required this.accounts,
     required this.eventVerifier,
     required this.eventSignerFactory,
+    required this.decryptedEventPayloads,
   });
 
   /// Returns the signer to use for signing operations.
@@ -90,6 +94,52 @@ class GiftWrap {
     );
 
     return rumor;
+  }
+
+  /// Attempts to unwrap a gift wrap using only cached decrypted payloads.
+  ///
+  /// Returns `null` when either the wrapped seal payload or the sealed rumor
+  /// payload is not available in the decrypted payload sidecar cache.
+  Future<Nip01Event?> tryFromGiftWrapFromCache({
+    required Nip01Event giftWrap,
+    EventSigner? customSigner,
+    bool verifySignature = true,
+  }) async {
+    if (giftWrap.kind != kGiftWrapEventkind) {
+      throw Exception("Event is not a gift wrap (kind:1059)");
+    }
+
+    final signer = _getSigner(customSigner: customSigner);
+    final viewerPubKey = signer.getPublicKey();
+
+    final cachedSealJson = await decryptedEventPayloads.loadCachedPlaintext(
+      eventId: giftWrap.id,
+      viewerPubKey: viewerPubKey,
+    );
+    if (cachedSealJson == null) {
+      return null;
+    }
+
+    final Map<String, dynamic> sealJson = jsonDecode(cachedSealJson);
+    final sealEvent = Nip01EventModel.fromJson(sealJson);
+
+    if (verifySignature) {
+      final isValid = await eventVerifier.verify(sealEvent);
+      if (!isValid) {
+        throw Exception("Seal event signature is invalid");
+      }
+    }
+
+    final cachedRumorJson = await decryptedEventPayloads.loadCachedPlaintext(
+      eventId: sealEvent.id,
+      viewerPubKey: viewerPubKey,
+    );
+    if (cachedRumorJson == null) {
+      return null;
+    }
+
+    final Map<String, dynamic> rumorJson = jsonDecode(cachedRumorJson);
+    return Nip01EventModel.fromJson(rumorJson);
   }
 
   /// Unwraps a gift-wrapped event with signature verification information
@@ -214,10 +264,14 @@ class GiftWrap {
 
     final signer = _getSigner(customSigner: customSigner);
 
-    // Now decrypt the seal to get the rumor
-    final decryptedRumorJson = await signer.decryptNip44(
-      ciphertext: sealedEvent.content,
-      senderPubKey: sealedEvent.pubKey,
+    final decryptedRumorJson = await decryptedEventPayloads.loadOrDecrypt(
+      event: sealedEvent,
+      viewerPubKey: signer.getPublicKey(),
+      scheme: DecryptedPayloadScheme.nip44,
+      decrypt: () => signer.decryptNip44(
+        ciphertext: sealedEvent.content,
+        senderPubKey: sealedEvent.pubKey,
+      ),
     );
 
     if (decryptedRumorJson == null) {
@@ -295,9 +349,14 @@ class GiftWrap {
   }) async {
     final signer = _getSigner(customSigner: customSigner);
 
-    final decryptedEventJson = await signer.decryptNip44(
-      ciphertext: wrappedEvent.content,
-      senderPubKey: wrappedEvent.pubKey,
+    final decryptedEventJson = await decryptedEventPayloads.loadOrDecrypt(
+      event: wrappedEvent,
+      viewerPubKey: signer.getPublicKey(),
+      scheme: DecryptedPayloadScheme.giftWrap,
+      decrypt: () => signer.decryptNip44(
+        ciphertext: wrappedEvent.content,
+        senderPubKey: wrappedEvent.pubKey,
+      ),
     );
 
     if (decryptedEventJson == null) {

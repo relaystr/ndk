@@ -44,6 +44,9 @@ class MemCacheManager implements CacheManager {
   /// In memory relay delivery target storage keyed by "$eventId|$relayUrl"
   Map<String, RelayDeliveryTarget> relayDeliveryTargets = {};
 
+  /// In memory decrypted payload sidecar storage keyed by "$eventId|$viewerPubKey"
+  Map<String, DecryptedEventPayloadRecord> decryptedEventPayloadRecords = {};
+
   /// String for mint Url
   Map<String, Set<CahsuKeyset>> cashuKeysets = {};
 
@@ -455,6 +458,77 @@ class MemCacheManager implements CacheManager {
   }
 
   @override
+  Future<void> saveDecryptedEventPayloadRecord(
+      DecryptedEventPayloadRecord record) async {
+    decryptedEventPayloadRecords[record.key] = record;
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecords(
+      List<DecryptedEventPayloadRecord> records) async {
+    for (final record in records) {
+      decryptedEventPayloadRecords[record.key] = record;
+    }
+  }
+
+  @override
+  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    return decryptedEventPayloadRecords[_eventSourceKey(eventId, viewerPubKey)];
+  }
+
+  @override
+  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadStatus? status,
+    int? limit,
+  }) async {
+    var records = decryptedEventPayloadRecords.values.where((record) {
+      if (eventId != null && record.eventId != eventId) {
+        return false;
+      }
+      if (viewerPubKey != null && record.viewerPubKey != viewerPubKey) {
+        return false;
+      }
+      if (status != null && record.status != status) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    records.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    if (limit != null && limit > 0 && records.length > limit) {
+      records = records.take(limit).toList();
+    }
+
+    return records;
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    decryptedEventPayloadRecords.remove(_eventSourceKey(eventId, viewerPubKey));
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
+    final prefix = '$eventId|';
+    decryptedEventPayloadRecords.removeWhere(
+        (key, value) => key.startsWith(prefix));
+  }
+
+  @override
+  Future<void> removeAllDecryptedEventPayloadRecords() async {
+    decryptedEventPayloadRecords.clear();
+  }
+
+  @override
   Future<List<Nip01Event>> loadEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -572,6 +646,7 @@ class MemCacheManager implements CacheManager {
       await removeEventSources(eventId);
       await removeEventDeliveryRecord(eventId);
       await removeRelayDeliveryTargets(eventId);
+      await removeDecryptedEventPayloadRecords(eventId);
     }
     await _refreshUserRelayListProjection(pubKey);
   }
@@ -582,6 +657,7 @@ class MemCacheManager implements CacheManager {
     eventSources.clear();
     eventDeliveryRecords.clear();
     relayDeliveryTargets.clear();
+    decryptedEventPayloadRecords.clear();
     userRelayLists.clear();
   }
 
@@ -591,6 +667,7 @@ class MemCacheManager implements CacheManager {
     await removeEventSources(id);
     await removeEventDeliveryRecord(id);
     await removeRelayDeliveryTargets(id);
+    await removeDecryptedEventPayloadRecords(id);
     if (removed != null) {
       await _refreshDerivedStateForEvent(removed);
     }
@@ -629,6 +706,7 @@ class MemCacheManager implements CacheManager {
       await removeEventSources(event.id);
       await removeEventDeliveryRecord(event.id);
       await removeRelayDeliveryTargets(event.id);
+      await removeDecryptedEventPayloadRecords(event.id);
     }
     await _refreshDerivedStateForPubKeys(
       rawEventsToRemove.map((event) => event.pubKey).toSet(),
@@ -857,6 +935,7 @@ class MemCacheManager implements CacheManager {
     eventSources.clear();
     eventDeliveryRecords.clear();
     relayDeliveryTargets.clear();
+    decryptedEventPayloadRecords.clear();
     userRelayLists.clear();
     relaySets.clear();
     nip05s.clear();

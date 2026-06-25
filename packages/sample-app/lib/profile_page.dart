@@ -7,11 +7,13 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 class ProfilePage extends StatefulWidget {
   final NdkFlutter ndkFlutter;
   final String? Function() getLoggedPubkey;
+  final String? initialPubkey;
 
   const ProfilePage({
     super.key,
     required this.ndkFlutter,
     required this.getLoggedPubkey,
+    this.initialPubkey,
   });
 
   @override
@@ -34,8 +36,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final loggedPubkey = widget.getLoggedPubkey();
+    final profilePubkey = widget.initialPubkey ?? loggedPubkey;
 
-    if (loggedPubkey == null) {
+    if (profilePubkey == null) {
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Card(
@@ -119,15 +122,16 @@ class _ProfilePageState extends State<ProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           NUserProfile(
-            key: ValueKey(loggedPubkey),
+            key: ValueKey(profilePubkey),
             ndkFlutter: widget.ndkFlutter,
+            pubkey: profilePubkey,
             onLogout: () {
               setState(() {});
             },
           ),
           const SizedBox(height: 16),
           FutureBuilder<Metadata?>(
-            future: widget.ndkFlutter.ndk.metadata.loadMetadata(loggedPubkey),
+            future: widget.ndkFlutter.ndk.metadata.loadMetadata(profilePubkey),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());

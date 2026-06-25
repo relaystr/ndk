@@ -33,6 +33,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   final Map<String, Set<String>> _eventSources = {};
   final Map<String, EventDeliveryRecord> _eventDeliveryRecords = {};
   final Map<String, RelayDeliveryTarget> _relayDeliveryTargets = {};
+  final Map<String, DecryptedEventPayloadRecord> _decryptedEventPayloadRecords =
+      {};
 
   /// crates objectbox db instace
   /// [attach] to attach to already open instance (e.g. for isolates)
@@ -232,6 +234,76 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   }
 
   @override
+  Future<void> saveDecryptedEventPayloadRecord(
+      DecryptedEventPayloadRecord record) async {
+    _decryptedEventPayloadRecords[record.key] = record;
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecords(
+      List<DecryptedEventPayloadRecord> records) async {
+    for (final record in records) {
+      _decryptedEventPayloadRecords[record.key] = record;
+    }
+  }
+
+  @override
+  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    return _decryptedEventPayloadRecords['$eventId|$viewerPubKey'];
+  }
+
+  @override
+  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadStatus? status,
+    int? limit,
+  }) async {
+    var records = _decryptedEventPayloadRecords.values.where((record) {
+      if (eventId != null && record.eventId != eventId) {
+        return false;
+      }
+      if (viewerPubKey != null && record.viewerPubKey != viewerPubKey) {
+        return false;
+      }
+      if (status != null && record.status != status) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    records.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    if (limit != null && limit > 0 && records.length > limit) {
+      records = records.take(limit).toList();
+    }
+
+    return records;
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    _decryptedEventPayloadRecords.remove('$eventId|$viewerPubKey');
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
+    final prefix = '$eventId|';
+    _decryptedEventPayloadRecords.removeWhere((key, _) => key.startsWith(prefix));
+  }
+
+  @override
+  Future<void> removeAllDecryptedEventPayloadRecords() async {
+    _decryptedEventPayloadRecords.clear();
+  }
+
+  @override
   Future<List<Nip01Event>> loadEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -369,6 +441,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     _eventSources.clear();
     _eventDeliveryRecords.clear();
     _relayDeliveryTargets.clear();
+    _decryptedEventPayloadRecords.clear();
   }
 
   @override
@@ -383,6 +456,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       _eventSources.remove(eventId);
       _eventDeliveryRecords.remove(eventId);
       _relayDeliveryTargets
+          .removeWhere((key, _) => key.startsWith('$eventId|'));
+      _decryptedEventPayloadRecords
           .removeWhere((key, _) => key.startsWith('$eventId|'));
     }
   }
@@ -585,6 +660,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     _eventSources.remove(id);
     _eventDeliveryRecords.remove(id);
     _relayDeliveryTargets.removeWhere((key, _) => key.startsWith('$id|'));
+    _decryptedEventPayloadRecords.removeWhere((key, _) => key.startsWith('$id|'));
   }
 
   @override
@@ -650,6 +726,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       _eventSources.remove(eventId);
       _eventDeliveryRecords.remove(eventId);
       _relayDeliveryTargets
+          .removeWhere((key, _) => key.startsWith('$eventId|'));
+      _decryptedEventPayloadRecords
           .removeWhere((key, _) => key.startsWith('$eventId|'));
     }
   }
@@ -1445,6 +1523,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     _eventSources.clear();
     _eventDeliveryRecords.clear();
     _relayDeliveryTargets.clear();
+    _decryptedEventPayloadRecords.clear();
   }
 
   @override

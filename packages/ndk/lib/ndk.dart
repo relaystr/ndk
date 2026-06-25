@@ -46,6 +46,7 @@ export 'domain_layer/entities/blossom_strategies.dart';
 export 'domain_layer/entities/blob_upload_progress.dart';
 export 'domain_layer/entities/file_hash_progress.dart';
 export 'domain_layer/entities/event_cache_records.dart';
+export 'domain_layer/entities/nip_17_conversation.dart';
 export '';
 
 export 'domain_layer/entities/account.dart';
@@ -96,6 +97,8 @@ export 'domain_layer/usecases/accounts/accounts.dart';
 export 'domain_layer/usecases/files/blossom_user_server_list.dart';
 export 'domain_layer/usecases/search/search.dart';
 export 'domain_layer/usecases/gift_wrap/gift_wrap.dart';
+export 'domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
+export 'domain_layer/usecases/nip17/nip17.dart';
 export 'domain_layer/usecases/cashu/cashu.dart';
 export 'domain_layer/usecases/cashu/cashu_seed.dart';
 export 'domain_layer/usecases/cashu/cashu_export_import.dart';

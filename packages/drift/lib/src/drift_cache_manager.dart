@@ -28,6 +28,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       'default_wallet_for_receiving';
   static const String _defaultWalletForSendingKey =
       'default_wallet_for_sending';
+  static const String _decryptedPayloadKeyPrefix = 'decrypted_payload:';
 
   final NdkCacheDatabase _db;
   String? _defaultWalletIdForReceiving;
@@ -183,9 +184,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       }).toList();
     }
 
-    final deletionRows = await (_db.select(_db.events)
-          ..where((t) => t.kind.equals(5)))
-        .get();
+    final deletionRows = await (_db.select(
+      _db.events,
+    )..where((t) => t.kind.equals(5))).get();
     final deletions = deletionRows.map(_eventFromRow).toList();
 
     events = _applyEventVisibilityRules(events, deletions);
@@ -202,25 +203,36 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<void> removeEvent(String id) async {
     await Future.wait([
       (_db.delete(_db.events)..where((t) => t.id.equals(id))).go(),
-      (_db.delete(_db.eventSourcesTable)..where((t) => t.eventId.equals(id)))
-          .go(),
-      (_db.delete(_db.eventDeliveryRecordsTable)
-            ..where((t) => t.eventId.equals(id)))
-          .go(),
-      (_db.delete(_db.relayDeliveryTargetsTable)
-            ..where((t) => t.eventId.equals(id)))
-          .go(),
+      (_db.delete(
+        _db.eventSourcesTable,
+      )..where((t) => t.eventId.equals(id))).go(),
+      (_db.delete(
+        _db.eventDeliveryRecordsTable,
+      )..where((t) => t.eventId.equals(id))).go(),
+      (_db.delete(
+        _db.relayDeliveryTargetsTable,
+      )..where((t) => t.eventId.equals(id))).go(),
+      removeDecryptedEventPayloadRecords(id),
     ]);
   }
 
   @override
   Future<void> removeAllEventsByPubKey(String pubKey) async {
+    final eventIds = (await loadEvents(
+      pubKeys: [pubKey],
+    )).map((event) => event.id).toList();
     await (_db.delete(_db.events)..where((t) => t.pubKey.equals(pubKey))).go();
+    for (final eventId in eventIds) {
+      await removeDecryptedEventPayloadRecords(eventId);
+    }
   }
 
   @override
   Future<void> removeAllEvents() async {
-    await _db.delete(_db.events).go();
+    await Future.wait([
+      _db.delete(_db.events).go(),
+      removeAllDecryptedEventPayloadRecords(),
+    ]);
   }
 
   @override
@@ -257,8 +269,19 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
       final idsToRemove = eventsToRemove.map((e) => e.id).toList();
       await (_db.delete(_db.events)..where((t) => t.id.isIn(idsToRemove))).go();
+      for (final eventId in idsToRemove) {
+        await removeDecryptedEventPayloadRecords(eventId);
+      }
       return;
     }
+
+    final eventsToRemove = await loadEvents(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      since: since,
+      until: until,
+    );
 
     // No tags filter, delete directly without loading events
     await (_db.delete(_db.events)..where((t) {
@@ -283,6 +306,10 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
           return conditions.reduce((a, b) => a & b);
         }))
         .go();
+
+    for (final event in eventsToRemove) {
+      await removeDecryptedEventPayloadRecords(event.id);
+    }
   }
 
   Nip01Event _eventFromRow(DbEvent row) {
@@ -413,17 +440,14 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     final events = await loadEvents(kinds: [Metadata.kKind]);
     final normalizedSearch = search.trim().toLowerCase();
-    final matches = events
-        .map((event) => Metadata.fromEvent(event))
-        .where((metadata) {
-          if (normalizedSearch.isEmpty) return true;
-          return metadata.matchesSearch(normalizedSearch) ||
-              (metadata.about?.toLowerCase().contains(normalizedSearch) ??
-                  false) ||
-              (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-        })
-        .toList()
-      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    final matches = events.map((event) => Metadata.fromEvent(event)).where((
+      metadata,
+    ) {
+      if (normalizedSearch.isEmpty) return true;
+      return metadata.matchesSearch(normalizedSearch) ||
+          (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
+          (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
+    }).toList()..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
 
     return matches.take(limit);
   }
@@ -956,7 +980,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     required String eventId,
     required String relayUrl,
   }) async {
-    await _db.into(_db.eventSourcesTable).insertOnConflictUpdate(
+    await _db
+        .into(_db.eventSourcesTable)
+        .insertOnConflictUpdate(
           EventSourcesTableCompanion.insert(
             eventId: eventId,
             relayUrl: relayUrl,
@@ -985,17 +1011,17 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<List<String>> loadEventSources(String eventId) async {
-    final rows = await (_db.select(_db.eventSourcesTable)
-          ..where((t) => t.eventId.equals(eventId)))
-        .get();
+    final rows = await (_db.select(
+      _db.eventSourcesTable,
+    )..where((t) => t.eventId.equals(eventId))).get();
     return rows.map((r) => r.relayUrl).toList();
   }
 
   @override
   Future<void> removeEventSources(String eventId) async {
-    await (_db.delete(_db.eventSourcesTable)
-          ..where((t) => t.eventId.equals(eventId)))
-        .go();
+    await (_db.delete(
+      _db.eventSourcesTable,
+    )..where((t) => t.eventId.equals(eventId))).go();
   }
 
   // =====================
@@ -1004,7 +1030,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveEventDeliveryRecord(EventDeliveryRecord record) async {
-    await _db.into(_db.eventDeliveryRecordsTable).insertOnConflictUpdate(
+    await _db
+        .into(_db.eventDeliveryRecordsTable)
+        .insertOnConflictUpdate(
           EventDeliveryRecordsTableCompanion.insert(
             eventId: record.eventId,
             status: record.status.name,
@@ -1018,20 +1046,24 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   }
 
   @override
-  Future<void> saveEventDeliveryRecords(List<EventDeliveryRecord> records) async {
+  Future<void> saveEventDeliveryRecords(
+    List<EventDeliveryRecord> records,
+  ) async {
     await _db.batch((batch) {
       batch.insertAllOnConflictUpdate(
         _db.eventDeliveryRecordsTable,
         records
-            .map((record) => EventDeliveryRecordsTableCompanion.insert(
-                  eventId: record.eventId,
-                  status: record.status.name,
-                  createdAt: record.createdAt,
-                  updatedAt: record.updatedAt,
-                  signedAt: Value(record.signedAt),
-                  completedAt: Value(record.completedAt),
-                  requiresNetworkSigner: Value(record.requiresNetworkSigner),
-                ))
+            .map(
+              (record) => EventDeliveryRecordsTableCompanion.insert(
+                eventId: record.eventId,
+                status: record.status.name,
+                createdAt: record.createdAt,
+                updatedAt: record.updatedAt,
+                signedAt: Value(record.signedAt),
+                completedAt: Value(record.completedAt),
+                requiresNetworkSigner: Value(record.requiresNetworkSigner),
+              ),
+            )
             .toList(),
       );
     });
@@ -1039,9 +1071,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId) async {
-    final row = await (_db.select(_db.eventDeliveryRecordsTable)
-          ..where((t) => t.eventId.equals(eventId)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.eventDeliveryRecordsTable,
+    )..where((t) => t.eventId.equals(eventId))).getSingleOrNull();
     if (row == null) return null;
     return _eventDeliveryRecordFromRow(row);
   }
@@ -1064,9 +1096,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> removeEventDeliveryRecord(String eventId) async {
-    await (_db.delete(_db.eventDeliveryRecordsTable)
-          ..where((t) => t.eventId.equals(eventId)))
-        .go();
+    await (_db.delete(
+      _db.eventDeliveryRecordsTable,
+    )..where((t) => t.eventId.equals(eventId))).go();
   }
 
   @override
@@ -1092,7 +1124,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target) async {
-    await _db.into(_db.relayDeliveryTargetsTable).insertOnConflictUpdate(
+    await _db
+        .into(_db.relayDeliveryTargetsTable)
+        .insertOnConflictUpdate(
           RelayDeliveryTargetsTableCompanion.insert(
             eventId: target.eventId,
             relayUrl: target.relayUrl,
@@ -1108,22 +1142,26 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   }
 
   @override
-  Future<void> saveRelayDeliveryTargets(List<RelayDeliveryTarget> targets) async {
+  Future<void> saveRelayDeliveryTargets(
+    List<RelayDeliveryTarget> targets,
+  ) async {
     await _db.batch((batch) {
       batch.insertAllOnConflictUpdate(
         _db.relayDeliveryTargetsTable,
         targets
-            .map((target) => RelayDeliveryTargetsTableCompanion.insert(
-                  eventId: target.eventId,
-                  relayUrl: target.relayUrl,
-                  reason: target.reason.name,
-                  state: target.state.name,
-                  attemptCount: Value(target.attemptCount),
-                  lastAttemptAt: Value(target.lastAttemptAt),
-                  nextRetryAt: Value(target.nextRetryAt),
-                  lastError: Value(target.lastError),
-                  lastOkMessage: Value(target.lastOkMessage),
-                ))
+            .map(
+              (target) => RelayDeliveryTargetsTableCompanion.insert(
+                eventId: target.eventId,
+                relayUrl: target.relayUrl,
+                reason: target.reason.name,
+                state: target.state.name,
+                attemptCount: Value(target.attemptCount),
+                lastAttemptAt: Value(target.lastAttemptAt),
+                nextRetryAt: Value(target.nextRetryAt),
+                lastError: Value(target.lastError),
+                lastOkMessage: Value(target.lastOkMessage),
+              ),
+            )
             .toList(),
       );
     });
@@ -1134,10 +1172,11 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     required String eventId,
     required String relayUrl,
   }) async {
-    final row = await (_db.select(_db.relayDeliveryTargetsTable)
-          ..where(
-              (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl)))
-        .getSingleOrNull();
+    final row =
+        await (_db.select(_db.relayDeliveryTargetsTable)..where(
+              (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl),
+            ))
+            .getSingleOrNull();
     if (row == null) return null;
     return _relayDeliveryTargetFromRow(row);
   }
@@ -1189,17 +1228,17 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     required String eventId,
     required String relayUrl,
   }) async {
-    await (_db.delete(_db.relayDeliveryTargetsTable)
-          ..where(
-              (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl)))
+    await (_db.delete(_db.relayDeliveryTargetsTable)..where(
+          (t) => t.eventId.equals(eventId) & t.relayUrl.equals(relayUrl),
+        ))
         .go();
   }
 
   @override
   Future<void> removeRelayDeliveryTargets(String eventId) async {
-    await (_db.delete(_db.relayDeliveryTargetsTable)
-          ..where((t) => t.eventId.equals(eventId)))
-        .go();
+    await (_db.delete(
+      _db.relayDeliveryTargetsTable,
+    )..where((t) => t.eventId.equals(eventId))).go();
   }
 
   @override
@@ -1219,6 +1258,115 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       lastError: row.lastError,
       lastOkMessage: row.lastOkMessage,
     );
+  }
+
+  String _decryptedPayloadKey(String eventId, String viewerPubKey) =>
+      '$_decryptedPayloadKeyPrefix$eventId|$viewerPubKey';
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecord(
+    DecryptedEventPayloadRecord record,
+  ) async {
+    await _storeKeyValue(
+      key: _decryptedPayloadKey(record.eventId, record.viewerPubKey),
+      value: jsonEncode(record.toJson()),
+    );
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecords(
+    List<DecryptedEventPayloadRecord> records,
+  ) async {
+    await _db.batch((batch) {
+      for (final record in records) {
+        batch.insert(
+          _db.keyValues,
+          KeyValuesCompanion.insert(
+            key: _decryptedPayloadKey(record.eventId, record.viewerPubKey),
+            value: Value(jsonEncode(record.toJson())),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  @override
+  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    final raw = await _getKeyValue(_decryptedPayloadKey(eventId, viewerPubKey));
+    if (raw == null) {
+      return null;
+    }
+    return DecryptedEventPayloadRecord.fromJson(
+      jsonDecode(raw) as Map<String, dynamic>,
+    );
+  }
+
+  @override
+  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadStatus? status,
+    int? limit,
+  }) async {
+    final rows = await (_db.select(
+      _db.keyValues,
+    )..where((kv) => kv.key.like('$_decryptedPayloadKeyPrefix%'))).get();
+
+    var records = rows
+        .where((row) => row.value != null)
+        .map(
+          (row) => DecryptedEventPayloadRecord.fromJson(
+            jsonDecode(row.value!) as Map<String, dynamic>,
+          ),
+        )
+        .where((record) {
+          if (eventId != null && record.eventId != eventId) {
+            return false;
+          }
+          if (viewerPubKey != null && record.viewerPubKey != viewerPubKey) {
+            return false;
+          }
+          if (status != null && record.status != status) {
+            return false;
+          }
+          return true;
+        })
+        .toList();
+
+    records.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    if (limit != null && limit > 0 && records.length > limit) {
+      records = records.take(limit).toList();
+    }
+    return records;
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    await (_db.delete(_db.keyValues)..where(
+          (kv) => kv.key.equals(_decryptedPayloadKey(eventId, viewerPubKey)),
+        ))
+        .go();
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
+    await (_db.delete(_db.keyValues)
+          ..where((kv) => kv.key.like('$_decryptedPayloadKeyPrefix$eventId|%')))
+        .go();
+  }
+
+  @override
+  Future<void> removeAllDecryptedEventPayloadRecords() async {
+    await (_db.delete(
+      _db.keyValues,
+    )..where((kv) => kv.key.like('$_decryptedPayloadKeyPrefix%'))).go();
   }
 
   // =====================

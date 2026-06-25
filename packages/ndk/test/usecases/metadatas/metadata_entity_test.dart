@@ -1,7 +1,8 @@
+import 'dart:convert';
+
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:test/test.dart';
-import 'dart:convert';
 
 void main() {
   group('Metadata', () {
@@ -502,8 +503,6 @@ void main() {
     );
 
     final signedMetadataEvent = await signer.sign(metadataEvent);
-
-    final metadata = Metadata.fromEvent(signedMetadataEvent);
 
     await cache.saveEvent(signedMetadataEvent);
 

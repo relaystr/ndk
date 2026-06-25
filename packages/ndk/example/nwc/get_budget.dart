@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:ndk/domain_layer/usecases/nwc/responses/get_budget_response.dart';
 import 'package:ndk/ndk.dart';
 
 void main() async {

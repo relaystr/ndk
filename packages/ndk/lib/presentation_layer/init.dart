@@ -35,6 +35,7 @@ import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
+import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
@@ -46,6 +47,7 @@ import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/lnurl/lnurl.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/nip_05.dart';
+import '../domain_layer/usecases/nip17/nip17.dart';
 import '../domain_layer/usecases/nip77/nip77.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/relay_manager.dart';
@@ -100,7 +102,9 @@ class Initialization {
   late BlossomUserServerList blossomUserServerList;
   late Search search;
   late GiftWrap giftWrap;
+  late Nip17 nip17;
   late Connectivy connectivity;
+  late DecryptedEventPayloads decryptedEventPayloads;
   late Cashu cashu;
   late Wallets wallets;
   late FetchedRanges fetchedRanges;
@@ -182,6 +186,9 @@ class Initialization {
     ///   use cases
     cacheWrite = CacheWrite(_ndkConfig.cache);
     cacheRead = CacheRead(_ndkConfig.cache);
+    decryptedEventPayloads = DecryptedEventPayloads(
+      cacheManager: _ndkConfig.cache,
+    );
 
     requests = Requests(
       defaultQueryTimeout: _ndkConfig.defaultQueryTimeout,
@@ -290,6 +297,7 @@ class Initialization {
       broadcast: broadcast,
       accounts: accounts,
       eventSignerFactory: _ndkConfig.eventSignerFactory,
+      decryptedEventPayloads: decryptedEventPayloads,
     );
 
     relaySets = RelaySets(
@@ -351,6 +359,15 @@ class Initialization {
       accounts: accounts,
       eventVerifier: _ndkConfig.eventVerifier,
       eventSignerFactory: _ndkConfig.eventSignerFactory,
+      decryptedEventPayloads: decryptedEventPayloads,
+    );
+    nip17 = Nip17(
+      accounts: accounts,
+      requests: requests,
+      broadcast: broadcast,
+      giftWrap: giftWrap,
+      userRelayLists: userRelayLists,
+      cacheManager: _ndkConfig.cache,
     );
 
     connectivity = Connectivy(relayManager);

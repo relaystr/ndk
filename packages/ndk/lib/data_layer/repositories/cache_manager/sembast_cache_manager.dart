@@ -41,6 +41,8 @@ class SembastCacheManager extends CacheManager {
   late final sembast.StoreRef<String, Map<String, Object?>> _eventDeliveryStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
       _relayDeliveryTargetStore;
+  late final sembast.StoreRef<String, Map<String, Object?>>
+      _decryptedEventPayloadStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _metadataStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _contactListStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _relayListStore;
@@ -61,6 +63,8 @@ class SembastCacheManager extends CacheManager {
         sembast.stringMapStoreFactory.store('event_delivery_records');
     _relayDeliveryTargetStore =
         sembast.stringMapStoreFactory.store('relay_delivery_targets');
+    _decryptedEventPayloadStore =
+        sembast.stringMapStoreFactory.store('decrypted_event_payloads');
     _metadataStore = sembast.stringMapStoreFactory.store('metadata');
     _contactListStore = sembast.stringMapStoreFactory.store('contact_lists');
     _relayListStore = sembast.stringMapStoreFactory.store('relay_lists');
@@ -297,6 +301,92 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<void> saveDecryptedEventPayloadRecord(
+      DecryptedEventPayloadRecord record) async {
+    await _decryptedEventPayloadStore
+        .record(record.key)
+        .put(_database, record.toJson().cast<String, Object?>());
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecords(
+      List<DecryptedEventPayloadRecord> records) async {
+    final keys = records.map((record) => record.key).toList();
+    final values = records
+        .map((record) => record.toJson().cast<String, Object?>())
+        .toList();
+    await _decryptedEventPayloadStore.records(keys).put(_database, values);
+  }
+
+  @override
+  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    final data = await _decryptedEventPayloadStore
+        .record(_eventSourceKey(eventId, viewerPubKey))
+        .get(_database);
+    if (data == null) return null;
+    return DecryptedEventPayloadRecord.fromJson(data);
+  }
+
+  @override
+  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadStatus? status,
+    int? limit,
+  }) async {
+    final filters = <sembast.Filter>[];
+    if (eventId != null) {
+      filters.add(sembast.Filter.equals('eventId', eventId));
+    }
+    if (viewerPubKey != null) {
+      filters.add(sembast.Filter.equals('viewerPubKey', viewerPubKey));
+    }
+    if (status != null) {
+      filters.add(sembast.Filter.equals('status', status.name));
+    }
+
+    final finder = sembast.Finder(
+      filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      sortOrders: [sembast.SortOrder('createdAt')],
+      limit: limit,
+    );
+
+    final records =
+        await _decryptedEventPayloadStore.find(_database, finder: finder);
+    return records
+        .map((record) => DecryptedEventPayloadRecord.fromJson(record.value))
+        .toList();
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    await _decryptedEventPayloadStore
+        .record(_eventSourceKey(eventId, viewerPubKey))
+        .delete(_database);
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
+    await _decryptedEventPayloadStore.delete(
+      _database,
+      finder: sembast.Finder(
+        filter: sembast.Filter.equals('eventId', eventId),
+      ),
+    );
+  }
+
+  @override
+  Future<void> removeAllDecryptedEventPayloadRecords() async {
+    await _decryptedEventPayloadStore.delete(_database);
+  }
+
+  @override
   Future<List<Nip01Event>> loadEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -489,6 +579,7 @@ class SembastCacheManager extends CacheManager {
     await _eventSourceStore.delete(_database);
     await _eventDeliveryStore.delete(_database);
     await _relayDeliveryTargetStore.delete(_database);
+    await _decryptedEventPayloadStore.delete(_database);
     await _relayListStore.delete(_database);
   }
 
@@ -510,6 +601,7 @@ class SembastCacheManager extends CacheManager {
       await removeEventSources(eventId);
       await removeEventDeliveryRecord(eventId);
       await removeRelayDeliveryTargets(eventId);
+      await removeDecryptedEventPayloadRecords(eventId);
     }
     await _contactListStore.record(pubKey).delete(_database);
     await _metadataStore.record(pubKey).delete(_database);
@@ -550,6 +642,7 @@ class SembastCacheManager extends CacheManager {
     await removeEventSources(id);
     await removeEventDeliveryRecord(id);
     await removeRelayDeliveryTargets(id);
+    await removeDecryptedEventPayloadRecords(id);
     if (removed != null) {
       await _refreshDerivedStateForEvent(removed);
     }
@@ -636,6 +729,7 @@ class SembastCacheManager extends CacheManager {
         await removeEventSources(event.id);
         await removeEventDeliveryRecord(event.id);
         await removeRelayDeliveryTargets(event.id);
+        await removeDecryptedEventPayloadRecords(event.id);
       }
       await _refreshDerivedStateForPubKeys(
         matchingEvents.map((event) => event.pubKey).toSet(),
@@ -659,6 +753,7 @@ class SembastCacheManager extends CacheManager {
         await removeEventSources(event.id);
         await removeEventDeliveryRecord(event.id);
         await removeRelayDeliveryTargets(event.id);
+        await removeDecryptedEventPayloadRecords(event.id);
       }
       await _refreshDerivedStateForPubKeys(
         matchingEvents.map((event) => event.pubKey).toSet(),
@@ -1308,6 +1403,7 @@ class SembastCacheManager extends CacheManager {
       _eventSourceStore.delete(_database),
       _eventDeliveryStore.delete(_database),
       _relayDeliveryTargetStore.delete(_database),
+      _decryptedEventPayloadStore.delete(_database),
       _metadataStore.delete(_database),
       _contactListStore.delete(_database),
       _relayListStore.delete(_database),

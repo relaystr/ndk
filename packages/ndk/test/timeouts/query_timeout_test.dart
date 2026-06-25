@@ -2,7 +2,6 @@ import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:test/test.dart';
-import 'dart:io';
 
 import '../mocks/mock_event_verifier.dart';
 import '../mocks/mock_relay.dart';

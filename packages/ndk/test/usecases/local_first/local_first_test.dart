@@ -297,6 +297,11 @@ void main() {
       expect(localCurrent.single.content, 'version 2');
 
       await relay.startServer();
+      await _waitForRelayConnected(
+        ndk: ndk,
+        relayUrl: relay.url,
+        timeout: const Duration(seconds: 20),
+      );
 
       final relayCurrent = await _waitForRelayEvents(
         relay: relay,

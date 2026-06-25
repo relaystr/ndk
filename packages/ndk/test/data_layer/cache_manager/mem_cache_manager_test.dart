@@ -146,6 +146,62 @@ void main() {
     });
   });
 
+  group('DecryptedEventPayloadRecord tests', () {
+    test('save and load decrypted payload record', () async {
+      final record = DecryptedEventPayloadRecord(
+        eventId: 'event-1',
+        viewerPubKey: 'viewer-1',
+        scheme: DecryptedPayloadScheme.nip44,
+        status: DecryptedPayloadStatus.ready,
+        plaintextContent: 'decrypted payload',
+        createdAt: 100,
+        updatedAt: 101,
+        decryptedAt: 101,
+        sourceEventPubKey: 'author-1',
+        sourceEventKind: 4,
+      );
+
+      await cacheManager.saveDecryptedEventPayloadRecord(record);
+
+      final loaded = await cacheManager.loadDecryptedEventPayloadRecord(
+        eventId: 'event-1',
+        viewerPubKey: 'viewer-1',
+      );
+
+      expect(loaded, isNotNull);
+      expect(loaded!.plaintextContent, 'decrypted payload');
+      expect(loaded.scheme, DecryptedPayloadScheme.nip44);
+      expect(loaded.status, DecryptedPayloadStatus.ready);
+    });
+
+    test('removeEvent removes decrypted payload sidecar', () async {
+      final event = Nip01Event(
+        pubKey: 'author-1',
+        kind: 4,
+        tags: const [],
+        content: 'ciphertext',
+      );
+      await cacheManager.saveEvent(event);
+      await cacheManager.saveDecryptedEventPayloadRecord(
+        DecryptedEventPayloadRecord(
+          eventId: event.id,
+          viewerPubKey: 'viewer-1',
+          plaintextContent: 'plaintext',
+          createdAt: 100,
+          updatedAt: 100,
+        ),
+      );
+
+      await cacheManager.removeEvent(event.id);
+
+      final loaded = await cacheManager.loadDecryptedEventPayloadRecord(
+        eventId: event.id,
+        viewerPubKey: 'viewer-1',
+      );
+      expect(loaded, isNull);
+    });
+  });
+
   group('RelaySet tests', () {
     test('saveRelaySet and loadRelaySet', () async {
       final mockRelaySet = MockRelaySet();

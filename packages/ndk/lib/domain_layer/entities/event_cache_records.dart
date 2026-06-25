@@ -30,6 +30,20 @@ enum RelayDeliveryReason {
   hint,
 }
 
+enum DecryptedPayloadScheme {
+  nip04,
+  nip44,
+  giftWrap,
+  seal,
+  unknown,
+}
+
+enum DecryptedPayloadStatus {
+  ready,
+  transientFailure,
+  permanentFailure,
+}
+
 class RelayDeliveryTarget {
   final String eventId;
   final String relayUrl;
@@ -179,6 +193,110 @@ class EventDeliveryRecord {
       signedAt: json['signedAt'] as int?,
       completedAt: json['completedAt'] as int?,
       requiresNetworkSigner: json['requiresNetworkSigner'] as bool? ?? false,
+    );
+  }
+}
+
+class DecryptedEventPayloadRecord {
+  final String eventId;
+  final String viewerPubKey;
+  final DecryptedPayloadScheme scheme;
+  final DecryptedPayloadStatus status;
+  final String? plaintextContent;
+  final int createdAt;
+  final int updatedAt;
+  final int? decryptedAt;
+  final String? failureReason;
+  final String? sourceEventPubKey;
+  final int? sourceEventKind;
+
+  const DecryptedEventPayloadRecord({
+    required this.eventId,
+    required this.viewerPubKey,
+    this.scheme = DecryptedPayloadScheme.unknown,
+    this.status = DecryptedPayloadStatus.ready,
+    this.plaintextContent,
+    required this.createdAt,
+    required this.updatedAt,
+    this.decryptedAt,
+    this.failureReason,
+    this.sourceEventPubKey,
+    this.sourceEventKind,
+  });
+
+  String get key => '$eventId|$viewerPubKey';
+
+  DecryptedEventPayloadRecord copyWith({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadScheme? scheme,
+    DecryptedPayloadStatus? status,
+    Object? plaintextContent = _noChange,
+    int? createdAt,
+    int? updatedAt,
+    Object? decryptedAt = _noChange,
+    Object? failureReason = _noChange,
+    Object? sourceEventPubKey = _noChange,
+    Object? sourceEventKind = _noChange,
+  }) {
+    return DecryptedEventPayloadRecord(
+      eventId: eventId ?? this.eventId,
+      viewerPubKey: viewerPubKey ?? this.viewerPubKey,
+      scheme: scheme ?? this.scheme,
+      status: status ?? this.status,
+      plaintextContent: identical(plaintextContent, _noChange)
+          ? this.plaintextContent
+          : plaintextContent as String?,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      decryptedAt: identical(decryptedAt, _noChange)
+          ? this.decryptedAt
+          : decryptedAt as int?,
+      failureReason: identical(failureReason, _noChange)
+          ? this.failureReason
+          : failureReason as String?,
+      sourceEventPubKey: identical(sourceEventPubKey, _noChange)
+          ? this.sourceEventPubKey
+          : sourceEventPubKey as String?,
+      sourceEventKind: identical(sourceEventKind, _noChange)
+          ? this.sourceEventKind
+          : sourceEventKind as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'eventId': eventId,
+      'viewerPubKey': viewerPubKey,
+      'scheme': scheme.name,
+      'status': status.name,
+      'plaintextContent': plaintextContent,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'decryptedAt': decryptedAt,
+      'failureReason': failureReason,
+      'sourceEventPubKey': sourceEventPubKey,
+      'sourceEventKind': sourceEventKind,
+    };
+  }
+
+  factory DecryptedEventPayloadRecord.fromJson(Map<String, dynamic> json) {
+    return DecryptedEventPayloadRecord(
+      eventId: json['eventId'] as String,
+      viewerPubKey: json['viewerPubKey'] as String,
+      scheme: json['scheme'] != null
+          ? DecryptedPayloadScheme.values.byName(json['scheme'] as String)
+          : DecryptedPayloadScheme.unknown,
+      status: json['status'] != null
+          ? DecryptedPayloadStatus.values.byName(json['status'] as String)
+          : DecryptedPayloadStatus.ready,
+      plaintextContent: json['plaintextContent'] as String?,
+      createdAt: json['createdAt'] as int,
+      updatedAt: json['updatedAt'] as int,
+      decryptedAt: json['decryptedAt'] as int?,
+      failureReason: json['failureReason'] as String?,
+      sourceEventPubKey: json['sourceEventPubKey'] as String?,
+      sourceEventKind: json['sourceEventKind'] as int?,
     );
   }
 }

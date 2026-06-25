@@ -57,6 +57,26 @@ abstract class CacheManager {
   });
   Future<void> removeRelayDeliveryTargets(String eventId);
   Future<void> removeAllRelayDeliveryTargets();
+  Future<void> saveDecryptedEventPayloadRecord(
+      DecryptedEventPayloadRecord record);
+  Future<void> saveDecryptedEventPayloadRecords(
+      List<DecryptedEventPayloadRecord> records);
+  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  });
+  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadStatus? status,
+    int? limit,
+  });
+  Future<void> removeDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  });
+  Future<void> removeDecryptedEventPayloadRecords(String eventId);
+  Future<void> removeAllDecryptedEventPayloadRecords();
 
   /// Load events from cache with flexible filtering \
   /// [ids] - list of event ids \

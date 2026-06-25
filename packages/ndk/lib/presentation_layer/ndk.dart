@@ -8,6 +8,7 @@ import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
+import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
 import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
@@ -17,6 +18,7 @@ import '../domain_layer/usecases/gift_wrap/gift_wrap.dart';
 import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/nip_05.dart';
+import '../domain_layer/usecases/nip17/nip17.dart';
 import '../domain_layer/usecases/nip77/nip77.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
 import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
@@ -135,11 +137,21 @@ class Ndk {
   /// low level usecase, recommended for advanced users
   GiftWrap get giftWrap => _initialization.giftWrap;
 
+  /// NIP-17 private direct messages.
+  Nip17 get nip17 => _initialization.nip17;
+
   /// Use case for managing relay connectivity \
   /// get notified about relay connectivity changes \
   /// and update NDK about your application connectivity \
   /// for faster reconnects
   Connectivy get connectivity => _initialization.connectivity;
+
+  /// Read-through cache for decrypted event payloads.
+  ///
+  /// Lets callers cache plaintext sidecars keyed by `(eventId, viewerPubKey)`
+  /// so remote signers do not need to decrypt the same event repeatedly.
+  DecryptedEventPayloads get decryptedEventPayloads =>
+      _initialization.decryptedEventPayloads;
 
   ProofOfWork get proofOfWork => _initialization.proofOfWork;
 
