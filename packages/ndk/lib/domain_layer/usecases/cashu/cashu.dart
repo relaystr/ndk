@@ -64,10 +64,6 @@ class Cashu {
     _cashuSeed = CashuSeed(
       userSeedPhrase: cashuUserSeedphrase,
     );
-    if (cashuUserSeedphrase == null) {
-      Logger.log.w(() =>
-          'Cashu initialized without user seed phrase, cashu features will not work \nSet the seed phrase using NdkConfig or Cashu.setCashuSeedPhrase()');
-    }
   }
 
   /// mints this usecase has interacted with \
