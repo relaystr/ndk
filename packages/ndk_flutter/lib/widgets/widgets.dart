@@ -8,6 +8,7 @@ export 'pending_requests/n_pending_requests.dart';
 export 'locale_switcher/n_locale_switcher.dart';
 export 'wallets/n_wallets.dart';
 export 'wallets/n_wallet_card.dart';
+export 'wallets/n_cashu_seed_backup_warning.dart';
 export 'wallets/n_wallet_card_list.dart';
 export 'wallets/n_pending_transactions.dart';
 export 'wallets/n_recent_transactions.dart';

@@ -1815,6 +1815,48 @@ abstract class AppLocalizations {
   /// **'Pending'**
   String get pendingTransactions;
 
+  /// No description provided for @backupSeedWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up your cashu recovery phrase'**
+  String get backupSeedWarning;
+
+  /// No description provided for @backupSeedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up cashu recovery phrase'**
+  String get backupSeedTitle;
+
+  /// No description provided for @backupSeedInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Write down these words in order and store them somewhere safe. They are the only way to recover your cashu funds if you lose this device.'**
+  String get backupSeedInstructions;
+
+  /// No description provided for @backupSeedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'I have written down my recovery phrase and stored it safely'**
+  String get backupSeedConfirm;
+
+  /// No description provided for @backupSeedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve backed it up'**
+  String get backupSeedDone;
+
+  /// Label for the action that retries minting tokens for pending funding transactions
+  ///
+  /// In en, this message translates to:
+  /// **'Reclaim pending funds'**
+  String get reclaimPendingFunds;
+
+  /// Title for the reclaim pending funds dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Reclaim Pending Funds'**
+  String get reclaimPendingTitle;
+
   /// Title for recent transactions section
   ///
   /// In en, this message translates to:
@@ -1968,13 +2010,13 @@ abstract class AppLocalizations {
   /// Title for the LNURL wallet type option
   ///
   /// In en, this message translates to:
-  /// **'LNURL / Lightning Address'**
+  /// **'Lightning Address (LNURL)'**
   String get lnurlWalletTypeTitle;
 
   /// Subtitle for the LNURL wallet type option
   ///
   /// In en, this message translates to:
-  /// **'Use a custodial wallet with LNURL or a Lightning address'**
+  /// **'Use a Lightning address (LNURL) for receiving only'**
   String get lnurlWalletTypeSubtitle;
 
   /// Title for the Cashu wallet type option
@@ -2168,6 +2210,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Never'**
   String get budgetNever;
+
+  /// Label for the wallet backup action
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backup;
+
+  /// Label for the wallet restore action
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// Title of the cashu backup dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Cashu Backup'**
+  String get cashuBackupTitle;
+
+  /// Security warning shown in the cashu backup dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This backup contains your ecash proofs, which are bearer funds. Keep it private and store it somewhere safe. Your seed phrase is backed up separately.'**
+  String get cashuBackupWarning;
+
+  /// Shown while the cashu backup is being generated
+  ///
+  /// In en, this message translates to:
+  /// **'Generating backup...'**
+  String get generatingBackup;
+
+  /// Button to copy the cashu backup to the clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Copy backup'**
+  String get copyBackup;
+
+  /// Confirmation that the backup was copied
+  ///
+  /// In en, this message translates to:
+  /// **'Backup copied to clipboard'**
+  String get backupCopiedToClipboard;
+
+  /// Title of the cashu restore dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Cashu Backup'**
+  String get cashuRestoreTitle;
+
+  /// Label for the backup JSON input field
+  ///
+  /// In en, this message translates to:
+  /// **'Backup JSON'**
+  String get backupJson;
+
+  /// Hint for the backup JSON input field
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your backup JSON here'**
+  String get backupJsonHint;
+
+  /// Validation message when the backup field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a backup'**
+  String get pleaseEnterBackup;
+
+  /// Shown while a cashu backup is being restored
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring backup...'**
+  String get restoringBackup;
+
+  /// Confirmation after a successful restore
+  ///
+  /// In en, this message translates to:
+  /// **'Restored {count} proofs from backup'**
+  String restoreSuccess(int count);
 }
 
 class _AppLocalizationsDelegate

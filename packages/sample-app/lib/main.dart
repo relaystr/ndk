@@ -6,7 +6,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk_demo/l10n/app_localizations_context.dart';
-import 'package:ndk_demo/l10n/generated/sample_app_localizations.dart';
 import 'package:ndk_demo/router.dart';
 import 'package:ndk_drift/ndk_drift.dart';
 import 'package:ndk_flutter/l10n/app_localizations.dart' as ndk_flutter;
@@ -14,7 +13,8 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
-import 'demo_app_config.dart';
+import 'l10n/generated/sample_app_localizations.dart';
+
 
 bool signerAppAvailable = false;
 
@@ -43,6 +43,10 @@ Future<void> main() async {
       : await SembastCacheManager.create(
           databasePath: (await getApplicationDocumentsDirectory()).path);
 
+  // Load the cashu seed phrase from secure storage, generating a fresh one on
+  // first run. Never hardcode this — it controls cashu funds.
+  final cashuSeedPhrase = await CashuSeedStore().loadOrCreate();
+
   final eventVerifier = kIsWeb ? WebEventVerifier() : RustEventVerifier();
   ndk = Ndk(
     NdkConfig(
@@ -51,7 +55,7 @@ Future<void> main() async {
       walletsRepo: FlutterSecureStorageWalletsRepo(),
       logLevel: Logger.logLevels.info,
       cashuUserSeedphrase: CashuUserSeedphrase(
-        seedPhrase: DemoAppConfig.cashuSeedPhrase,
+        seedPhrase: cashuSeedPhrase,
       ),
     ),
   );
@@ -121,7 +125,10 @@ class _MyAppState extends State<MyApp> with ProtocolListener {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        supportedLocales: SampleAppLocalizations.supportedLocales,
+        // Use ndk_flutter's locale list — it's the superset that includes the
+        // extra locales (fi, pt, pt_BR) translated in that package. The sample
+        // app shell falls back to English for those via the delegate above.
+        supportedLocales: ndk_flutter.AppLocalizations.supportedLocales,
         routerConfig: appRouter,
         builder: (context, child) => Stack(
           children: [

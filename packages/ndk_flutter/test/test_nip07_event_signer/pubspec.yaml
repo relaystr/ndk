@@ -1,22 +1,22 @@
 name: test_nip07_event_signer
-description: "A new Flutter project."
+description: "A Flutter project for manual NIP-07 extension testing."
 publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.9.0
 
 dependencies:
   flutter:
     sdk: flutter
-  ndk: ^0.5.0
-  nip07_event_signer:
-    path: ../../../nip07_event_signer
+  ndk: ^0.8.4-dev.4
+  ndk_flutter:
+    path: ../../../ndk_flutter
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../../shared/helpers/mutex_simple.dart';
 import '../../entities/cashu/cashu_keyset.dart';
+import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
 import '../../repositories/cache_manager.dart';
 
@@ -14,6 +15,15 @@ class CashuCacheDecorator implements CacheManager {
     MutexSimple? mutex,
   })  : _delegate = cacheManager,
         _mutex = mutex ?? MutexSimple();
+
+  @override
+  Future<List<CashuMintInfo>?> getMintInfos({
+    List<String>? mintUrls,
+  }) async {
+    return await _mutex.synchronized(() async {
+      return await _delegate.getMintInfos(mintUrls: mintUrls);
+    });
+  }
 
   @override
   Future<void> saveProofs({
@@ -63,6 +73,52 @@ class CashuCacheDecorator implements CacheManager {
   Future<void> saveKeyset(CahsuKeyset keyset) async {
     await _mutex.synchronized(() async {
       await _delegate.saveKeyset(keyset);
+    });
+  }
+
+  @override
+  Future<void> saveMintInfo({
+    required CashuMintInfo mintInfo,
+  }) async {
+    await _mutex.synchronized(() async {
+      await _delegate.saveMintInfo(mintInfo: mintInfo);
+    });
+  }
+
+  @override
+  Future<void> removeMintInfo({
+    required String mintUrl,
+  }) async {
+    await _mutex.synchronized(() async {
+      await _delegate.removeMintInfo(mintUrl: mintUrl);
+    });
+  }
+
+  @override
+  Future<int> getCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+  }) async {
+    return await _mutex.synchronized(() async {
+      return await _delegate.getCashuSecretCounter(
+        mintUrl: mintUrl,
+        keysetId: keysetId,
+      );
+    });
+  }
+
+  @override
+  Future<void> setCashuSecretCounter({
+    required String mintUrl,
+    required String keysetId,
+    required int counter,
+  }) async {
+    await _mutex.synchronized(() async {
+      await _delegate.setCashuSecretCounter(
+        mintUrl: mintUrl,
+        keysetId: keysetId,
+        counter: counter,
+      );
     });
   }
 
