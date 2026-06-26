@@ -1,3 +1,7 @@
+## 0.8.4-dev.11
+
+ - Update a dependency to the latest release.
+
 ## 0.8.4-dev.10
 
  - **FIX**: dynamic sdk constraints.

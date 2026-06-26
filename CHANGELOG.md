@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-06-26
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.8`](#ndk---v084-dev8)
+ - [`ndk_objectbox` - `v0.2.12-dev.8`](#ndk_objectbox---v0212-dev8)
+ - [`ndk_drift` - `v0.1.1-dev.10`](#ndk_drift---v011-dev10)
+ - [`ndk_flutter` - `v0.8.4-dev.11`](#ndk_flutter---v084-dev11)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.8`
+ - `ndk_drift` - `v0.1.1-dev.10`
+ - `ndk_flutter` - `v0.8.4-dev.11`
+
+---
+
+#### `ndk` - `v0.8.4-dev.8`
+
+ - **FIX**(test): apply tag filters in mock relay.
+
+
 ## 2026-06-24
 
 ### Changes
