@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk/shared/nips/nip01/event_eviction_planner.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
@@ -295,7 +296,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
     final prefix = '$eventId|';
-    _decryptedEventPayloadRecords.removeWhere((key, _) => key.startsWith(prefix));
+    _decryptedEventPayloadRecords
+        .removeWhere((key, _) => key.startsWith(prefix));
   }
 
   @override
@@ -657,10 +659,53 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     if (existingEvent != null) {
       eventBox.remove(existingEvent.dbId);
     }
-    _eventSources.remove(id);
-    _eventDeliveryRecords.remove(id);
-    _relayDeliveryTargets.removeWhere((key, _) => key.startsWith('$id|'));
-    _decryptedEventPayloadRecords.removeWhere((key, _) => key.startsWith('$id|'));
+    _removeEventSidecarsByIds([id]);
+  }
+
+  @override
+  Future<EvictionResult> evict(EvictionPolicy policy) async {
+    await dbRdy;
+    final eventBox = _objectBox.store.box<DbNip01Event>();
+    final rawEvents = eventBox.getAll().map((event) => event.toNdk()).toList();
+    final lockedEventIds = <String>{
+      ..._eventDeliveryRecords.keys,
+      ..._relayDeliveryTargets.values.map((target) => target.eventId),
+    };
+    final plan = EventEvictionPlanner.plan(
+      rawEvents: rawEvents,
+      lockedEventIds: lockedEventIds,
+      policy: policy,
+    );
+
+    if (plan.eventIdsToRemove.isEmpty) {
+      return plan.toResult();
+    }
+
+    final query = eventBox
+        .query(DbNip01Event_.nostrId.oneOf(plan.eventIdsToRemove.toList()))
+        .build();
+    final results = query.find();
+    query.close();
+    eventBox.removeMany(results.map((event) => event.dbId).toList());
+    _removeEventSidecarsByIds(plan.eventIdsToRemove);
+
+    return plan.toResult();
+  }
+
+  void _removeEventSidecarsByIds(Iterable<String> eventIds) {
+    final eventIdSet = eventIds.toSet();
+    if (eventIdSet.isEmpty) return;
+
+    _eventSources.removeWhere((eventId, value) => eventIdSet.contains(eventId));
+    _eventDeliveryRecords.removeWhere(
+      (eventId, value) => eventIdSet.contains(eventId),
+    );
+    _relayDeliveryTargets.removeWhere(
+      (key, target) => eventIdSet.contains(target.eventId),
+    );
+    _decryptedEventPayloadRecords.removeWhere(
+      (key, record) => eventIdSet.contains(record.eventId),
+    );
   }
 
   @override

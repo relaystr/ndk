@@ -68,7 +68,7 @@ class _DmInboxPageState extends State<DmInboxPage> {
 
     if (!forceRefresh) {
       try {
-        final cachedConversations = await ndk.nip17.loadConversationsSnapshot();
+        final cachedConversations = await ndk.dms.loadConversationsSnapshot();
         if (!mounted || loadGeneration != _loadGeneration) return;
         if (cachedConversations.isNotEmpty || _conversations.isEmpty) {
           setState(() {
@@ -88,7 +88,7 @@ class _DmInboxPageState extends State<DmInboxPage> {
     }
 
     try {
-      final conversations = await ndk.nip17.loadConversations(
+      final conversations = await ndk.dms.loadConversations(
         forceRefresh: forceRefresh,
       );
       if (!mounted || loadGeneration != _loadGeneration) return;
@@ -371,7 +371,7 @@ class _DmConversationPageState extends State<DmConversationPage> {
     });
 
     try {
-      await ndk.nip17.sendMessage(
+      await ndk.dms.sendMessage(
         recipientPubKey: widget.peerPubKey,
         content: content,
       );
@@ -414,7 +414,7 @@ class _DmConversationPageState extends State<DmConversationPage> {
 
     if (!forceRefresh) {
       try {
-        final cachedMessages = await ndk.nip17.loadConversationSnapshot(
+        final cachedMessages = await ndk.dms.loadConversationSnapshot(
           peerPubKey: widget.peerPubKey,
         );
         if (!mounted || loadGeneration != _loadGeneration) return;
@@ -437,7 +437,7 @@ class _DmConversationPageState extends State<DmConversationPage> {
     );
 
     try {
-      final messages = await ndk.nip17.loadConversation(
+      final messages = await ndk.dms.loadConversation(
         peerPubKey: widget.peerPubKey,
         forceRefresh: forceRefresh,
       );
@@ -697,7 +697,7 @@ class _DmComposePageState extends State<DmComposePage> {
     });
 
     try {
-      await ndk.nip17.sendMessage(
+      await ndk.dms.sendMessage(
         recipientPubKey: recipient,
         content: content,
       );

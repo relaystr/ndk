@@ -29,14 +29,14 @@ import '../domain_layer/usecases/broadcast/broadcast.dart';
 import '../domain_layer/usecases/broadcast/broadcast_sender.dart';
 import '../domain_layer/usecases/broadcast/pending_broadcast_delivery.dart';
 import '../domain_layer/usecases/bunkers/bunkers.dart';
-import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
+import '../domain_layer/usecases/cache_eviction/cache_eviction_scheduler.dart';
 import '../domain_layer/usecases/cache_read/cache_read.dart';
-import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/cache_write/cache_write.dart';
 import '../domain_layer/usecases/cashu/cashu.dart';
 import '../domain_layer/usecases/connectivity/connectivity.dart';
 import '../domain_layer/usecases/decrypted_event_payloads/decrypted_event_payloads.dart';
 import '../domain_layer/usecases/engines/network_engine.dart';
+import '../domain_layer/usecases/fetched_ranges/fetched_ranges.dart';
 import '../domain_layer/usecases/files/blossom.dart';
 import '../domain_layer/usecases/files/blossom_user_server_list.dart';
 import '../domain_layer/usecases/files/files.dart';
@@ -47,9 +47,10 @@ import '../domain_layer/usecases/lists/lists.dart';
 import '../domain_layer/usecases/lnurl/lnurl.dart';
 import '../domain_layer/usecases/metadatas/metadatas.dart';
 import '../domain_layer/usecases/nip05/nip_05.dart';
-import '../domain_layer/usecases/nip17/nip17.dart';
+import '../domain_layer/usecases/dms/dms.dart';
 import '../domain_layer/usecases/nip77/nip77.dart';
 import '../domain_layer/usecases/nwc/nwc.dart';
+import '../domain_layer/usecases/proof_of_work/proof_of_work.dart';
 import '../domain_layer/usecases/relay_manager.dart';
 import '../domain_layer/usecases/relay_sets/relay_sets.dart';
 import '../domain_layer/usecases/relay_sets_engine.dart';
@@ -102,12 +103,13 @@ class Initialization {
   late BlossomUserServerList blossomUserServerList;
   late Search search;
   late GiftWrap giftWrap;
-  late Nip17 nip17;
+  late Dms dms;
   late Connectivy connectivity;
   late DecryptedEventPayloads decryptedEventPayloads;
   late Cashu cashu;
   late Wallets wallets;
   late FetchedRanges fetchedRanges;
+  CacheEvictionScheduler? cacheEvictionScheduler;
   late ProofOfWork proofOfWork;
   late TrustedAssertions trustedAssertions;
   StreamSubscription<Map<String, RelayConnectivity>>?
@@ -361,7 +363,7 @@ class Initialization {
       eventSignerFactory: _ndkConfig.eventSignerFactory,
       decryptedEventPayloads: decryptedEventPayloads,
     );
-    nip17 = Nip17(
+    dms = Dms(
       accounts: accounts,
       requests: requests,
       broadcast: broadcast,
@@ -393,6 +395,16 @@ class Initialization {
       defaultProviders: _ndkConfig.defaultTrustedProviders,
     );
 
+    if (_ndkConfig.cacheEvictionEnabled) {
+      cacheEvictionScheduler = CacheEvictionScheduler(
+        cacheManager: _ndkConfig.cache,
+        policy: _ndkConfig.cacheEvictionPolicy,
+        startupDelay: _ndkConfig.cacheEvictionStartupDelay,
+        interval: _ndkConfig.cacheEvictionInterval,
+        runOnStartup: _ndkConfig.runCacheEvictionOnStartup,
+      )..start();
+    }
+
     /// set the user configured log level
     Logger.setLogLevel(_ndkConfig.logLevel);
   }
@@ -403,6 +415,7 @@ class Initialization {
   }
 
   Future<void> dispose() async {
+    await cacheEvictionScheduler?.stop();
     await pendingBroadcastDelivery.stop();
     await _relayConnectivitySubscription?.cancel();
   }

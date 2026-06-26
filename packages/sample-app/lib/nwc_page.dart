@@ -7,7 +7,6 @@ import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_kind.dart';
-import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_method.dart';
 import 'package:ndk/domain_layer/usecases/nwc/nwc_notification.dart';
 import 'package:ndk/domain_layer/usecases/nwc/responses/nwc_response.dart';
 import 'package:ndk/ndk.dart';
@@ -259,32 +258,24 @@ class NwcPageState extends State<NwcPage> with WidgetsBindingObserver {
           doGetInfoMethod: true,
         );
 
-        if (establishedConn != null) {
-          setState(() {
-            connection = establishedConn;
-            balance = null;
-            _resetInvoiceStates();
-            // If make_hold_invoice is not permitted, ensure isHoldInvoice is false.
-            if (!(connection!.info?.methods
-                    .contains(NwcMethod.MAKE_HOLD_INVOICE.name) ??
-                false)) {
-              isHoldInvoice = false;
-            }
-          });
-          print(
-              'Successfully connected to NWC wallet: $walletNwcServicePubkey via $nwcRelayForConnectionUri');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(
-                // Try using 'alias' as per potential GetInfoResponse field, fallback to pubkey
-                'NWC Connected to: ${connection?.info?.alias ?? walletNwcServicePubkey.substring(0, 10)}...')),
-          );
-        } else {
-          print('Failed to connect to NWC wallet using the constructed URI.');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Failed to establish NWC connection.')),
-          );
-        }
+        setState(() {
+          connection = establishedConn;
+          balance = null;
+          _resetInvoiceStates();
+          // If make_hold_invoice is not permitted, ensure isHoldInvoice is false.
+          if (!(connection!.info?.methods
+                  .contains(NwcMethod.MAKE_HOLD_INVOICE.name) ??
+              false)) {
+            isHoldInvoice = false;
+          }
+        });
+        print(
+            'Successfully connected to NWC wallet: $walletNwcServicePubkey via $nwcRelayForConnectionUri');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(
+              // Try using 'alias' as per potential GetInfoResponse field, fallback to pubkey
+              'NWC Connected to: ${connection?.info?.alias ?? walletNwcServicePubkey.substring(0, 10)}...')),
+        );
       } catch (e) {
         print('Error during NIP-47 callback processing: $e');
         ScaffoldMessenger.of(context).showSnackBar(

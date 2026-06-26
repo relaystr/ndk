@@ -9,6 +9,21 @@ typedef DecryptedPayloadFailureClassifier = DecryptedPayloadStatus? Function(
   StackTrace stackTrace,
 );
 
+/// Read-through cache for decrypted payload sidecars.
+///
+/// This usecase is the main app-facing abstraction for caching plaintext of
+/// encrypted Nostr events. It intentionally does not rewrite [Nip01Event]
+/// content. Instead it stores a viewer-specific sidecar record keyed by
+/// `(eventId, viewerPubKey)`.
+///
+/// Typical flow:
+/// 1. caller asks for plaintext
+/// 2. cache is checked first
+/// 3. if missing, caller-provided decryptor is executed
+/// 4. successful plaintext is stored for future reads
+///
+/// A per-record mutex prevents the same event/viewer pair from being decrypted
+/// multiple times concurrently.
 class DecryptedEventPayloads {
   final CacheManager _cacheManager;
   final Map<String, MutexSimple> _recordMutexes = {};
@@ -17,6 +32,7 @@ class DecryptedEventPayloads {
     required CacheManager cacheManager,
   }) : _cacheManager = cacheManager;
 
+  /// Returns cached plaintext if a ready sidecar already exists.
   Future<String?> loadCachedPlaintext({
     required String eventId,
     required String viewerPubKey,
@@ -34,6 +50,14 @@ class DecryptedEventPayloads {
     return record.plaintextContent;
   }
 
+  /// Returns plaintext from cache or decrypts and persists it on demand.
+  ///
+  /// [scheme] describes the encryption family used by the event.
+  /// [decrypt] is only executed when no usable plaintext sidecar already
+  /// exists.
+  ///
+  /// If [classifyFailure] returns a status, the failure is also persisted so
+  /// callers and tests can distinguish transient from permanent failures.
   Future<String?> loadOrDecrypt({
     required Nip01Event event,
     required String viewerPubKey,

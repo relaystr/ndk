@@ -14,16 +14,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 ## Apps using NDK
 
-- [sample app](https://dart-nostr.com/app/)
-- [yana](https://github.com/frnandu/yana)
-- [camelus](https://github.com/leo-lox/camelus)
-- [zap.stream](https://github.com/nostrlabs-io/zap-stream-flutter)
-- [zapstore](https://github.com/zapstore/zapstore)
-- [freeflow](https://github.com/nostrlabs-io/freeflow)
-- [hostr](https://github.com/sudonym-btc/hostr)
-- [bitblik](https://github.com/bit-blik)
-- [donow](https://github.com/nogringo/donow)
-- [submarine](https://github.com/nogringo/submarine)
+- [sample app](https://dart-nostr.com/app/), [yana](https://github.com/frnandu/yana), [camelus](https://github.com/leo-lox/camelus), [zap.stream](https://github.com/nostrlabs-io/zap-stream-flutter), [zapstore](https://github.com/zapstore/zapstore), [freeflow](https://github.com/nostrlabs-io/freeflow), [hostr](https://github.com/sudonym-btc/hostr), [bitblik](https://github.com/bit-blik/bitblik), [donow](https://github.com/nogringo/donow), [submarine](https://github.com/nogringo/submarine), [nostr-mail-client](https://github.com/nogringo/nostr-mail-client)
 
 # ➡️ [Getting Started 🔗](https://dart-nostr.com/guides/getting-started/)
 

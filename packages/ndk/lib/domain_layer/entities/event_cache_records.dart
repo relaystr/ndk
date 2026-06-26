@@ -3,6 +3,7 @@ import '../../shared/nips/nip01/event_kind_classification.dart';
 
 const _noChange = Object();
 
+/// Aggregate delivery state for one event across all of its relay targets.
 enum EventDeliveryStatus {
   pending,
   inProgress,
@@ -12,6 +13,7 @@ enum EventDeliveryStatus {
   failed,
 }
 
+/// Per-relay delivery state for one `(eventId, relayUrl)` pair.
 enum RelayDeliveryState {
   pending,
   attempting,
@@ -21,6 +23,7 @@ enum RelayDeliveryState {
   authRequired,
 }
 
+/// Why a relay became a delivery target for an event.
 enum RelayDeliveryReason {
   authorWrite,
   authorRead,
@@ -38,12 +41,18 @@ enum DecryptedPayloadScheme {
   unknown,
 }
 
+/// Result of attempting to obtain plaintext for an encrypted payload sidecar.
 enum DecryptedPayloadStatus {
   ready,
   transientFailure,
   permanentFailure,
 }
 
+/// Persisted relay-specific broadcast target.
+///
+/// NDK stores one record per `(eventId, relayUrl)` pair instead of keeping a
+/// mutable list inside an event record. This makes concurrent updates safer and
+/// allows retries, acknowledgements, and failures to be tracked independently.
 class RelayDeliveryTarget {
   final String eventId;
   final String relayUrl;
@@ -67,6 +76,7 @@ class RelayDeliveryTarget {
     this.lastOkMessage,
   });
 
+  /// Stable primary key used by cache backends.
   String get key => '$eventId|$relayUrl';
 
   RelayDeliveryTarget copyWith({
@@ -130,6 +140,11 @@ class RelayDeliveryTarget {
   }
 }
 
+/// Persisted aggregate delivery record for one event.
+///
+/// This record answers "what is the overall delivery state of this event?" and
+/// survives process restarts. Detailed per-relay information lives separately in
+/// [RelayDeliveryTarget].
 class EventDeliveryRecord {
   final String eventId;
   final EventDeliveryStatus status;
@@ -149,6 +164,7 @@ class EventDeliveryRecord {
     this.requiresNetworkSigner = false,
   });
 
+  /// True once all known targets have been acknowledged.
   bool get isComplete => status == EventDeliveryStatus.delivered;
 
   EventDeliveryRecord copyWith({
@@ -197,6 +213,11 @@ class EventDeliveryRecord {
   }
 }
 
+/// Sidecar cache record for decrypted event plaintext.
+///
+/// NDK intentionally does not mutate the original encrypted [Nip01Event] with
+/// decrypted content. Instead it stores a separate plaintext sidecar keyed by
+/// `(eventId, viewerPubKey)`.
 class DecryptedEventPayloadRecord {
   final String eventId;
   final String viewerPubKey;
@@ -224,6 +245,7 @@ class DecryptedEventPayloadRecord {
     this.sourceEventKind,
   });
 
+  /// Stable primary key used by cache backends.
   String get key => '$eventId|$viewerPubKey';
 
   DecryptedEventPayloadRecord copyWith({
@@ -301,6 +323,11 @@ class DecryptedEventPayloadRecord {
   }
 }
 
+/// Normalized cache record describing one stored event and its derived state.
+///
+/// This model exists to make visibility and eviction decisions efficient across
+/// backends. Some fields duplicate data derivable from [event] on purpose so
+/// backends can index and query without reparsing tags every time.
 class CachedEventRecord {
   final String eventId;
   final Nip01Event event;
@@ -338,14 +365,19 @@ class CachedEventRecord {
     this.localCreatedAt,
   });
 
+  /// Convenience accessor for [event.pubKey].
   String get pubKey => event.pubKey;
 
+  /// Convenience accessor for [event.kind].
   int get kind => event.kind;
 
+  /// Convenience accessor for [event.createdAt].
   int get createdAt => event.createdAt;
 
+  /// True if this event is currently tombstoned by a matching author delete.
   bool get isDeleted => deletedByEventId != null;
 
+  /// Returns whether the event should be considered expired at [timestamp].
   bool isExpiredAt(int timestamp) =>
       expirationAt != null && expirationAt! <= timestamp;
 
@@ -394,6 +426,8 @@ class CachedEventRecord {
     bool localOrigin = false,
     int? localCreatedAt,
   }) {
+    // Source relays are normalized onto the cached record when the event is
+    // materialized from event data plus optional explicit provenance input.
     final normalizedSources = _dedupeRelays(sourceRelays ?? event.sources);
     final derivedSeenAt = seenAt ?? Nip01Event.secondsSinceEpoch();
     final dTag = event.getDtag();
@@ -466,6 +500,9 @@ class CachedEventRecord {
     CachedEventRecord candidate,
     CachedEventRecord current,
   ) {
+    // Replaceable tie-breaker:
+    // 1. newer created_at wins
+    // 2. stable event id ordering breaks same-timestamp ties deterministically
     if (candidate.createdAt != current.createdAt) {
       return candidate.createdAt > current.createdAt;
     }
@@ -488,6 +525,8 @@ class CachedEventRecord {
     String? dTag,
     bool isAddressable,
   ) {
+    // Coordinate keys identify the conflict domain for replaceable events.
+    // For addressable kinds this becomes `kind:pubkey:d-tag`.
     if (!isAddressable) return null;
     return '${event.kind}:${event.pubKey}:${dTag ?? ''}';
   }

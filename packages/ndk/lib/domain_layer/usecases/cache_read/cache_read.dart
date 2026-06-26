@@ -5,12 +5,21 @@ import '../../entities/nip_01_event.dart';
 import '../../entities/request_state.dart';
 import '../../repositories/cache_manager.dart';
 
+/// Cache-first helper for request resolution.
+///
+/// This usecase is intentionally small: it asks the cache for currently visible
+/// events matching unresolved filters and forwards them into the request
+/// response stream before or alongside network results.
 class CacheRead {
   final CacheManager cacheManager;
 
   CacheRead(this.cacheManager);
 
-  /// find matching events in cache return them and remove/update unresolved filters
+  /// Finds matching visible events in cache and forwards them to
+  /// [outController].
+  ///
+  /// `loadEvents()` already applies visibility rules, so callers do not need to
+  /// re-check replacement, expiration, or deletion here.
   Future<void> resolveUnresolvedFilters({
     required RequestState requestState,
     required StreamController<Nip01Event> outController,

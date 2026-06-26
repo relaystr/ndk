@@ -59,7 +59,7 @@ class DmLiveState extends ChangeNotifier {
     }
 
     try {
-      final existingConversations = await ndk.nip17.loadConversations();
+      final existingConversations = await ndk.dms.loadConversations();
       if (pubKey != _activePubKey) {
         return;
       }
@@ -92,7 +92,7 @@ class DmLiveState extends ChangeNotifier {
     _dmSubscription = response.stream.listen(
       (wrappedEvent) async {
         try {
-          final message = await ndk.nip17.parseWrappedMessage(
+          final message = await ndk.dms.parseWrappedMessage(
             wrappedEvent: wrappedEvent,
           );
           if (message == null) {

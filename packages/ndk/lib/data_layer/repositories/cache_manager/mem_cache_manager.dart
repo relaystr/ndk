@@ -3,6 +3,7 @@ import 'dart:core';
 import '../../../domain_layer/entities/cashu/cashu_keyset.dart';
 import '../../../domain_layer/entities/cashu/cashu_mint_info.dart';
 import '../../../domain_layer/entities/cashu/cashu_proof.dart';
+import '../../../domain_layer/entities/cache_eviction.dart';
 import '../../../domain_layer/entities/contact_list.dart';
 import '../../../domain_layer/entities/event_cache_records.dart';
 import '../../../domain_layer/entities/filter_fetched_ranges.dart';
@@ -15,6 +16,7 @@ import '../../../domain_layer/entities/user_relay_list.dart';
 import '../../../domain_layer/entities/wallet/wallet.dart';
 import '../../../domain_layer/repositories/cache_manager.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
+import '../../../shared/nips/nip01/event_eviction_planner.dart';
 
 /// In memory database implementation
 /// benefits: very fast
@@ -255,17 +257,14 @@ class MemCacheManager implements CacheManager {
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     final events = await loadEvents(kinds: [Metadata.kKind]);
     final normalizedSearch = search.trim().toLowerCase();
-    final matches = events
-        .map((event) => Metadata.fromEvent(event))
-        .where((metadata) {
-          if (normalizedSearch.isEmpty) return true;
-          return metadata.matchesSearch(normalizedSearch) ||
-              (metadata.about?.toLowerCase().contains(normalizedSearch) ??
-                  false) ||
-              (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-        })
-        .toList()
-      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    final matches =
+        events.map((event) => Metadata.fromEvent(event)).where((metadata) {
+      if (normalizedSearch.isEmpty) return true;
+      return metadata.matchesSearch(normalizedSearch) ||
+          (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
+          (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
+    }).toList()
+          ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
     return matches.take(limit);
   }
 
@@ -519,13 +518,41 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
     final prefix = '$eventId|';
-    decryptedEventPayloadRecords.removeWhere(
-        (key, value) => key.startsWith(prefix));
+    decryptedEventPayloadRecords
+        .removeWhere((key, value) => key.startsWith(prefix));
   }
 
   @override
   Future<void> removeAllDecryptedEventPayloadRecords() async {
     decryptedEventPayloadRecords.clear();
+  }
+
+  @override
+  Future<EvictionResult> evict(EvictionPolicy policy) async {
+    final lockedEventIds = <String>{
+      ...eventDeliveryRecords.keys,
+      ...relayDeliveryTargets.values.map((target) => target.eventId),
+    };
+    final plan = EventEvictionPlanner.plan(
+      rawEvents: events.values.toList(),
+      lockedEventIds: lockedEventIds,
+      policy: policy,
+    );
+
+    if (plan.eventIdsToRemove.isEmpty) {
+      return plan.toResult();
+    }
+
+    final removedEvents = events.values
+        .where((event) => plan.eventIdsToRemove.contains(event.id))
+        .toList();
+    events.removeWhere((key, value) => plan.eventIdsToRemove.contains(key));
+    _removeEventSidecarsByIds(plan.eventIdsToRemove);
+    await _refreshDerivedStateForPubKeys(
+      removedEvents.map((event) => event.pubKey).toSet(),
+    );
+
+    return plan.toResult();
   }
 
   @override
@@ -642,12 +669,7 @@ class MemCacheManager implements CacheManager {
         .map((event) => event.id)
         .toList();
     events.removeWhere((key, value) => value.pubKey == pubKey);
-    for (final eventId in eventIds) {
-      await removeEventSources(eventId);
-      await removeEventDeliveryRecord(eventId);
-      await removeRelayDeliveryTargets(eventId);
-      await removeDecryptedEventPayloadRecords(eventId);
-    }
+    _removeEventSidecarsByIds(eventIds);
     await _refreshUserRelayListProjection(pubKey);
   }
 
@@ -664,10 +686,7 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeEvent(String id) async {
     final removed = events.remove(id);
-    await removeEventSources(id);
-    await removeEventDeliveryRecord(id);
-    await removeRelayDeliveryTargets(id);
-    await removeDecryptedEventPayloadRecords(id);
+    _removeEventSidecarsByIds([id]);
     if (removed != null) {
       await _refreshDerivedStateForEvent(removed);
     }
@@ -701,15 +720,33 @@ class MemCacheManager implements CacheManager {
       until: until,
       applyVisibilityRules: false,
     );
-    for (final event in rawEventsToRemove) {
-      events.remove(event.id);
-      await removeEventSources(event.id);
-      await removeEventDeliveryRecord(event.id);
-      await removeRelayDeliveryTargets(event.id);
-      await removeDecryptedEventPayloadRecords(event.id);
-    }
+    final eventIdsToRemove =
+        rawEventsToRemove.map((event) => event.id).toList();
+    final eventIdSet = eventIdsToRemove.toSet();
+    events.removeWhere((key, value) => eventIdSet.contains(key));
+    _removeEventSidecarsByIds(eventIdsToRemove);
     await _refreshDerivedStateForPubKeys(
       rawEventsToRemove.map((event) => event.pubKey).toSet(),
+    );
+  }
+
+  void _removeEventSidecarsByIds(Iterable<String> eventIds) {
+    final eventIdSet = eventIds.toSet();
+    if (eventIdSet.isEmpty) return;
+
+    eventSources.removeWhere((key, value) {
+      final separator = key.indexOf('|');
+      final eventId = separator == -1 ? key : key.substring(0, separator);
+      return eventIdSet.contains(eventId);
+    });
+    eventDeliveryRecords.removeWhere(
+      (eventId, value) => eventIdSet.contains(eventId),
+    );
+    relayDeliveryTargets.removeWhere(
+      (key, target) => eventIdSet.contains(target.eventId),
+    );
+    decryptedEventPayloadRecords.removeWhere(
+      (key, record) => eventIdSet.contains(record.eventId),
     );
   }
 

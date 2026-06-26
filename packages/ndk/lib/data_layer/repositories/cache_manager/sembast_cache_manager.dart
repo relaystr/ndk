@@ -2,6 +2,7 @@ import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
 import '../../../shared/nips/nip01/event_kind_classification.dart';
+import '../../../shared/nips/nip01/event_eviction_planner.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import 'ndk_extensions.dart';
 
@@ -387,6 +388,39 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<EvictionResult> evict(EvictionPolicy policy) async {
+    final rawEvents = await _loadEventsInternal(applyVisibilityRules: false);
+    final deliveryRecords = await loadEventDeliveryRecords();
+    final relayTargets = await loadRelayDeliveryTargets();
+    final lockedEventIds = <String>{
+      ...deliveryRecords.map((record) => record.eventId),
+      ...relayTargets.map((target) => target.eventId),
+    };
+    final plan = EventEvictionPlanner.plan(
+      rawEvents: rawEvents,
+      lockedEventIds: lockedEventIds,
+      policy: policy,
+    );
+
+    if (plan.eventIdsToRemove.isEmpty) {
+      return plan.toResult();
+    }
+
+    final removedEvents = rawEvents
+        .where((event) => plan.eventIdsToRemove.contains(event.id))
+        .toList();
+    await _eventsStore
+        .records(plan.eventIdsToRemove.toList())
+        .delete(_database);
+    await _removeEventSidecarsByIds(plan.eventIdsToRemove);
+    await _refreshDerivedStateForPubKeys(
+      removedEvents.map((event) => event.pubKey).toSet(),
+    );
+
+    return plan.toResult();
+  }
+
+  @override
   Future<List<Nip01Event>> loadEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -596,13 +630,8 @@ class SembastCacheManager extends CacheManager {
       filter: sembast.Filter.equals('pubkey', pubKey),
     );
     await _eventsStore.delete(_database, finder: finder);
-    for (final record in events) {
-      final eventId = record.key;
-      await removeEventSources(eventId);
-      await removeEventDeliveryRecord(eventId);
-      await removeRelayDeliveryTargets(eventId);
-      await removeDecryptedEventPayloadRecords(eventId);
-    }
+    await _removeEventSidecarsByIds(
+        events.map((record) => record.key).toList());
     await _contactListStore.record(pubKey).delete(_database);
     await _metadataStore.record(pubKey).delete(_database);
     await _refreshUserRelayListProjection(pubKey);
@@ -639,10 +668,7 @@ class SembastCacheManager extends CacheManager {
   Future<void> removeEvent(String id) async {
     final removed = await loadEvent(id);
     await _eventsStore.record(id).delete(_database);
-    await removeEventSources(id);
-    await removeEventDeliveryRecord(id);
-    await removeRelayDeliveryTargets(id);
-    await removeDecryptedEventPayloadRecords(id);
+    await _removeEventSidecarsByIds([id]);
     if (removed != null) {
       await _refreshDerivedStateForEvent(removed);
     }
@@ -722,15 +748,9 @@ class SembastCacheManager extends CacheManager {
       }).toList();
 
       // Delete matching events by ID
-      await _eventsStore
-          .records(matchingEvents.map((e) => e.id).toList())
-          .delete(_database);
-      for (final event in matchingEvents) {
-        await removeEventSources(event.id);
-        await removeEventDeliveryRecord(event.id);
-        await removeRelayDeliveryTargets(event.id);
-        await removeDecryptedEventPayloadRecords(event.id);
-      }
+      final eventIdsToRemove = matchingEvents.map((event) => event.id).toList();
+      await _eventsStore.records(eventIdsToRemove).delete(_database);
+      await _removeEventSidecarsByIds(eventIdsToRemove);
       await _refreshDerivedStateForPubKeys(
         matchingEvents.map((event) => event.pubKey).toSet(),
       );
@@ -749,16 +769,36 @@ class SembastCacheManager extends CacheManager {
         filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
       );
       await _eventsStore.delete(_database, finder: finder);
-      for (final event in matchingEvents) {
-        await removeEventSources(event.id);
-        await removeEventDeliveryRecord(event.id);
-        await removeRelayDeliveryTargets(event.id);
-        await removeDecryptedEventPayloadRecords(event.id);
-      }
+      await _removeEventSidecarsByIds(
+        matchingEvents.map((event) => event.id).toList(),
+      );
       await _refreshDerivedStateForPubKeys(
         matchingEvents.map((event) => event.pubKey).toSet(),
       );
     }
+  }
+
+  Future<void> _removeEventSidecarsByIds(Iterable<String> eventIds) async {
+    final ids = eventIds.toSet().toList();
+    if (ids.isEmpty) return;
+
+    final filter = sembast.Filter.inList('eventId', ids);
+    await _eventSourceStore.delete(
+      _database,
+      finder: sembast.Finder(filter: filter),
+    );
+    await _eventDeliveryStore.delete(
+      _database,
+      finder: sembast.Finder(filter: filter),
+    );
+    await _relayDeliveryTargetStore.delete(
+      _database,
+      finder: sembast.Finder(filter: filter),
+    );
+    await _decryptedEventPayloadStore.delete(
+      _database,
+      finder: sembast.Finder(filter: filter),
+    );
   }
 
   @override
@@ -979,17 +1019,14 @@ class SembastCacheManager extends CacheManager {
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     final events = await loadEvents(kinds: [Metadata.kKind]);
     final normalizedSearch = search.trim().toLowerCase();
-    final matches = events
-        .map((event) => Metadata.fromEvent(event))
-        .where((metadata) {
-          if (normalizedSearch.isEmpty) return true;
-          return metadata.matchesSearch(normalizedSearch) ||
-              (metadata.about?.toLowerCase().contains(normalizedSearch) ??
-                  false) ||
-              (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
-        })
-        .toList()
-      ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    final matches =
+        events.map((event) => Metadata.fromEvent(event)).where((metadata) {
+      if (normalizedSearch.isEmpty) return true;
+      return metadata.matchesSearch(normalizedSearch) ||
+          (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
+          (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
+    }).toList()
+          ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
     return matches.take(limit);
   }
 

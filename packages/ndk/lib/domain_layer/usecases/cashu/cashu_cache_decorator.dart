@@ -4,6 +4,7 @@ import '../../../shared/helpers/mutex_simple.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
+import '../../entities/cache_eviction.dart';
 import '../../entities/event_cache_records.dart';
 import '../../repositories/cache_manager.dart';
 
@@ -195,6 +196,13 @@ class CashuCacheDecorator implements CacheManager {
   Future<void> removeAllDecryptedEventPayloadRecords() async {
     await _mutex.synchronized(() async {
       await _delegate.removeAllDecryptedEventPayloadRecords();
+    });
+  }
+
+  @override
+  Future<EvictionResult> evict(EvictionPolicy policy) async {
+    return _mutex.synchronized(() async {
+      return _delegate.evict(policy);
     });
   }
 

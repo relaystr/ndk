@@ -7,7 +7,7 @@ import 'blossom_page.dart';
 import 'follows_page.dart';
 import 'home_page.dart';
 import 'main.dart';
-import 'nip17_page.dart';
+import 'dm_page.dart';
 import 'profile_page.dart';
 import 'quantum_secure_page.dart';
 import 'relays_page.dart';

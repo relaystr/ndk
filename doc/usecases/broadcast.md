@@ -34,3 +34,40 @@ If you want to use the outbox model, check out the [enabling gossip](/guides/ena
 Broadcast should be used when your use case has no broadcasting method. \
 Signing is done automatically, and you can specify a custom signer just for one broadcast. \
 By default, the inbox/outbox model is used for broadcasting looking at the event data (e.g. if it's a reply) you can also specify specific relays to broadcast to.
+
+## Local-first behavior
+
+NDK keeps delivery state for locally created events in the configured cache backend.
+
+That means:
+
+- an event may be visible locally before every relay accepts it
+- pending delivery can survive app restarts when the cache backend is persistent
+- retries can continue later when relays are reachable again
+- replaceable events only keep retrying the newest visible version
+
+With `MemCacheManager`, this state exists while the process is alive. With a persistent `CacheManager`, it also survives restarts.
+
+## Retry behavior
+
+Background delivery retries are not identical for every event.
+
+Current behavior includes:
+
+- replaceable events retry as latest-state-only delivery
+- ephemeral events are not kept for retry
+- some control-style events can use faster retry behavior
+- relay responses classified as permanent failure stop retry for that relay target
+- relay responses classified as transient failure remain retryable
+
+## Relay targeting
+
+Broadcast targeting can include more than author outbox relays.
+
+Depending on the event, NDK may target:
+
+- explicit relays
+- author write relays
+- inbox/read relays needed for replies and reactions
+
+Delivery targets are tracked separately from source provenance.

@@ -9,7 +9,18 @@ import '../gift_wrap/gift_wrap.dart';
 import '../requests/requests.dart';
 import '../user_relay_lists/user_relay_lists.dart';
 
-class Nip17 {
+/// Direct-messages usecase built on NIP-17 gift-wrapped messages.
+///
+/// This usecase provides app-facing helpers for:
+/// - sending a DM to a peer
+/// - loading the logged-in user's conversations
+/// - loading one conversation with a specific peer
+/// - parsing a wrapped event into a DM message model
+///
+/// Conversation loading uses the logged-in user's DM relay list and can reuse
+/// cached decrypted payload sidecars for fast repeated reads.
+class Dms {
+  /// Message rumor kind used by this DM usecase.
   static const int kMessageKind = 14;
 
   final Accounts _accounts;
@@ -19,7 +30,8 @@ class Nip17 {
   final UserRelayLists _userRelayLists;
   final CacheManager _cacheManager;
 
-  Nip17({
+  /// Creates the direct-messages usecase.
+  Dms({
     required Accounts accounts,
     required Requests requests,
     required Broadcast broadcast,
@@ -33,6 +45,13 @@ class Nip17 {
         _userRelayLists = userRelayLists,
         _cacheManager = cacheManager;
 
+  /// Sends a direct message to [recipientPubKey].
+  ///
+  /// NDK creates a message rumor, wraps it once for the recipient and once for
+  /// the sender, and broadcasts each wrapped copy to the corresponding DM
+  /// relays.
+  ///
+  /// Throws if either side has no published DM relay list.
   Future<void> sendMessage({
     required String recipientPubKey,
     required String content,
@@ -90,6 +109,10 @@ class Nip17 {
     ]);
   }
 
+  /// Loads the full conversation with one peer.
+  ///
+  /// If [forceRefresh] is `false`, cached reads are allowed before or alongside
+  /// network refresh. If the peer has no messages, an empty list is returned.
   Future<List<Nip17Message>> loadConversation({
     required String peerPubKey,
     bool forceRefresh = false,
@@ -107,6 +130,9 @@ class Nip17 {
     return const [];
   }
 
+  /// Loads the conversation with one peer using cache only.
+  ///
+  /// This is useful for immediate UI rendering before a background refresh.
   Future<List<Nip17Message>> loadConversationSnapshot({
     required String peerPubKey,
   }) async {
@@ -119,6 +145,10 @@ class Nip17 {
     return const [];
   }
 
+  /// Loads all conversations for the logged-in user.
+  ///
+  /// Conversations are grouped by peer pubkey and sorted by newest message
+  /// first.
   Future<List<Nip17Conversation>> loadConversations({
     bool forceRefresh = false,
     Duration timeout = const Duration(seconds: 5),
@@ -137,6 +167,7 @@ class Nip17 {
     return _buildConversations(messages);
   }
 
+  /// Loads all conversations for the logged-in user using cache only.
   Future<List<Nip17Conversation>> loadConversationsSnapshot() async {
     final myPubKey = _requireLoggedPubKey();
     final wrappedEvents = await _loadWrappedEventsFromCache(myPubKey: myPubKey);
@@ -165,7 +196,7 @@ class Nip17 {
     }
 
     final response = _requests.query(
-      name: 'nip17-conversations',
+      name: 'dm-conversations',
       explicitRelays: dmRelays,
       cacheRead: !forceRefresh,
       cacheWrite: true,
@@ -249,6 +280,10 @@ class Nip17 {
     return conversations;
   }
 
+  /// Parses a single wrapped event into a DM message if possible.
+  ///
+  /// Returns `null` when the event is not a valid or decryptable NIP-17 message
+  /// for the logged-in user.
   Future<Nip17Message?> parseWrappedMessage({
     required Nip01Event wrappedEvent,
   }) async {
@@ -360,3 +395,5 @@ class Nip17 {
     return results.cast<R>();
   }
 }
+
+/// App-facing alias for the direct-messages usecase.

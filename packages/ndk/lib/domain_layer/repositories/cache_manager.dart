@@ -1,6 +1,7 @@
 import '../entities/cashu/cashu_keyset.dart';
 import '../entities/cashu/cashu_mint_info.dart';
 import '../entities/cashu/cashu_proof.dart';
+import '../entities/cache_eviction.dart';
 import '../entities/contact_list.dart';
 import '../entities/event_cache_records.dart';
 import '../entities/filter_fetched_ranges.dart';
@@ -10,6 +11,23 @@ import '../entities/nip_05.dart';
 import '../entities/relay_set.dart';
 import '../entities/user_relay_list.dart';
 
+/// Storage contract used by NDK.
+///
+/// This is intentionally broader than a plain event store. Modern NDK cache
+/// backends persist several related data domains:
+/// - canonical Nostr events
+/// - event provenance (`source relays`)
+/// - delivery state (`EventDeliveryRecord` and `RelayDeliveryTarget`)
+/// - decrypted plaintext sidecars for encrypted events
+/// - convenience projections like metadata/contact list/user relay list
+/// - optional fetched-ranges state
+///
+/// Backend authors should treat this class as a behavior contract, not just a
+/// list of CRUD methods. The most important behavioral expectations are:
+/// - [loadEvents] returns *visible* events only
+/// - metadata/contact list loaders are convenience views over the generic event
+///   store, not separate authoritative silos
+/// - provenance and delivery targets are separate concerns
 abstract class CacheManager {
   /// closes the cache manger \
   /// used to close the db
@@ -17,7 +35,18 @@ abstract class CacheManager {
 
   Future<void> saveEvent(Nip01Event event);
   Future<void> saveEvents(List<Nip01Event> events);
+
+  /// Loads the raw stored event by id.
+  ///
+  /// Prefer [loadEvents] in app-facing read paths because `loadEvent` does not
+  /// itself promise visibility filtering.
   Future<Nip01Event?> loadEvent(String id);
+
+  /// Adds one provenance relay for a stored event.
+  ///
+  /// Provenance is intentionally stored separately from broadcast delivery
+  /// targets. A relay can be a source of truth for where an event was observed
+  /// without being a relay NDK should later broadcast back to.
   Future<void> addEventSource({
     required String eventId,
     required String relayUrl,
@@ -28,6 +57,8 @@ abstract class CacheManager {
   });
   Future<List<String>> loadEventSources(String eventId);
   Future<void> removeEventSources(String eventId);
+
+  /// Persist aggregate delivery state for one event.
   Future<void> saveEventDeliveryRecord(EventDeliveryRecord record);
   Future<void> saveEventDeliveryRecords(List<EventDeliveryRecord> records);
   Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId);
@@ -37,9 +68,10 @@ abstract class CacheManager {
   });
   Future<void> removeEventDeliveryRecord(String eventId);
   Future<void> removeAllEventDeliveryRecords();
+
+  /// Persist one relay-specific delivery target.
   Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target);
-  Future<void> saveRelayDeliveryTargets(
-      List<RelayDeliveryTarget> targets);
+  Future<void> saveRelayDeliveryTargets(List<RelayDeliveryTarget> targets);
   Future<RelayDeliveryTarget?> loadRelayDeliveryTarget({
     required String eventId,
     required String relayUrl,
@@ -57,6 +89,8 @@ abstract class CacheManager {
   });
   Future<void> removeRelayDeliveryTargets(String eventId);
   Future<void> removeAllRelayDeliveryTargets();
+
+  /// Persist one plaintext sidecar for an encrypted event.
   Future<void> saveDecryptedEventPayloadRecord(
       DecryptedEventPayloadRecord record);
   Future<void> saveDecryptedEventPayloadRecords(
@@ -78,16 +112,27 @@ abstract class CacheManager {
   Future<void> removeDecryptedEventPayloadRecords(String eventId);
   Future<void> removeAllDecryptedEventPayloadRecords();
 
-  /// Load events from cache with flexible filtering \
-  /// [ids] - list of event ids \
-  /// [pubKeys] - list of authors pubKeys \
-  /// [kinds] - list of kinds \
-  /// [tags] - map of tags (e.g. {'p': ['pubkey1'], 'e': ['eventid1']}) \
-  /// [since] - timestamp \
-  /// [until] - timestamp \
-  /// [search] - search string to match against content \
-  /// [limit] - limit of results \
-  /// returns list of events
+  /// Run one eviction pass according to [policy].
+  ///
+  /// Backends should remove associated sidecars, provenance, and delivery state
+  /// for any event they physically delete.
+  Future<EvictionResult> evict(EvictionPolicy policy);
+
+  /// Load visible events from cache with flexible filtering.
+  ///
+  /// Parameters:
+  /// - [ids]: event ids
+  /// - [pubKeys]: author pubkeys
+  /// - [kinds]: event kinds
+  /// - [tags]: tag filters, e.g. `{'p': ['pubkey1'], 'e': ['eventid1']}`
+  /// - [since]/[until]: created_at bounds
+  /// - [search]: content search string
+  /// - [limit]: maximum number of returned events
+  ///
+  /// Visibility rules apply here:
+  /// - only the latest visible replaceable/addressable winner is returned
+  /// - expired events are filtered out
+  /// - author-deleted events are filtered out
   Future<List<Nip01Event>> loadEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -100,14 +145,10 @@ abstract class CacheManager {
   });
   Future<void> removeEvent(String id);
 
-  /// Remove events from cache with flexible filtering \
-  /// [ids] - list of event ids \
-  /// [pubKeys] - list of authors pubKeys \
-  /// [kinds] - list of kinds \
-  /// [tags] - map of tags (e.g. {'p': ['pubkey1'], 'e': ['eventid1']}) \
-  /// [since] - timestamp \
-  /// [until] - timestamp \
-  /// If all parameters are empty, returns early (doesn't delete everything)
+  /// Remove events from cache with flexible filtering.
+  ///
+  /// If all parameters are empty, implementations should return early instead
+  /// of deleting everything by accident.
   Future<void> removeEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -119,6 +160,11 @@ abstract class CacheManager {
   Future<void> removeAllEventsByPubKey(String pubKey);
   Future<void> removeAllEvents();
 
+  /// Store a precomputed user relay list projection.
+  ///
+  /// This remains a convenience projection. The authoritative data still comes
+  /// from the generic event store (for example kind `3` and kind `10002`
+  /// inputs).
   Future<void> saveUserRelayList(UserRelayList userRelayList);
   Future<void> saveUserRelayLists(List<UserRelayList> userRelayLists);
   Future<UserRelayList?> loadUserRelayList(String pubKey);

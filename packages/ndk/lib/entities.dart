@@ -6,6 +6,7 @@ library;
 
 export 'domain_layer/entities/broadcast_response.dart';
 export 'domain_layer/entities/broadcast_state.dart';
+export 'domain_layer/entities/cache_eviction.dart';
 export 'domain_layer/entities/connection_source.dart';
 export 'domain_layer/entities/contact_list.dart';
 export 'domain_layer/entities/event_filter.dart';

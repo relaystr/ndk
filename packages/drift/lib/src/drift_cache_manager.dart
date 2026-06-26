@@ -19,6 +19,7 @@ import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk/shared/nips/nip01/event_eviction_planner.dart';
 
 import 'database/database.dart';
 
@@ -201,19 +202,8 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> removeEvent(String id) async {
-    await Future.wait([
-      (_db.delete(_db.events)..where((t) => t.id.equals(id))).go(),
-      (_db.delete(
-        _db.eventSourcesTable,
-      )..where((t) => t.eventId.equals(id))).go(),
-      (_db.delete(
-        _db.eventDeliveryRecordsTable,
-      )..where((t) => t.eventId.equals(id))).go(),
-      (_db.delete(
-        _db.relayDeliveryTargetsTable,
-      )..where((t) => t.eventId.equals(id))).go(),
-      removeDecryptedEventPayloadRecords(id),
-    ]);
+    await (_db.delete(_db.events)..where((t) => t.id.equals(id))).go();
+    await _removeEventSidecarsByIds([id]);
   }
 
   @override
@@ -222,9 +212,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       pubKeys: [pubKey],
     )).map((event) => event.id).toList();
     await (_db.delete(_db.events)..where((t) => t.pubKey.equals(pubKey))).go();
-    for (final eventId in eventIds) {
-      await removeDecryptedEventPayloadRecords(eventId);
-    }
+    await _removeEventSidecarsByIds(eventIds);
   }
 
   @override
@@ -233,6 +221,35 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       _db.delete(_db.events).go(),
       removeAllDecryptedEventPayloadRecords(),
     ]);
+  }
+
+  @override
+  Future<EvictionResult> evict(EvictionPolicy policy) async {
+    final rawRows = await _db.select(_db.events).get();
+    final rawEvents = rawRows.map(_eventFromRow).toList();
+    final deliveryRecords = await loadEventDeliveryRecords();
+    final relayTargets = await loadRelayDeliveryTargets();
+    final lockedEventIds = <String>{
+      ...deliveryRecords.map((record) => record.eventId),
+      ...relayTargets.map((target) => target.eventId),
+    };
+    final plan = EventEvictionPlanner.plan(
+      rawEvents: rawEvents,
+      lockedEventIds: lockedEventIds,
+      policy: policy,
+    );
+
+    if (plan.eventIdsToRemove.isEmpty) {
+      return plan.toResult();
+    }
+
+    final idsToRemove = plan.eventIdsToRemove.toList();
+    await _db.transaction(() async {
+      await (_db.delete(_db.events)..where((t) => t.id.isIn(idsToRemove))).go();
+      await _removeEventSidecarsByIds(idsToRemove);
+    });
+
+    return plan.toResult();
   }
 
   @override
@@ -269,9 +286,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
       final idsToRemove = eventsToRemove.map((e) => e.id).toList();
       await (_db.delete(_db.events)..where((t) => t.id.isIn(idsToRemove))).go();
-      for (final eventId in idsToRemove) {
-        await removeDecryptedEventPayloadRecords(eventId);
-      }
+      await _removeEventSidecarsByIds(idsToRemove);
       return;
     }
 
@@ -307,9 +322,34 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
         }))
         .go();
 
-    for (final event in eventsToRemove) {
-      await removeDecryptedEventPayloadRecords(event.id);
-    }
+    await _removeEventSidecarsByIds(
+      eventsToRemove.map((event) => event.id).toList(),
+    );
+  }
+
+  Future<void> _removeEventSidecarsByIds(Iterable<String> eventIds) async {
+    final ids = eventIds.toSet().toList();
+    if (ids.isEmpty) return;
+
+    await (_db.delete(
+      _db.eventSourcesTable,
+    )..where((t) => t.eventId.isIn(ids))).go();
+    await (_db.delete(
+      _db.eventDeliveryRecordsTable,
+    )..where((t) => t.eventId.isIn(ids))).go();
+    await (_db.delete(
+      _db.relayDeliveryTargetsTable,
+    )..where((t) => t.eventId.isIn(ids))).go();
+    await (_db.delete(_db.keyValues)..where((kv) {
+          final conditions = ids
+              .map((id) => kv.key.like('$_decryptedPayloadKeyPrefix$id|%'))
+              .toList();
+          if (conditions.length == 1) {
+            return conditions.first;
+          }
+          return conditions.reduce((a, b) => a | b);
+        }))
+        .go();
   }
 
   Nip01Event _eventFromRow(DbEvent row) {

@@ -9,6 +9,16 @@ import '../../../shared/nips/nip01/event_kind_classification.dart';
 import 'broadcast_sender.dart';
 import 'delivery_policy.dart';
 
+/// Background manager for persisted broadcast delivery.
+///
+/// This usecase persists relay-specific delivery targets, retries due targets,
+/// and converges replaceable delivery so only the latest visible version keeps
+/// being retried.
+///
+/// Conceptually:
+/// - [Broadcast] decides that an event should be sent
+/// - [PendingBroadcastDelivery] remembers where it still needs to go and when
+///   it should be retried
 class PendingBroadcastDelivery {
   static const Duration defaultRetryInterval = Duration(seconds: 15);
   final CacheManager _cacheManager;
@@ -22,6 +32,10 @@ class PendingBroadcastDelivery {
   })  : _cacheManager = cacheManager,
         _sender = broadcastSender;
 
+  /// Starts periodic due-retry processing.
+  ///
+  /// The callbacks are injected so this class can stay storage-focused and not
+  /// depend directly on relay manager internals.
   void startPeriodicRetry({
     required Iterable<String> Function() connectedRelayUrls,
     required Future<bool> Function(String relayUrl) reconnectRelay,
@@ -84,6 +98,9 @@ class PendingBroadcastDelivery {
     required Iterable<String> relayUrls,
     required bool requiresNetworkSigner,
   }) async {
+    // One durable aggregate record plus one durable target per relay gives NDK
+    // enough state to recover delivery after restart without mutating a shared
+    // in-memory list.
     final relayUrlList = relayUrls.toSet().toList()..sort();
     Logger.log.d(() => 'enqueue pending delivery ${event.id} -> $relayUrlList');
     final existing = await _cacheManager.loadEventDeliveryRecord(event.id);
@@ -194,6 +211,8 @@ class PendingBroadcastDelivery {
     String relayUrl, {
     bool onlyDue = false,
   }) async {
+    // Per-relay flush serialization avoids two concurrent retry paths trying to
+    // re-send the same relay targets at once.
     if (!_flushInProgress.add(relayUrl)) {
       return;
     }
@@ -263,6 +282,8 @@ class PendingBroadcastDelivery {
 
   Future<bool> _isObsoleteReplaceableOrAddressableEvent(
       Nip01Event event) async {
+    // Replaceable/addressable retries should follow the currently visible cache
+    // winner, not historical offline versions that were later superseded.
     final policy = DeliveryPolicy.forEvent(event);
     if (!policy.retainsOnlyLatest) {
       return false;
