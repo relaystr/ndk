@@ -19,7 +19,7 @@ dependencies:
     sdk: flutter
   ndk: ^0.8.4-dev.7
   drift: ^2.31.0
-  drift_flutter: ^0.2.8
+  drift_flutter: ^0.3.0
   path_provider: ^2.1.5
 
 dev_dependencies:
