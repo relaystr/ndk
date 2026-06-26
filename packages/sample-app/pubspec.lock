@@ -173,18 +173,18 @@ packages:
     dependency: transitive
     description:
       name: drift
-      sha256: "970cd188fddb111b26ea6a9b07a62bf5c2432d74147b8122c67044ae3b97e99e"
+      sha256: "6cc0b623c0e83f7080524d8396e9301b1d78b9c66a4fdceeb0f798211303254c"
       url: "https://pub.dev"
     source: hosted
-    version: "2.31.0"
+    version: "2.34.0"
   drift_flutter:
     dependency: transitive
     description:
       name: drift_flutter
-      sha256: c07120854742a0cae2f7501a0da02493addde550db6641d284983c08762e60a7
+      sha256: "887fdec622174dc7eaefd0048403e34ee07cc18626ac8a7544cc3b8a4a172166"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.8"
+    version: "0.3.0"
   elliptic:
     dependency: transitive
     description:
@@ -579,7 +579,7 @@ packages:
       path: "../ndk"
       relative: true
     source: path
-    version: "0.8.4-dev.5"
+    version: "0.8.4-dev.7"
   ndk_bip32_keys:
     dependency: transitive
     description:
@@ -594,14 +594,14 @@ packages:
       path: "../drift"
       relative: true
     source: path
-    version: "0.1.1-dev.7"
+    version: "0.1.1-dev.9"
   ndk_flutter:
     dependency: "direct main"
     description:
       path: "../ndk_flutter"
       relative: true
     source: path
-    version: "0.8.4-dev.8"
+    version: "0.8.4-dev.10"
   nested:
     dependency: transitive
     description:
@@ -610,13 +610,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-  nip07_event_signer:
-    dependency: "direct overridden"
-    description:
-      path: "../nip07_event_signer"
-      relative: true
-    source: path
-    version: "1.1.0-dev.5"
   objective_c:
     dependency: transitive
     description:
@@ -918,22 +911,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.2"
+  sqlcipher_flutter_libs:
+    dependency: transitive
+    description:
+      name: sqlcipher_flutter_libs
+      sha256: "38d62d659d2fb8739bf25a42c9a350d1fdd6c29a5a61f13a946778ec75d27929"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.0+eol"
   sqlite3:
     dependency: transitive
     description:
       name: sqlite3
-      sha256: "3145bd74dcdb4fd6f5c6dda4d4e4490a8087d7f286a14dee5d37087290f0f8a2"
+      sha256: "37356bcb56ce0d9404d602c41e4bdb7765e7e9732a3e47adb3d98c556a6abdad"
       url: "https://pub.dev"
     source: hosted
-    version: "2.9.4"
+    version: "3.3.3"
   sqlite3_flutter_libs:
     dependency: transitive
     description:
       name: sqlite3_flutter_libs
-      sha256: eeb9e3a45207649076b808f8a5a74d68770d0b7f26ccef6d5f43106eee5375ad
+      sha256: "3ed7553eee7bb368f8950f58ba29f634e06e813c029aff6a0d60862b96de8454"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.42"
+    version: "0.6.0+eol"
   stack_trace:
     dependency: transitive
     description:
