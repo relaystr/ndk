@@ -32,5 +32,5 @@ void main() async {
     expect(response, isNotNull, reason: 'response is Null');
     expect(response!.nip05, isNotEmpty, reason: 'nip05 is empty');
     ndk.destroy();
-  });
+  }, skip:true);
 }

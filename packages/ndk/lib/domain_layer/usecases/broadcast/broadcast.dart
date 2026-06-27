@@ -54,9 +54,8 @@ class Broadcast {
     bool? saveToCache,
   }) {
     // prep for pending delivery enrollment
-    final cleanedSpecificRelays = specificRelays != null
-        ? cleanRelayUrls(specificRelays.toList())
-        : null;
+    final cleanedSpecificRelays =
+        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
     final signer = nostrEvent.sig == null
         ? _checkSinger(customSigner: customSigner)
         : null;
@@ -79,7 +78,8 @@ class Broadcast {
       pendingDelivery.enqueueSpecificRelayBroadcast(
         event: nostrEvent,
         relayUrls: cleanedSpecificRelays,
-        requiresNetworkSigner: signer != null && !signer.canSign(),
+        requiresInteractiveSigning:
+            signer != null && signer.requiresInteractiveSigning,
       );
       response.broadcastDoneFuture.then(
         (responses) => pendingDelivery.persistSpecificRelayBroadcastResult(

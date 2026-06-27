@@ -26,6 +26,15 @@ class QsRustEventSigner implements EventSigner {
 
   QsRustEventSigner({required QsKeypair keypair, this.level = 2});
 
+  @override
+  bool get requiresInteractiveSigning => false;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
   static QsKeypair generateKeypair({int level = 2}) {
     throw UnsupportedError(
       'QsRustEventSigner is not available on this platform. '

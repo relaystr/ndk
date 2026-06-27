@@ -16,6 +16,15 @@ class Nip07EventSigner implements EventSigner {
   }
 
   @override
+  bool get requiresInteractiveSigning => true;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
+  @override
   Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
     throw UnsupportedError('NIP-07 is not available on this platform');
   }

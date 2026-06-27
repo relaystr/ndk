@@ -13,6 +13,17 @@ enum EventDeliveryStatus {
   failed,
 }
 
+/// Persisted signing state for one event before relay delivery can proceed.
+enum EventSigningState {
+  notNeeded,
+  pending,
+  attempting,
+  signed,
+  transientFailure,
+  needsAction,
+  permanentFailure,
+}
+
 /// Per-relay delivery state for one `(eventId, relayUrl)` pair.
 enum RelayDeliveryState {
   pending,
@@ -148,43 +159,78 @@ class RelayDeliveryTarget {
 class EventDeliveryRecord {
   final String eventId;
   final EventDeliveryStatus status;
+  final EventSigningState signingState;
   final int createdAt;
   final int updatedAt;
   final int? signedAt;
   final int? completedAt;
-  final bool requiresNetworkSigner;
+  final bool requiresInteractiveSigning;
+  final int signAttemptCount;
+  final int? lastSignAttemptAt;
+  final int? nextSignRetryAt;
+  final String? lastSignError;
 
   const EventDeliveryRecord({
     required this.eventId,
     this.status = EventDeliveryStatus.pending,
+    this.signingState = EventSigningState.notNeeded,
     required this.createdAt,
     required this.updatedAt,
     this.signedAt,
     this.completedAt,
-    this.requiresNetworkSigner = false,
+    this.requiresInteractiveSigning = false,
+    this.signAttemptCount = 0,
+    this.lastSignAttemptAt,
+    this.nextSignRetryAt,
+    this.lastSignError,
   });
 
   /// True once all known targets have been acknowledged.
   bool get isComplete => status == EventDeliveryStatus.delivered;
 
+  /// True once the event is signed or never required a remote signing phase.
+  bool get isSigned =>
+      signingState == EventSigningState.signed ||
+      (!requiresInteractiveSigning && signedAt == null) ||
+      signedAt != null;
+
   EventDeliveryRecord copyWith({
     String? eventId,
     EventDeliveryStatus? status,
+    EventSigningState? signingState,
     int? createdAt,
     int? updatedAt,
-    int? signedAt,
-    int? completedAt,
-    bool? requiresNetworkSigner,
+    Object? signedAt = _noChange,
+    Object? completedAt = _noChange,
+    bool? requiresInteractiveSigning,
+    int? signAttemptCount,
+    Object? lastSignAttemptAt = _noChange,
+    Object? nextSignRetryAt = _noChange,
+    Object? lastSignError = _noChange,
   }) {
     return EventDeliveryRecord(
       eventId: eventId ?? this.eventId,
       status: status ?? this.status,
+      signingState: signingState ?? this.signingState,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      signedAt: signedAt ?? this.signedAt,
-      completedAt: completedAt ?? this.completedAt,
-      requiresNetworkSigner:
-          requiresNetworkSigner ?? this.requiresNetworkSigner,
+      signedAt:
+          identical(signedAt, _noChange) ? this.signedAt : signedAt as int?,
+      completedAt: identical(completedAt, _noChange)
+          ? this.completedAt
+          : completedAt as int?,
+      requiresInteractiveSigning:
+          requiresInteractiveSigning ?? this.requiresInteractiveSigning,
+      signAttemptCount: signAttemptCount ?? this.signAttemptCount,
+      lastSignAttemptAt: identical(lastSignAttemptAt, _noChange)
+          ? this.lastSignAttemptAt
+          : lastSignAttemptAt as int?,
+      nextSignRetryAt: identical(nextSignRetryAt, _noChange)
+          ? this.nextSignRetryAt
+          : nextSignRetryAt as int?,
+      lastSignError: identical(lastSignError, _noChange)
+          ? this.lastSignError
+          : lastSignError as String?,
     );
   }
 
@@ -192,23 +238,41 @@ class EventDeliveryRecord {
     return {
       'eventId': eventId,
       'status': status.name,
+      'signingState': signingState.name,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'signedAt': signedAt,
       'completedAt': completedAt,
-      'requiresNetworkSigner': requiresNetworkSigner,
+      'requiresInteractiveSigning': requiresInteractiveSigning,
+      'signAttemptCount': signAttemptCount,
+      'lastSignAttemptAt': lastSignAttemptAt,
+      'nextSignRetryAt': nextSignRetryAt,
+      'lastSignError': lastSignError,
     };
   }
 
   factory EventDeliveryRecord.fromJson(Map<String, dynamic> json) {
+    final requiresInteractiveSigning =
+        json['requiresInteractiveSigning'] as bool? ??
+            json['requiresNetworkSigner'] as bool? ??
+            false;
     return EventDeliveryRecord(
       eventId: json['eventId'] as String,
       status: EventDeliveryStatus.values.byName(json['status'] as String),
+      signingState: json['signingState'] != null
+          ? EventSigningState.values.byName(json['signingState'] as String)
+          : (requiresInteractiveSigning
+              ? EventSigningState.pending
+              : EventSigningState.notNeeded),
       createdAt: json['createdAt'] as int,
       updatedAt: json['updatedAt'] as int,
       signedAt: json['signedAt'] as int?,
       completedAt: json['completedAt'] as int?,
-      requiresNetworkSigner: json['requiresNetworkSigner'] as bool? ?? false,
+      requiresInteractiveSigning: requiresInteractiveSigning,
+      signAttemptCount: json['signAttemptCount'] as int? ?? 0,
+      lastSignAttemptAt: json['lastSignAttemptAt'] as int?,
+      nextSignRetryAt: json['nextSignRetryAt'] as int?,
+      lastSignError: json['lastSignError'] as String?,
     );
   }
 }

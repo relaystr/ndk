@@ -41,6 +41,15 @@ class QsRustEventSigner implements EventSigner {
     this.level = 2,
   }) : _keypair = keypair;
 
+  @override
+  bool get requiresInteractiveSigning => false;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
   /// Generates a new Dilithium keypair.
   /// Its only added here for testing purposes!
   ///

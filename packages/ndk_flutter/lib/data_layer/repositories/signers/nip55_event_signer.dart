@@ -180,6 +180,15 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }
 
   @override
+  bool get requiresInteractiveSigning => true;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
+  @override
   Future<String?> encryptNip44({
     required String plaintext,
     required String recipientPubKey,

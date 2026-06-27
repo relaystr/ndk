@@ -90,7 +90,6 @@ void main() {
       expect(CachedEventRecord.isMoreRecentThan(newer, older), isTrue);
       expect(CachedEventRecord.isMoreRecentThan(older, newer), isFalse);
     });
-
   });
 
   group('EventDeliveryRecord', () {
@@ -98,10 +97,16 @@ void main() {
       final original = EventDeliveryRecord(
         eventId: 'event-3',
         status: EventDeliveryStatus.partiallyDelivered,
+        signingState: EventSigningState.transientFailure,
         createdAt: 1700001000,
         updatedAt: 1700001010,
         signedAt: 1700001005,
-        requiresNetworkSigner: true,
+        completedAt: 1700001020,
+        requiresInteractiveSigning: true,
+        signAttemptCount: 2,
+        lastSignAttemptAt: 1700001008,
+        nextSignRetryAt: 1700001100,
+        lastSignError: 'timed out',
       );
 
       final restored = EventDeliveryRecord.fromJson(original.toJson());

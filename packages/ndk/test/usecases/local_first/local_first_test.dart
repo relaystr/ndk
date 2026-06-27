@@ -29,7 +29,9 @@ void main() {
       await tempDir.delete(recursive: true);
     });
 
-    test('offline publish is locally readable and eventually reaches relay when relay comes online', () async {
+    test(
+        'offline publish is locally readable and eventually reaches relay when relay comes online',
+        () async {
       final relay = MockRelay(name: 'local-first-relay');
       ndk = await _createNdk(
         tempDir.path,
@@ -85,13 +87,16 @@ void main() {
       expect(
         relayAfterReconnect.map((e) => e.id),
         contains(event.id),
-        reason: 'Local-first should auto-deliver the unpublished event after the relay becomes reachable.',
+        reason:
+            'Local-first should auto-deliver the unpublished event after the relay becomes reachable.',
       );
 
       await relay.stopServer();
     });
 
-    test('partial success keeps local visibility and should later deliver only to relays that were offline', () async {
+    test(
+        'partial success keeps local visibility and should later deliver only to relays that were offline',
+        () async {
       final relayOnline = MockRelay(name: 'relay-online');
       final relayOffline = MockRelay(name: 'relay-offline');
       ndk = await _createNdk(
@@ -157,7 +162,9 @@ void main() {
       await relayOffline.stopServer();
     });
 
-    test('offline reaction to a cached root is locally visible and should later reach the relay', () async {
+    test(
+        'offline reaction to a cached root is locally visible and should later reach the relay',
+        () async {
       final relay = MockRelay(name: 'reaction-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
@@ -233,7 +240,8 @@ void main() {
       await relay.stopServer();
     });
 
-    test('offline replaceable supersession shows latest locally and should later deliver only the newest version',
+    test(
+        'offline replaceable supersession shows latest locally and should later deliver only the newest version',
         () async {
       final relay = MockRelay(name: 'replaceable-relay');
       ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
@@ -244,24 +252,24 @@ void main() {
       );
 
       final version1 = Nip01Event(
-          pubKey: authorKey.publicKey,
-          kind: 30023,
-          tags: const [
-            ['d', 'article-1']
-          ],
-          content: 'version 1',
-          createdAt: 1_700_000_030,
-        );
+        pubKey: authorKey.publicKey,
+        kind: 30023,
+        tags: const [
+          ['d', 'article-1']
+        ],
+        content: 'version 1',
+        createdAt: 1_700_000_030,
+      );
 
       final version2 = Nip01Event(
-          pubKey: authorKey.publicKey,
-          kind: 30023,
-          tags: const [
-            ['d', 'article-1']
-          ],
-          content: 'version 2',
-          createdAt: 1_700_000_031,
-        );
+        pubKey: authorKey.publicKey,
+        kind: 30023,
+        tags: const [
+          ['d', 'article-1']
+        ],
+        content: 'version 2',
+        createdAt: 1_700_000_031,
+      );
 
       await ndk.broadcast
           .broadcast(
@@ -336,13 +344,16 @@ void main() {
       expect(
         relay.receivedEvents.where((e) => e.content == 'version 2').length,
         1,
-        reason: 'Only the current replaceable version should be delivered during delayed flush.',
+        reason:
+            'Only the current replaceable version should be delivered during delayed flush.',
       );
 
       await relay.stopServer();
     });
 
-    test('offline publish survives ndk restart and is later delivered after relay comes online', () async {
+    test(
+        'offline publish survives ndk restart and is later delivered after relay comes online',
+        () async {
       final relay = MockRelay(name: 'restart-relay');
       ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
 
@@ -352,12 +363,12 @@ void main() {
       );
 
       final event = Nip01Event(
-          pubKey: authorKey.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: const [],
-          content: 'restart persistence note',
-          createdAt: 1_700_000_035,
-        );
+        pubKey: authorKey.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'restart persistence note',
+        createdAt: 1_700_000_035,
+      );
 
       await ndk.broadcast
           .broadcast(
@@ -417,7 +428,9 @@ void main() {
       await relay.stopServer();
     });
 
-    test('incoming deletion hides a previously cached foreign event from app queries', () async {
+    test(
+        'incoming deletion hides a previously cached foreign event from app queries',
+        () async {
       final relay = MockRelay(name: 'incoming-deletion-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
@@ -490,7 +503,9 @@ void main() {
       await relay.stopServer();
     });
 
-    test('deletion received before target should keep the later foreign target suppressed locally', () async {
+    test(
+        'deletion received before target should keep the later foreign target suppressed locally',
+        () async {
       final relay = MockRelay(name: 'deletion-first-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final rootEvent = Nip01Utils.signWithPrivateKey(
@@ -570,7 +585,9 @@ void main() {
       await relay.stopServer();
     });
 
-    test('relay refresh replaces stale cached metadata with the newest remote version', () async {
+    test(
+        'relay refresh replaces stale cached metadata with the newest remote version',
+        () async {
       final relay = MockRelay(name: 'metadata-convergence-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final oldMetadataEvent = Nip01Utils.signWithPrivateKey(
@@ -595,7 +612,8 @@ void main() {
       );
       ndk = await _createNdk(tempDir.path, bootstrapRelays: [relay.url]);
 
-      await relay.startServer(metadatas: {remoteAuthor.publicKey: oldMetadataEvent});
+      await relay
+          .startServer(metadatas: {remoteAuthor.publicKey: oldMetadataEvent});
 
       final cachedOldMetadata = await ndk.metadata.loadMetadata(
         remoteAuthor.publicKey,
@@ -605,7 +623,8 @@ void main() {
       expect(cachedOldMetadata?.name, 'old-name');
 
       await relay.stopServer();
-      await relay.startServer(metadatas: {remoteAuthor.publicKey: newMetadataEvent});
+      await relay
+          .startServer(metadatas: {remoteAuthor.publicKey: newMetadataEvent});
 
       final refreshedMetadata = await ndk.metadata.loadMetadata(
         remoteAuthor.publicKey,
@@ -619,13 +638,16 @@ void main() {
             'A newer replaceable metadata event from the relay should overwrite the stale cached materialized view.',
       );
 
-      final localCurrentMetadata = await ndk.metadata.loadMetadata(remoteAuthor.publicKey);
+      final localCurrentMetadata =
+          await ndk.metadata.loadMetadata(remoteAuthor.publicKey);
       expect(localCurrentMetadata?.name, 'new-name');
 
       await relay.stopServer();
     });
 
-    test('connected relay rejecting first should keep local visibility and later succeed via periodic retry', () async {
+    test(
+        'connected relay rejecting first should keep local visibility and later succeed via periodic retry',
+        () async {
       final relay = MockRelay(
         name: 'retry-relay',
         rejectFirstEventPublishes: 1,
@@ -644,12 +666,12 @@ void main() {
       );
 
       final event = Nip01Event(
-          pubKey: authorKey.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: const [],
-          content: 'connected retry note',
-          createdAt: 1_700_000_040,
-        );
+        pubKey: authorKey.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'connected retry note',
+        createdAt: 1_700_000_040,
+      );
 
       await ndk.broadcast
           .broadcast(
@@ -672,12 +694,14 @@ void main() {
       expect(
         relay.receivedEvents.where((e) => e.id == event.id).length,
         1,
-        reason: 'The first connected publish attempt should reach the relay and be rejected without disconnecting.',
+        reason:
+            'The first connected publish attempt should reach the relay and be rejected without disconnecting.',
       );
       expect(
         relay.matchingEvents(Filter(ids: [event.id])),
         isEmpty,
-        reason: 'Rejected events should not be visible on the relay before the retry succeeds.',
+        reason:
+            'Rejected events should not be visible on the relay before the retry succeeds.',
       );
 
       final eventuallyStored = await _waitForRelayEvents(
@@ -695,13 +719,15 @@ void main() {
       expect(
         relay.receivedEvents.where((e) => e.id == event.id).length,
         2,
-        reason: 'The retry path should produce a second publish attempt after the initial transient rejection.',
+        reason:
+            'The retry path should produce a second publish attempt after the initial transient rejection.',
       );
 
       await relay.stopServer();
     });
 
-    test('connected relay returning permanent failure should keep local visibility without periodic retry spam',
+    test(
+        'connected relay returning permanent failure should keep local visibility without periodic retry spam',
         () async {
       final relay = MockRelay(
         name: 'permanent-failure-relay',
@@ -721,12 +747,12 @@ void main() {
       );
 
       final event = Nip01Event(
-          pubKey: authorKey.publicKey,
-          kind: Nip01Event.kTextNodeKind,
-          tags: const [],
-          content: 'permanent failure note',
-          createdAt: 1_700_000_041,
-        );
+        pubKey: authorKey.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'permanent failure note',
+        createdAt: 1_700_000_041,
+      );
 
       await ndk.broadcast
           .broadcast(
@@ -749,7 +775,8 @@ void main() {
       expect(
         relay.receivedEvents.where((e) => e.id == event.id).length,
         1,
-        reason: 'The initial publish attempt should still reach the connected relay before being rejected permanently.',
+        reason:
+            'The initial publish attempt should still reach the connected relay before being rejected permanently.',
       );
 
       await Future<void>.delayed(const Duration(seconds: 4));
@@ -757,15 +784,269 @@ void main() {
       expect(
         relay.matchingEvents(Filter(ids: [event.id])),
         isEmpty,
-        reason: 'A permanently rejected event should never appear on the relay if the relay keeps refusing it.',
+        reason:
+            'A permanently rejected event should never appear on the relay if the relay keeps refusing it.',
       );
       expect(
         relay.receivedEvents.where((e) => e.id == event.id).length,
         1,
-        reason: 'Permanent failures should not be retried by the periodic retry pump.',
+        reason:
+            'Permanent failures should not be retried by the periodic retry pump.',
       );
 
       await relay.stopServer();
+    });
+
+    test(
+        'network-backed interactive signer queues locally while signer transport relay is offline and publishes once that relay connects',
+        () async {
+      final publishRelay = MockRelay(name: 'signer-publish-relay');
+      final signerRelay = MockRelay(name: 'signer-transport-relay');
+      final signer = _ControllableInteractiveSigner(
+        keyPair: authorKey,
+        available: false,
+        requiresSignerNetwork: true,
+        transportRelayUrls: () => [signerRelay.url],
+      );
+
+      await publishRelay.startServer();
+      ndk = await _createNdk(
+        tempDir.path,
+        bootstrapRelays: [publishRelay.url, signerRelay.url],
+        pendingDeliveryRetryInterval: const Duration(seconds: 1),
+      );
+      ndk.accounts.loginExternalSigner(signer: signer);
+
+      final event = Nip01Event(
+        pubKey: authorKey.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'network signer offline then online',
+        createdAt: 1_700_000_080,
+      );
+
+      try {
+        await ndk.broadcast
+            .broadcast(
+              nostrEvent: event,
+              specificRelays: [publishRelay.url],
+              timeout: const Duration(milliseconds: 300),
+            )
+            .broadcastDoneFuture;
+      } catch (_) {}
+
+      final localWhileSignerOffline = await _waitForCachedEvents(
+        ndk: ndk,
+        filter: Filter(ids: [event.id]),
+      );
+      expect(localWhileSignerOffline.map((e) => e.id), contains(event.id));
+
+      await Future<void>.delayed(const Duration(seconds: 2));
+      expect(
+        publishRelay.receivedEvents.where((e) => e.id == event.id),
+        isEmpty,
+        reason:
+            'While the network-backed signer transport relay is unavailable, local-first should keep the event queued without publishing to target relays.',
+      );
+
+      signer.available = true;
+      await signerRelay.startServer();
+      await ndk.connectivity.tryReconnect();
+      await _waitForRelayConnected(
+        ndk: ndk,
+        relayUrl: signerRelay.url,
+        timeout: const Duration(seconds: 10),
+      );
+
+      final relayAfterSignerTransportOnline = await _waitForRelayEvents(
+        relay: publishRelay,
+        filter: Filter(ids: [event.id]),
+        timeout: const Duration(seconds: 10),
+      );
+
+      expect(
+        relayAfterSignerTransportOnline.map((e) => e.id),
+        contains(event.id),
+        reason:
+            'When the signer transport relay comes online, local-first should retry signing and then immediately publish to connected delivery relays.',
+      );
+
+      await publishRelay.stopServer();
+      await signerRelay.stopServer();
+    });
+
+    test(
+        'interactive signer queue survives restart and later signs plus publishes when signer becomes available',
+        () async {
+      final relay = MockRelay(name: 'interactive-restart-relay');
+      final failingSigner = _ControllableInteractiveSigner(
+        keyPair: authorKey,
+        available: false,
+        requiresSignerNetwork: false,
+      );
+
+      await relay.startServer();
+      ndk = await _createNdk(
+        tempDir.path,
+        bootstrapRelays: [relay.url],
+        pendingDeliveryRetryInterval: const Duration(seconds: 1),
+      );
+      ndk.accounts.loginExternalSigner(signer: failingSigner);
+
+      final event = Nip01Event(
+        pubKey: authorKey.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'interactive signer restart persistence',
+        createdAt: 1_700_000_081,
+      );
+
+      try {
+        await ndk.broadcast
+            .broadcast(
+              nostrEvent: event,
+              specificRelays: [relay.url],
+              timeout: const Duration(milliseconds: 300),
+            )
+            .broadcastDoneFuture;
+      } catch (_) {}
+
+      final localBeforeRestart = await _waitForCachedEvents(
+        ndk: ndk,
+        filter: Filter(ids: [event.id]),
+      );
+      expect(localBeforeRestart.map((e) => e.id), contains(event.id));
+      expect(
+        relay.receivedEvents.where((e) => e.id == event.id),
+        isEmpty,
+        reason:
+            'If interactive signing cannot complete yet, the event should remain local without being published.',
+      );
+
+      await ndk.destroy();
+
+      ndk = await _createNdk(
+        tempDir.path,
+        bootstrapRelays: [relay.url],
+        pendingDeliveryRetryInterval: const Duration(seconds: 1),
+      );
+      ndk.accounts.loginExternalSigner(
+        signer: _ControllableInteractiveSigner(
+          keyPair: authorKey,
+          available: true,
+          requiresSignerNetwork: false,
+        ),
+      );
+
+      final localAfterRestart = await ndk.requests
+          .query(
+            filter: Filter(ids: [event.id]),
+            cacheRead: true,
+            cacheWrite: false,
+            timeout: const Duration(milliseconds: 300),
+          )
+          .future;
+      expect(localAfterRestart.map((e) => e.id), contains(event.id));
+
+      final relayAfterRestart = await _waitForRelayEvents(
+        relay: relay,
+        filter: Filter(ids: [event.id]),
+        timeout: const Duration(seconds: 10),
+      );
+
+      expect(
+        relayAfterRestart.map((e) => e.id),
+        contains(event.id),
+        reason:
+            'Unsigned interactive-signing work should survive restart and later complete once a compatible signer becomes available again.',
+      );
+
+      await relay.stopServer();
+    });
+
+    test(
+        'successful network signing while publish relay is offline should still deliver later when the target relay reconnects',
+        () async {
+      final publishRelay = MockRelay(name: 'signed-then-publish-later-relay');
+      final signerRelay = MockRelay(name: 'signer-online-relay');
+      final signer = _ControllableInteractiveSigner(
+        keyPair: authorKey,
+        available: true,
+        requiresSignerNetwork: true,
+        transportRelayUrls: () => [signerRelay.url],
+      );
+
+      await signerRelay.startServer();
+      ndk = await _createNdk(
+        tempDir.path,
+        bootstrapRelays: [publishRelay.url, signerRelay.url],
+        pendingDeliveryRetryInterval: const Duration(seconds: 1),
+      );
+      ndk.accounts.loginExternalSigner(signer: signer);
+
+      await _waitForRelayConnected(
+        ndk: ndk,
+        relayUrl: signerRelay.url,
+        timeout: const Duration(seconds: 10),
+      );
+
+      final event = Nip01Event(
+        pubKey: authorKey.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'signed now publish later',
+        createdAt: 1_700_000_082,
+      );
+
+      await ndk.broadcast
+          .broadcast(
+            nostrEvent: event,
+            specificRelays: [publishRelay.url],
+            timeout: const Duration(milliseconds: 300),
+          )
+          .broadcastDoneFuture;
+
+      final localSignedWhilePublishOffline = await ndk.requests
+          .query(
+            filter: Filter(ids: [event.id]),
+            cacheRead: true,
+            cacheWrite: false,
+            timeout: const Duration(milliseconds: 300),
+          )
+          .future;
+      expect(
+          localSignedWhilePublishOffline.map((e) => e.id), contains(event.id));
+
+      await Future<void>.delayed(const Duration(seconds: 2));
+      expect(
+        publishRelay.receivedEvents.where((e) => e.id == event.id),
+        isEmpty,
+        reason:
+            'Even if signing succeeds immediately, target relay delivery should stay queued while the publish relay is still offline.',
+      );
+
+      await publishRelay.startServer();
+      await _waitForRelayConnected(
+        ndk: ndk,
+        relayUrl: publishRelay.url,
+        timeout: const Duration(seconds: 15),
+      );
+
+      final relayAfterPublishReconnect = await _waitForRelayEvents(
+        relay: publishRelay,
+        filter: Filter(ids: [event.id]),
+        timeout: const Duration(seconds: 10),
+      );
+
+      expect(
+        relayAfterPublishReconnect.map((e) => e.id),
+        contains(event.id),
+        reason:
+            'After signing succeeded while the publish relay was offline, the queued signed event should later be delivered once that relay reconnects.',
+      );
+
+      await publishRelay.stopServer();
+      await signerRelay.stopServer();
     });
   });
 }
@@ -783,7 +1064,8 @@ Future<Ndk> _createNdk(
       bootstrapRelays: bootstrapRelays,
       ignoreRelays: const [],
       logLevel: LogLevel.all,
-      pendingDeliveryRetryInterval: pendingDeliveryRetryInterval ?? const Duration(seconds: 15),
+      pendingDeliveryRetryInterval:
+          pendingDeliveryRetryInterval ?? const Duration(seconds: 15),
       cashuUserSeedphrase: CashuUserSeedphrase(
         seedPhrase: CashuSeed.generateSeedPhrase(),
       ),
@@ -859,6 +1141,37 @@ Future<List<Nip01Event>> _waitForRelayEvents({
   return relay.matchingEvents(filter);
 }
 
+Future<List<Nip01Event>> _waitForCachedEvents({
+  required Ndk ndk,
+  required Filter filter,
+  Duration timeout = const Duration(seconds: 5),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (DateTime.now().isBefore(deadline)) {
+    final result = await ndk.requests
+        .query(
+          filter: filter,
+          cacheRead: true,
+          cacheWrite: false,
+          timeout: const Duration(milliseconds: 300),
+        )
+        .future;
+    if (result.isNotEmpty) {
+      return result;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+  }
+
+  return ndk.requests
+      .query(
+        filter: filter,
+        cacheRead: true,
+        cacheWrite: false,
+        timeout: const Duration(milliseconds: 300),
+      )
+      .future;
+}
+
 Future<void> _waitForRelayConnected({
   required Ndk ndk,
   required String relayUrl,
@@ -874,4 +1187,85 @@ Future<void> _waitForRelayConnected({
         (relays) => relays[relayUrl]?.isConnected == true,
       )
       .timeout(timeout);
+}
+
+class _ControllableInteractiveSigner implements EventSigner {
+  final KeyPair keyPair;
+  final bool requiresSignerNetwork;
+  final Iterable<String> Function() _transportRelayUrlsProvider;
+  bool available;
+  final Bip340EventSigner _innerSigner;
+
+  _ControllableInteractiveSigner({
+    required this.keyPair,
+    required this.available,
+    required this.requiresSignerNetwork,
+    Iterable<String> Function()? transportRelayUrls,
+  })  : _transportRelayUrlsProvider =
+            transportRelayUrls ?? (() => const <String>[]),
+        _innerSigner = Bip340EventSigner(
+          privateKey: keyPair.privateKey!,
+          publicKey: keyPair.publicKey,
+        );
+
+  @override
+  bool get requiresInteractiveSigning => true;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls =>
+      _transportRelayUrlsProvider();
+
+  @override
+  bool canSign() => true;
+
+  @override
+  bool cancelRequest(String requestId) => false;
+
+  @override
+  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async =>
+      null;
+
+  @override
+  Future<String?> decryptNip44({
+    required String ciphertext,
+    required String senderPubKey,
+  }) async =>
+      null;
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async =>
+      null;
+
+  @override
+  Future<String?> encryptNip44({
+    required String plaintext,
+    required String recipientPubKey,
+  }) async =>
+      null;
+
+  @override
+  String getPublicKey() => keyPair.publicKey;
+
+  @override
+  List<PendingSignerRequest> get pendingRequests => const [];
+
+  @override
+  Stream<List<PendingSignerRequest>> get pendingRequestsStream =>
+      const Stream.empty();
+
+  @override
+  Future<Nip01Event> sign(Nip01Event event) async {
+    if (!available) {
+      throw Exception(
+        requiresSignerNetwork
+            ? 'temporary network signer offline'
+            : 'temporary interactive signer unavailable',
+      );
+    }
+
+    return _innerSigner.sign(event);
+  }
 }

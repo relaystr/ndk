@@ -215,6 +215,7 @@ class Initialization {
     pendingBroadcastDelivery = PendingBroadcastDelivery(
       cacheManager: _ndkConfig.cache,
       broadcastSender: broadcastSender,
+      accounts: accounts,
     );
     broadcast = Broadcast(
       broadcastSender: broadcastSender,
@@ -428,6 +429,11 @@ class Initialization {
       _relayOpenStates[relayUrl] = isOpen;
 
       if (isOpen && !wasOpen) {
+        unawaited(
+          pendingBroadcastDelivery.retryInteractiveSigningForTransportRelay(
+            relayUrl,
+          ),
+        );
         unawaited(pendingBroadcastDelivery.flushForRelay(relayUrl));
       }
     }

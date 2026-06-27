@@ -15,6 +15,17 @@ class MockSlowSigner implements EventSigner {
         _delay = delay;
 
   @override
+  bool get requiresInteractiveSigning =>
+      _innerSigner.requiresInteractiveSigning;
+
+  @override
+  bool get requiresSignerNetwork => _innerSigner.requiresSignerNetwork;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls =>
+      _innerSigner.signerTransportRelayUrls;
+
+  @override
   Future<Nip01Event> sign(Nip01Event event) async {
     await Future.delayed(_delay);
     return _innerSigner.sign(event);
