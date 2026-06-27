@@ -20,6 +20,34 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 
 ---
 
+## CLI
+
+NDK ships a CLI tool. Install it on Linux / macOS with a single command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash
+```
+
+By default this installs the `ndk` binary to `~/.local/bin/ndk` (user mode).
+
+```bash
+# system-wide install (/usr/bin/ndk), may require sudo
+curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash -s -- --system
+
+# pin a specific version
+NDK_VERSION=v0.8.3 curl -fsSL https://raw.githubusercontent.com/relaystr/ndk/refs/heads/master/install.sh | bash
+```
+
+If `~/.local/bin` is not in your `PATH`, add it to your shell profile:
+
+```bash
+export PATH="$PATH:$HOME/.local/bin"
+```
+
+Verify the installation with `ndk --version`. See [releases](https://github.com/relaystr/ndk/releases) for available versions.
+
+---
+
 ## Core Features
 
 ### Network & Data Management
