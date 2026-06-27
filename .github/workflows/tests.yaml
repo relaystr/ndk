@@ -19,8 +19,8 @@ jobs:
       - run: dart pub get
       - run: dart format --output=none .
       - run: dart analyze --no-fatal-warnings
-      - run: dart test --coverage="coverage" -j 4
-      - run: dart test ./example -j 4
+      - run: dart test --coverage="coverage" -j 2
+      - run: dart test ./example -j 2
       - run: dart pub global activate coverage
       - run: $HOME/.pub-cache/bin/format_coverage --ignore-files **/*.g.dart --lcov --check-ignore --in=coverage --out=coverage.lcov --report-on=lib
       - name: Upload coverage reports to Codecov
@@ -48,4 +48,4 @@ jobs:
           architecture: x64 # optional, x64 or arm
       - run: dart pub get
       - run: dart analyze --no-fatal-warnings
-      - run: flutter test --platform chrome
+      - run: flutter test --platform chrome --concurrency=2
