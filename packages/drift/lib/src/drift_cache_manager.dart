@@ -1080,7 +1080,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
             updatedAt: record.updatedAt,
             signedAt: Value(record.signedAt),
             completedAt: Value(record.completedAt),
-            requiresNetworkSigner: Value(record.requiresNetworkSigner),
+            requiresNetworkSigner: Value(record.requiresInteractiveSigning),
           ),
         );
   }
@@ -1101,7 +1101,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
                 updatedAt: record.updatedAt,
                 signedAt: Value(record.signedAt),
                 completedAt: Value(record.completedAt),
-                requiresNetworkSigner: Value(record.requiresNetworkSigner),
+                requiresNetworkSigner: Value(record.requiresInteractiveSigning),
               ),
             )
             .toList(),
@@ -1154,7 +1154,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       updatedAt: row.updatedAt,
       signedAt: row.signedAt,
       completedAt: row.completedAt,
-      requiresNetworkSigner: row.requiresNetworkSigner,
+      requiresInteractiveSigning: row.requiresNetworkSigner,
     );
   }
 
