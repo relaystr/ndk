@@ -24,11 +24,12 @@ jobs:
       - run: dart pub global activate coverage
       - run: $HOME/.pub-cache/bin/format_coverage --ignore-files **/*.g.dart --lcov --check-ignore --in=coverage --out=coverage.lcov --report-on=lib
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: coverage.lcov
+          fail_ci_if_error: true   # fails only on upload errors, not coverage drops
           verbose: true # optional (default = false)
 
   nip07-tests:
