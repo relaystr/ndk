@@ -1,7 +1,7 @@
 ---
 title: CLI
 icon: terminal
-order: 101
+order: 99.5
 ---
 
 # NDK CLI

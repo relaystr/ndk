@@ -43,6 +43,7 @@ That means:
 
 - an event may be visible locally before every relay accepts it
 - pending delivery can survive app restarts when the cache backend is persistent
+- if signing is delayed by an external signer, the unsigned event can still stay queued locally
 - retries can continue later when relays are reachable again
 - replaceable events only keep retrying the newest visible version
 
@@ -59,6 +60,23 @@ Current behavior includes:
 - some control-style events can use faster retry behavior
 - relay responses classified as permanent failure stop retry for that relay target
 - relay responses classified as transient failure remain retryable
+- external signer flows can also be retried in the background before relay delivery continues
+
+## External signer retry behavior
+
+When you broadcast through an external signer such as `Nip46EventSigner`,
+`Nip07EventSigner`, or `Nip55EventSigner`, signing and relay delivery are treated
+as separate steps.
+
+Current behavior:
+
+- if the signer does not complete immediately, the event can remain queued locally
+- once signing succeeds later, NDK can continue relay delivery for that same event
+- if the signer depends on network transport, retries are biased toward moments when the signer transport looks reachable again
+- if the signer succeeds while some target relays are still offline, delivery to those relays can still continue later
+
+In practice this means apps can treat delayed external signing as part of the same
+local-first publish flow instead of having to rebuild the publish manually.
 
 ## Delivery policy
 
