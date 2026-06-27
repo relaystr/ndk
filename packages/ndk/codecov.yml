@@ -9,4 +9,6 @@ coverage:
         threshold: 5%     # ✅ allow up to 5% drop — tune this to your X
     patch:
       default:
-        informational: true
+        target: 80%          # only require 80% of NEW lines to be covered
+        informational:  true
+
