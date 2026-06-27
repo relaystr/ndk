@@ -60,6 +60,32 @@ Current behavior includes:
 - relay responses classified as permanent failure stop retry for that relay target
 - relay responses classified as transient failure remain retryable
 
+## Delivery policy
+
+NDK uses an internal `DeliveryPolicy` for local-first broadcast retry handling.
+
+Current policy selection is automatic:
+
+- ephemeral events use `doNotRetry`
+- deletion events use `highPriorityControl`
+- replaceable and addressable events use `latestStateOnly`
+- other events use `persistentEventual`
+
+This policy is currently **not configurable** through `ndk.broadcast.broadcast()`,
+`NdkConfig`, or a per-event override.
+
+That means:
+
+- you cannot choose a custom retry/backoff profile for one broadcast
+- you cannot inject your own delivery policy classifier
+- the practical way to influence policy today is through the event kind you publish
+
+Examples:
+
+- `kind:5` deletions get faster control-style retries
+- replaceable kinds only keep retrying the newest visible version
+- ephemeral kinds are not persisted for background retry
+
 ## Relay targeting
 
 Broadcast targeting can include more than author outbox relays.

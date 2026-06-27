@@ -4,6 +4,11 @@ import '../../entities/nip_01_event.dart';
 import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 
+/// Internal retry/delivery strategy used by local-first broadcast persistence.
+///
+/// NDK currently derives this policy from the event kind. There is no public
+/// broadcast parameter or config hook that lets apps override the policy for a
+/// single event.
 enum DeliveryPolicyKind {
   persistentEventual,
   latestStateOnly,
@@ -11,6 +16,16 @@ enum DeliveryPolicyKind {
   doNotRetry,
 }
 
+/// Internal classifier for how one event should be retried after broadcast.
+///
+/// Current mapping:
+/// - ephemeral events -> [DeliveryPolicyKind.doNotRetry]
+/// - deletion events -> [DeliveryPolicyKind.highPriorityControl]
+/// - replaceable/addressable events -> [DeliveryPolicyKind.latestStateOnly]
+/// - all other events -> [DeliveryPolicyKind.persistentEventual]
+///
+/// Apps do not configure this directly today. To change behavior, they must
+/// change the event kind semantics rather than pass a custom policy.
 class DeliveryPolicy {
   static const Set<String> _permanentFailurePrefixes = {
     'blocked',
@@ -46,6 +61,7 @@ class DeliveryPolicy {
 
   const DeliveryPolicy._(this.kind);
 
+  /// Classifies the delivery policy for [event] from its Nostr event kind.
   factory DeliveryPolicy.forEvent(Nip01Event event) {
     if (EventKindClassification.isEphemeralKind(event.kind)) {
       return const DeliveryPolicy._(DeliveryPolicyKind.doNotRetry);
