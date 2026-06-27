@@ -58,7 +58,7 @@ abstract class EventSigner {
   /// Emits whenever the list changes (request added, completed, or cancelled).
   ///
   /// For local signers (like Bip340EventSigner), this will always emit an empty list.
-  /// For remote signers (NIP-46, NIP-07, Amber), this will emit the current
+  /// For remote signers (NIP-46, NIP-07, NIP-55), this will emit the current
   /// pending requests that are waiting for user approval.
   Stream<List<PendingSignerRequest>> get pendingRequestsStream;
 

@@ -14,8 +14,8 @@ class _PendingRequestEntry {
 
 /// Event signer backed by a NIP-55 external signer application.
 ///
-/// NIP-55 is a protocol implemented by several external signer apps
-/// (Amber, Primal, Aegis, ...). This signer delegates all cryptographic
+/// NIP-55 is a protocol implemented by several external signer apps.
+/// This signer delegates all cryptographic
 /// operations to whichever compatible signer is installed via [Nip55Signer].
 class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   final Nip55Signer nip55Signer;

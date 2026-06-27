@@ -21,8 +21,8 @@ import io.flutter.plugin.common.PluginRegistry
 
 /// ndk_flutter native plugin.
 ///
-/// Hosts the NIP-55 "Android Signer Application" bridge (external signer apps
-/// such as Amber, Primal, Aegis, ...). Communication happens either silently
+/// Hosts the NIP-55 "Android Signer Application" bridge for external signer
+/// apps. Communication happens either silently
 /// through a ContentResolver query (when the user has pre-authorized the
 /// permission) or, as a fallback, by launching the signer via an Intent and
 /// reading the result in [onActivityResult].
@@ -71,14 +71,14 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 val id = paramsMap[keyId] as? String ?: ""
                 val uriData = paramsMap[keyUriData] as? String ?: ""
                 val permissions = paramsMap[keyPermissions] as? String ?: ""
-                // Signer app package captured at login (Amber, Primal, ...).
+                // Signer app package captured at login.
                 // Empty for get_public_key / legacy accounts.
                 val signerPackage = paramsMap[keyPackage] as? String ?: ""
 
                 // First try the silent ContentResolver path (pre-authorized
                 // permissions). Only attempt it when we know which signer to
                 // query (a captured package): querying a foreign provider
-                // (e.g. Amber for a Primal account) returns wrong/empty data.
+                // returns wrong/empty data.
                 // get_public_key (login) is Intent-only per NIP-55.
                 if (requestType != "get_public_key" && signerPackage.isNotEmpty()) {
                     val data = getDataFromContentResolver(

@@ -11,11 +11,11 @@ Signers are responsible for cryptographic operations: signing events, encrypting
 | `NdkEventSigner` | Automatic platform selection (web/native) | No (instant) |
 | `Nip46EventSigner` | Remote signer via NIP-46 bunker | Yes |
 | `Nip07EventSigner` | Browser extension (NIP-07) | Yes |
-| `AmberEventSigner` | Android Amber app | Yes |
+| `Nip55EventSigner` | Android NIP-55 external signer app | Yes |
 
 ## Pending Requests
 
-External signers (NIP-46, NIP-07, Amber) require user approval for operations. The unified pending requests API allows your UI to:
+External signers (NIP-46, NIP-07, NIP-55) require user approval for operations. The unified pending requests API allows your UI to:
 
 - Display pending operations to the user
 - Cancel pending requests
@@ -82,7 +82,7 @@ try {
 
 ### Handling Remote Rejections
 
-When the user rejects a request on the remote signer (bunker, browser extension, Amber), the caller receives a `SignerRequestRejectedException`:
+When the user rejects a request on the remote signer (bunker, browser extension, NIP-55 signer app), the caller receives a `SignerRequestRejectedException`:
 
 ```dart
 try {

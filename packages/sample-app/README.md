@@ -20,5 +20,4 @@ Main package: [🔗 Dart Nostr Development Kit (NDK)](https://pub.dev/packages/n
 ## NIP-55 signer
 
 A NIP-55 compatible external Nostr signer is optional for running this
-application. Amber is one app that implements NIP-55, but the sample app is not
-specific to Amber.
+application. The sample app is not tied to any specific signer app.
