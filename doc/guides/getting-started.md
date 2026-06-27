@@ -8,7 +8,8 @@ order: 100
 
 ## Install
 
-Ndk has a core package `ndk` and optional packages like `amber` and `objectbox`
+NDK has a core package `ndk` and optional companion packages such as
+`ndk_flutter`, `ndk_objectbox`, and `ndk_drift`.
 
 ```bash
 flutter pub add ndk
@@ -63,12 +64,7 @@ rustup target add aarch64-apple-ios-sim
 rustup target add armv7-apple-ios i386-apple-ios
 ```
 
-## Install
-
-```bash
-flutter pub add ndk_rust_verifier
-flutter pub add ndk_amber
-```
+## Core usage
 
 ```dart
 import 'package:ndk/ndk.dart';
@@ -105,11 +101,18 @@ $~~~~~~~~~~~$
 ## Install
 
 ```bash
-flutter pub add ndk_amber
+flutter pub add ndk_flutter
 ```
 
 ## Import
 
 ```dart
-import 'package:ndk_amber/ndk_amber.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 ```
+
+Use `ndk_flutter` when you want Flutter-specific integrations such as:
+
+- `NdkEventVerifier`
+- `Nip07EventSigner`
+- `Nip55EventSigner`
+- login and account widgets
