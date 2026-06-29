@@ -151,4 +151,97 @@ void main() async {
       } catch (_) {}
     }
   });
+
+  test('reopen keeps expired event locked by persisted delivery record',
+      () async {
+    final tempDir = await Directory.systemTemp.createTemp(
+      'objectbox_evict_restart_test',
+    );
+
+    try {
+      final first = DbObjectBox(directory: tempDir.path);
+      await first.dbRdy;
+
+      final expiredEvent = Nip01Event(
+        pubKey: 'locked_after_restart_delivery',
+        kind: 1,
+        tags: const [
+          ['expiration', '1'],
+        ],
+        content: 'expired but queued',
+        createdAt: 11,
+      );
+
+      await first.saveEvent(expiredEvent);
+      await first.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: expiredEvent.id,
+          createdAt: 11,
+          updatedAt: 11,
+        ),
+      );
+      await first.close();
+
+      final reopened = DbObjectBox(directory: tempDir.path);
+      await reopened.dbRdy;
+
+      final result = await reopened.evict(const EvictionPolicy.safeSweep());
+
+      expect(result.removedEvents, equals(0));
+      expect(result.keptDueToDeliveryState, equals(1));
+      expect(await reopened.loadEvent(expiredEvent.id), isNotNull);
+
+      await reopened.close();
+    } finally {
+      try {
+        await tempDir.delete(recursive: true);
+      } catch (_) {}
+    }
+  });
+
+  test('reopen keeps expired event locked by persisted relay target', () async {
+    final tempDir = await Directory.systemTemp.createTemp(
+      'objectbox_evict_restart_test',
+    );
+
+    try {
+      final first = DbObjectBox(directory: tempDir.path);
+      await first.dbRdy;
+
+      final expiredEvent = Nip01Event(
+        pubKey: 'locked_after_restart_target',
+        kind: 1,
+        tags: const [
+          ['expiration', '1'],
+        ],
+        content: 'expired but waiting for relay',
+        createdAt: 12,
+      );
+
+      await first.saveEvent(expiredEvent);
+      await first.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: expiredEvent.id,
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+        ),
+      );
+      await first.close();
+
+      final reopened = DbObjectBox(directory: tempDir.path);
+      await reopened.dbRdy;
+
+      final result = await reopened.evict(const EvictionPolicy.safeSweep());
+
+      expect(result.removedEvents, equals(0));
+      expect(result.keptDueToDeliveryState, equals(1));
+      expect(await reopened.loadEvent(expiredEvent.id), isNotNull);
+
+      await reopened.close();
+    } finally {
+      try {
+        await tempDir.delete(recursive: true);
+      } catch (_) {}
+    }
+  });
 }

@@ -844,9 +844,11 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
     final rawEvents = eventBox.getAll().map((event) => event.toNdk()).toList();
+    final deliveryRecords = await loadEventDeliveryRecords();
+    final relayTargets = await loadRelayDeliveryTargets();
     final lockedEventIds = <String>{
-      ..._eventDeliveryRecords.keys,
-      ..._relayDeliveryTargets.values.map((target) => target.eventId),
+      ...deliveryRecords.map((record) => record.eventId),
+      ...relayTargets.map((target) => target.eventId),
     };
     final plan = EventEvictionPlanner.plan(
       rawEvents: rawEvents,
