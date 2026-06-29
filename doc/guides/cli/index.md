@@ -1,12 +1,28 @@
 ---
-title: CLI
+label: NDK CLI
+title: NDK CLI
 icon: terminal
 order: 99.5
 ---
 
 # NDK CLI
 
-NDK ships a standalone command line interface for querying relays and managing wallets, without writing any Dart code. It is a prebuilt binary — no Dart or Flutter toolchain required.
+NDK ships a standalone command line interface for querying relays, managing
+identities, publishing events, and operating Lightning/Cashu wallets — without
+writing any Dart code. It is a prebuilt binary — no Dart or Flutter toolchain
+required.
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| [`req`](req.md) | Query relays for events |
+| [`broadcast`](broadcast.md) | Publish events to relays |
+| [`accounts`](accounts.md) | Manage local identities (login, logout, list, switch, whoami) |
+| [`wallets`](wallets.md) | Lightning / Cashu wallet operations |
+| [`zaps`](zaps.md) | NIP-57 zap operations (invoice, zap, receipts) |
+| [`files`](files.md) | High-level file management (upload, download, delete, check) |
+| [`blossom`](blossom.md) | Low-level Blossom operations (upload, download, delete, list, mirror, check, servers) |
 
 ## Install
 
@@ -77,59 +93,14 @@ Global options (must come before the command name):
 
 Run `ndk` with no arguments, or `ndk --help`, to list all commands.
 
-## Commands
+## Persistence & local state
 
-### `req` — query relays for events
+The CLI stores the following files in your working directory (or the
+locations noted):
 
-Fetches events from one or more relays and prints them as JSON (one object per line).
-
-```
-ndk req [-k <kind>] [-l <limit>] [-t <seconds>] <relay1> [relay2 ...]
-```
-
-| Option | Description |
-|--------|-------------|
-| `-k`, `--kind <kind>` | Filter by event kind |
-| `-l`, `--limit <limit>` | Limit number of events (default `10`) |
-| `-t`, `--timeout <sec>` | Query timeout in seconds (default `12`) |
-
-Relay URLs may be passed with or without the `wss://` scheme.
-
-```bash
-# last 5 text notes (kind 1) from a relay
-ndk req -k 1 -l 5 wss://relay.damus.net
-
-# kind-0 metadata from two relays, 5s timeout
-ndk req -k 0 -t 5 relay.damus.net nos.lol
-```
-
-### `wallets` — manage Lightning/Cashu wallets
-
-Wallet operations for NIP-47 (NWC) and Cashu wallets.
-
-```
-ndk wallets <list|add|remove|receive|send|balance|budget> [args]
-```
-
-| Sub-command | Description |
-|-------------|-------------|
-| `list` | List configured wallets |
-| `add nwc <NWC_URI> [name]` | Add a Nostr Wallet Connect wallet |
-| `add cashu <MINT_URL> [name]` | Add a Cashu wallet |
-| `remove <walletId>` | Remove a wallet |
-| `receive <amountSats> [walletId]` | Generate a receive invoice |
-| `send <bolt11> [walletId]` | Pay a BOLT11 invoice |
-| `balance [walletId]` | Show wallet balances |
-| `budget [walletId]` | Show NWC budget info (NWC wallets only) |
-
-```bash
-ndk wallets list
-ndk wallets add nwc "nostr+walletconnect://..."
-ndk wallets add cashu "https://mint.example.com"
-ndk wallets receive 1000
-ndk wallets send "lnbc1..."
-ndk wallets balance
-ndk wallets budget
-```
-
-Run `ndk wallets help` for the full list of examples.
+| File | Purpose |
+|------|---------|
+| `~/.ndk/accounts.json` | Persisted identities (private keys / bunker connections). Override with `NDK_ACCOUNTS_FILE`. |
+| `wallets_db.db` | Wallet definitions and transaction history. |
+| `ndk_cache.db` | Event cache, Cashu proofs/keysets/mint infos. |
+| `NDK_CASHU_SEED` | Environment variable supplying the Cashu seed phrase. |

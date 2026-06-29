@@ -12,6 +12,16 @@ NDK (Nostr Development Kit) is a Dart library that enhances the Nostr developmen
 NDK supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.\
 Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.
 
+!!!
+Want to see NDK in action?
+
+The repository includes a **sample app** that demonstrates many implemented
+features, usecases, and Flutter widgets end to end.
+
+- [sample app live demo](https://dart-nostr.com/app/)
+- source: `packages/sample-app`
+!!!
+
 ## Apps using NDK
 
 - [sample app](https://dart-nostr.com/app/), [yana](https://github.com/frnandu/yana), [camelus](https://github.com/leo-lox/camelus), [zap.stream](https://github.com/nostrlabs-io/zap-stream-flutter), [zapstore](https://github.com/zapstore/zapstore), [freeflow](https://github.com/nostrlabs-io/freeflow), [hostr](https://github.com/sudonym-btc/hostr), [bitblik](https://github.com/bit-blik/bitblik), [donow](https://github.com/nogringo/donow), [submarine](https://github.com/nogringo/submarine), [nostr-mail-client](https://github.com/nogringo/nostr-mail-client)
