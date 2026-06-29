@@ -63,4 +63,92 @@ void main() async {
     expect(loadedProofs[0].keysetId, equals(proof.keysetId));
     expect(loadedProofs[0].amount, equals(proof.amount));
   });
+
+  test('reopen persists event sidecar records', () async {
+    final tempDir = await Directory.systemTemp.createTemp(
+      'objectbox_restart_test',
+    );
+
+    try {
+      final first = DbObjectBox(directory: tempDir.path);
+      await first.dbRdy;
+
+      const deliveryRecord = EventDeliveryRecord(
+        eventId: 'event-1',
+        status: EventDeliveryStatus.inProgress,
+        signingState: EventSigningState.pending,
+        createdAt: 1700000000,
+        updatedAt: 1700000100,
+        serializedEventJson: '{"id":"event-1"}',
+        requiresInteractiveSigning: true,
+        signAttemptCount: 2,
+        lastSignAttemptAt: 1700000090,
+        nextSignRetryAt: 1700000400,
+        lastSignError: 'signer unavailable',
+      );
+      const relayTarget = RelayDeliveryTarget(
+        eventId: 'event-1',
+        relayUrl: 'wss://relay.example',
+        reason: RelayDeliveryReason.explicit,
+        state: RelayDeliveryState.permanentFailure,
+        attemptCount: 3,
+        lastAttemptAt: 1700000091,
+        nextRetryAt: 1700000500,
+        lastError: 'timeout',
+      );
+      const decryptedRecord = DecryptedEventPayloadRecord(
+        eventId: 'event-1',
+        viewerPubKey: 'viewer-1',
+        scheme: DecryptedPayloadScheme.nip04,
+        status: DecryptedPayloadStatus.ready,
+        plaintextContent: 'hello',
+        createdAt: 1700000000,
+        updatedAt: 1700000100,
+        decryptedAt: 1700000101,
+        sourceEventPubKey: 'author-1',
+        sourceEventKind: 4,
+      );
+
+      await first.addEventSources(
+        eventId: 'event-1',
+        relayUrls: const ['wss://relay-a.example', 'wss://relay-b.example'],
+      );
+      await first.saveEventDeliveryRecord(deliveryRecord);
+      await first.saveRelayDeliveryTarget(relayTarget);
+      await first.saveDecryptedEventPayloadRecord(decryptedRecord);
+      await first.close();
+
+      final reopened = DbObjectBox(directory: tempDir.path);
+      await reopened.dbRdy;
+
+      expect(
+        await reopened.loadEventSources('event-1'),
+        unorderedEquals(['wss://relay-a.example', 'wss://relay-b.example']),
+      );
+      expect(
+        await reopened.loadEventDeliveryRecord('event-1'),
+        isNotNull,
+      );
+      expect(
+        await reopened.loadRelayDeliveryTarget(
+          eventId: 'event-1',
+          relayUrl: 'wss://relay.example',
+        ),
+        isNotNull,
+      );
+      expect(
+        await reopened.loadDecryptedEventPayloadRecord(
+          eventId: 'event-1',
+          viewerPubKey: 'viewer-1',
+        ),
+        isNotNull,
+      );
+
+      await reopened.close();
+    } finally {
+      try {
+        await tempDir.delete(recursive: true);
+      } catch (_) {}
+    }
+  });
 }

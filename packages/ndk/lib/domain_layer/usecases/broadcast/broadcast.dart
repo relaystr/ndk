@@ -72,25 +72,39 @@ class Broadcast {
 
     // enroll in pending delivery for specific-relay broadcasts
     final pendingDelivery = _pendingDelivery;
+    Future<void>? pendingEnrollment;
     if (pendingDelivery != null &&
         cleanedSpecificRelays != null &&
         cleanedSpecificRelays.isNotEmpty) {
-      pendingDelivery.enqueueSpecificRelayBroadcast(
+      pendingEnrollment = pendingDelivery.enqueueSpecificRelayBroadcast(
         event: nostrEvent,
         relayUrls: cleanedSpecificRelays,
         requiresInteractiveSigning:
             signer != null && signer.requiresInteractiveSigning,
       );
-      response.broadcastDoneFuture.then(
-        (responses) => pendingDelivery.persistSpecificRelayBroadcastResult(
-          nostrEvent,
-          responses,
-        ),
-        onError: (_, __) {},
-      );
+      pendingEnrollment.then((_) {
+        response.broadcastDoneFuture.then(
+          (responses) => pendingDelivery.persistSpecificRelayBroadcastResult(
+            nostrEvent,
+            responses,
+          ),
+          onError: (_, __) {},
+        );
+      }, onError: (_, __) {});
     }
 
-    return response;
+    if (pendingEnrollment == null) {
+      return response;
+    }
+
+    final broadcastDoneFuture = pendingEnrollment.then(
+      (_) => response.broadcastDoneFuture,
+    );
+    return NdkBroadcastResponse(
+      publishEvent: response.publishEvent,
+      broadcastDoneStream: response.broadcastDone,
+      broadcastDoneFuture: broadcastDoneFuture,
+    );
   }
 
   /// **********************************************************************************************************

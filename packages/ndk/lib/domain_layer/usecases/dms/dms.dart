@@ -337,14 +337,18 @@ class Dms {
     required Nip01Event rumor,
     required String myPubKey,
   }) {
-    final participants = rumor.pTags.toSet();
+    final orderedParticipants = rumor.tags
+        .where((tag) => tag.length >= 2 && tag[0] == 'p')
+        .map((tag) => tag[1])
+        .toList();
+    final participants = orderedParticipants.toSet();
     if (rumor.pubKey == myPubKey) {
-      final others =
-          participants.where((pubKey) => pubKey != myPubKey).toList();
-      if (others.length != 1) {
-        return null;
+      for (final participant in orderedParticipants) {
+        if (participant != myPubKey) {
+          return participant;
+        }
       }
-      return others.first;
+      return null;
     }
 
     if (rumor.pubKey != myPubKey && participants.contains(myPubKey)) {

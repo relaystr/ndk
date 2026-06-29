@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
+import '../../../data_layer/models/nip_01_event_model.dart';
 import '../../entities/broadcast_state.dart';
 import '../../entities/event_cache_records.dart';
 import '../../entities/nip_01_event.dart';
@@ -183,6 +185,8 @@ class PendingBroadcastDelivery {
                 : EventSigningState.notNeeded),
         createdAt: existing?.createdAt ?? event.createdAt,
         updatedAt: now,
+        serializedEventJson:
+            _serializeEvent(event) ?? existing?.serializedEventJson,
         signedAt: existing?.signedAt ?? (event.sig != null ? now : null),
         completedAt: existing?.completedAt,
         requiresInteractiveSigning: requiresInteractiveSigning,
@@ -327,7 +331,10 @@ class PendingBroadcastDelivery {
           continue;
         }
 
-        final loadedEvent = await _cacheManager.loadEvent(target.eventId);
+        final loadedEvent = await _loadRecoverableEvent(
+          target.eventId,
+          record: deliveryRecord,
+        );
         if (loadedEvent == null) {
           await _cacheManager.removeRelayDeliveryTarget(
             eventId: target.eventId,
@@ -454,7 +461,10 @@ class PendingBroadcastDelivery {
         continue;
       }
 
-      final event = await _cacheManager.loadEvent(record.eventId);
+      final event = await _loadRecoverableEvent(
+        record.eventId,
+        record: record,
+      );
       if (event == null) {
         await _discardEventDelivery(record.eventId);
         continue;
@@ -623,6 +633,7 @@ class PendingBroadcastDelivery {
       record.copyWith(
         signingState: EventSigningState.signed,
         updatedAt: now,
+        serializedEventJson: _serializeEvent(signedEvent),
         signedAt: now,
         nextSignRetryAt: null,
         lastSignError: null,
@@ -802,6 +813,44 @@ class PendingBroadcastDelivery {
 
   bool _isAddressableKind(int kind) {
     return EventKindClassification.isAddressableKind(kind);
+  }
+
+  Future<Nip01Event?> _loadRecoverableEvent(
+    String eventId, {
+    required EventDeliveryRecord record,
+  }) async {
+    final cachedEvent = await _cacheManager.loadEvent(eventId);
+    if (cachedEvent != null) {
+      return cachedEvent;
+    }
+
+    final serializedEventJson = record.serializedEventJson;
+    if (serializedEventJson == null || serializedEventJson.isEmpty) {
+      return null;
+    }
+
+    try {
+      final parsedEvent = Nip01EventModel.fromJson(
+        jsonDecode(serializedEventJson) as Map<String, dynamic>,
+      );
+      await _cacheManager.saveEvent(parsedEvent);
+      return parsedEvent;
+    } catch (error, stackTrace) {
+      Logger.log.w(
+        () => 'failed to restore serialized pending-delivery event $eventId',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  String? _serializeEvent(Nip01Event event) {
+    try {
+      return Nip01EventModel.fromEntity(event).toJsonString();
+    } catch (_) {
+      return null;
+    }
   }
 
   EventDeliveryStatus _resolveDeliveryStatus(

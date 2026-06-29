@@ -162,6 +162,7 @@ class EventDeliveryRecord {
   final EventSigningState signingState;
   final int createdAt;
   final int updatedAt;
+  final String? serializedEventJson;
   final int? signedAt;
   final int? completedAt;
   final bool requiresInteractiveSigning;
@@ -176,6 +177,7 @@ class EventDeliveryRecord {
     this.signingState = EventSigningState.notNeeded,
     required this.createdAt,
     required this.updatedAt,
+    this.serializedEventJson,
     this.signedAt,
     this.completedAt,
     this.requiresInteractiveSigning = false,
@@ -200,6 +202,7 @@ class EventDeliveryRecord {
     EventSigningState? signingState,
     int? createdAt,
     int? updatedAt,
+    Object? serializedEventJson = _noChange,
     Object? signedAt = _noChange,
     Object? completedAt = _noChange,
     bool? requiresInteractiveSigning,
@@ -214,6 +217,9 @@ class EventDeliveryRecord {
       signingState: signingState ?? this.signingState,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      serializedEventJson: identical(serializedEventJson, _noChange)
+          ? this.serializedEventJson
+          : serializedEventJson as String?,
       signedAt:
           identical(signedAt, _noChange) ? this.signedAt : signedAt as int?,
       completedAt: identical(completedAt, _noChange)
@@ -241,6 +247,7 @@ class EventDeliveryRecord {
       'signingState': signingState.name,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'serializedEventJson': serializedEventJson,
       'signedAt': signedAt,
       'completedAt': completedAt,
       'requiresInteractiveSigning': requiresInteractiveSigning,
@@ -266,6 +273,7 @@ class EventDeliveryRecord {
               : EventSigningState.notNeeded),
       createdAt: json['createdAt'] as int,
       updatedAt: json['updatedAt'] as int,
+      serializedEventJson: json['serializedEventJson'] as String?,
       signedAt: json['signedAt'] as int?,
       completedAt: json['completedAt'] as int?,
       requiresInteractiveSigning: requiresInteractiveSigning,

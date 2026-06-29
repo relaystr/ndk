@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
@@ -27,6 +28,11 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       'default_wallet_for_receiving';
   static const String _defaultWalletForSendingKey =
       'default_wallet_for_sending';
+  static const String _eventSourcesKeyPrefix = 'event_sources:';
+  static const String _eventDeliveryRecordKeyPrefix = 'event_delivery_record:';
+  static const String _relayDeliveryTargetKeyPrefix = 'relay_delivery_target:';
+  static const String _decryptedEventPayloadKeyPrefix =
+      'decrypted_event_payload:';
 
   final Completer _initCompleter = Completer();
   Future get dbRdy => _initCompleter.future;
@@ -96,37 +102,80 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     required String eventId,
     required Iterable<String> relayUrls,
   }) async {
+    await dbRdy;
     final sources = _eventSources.putIfAbsent(eventId, () => <String>{});
     sources.addAll(relayUrls);
+    final sortedSources = sources.toList()..sort();
+    _upsertKeyValue(
+      _eventSourcesKey(eventId),
+      jsonEncode(sortedSources),
+    );
   }
 
   @override
   Future<List<String>> loadEventSources(String eventId) async {
-    final sources = (_eventSources[eventId] ?? <String>{}).toList()..sort();
-    return sources;
+    await dbRdy;
+    final cached = _eventSources[eventId];
+    if (cached != null) {
+      final sources = cached.toList()..sort();
+      return sources;
+    }
+    final stored = _getKeyValue(_eventSourcesKey(eventId));
+    if (stored == null) {
+      return [];
+    }
+    final sources =
+        (jsonDecode(stored) as List).map((entry) => entry.toString()).toSet();
+    _eventSources[eventId] = sources;
+    final sortedSources = sources.toList()..sort();
+    return sortedSources;
   }
 
   @override
   Future<void> removeEventSources(String eventId) async {
+    await dbRdy;
     _eventSources.remove(eventId);
+    _removeKeyValue(_eventSourcesKey(eventId));
   }
 
   @override
   Future<void> saveEventDeliveryRecord(EventDeliveryRecord record) async {
+    await dbRdy;
     _eventDeliveryRecords[record.eventId] = record;
+    _upsertKeyValue(
+      _eventDeliveryRecordKey(record.eventId),
+      jsonEncode(record.toJson()),
+    );
   }
 
   @override
   Future<void> saveEventDeliveryRecords(
       List<EventDeliveryRecord> records) async {
+    await dbRdy;
     for (final record in records) {
       _eventDeliveryRecords[record.eventId] = record;
+      _upsertKeyValue(
+        _eventDeliveryRecordKey(record.eventId),
+        jsonEncode(record.toJson()),
+      );
     }
   }
 
   @override
   Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId) async {
-    return _eventDeliveryRecords[eventId];
+    await dbRdy;
+    final cached = _eventDeliveryRecords[eventId];
+    if (cached != null) {
+      return cached;
+    }
+    final stored = _getKeyValue(_eventDeliveryRecordKey(eventId));
+    if (stored == null) {
+      return null;
+    }
+    final record = EventDeliveryRecord.fromJson(
+        jsonDecode(stored) as Map<String, dynamic>);
+    _eventDeliveryRecords[eventId] = record;
+    return record;
   }
 
   @override
@@ -134,38 +183,64 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     EventDeliveryStatus? status,
     int? limit,
   }) async {
-    var records = _eventDeliveryRecords.values.where((record) {
+    await dbRdy;
+    final records = _loadKeyValuesByPrefix(_eventDeliveryRecordKeyPrefix)
+        .map(
+          (entry) => EventDeliveryRecord.fromJson(
+            jsonDecode(entry.value!) as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+    _eventDeliveryRecords
+      ..clear()
+      ..addEntries(records.map((record) => MapEntry(record.eventId, record)));
+
+    var filtered = records.where((record) {
       return status == null || record.status == status;
     }).toList()
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-    if (limit != null && limit < records.length) {
-      records = records.take(limit).toList();
+    if (limit != null && limit < filtered.length) {
+      filtered = filtered.take(limit).toList();
     }
 
-    return records;
+    return filtered;
   }
 
   @override
   Future<void> removeEventDeliveryRecord(String eventId) async {
+    await dbRdy;
     _eventDeliveryRecords.remove(eventId);
+    _removeKeyValue(_eventDeliveryRecordKey(eventId));
   }
 
   @override
   Future<void> removeAllEventDeliveryRecords() async {
+    await dbRdy;
     _eventDeliveryRecords.clear();
+    _removeKeyValuesByPrefix(_eventDeliveryRecordKeyPrefix);
   }
 
   @override
   Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target) async {
+    await dbRdy;
     _relayDeliveryTargets[target.key] = target;
+    _upsertKeyValue(
+      _relayDeliveryTargetKey(target.key),
+      jsonEncode(target.toJson()),
+    );
   }
 
   @override
   Future<void> saveRelayDeliveryTargets(
       List<RelayDeliveryTarget> targets) async {
+    await dbRdy;
     for (final target in targets) {
       _relayDeliveryTargets[target.key] = target;
+      _upsertKeyValue(
+        _relayDeliveryTargetKey(target.key),
+        jsonEncode(target.toJson()),
+      );
     }
   }
 
@@ -174,7 +249,20 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     required String eventId,
     required String relayUrl,
   }) async {
-    return _relayDeliveryTargets['$eventId|$relayUrl'];
+    await dbRdy;
+    final key = '$eventId|$relayUrl';
+    final cached = _relayDeliveryTargets[key];
+    if (cached != null) {
+      return cached;
+    }
+    final stored = _getKeyValue(_relayDeliveryTargetKey(key));
+    if (stored == null) {
+      return null;
+    }
+    final target = RelayDeliveryTarget.fromJson(
+        jsonDecode(stored) as Map<String, dynamic>);
+    _relayDeliveryTargets[key] = target;
+    return target;
   }
 
   @override
@@ -185,7 +273,19 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     bool excludeAcked = false,
     int? limit,
   }) async {
-    var targets = _relayDeliveryTargets.values.where((target) {
+    await dbRdy;
+    final targets = _loadKeyValuesByPrefix(_relayDeliveryTargetKeyPrefix)
+        .map(
+          (entry) => RelayDeliveryTarget.fromJson(
+            jsonDecode(entry.value!) as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+    _relayDeliveryTargets
+      ..clear()
+      ..addEntries(targets.map((target) => MapEntry(target.key, target)));
+
+    var filtered = targets.where((target) {
       if (eventId != null && target.eventId != eventId) {
         return false;
       }
@@ -209,11 +309,11 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
         return a.key.compareTo(b.key);
       });
 
-    if (limit != null && limit < targets.length) {
-      targets = targets.take(limit).toList();
+    if (limit != null && limit < filtered.length) {
+      filtered = filtered.take(limit).toList();
     }
 
-    return targets;
+    return filtered;
   }
 
   @override
@@ -221,30 +321,47 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     required String eventId,
     required String relayUrl,
   }) async {
-    _relayDeliveryTargets.remove('$eventId|$relayUrl');
+    await dbRdy;
+    final key = '$eventId|$relayUrl';
+    _relayDeliveryTargets.remove(key);
+    _removeKeyValue(_relayDeliveryTargetKey(key));
   }
 
   @override
   Future<void> removeRelayDeliveryTargets(String eventId) async {
+    await dbRdy;
     _relayDeliveryTargets.removeWhere((key, _) => key.startsWith('$eventId|'));
+    _removeKeyValuesByPrefix(_relayDeliveryTargetKeyPrefixForEvent(eventId));
   }
 
   @override
   Future<void> removeAllRelayDeliveryTargets() async {
+    await dbRdy;
     _relayDeliveryTargets.clear();
+    _removeKeyValuesByPrefix(_relayDeliveryTargetKeyPrefix);
   }
 
   @override
   Future<void> saveDecryptedEventPayloadRecord(
       DecryptedEventPayloadRecord record) async {
+    await dbRdy;
     _decryptedEventPayloadRecords[record.key] = record;
+    _upsertKeyValue(
+      _decryptedEventPayloadKey(record.key),
+      jsonEncode(record.toJson()),
+    );
   }
 
   @override
   Future<void> saveDecryptedEventPayloadRecords(
       List<DecryptedEventPayloadRecord> records) async {
+    await dbRdy;
     for (final record in records) {
       _decryptedEventPayloadRecords[record.key] = record;
+      _upsertKeyValue(
+        _decryptedEventPayloadKey(record.key),
+        jsonEncode(record.toJson()),
+      );
     }
   }
 
@@ -253,7 +370,21 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     required String eventId,
     required String viewerPubKey,
   }) async {
-    return _decryptedEventPayloadRecords['$eventId|$viewerPubKey'];
+    await dbRdy;
+    final key = '$eventId|$viewerPubKey';
+    final cached = _decryptedEventPayloadRecords[key];
+    if (cached != null) {
+      return cached;
+    }
+    final stored = _getKeyValue(_decryptedEventPayloadKey(key));
+    if (stored == null) {
+      return null;
+    }
+    final record = DecryptedEventPayloadRecord.fromJson(
+      jsonDecode(stored) as Map<String, dynamic>,
+    );
+    _decryptedEventPayloadRecords[key] = record;
+    return record;
   }
 
   @override
@@ -263,7 +394,19 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     DecryptedPayloadStatus? status,
     int? limit,
   }) async {
-    var records = _decryptedEventPayloadRecords.values.where((record) {
+    await dbRdy;
+    final records = _loadKeyValuesByPrefix(_decryptedEventPayloadKeyPrefix)
+        .map(
+          (entry) => DecryptedEventPayloadRecord.fromJson(
+            jsonDecode(entry.value!) as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+    _decryptedEventPayloadRecords
+      ..clear()
+      ..addEntries(records.map((record) => MapEntry(record.key, record)));
+
+    var filtered = records.where((record) {
       if (eventId != null && record.eventId != eventId) {
         return false;
       }
@@ -276,13 +419,13 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       return true;
     }).toList();
 
-    records.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    filtered.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-    if (limit != null && limit > 0 && records.length > limit) {
-      records = records.take(limit).toList();
+    if (limit != null && limit > 0 && filtered.length > limit) {
+      filtered = filtered.take(limit).toList();
     }
 
-    return records;
+    return filtered;
   }
 
   @override
@@ -290,19 +433,26 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     required String eventId,
     required String viewerPubKey,
   }) async {
-    _decryptedEventPayloadRecords.remove('$eventId|$viewerPubKey');
+    await dbRdy;
+    final key = '$eventId|$viewerPubKey';
+    _decryptedEventPayloadRecords.remove(key);
+    _removeKeyValue(_decryptedEventPayloadKey(key));
   }
 
   @override
   Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
+    await dbRdy;
     final prefix = '$eventId|';
     _decryptedEventPayloadRecords
         .removeWhere((key, _) => key.startsWith(prefix));
+    _removeKeyValuesByPrefix(_decryptedEventPayloadKeyPrefixForEvent(eventId));
   }
 
   @override
   Future<void> removeAllDecryptedEventPayloadRecords() async {
+    await dbRdy;
     _decryptedEventPayloadRecords.clear();
+    _removeKeyValuesByPrefix(_decryptedEventPayloadKeyPrefix);
   }
 
   @override
@@ -440,10 +590,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
     eventBox.removeAll();
-    _eventSources.clear();
-    _eventDeliveryRecords.clear();
-    _relayDeliveryTargets.clear();
-    _decryptedEventPayloadRecords.clear();
+    _objectBox.store.box<DbUserRelayList>().removeAll();
+    _removeAllEventSidecars();
   }
 
   @override
@@ -454,14 +602,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
         eventBox.query(DbNip01Event_.pubKey.equals(pubKey)).build().find();
     final eventIds = events.map((e) => e.nostrId).toList();
     eventBox.removeMany(events.map((e) => e.dbId).toList());
-    for (final eventId in eventIds) {
-      _eventSources.remove(eventId);
-      _eventDeliveryRecords.remove(eventId);
-      _relayDeliveryTargets
-          .removeWhere((key, _) => key.startsWith('$eventId|'));
-      _decryptedEventPayloadRecords
-          .removeWhere((key, _) => key.startsWith('$eventId|'));
-    }
+    _removeEventSidecarsByIds(eventIds);
+    await _syncUserRelayListProjection(pubKey);
   }
 
   @override
@@ -623,6 +765,38 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     return null;
   }
 
+  Future<void> _syncUserRelayListProjection(String pubKey) async {
+    final derived = await _deriveUserRelayListFromEvents(pubKey);
+    final userRelayListBox = _objectBox.store.box<DbUserRelayList>();
+    final existingUserRelayList = userRelayListBox
+        .query(DbUserRelayList_.pubKey.equals(pubKey))
+        .build()
+        .findFirst();
+    if (existingUserRelayList != null) {
+      userRelayListBox.remove(existingUserRelayList.dbId);
+    }
+    if (derived != null) {
+      userRelayListBox.put(DbUserRelayList.fromNdk(derived));
+    }
+  }
+
+  Future<void> _syncUserRelayListProjectionForEvent(Nip01Event event) async {
+    if (!_affectsUserRelayListProjection(event.kind)) {
+      return;
+    }
+    await _syncUserRelayListProjection(event.pubKey);
+  }
+
+  Future<void> _syncUserRelayListProjections(Iterable<String> pubKeys) async {
+    for (final pubKey in pubKeys.toSet()) {
+      await _syncUserRelayListProjection(pubKey);
+    }
+  }
+
+  bool _affectsUserRelayListProjection(int kind) {
+    return kind == ContactList.kKind || kind == Nip65.kKind;
+  }
+
   @override
   Future<void> removeAllNip05s() async {
     await dbRdy;
@@ -660,6 +834,9 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       eventBox.remove(existingEvent.dbId);
     }
     _removeEventSidecarsByIds([id]);
+    if (existingEvent != null) {
+      await _syncUserRelayListProjectionForEvent(existingEvent.toNdk());
+    }
   }
 
   @override
@@ -706,6 +883,19 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     _decryptedEventPayloadRecords.removeWhere(
       (key, record) => eventIdSet.contains(record.eventId),
     );
+    final box = _objectBox.store.box<DbKeyValue>();
+    for (final eventId in eventIdSet) {
+      _removeKeyValue(_eventSourcesKey(eventId), box: box);
+      _removeKeyValue(_eventDeliveryRecordKey(eventId), box: box);
+      _removeKeyValuesByPrefix(
+        _relayDeliveryTargetKeyPrefixForEvent(eventId),
+        box: box,
+      );
+      _removeKeyValuesByPrefix(
+        _decryptedEventPayloadKeyPrefixForEvent(eventId),
+        box: box,
+      );
+    }
   }
 
   @override
@@ -766,15 +956,10 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
     // Remove matching events
     final removedEventIds = results.map((e) => e.nostrId).toList();
+    final affectedPubKeys = results.map((e) => e.pubKey).toSet();
     eventBox.removeMany(results.map((e) => e.dbId).toList());
-    for (final eventId in removedEventIds) {
-      _eventSources.remove(eventId);
-      _eventDeliveryRecords.remove(eventId);
-      _relayDeliveryTargets
-          .removeWhere((key, _) => key.startsWith('$eventId|'));
-      _decryptedEventPayloadRecords
-          .removeWhere((key, _) => key.startsWith('$eventId|'));
-    }
+    _removeEventSidecarsByIds(removedEventIds);
+    await _syncUserRelayListProjections(affectedPubKeys);
   }
 
   List<Nip01Event> _applyEventVisibilityRules(
@@ -1624,5 +1809,76 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       }
     }
     return null;
+  }
+
+  String _eventSourcesKey(String eventId) => '$_eventSourcesKeyPrefix$eventId';
+
+  String _eventDeliveryRecordKey(String eventId) {
+    return '$_eventDeliveryRecordKeyPrefix$eventId';
+  }
+
+  String _relayDeliveryTargetKey(String key) {
+    return '$_relayDeliveryTargetKeyPrefix$key';
+  }
+
+  String _relayDeliveryTargetKeyPrefixForEvent(String eventId) {
+    return '$_relayDeliveryTargetKeyPrefix$eventId|';
+  }
+
+  String _decryptedEventPayloadKey(String key) {
+    return '$_decryptedEventPayloadKeyPrefix$key';
+  }
+
+  String _decryptedEventPayloadKeyPrefixForEvent(String eventId) {
+    return '$_decryptedEventPayloadKeyPrefix$eventId|';
+  }
+
+  String? _getKeyValue(String key) {
+    final box = _objectBox.store.box<DbKeyValue>();
+    final existing = _findKeyValue(box, key);
+    return existing?.value;
+  }
+
+  void _upsertKeyValue(String key, String? value) {
+    final box = _objectBox.store.box<DbKeyValue>();
+    _removeKeyValue(key, box: box);
+    box.put(DbKeyValue(key: key, value: value));
+  }
+
+  void _removeKeyValue(String key, {Box<DbKeyValue>? box}) {
+    final targetBox = box ?? _objectBox.store.box<DbKeyValue>();
+    final existing = _findKeyValue(targetBox, key);
+    if (existing != null) {
+      targetBox.remove(existing.dbId);
+    }
+  }
+
+  List<DbKeyValue> _loadKeyValuesByPrefix(String prefix) {
+    final box = _objectBox.store.box<DbKeyValue>();
+    return box.getAll().where((entry) => entry.key.startsWith(prefix)).toList();
+  }
+
+  void _removeKeyValuesByPrefix(String prefix, {Box<DbKeyValue>? box}) {
+    final targetBox = box ?? _objectBox.store.box<DbKeyValue>();
+    final idsToRemove = targetBox
+        .getAll()
+        .where((entry) => entry.key.startsWith(prefix))
+        .map((entry) => entry.dbId)
+        .toList();
+    if (idsToRemove.isNotEmpty) {
+      targetBox.removeMany(idsToRemove);
+    }
+  }
+
+  void _removeAllEventSidecars() {
+    _eventSources.clear();
+    _eventDeliveryRecords.clear();
+    _relayDeliveryTargets.clear();
+    _decryptedEventPayloadRecords.clear();
+    final box = _objectBox.store.box<DbKeyValue>();
+    _removeKeyValuesByPrefix(_eventSourcesKeyPrefix, box: box);
+    _removeKeyValuesByPrefix(_eventDeliveryRecordKeyPrefix, box: box);
+    _removeKeyValuesByPrefix(_relayDeliveryTargetKeyPrefix, box: box);
+    _removeKeyValuesByPrefix(_decryptedEventPayloadKeyPrefix, box: box);
   }
 }

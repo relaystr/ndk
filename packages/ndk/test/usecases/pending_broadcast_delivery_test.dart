@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ndk/data_layer/models/nip_01_event_model.dart';
 import 'package:ndk/data_layer/repositories/cache_manager/mem_cache_manager.dart';
 import 'package:ndk/domain_layer/entities/broadcast_response.dart';
 import 'package:ndk/domain_layer/entities/broadcast_state.dart';
@@ -198,6 +199,33 @@ void main() {
       expect(broadcast.broadcastedEvents.single.sig, 'remote-sig');
     });
 
+    test(
+        'replays pending delivery from serialized record when event row is missing',
+        () async {
+      final serializedRecord = EventDeliveryRecord(
+        eventId: event.id,
+        status: EventDeliveryStatus.pending,
+        createdAt: event.createdAt,
+        updatedAt: event.createdAt,
+        serializedEventJson: Nip01EventModel.fromEntity(event).toJsonString(),
+      );
+      await cacheManager.saveEventDeliveryRecord(serializedRecord);
+      await cacheManager.saveRelayDeliveryTarget(
+        const RelayDeliveryTarget(
+          eventId: 'event-1',
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+        ),
+      );
+      cacheManager.events.remove(event.id);
+
+      await pendingDelivery.flushForRelay('wss://relay.example');
+
+      expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
+      final restoredEvent = await cacheManager.loadEvent(event.id);
+      expect(restoredEvent?.content, event.content);
+    });
+
     test('rejected remote signing becomes needsAction and does not broadcast',
         () async {
       final unsignedEvent = Nip01Event(
@@ -306,7 +334,8 @@ void main() {
 
       final afterTimeoutRecord =
           await cacheManager.loadEventDeliveryRecord(unsignedEvent.id);
-      expect(afterTimeoutRecord?.signingState, EventSigningState.transientFailure);
+      expect(
+          afterTimeoutRecord?.signingState, EventSigningState.transientFailure);
       expect(signer.signCallCount, 1);
       expect(broadcast.broadcastedEvents, isEmpty);
 

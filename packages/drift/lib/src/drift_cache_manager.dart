@@ -30,6 +30,8 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   static const String _defaultWalletForSendingKey =
       'default_wallet_for_sending';
   static const String _decryptedPayloadKeyPrefix = 'decrypted_payload:';
+  static const String _eventDeliverySnapshotKeyPrefix =
+      'event_delivery_snapshot:';
 
   final NdkCacheDatabase _db;
   String? _defaultWalletIdForReceiving;
@@ -202,24 +204,35 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
 
   @override
   Future<void> removeEvent(String id) async {
+    final removedEvent = await loadEvent(id);
     await (_db.delete(_db.events)..where((t) => t.id.equals(id))).go();
     await _removeEventSidecarsByIds([id]);
+    if (removedEvent != null) {
+      await _syncUserRelayListProjectionForEvent(removedEvent);
+    }
   }
 
   @override
   Future<void> removeAllEventsByPubKey(String pubKey) async {
-    final eventIds = (await loadEvents(
-      pubKeys: [pubKey],
-    )).map((event) => event.id).toList();
+    final rows = await (_db.select(
+      _db.events,
+    )..where((t) => t.pubKey.equals(pubKey))).get();
+    final eventIds = rows.map((row) => row.id).toList();
     await (_db.delete(_db.events)..where((t) => t.pubKey.equals(pubKey))).go();
     await _removeEventSidecarsByIds(eventIds);
+    await _syncUserRelayListProjection(pubKey);
   }
 
   @override
   Future<void> removeAllEvents() async {
     await Future.wait([
       _db.delete(_db.events).go(),
+      _db.delete(_db.eventSourcesTable).go(),
+      _db.delete(_db.eventDeliveryRecordsTable).go(),
+      _db.delete(_db.relayDeliveryTargetsTable).go(),
+      _db.delete(_db.userRelayLists).go(),
       removeAllDecryptedEventPayloadRecords(),
+      _removeAllEventDeliverySnapshots(),
     ]);
   }
 
@@ -287,16 +300,37 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       final idsToRemove = eventsToRemove.map((e) => e.id).toList();
       await (_db.delete(_db.events)..where((t) => t.id.isIn(idsToRemove))).go();
       await _removeEventSidecarsByIds(idsToRemove);
+      await _syncUserRelayListProjections(
+        eventsToRemove.map((event) => event.pubKey),
+      );
       return;
     }
 
-    final eventsToRemove = await loadEvents(
-      ids: ids,
-      pubKeys: pubKeys,
-      kinds: kinds,
-      since: since,
-      until: until,
-    );
+    final rows =
+        await (_db.select(_db.events)..where((t) {
+              final conditions = <Expression<bool>>[];
+
+              if (ids != null && ids.isNotEmpty) {
+                conditions.add(t.id.isIn(ids));
+              }
+              if (pubKeys != null && pubKeys.isNotEmpty) {
+                conditions.add(t.pubKey.isIn(pubKeys));
+              }
+              if (kinds != null && kinds.isNotEmpty) {
+                conditions.add(t.kind.isIn(kinds));
+              }
+              if (since != null) {
+                conditions.add(t.createdAt.isBiggerOrEqualValue(since));
+              }
+              if (until != null) {
+                conditions.add(t.createdAt.isSmallerOrEqualValue(until));
+              }
+
+              return conditions.reduce((a, b) => a & b);
+            }))
+            .get();
+    final removedEventIds = rows.map((row) => row.id).toList();
+    final affectedPubKeys = rows.map((row) => row.pubKey).toSet();
 
     // No tags filter, delete directly without loading events
     await (_db.delete(_db.events)..where((t) {
@@ -322,9 +356,8 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
         }))
         .go();
 
-    await _removeEventSidecarsByIds(
-      eventsToRemove.map((event) => event.id).toList(),
-    );
+    await _removeEventSidecarsByIds(removedEventIds);
+    await _syncUserRelayListProjections(affectedPubKeys);
   }
 
   Future<void> _removeEventSidecarsByIds(Iterable<String> eventIds) async {
@@ -342,7 +375,12 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     )..where((t) => t.eventId.isIn(ids))).go();
     await (_db.delete(_db.keyValues)..where((kv) {
           final conditions = ids
-              .map((id) => kv.key.like('$_decryptedPayloadKeyPrefix$id|%'))
+              .expand(
+                (id) => [
+                  kv.key.like('$_decryptedPayloadKeyPrefix$id|%'),
+                  kv.key.equals(_eventDeliverySnapshotKey(id)),
+                ],
+              )
               .toList();
           if (conditions.length == 1) {
             return conditions.first;
@@ -615,6 +653,35 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     }
 
     return null;
+  }
+
+  Future<void> _syncUserRelayListProjection(String pubKey) async {
+    final derived = await _deriveUserRelayListFromEvents(pubKey);
+    if (derived == null) {
+      await (_db.delete(
+        _db.userRelayLists,
+      )..where((t) => t.pubKey.equals(pubKey))).go();
+      return;
+    }
+
+    await saveUserRelayList(derived);
+  }
+
+  Future<void> _syncUserRelayListProjectionForEvent(Nip01Event event) async {
+    if (!_affectsUserRelayListProjection(event.kind)) {
+      return;
+    }
+    await _syncUserRelayListProjection(event.pubKey);
+  }
+
+  Future<void> _syncUserRelayListProjections(Iterable<String> pubKeys) async {
+    for (final pubKey in pubKeys.toSet()) {
+      await _syncUserRelayListProjection(pubKey);
+    }
+  }
+
+  bool _affectsUserRelayListProjection(int kind) {
+    return kind == ContactList.kKind || kind == Nip65.kKind;
   }
 
   @override
@@ -1083,6 +1150,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
             requiresNetworkSigner: Value(record.requiresInteractiveSigning),
           ),
         );
+    await _saveEventDeliverySnapshot(record);
   }
 
   @override
@@ -1107,6 +1175,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
             .toList(),
       );
     });
+    await Future.wait(records.map(_saveEventDeliverySnapshot));
   }
 
   @override
@@ -1115,7 +1184,7 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       _db.eventDeliveryRecordsTable,
     )..where((t) => t.eventId.equals(eventId))).getSingleOrNull();
     if (row == null) return null;
-    return _eventDeliveryRecordFromRow(row);
+    return _withEventDeliverySnapshot(_eventDeliveryRecordFromRow(row));
   }
 
   @override
@@ -1131,19 +1200,29 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       query = query..limit(limit);
     }
     final rows = await query.get();
-    return rows.map(_eventDeliveryRecordFromRow).toList();
+    return Future.wait(
+      rows.map(
+        (row) => _withEventDeliverySnapshot(_eventDeliveryRecordFromRow(row)),
+      ),
+    );
   }
 
   @override
   Future<void> removeEventDeliveryRecord(String eventId) async {
-    await (_db.delete(
-      _db.eventDeliveryRecordsTable,
-    )..where((t) => t.eventId.equals(eventId))).go();
+    await Future.wait([
+      (_db.delete(
+        _db.eventDeliveryRecordsTable,
+      )..where((t) => t.eventId.equals(eventId))).go(),
+      _removeEventDeliverySnapshot(eventId),
+    ]);
   }
 
   @override
   Future<void> removeAllEventDeliveryRecords() async {
-    await _db.delete(_db.eventDeliveryRecordsTable).go();
+    await Future.wait([
+      _db.delete(_db.eventDeliveryRecordsTable).go(),
+      _removeAllEventDeliverySnapshots(),
+    ]);
   }
 
   EventDeliveryRecord _eventDeliveryRecordFromRow(DbEventDeliveryRecord row) {
@@ -1156,6 +1235,74 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       completedAt: row.completedAt,
       requiresInteractiveSigning: row.requiresNetworkSigner,
     );
+  }
+
+  Future<void> _saveEventDeliverySnapshot(EventDeliveryRecord record) async {
+    final hasSnapshotPayload =
+        (record.serializedEventJson != null &&
+            record.serializedEventJson!.isNotEmpty) ||
+        record.signingState != EventSigningState.notNeeded ||
+        record.signAttemptCount > 0 ||
+        record.lastSignAttemptAt != null ||
+        record.nextSignRetryAt != null ||
+        record.lastSignError != null;
+    if (!hasSnapshotPayload) {
+      await _removeEventDeliverySnapshot(record.eventId);
+      return;
+    }
+
+    final snapshotJson = jsonEncode(record.toJson());
+    await _db
+        .into(_db.keyValues)
+        .insertOnConflictUpdate(
+          KeyValuesCompanion.insert(
+            key: _eventDeliverySnapshotKey(record.eventId),
+            value: Value(snapshotJson),
+          ),
+        );
+  }
+
+  Future<EventDeliveryRecord> _withEventDeliverySnapshot(
+    EventDeliveryRecord record,
+  ) async {
+    final snapshotRow =
+        await (_db.select(_db.keyValues)..where(
+              (kv) => kv.key.equals(_eventDeliverySnapshotKey(record.eventId)),
+            ))
+            .getSingleOrNull();
+    final snapshotValue = snapshotRow?.value;
+    if (snapshotValue == null || snapshotValue.isEmpty) {
+      return record;
+    }
+
+    try {
+      final decoded = jsonDecode(snapshotValue);
+      if (decoded is Map<String, dynamic> &&
+          decoded.containsKey('eventId') &&
+          decoded.containsKey('status')) {
+        return EventDeliveryRecord.fromJson(decoded);
+      }
+    } catch (_) {
+      // Older snapshots stored only the serialized event JSON string.
+    }
+
+    return record.copyWith(serializedEventJson: snapshotValue);
+  }
+
+  Future<void> _removeEventDeliverySnapshot(String eventId) async {
+    await (_db.delete(
+      _db.keyValues,
+    )..where((kv) => kv.key.equals(_eventDeliverySnapshotKey(eventId)))).go();
+  }
+
+  Future<void> _removeAllEventDeliverySnapshots() async {
+    await (_db.delete(
+      _db.keyValues,
+    )..where((kv) => kv.key.like('$_eventDeliverySnapshotKeyPrefix%'))).go();
+  }
+
+  String _eventDeliverySnapshotKey(String eventId) {
+    return '$_eventDeliverySnapshotKeyPrefix$eventId';
   }
 
   // =====================

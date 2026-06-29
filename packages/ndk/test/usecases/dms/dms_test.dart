@@ -124,10 +124,7 @@ void main() async {
           .toList();
       expect(giftWraps.length, greaterThanOrEqualTo(2));
 
-      final recipients = giftWraps
-          .map((e) => e.pTags)
-          .expand((p) => p)
-          .toSet();
+      final recipients = giftWraps.map((e) => e.pTags).expand((p) => p).toSet();
       expect(recipients, containsAll([alice.publicKey, bob.publicKey]));
     });
 
@@ -164,10 +161,35 @@ void main() async {
       expect(aliceConv.messages, isNotEmpty);
       final rumor = aliceConv.messages.first.rumor;
       expect(
-        rumor.tags.any((t) =>
-            t.length >= 2 && t[0] == 'subject' && t[1] == 'greeting'),
+        rumor.tags.any(
+            (t) => t.length >= 2 && t[0] == 'subject' && t[1] == 'greeting'),
         isTrue,
       );
+    });
+
+    test('sender view keeps outgoing DMs with additional p tags for mentions',
+        () async {
+      await publishDmRelayList(alice, urls: [relay.url]);
+      await publishDmRelayList(bob, urls: [relay.url]);
+
+      final mention = Bip340.generatePrivateKey();
+      await ndk.dms.sendMessage(
+        recipientPubKey: bob.publicKey,
+        content: 'hello with mention',
+        additionalTags: [
+          ['p', mention.publicKey],
+        ],
+      );
+
+      final messages = await ndk.dms.loadConversation(
+        peerPubKey: bob.publicKey,
+        timeout: const Duration(seconds: 10),
+      );
+
+      expect(messages, isNotEmpty);
+      expect(messages.single.content, 'hello with mention');
+      expect(messages.single.isOutgoing, isTrue);
+      expect(messages.single.peerPubKey, bob.publicKey);
     });
 
     test('loadConversations throws when not logged in', () async {
