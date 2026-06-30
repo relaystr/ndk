@@ -29,7 +29,6 @@ enum DeliveryPolicyKind {
 class DeliveryPolicy {
   static const Set<String> _permanentFailurePrefixes = {
     'blocked',
-    'duplicate',
     'invalid',
     'pow',
     'restricted',
@@ -79,6 +78,14 @@ class DeliveryPolicy {
 
   RelayDeliveryState resolveNextState(RelayBroadcastResponse response) {
     if (response.okReceived && response.broadcastSuccessful) {
+      return RelayDeliveryState.acked;
+    }
+
+    // A relay answering `duplicate:` already holds the event, so delivery to it
+    // is effectively done even when OK was false. Treat it as acked rather than
+    // a permanent failure so it is not reported as undelivered.
+    if (_machineReadablePrefix(response.msg.trim().toLowerCase()) ==
+        'duplicate') {
       return RelayDeliveryState.acked;
     }
 

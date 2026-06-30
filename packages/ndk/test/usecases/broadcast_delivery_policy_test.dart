@@ -126,7 +126,46 @@ void main() {
       );
     });
 
-    test('treats duplicate and policy violations as permanent failures', () {
+    test('treats a duplicate response as acked', () {
+      final event = Nip01Event(
+        id: 'event-dup',
+        pubKey: 'pubkey',
+        createdAt: 1700000002,
+        kind: Nip01Event.kTextNodeKind,
+        tags: const [],
+        content: 'text',
+        sig: 'sig',
+      );
+
+      final policy = DeliveryPolicy.forEvent(event);
+
+      // A relay answering `duplicate:` already holds the event, so even with
+      // OK=false the delivery to that relay is effectively done.
+      expect(
+        policy.resolveNextState(
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: false,
+            broadcastSuccessful: false,
+            msg: 'duplicate: already have this event',
+          ),
+        ),
+        RelayDeliveryState.acked,
+      );
+      expect(
+        policy.resolveNextState(
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: false,
+            broadcastSuccessful: false,
+            msg: 'DUPLICATE: already have this event',
+          ),
+        ),
+        RelayDeliveryState.acked,
+      );
+    });
+
+    test('treats policy violations as permanent failures', () {
       final event = Nip01Event(
         id: 'event-2',
         pubKey: 'pubkey',
@@ -139,17 +178,6 @@ void main() {
 
       final policy = DeliveryPolicy.forEvent(event);
 
-      expect(
-        policy.resolveNextState(
-          RelayBroadcastResponse(
-            relayUrl: 'wss://relay.example',
-            okReceived: false,
-            broadcastSuccessful: false,
-            msg: 'duplicate: already have this event',
-          ),
-        ),
-        RelayDeliveryState.permanentFailure,
-      );
       expect(
         policy.resolveNextState(
           RelayBroadcastResponse(
