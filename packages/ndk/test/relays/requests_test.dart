@@ -41,9 +41,26 @@ void main() async {
     key2: textNote(key2)
   };
 
+  Future<void> waitForEventCount(
+    List<Nip01Event> events,
+    int expectedCount, {
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+
+    while (events.length < expectedCount) {
+      if (DateTime.now().isAfter(deadline)) {
+        throw TimeoutException(
+          'Timed out waiting for $expectedCount events, received ${events.length}',
+        );
+      }
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+  }
+
   group('Requests', () {
     test('Request text note with single filter parameter', () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: textNotes);
 
       final ndk = Ndk(NdkConfig(
@@ -70,7 +87,7 @@ void main() async {
     });
 
     test('Request text note', () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: textNotes);
 
       final ndk = Ndk(NdkConfig(
@@ -96,7 +113,7 @@ void main() async {
     });
 
     test('Request multiple filters text note', () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: textNotes);
 
       final ndk = Ndk(NdkConfig(
@@ -127,7 +144,7 @@ void main() async {
       await relay1.stopServer();
     });
     test('Request multiple filters text note JIT', skip: true, () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: textNotes);
 
       final ndk = Ndk(NdkConfig(
@@ -159,7 +176,7 @@ void main() async {
     });
 
     test('Subscription with single filter parameter', () async {
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: textNotes);
 
       final ndk = Ndk(NdkConfig(
@@ -181,24 +198,25 @@ void main() async {
       final streamSubscription = subscription.stream.listen((event) {
         receivedEvents.add(event);
       });
+      try {
+        await waitForEventCount(receivedEvents, 1);
 
-      await Future.delayed(Duration(milliseconds: 200));
-
-      expect(receivedEvents.length, equals(1));
-      expect(receivedEvents[0].content, contains('key1'));
-
-      await streamSubscription.cancel();
-      await ndk.requests.closeSubscription(subscription.requestId);
-      await ndk.destroy();
-      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
-      await relay1.stopServer();
+        expect(receivedEvents.length, equals(1));
+        expect(receivedEvents[0].content, contains('key1'));
+      } finally {
+        await streamSubscription.cancel();
+        await ndk.requests.closeSubscription(subscription.requestId);
+        await ndk.destroy();
+        expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+        await relay1.stopServer();
+      }
     });
 
     test('Subscription processes events immediately without stream closing',
         () async {
       // This test would FAIL with the previous VerifyEventStream implementation
       // because events would remain stuck in buffer until stream closes
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: textNotes);
 
       final ndk = Ndk(NdkConfig(
@@ -220,29 +238,27 @@ void main() async {
       final streamSubscription = subscription.stream.listen((event) {
         receivedEvents.add(event);
       });
+      try {
+        await waitForEventCount(receivedEvents, 1);
 
-      // Wait for initial events to be processed
-      // Previous implementation would not yield these events from subscription
-      await Future.delayed(Duration(milliseconds: 200));
-
-      expect(receivedEvents.length, equals(1),
-          reason:
-              'Subscription should process events immediately without waiting for stream to close');
-      expect(receivedEvents[0].content, contains('key1'));
-
-      // Clean up
-      await streamSubscription.cancel();
-      await ndk.requests.closeSubscription(subscription.requestId);
-      await ndk.destroy();
-      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
-      await relay1.stopServer();
+        expect(receivedEvents.length, equals(1),
+            reason:
+                'Subscription should process events immediately without waiting for stream to close');
+        expect(receivedEvents[0].content, contains('key1'));
+      } finally {
+        await streamSubscription.cancel();
+        await ndk.requests.closeSubscription(subscription.requestId);
+        await ndk.destroy();
+        expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+        await relay1.stopServer();
+      }
     });
 
     test('Subscription handles continuous events from non-closing stream',
         () async {
       // This test simulates a real-world scenario where a subscription
       // receives events continuously without the stream ever closing
-      MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 6060);
+      MockRelay relay1 = MockRelay(name: "relay 1");
 
       // Start with multiple events to test continuous processing
       final multipleEvents = {
@@ -282,23 +298,24 @@ void main() async {
         }
       });
 
-      await allReceived.future.timeout(const Duration(seconds: 3));
+      try {
+        await allReceived.future.timeout(const Duration(seconds: 3));
 
-      expect(receivedEvents.length, equals(4),
-          reason:
-              'Subscription should process all matching events immediately');
+        expect(receivedEvents.length, equals(4),
+            reason:
+                'Subscription should process all matching events immediately');
 
-      // Verify we got events from different authors (showing parallel processing worked)
-      final uniqueAuthors = receivedEvents.map((e) => e.pubKey).toSet();
-      expect(uniqueAuthors.length, greaterThan(1),
-          reason: 'Should receive events from multiple authors');
-
-      // Clean up
-      await streamSubscription.cancel();
-      await ndk.requests.closeSubscription(subscription.requestId);
-      await ndk.destroy();
-      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
-      await relay1.stopServer();
+        // Verify we got events from different authors (showing parallel processing worked)
+        final uniqueAuthors = receivedEvents.map((e) => e.pubKey).toSet();
+        expect(uniqueAuthors.length, greaterThan(1),
+            reason: 'Should receive events from multiple authors');
+      } finally {
+        await streamSubscription.cancel();
+        await ndk.requests.closeSubscription(subscription.requestId);
+        await ndk.destroy();
+        expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+        await relay1.stopServer();
+      }
     });
   });
 

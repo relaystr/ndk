@@ -351,6 +351,8 @@ class Requests {
       if (state.request.filters.isNotEmpty) {
         /// handle request
         _engine.handleRequest(state);
+      } else {
+        state.networkController.close();
       }
     }
 

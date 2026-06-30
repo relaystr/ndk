@@ -69,6 +69,7 @@ class Broadcast {
       timeout: timeout,
       saveToCache: saveToCache,
     );
+    final responseDoneFuture = response.broadcastDoneFuture;
 
     // enroll in pending delivery for specific-relay broadcasts
     final pendingDelivery = _pendingDelivery;
@@ -82,15 +83,16 @@ class Broadcast {
         requiresInteractiveSigning:
             signer != null && signer.requiresInteractiveSigning,
       );
-      pendingEnrollment.then((_) {
-        response.broadcastDoneFuture.then(
-          (responses) => pendingDelivery.persistSpecificRelayBroadcastResult(
+      responseDoneFuture.then(
+        (responses) => pendingEnrollment!.then(
+          (_) => pendingDelivery.persistSpecificRelayBroadcastResult(
             nostrEvent,
             responses,
           ),
           onError: (_, __) {},
-        );
-      }, onError: (_, __) {});
+        ),
+        onError: (_, __) {},
+      );
     }
 
     if (pendingEnrollment == null) {
@@ -98,7 +100,7 @@ class Broadcast {
     }
 
     final broadcastDoneFuture = pendingEnrollment.then(
-      (_) => response.broadcastDoneFuture,
+      (_) => responseDoneFuture,
     );
     return NdkBroadcastResponse(
       publishEvent: response.publishEvent,
