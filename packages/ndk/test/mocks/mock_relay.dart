@@ -196,6 +196,7 @@ class MockRelay {
                     .removeWhere((key, event) => event.id == idToDelete);
                 _metadatas.removeWhere((key, event) => event.id == idToDelete);
               }
+              _storedEvents.add(newEvent);
             } else if (_isEphemeralKind(newEvent.kind)) {
               // Ephemeral events (kinds 20000-29999) are broadcast but NOT stored
               // Also handle NIP-46 if targeting our mock signer
