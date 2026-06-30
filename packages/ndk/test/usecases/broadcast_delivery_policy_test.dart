@@ -94,6 +94,18 @@ void main() {
         ),
         RelayDeliveryState.authRequired,
       );
+      // Uppercase / leading whitespace must still be classified as auth-required.
+      expect(
+        policy.resolveNextState(
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: false,
+            broadcastSuccessful: false,
+            msg: '  AUTH-REQUIRED: please authenticate',
+          ),
+        ),
+        RelayDeliveryState.authRequired,
+      );
       expect(policy.shouldRetryState(RelayDeliveryState.authRequired), isTrue);
       expect(
         policy.retryDelayFor(

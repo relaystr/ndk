@@ -442,9 +442,19 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
   bool _isDeletedByAuthor(Nip01Event target, List<Nip01Event> deletions) {
     if (target.kind == 5) return false;
 
+    // Addressable/replaceable events are deleted by coordinate (`a` tag), so a
+    // later version published after the deletion stays visible (NIP-09 only
+    // deletes coordinate matches with created_at <= the deletion).
+    final coordinate = _coordinateKey(target);
+
     for (final deletion in deletions) {
       if (deletion.pubKey != target.pubKey) continue;
       if (deletion.getTags('e').contains(target.id.toLowerCase())) {
+        return true;
+      }
+      if (coordinate != null &&
+          deletion.createdAt >= target.createdAt &&
+          deletion.getTags('a').contains(coordinate)) {
         return true;
       }
     }

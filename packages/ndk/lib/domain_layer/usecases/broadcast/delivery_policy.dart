@@ -81,15 +81,18 @@ class DeliveryPolicy {
       return RelayDeliveryState.acked;
     }
 
+    final normalizedMsg = response.msg.trim().toLowerCase();
+    final prefix = _machineReadablePrefix(normalizedMsg);
+
     // A relay answering `duplicate:` already holds the event, so delivery to it
     // is effectively done even when OK was false. Treat it as acked rather than
     // a permanent failure so it is not reported as undelivered.
-    if (_machineReadablePrefix(response.msg.trim().toLowerCase()) ==
-        'duplicate') {
+    if (prefix == 'duplicate') {
       return RelayDeliveryState.acked;
     }
 
-    if (response.msg.startsWith('auth-required')) {
+    if (prefix == 'auth-required' ||
+        normalizedMsg.startsWith('auth-required')) {
       return RelayDeliveryState.authRequired;
     }
 
