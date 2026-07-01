@@ -91,6 +91,12 @@ class Requests {
     Nip01Event event,
   ) async {
     await _cacheWrite.cacheManager.saveEvent(event);
+    if (event.sources.isNotEmpty) {
+      await _cacheWrite.cacheManager.addEventSources(
+        eventId: event.id,
+        relayUrls: event.sources.toSet(),
+      );
+    }
 
     if (event.kind == 5) {
       return event;

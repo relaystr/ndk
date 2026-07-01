@@ -109,6 +109,70 @@ class Broadcast {
     );
   }
 
+  /// Returns the joined persisted local-first delivery state for one event id.
+  ///
+  /// This lets apps inspect events that may still exist only locally after a
+  /// restart, including the last persisted per-relay outcome.
+  Future<EventDeliverySnapshot?> loadEventDelivery(String eventId) async {
+    final record = await _cacheManager.loadEventDeliveryRecord(eventId);
+    if (record == null) {
+      return null;
+    }
+
+    return _loadSnapshotForRecord(record);
+  }
+
+  /// Lists persisted delivery items.
+  ///
+  /// By default this returns only events that are not fully delivered yet.
+  Future<List<EventDeliverySnapshot>> loadDeliveries({
+    bool pendingOnly = true,
+    EventDeliveryStatus? status,
+    int? limit,
+  }) async {
+    final records = await _cacheManager.loadEventDeliveryRecords(
+      status: status,
+      limit: limit,
+    );
+    records.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    final snapshots = <EventDeliverySnapshot>[];
+    for (final record in records) {
+      if (pendingOnly && record.status == EventDeliveryStatus.delivered) {
+        continue;
+      }
+      snapshots.add(await _loadSnapshotForRecord(record));
+    }
+
+    return snapshots;
+  }
+
+  /// Convenience alias for app UIs that want items still pending broadcast.
+  Future<List<EventDeliverySnapshot>> loadPendingDeliveries({
+    int? limit,
+  }) {
+    return loadDeliveries(
+      pendingOnly: true,
+      limit: limit,
+    );
+  }
+
+  Future<EventDeliverySnapshot> _loadSnapshotForRecord(
+    EventDeliveryRecord record,
+  ) async {
+    final event = await _cacheManager.loadEvent(record.eventId);
+    final relayTargets = await _cacheManager.loadRelayDeliveryTargets(
+      eventId: record.eventId,
+    );
+    relayTargets.sort((a, b) => a.relayUrl.compareTo(b.relayUrl));
+
+    return EventDeliverySnapshot(
+      event: event,
+      record: record,
+      relayTargets: relayTargets,
+    );
+  }
+
   /// **********************************************************************************************************
   /// convenience methods
   /// **********************************************************************************************************

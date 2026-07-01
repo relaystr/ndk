@@ -148,6 +148,33 @@ class RelayManager<T> {
     return relay != null && relay.connecting;
   }
 
+  Future<bool> _waitForTransportOpen(
+    NostrTransport transport, {
+    required int timeoutSeconds,
+  }) async {
+    final deadline = DateTime.now().add(Duration(seconds: timeoutSeconds));
+
+    while (DateTime.now().isBefore(deadline)) {
+      if (transport.isOpen()) {
+        return true;
+      }
+
+      try {
+        await transport.ready.timeout(const Duration(milliseconds: 250));
+      } catch (_) {
+        // keep polling isOpen() until the overall timeout expires
+      }
+
+      if (transport.isOpen()) {
+        return true;
+      }
+
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+
+    return transport.isOpen();
+  }
+
   /// Connects to a relay to the relay pool.
   /// Returns a tuple with the first element being a boolean indicating success \\
   /// and the second element being a string with the error message if any.
@@ -210,9 +237,16 @@ class RelayManager<T> {
         relayConnectivity!.stats.connectionErrors++;
         updateRelayConnectivity();
       });
-      await relayConnectivity.relayTransport!.ready.timeout(
-        Duration(seconds: connectTimeout),
+      final opened = await _waitForTransportOpen(
+        relayConnectivity.relayTransport!,
+        timeoutSeconds: connectTimeout,
       );
+      if (!opened) {
+        throw TimeoutException(
+          "Future not completed",
+          Duration(seconds: connectTimeout),
+        );
+      }
 
       _startListeningToSocket(relayConnectivity);
 
@@ -226,7 +260,7 @@ class RelayManager<T> {
       return Tuple(true, "");
     } catch (e) {
       Logger.log.e(() => "!! could not connect to $url -> $e");
-      relayConnectivity!.relayTransport = null;
+      await relayConnectivity!.close();
     }
     relayConnectivity.relay.failedToConnect();
     relayConnectivity.stats.connectionErrors++;
@@ -241,26 +275,19 @@ class RelayManager<T> {
     bool force = false,
   }) async {
     RelayConnectivity? relayConnectivity = globalState.relays[url];
-    if (force &&
-        relayConnectivity != null &&
-        relayConnectivity.relay.connecting &&
-        (relayConnectivity.relayTransport == null ||
-            !relayConnectivity.relayTransport!.isOpen())) {
-      if (relayConnectivity.relayTransport != null) {
-        await resetTransport(url);
-      } else {
-        relayConnectivity.relay.failedToConnect();
-      }
-      relayConnectivity = globalState.relays[url];
-    }
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
-      await relayConnectivity.relayTransport!.ready
-          .timeout(Duration(seconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT))
-          .onError(
-        (error, stackTrace) {
-          Logger.log.e(() => "error connecting to relay $url: $error");
-        },
-      );
+      try {
+        final opened = await _waitForTransportOpen(
+          relayConnectivity.relayTransport!,
+          timeoutSeconds: DEFAULT_WEB_SOCKET_CONNECT_TIMEOUT,
+        );
+        if (opened && relayConnectivity.relayTransport!.isOpen()) {
+          updateRelayConnectivity();
+          return true;
+        }
+      } catch (error) {
+        Logger.log.e(() => "error connecting to relay $url: $error");
+      }
     }
     if (relayConnectivity == null ||
         relayConnectivity.relayTransport == null ||
@@ -357,38 +384,55 @@ class RelayManager<T> {
     Logger.log.d(() => "send message to ${relayConnectivity.url}: $data");
   }
 
-  /// sends a [ClientMsg] to relay transport sink, throw an error if relay not connected
-  void send(RelayConnectivity relayConnectivity, ClientMsg msg) async {
+  /// Sends a [ClientMsg] and surfaces transport churn/closed-socket failures to
+  /// the caller instead of silently dropping the write.
+  Future<void> sendOrThrow(
+    RelayConnectivity relayConnectivity,
+    ClientMsg msg,
+  ) async {
     NostrTransport? transport = relayConnectivity.relayTransport;
     if (transport == null) {
-      Logger.log.t(() => "skip send to ${relayConnectivity.url}: relay not connected");
-      return;
+      throw StateError("relay not connected: ${relayConnectivity.url}");
     }
 
-    /// wait until rdy
     await transport.ready;
 
     if (!identical(relayConnectivity.relayTransport, transport) ||
         !transport.isOpen()) {
       transport = relayConnectivity.relayTransport;
       if (transport == null) {
-        Logger.log.t(() =>
-            "skip send to ${relayConnectivity.url}: transport changed while waiting");
-        return;
+        throw StateError(
+          "transport changed while waiting for ${relayConnectivity.url}",
+        );
       }
 
       await transport.ready;
 
       if (!identical(relayConnectivity.relayTransport, transport) ||
           !transport.isOpen()) {
-        Logger.log.t(() =>
-            "skip send to ${relayConnectivity.url}: transport changed while waiting");
-        return;
+        throw StateError(
+          "transport changed while waiting for ${relayConnectivity.url}",
+        );
       }
     }
 
     final String encodedMsg = jsonEncode(msg.toJson());
+    if (!identical(relayConnectivity.relayTransport, transport) ||
+        !transport.isOpen()) {
+      throw StateError("transport closed before send: ${relayConnectivity.url}");
+    }
     _sendRaw(relayConnectivity, transport, encodedMsg);
+  }
+
+  /// sends a [ClientMsg] to relay transport sink, throw an error if relay not connected
+  void send(RelayConnectivity relayConnectivity, ClientMsg msg) {
+    unawaited(
+      sendOrThrow(relayConnectivity, msg).catchError((Object error) {
+        Logger.log.t(
+          () => "skip send to ${relayConnectivity.url}: $error",
+        );
+      }),
+    );
   }
 
   /// use this to register your request against a relay, \

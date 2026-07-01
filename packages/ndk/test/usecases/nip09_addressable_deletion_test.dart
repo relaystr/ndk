@@ -1,4 +1,3 @@
-import 'package:ndk/domain_layer/entities/cache_eviction.dart';
 import 'package:ndk/ndk.dart';
 import 'package:ndk/shared/nips/nip01/event_eviction_planner.dart';
 import 'package:ndk/shared/nips/nip09/deletion.dart';
@@ -8,7 +7,8 @@ void main() {
   // NIP-09 deletions can target addressable/replaceable events by coordinate
   // (`a` tag = `kind:pubkey:d-tag`) instead of by event id (`e` tag). These
   // tests exercise that path, which is currently unhandled.
-  const author = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  const author =
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
   const addressableKind = 30023; // long-form content, addressable
   const dTag = 'my-article';
   const coordinate = '$addressableKind:$author:$dTag';
@@ -80,6 +80,26 @@ void main() {
         reason: 'a version newer than the deletion must not be swept',
       );
     });
+
+    test('state-record path sweeps an addressable event deleted by coordinate',
+        () {
+      final target = addressableEvent(createdAt: 1700000000);
+      final deletion = coordinateDeletion(createdAt: 1700000001);
+      final stateRecords = EventCacheStateRecord.buildForEvents([
+        target,
+        deletion,
+      ], now: 1700000100);
+
+      final plan = EventEvictionPlanner.planFromStateRecords(
+        stateRecords: stateRecords,
+        lockedEventIds: const {},
+        policy: const EvictionPolicy(),
+        now: 1700000100,
+      );
+
+      expect(plan.eventIdsToRemove, contains(target.id));
+      expect(plan.removedDeleted, 1);
+    });
   });
 
   group('MemCacheManager addressable (a-tag) deletion visibility', () {
@@ -99,6 +119,31 @@ void main() {
         reason:
             'addressable event tombstoned via `a` tag should not be visible',
       );
+    });
+
+    test('eviction uses derived state to sweep obsolete replaceable versions',
+        () async {
+      final cache = MemCacheManager();
+      final oldVersion = addressableEvent(
+        createdAt: 1700000000,
+        content: 'old version',
+      );
+      final newVersion = addressableEvent(
+        createdAt: 1700000001,
+        content: 'new version',
+      );
+
+      await cache.saveEvents([oldVersion, newVersion]);
+
+      final result =
+          await cache.evict(const EvictionPolicy(sweepSuperseded: true));
+
+      expect(result.removedSuperseded, 1);
+      final remaining =
+          await cache.loadEvents(pubKeys: [author], kinds: [addressableKind]);
+      expect(remaining.map((event) => event.id), contains(newVersion.id));
+      expect(
+          remaining.map((event) => event.id), isNot(contains(oldVersion.id)));
     });
   });
 }

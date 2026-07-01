@@ -112,6 +112,44 @@ void main() async {
       await relay1.stopServer();
     });
 
+    test('Query persists multiple source relays for the same cached event',
+        () async {
+      final sharedEvent = textNotes.values.first;
+      final relay1 = MockRelay(name: "relay 1");
+      final relay2 = MockRelay(name: "relay 2");
+      await relay1.startServer(textNotes: {key1: sharedEvent});
+      await relay2.startServer(textNotes: {key1: sharedEvent});
+
+      final cache = MemCacheManager();
+      final ndk = Ndk(NdkConfig(
+        eventVerifier: MockEventVerifier(),
+        cache: cache,
+        engine: NdkEngine.RELAY_SETS,
+        bootstrapRelays: [relay1.url, relay2.url],
+      ));
+      ndk.accounts
+          .loginPrivateKey(pubkey: key1.publicKey, privkey: key1.privateKey!);
+
+      final filter =
+          Filter(kinds: [Nip01Event.kTextNodeKind], authors: [key1.publicKey]);
+
+      final events = await ndk.requests.query(
+        filter: filter,
+        explicitRelays: [relay1.url, relay2.url],
+      ).future;
+
+      expect(events, isNotEmpty);
+      final eventId = events.first.id;
+      final sources = await cache.loadEventSources(eventId);
+      expect(sources, containsAll([relay1.url, relay2.url]));
+      expect(sources.length, equals(2));
+
+      await ndk.destroy();
+      expect(ndk.relays.globalState.inFlightRequests.isEmpty, true);
+      await relay1.stopServer();
+      await relay2.stopServer();
+    });
+
     test('Request multiple filters text note', () async {
       MockRelay relay1 = MockRelay(name: "relay 1");
       await relay1.startServer(textNotes: textNotes);

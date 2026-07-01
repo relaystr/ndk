@@ -234,7 +234,7 @@ class Initialization {
       reconnectRelay: (relayUrl) => relayManager.reconnectRelay(
         relayUrl,
         connectionSource: ConnectionSource.explicit,
-        force: true,
+        force: false,
       ),
       retryInterval: _ndkConfig.pendingDeliveryRetryInterval,
     );

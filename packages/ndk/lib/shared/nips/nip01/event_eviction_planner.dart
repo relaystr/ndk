@@ -1,4 +1,5 @@
 import '../../../domain_layer/entities/cache_eviction.dart';
+import '../../../domain_layer/entities/event_cache_records.dart';
 import '../../../domain_layer/entities/nip_01_event.dart';
 import 'event_kind_classification.dart';
 
@@ -48,6 +49,86 @@ class EventEvictionPlan {
 ///   - latest replaceable/addressable winner for its coordinate
 /// - protection only prevents cap-based eviction, not structural cleanup
 class EventEvictionPlanner {
+  static EventEvictionPlan planFromStateRecords({
+    required List<EventCacheStateRecord> stateRecords,
+    required Set<String> lockedEventIds,
+    required EvictionPolicy policy,
+    int? now,
+  }) {
+    final currentTime = now ?? Nip01Event.secondsSinceEpoch();
+    final eventIdsToRemove = <String>{};
+    var removedExpired = 0;
+    var removedDeleted = 0;
+    var removedSuperseded = 0;
+    var removedByKindCap = 0;
+    var keptDueToDeliveryState = 0;
+    var keptProtected = 0;
+    final eligibleByKind = <int, List<EventCacheStateRecord>>{};
+
+    for (final record in stateRecords) {
+      if (lockedEventIds.contains(record.eventId)) {
+        keptDueToDeliveryState++;
+        continue;
+      }
+
+      if (policy.sweepExpired && record.isExpiredAt(currentTime)) {
+        eventIdsToRemove.add(record.eventId);
+        removedExpired++;
+        continue;
+      }
+
+      if (policy.sweepDeleted && record.isDeleted) {
+        eventIdsToRemove.add(record.eventId);
+        removedDeleted++;
+        continue;
+      }
+
+      if (policy.sweepSuperseded &&
+          EventKindClassification.isReplaceableKind(record.kind) &&
+          !record.isCurrent) {
+        eventIdsToRemove.add(record.eventId);
+        removedSuperseded++;
+        continue;
+      }
+
+      if (record.isCurrent) {
+        if (_isCapProtectedRecord(record, policy)) {
+          keptProtected++;
+          continue;
+        }
+        eligibleByKind
+            .putIfAbsent(record.kind, () => <EventCacheStateRecord>[])
+            .add(record);
+      }
+    }
+
+    for (final entry in policy.kindCaps.entries) {
+      final cap = entry.value;
+      final recordsForKind = eligibleByKind[entry.key];
+      if (recordsForKind == null || cap < 0) continue;
+
+      recordsForKind.sort(_compareNewestRecordFirst);
+      final removable = cap >= recordsForKind.length
+          ? const <EventCacheStateRecord>[]
+          : recordsForKind.skip(cap);
+      for (final record in removable) {
+        if (eventIdsToRemove.add(record.eventId)) {
+          removedByKindCap++;
+        }
+      }
+    }
+
+    return EventEvictionPlan(
+      eventIdsToRemove: eventIdsToRemove,
+      removedExpired: removedExpired,
+      removedDeleted: removedDeleted,
+      removedSuperseded: removedSuperseded,
+      removedByKindCap: removedByKindCap,
+      keptDueToDeliveryState: keptDueToDeliveryState,
+      keptProtected: keptProtected,
+    );
+  }
+
   static EventEvictionPlan plan({
     required List<Nip01Event> rawEvents,
     required Set<String> lockedEventIds,
@@ -146,6 +227,20 @@ class EventEvictionPlanner {
     return false;
   }
 
+  static bool _isCapProtectedRecord(
+    EventCacheStateRecord record,
+    EvictionPolicy policy,
+  ) {
+    if (policy.protectedEventIds.contains(record.eventId)) return true;
+    if (policy.protectedPubKeys.contains(record.pubKey)) return true;
+    if (policy.protectedKinds.contains(record.kind)) return true;
+    if (record.coordinateKey != null &&
+        policy.protectedCoordinates.contains(record.coordinateKey)) {
+      return true;
+    }
+    return false;
+  }
+
   static Set<String> _visibleIds(
     List<Nip01Event> events,
     List<Nip01Event> deletionEvents,
@@ -229,5 +324,16 @@ class EventEvictionPlanner {
     }
 
     return a.id.compareTo(b.id);
+  }
+
+  static int _compareNewestRecordFirst(
+    EventCacheStateRecord a,
+    EventCacheStateRecord b,
+  ) {
+    if (a.createdAt != b.createdAt) {
+      return b.createdAt.compareTo(a.createdAt);
+    }
+
+    return a.eventId.compareTo(b.eventId);
   }
 }

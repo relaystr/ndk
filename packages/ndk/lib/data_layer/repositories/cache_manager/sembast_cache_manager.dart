@@ -38,6 +38,8 @@ class SembastCacheManager extends CacheManager {
   final sembast.Database _database;
 
   late final sembast.StoreRef<String, Map<String, Object?>> _eventsStore;
+  late final sembast.StoreRef<String, Map<String, Object?>>
+      _eventCacheStateStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _eventSourceStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _eventDeliveryStore;
   late final sembast.StoreRef<String, Map<String, Object?>>
@@ -59,6 +61,8 @@ class SembastCacheManager extends CacheManager {
 
   SembastCacheManager(this._database) {
     _eventsStore = sembast.stringMapStoreFactory.store('events');
+    _eventCacheStateStore =
+        sembast.stringMapStoreFactory.store('event_cache_state');
     _eventSourceStore = sembast.stringMapStoreFactory.store('event_sources');
     _eventDeliveryStore =
         sembast.stringMapStoreFactory.store('event_delivery_records');
@@ -390,14 +394,15 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<EvictionResult> evict(EvictionPolicy policy) async {
     final rawEvents = await _loadEventsInternal(applyVisibilityRules: false);
+    final stateRecords = await _loadEventCacheStateRecords();
     final deliveryRecords = await loadEventDeliveryRecords();
     final relayTargets = await loadRelayDeliveryTargets();
     final lockedEventIds = <String>{
       ...deliveryRecords.map((record) => record.eventId),
       ...relayTargets.map((target) => target.eventId),
     };
-    final plan = EventEvictionPlanner.plan(
-      rawEvents: rawEvents,
+    final plan = EventEvictionPlanner.planFromStateRecords(
+      stateRecords: stateRecords,
       lockedEventIds: lockedEventIds,
       policy: policy,
     );
@@ -610,6 +615,7 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<void> removeAllEvents() async {
     await _eventsStore.delete(_database);
+    await _eventCacheStateStore.delete(_database);
     await _eventSourceStore.delete(_database);
     await _eventDeliveryStore.delete(_database);
     await _relayDeliveryTargetStore.delete(_database);
@@ -799,6 +805,7 @@ class SembastCacheManager extends CacheManager {
       _database,
       finder: sembast.Finder(filter: filter),
     );
+    await _eventCacheStateStore.records(ids).delete(_database);
   }
 
   @override
@@ -1050,41 +1057,32 @@ class SembastCacheManager extends CacheManager {
   }
 
   Future<void> _refreshDerivedStateForEvent(Nip01Event event) async {
-    if (event.kind == ContactList.kKind) {
-      final latest = await _loadLatestVisibleEvent(
-        pubKey: event.pubKey,
-        kind: ContactList.kKind,
-      );
-      if (latest == null) {
-        await _contactListStore.record(event.pubKey).delete(_database);
-      } else {
-        await _contactListStore
-            .record(event.pubKey)
-            .put(_database, ContactList.fromEvent(latest).toJsonForStorage());
-      }
-    } else if (event.kind == Metadata.kKind) {
-      final latest = await _loadLatestVisibleEvent(
-        pubKey: event.pubKey,
-        kind: Metadata.kKind,
-      );
-      if (latest == null) {
-        await _metadataStore.record(event.pubKey).delete(_database);
-      } else {
-        final metadata = Metadata.fromEvent(latest);
-        metadata.refreshedTimestamp = Helpers.now;
-        await _metadataStore
-            .record(event.pubKey)
-            .put(_database, metadata.toJsonForStorage());
-      }
-    }
-
-    if (_affectsUserRelayListProjection(event.kind)) {
-      await _refreshUserRelayListProjection(event.pubKey);
-    }
+    await _refreshDerivedStateForPubKeys({event.pubKey});
   }
 
   Future<void> _refreshDerivedStateForPubKeys(Set<String> pubKeys) async {
     for (final pubKey in pubKeys) {
+      final rawPubKeyEvents = await _loadEventsInternal(
+        pubKeys: [pubKey],
+        applyVisibilityRules: false,
+      );
+      await _eventCacheStateStore.delete(
+        _database,
+        finder: sembast.Finder(
+          filter: sembast.Filter.equals('pubKey', pubKey),
+        ),
+      );
+      final stateRecords =
+          EventCacheStateRecord.buildForEvents(rawPubKeyEvents);
+      if (stateRecords.isNotEmpty) {
+        await _eventCacheStateStore
+            .records(stateRecords.map((record) => record.eventId).toList())
+            .put(
+              _database,
+              stateRecords.map((record) => record.toJson()).toList(),
+            );
+      }
+
       final metadataEvent = await _loadLatestVisibleEvent(
         pubKey: pubKey,
         kind: Metadata.kKind,
@@ -1116,8 +1114,11 @@ class SembastCacheManager extends CacheManager {
     }
   }
 
-  bool _affectsUserRelayListProjection(int kind) {
-    return kind == ContactList.kKind || kind == Nip65.kKind;
+  Future<List<EventCacheStateRecord>> _loadEventCacheStateRecords() async {
+    final records = await _eventCacheStateStore.find(_database);
+    return records
+        .map((record) => EventCacheStateRecord.fromJson(record.value))
+        .toList();
   }
 
   Future<void> _refreshUserRelayListProjection(String pubKey) async {

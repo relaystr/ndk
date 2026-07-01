@@ -18,6 +18,7 @@ import '../../shared/nips/nip28/channel_metadata.dart';
 /// deliberate: protected metadata or contact list kinds should still have old
 /// superseded versions removed.
 class EvictionPolicy {
+  // TODO doc this
   final bool sweepExpired;
   final bool sweepDeleted;
   final bool sweepSuperseded;

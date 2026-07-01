@@ -58,25 +58,25 @@ class RelaySetsEngine implements NetworkEngine {
       return false;
     }
 
-    final explicitRelays = _globalState.inFlightRequests[id]?.request.explicitRelays;
     final connected = await _relayManager.reconnectRelay(
       request.url,
       connectionSource:
           ConnectionSource.explicit, // TODO improve this connection source
-      force: explicitRelays != null && explicitRelays.contains(request.url),
+      force: false,
     );
     if (connected) {
       RelayConnectivity? relay = _globalState.relays[request.url];
       if (relay != null) {
         relay.stats.activeRequests++;
         try {
-          _relayManager.send(
-              relay,
-              ClientMsg(
-                ClientMsgType.kReq,
-                id: id,
-                filters: request.filters,
-              ));
+          await _relayManager.sendOrThrow(
+            relay,
+            ClientMsg(
+              ClientMsgType.kReq,
+              id: id,
+              filters: request.filters,
+            ),
+          );
         } catch (e) {
           Logger.log
               .e(() => "COULD NOT SEND REQUEST TO ${request.url}:", error: e);
@@ -119,12 +119,13 @@ class RelaySetsEngine implements NetworkEngine {
     if (connected) {
       final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
       if (relayConnectivity != null) {
-        _relayManager.send(
-            relayConnectivity,
-            ClientMsg(
-              ClientMsgType.kEvent,
-              event: nostrEvent,
-            ));
+        await _relayManager.sendOrThrow(
+          relayConnectivity,
+          ClientMsg(
+            ClientMsgType.kEvent,
+            event: nostrEvent,
+          ),
+        );
         return;
       }
     }

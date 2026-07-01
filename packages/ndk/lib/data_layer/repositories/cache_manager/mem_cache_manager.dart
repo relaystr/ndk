@@ -46,6 +46,9 @@ class MemCacheManager implements CacheManager {
   /// In memory relay delivery target storage keyed by "$eventId|$relayUrl"
   Map<String, RelayDeliveryTarget> relayDeliveryTargets = {};
 
+  /// In memory derived event-state storage keyed by eventId.
+  Map<String, EventCacheStateRecord> eventCacheStateRecords = {};
+
   /// In memory decrypted payload sidecar storage keyed by "$eventId|$viewerPubKey"
   Map<String, DecryptedEventPayloadRecord> decryptedEventPayloadRecords = {};
 
@@ -533,8 +536,8 @@ class MemCacheManager implements CacheManager {
       ...eventDeliveryRecords.keys,
       ...relayDeliveryTargets.values.map((target) => target.eventId),
     };
-    final plan = EventEvictionPlanner.plan(
-      rawEvents: events.values.toList(),
+    final plan = EventEvictionPlanner.planFromStateRecords(
+      stateRecords: eventCacheStateRecords.values.toList(),
       lockedEventIds: lockedEventIds,
       policy: policy,
     );
@@ -676,6 +679,7 @@ class MemCacheManager implements CacheManager {
   @override
   Future<void> removeAllEvents() async {
     events.clear();
+    eventCacheStateRecords.clear();
     eventSources.clear();
     eventDeliveryRecords.clear();
     relayDeliveryTargets.clear();
@@ -1072,19 +1076,22 @@ class MemCacheManager implements CacheManager {
   }
 
   Future<void> _refreshDerivedStateForEvent(Nip01Event event) async {
-    if (_affectsUserRelayListProjection(event.kind)) {
-      await _refreshUserRelayListProjection(event.pubKey);
-    }
+    await _refreshDerivedStateForPubKeys({event.pubKey});
   }
 
   Future<void> _refreshDerivedStateForPubKeys(Set<String> pubKeys) async {
     for (final pubKey in pubKeys) {
+      eventCacheStateRecords.removeWhere(
+        (eventId, record) => record.pubKey == pubKey,
+      );
+      final rawEvents = events.values
+          .where((event) => event.pubKey == pubKey)
+          .toList(growable: false);
+      for (final record in EventCacheStateRecord.buildForEvents(rawEvents)) {
+        eventCacheStateRecords[record.eventId] = record;
+      }
       await _refreshUserRelayListProjection(pubKey);
     }
-  }
-
-  bool _affectsUserRelayListProjection(int kind) {
-    return kind == ContactList.kKind || kind == Nip65.kKind;
   }
 
   Future<void> _refreshUserRelayListProjection(String pubKey) async {

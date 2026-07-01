@@ -2,8 +2,8 @@ import 'package:ndk/entities.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('CachedEventRecord', () {
-    test('derives replaceable coordinate and expiration fields', () {
+  group('EventCacheStateRecord', () {
+    test('derives coordinate and expiration fields for addressable events', () {
       final event = Nip01Event(
         id: 'event-1',
         pubKey: 'pubkey-1',
@@ -15,80 +15,67 @@ void main() {
         ],
         content: 'hello',
         sig: 'sig-1',
-        sources: ['wss://b', 'wss://a'],
       );
 
-      final record = CachedEventRecord.fromEvent(
-        event,
-        seenAt: 1700000100,
-      );
+      final record = EventCacheStateRecord.buildForEvents(
+        [event],
+        now: 1700000100,
+      ).single;
 
       expect(record.eventId, event.id);
-      expect(record.dTag, 'article-1');
       expect(record.coordinateKey, '30023:pubkey-1:article-1');
-      expect(record.isReplaceable, isTrue);
-      expect(record.isAddressable, isTrue);
       expect(record.expirationAt, 1700009999);
-      expect(record.sourceRelays, ['wss://a', 'wss://b']);
-      expect(record.firstSeenAt, 1700000100);
-      expect(record.lastSeenAt, 1700000100);
+      expect(record.isCurrent, isTrue);
+      expect(record.deletedByEventId, isNull);
     });
 
     test('round trips through json', () {
-      final event = Nip01Event(
-        id: 'event-2',
+      const original = EventCacheStateRecord(
+        eventId: 'event-2',
         pubKey: 'pubkey-2',
-        createdAt: 1700000001,
         kind: 1,
-        tags: const [],
-        content: 'hi',
-        sig: 'sig-2',
-      );
-
-      final original = CachedEventRecord.fromEvent(
-        event,
-        sourceRelays: const ['wss://relay.example'],
-        seenAt: 1700000200,
-        localOrigin: true,
-        localCreatedAt: 1700000190,
-      ).copyWith(
+        createdAt: 1700000001,
+        coordinateKey: null,
+        isCurrent: false,
+        expirationAt: 1700009999,
         deletedByEventId: 'delete-1',
-        deletedAt: 1700000300,
       );
 
-      final restored = CachedEventRecord.fromJson(original.toJson());
+      final restored = EventCacheStateRecord.fromJson(original.toJson());
 
       expect(restored.toJson(), original.toJson());
       expect(restored.isDeleted, isTrue);
     });
 
-    test('uses lower event id as tie breaker for replaceable events', () {
-      final older = CachedEventRecord.fromEvent(
+    test('uses lower event id as tie breaker for addressable winners', () {
+      final records = EventCacheStateRecord.buildForEvents([
         Nip01Event(
           id: 'bbbb',
           pubKey: 'pubkey-3',
           createdAt: 1700000002,
-          kind: 10002,
-          tags: const [],
+          kind: 30023,
+          tags: const [
+            ['d', 'article-1'],
+          ],
           content: 'older',
           sig: 'sig-3',
         ),
-      );
-
-      final newer = CachedEventRecord.fromEvent(
         Nip01Event(
           id: 'aaaa',
           pubKey: 'pubkey-3',
           createdAt: 1700000002,
-          kind: 10002,
-          tags: const [],
+          kind: 30023,
+          tags: const [
+            ['d', 'article-1'],
+          ],
           content: 'newer',
           sig: 'sig-4',
         ),
-      );
+      ]);
 
-      expect(CachedEventRecord.isMoreRecentThan(newer, older), isTrue);
-      expect(CachedEventRecord.isMoreRecentThan(older, newer), isFalse);
+      final byId = {for (final record in records) record.eventId: record};
+      expect(byId['aaaa']!.isCurrent, isTrue);
+      expect(byId['bbbb']!.isCurrent, isFalse);
     });
   });
 

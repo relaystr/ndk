@@ -395,251 +395,178 @@ class DecryptedEventPayloadRecord {
   }
 }
 
-/// Normalized cache record describing one stored event and its derived state.
+int? _extractExpirationAt(Nip01Event event) {
+  final rawValue = event.getFirstTag('expiration');
+  if (rawValue == null) return null;
+  return int.tryParse(rawValue);
+}
+
+String? _buildCoordinateKey(
+  Nip01Event event,
+  String? dTag,
+  bool isAddressable,
+) {
+  // Coordinate keys identify the conflict domain for replaceable events.
+  // For addressable kinds this becomes `kind:pubkey:d-tag`.
+  if (!isAddressable) return null;
+  return '${event.kind}:${event.pubKey}:${dTag ?? ''}';
+}
+
+bool _isAddressableKind(int kind) {
+  return EventKindClassification.isAddressableKind(kind);
+}
+
+bool _isMoreRecentEventThan(Nip01Event candidate, Nip01Event current) {
+  // Replaceable tie-breaker:
+  // 1. newer created_at wins
+  // 2. stable event id ordering breaks same-timestamp ties deterministically
+  if (candidate.createdAt != current.createdAt) {
+    return candidate.createdAt > current.createdAt;
+  }
+
+  return candidate.id.compareTo(current.id) < 0;
+}
+
+/// Lean derived cache metadata for one event.
 ///
-/// This model exists to make visibility and eviction decisions efficient across
-/// backends. Some fields duplicate data derivable from [event] on purpose so
-/// backends can index and query without reparsing tags every time.
-class CachedEventRecord {
+/// This intentionally does not embed the full [Nip01Event]. It persists only
+/// the extra state useful for cache maintenance tasks such as eviction
+/// planning.
+class EventCacheStateRecord {
   final String eventId;
-  final Nip01Event event;
-  final String? dTag;
+  final String pubKey;
+  final int kind;
+  final int createdAt;
   final String? coordinateKey;
-  final bool isReplaceable;
-  final bool isAddressable;
   final bool isCurrent;
-  final String? supersededByEventId;
   final int? expirationAt;
   final String? deletedByEventId;
-  final int? deletedAt;
-  final List<String> sourceRelays;
-  final int firstSeenAt;
-  final int lastSeenAt;
-  final bool localOrigin;
-  final int? localCreatedAt;
 
-  const CachedEventRecord({
+  const EventCacheStateRecord({
     required this.eventId,
-    required this.event,
-    this.dTag,
+    required this.pubKey,
+    required this.kind,
+    required this.createdAt,
     this.coordinateKey,
-    required this.isReplaceable,
-    required this.isAddressable,
-    this.isCurrent = true,
-    this.supersededByEventId,
+    required this.isCurrent,
     this.expirationAt,
     this.deletedByEventId,
-    this.deletedAt,
-    this.sourceRelays = const [],
-    required this.firstSeenAt,
-    required this.lastSeenAt,
-    this.localOrigin = false,
-    this.localCreatedAt,
   });
 
-  /// Convenience accessor for [event.pubKey].
-  String get pubKey => event.pubKey;
-
-  /// Convenience accessor for [event.kind].
-  int get kind => event.kind;
-
-  /// Convenience accessor for [event.createdAt].
-  int get createdAt => event.createdAt;
-
-  /// True if this event is currently tombstoned by a matching author delete.
   bool get isDeleted => deletedByEventId != null;
 
-  /// Returns whether the event should be considered expired at [timestamp].
   bool isExpiredAt(int timestamp) =>
       expirationAt != null && expirationAt! <= timestamp;
-
-  CachedEventRecord copyWith({
-    String? eventId,
-    Nip01Event? event,
-    String? dTag,
-    String? coordinateKey,
-    bool? isReplaceable,
-    bool? isAddressable,
-    bool? isCurrent,
-    String? supersededByEventId,
-    int? expirationAt,
-    String? deletedByEventId,
-    int? deletedAt,
-    List<String>? sourceRelays,
-    int? firstSeenAt,
-    int? lastSeenAt,
-    bool? localOrigin,
-    int? localCreatedAt,
-  }) {
-    return CachedEventRecord(
-      eventId: eventId ?? this.eventId,
-      event: event ?? this.event,
-      dTag: dTag ?? this.dTag,
-      coordinateKey: coordinateKey ?? this.coordinateKey,
-      isReplaceable: isReplaceable ?? this.isReplaceable,
-      isAddressable: isAddressable ?? this.isAddressable,
-      isCurrent: isCurrent ?? this.isCurrent,
-      supersededByEventId: supersededByEventId ?? this.supersededByEventId,
-      expirationAt: expirationAt ?? this.expirationAt,
-      deletedByEventId: deletedByEventId ?? this.deletedByEventId,
-      deletedAt: deletedAt ?? this.deletedAt,
-      sourceRelays: sourceRelays ?? this.sourceRelays,
-      firstSeenAt: firstSeenAt ?? this.firstSeenAt,
-      lastSeenAt: lastSeenAt ?? this.lastSeenAt,
-      localOrigin: localOrigin ?? this.localOrigin,
-      localCreatedAt: localCreatedAt ?? this.localCreatedAt,
-    );
-  }
-
-  factory CachedEventRecord.fromEvent(
-    Nip01Event event, {
-    List<String>? sourceRelays,
-    int? seenAt,
-    bool localOrigin = false,
-    int? localCreatedAt,
-  }) {
-    // Source relays are normalized onto the cached record when the event is
-    // materialized from event data plus optional explicit provenance input.
-    final normalizedSources = _dedupeRelays(sourceRelays ?? event.sources);
-    final derivedSeenAt = seenAt ?? Nip01Event.secondsSinceEpoch();
-    final dTag = event.getDtag();
-    final isAddressable = _isAddressableKind(event.kind);
-    final isReplaceable = _isReplaceableKind(event.kind);
-
-    return CachedEventRecord(
-      eventId: event.id,
-      event: event,
-      dTag: dTag,
-      coordinateKey: _buildCoordinateKey(event, dTag, isAddressable),
-      isReplaceable: isReplaceable,
-      isAddressable: isAddressable,
-      expirationAt: _extractExpirationAt(event),
-      sourceRelays: normalizedSources,
-      firstSeenAt: derivedSeenAt,
-      lastSeenAt: derivedSeenAt,
-      localOrigin: localOrigin,
-      localCreatedAt: localCreatedAt,
-    );
-  }
 
   Map<String, dynamic> toJson() {
     return {
       'eventId': eventId,
-      'event': _eventToJson(event),
-      'dTag': dTag,
+      'pubKey': pubKey,
+      'kind': kind,
+      'createdAt': createdAt,
       'coordinateKey': coordinateKey,
-      'isReplaceable': isReplaceable,
-      'isAddressable': isAddressable,
       'isCurrent': isCurrent,
-      'supersededByEventId': supersededByEventId,
       'expirationAt': expirationAt,
       'deletedByEventId': deletedByEventId,
-      'deletedAt': deletedAt,
-      'sourceRelays': sourceRelays,
-      'firstSeenAt': firstSeenAt,
-      'lastSeenAt': lastSeenAt,
-      'localOrigin': localOrigin,
-      'localCreatedAt': localCreatedAt,
     };
   }
 
-  factory CachedEventRecord.fromJson(Map<String, dynamic> json) {
-    return CachedEventRecord(
+  factory EventCacheStateRecord.fromJson(Map<String, dynamic> json) {
+    return EventCacheStateRecord(
       eventId: json['eventId'] as String,
-      event: _eventFromJson(
-        Map<String, dynamic>.from(json['event'] as Map),
-      ),
-      dTag: json['dTag'] as String?,
+      pubKey: json['pubKey'] as String,
+      kind: json['kind'] as int,
+      createdAt: json['createdAt'] as int,
       coordinateKey: json['coordinateKey'] as String?,
-      isReplaceable: json['isReplaceable'] as bool? ?? false,
-      isAddressable: json['isAddressable'] as bool? ?? false,
       isCurrent: json['isCurrent'] as bool? ?? true,
-      supersededByEventId: json['supersededByEventId'] as String?,
       expirationAt: json['expirationAt'] as int?,
       deletedByEventId: json['deletedByEventId'] as String?,
-      deletedAt: json['deletedAt'] as int?,
-      sourceRelays: ((json['sourceRelays'] as List?) ?? [])
-          .map((relay) => relay as String)
-          .toList(),
-      firstSeenAt: json['firstSeenAt'] as int,
-      lastSeenAt: json['lastSeenAt'] as int,
-      localOrigin: json['localOrigin'] as bool? ?? false,
-      localCreatedAt: json['localCreatedAt'] as int?,
     );
   }
 
-  static bool isMoreRecentThan(
-    CachedEventRecord candidate,
-    CachedEventRecord current,
-  ) {
-    // Replaceable tie-breaker:
-    // 1. newer created_at wins
-    // 2. stable event id ordering breaks same-timestamp ties deterministically
-    if (candidate.createdAt != current.createdAt) {
-      return candidate.createdAt > current.createdAt;
+  /// Builds derived state records from raw events using the same visibility
+  /// semantics as cache reads and eviction planning.
+  static List<EventCacheStateRecord> buildForEvents(
+    List<Nip01Event> rawEvents, {
+    int? now,
+  }) {
+    final currentTime = now ?? Nip01Event.secondsSinceEpoch();
+    final deletionEvents =
+        rawEvents.where((event) => event.kind == 5).toList(growable: false);
+    final visibleWinners = <String, Nip01Event>{};
+
+    for (final event in rawEvents) {
+      final coordinateKey = _buildCoordinateKey(
+        event,
+        event.getDtag(),
+        _isAddressableKind(event.kind),
+      );
+      if (coordinateKey == null) {
+        continue;
+      }
+      if (_extractExpirationAt(event) case final expirationAt?
+          when expirationAt <= currentTime) {
+        continue;
+      }
+      if (_findDeletingEvent(event, deletionEvents) != null) {
+        continue;
+      }
+
+      final current = visibleWinners[coordinateKey];
+      if (current == null || _isMoreRecentEventThan(event, current)) {
+        visibleWinners[coordinateKey] = event;
+      }
     }
 
-    return candidate.eventId.compareTo(current.eventId) < 0;
+    final records = <EventCacheStateRecord>[];
+    for (final event in rawEvents) {
+      final coordinateKey = _buildCoordinateKey(
+        event,
+        event.getDtag(),
+        _isAddressableKind(event.kind),
+      );
+      final deletingEvent = _findDeletingEvent(event, deletionEvents);
+      records.add(
+        EventCacheStateRecord(
+          eventId: event.id,
+          pubKey: event.pubKey,
+          kind: event.kind,
+          createdAt: event.createdAt,
+          coordinateKey: coordinateKey,
+          isCurrent: coordinateKey == null ||
+              visibleWinners[coordinateKey]?.id == event.id,
+          expirationAt: _extractExpirationAt(event),
+          deletedByEventId: deletingEvent?.id,
+        ),
+      );
+    }
+
+    return records;
   }
 
-  static List<String> _dedupeRelays(List<String> relays) {
-    return relays.toSet().toList()..sort();
-  }
-
-  static int? _extractExpirationAt(Nip01Event event) {
-    final rawValue = event.getFirstTag('expiration');
-    if (rawValue == null) return null;
-    return int.tryParse(rawValue);
-  }
-
-  static String? _buildCoordinateKey(
-    Nip01Event event,
-    String? dTag,
-    bool isAddressable,
+  static Nip01Event? _findDeletingEvent(
+    Nip01Event target,
+    List<Nip01Event> deletionEvents,
   ) {
-    // Coordinate keys identify the conflict domain for replaceable events.
-    // For addressable kinds this becomes `kind:pubkey:d-tag`.
-    if (!isAddressable) return null;
-    return '${event.kind}:${event.pubKey}:${dTag ?? ''}';
-  }
-
-  static bool _isAddressableKind(int kind) {
-    return EventKindClassification.isAddressableKind(kind);
-  }
-
-  static bool _isReplaceableKind(int kind) {
-    return EventKindClassification.isReplaceableKind(kind);
-  }
-
-  static Map<String, dynamic> _eventToJson(Nip01Event event) {
-    return {
-      'id': event.id,
-      'pubkey': event.pubKey,
-      'created_at': event.createdAt,
-      'kind': event.kind,
-      'tags': event.tags,
-      'content': event.content,
-      'sig': event.sig,
-      'sources': event.sources,
-      'validSig': event.validSig,
-    };
-  }
-
-  static Nip01Event _eventFromJson(Map<String, dynamic> json) {
-    return Nip01Event(
-      id: json['id'] as String?,
-      pubKey: json['pubkey'] as String,
-      createdAt: json['created_at'] as int,
-      kind: json['kind'] as int,
-      tags: ((json['tags'] as List?) ?? [])
-          .map((tag) => (tag as List).map((item) => item as String).toList())
-          .toList(),
-      content: json['content'] as String? ?? '',
-      sig: json['sig'] as String?,
-      validSig: json['validSig'] as bool?,
-      sources: ((json['sources'] as List?) ?? [])
-          .map((item) => item as String)
-          .toList(),
+    if (target.kind == 5) return null;
+    final coordinate = _buildCoordinateKey(
+      target,
+      target.getDtag(),
+      _isAddressableKind(target.kind),
     );
+
+    for (final event in deletionEvents) {
+      if (event.pubKey != target.pubKey) continue;
+      if (event.getTags('e').contains(target.id.toLowerCase())) {
+        return event;
+      }
+      if (coordinate != null &&
+          event.createdAt >= target.createdAt &&
+          event.getTags('a').contains(coordinate)) {
+        return event;
+      }
+    }
+
+    return null;
   }
 }
