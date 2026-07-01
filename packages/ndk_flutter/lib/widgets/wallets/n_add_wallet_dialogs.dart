@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/domain_layer/usecases/nwc/consts/nwc_kind.dart';
 import 'package:ndk/ndk.dart';
@@ -19,6 +18,9 @@ import '../../l10n/app_localizations.dart';
 
 const String _defaultMintUrl = 'https://mint.minibits.cash/Bitcoin';
 const String _dialogBackResult = '__back__';
+
+/// Opens a host-provided NWC QR scanner and returns the scanned URI.
+typedef NwcUriScanner = Future<String?> Function(BuildContext context);
 
 enum AlbyGoConnectMethod { walletAuth, nostrNwcCallback }
 
@@ -346,6 +348,7 @@ Future<CashuWallet?> showAddCashuWalletDialog(
   bool returnToWalletType = false,
   AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
   NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
+  NwcUriScanner? nwcUriScanner,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final mintUrlController = TextEditingController(text: defaultMintUrl);
@@ -365,6 +368,7 @@ Future<CashuWallet?> showAddCashuWalletDialog(
                     ndkFlutter,
                     albyGoConnectConfig: albyGoConnectConfig,
                     nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                    nwcUriScanner: nwcUriScanner,
                   );
                 }
               },
@@ -463,6 +467,7 @@ Future<NwcWallet?> showAddNwcWalletDialog(
   BuildContext context,
   NdkFlutter ndkFlutter, {
   int defaultBalance = 10000,
+  NwcUriScanner? nwcUriScanner,
 }) async {
   return showDialog<NwcWallet?>(
     context: context,
@@ -470,6 +475,7 @@ Future<NwcWallet?> showAddNwcWalletDialog(
       return _AddNwcWalletDialog(
         ndkFlutter: ndkFlutter,
         defaultBalance: defaultBalance,
+        nwcUriScanner: nwcUriScanner,
       );
     },
   );
@@ -478,10 +484,12 @@ Future<NwcWallet?> showAddNwcWalletDialog(
 class _AddNwcWalletDialog extends StatefulWidget {
   final NdkFlutter ndkFlutter;
   final int defaultBalance;
+  final NwcUriScanner? nwcUriScanner;
 
   const _AddNwcWalletDialog({
     required this.ndkFlutter,
     required this.defaultBalance,
+    required this.nwcUriScanner,
   });
 
   @override
@@ -509,6 +517,28 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
     nwcUriController.dispose();
     balanceController.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanNwcUri() async {
+    final nwcUriScanner = widget.nwcUriScanner;
+    if (nwcUriScanner == null) return;
+
+    final scannedUri = await nwcUriScanner(context);
+    if (!mounted || scannedUri == null) return;
+
+    final trimmedUri = scannedUri.trim();
+    if (trimmedUri.startsWith(Nwc.kNWCProtocolPrefix)) {
+      nwcUriController.text = trimmedUri;
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.invalidNwcQrCode),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   @override
@@ -595,22 +625,11 @@ class _AddNwcWalletDialogState extends State<_AddNwcWalletDialog>
                                   icon: const Icon(Icons.paste),
                                   tooltip: l10n.copy,
                                 ),
-                                if (!kIsWeb &&
-                                    (Platform.isAndroid || Platform.isIOS))
+                                if (widget.nwcUriScanner != null)
                                   IconButton(
-                                    onPressed: () async {
-                                      final scannedUri =
-                                          await showDialog<String>(
-                                            context: context,
-                                            builder: (context) =>
-                                                const _NwcQrScannerDialog(),
-                                          );
-                                      if (scannedUri != null) {
-                                        nwcUriController.text = scannedUri;
-                                      }
-                                    },
+                                    onPressed: _scanNwcUri,
                                     icon: const Icon(Icons.qr_code_scanner),
-                                    tooltip: l10n.copy,
+                                    tooltip: l10n.scanNwcQrCodeTitle,
                                   ),
                               ],
                             ),
@@ -757,6 +776,7 @@ Future<Wallet?> showAddLnurlWalletDialog(
   bool returnToWalletType = false,
   AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
   NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
+  NwcUriScanner? nwcUriScanner,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final identifierController = TextEditingController();
@@ -789,6 +809,7 @@ Future<Wallet?> showAddLnurlWalletDialog(
         returnToWalletType: returnToWalletType,
         albyGoConnectConfig: albyGoConnectConfig,
         nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+        nwcUriScanner: nwcUriScanner,
       );
     },
   );
@@ -803,6 +824,7 @@ class _AddLnurlWalletDialog extends StatefulWidget {
   final bool returnToWalletType;
   final AlbyGoConnectConfig albyGoConnectConfig;
   final NwcWalletAuthCoordinator? nwcWalletAuthCoordinator;
+  final NwcUriScanner? nwcUriScanner;
 
   const _AddLnurlWalletDialog({
     required this.l10n,
@@ -813,6 +835,7 @@ class _AddLnurlWalletDialog extends StatefulWidget {
     required this.returnToWalletType,
     required this.albyGoConnectConfig,
     required this.nwcWalletAuthCoordinator,
+    required this.nwcUriScanner,
   });
 
   @override
@@ -878,6 +901,7 @@ class _AddLnurlWalletDialogState extends State<_AddLnurlWalletDialog> {
                   widget.ndkFlutter,
                   albyGoConnectConfig: widget.albyGoConnectConfig,
                   nwcWalletAuthCoordinator: widget.nwcWalletAuthCoordinator,
+                  nwcUriScanner: widget.nwcUriScanner,
                 );
               }
             },
@@ -953,6 +977,7 @@ Future<bool> showAddWalletTypeDialog(
   NdkFlutter ndkFlutter, {
   AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
   NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
+  NwcUriScanner? nwcUriScanner,
 }) async {
   final l10n = AppLocalizations.of(context)!;
 
@@ -1009,6 +1034,7 @@ Future<bool> showAddWalletTypeDialog(
                           ndkFlutter,
                           albyGoConnectConfig: albyGoConnectConfig,
                           nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                          nwcUriScanner: nwcUriScanner,
                         );
                       },
                     ),
@@ -1026,6 +1052,7 @@ Future<bool> showAddWalletTypeDialog(
                           returnToWalletType: true,
                           albyGoConnectConfig: albyGoConnectConfig,
                           nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                          nwcUriScanner: nwcUriScanner,
                         );
                       },
                     ),
@@ -1043,6 +1070,7 @@ Future<bool> showAddWalletTypeDialog(
                           returnToWalletType: true,
                           albyGoConnectConfig: albyGoConnectConfig,
                           nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                          nwcUriScanner: nwcUriScanner,
                         );
                       },
                     ),
@@ -1065,6 +1093,7 @@ Future<bool> showNwcConnectionOptionsDialog(
   NdkFlutter ndkFlutter, {
   AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
   NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
+  NwcUriScanner? nwcUriScanner,
 }) async {
   final l10n = AppLocalizations.of(context)!;
 
@@ -1092,6 +1121,7 @@ Future<bool> showNwcConnectionOptionsDialog(
                             ndkFlutter,
                             albyGoConnectConfig: albyGoConnectConfig,
                             nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                            nwcUriScanner: nwcUriScanner,
                           );
                         }
                       },
@@ -1141,18 +1171,19 @@ Future<bool> showNwcConnectionOptionsDialog(
                               );
                         },
                       ),
-                    // Manual connection button (goes directly to QR scanner)
+                    // Manual connection button (with optional QR scanner hook)
                     _WalletTypeOptionButton(
-                      icon: Icons.qr_code_scanner,
+                      icon: Icons.edit,
                       label: l10n.manualOption,
                       onTap: () async {
                         Navigator.of(dialogContext).pop(true);
-                        await _showNwcScannerAndAddWallet(
+                        await _showNwcUriInputAndAddWallet(
                           context,
                           ndkFlutter,
                           returnToNwcOptions: true,
                           albyGoConnectConfig: albyGoConnectConfig,
                           nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                          nwcUriScanner: nwcUriScanner,
                         );
                       },
                     ),
@@ -1169,6 +1200,7 @@ Future<bool> showNwcConnectionOptionsDialog(
                             returnToNwcOptions: true,
                             albyGoConnectConfig: albyGoConnectConfig,
                             nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                            nwcUriScanner: nwcUriScanner,
                           );
                         },
                       ),
@@ -1409,18 +1441,19 @@ bool _matchesReturnTo(String receivedUrl, String expectedReturnTo) {
       receivedUri.path == expectedUri.path;
 }
 
-/// Shows QR scanner dialog and then adds the wallet directly
-Future<void> _showNwcScannerAndAddWallet(
+/// Shows NWC URI input dialog and then adds the wallet directly.
+Future<void> _showNwcUriInputAndAddWallet(
   BuildContext context,
   NdkFlutter ndkFlutter, {
   bool returnToNwcOptions = false,
   AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
   NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
+  NwcUriScanner? nwcUriScanner,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final result = await showDialog<String?>(
     context: context,
-    builder: (context) => const _NwcQrScannerDialogWithPaste(),
+    builder: (context) => _NwcUriInputDialog(nwcUriScanner: nwcUriScanner),
   );
 
   if (result == _dialogBackResult) {
@@ -1430,6 +1463,7 @@ Future<void> _showNwcScannerAndAddWallet(
         ndkFlutter,
         albyGoConnectConfig: albyGoConnectConfig,
         nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+        nwcUriScanner: nwcUriScanner,
       );
     }
     return;
@@ -1462,362 +1496,136 @@ Future<void> _showNwcScannerAndAddWallet(
   }
 }
 
-/// A dialog for scanning NWC QR codes.
-class _NwcQrScannerDialog extends StatefulWidget {
-  const _NwcQrScannerDialog();
+class _NwcUriInputDialog extends StatefulWidget {
+  final NwcUriScanner? nwcUriScanner;
+
+  const _NwcUriInputDialog({required this.nwcUriScanner});
 
   @override
-  State<_NwcQrScannerDialog> createState() => _NwcQrScannerDialogState();
+  State<_NwcUriInputDialog> createState() => _NwcUriInputDialogState();
 }
 
-class _NwcQrScannerDialogState extends State<_NwcQrScannerDialog> {
-  MobileScannerController? _scannerController;
-  bool _hasScanned = false;
+class _NwcUriInputDialogState extends State<_NwcUriInputDialog> {
+  final _nwcUriController = TextEditingController();
   String? _errorMessage;
 
   @override
-  void initState() {
-    super.initState();
-    if (!kIsWeb) {
-      _scannerController = MobileScannerController(
-        detectionSpeed: DetectionSpeed.normal,
-        facing: CameraFacing.back,
-      );
-    }
-  }
-
-  @override
   void dispose() {
-    _scannerController?.dispose();
+    _nwcUriController.dispose();
     super.dispose();
   }
 
-  void _onBarcodeDetected(BarcodeCapture capture) {
-    if (_hasScanned) return;
-
+  void _submit(String value, {required bool fromScanner}) {
+    final text = value.trim();
     final l10n = AppLocalizations.of(context)!;
-    final barcodes = capture.barcodes;
-    for (final barcode in barcodes) {
-      final rawValue = barcode.rawValue;
-      if (rawValue != null && rawValue.startsWith('nostr+walletconnect://')) {
-        setState(() => _hasScanned = true);
-        Navigator.of(context).pop(rawValue);
-        return;
-      } else if (rawValue != null) {
-        setState(() {
-          _errorMessage = l10n.invalidNwcQrCode;
-        });
-      }
+
+    if (text.startsWith(Nwc.kNWCProtocolPrefix)) {
+      Navigator.of(context).pop(text);
+      return;
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Dialog(
-      backgroundColor: Colors.black,
-      child: SizedBox(
-        width: 400,
-        height: 500,
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () =>
-                        Navigator.of(context).pop(_dialogBackResult),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                  Text(
-                    l10n.scanNwcQrCodeTitle,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-
-            // Scanner
-            Expanded(
-              child: Stack(
-                children: [
-                  if (_scannerController != null)
-                    MobileScanner(
-                      controller: _scannerController!,
-                      onDetect: _onBarcodeDetected,
-                    )
-                  else
-                    Center(
-                      child: Text(
-                        l10n.cameraNotAvailable,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-
-                  // Scan overlay
-                  if (_scannerController != null)
-                    Center(
-                      child: Container(
-                        width: 250,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-
-                  // Error message
-                  if (_errorMessage != null)
-                    Positioned(
-                      top: 20,
-                      left: 20,
-                      right: 20,
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-
-                  // Scanning indicator
-                  if (_hasScanned)
-                    Container(
-                      color: Colors.black.withValues(alpha: 0.7),
-                      child: const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // Instructions
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.scanNwcInstructions,
-                style: const TextStyle(color: Colors.white70),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A dialog for scanning NWC QR codes with paste from clipboard option.
-class _NwcQrScannerDialogWithPaste extends StatefulWidget {
-  const _NwcQrScannerDialogWithPaste();
-
-  @override
-  State<_NwcQrScannerDialogWithPaste> createState() =>
-      _NwcQrScannerDialogWithPasteState();
-}
-
-class _NwcQrScannerDialogWithPasteState
-    extends State<_NwcQrScannerDialogWithPaste> {
-  MobileScannerController? _scannerController;
-  bool _hasScanned = false;
-  String? _errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      _scannerController = MobileScannerController(
-        detectionSpeed: DetectionSpeed.normal,
-        facing: CameraFacing.back,
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _scannerController?.dispose();
-    super.dispose();
-  }
-
-  void _onBarcodeDetected(BarcodeCapture capture) {
-    if (_hasScanned) return;
-
-    final l10n = AppLocalizations.of(context)!;
-    final barcodes = capture.barcodes;
-    for (final barcode in barcodes) {
-      final rawValue = barcode.rawValue;
-      if (rawValue != null && rawValue.startsWith('nostr+walletconnect://')) {
-        setState(() => _hasScanned = true);
-        Navigator.of(context).pop(rawValue);
-        return;
-      } else if (rawValue != null) {
-        setState(() {
-          _errorMessage = l10n.invalidNwcQrCode;
-        });
-      }
-    }
+    setState(() {
+      _errorMessage = fromScanner ? l10n.invalidNwcQrCode : l10n.invalidNwcUri;
+    });
   }
 
   Future<void> _pasteFromClipboard() async {
-    final l10n = AppLocalizations.of(context)!;
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-    final text = clipboardData?.text?.trim();
+    final text = clipboardData?.text;
 
-    if (text != null && text.startsWith('nostr+walletconnect://')) {
-      if (mounted) {
-        Navigator.of(context).pop(text);
-      }
-    } else {
-      setState(() {
-        _errorMessage = l10n.invalidNwcUri;
-      });
+    if (!mounted) return;
+    if (text == null) {
+      _submit('', fromScanner: false);
+      return;
     }
+
+    _nwcUriController.text = text.trim();
+    _submit(text, fromScanner: false);
+  }
+
+  Future<void> _scanNwcUri() async {
+    final nwcUriScanner = widget.nwcUriScanner;
+    if (nwcUriScanner == null) return;
+
+    final scannedUri = await nwcUriScanner(context);
+    if (!mounted || scannedUri == null) return;
+
+    _nwcUriController.text = scannedUri.trim();
+    _submit(scannedUri, fromScanner: true);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final bool hasCamera = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
-    return Dialog(
-      backgroundColor: Colors.black,
-      child: SizedBox(
+    return AlertDialog(
+      title: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(_dialogBackResult),
+            icon: const Icon(Icons.arrow_back),
+          ),
+          Expanded(child: Text(l10n.nwcConnectionUri)),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
+      content: SizedBox(
         width: 400,
-        height: hasCamera ? 560 : 200,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () =>
-                        Navigator.of(context).pop(_dialogBackResult),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                  Text(
-                    l10n.scanNwcQrCodeTitle,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: Colors.white),
-                  ),
-                ],
+            TextField(
+              controller: _nwcUriController,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText: l10n.nwcConnectionUri,
+                hintText: l10n.nwcConnectionUriHint,
               ),
             ),
-
-            // Scanner (only on mobile)
-            if (hasCamera)
-              Expanded(
-                child: Stack(
-                  children: [
-                    MobileScanner(
-                      controller: _scannerController!,
-                      onDetect: _onBarcodeDetected,
-                    ),
-
-                    // Scan overlay
-                    Center(
-                      child: Container(
-                        width: 250,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-
-                    // Error message
-                    if (_errorMessage != null)
-                      Positioned(
-                        top: 20,
-                        left: 20,
-                        right: 20,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.white),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-
-                    // Scanning indicator
-                    if (_hasScanned)
-                      Container(
-                        color: Colors.black.withValues(alpha: 0.7),
-                        child: const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
-                      ),
-                  ],
-                ),
-              )
-            else
-              Expanded(
-                child: Center(
-                  child: Text(
-                    l10n.cameraNotAvailable,
-                    style: const TextStyle(color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                textAlign: TextAlign.center,
               ),
-
-            // Instructions or paste button area
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (hasCamera)
-                    Text(
-                      l10n.scanNwcInstructions,
-                      style: const TextStyle(color: Colors.white70),
-                      textAlign: TextAlign.center,
-                    ),
-                  if (hasCamera) const SizedBox(height: 12),
-                  // Paste from clipboard button
-                  ElevatedButton.icon(
+            ],
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
                     onPressed: _pasteFromClipboard,
                     icon: const Icon(Icons.paste),
                     label: Text(l10n.paste),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
+                  ),
+                ),
+                if (widget.nwcUriScanner != null) ...[
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: _scanNwcUri,
+                    icon: const Icon(Icons.qr_code_scanner),
+                    tooltip: l10n.scanNwcQrCodeTitle,
                   ),
                 ],
-              ),
+              ],
             ),
           ],
         ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        TextButton(
+          onPressed: () => _submit(_nwcUriController.text, fromScanner: false),
+          child: Text(l10n.add),
+        ),
+      ],
     );
   }
 }
@@ -1829,6 +1637,7 @@ Future<void> _showNwcFaucetDialog(
   bool returnToNwcOptions = false,
   AlbyGoConnectConfig albyGoConnectConfig = kDefaultAlbyGoConnectConfig,
   NwcWalletAuthCoordinator? nwcWalletAuthCoordinator,
+  NwcUriScanner? nwcUriScanner,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final parentContext = context;
@@ -1849,6 +1658,7 @@ Future<void> _showNwcFaucetDialog(
                     ndkFlutter,
                     albyGoConnectConfig: albyGoConnectConfig,
                     nwcWalletAuthCoordinator: nwcWalletAuthCoordinator,
+                    nwcUriScanner: nwcUriScanner,
                   );
                 }
               },
