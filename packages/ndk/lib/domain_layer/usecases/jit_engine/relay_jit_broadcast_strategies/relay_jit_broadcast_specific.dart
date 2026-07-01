@@ -1,4 +1,6 @@
 import '../../../../shared/nips/nip01/client_msg.dart';
+import '../../../../shared/nips/nip01/event_kind_classification.dart';
+import '../../../repositories/cache_manager.dart';
 import '../../../entities/connection_source.dart';
 import '../../../entities/jit_engine_relay_connectivity_data.dart';
 import '../../../entities/nip_01_event.dart';
@@ -10,6 +12,7 @@ class RelayJitBroadcastSpecificRelaysStrategy {
   /// [specificRelays] urls of relays you want to publish to
   static Future broadcast({
     required Nip01Event eventToPublish,
+    required CacheManager cacheManager,
     required List<RelayConnectivity<JitEngineRelayConnectivityData>>
         connectedRelays,
     required RelayManager relayManager,
@@ -40,6 +43,17 @@ class RelayJitBroadcastSpecificRelaysStrategy {
       try {
         final isConnected = relayManager.isRelayConnected(relayUrl);
         if (isConnected) {
+          if (await _shouldSkipObsoleteReplaceableBroadcast(
+            cacheManager: cacheManager,
+            event: eventToPublish,
+          )) {
+            relayManager.failBroadcast(
+              eventToPublish.id,
+              relayUrl,
+              "obsolete replaceable event skipped",
+            );
+            return;
+          }
           try {
             final relay = connectedRelays.firstWhere(
               (element) => element.url == relayUrl,
@@ -67,6 +81,17 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           );
           return;
         }
+        if (await _shouldSkipObsoleteReplaceableBroadcast(
+          cacheManager: cacheManager,
+          event: eventToPublish,
+        )) {
+          relayManager.failBroadcast(
+            eventToPublish.id,
+            relayUrl,
+            "obsolete replaceable event skipped",
+          );
+          return;
+        }
         try {
           final relay = relayManager.connectedRelays
               .firstWhere((element) => element.url == relayUrl);
@@ -89,5 +114,32 @@ class RelayJitBroadcastSpecificRelaysStrategy {
 
     // Broadcast to all relays in parallel
     await Future.wait(uniqueRelayUrls.map(sendToUrl), eagerError: false);
+  }
+
+  static Future<bool> _shouldSkipObsoleteReplaceableBroadcast({
+    required CacheManager cacheManager,
+    required Nip01Event event,
+  }) async {
+    if (!EventKindClassification.isReplaceableKind(event.kind)) {
+      return false;
+    }
+
+    final dTag = event.getDtag();
+    final visibleEvents = await cacheManager.loadEvents(
+      pubKeys: [event.pubKey],
+      kinds: [event.kind],
+      tags: EventKindClassification.isAddressableKind(event.kind) && dTag != null
+          ? {
+              'd': [dTag],
+            }
+          : null,
+      limit: 1,
+    );
+
+    if (visibleEvents.isEmpty) {
+      return false;
+    }
+
+    return visibleEvents.single.id != event.id;
   }
 }

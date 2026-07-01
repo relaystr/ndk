@@ -186,6 +186,7 @@ class JitEngine with Logger implements NetworkEngine {
         await RelayJitBroadcastSpecificRelaysStrategy.broadcast(
           specificRelays: cleanedSpecificRelays,
           relayManager: relayManagerLight,
+          cacheManager: cache,
           eventToPublish: workingNostrEvent,
           connectedRelays: relayManagerLight.connectedRelays
               .whereType<RelayConnectivity<JitEngineRelayConnectivityData>>()

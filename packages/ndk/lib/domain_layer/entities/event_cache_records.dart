@@ -412,6 +412,19 @@ String? _buildCoordinateKey(
   return '${event.kind}:${event.pubKey}:${dTag ?? ''}';
 }
 
+String? _buildReplaceableConflictKey(
+  Nip01Event event,
+  String? dTag,
+) {
+  if (EventKindClassification.isParameterizedReplaceableKind(event.kind)) {
+    return '${event.kind}:${event.pubKey}:${dTag ?? ''}';
+  }
+  if (EventKindClassification.isReplaceableKind(event.kind)) {
+    return '${event.kind}:${event.pubKey}';
+  }
+  return null;
+}
+
 bool _isAddressableKind(int kind) {
   return EventKindClassification.isAddressableKind(kind);
 }
@@ -496,12 +509,11 @@ class EventCacheStateRecord {
     final visibleWinners = <String, Nip01Event>{};
 
     for (final event in rawEvents) {
-      final coordinateKey = _buildCoordinateKey(
+      final replaceableConflictKey = _buildReplaceableConflictKey(
         event,
         event.getDtag(),
-        _isAddressableKind(event.kind),
       );
-      if (coordinateKey == null) {
+      if (replaceableConflictKey == null) {
         continue;
       }
       if (_extractExpirationAt(event) case final expirationAt?
@@ -512,9 +524,9 @@ class EventCacheStateRecord {
         continue;
       }
 
-      final current = visibleWinners[coordinateKey];
+      final current = visibleWinners[replaceableConflictKey];
       if (current == null || _isMoreRecentEventThan(event, current)) {
-        visibleWinners[coordinateKey] = event;
+        visibleWinners[replaceableConflictKey] = event;
       }
     }
 
@@ -525,6 +537,8 @@ class EventCacheStateRecord {
         event.getDtag(),
         _isAddressableKind(event.kind),
       );
+      final replaceableConflictKey =
+          _buildReplaceableConflictKey(event, event.getDtag());
       final deletingEvent = _findDeletingEvent(event, deletionEvents);
       records.add(
         EventCacheStateRecord(
@@ -533,8 +547,9 @@ class EventCacheStateRecord {
           kind: event.kind,
           createdAt: event.createdAt,
           coordinateKey: coordinateKey,
-          isCurrent: coordinateKey == null ||
-              visibleWinners[coordinateKey]?.id == event.id,
+          isCurrent: replaceableConflictKey == null
+              ? true
+              : visibleWinners[replaceableConflictKey]?.id == event.id,
           expirationAt: _extractExpirationAt(event),
           deletedByEventId: deletingEvent?.id,
         ),
@@ -549,20 +564,17 @@ class EventCacheStateRecord {
     List<Nip01Event> deletionEvents,
   ) {
     if (target.kind == 5) return null;
-    final coordinate = _buildCoordinateKey(
-      target,
-      target.getDtag(),
-      _isAddressableKind(target.kind),
-    );
+    final replaceableConflictKey =
+        _buildReplaceableConflictKey(target, target.getDtag());
 
     for (final event in deletionEvents) {
       if (event.pubKey != target.pubKey) continue;
       if (event.getTags('e').contains(target.id.toLowerCase())) {
         return event;
       }
-      if (coordinate != null &&
+      if (replaceableConflictKey != null &&
           event.createdAt >= target.createdAt &&
-          event.getTags('a').contains(coordinate)) {
+          event.getTags('a').contains(replaceableConflictKey)) {
         return event;
       }
     }

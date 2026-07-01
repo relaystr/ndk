@@ -6,6 +6,7 @@ import 'dart:math';
 import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/event_kind_classification.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../../shared/nips/nip01/helpers.dart';
 import '../../shared/helpers/relay_helper.dart';
@@ -117,6 +118,17 @@ class RelaySetsEngine implements NetworkEngine {
     }
 
     if (connected) {
+      if (await _shouldSkipObsoleteReplaceableBroadcast(nostrEvent)) {
+        Logger.log.d(() =>
+            'skip obsolete specific-relay broadcast ${nostrEvent.id} for $relayUrl');
+        _relayManager.failBroadcast(
+          nostrEvent.id,
+          relayUrl,
+          'obsolete replaceable event skipped',
+        );
+        return;
+      }
+
       final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
       if (relayConnectivity != null) {
         await _relayManager.sendOrThrow(
@@ -131,6 +143,32 @@ class RelaySetsEngine implements NetworkEngine {
     }
     _relayManager.failBroadcast(
         nostrEvent.id, relayUrl, "Could not connect to relay $relayUrl $error");
+  }
+
+  Future<bool> _shouldSkipObsoleteReplaceableBroadcast(
+    Nip01Event event,
+  ) async {
+    if (!EventKindClassification.isReplaceableKind(event.kind)) {
+      return false;
+    }
+
+    final dTag = event.getDtag();
+    final visibleEvents = await _cacheManager.loadEvents(
+      pubKeys: [event.pubKey],
+      kinds: [event.kind],
+      tags: EventKindClassification.isAddressableKind(event.kind) && dTag != null
+          ? {
+              'd': [dTag],
+            }
+          : null,
+      limit: 1,
+    );
+
+    if (visibleEvents.isEmpty) {
+      return false;
+    }
+
+    return visibleEvents.single.id != event.id;
   }
 
   Future<void> doNostrRequestWithRelaySet(RequestState state,
