@@ -1,3 +1,7 @@
+## 0.8.4-dev.11
+
+ - **REFACTOR**: make NWC QR scanning host-provided.
+
 ## 0.8.4-dev.10
 
  - **FIX**: dynamic sdk constraints.
