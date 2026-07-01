@@ -1,6 +1,9 @@
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 import 'package:sembast/sembast.dart' as sembast;
+import '../../../shared/nips/nip01/event_kind_classification.dart';
+import '../../../shared/nips/nip01/event_eviction_planner.dart';
+import '../../../shared/nips/nip01/helpers.dart';
 import 'ndk_extensions.dart';
 
 // Platform-specific imports
@@ -35,6 +38,14 @@ class SembastCacheManager extends CacheManager {
   final sembast.Database _database;
 
   late final sembast.StoreRef<String, Map<String, Object?>> _eventsStore;
+  late final sembast.StoreRef<String, Map<String, Object?>>
+      _eventCacheStateStore;
+  late final sembast.StoreRef<String, Map<String, Object?>> _eventSourceStore;
+  late final sembast.StoreRef<String, Map<String, Object?>> _eventDeliveryStore;
+  late final sembast.StoreRef<String, Map<String, Object?>>
+      _relayDeliveryTargetStore;
+  late final sembast.StoreRef<String, Map<String, Object?>>
+      _decryptedEventPayloadStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _metadataStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _contactListStore;
   late final sembast.StoreRef<String, Map<String, Object?>> _relayListStore;
@@ -50,6 +61,15 @@ class SembastCacheManager extends CacheManager {
 
   SembastCacheManager(this._database) {
     _eventsStore = sembast.stringMapStoreFactory.store('events');
+    _eventCacheStateStore =
+        sembast.stringMapStoreFactory.store('event_cache_state');
+    _eventSourceStore = sembast.stringMapStoreFactory.store('event_sources');
+    _eventDeliveryStore =
+        sembast.stringMapStoreFactory.store('event_delivery_records');
+    _relayDeliveryTargetStore =
+        sembast.stringMapStoreFactory.store('relay_delivery_targets');
+    _decryptedEventPayloadStore =
+        sembast.stringMapStoreFactory.store('decrypted_event_payloads');
     _metadataStore = sembast.stringMapStoreFactory.store('metadata');
     _contactListStore = sembast.stringMapStoreFactory.store('contact_lists');
     _relayListStore = sembast.stringMapStoreFactory.store('relay_lists');
@@ -71,6 +91,14 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<ContactList?> loadContactList(String pubKey) async {
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: ContactList.kKind,
+    );
+    if (event != null) {
+      return ContactList.fromEvent(event);
+    }
+
     final data = await _contactListStore.record(pubKey).get(_database);
     if (data == null) return null;
     return ContactListExtension.fromJsonStorage(data);
@@ -84,6 +112,320 @@ class SembastCacheManager extends CacheManager {
   }
 
   @override
+  Future<void> addEventSource({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    await addEventSources(eventId: eventId, relayUrls: [relayUrl]);
+  }
+
+  @override
+  Future<void> addEventSources({
+    required String eventId,
+    required Iterable<String> relayUrls,
+  }) async {
+    for (final relayUrl in relayUrls) {
+      await _eventSourceStore.record(_eventSourceKey(eventId, relayUrl)).put(
+        _database,
+        {
+          'eventId': eventId,
+          'relayUrl': relayUrl,
+        },
+      );
+    }
+  }
+
+  @override
+  Future<List<String>> loadEventSources(String eventId) async {
+    final records = await _eventSourceStore.find(
+      _database,
+      finder: sembast.Finder(
+        filter: sembast.Filter.equals('eventId', eventId),
+      ),
+    );
+
+    final sources = records
+        .map((record) => record.value['relayUrl'] as String)
+        .toList()
+      ..sort();
+    return sources;
+  }
+
+  @override
+  Future<void> removeEventSources(String eventId) async {
+    await _eventSourceStore.delete(
+      _database,
+      finder: sembast.Finder(
+        filter: sembast.Filter.equals('eventId', eventId),
+      ),
+    );
+  }
+
+  @override
+  Future<void> saveEventDeliveryRecord(EventDeliveryRecord record) async {
+    await _eventDeliveryStore
+        .record(record.eventId)
+        .put(_database, record.toJson().cast<String, Object?>());
+  }
+
+  @override
+  Future<void> saveEventDeliveryRecords(
+      List<EventDeliveryRecord> records) async {
+    final keys = records.map((record) => record.eventId).toList();
+    final values = records
+        .map((record) => record.toJson().cast<String, Object?>())
+        .toList();
+    await _eventDeliveryStore.records(keys).put(_database, values);
+  }
+
+  @override
+  Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId) async {
+    final data = await _eventDeliveryStore.record(eventId).get(_database);
+    if (data == null) return null;
+    return EventDeliveryRecord.fromJson(data);
+  }
+
+  @override
+  Future<List<EventDeliveryRecord>> loadEventDeliveryRecords({
+    EventDeliveryStatus? status,
+    int? limit,
+  }) async {
+    final finder = sembast.Finder(
+      filter:
+          status != null ? sembast.Filter.equals('status', status.name) : null,
+      sortOrders: [sembast.SortOrder('createdAt')],
+      limit: limit,
+    );
+    final records = await _eventDeliveryStore.find(_database, finder: finder);
+    return records
+        .map((record) => EventDeliveryRecord.fromJson(record.value))
+        .toList();
+  }
+
+  @override
+  Future<void> removeEventDeliveryRecord(String eventId) async {
+    await _eventDeliveryStore.record(eventId).delete(_database);
+  }
+
+  @override
+  Future<void> removeAllEventDeliveryRecords() async {
+    await _eventDeliveryStore.delete(_database);
+  }
+
+  @override
+  Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target) async {
+    await _relayDeliveryTargetStore
+        .record(target.key)
+        .put(_database, target.toJson().cast<String, Object?>());
+  }
+
+  @override
+  Future<void> saveRelayDeliveryTargets(
+      List<RelayDeliveryTarget> targets) async {
+    final keys = targets.map((target) => target.key).toList();
+    final values = targets
+        .map((target) => target.toJson().cast<String, Object?>())
+        .toList();
+    await _relayDeliveryTargetStore.records(keys).put(_database, values);
+  }
+
+  @override
+  Future<RelayDeliveryTarget?> loadRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    final data = await _relayDeliveryTargetStore
+        .record(_eventSourceKey(eventId, relayUrl))
+        .get(_database);
+    if (data == null) return null;
+    return RelayDeliveryTarget.fromJson(data);
+  }
+
+  @override
+  Future<List<RelayDeliveryTarget>> loadRelayDeliveryTargets({
+    String? eventId,
+    String? relayUrl,
+    RelayDeliveryState? state,
+    bool excludeAcked = false,
+    int? limit,
+  }) async {
+    final filters = <sembast.Filter>[];
+    if (eventId != null) {
+      filters.add(sembast.Filter.equals('eventId', eventId));
+    }
+    if (relayUrl != null) {
+      filters.add(sembast.Filter.equals('relayUrl', relayUrl));
+    }
+    if (state != null) {
+      filters.add(sembast.Filter.equals('state', state.name));
+    }
+    if (excludeAcked) {
+      filters.add(
+          sembast.Filter.notEquals('state', RelayDeliveryState.acked.name));
+    }
+
+    final finder = sembast.Finder(
+      filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      sortOrders: [
+        sembast.SortOrder('nextRetryAt'),
+        sembast.SortOrder('eventId'),
+        sembast.SortOrder('relayUrl'),
+      ],
+      limit: limit,
+    );
+    final records =
+        await _relayDeliveryTargetStore.find(_database, finder: finder);
+    return records
+        .map((record) => RelayDeliveryTarget.fromJson(record.value))
+        .toList();
+  }
+
+  @override
+  Future<void> removeRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    await _relayDeliveryTargetStore
+        .record(_eventSourceKey(eventId, relayUrl))
+        .delete(_database);
+  }
+
+  @override
+  Future<void> removeRelayDeliveryTargets(String eventId) async {
+    await _relayDeliveryTargetStore.delete(
+      _database,
+      finder: sembast.Finder(
+        filter: sembast.Filter.equals('eventId', eventId),
+      ),
+    );
+  }
+
+  @override
+  Future<void> removeAllRelayDeliveryTargets() async {
+    await _relayDeliveryTargetStore.delete(_database);
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecord(
+      DecryptedEventPayloadRecord record) async {
+    await _decryptedEventPayloadStore
+        .record(record.key)
+        .put(_database, record.toJson().cast<String, Object?>());
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecords(
+      List<DecryptedEventPayloadRecord> records) async {
+    final keys = records.map((record) => record.key).toList();
+    final values = records
+        .map((record) => record.toJson().cast<String, Object?>())
+        .toList();
+    await _decryptedEventPayloadStore.records(keys).put(_database, values);
+  }
+
+  @override
+  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    final data = await _decryptedEventPayloadStore
+        .record(_eventSourceKey(eventId, viewerPubKey))
+        .get(_database);
+    if (data == null) return null;
+    return DecryptedEventPayloadRecord.fromJson(data);
+  }
+
+  @override
+  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadStatus? status,
+    int? limit,
+  }) async {
+    final filters = <sembast.Filter>[];
+    if (eventId != null) {
+      filters.add(sembast.Filter.equals('eventId', eventId));
+    }
+    if (viewerPubKey != null) {
+      filters.add(sembast.Filter.equals('viewerPubKey', viewerPubKey));
+    }
+    if (status != null) {
+      filters.add(sembast.Filter.equals('status', status.name));
+    }
+
+    final finder = sembast.Finder(
+      filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      sortOrders: [sembast.SortOrder('createdAt')],
+      limit: limit,
+    );
+
+    final records =
+        await _decryptedEventPayloadStore.find(_database, finder: finder);
+    return records
+        .map((record) => DecryptedEventPayloadRecord.fromJson(record.value))
+        .toList();
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    await _decryptedEventPayloadStore
+        .record(_eventSourceKey(eventId, viewerPubKey))
+        .delete(_database);
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
+    await _decryptedEventPayloadStore.delete(
+      _database,
+      finder: sembast.Finder(
+        filter: sembast.Filter.equals('eventId', eventId),
+      ),
+    );
+  }
+
+  @override
+  Future<void> removeAllDecryptedEventPayloadRecords() async {
+    await _decryptedEventPayloadStore.delete(_database);
+  }
+
+  @override
+  Future<EvictionResult> evict(EvictionPolicy policy) async {
+    final rawEvents = await _loadEventsInternal(applyVisibilityRules: false);
+    final stateRecords = await _loadEventCacheStateRecords();
+    final deliveryRecords = await loadEventDeliveryRecords();
+    final relayTargets = await loadRelayDeliveryTargets();
+    final lockedEventIds = <String>{
+      ...deliveryRecords.map((record) => record.eventId),
+      ...relayTargets.map((target) => target.eventId),
+    };
+    final plan = EventEvictionPlanner.planFromStateRecords(
+      stateRecords: stateRecords,
+      lockedEventIds: lockedEventIds,
+      policy: policy,
+    );
+
+    if (plan.eventIdsToRemove.isEmpty) {
+      return plan.toResult();
+    }
+
+    final removedEvents = rawEvents
+        .where((event) => plan.eventIdsToRemove.contains(event.id))
+        .toList();
+    await _eventsStore
+        .records(plan.eventIdsToRemove.toList())
+        .delete(_database);
+    await _removeEventSidecarsByIds(plan.eventIdsToRemove);
+    await _refreshDerivedStateForPubKeys(
+      removedEvents.map((event) => event.pubKey).toSet(),
+    );
+
+    return plan.toResult();
+  }
+
+  @override
   Future<List<Nip01Event>> loadEvents({
     List<String>? ids,
     List<String>? pubKeys,
@@ -93,6 +435,30 @@ class SembastCacheManager extends CacheManager {
     int? until,
     String? search,
     int? limit,
+  }) async {
+    return _loadEventsInternal(
+      ids: ids,
+      pubKeys: pubKeys,
+      kinds: kinds,
+      tags: tags,
+      since: since,
+      until: until,
+      search: search,
+      limit: limit,
+      applyVisibilityRules: true,
+    );
+  }
+
+  Future<List<Nip01Event>> _loadEventsInternal({
+    List<String>? ids,
+    List<String>? pubKeys,
+    List<int>? kinds,
+    Map<String, List<String>>? tags,
+    int? since,
+    int? until,
+    String? search,
+    int? limit,
+    required bool applyVisibilityRules,
   }) async {
     // Build filter conditions
     final filters = <sembast.Filter>[];
@@ -137,9 +503,13 @@ class SembastCacheManager extends CacheManager {
         .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
         .toList();
 
+    final visibleEvents = applyVisibilityRules
+        ? await _applyEventVisibilityRules(events)
+        : events;
+
     // Filter by tags if specified (done in memory since Sembast doesn't support complex tag filtering)
     if (tags != null && tags.isNotEmpty) {
-      return events.where((event) {
+      return visibleEvents.where((event) {
         return tags.entries.every((tagEntry) {
           var tagName = tagEntry.key;
           final tagValues = tagEntry.value;
@@ -163,11 +533,21 @@ class SembastCacheManager extends CacheManager {
       }).toList();
     }
 
-    return events;
+    return visibleEvents;
   }
 
   @override
   Future<Metadata?> loadMetadata(String pubKey) async {
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: Metadata.kKind,
+    );
+    if (event != null) {
+      final metadata = Metadata.fromEvent(event);
+      metadata.refreshedTimestamp = Helpers.now;
+      return metadata;
+    }
+
     final data = await _metadataStore.record(pubKey).get(_database);
     if (data == null) return null;
     return MetadataExtension.fromJsonStorage(data);
@@ -175,11 +555,7 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
-    final snapshots = await _metadataStore.records(pubKeys).get(_database);
-    return snapshots.map((data) {
-      if (data == null) return null;
-      return MetadataExtension.fromJsonStorage(data);
-    }).toList();
+    return Future.wait(pubKeys.map(loadMetadata));
   }
 
   @override
@@ -220,31 +596,57 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<UserRelayList?> loadUserRelayList(String pubKey) async {
     final data = await _relayListStore.record(pubKey).get(_database);
-    if (data == null) return null;
-    return UserRelayListExtension.fromJsonStorage(data);
+    if (data != null) {
+      return UserRelayListExtension.fromJsonStorage(data);
+    }
+
+    await _refreshUserRelayListProjection(pubKey);
+    final refreshed = await _relayListStore.record(pubKey).get(_database);
+    if (refreshed == null) return null;
+    return UserRelayListExtension.fromJsonStorage(refreshed);
   }
 
   @override
   Future<void> removeAllContactLists() async {
     await _contactListStore.delete(_database);
+    await removeEvents(kinds: [ContactList.kKind]);
   }
 
   @override
   Future<void> removeAllEvents() async {
     await _eventsStore.delete(_database);
+    await _eventCacheStateStore.delete(_database);
+    await _eventSourceStore.delete(_database);
+    await _eventDeliveryStore.delete(_database);
+    await _relayDeliveryTargetStore.delete(_database);
+    await _decryptedEventPayloadStore.delete(_database);
+    await _relayListStore.delete(_database);
   }
 
   @override
   Future<void> removeAllEventsByPubKey(String pubKey) async {
+    final events = await _eventsStore.find(
+      _database,
+      finder: sembast.Finder(
+        filter: sembast.Filter.equals('pubkey', pubKey),
+      ),
+    );
+
     final finder = sembast.Finder(
       filter: sembast.Filter.equals('pubkey', pubKey),
     );
     await _eventsStore.delete(_database, finder: finder);
+    await _removeEventSidecarsByIds(
+        events.map((record) => record.key).toList());
+    await _contactListStore.record(pubKey).delete(_database);
+    await _metadataStore.record(pubKey).delete(_database);
+    await _refreshUserRelayListProjection(pubKey);
   }
 
   @override
   Future<void> removeAllMetadatas() async {
     await _metadataStore.delete(_database);
+    await removeEvents(kinds: [Metadata.kKind]);
   }
 
   @override
@@ -265,11 +667,17 @@ class SembastCacheManager extends CacheManager {
   @override
   Future<void> removeContactList(String pubKey) async {
     await _contactListStore.record(pubKey).delete(_database);
+    await removeEvents(pubKeys: [pubKey], kinds: [ContactList.kKind]);
   }
 
   @override
   Future<void> removeEvent(String id) async {
+    final removed = await loadEvent(id);
     await _eventsStore.record(id).delete(_database);
+    await _removeEventSidecarsByIds([id]);
+    if (removed != null) {
+      await _refreshDerivedStateForEvent(removed);
+    }
   }
 
   @override
@@ -312,13 +720,15 @@ class SembastCacheManager extends CacheManager {
 
     // If tags are specified, we need to load events first and filter in memory
     if (tags != null && tags.isNotEmpty) {
-      final finder = sembast.Finder(
-        filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
+      final events = await _loadEventsInternal(
+        ids: ids,
+        pubKeys: pubKeys,
+        kinds: kinds,
+        tags: null,
+        since: since,
+        until: until,
+        applyVisibilityRules: false,
       );
-      final records = await _eventsStore.find(_database, finder: finder);
-      final events = records
-          .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
-          .toList();
 
       // Filter by tags in memory
       final matchingEvents = events.where((event) {
@@ -344,21 +754,64 @@ class SembastCacheManager extends CacheManager {
       }).toList();
 
       // Delete matching events by ID
-      await _eventsStore
-          .records(matchingEvents.map((e) => e.id).toList())
-          .delete(_database);
+      final eventIdsToRemove = matchingEvents.map((event) => event.id).toList();
+      await _eventsStore.records(eventIdsToRemove).delete(_database);
+      await _removeEventSidecarsByIds(eventIdsToRemove);
+      await _refreshDerivedStateForPubKeys(
+        matchingEvents.map((event) => event.pubKey).toSet(),
+      );
     } else {
       // No tags filter, delete directly with finder
+      final matchingEvents = await _loadEventsInternal(
+        ids: ids,
+        pubKeys: pubKeys,
+        kinds: kinds,
+        tags: tags,
+        since: since,
+        until: until,
+        applyVisibilityRules: false,
+      );
       final finder = sembast.Finder(
         filter: filters.isNotEmpty ? sembast.Filter.and(filters) : null,
       );
       await _eventsStore.delete(_database, finder: finder);
+      await _removeEventSidecarsByIds(
+        matchingEvents.map((event) => event.id).toList(),
+      );
+      await _refreshDerivedStateForPubKeys(
+        matchingEvents.map((event) => event.pubKey).toSet(),
+      );
     }
+  }
+
+  Future<void> _removeEventSidecarsByIds(Iterable<String> eventIds) async {
+    final ids = eventIds.toSet().toList();
+    if (ids.isEmpty) return;
+
+    final filter = sembast.Filter.inList('eventId', ids);
+    await _eventSourceStore.delete(
+      _database,
+      finder: sembast.Finder(filter: filter),
+    );
+    await _eventDeliveryStore.delete(
+      _database,
+      finder: sembast.Finder(filter: filter),
+    );
+    await _relayDeliveryTargetStore.delete(
+      _database,
+      finder: sembast.Finder(filter: filter),
+    );
+    await _decryptedEventPayloadStore.delete(
+      _database,
+      finder: sembast.Finder(filter: filter),
+    );
+    await _eventCacheStateStore.records(ids).delete(_database);
   }
 
   @override
   Future<void> removeMetadata(String pubKey) async {
     await _metadataStore.record(pubKey).delete(_database);
+    await removeEvents(pubKeys: [pubKey], kinds: [Metadata.kKind]);
   }
 
   @override
@@ -379,16 +832,18 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<void> saveContactList(ContactList contactList) async {
+    final event = contactList.toEvent();
+    await saveEvent(event);
     await _contactListStore
         .record(contactList.pubKey)
-        .put(_database, contactList.toJsonForStorage());
+        .put(_database, ContactList.fromEvent(event).toJsonForStorage());
   }
 
   @override
   Future<void> saveContactLists(List<ContactList> contactLists) async {
-    final keys = contactLists.map((c) => c.pubKey).toList();
-    final values = contactLists.map((c) => c.toJsonForStorage()).toList();
-    await _contactListStore.records(keys).put(_database, values);
+    for (final contactList in contactLists) {
+      await saveContactList(contactList);
+    }
   }
 
   @override
@@ -396,6 +851,7 @@ class SembastCacheManager extends CacheManager {
     await _eventsStore
         .record(event.id)
         .put(_database, event.toJsonForStorage());
+    await _refreshDerivedStateForEvent(event);
   }
 
   @override
@@ -403,20 +859,27 @@ class SembastCacheManager extends CacheManager {
     final keys = events.map((e) => e.id).toList();
     final values = events.map((e) => e.toJsonForStorage()).toList();
     await _eventsStore.records(keys).put(_database, values);
+    await _refreshDerivedStateForPubKeys(
+      events.map((event) => event.pubKey).toSet(),
+    );
   }
 
   @override
   Future<void> saveMetadata(Metadata metadata) async {
+    final event = metadata.toEvent();
+    await saveEvent(event);
+    final normalized = Metadata.fromEvent(event);
+    normalized.refreshedTimestamp = metadata.refreshedTimestamp;
     await _metadataStore
         .record(metadata.pubKey)
-        .put(_database, metadata.toJsonForStorage());
+        .put(_database, normalized.toJsonForStorage());
   }
 
   @override
   Future<void> saveMetadatas(List<Metadata> metadatas) async {
-    final keys = metadatas.map((m) => m.pubKey).toList();
-    final values = metadatas.map((m) => m.toJsonForStorage()).toList();
-    await _metadataStore.records(keys).put(_database, values);
+    for (final metadata in metadatas) {
+      await saveMetadata(metadata);
+    }
   }
 
   @override
@@ -455,6 +918,96 @@ class SembastCacheManager extends CacheManager {
     await _relayListStore.records(keys).put(_database, values);
   }
 
+  Future<List<Nip01Event>> _applyEventVisibilityRules(
+      List<Nip01Event> events) async {
+    final visible = <Nip01Event>[];
+    final replaceableWinners = <String, Nip01Event>{};
+    final now = Nip01Event.secondsSinceEpoch();
+    final deletionEvents = await _loadDeletionEvents();
+
+    for (final event in events) {
+      if (_isExpired(event, now)) continue;
+      if (_isDeletedByAuthor(event, deletionEvents)) continue;
+
+      final coordinateKey = _coordinateKey(event);
+      if (coordinateKey == null) {
+        visible.add(event);
+        continue;
+      }
+
+      final current = replaceableWinners[coordinateKey];
+      if (current == null || _isMoreRecentReplaceable(event, current)) {
+        replaceableWinners[coordinateKey] = event;
+      }
+    }
+
+    visible.addAll(replaceableWinners.values);
+    return visible;
+  }
+
+  bool _isDeletedByAuthor(Nip01Event target, List<Nip01Event> deletionEvents) {
+    if (target.kind == 5) return false;
+
+    // Addressable/replaceable events are deleted by coordinate (`a` tag), so a
+    // later version published after the deletion stays visible (NIP-09 only
+    // deletes coordinate matches with created_at <= the deletion).
+    final coordinate = _coordinateKey(target);
+
+    for (final event in deletionEvents) {
+      if (event.kind != 5) continue;
+      if (event.pubKey != target.pubKey) continue;
+      if (event.getTags('e').contains(target.id.toLowerCase())) {
+        return true;
+      }
+      if (coordinate != null &&
+          event.createdAt >= target.createdAt &&
+          event.getTags('a').contains(coordinate)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  Future<List<Nip01Event>> _loadDeletionEvents() async {
+    final records = await _eventsStore.find(
+      _database,
+      finder: sembast.Finder(
+        filter: sembast.Filter.equals('kind', 5),
+      ),
+    );
+
+    return records
+        .map((record) => Nip01EventExtension.fromJsonStorage(record.value))
+        .toList();
+  }
+
+  bool _isExpired(Nip01Event event, int now) {
+    final expirationValue = event.getFirstTag('expiration');
+    if (expirationValue == null) return false;
+    final expiration = int.tryParse(expirationValue);
+    if (expiration == null) return false;
+    return expiration <= now;
+  }
+
+  String? _coordinateKey(Nip01Event event) {
+    if (!_isReplaceableKind(event.kind)) return null;
+    final dTag = event.getDtag() ?? '';
+    return '${event.kind}:${event.pubKey}:$dTag';
+  }
+
+  bool _isReplaceableKind(int kind) {
+    return EventKindClassification.isReplaceableKind(kind);
+  }
+
+  bool _isMoreRecentReplaceable(Nip01Event candidate, Nip01Event current) {
+    if (candidate.createdAt != current.createdAt) {
+      return candidate.createdAt > current.createdAt;
+    }
+
+    return candidate.id.compareTo(current.id) < 0;
+  }
+
   @override
   @Deprecated('Use loadEvents() instead')
   Future<Iterable<Nip01Event>> searchEvents({
@@ -481,31 +1034,129 @@ class SembastCacheManager extends CacheManager {
 
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
-    sembast.Filter? filter;
-    if (search.isNotEmpty) {
-      final pattern = RegExp.escape(search);
-      filter = sembast.Filter.or([
-        sembast.Filter.matchesRegExp(
-            'name', RegExp(pattern, caseSensitive: false)),
-        sembast.Filter.matchesRegExp(
-            'displayName', RegExp(pattern, caseSensitive: false)),
-        sembast.Filter.matchesRegExp(
-            'about', RegExp(pattern, caseSensitive: false)),
-        sembast.Filter.matchesRegExp(
-            'nip05', RegExp(pattern, caseSensitive: false)),
-      ]);
-    }
+    final events = await loadEvents(kinds: [Metadata.kKind]);
+    final normalizedSearch = search.trim().toLowerCase();
+    final matches =
+        events.map((event) => Metadata.fromEvent(event)).where((metadata) {
+      if (normalizedSearch.isEmpty) return true;
+      return metadata.matchesSearch(normalizedSearch) ||
+          (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
+          (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
+    }).toList()
+          ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
+    return matches.take(limit);
+  }
 
-    final finder = sembast.Finder(
-      filter: filter,
-      limit: limit,
-      sortOrders: [sembast.SortOrder('updatedAt', false)],
+  Future<Nip01Event?> _loadLatestVisibleEvent({
+    required String pubKey,
+    required int kind,
+  }) async {
+    final events = await loadEvents(pubKeys: [pubKey], kinds: [kind], limit: 1);
+    if (events.isEmpty) return null;
+    return events.first;
+  }
+
+  Future<void> _refreshDerivedStateForEvent(Nip01Event event) async {
+    await _refreshDerivedStateForPubKeys({event.pubKey});
+  }
+
+  Future<void> _refreshDerivedStateForPubKeys(Set<String> pubKeys) async {
+    for (final pubKey in pubKeys) {
+      final rawPubKeyEvents = await _loadEventsInternal(
+        pubKeys: [pubKey],
+        applyVisibilityRules: false,
+      );
+      await _eventCacheStateStore.delete(
+        _database,
+        finder: sembast.Finder(
+          filter: sembast.Filter.equals('pubKey', pubKey),
+        ),
+      );
+      final stateRecords =
+          EventCacheStateRecord.buildForEvents(rawPubKeyEvents);
+      if (stateRecords.isNotEmpty) {
+        await _eventCacheStateStore
+            .records(stateRecords.map((record) => record.eventId).toList())
+            .put(
+              _database,
+              stateRecords.map((record) => record.toJson()).toList(),
+            );
+      }
+
+      final metadataEvent = await _loadLatestVisibleEvent(
+        pubKey: pubKey,
+        kind: Metadata.kKind,
+      );
+      if (metadataEvent == null) {
+        await _metadataStore.record(pubKey).delete(_database);
+      } else {
+        final metadata = Metadata.fromEvent(metadataEvent);
+        metadata.refreshedTimestamp = Helpers.now;
+        await _metadataStore
+            .record(pubKey)
+            .put(_database, metadata.toJsonForStorage());
+      }
+
+      final contactListEvent = await _loadLatestVisibleEvent(
+        pubKey: pubKey,
+        kind: ContactList.kKind,
+      );
+      if (contactListEvent == null) {
+        await _contactListStore.record(pubKey).delete(_database);
+      } else {
+        await _contactListStore.record(pubKey).put(
+              _database,
+              ContactList.fromEvent(contactListEvent).toJsonForStorage(),
+            );
+      }
+
+      await _refreshUserRelayListProjection(pubKey);
+    }
+  }
+
+  Future<List<EventCacheStateRecord>> _loadEventCacheStateRecords() async {
+    final records = await _eventCacheStateStore.find(_database);
+    return records
+        .map((record) => EventCacheStateRecord.fromJson(record.value))
+        .toList();
+  }
+
+  Future<void> _refreshUserRelayListProjection(String pubKey) async {
+    final events = await loadEvents(
+      pubKeys: [pubKey],
+      kinds: [Nip65.kKind, ContactList.kKind],
     );
 
-    final records = await _metadataStore.find(_database, finder: finder);
-    return records
-        .map((record) => MetadataExtension.fromJsonStorage(record.value))
-        .toList();
+    Nip01Event? latestNip65;
+    Nip01Event? latestContactListWithRelays;
+    for (final event in events) {
+      if (event.kind == Nip65.kKind) {
+        latestNip65 ??= event;
+      } else if (event.kind == ContactList.kKind &&
+          ContactList.relaysFromContent(event).isNotEmpty) {
+        latestContactListWithRelays ??= event;
+      }
+    }
+
+    if (latestNip65 != null) {
+      await _relayListStore.record(pubKey).put(
+            _database,
+            UserRelayList.fromNip65(Nip65.fromEvent(latestNip65))
+                .toJsonForStorage(),
+          );
+      return;
+    }
+
+    if (latestContactListWithRelays != null) {
+      await _relayListStore.record(pubKey).put(
+            _database,
+            UserRelayList.fromNip02EventContent(latestContactListWithRelays)
+                .toJsonForStorage(),
+          );
+      return;
+    }
+
+    await _relayListStore.record(pubKey).delete(_database);
   }
 
   // =====================
@@ -797,6 +1448,10 @@ class SembastCacheManager extends CacheManager {
   Future<void> clearAll() async {
     await Future.wait([
       _eventsStore.delete(_database),
+      _eventSourceStore.delete(_database),
+      _eventDeliveryStore.delete(_database),
+      _relayDeliveryTargetStore.delete(_database),
+      _decryptedEventPayloadStore.delete(_database),
       _metadataStore.delete(_database),
       _contactListStore.delete(_database),
       _relayListStore.delete(_database),
@@ -808,5 +1463,9 @@ class SembastCacheManager extends CacheManager {
       _mintInfoStore.delete(_database),
       _secretCounterStore.delete(_database),
     ]);
+  }
+
+  String _eventSourceKey(String eventId, String relayUrl) {
+    return '$eventId|$relayUrl';
   }
 }

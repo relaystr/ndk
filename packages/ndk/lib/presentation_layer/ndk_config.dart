@@ -5,6 +5,7 @@ import '../config/logger_defaults.dart';
 import '../config/request_defaults.dart';
 import '../data_layer/repositories/signers/bip340_event_signer.dart';
 import '../domain_layer/entities/cashu/cashu_user_seedphrase.dart';
+import '../domain_layer/entities/cache_eviction.dart';
 import '../domain_layer/entities/event_filter.dart';
 import '../domain_layer/entities/nip_85.dart';
 import '../domain_layer/repositories/cache_manager.dart';
@@ -86,8 +87,26 @@ class NdkConfig {
   /// Defaults to 30 seconds.
   Duration authCallbackTimeout;
 
+  /// Interval for retrying pending broadcast deliveries while relays remain connected.
+  Duration pendingDeliveryRetryInterval;
+
   /// Default trusted providers for NIP-85 trusted assertions.
   List<Nip85TrustedProvider> defaultTrustedProviders;
+
+  /// Whether background cache eviction scheduling is enabled.
+  bool cacheEvictionEnabled;
+
+  /// Cache eviction policy used by the background scheduler.
+  EvictionPolicy cacheEvictionPolicy;
+
+  /// Delay before the first scheduled cache eviction run after startup.
+  Duration cacheEvictionStartupDelay;
+
+  /// Interval between background cache eviction runs.
+  Duration cacheEvictionInterval;
+
+  /// Whether to run cache eviction once on startup before periodic runs.
+  bool runCacheEvictionOnStartup;
 
   /// Creates a new instance of [NdkConfig].
   ///
@@ -121,7 +140,13 @@ class NdkConfig {
     this.fetchedRangesEnabled = false,
     this.eagerAuth = false,
     this.authCallbackTimeout = RequestDefaults.DEFAULT_AUTH_CALLBACK_TIMEOUT,
+    this.pendingDeliveryRetryInterval = const Duration(seconds: 15),
     this.defaultTrustedProviders = DEFAULT_NIP85_PROVIDERS,
+    this.cacheEvictionEnabled = false,
+    this.cacheEvictionPolicy = const EvictionPolicy(),
+    this.cacheEvictionStartupDelay = const Duration(minutes: 1),
+    this.cacheEvictionInterval = const Duration(hours: 1),
+    this.runCacheEvictionOnStartup = true,
   });
 }
 

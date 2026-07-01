@@ -13,15 +13,22 @@ void main() {
     late BunkerConnection connection;
     late Ndk ndk;
     late MockRelay mockRelay;
+    var signerInitialized = false;
+    var ndkInitialized = false;
+    var relayInitialized = false;
 
     setUp(() async {
+      signerInitialized = false;
+      ndkInitialized = false;
+      relayInitialized = false;
+
       // Start the mock relay with NIP-46 support
       mockRelay = MockRelay(
         name: 'nip46-test-relay',
         signEvents: true,
-        explicitPort: 4046, // Use a specific port for NIP-46 tests
       );
       await mockRelay.startServer();
+      relayInitialized = true;
 
       ndk = Ndk(
         NdkConfig(
@@ -31,6 +38,8 @@ void main() {
           logLevel: Logger.logLevels.trace,
         ),
       );
+      ndkInitialized = true;
+      await ndk.relays.seedRelaysConnected;
 
       connection = BunkerConnection(
         privateKey:
@@ -45,12 +54,19 @@ void main() {
           requests: ndk.requests,
           broadcast: ndk.broadcast,
           eventSignerFactory: eventSignerFactory);
+      signerInitialized = true;
     });
 
     tearDown(() async {
-      signer.dispose();
-      await ndk.destroy();
-      await mockRelay.stopServer();
+      if (signerInitialized) {
+        signer.dispose();
+      }
+      if (ndkInitialized) {
+        await ndk.destroy();
+      }
+      if (relayInitialized) {
+        await mockRelay.stopServer();
+      }
     });
 
     test('canSign should return true', () {

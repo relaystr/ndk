@@ -87,11 +87,12 @@ class BroadcastState {
   }
 
   /// completes when state update controller closes
-  Future<BroadcastState> get publishDoneFuture => _stateUpdatesController.last;
+  Future<BroadcastState> get publishDoneFuture => _publishDoneCompleter.future;
 
   late final StreamSubscription _networkSubscription;
   Timer? _timeoutTimer;
   bool _isDisposed = false;
+  final Completer<BroadcastState> _publishDoneCompleter = Completer();
 
   bool _timeoutStarted = false;
 
@@ -139,13 +140,18 @@ class BroadcastState {
     _isDisposed = true;
     _timeoutTimer?.cancel();
     _networkSubscription.cancel();
+    if (!_publishDoneCompleter.isCompleted) {
+      _publishDoneCompleter.complete(this);
+    }
     _stateUpdatesController.close();
     networkController.close();
   }
 
   /// Add an error to the broadcast state stream and dispose
   void addError(Object error, [StackTrace? stackTrace]) {
-    _stateUpdatesController.addError(error, stackTrace);
+    if (!_publishDoneCompleter.isCompleted) {
+      _publishDoneCompleter.completeError(error, stackTrace);
+    }
     _dispose();
   }
 

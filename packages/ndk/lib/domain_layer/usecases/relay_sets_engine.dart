@@ -6,6 +6,7 @@ import 'dart:math';
 import '../../config/bootstrap_relays.dart';
 import '../../config/broadcast_defaults.dart';
 import '../../shared/logger/logger.dart';
+import '../../shared/nips/nip01/event_kind_classification.dart';
 import '../../shared/nips/nip01/client_msg.dart';
 import '../../shared/nips/nip01/helpers.dart';
 import '../../shared/helpers/relay_helper.dart';
@@ -58,22 +59,25 @@ class RelaySetsEngine implements NetworkEngine {
       return false;
     }
 
-    final connected = await _relayManager.reconnectRelay(request.url,
-        connectionSource:
-            ConnectionSource.explicit // TODO improve this connection source
-        );
+    final connected = await _relayManager.reconnectRelay(
+      request.url,
+      connectionSource:
+          ConnectionSource.explicit, // TODO improve this connection source
+      force: false,
+    );
     if (connected) {
       RelayConnectivity? relay = _globalState.relays[request.url];
       if (relay != null) {
         relay.stats.activeRequests++;
         try {
-          _relayManager.send(
-              relay,
-              ClientMsg(
-                ClientMsgType.kReq,
-                id: id,
-                filters: request.filters,
-              ));
+          await _relayManager.sendOrThrow(
+            relay,
+            ClientMsg(
+              ClientMsgType.kReq,
+              id: id,
+              filters: request.filters,
+            ),
+          );
         } catch (e) {
           Logger.log
               .e(() => "COULD NOT SEND REQUEST TO ${request.url}:", error: e);
@@ -101,32 +105,78 @@ class RelaySetsEngine implements NetworkEngine {
       eventToPublish: nostrEvent,
       relayUrl: relayUrl,
     );
-    bool connected = false;
+
+    var connected = _relayManager.isRelayConnected(relayUrl);
     Object? error;
-    try {
-      connected = await _relayManager.reconnectRelay(relayUrl,
-          connectionSource: ConnectionSource.broadcastSpecific);
-    } catch (e) {
-      Logger.log.w(
-          () => "Error during reconnectRelay for $relayUrl in doRelayBroadcast",
-          error: e);
-      error = e;
+    if (!connected) {
+      try {
+        final result = await _relayManager.connectRelay(
+          dirtyUrl: relayUrl,
+          connectionSource: ConnectionSource.broadcastSpecific,
+          connectTimeout: 1,
+        );
+        connected = result.first;
+      } catch (e) {
+        Logger.log.w(
+          () => "Error during quick connect for $relayUrl in doRelayBroadcast",
+          error: e,
+        );
+        error = e;
+      }
     }
 
     if (connected) {
+      if (await _shouldSkipObsoleteReplaceableBroadcast(nostrEvent)) {
+        Logger.log.d(() =>
+            'skip obsolete specific-relay broadcast ${nostrEvent.id} for $relayUrl');
+        _relayManager.failBroadcast(
+          nostrEvent.id,
+          relayUrl,
+          'obsolete replaceable event skipped',
+        );
+        return;
+      }
+
       final relayConnectivity = _relayManager.getRelayConnectivity(relayUrl);
       if (relayConnectivity != null) {
-        _relayManager.send(
-            relayConnectivity,
-            ClientMsg(
-              ClientMsgType.kEvent,
-              event: nostrEvent,
-            ));
+        await _relayManager.sendOrThrow(
+          relayConnectivity,
+          ClientMsg(
+            ClientMsgType.kEvent,
+            event: nostrEvent,
+          ),
+        );
         return;
       }
     }
     _relayManager.failBroadcast(
         nostrEvent.id, relayUrl, "Could not connect to relay $relayUrl $error");
+  }
+
+  Future<bool> _shouldSkipObsoleteReplaceableBroadcast(
+    Nip01Event event,
+  ) async {
+    if (!EventKindClassification.isReplaceableKind(event.kind)) {
+      return false;
+    }
+
+    final dTag = event.getDtag();
+    final visibleEvents = await _cacheManager.loadEvents(
+      pubKeys: [event.pubKey],
+      kinds: [event.kind],
+      tags: EventKindClassification.isAddressableKind(event.kind) && dTag != null
+          ? {
+              'd': [dTag],
+            }
+          : null,
+      limit: 1,
+    );
+
+    if (visibleEvents.isEmpty) {
+      return false;
+    }
+
+    return visibleEvents.single.id != event.id;
   }
 
   Future<void> doNostrRequestWithRelaySet(RequestState state,
@@ -172,7 +222,10 @@ class RelaySetsEngine implements NetworkEngine {
 
   @override
   Future<void> handleRequest(RequestState state) async {
-    await _relayManager.seedRelaysConnected;
+    if (state.request.explicitRelays == null ||
+        state.request.explicitRelays!.isEmpty) {
+      await _relayManager.seedRelaysConnected;
+    }
 
     if (state.request.relaySet != null) {
       return await doNostrRequestWithRelaySet(state);
@@ -358,6 +411,8 @@ class RelaySetsEngine implements NetworkEngine {
       publishEvent: nostrEvent,
       broadcastDoneStream: broadcastState.stateUpdates
           .map((state) => state.broadcasts.values.toList()),
+      broadcastDoneFuture: broadcastState.publishDoneFuture
+          .then((state) => state.broadcasts.values.toList()),
     );
   }
 }

@@ -52,11 +52,11 @@ class _VerifiersPerformancePageState extends State<VerifiersPerformancePage> {
     return signedList;
   }
 
-  _verifyEventsWaiting({required EventVerifier verifier}) async {
-    for (final event in _events) {
-      await verifier.verify(event);
-    }
-  }
+  // _verifyEventsWaiting({required EventVerifier verifier}) async {
+  //   for (final event in _events) {
+  //     await verifier.verify(event);
+  //   }
+  // }
 
   _verifyEventsParallel({required EventVerifier verifier}) async {
     final futures = <Future>[];

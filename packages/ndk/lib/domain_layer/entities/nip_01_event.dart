@@ -28,7 +28,13 @@ class Nip01Event {
   /// has signature been validated?
   final bool? validSig;
 
-  /// Relay that an event was received from
+  /// Relay hints attached to the event object.
+  ///
+  /// Deprecated: use cache provenance APIs such as
+  /// `CacheManager.addEventSource(s)` / `loadEventSources()` instead.
+  @Deprecated(
+    'Use CacheManager provenance methods instead of Nip01Event.sources.',
+  )
   final List<String> sources;
 
   /// Creates a new Nostr event.

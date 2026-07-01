@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' show Random;
 
 import 'package:bip340/bip340.dart';
 import 'package:ndk/domain_layer/usecases/bunkers/models/bunker_request.dart';
@@ -14,8 +15,12 @@ import 'package:ndk/shared/nips/nip04/nip04.dart';
 import 'package:ndk/shared/nips/nip44/nip44.dart';
 
 class MockRelay {
+  static final Random _random = Random.secure();
+  static final Set<int> _reservedPorts = <int>{};
+
   String name;
   int? _port;
+  final int? _explicitPort;
   HttpServer? server;
   Map<KeyPair, Nip65>? _nip65s;
   Map<KeyPair, Nip01Event>? textNotes;
@@ -24,9 +29,15 @@ class MockRelay {
   Map<String, Nip01Event> _nip85Assertions =
       {}; // NIP-85 assertions keyed by "author:dTag"
   final Set<Nip01Event> _storedEvents = {}; // Store received events
+  final List<Nip01Event> _receivedEvents = [];
 
   // Track all connected clients with their subscriptions
   final Map<WebSocket, Map<String, List<Filter>>> _clientSubscriptions = {};
+
+  int get connectedClientCount => _clientSubscriptions.length;
+
+  int get activeSubscriptionCount => _clientSubscriptions.values
+      .fold<int>(0, (count, subscriptions) => count + subscriptions.length);
   bool signEvents;
   bool requireAuthForRequests;
   bool requireAuthForEvents;
@@ -37,6 +48,8 @@ class MockRelay {
   int? maxEventsPerRequest;
   int signEventCreatedAtOffsetSeconds;
   String? signEventContentOverride;
+  int rejectFirstEventPublishes;
+  String rejectEventMessage;
 
   // NIP-46 Remote Signer Support
   static const int kNip46Kind = BunkerRequest.kKind;
@@ -46,10 +59,59 @@ class MockRelay {
       "e7158a4379e743889f8ea8cfcdf4bd904cdfde4ff8a1c545aad4590d8a3acccc";
   static const String remoteSignerPublicKey =
       "52f58988d7aaea17936581db7ff19074633557fad37f354323cea579b1025cef";
-
-  static int _startPort = 4040;
-
   String get url => "ws://localhost:$_port";
+
+  static int _pickRandomPort() {
+    while (true) {
+      final candidate = 20000 + _random.nextInt(40000);
+      if (_reservedPorts.add(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  static void _releaseReservedPort(int? port) {
+    if (port != null) {
+      _reservedPorts.remove(port);
+    }
+  }
+
+  List<Nip01Event> matchingEvents(Filter filter) {
+    final events = <Nip01Event>{};
+    events.addAll(_storedEvents);
+    if (textNotes != null) {
+      events.addAll(textNotes!.values);
+    }
+
+    return events.where((event) {
+      if (filter.ids != null &&
+          filter.ids!.isNotEmpty &&
+          !filter.ids!.contains(event.id)) {
+        return false;
+      }
+      if (filter.authors != null &&
+          filter.authors!.isNotEmpty &&
+          !filter.authors!.contains(event.pubKey)) {
+        return false;
+      }
+      if (filter.kinds != null &&
+          filter.kinds!.isNotEmpty &&
+          !filter.kinds!.contains(event.kind)) {
+        return false;
+      }
+      if (filter.tags != null && filter.tags!.isNotEmpty) {
+        for (final entry in filter.tags!.entries) {
+          final eventValues = event.getTags(entry.key);
+          if (!entry.value.any((value) => eventValues.contains(value))) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  List<Nip01Event> get receivedEvents => List.unmodifiable(_receivedEvents);
 
   MockRelay({
     required this.name,
@@ -64,15 +126,12 @@ class MockRelay {
     this.maxEventsPerRequest,
     this.signEventCreatedAtOffsetSeconds = 0,
     this.signEventContentOverride,
+    this.rejectFirstEventPublishes = 0,
+    this.rejectEventMessage = 'rate-limited: retry later',
     int? explicitPort,
-  }) : _nip65s = nip65s {
-    if (explicitPort != null) {
-      _port = explicitPort;
-    } else {
-      _port = _startPort;
-      _startPort++;
-    }
-  }
+  })  : _nip65s = nip65s,
+        _explicitPort = explicitPort,
+        _port = explicitPort ?? _pickRandomPort();
 
   Future<void> startServer({
     Map<KeyPair, Nip65>? nip65s,
@@ -100,8 +159,39 @@ class MockRelay {
       _nip85Assertions = nip85Assertions;
     }
 
-    var server = await HttpServer.bind(InternetAddress.loopbackIPv4, _port!,
-        shared: true);
+    HttpServer? server;
+    Object? lastBindError;
+    StackTrace? lastBindStackTrace;
+
+    for (var attempt = 0; attempt < 10; attempt++) {
+      try {
+        server = await HttpServer.bind(
+          InternetAddress.loopbackIPv4,
+          _port!,
+          shared: false,
+        );
+        break;
+      } on SocketException catch (e, stackTrace) {
+        lastBindError = e;
+        lastBindStackTrace = stackTrace;
+
+        if (_explicitPort != null) {
+          rethrow;
+        }
+
+        _releaseReservedPort(_port);
+        _port = _pickRandomPort();
+      }
+    }
+
+    if (server == null) {
+      Error.throwWithStackTrace(
+        lastBindError ??
+            StateError('Failed to bind mock relay server after retries'),
+        lastBindStackTrace ?? StackTrace.current,
+      );
+    }
+
     this.server = server;
     var stream = server.transform(WebSocketTransformer());
 
@@ -157,6 +247,17 @@ class MockRelay {
         if (eventJson[0] == "EVENT") {
           Nip01Event newEvent = Nip01EventModel.fromJson(eventJson[1]);
           if (verify(newEvent.pubKey, newEvent.id, newEvent.sig!)) {
+            _receivedEvents.add(newEvent);
+            if (rejectFirstEventPublishes > 0) {
+              rejectFirstEventPublishes--;
+              webSocket.add(jsonEncode([
+                "OK",
+                newEvent.id,
+                false,
+                rejectEventMessage,
+              ]));
+              return;
+            }
             bool shouldBroadcastToSubscriptions = true;
 
             // Check auth for events if required (any authenticated user is OK)
@@ -184,6 +285,7 @@ class MockRelay {
                 shouldBroadcastToSubscriptions = false;
               }
             } else if (newEvent.kind == Deletion.kKind) {
+              _storedEvents.add(newEvent);
               final eventIdsToDelete = newEvent.getTags("e");
               for (final idToDelete in eventIdsToDelete) {
                 _storedEvents.removeWhere((e) => idToDelete == e.id);
@@ -615,11 +717,24 @@ class MockRelay {
     });
   }
 
+  /// Closes all connected client sockets while keeping the server running,
+  /// simulating a relay-side disconnect.
+  Future<void> closeClientSockets() async {
+    final sockets = _clientSubscriptions.keys.toList();
+    for (final socket in sockets) {
+      await socket.close();
+    }
+    _clientSubscriptions.clear();
+  }
+
   Future<void> stopServer() async {
     if (server != null) {
       log('Closing server on localhost:$url');
-      await server!.close();
+      await server!.close(force: true);
+      server = null;
+      _clientSubscriptions.clear();
     }
+    _releaseReservedPort(_port);
   }
 
   /// Handle NIP-46 remote signer requests

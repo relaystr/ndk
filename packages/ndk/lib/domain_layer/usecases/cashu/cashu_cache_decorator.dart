@@ -4,6 +4,8 @@ import '../../../shared/helpers/mutex_simple.dart';
 import '../../entities/cashu/cashu_keyset.dart';
 import '../../entities/cashu/cashu_mint_info.dart';
 import '../../entities/cashu/cashu_proof.dart';
+import '../../entities/cache_eviction.dart';
+import '../../entities/event_cache_records.dart';
 import '../../repositories/cache_manager.dart';
 
 class CashuCacheDecorator implements CacheManager {
@@ -119,6 +121,88 @@ class CashuCacheDecorator implements CacheManager {
         keysetId: keysetId,
         counter: counter,
       );
+    });
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecord(
+    DecryptedEventPayloadRecord record,
+  ) async {
+    await _mutex.synchronized(() async {
+      await _delegate.saveDecryptedEventPayloadRecord(record);
+    });
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecords(
+    List<DecryptedEventPayloadRecord> records,
+  ) async {
+    await _mutex.synchronized(() async {
+      await _delegate.saveDecryptedEventPayloadRecords(records);
+    });
+  }
+
+  @override
+  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    return _mutex.synchronized(() async {
+      return _delegate.loadDecryptedEventPayloadRecord(
+        eventId: eventId,
+        viewerPubKey: viewerPubKey,
+      );
+    });
+  }
+
+  @override
+  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadStatus? status,
+    int? limit,
+  }) async {
+    return _mutex.synchronized(() async {
+      return _delegate.loadDecryptedEventPayloadRecords(
+        eventId: eventId,
+        viewerPubKey: viewerPubKey,
+        status: status,
+        limit: limit,
+      );
+    });
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    await _mutex.synchronized(() async {
+      await _delegate.removeDecryptedEventPayloadRecord(
+        eventId: eventId,
+        viewerPubKey: viewerPubKey,
+      );
+    });
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
+    await _mutex.synchronized(() async {
+      await _delegate.removeDecryptedEventPayloadRecords(eventId);
+    });
+  }
+
+  @override
+  Future<void> removeAllDecryptedEventPayloadRecords() async {
+    await _mutex.synchronized(() async {
+      await _delegate.removeAllDecryptedEventPayloadRecords();
+    });
+  }
+
+  @override
+  Future<EvictionResult> evict(EvictionPolicy policy) async {
+    return _mutex.synchronized(() async {
+      return _delegate.evict(policy);
     });
   }
 

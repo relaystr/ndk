@@ -10,7 +10,7 @@ void main() {
   test('broadcast with slow signer should not timeout during signing',
       timeout: Timeout(Duration(seconds: 60)), () async {
     final key = Bip340.generatePrivateKey();
-    final relay = MockRelay(name: "relay", explicitPort: 5097);
+    final relay = MockRelay(name: "relay");
     await relay.startServer();
 
     final ndk = Ndk(NdkConfig(
@@ -18,6 +18,7 @@ void main() {
       cache: MemCacheManager(),
       bootstrapRelays: [relay.url],
     ));
+    await ndk.relays.seedRelaysConnected;
 
     ndk.accounts.loginExternalSigner(
       signer: MockSlowSigner(
@@ -56,7 +57,6 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay",
-      explicitPort: 5098,
       requireAuthForRequests: true,
     );
 
@@ -77,6 +77,7 @@ void main() {
       cache: MemCacheManager(),
       bootstrapRelays: [relay.url],
     ));
+    await ndk.relays.seedRelaysConnected;
 
     ndk.accounts.loginExternalSigner(
       signer: MockSlowSigner(

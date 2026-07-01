@@ -9,10 +9,11 @@ class NdkBroadcastResponse {
   final Nip01Event publishEvent;
 
   final Stream<List<RelayBroadcastResponse>> _broadcastDoneStream;
+  final Future<List<RelayBroadcastResponse>> _broadcastDoneFuture;
 
   /// completes when all relays have responded or timed out
   Future<List<RelayBroadcastResponse>> get broadcastDoneFuture =>
-      _broadcastDoneStream.last;
+      _broadcastDoneFuture;
 
   /// stream of state updates \
   Stream<List<RelayBroadcastResponse>> get broadcastDone =>
@@ -22,5 +23,7 @@ class NdkBroadcastResponse {
   NdkBroadcastResponse({
     required this.publishEvent,
     required Stream<List<RelayBroadcastResponse>> broadcastDoneStream,
-  }) : _broadcastDoneStream = broadcastDoneStream;
+    Future<List<RelayBroadcastResponse>>? broadcastDoneFuture,
+  })  : _broadcastDoneStream = broadcastDoneStream,
+        _broadcastDoneFuture = broadcastDoneFuture ?? broadcastDoneStream.last;
 }

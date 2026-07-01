@@ -129,6 +129,7 @@ class DbNip01Event {
   }
 
   ndk_entities.Nip01Event toNdk() {
+    // ignore: deprecated_member_use
     return ndk_entities.Nip01Event(
       pubKey: pubKey,
       content: content,
@@ -153,6 +154,7 @@ class DbNip01Event {
     dbE.tags = ndkE.tags;
     dbE.sig = ndkE.sig;
     dbE.validSig = ndkE.validSig;
+    // ignore: deprecated_member_use
     dbE.sources = ndkE.sources;
     return dbE;
   }

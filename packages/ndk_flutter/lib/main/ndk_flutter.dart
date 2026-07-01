@@ -109,7 +109,7 @@ class NdkFlutter {
       }
 
       if (account.signer is Nip55EventSigner) {
-        // `signerSeed` holds the signer app package (Amber, Primal, ...) so
+        // `signerSeed` holds the signer app package so
         // silent signing keeps working after restart.
         final signer = account.signer as Nip55EventSigner;
         accounts.accounts.add(

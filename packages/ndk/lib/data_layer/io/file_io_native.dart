@@ -57,10 +57,21 @@ class FileIONative implements FileIO {
   }
 
   @override
-  Stream<FileHashProgress> computeFileHash(String filePath) {
-    return IsolateManager.instance
+  Stream<FileHashProgress> computeFileHash(String filePath) async* {
+    final file = File(filePath);
+    if (!await file.exists()) {
+      throw PathNotFoundException(
+        'Cannot open file',
+        OSError('No such file or directory', 2),
+        filePath,
+      );
+    }
+
+    yield* IsolateManager.instance
         .runInComputeIsolateStream<String, FileHashProgress>(
-            _computeFileHashTask, filePath);
+      _computeFileHashTask,
+      filePath,
+    );
   }
 }
 

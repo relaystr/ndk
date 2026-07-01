@@ -23,6 +23,17 @@ void main() {
       await mockRelay.stopServer();
     });
 
+    Future<void> waitForSubscriptionRegistration() async {
+      final deadline = DateTime.now().add(const Duration(seconds: 2));
+      while (DateTime.now().isBefore(deadline)) {
+        if (mockRelay.activeSubscriptionCount > 0) {
+          return;
+        }
+        await Future.delayed(const Duration(milliseconds: 25));
+      }
+      throw TimeoutException('MockRelay did not register the subscription.');
+    }
+
     test('NDK A receives matching event broadcast by NDK B', () async {
       final keyPair = Bip340.generatePrivateKey();
 
@@ -58,7 +69,7 @@ void main() {
         }
       });
 
-      await Future.delayed(Duration(milliseconds: 200));
+      await waitForSubscriptionRegistration();
 
       final event = Nip01Event(
         pubKey: keyPair.publicKey,
@@ -129,7 +140,7 @@ void main() {
         }
       });
 
-      await Future.delayed(Duration(milliseconds: 200));
+      await waitForSubscriptionRegistration();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final currentEvent = Nip01Event(
@@ -186,6 +197,80 @@ void main() {
         isFalse,
         reason: 'Stale replaceable events should not be broadcast live.',
       );
+    });
+
+    test('live subscription resumes after relay closes the socket', () async {
+      final keyPair = Bip340.generatePrivateKey();
+
+      final ndkA = Ndk(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: MockEventVerifier(),
+          bootstrapRelays: [mockRelay.url],
+        ),
+      );
+      addTearDown(ndkA.destroy);
+
+      final ndkB = Ndk(
+        NdkConfig(
+          cache: MemCacheManager(),
+          eventVerifier: MockEventVerifier(),
+          bootstrapRelays: [mockRelay.url],
+        ),
+      );
+      addTearDown(ndkB.destroy);
+
+      final eventAfterReconnect = Completer<Nip01Event>();
+      final subscription = ndkA.requests.subscription(
+        filter: Filter(
+          kinds: [Nip01Event.kTextNodeKind],
+          authors: [keyPair.publicKey],
+        ),
+      );
+
+      subscription.stream.listen((event) {
+        if (!eventAfterReconnect.isCompleted) {
+          eventAfterReconnect.complete(event);
+        }
+      });
+
+      await waitForSubscriptionRegistration();
+
+      // Backdate the last connect attempt so the reconnect-on-close path is
+      // not suppressed by the FAIL_RELAY_CONNECT_TRY_AFTER_SECONDS throttle.
+      ndkA.relays.globalState.relays[mockRelay.url]!.relay.lastConnectTry = 0;
+
+      // Relay-side disconnect: the server stays up, only the sockets die.
+      await mockRelay.closeClientSockets();
+
+      // NDK A must reconnect and re-send its in-flight REQ on its own.
+      await waitForSubscriptionRegistration();
+
+      final event = Nip01Event(
+        pubKey: keyPair.publicKey,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [],
+        content: 'event after reconnect',
+      );
+      final signedEvent = Nip01Utils.signWithPrivateKey(
+        event: event,
+        privateKey: keyPair.privateKey!,
+      );
+
+      await ndkB.broadcast.broadcast(
+        nostrEvent: signedEvent,
+        specificRelays: [mockRelay.url],
+      ).broadcastDoneFuture;
+
+      final received = await eventAfterReconnect.future.timeout(
+        Duration(seconds: 5),
+        onTimeout: () => throw TimeoutException(
+          'NDK A did not receive events after the relay closed the socket.',
+        ),
+      );
+
+      expect(received.id, equals(signedEvent.id));
+      expect(received.content, equals('event after reconnect'));
     });
   });
 }

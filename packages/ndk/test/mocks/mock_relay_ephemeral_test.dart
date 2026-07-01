@@ -23,6 +23,17 @@ void main() {
       await mockRelay.stopServer();
     });
 
+    Future<void> waitForSubscriptionRegistration() async {
+      final deadline = DateTime.now().add(const Duration(seconds: 2));
+      while (DateTime.now().isBefore(deadline)) {
+        if (mockRelay.activeSubscriptionCount > 0) {
+          return;
+        }
+        await Future.delayed(const Duration(milliseconds: 25));
+      }
+      throw TimeoutException('MockRelay did not register the subscription.');
+    }
+
     test('ephemeral events should be broadcast to matching subscriptions',
         () async {
       final keyPair1 = Bip340.generatePrivateKey();
@@ -63,8 +74,7 @@ void main() {
         }
       });
 
-      // Wait for subscription to be established
-      await Future.delayed(Duration(milliseconds: 200));
+      await waitForSubscriptionRegistration();
 
       // Client 1 sends an ephemeral event (kind 21133 - NIP-46)
       final ephemeralEvent = Nip01Event(

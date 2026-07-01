@@ -27,15 +27,21 @@ void main() {
         defaultQueryTimeout: const Duration(seconds: 5),
       ));
 
-      final stopwatch = Stopwatch()..start();
+      final current = ndk.relays.getRelayConnectivity(relay.url);
+      if (current?.isConnected != true) {
+        await ndk.connectivity.relayConnectivityChanges
+            .firstWhere((relays) => relays[relay.url]?.isConnected == true)
+            .timeout(const Duration(seconds: 10));
+      }
 
-      // Create two identical requests at the same time (same filter)
-      // One will be treated as a duplicate
+      final stopwatch = Stopwatch()..start();
       final filter = Filter(
         kinds: [Nip01Event.kTextNodeKind],
         authors: [key.publicKey],
       );
 
+      // Create two identical requests at the same time (same filter)
+      // One will be treated as a duplicate
       final futures = await Future.wait([
         ndk.requests.query(filter: filter, explicitRelays: [relay.url]).future,
         ndk.requests.query(filter: filter, explicitRelays: [relay.url]).future,

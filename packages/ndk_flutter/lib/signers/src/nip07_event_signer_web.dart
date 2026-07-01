@@ -104,6 +104,15 @@ class Nip07EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }
 
   @override
+  bool get requiresInteractiveSigning => true;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
+  @override
   Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
     if (js.nostr == null) {
       throw Exception('NIP-07 extension not available');

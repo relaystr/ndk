@@ -30,28 +30,30 @@ MaterialApp(
 
 ## Usage
 
-By default, the logged user is used for user widgets, you can overwrite it by providing a pubkey as parameter.
-
 ```dart
-import 'package:nostr_widgets/nostr_widgets.dart';
+import 'package:ndk/ndk.dart';
+import 'package:ndk_flutter/ndk_flutter.dart';
 
-// available widgets
-NBanner(ndk);
-NPicture(ndk);
-NName(ndk);
-NUserProfile(ndk);
-NLogin(ndk);
-NSwitchAccount(ndk);
+// wrap your Ndk instance
+final ndkFlutter = NdkFlutter(ndk: ndk);
 
-final ndkFlutter = NdkFlutter(ndk: ndk)
+// reads saved accounts from secure storage and registers their signers in ndk
+// typically called before runApp
+await ndkFlutter.restoreAccountsState();
 
-// this method read the saved state from secure storage and add the signers in ndk
-// typicaly called before runApp
-ndkFlutter.restoreAccountsState();
+// call this every time the auth state changes
+await ndkFlutter.saveAccountsState();
 
-// call this every time the auth state change
-ndkFlutter.saveAccountsState();
+// available widgets (take ndkFlutter, not ndk)
+NBanner(ndkFlutter: ndkFlutter);
+NPicture(ndkFlutter: ndkFlutter);
+NName(ndkFlutter: ndkFlutter);
+NUserProfile(ndkFlutter: ndkFlutter);
+NLogin(ndkFlutter: ndkFlutter);
+NSwitchAccount(ndkFlutter: ndkFlutter);
 ```
+
+By default, the logged-in user is used for user widgets; you can override it by passing a `pubkey` parameter.
 
 ## TODO
 

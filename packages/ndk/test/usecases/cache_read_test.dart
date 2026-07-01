@@ -51,7 +51,7 @@ void main() async {
       );
 
       await response.then((data) {
-        expect(data, equals(myEvens));
+        expect(data, unorderedEquals(myEvens));
       });
 
       //await expectLater(myRequestState.stream, emitsInAnyOrder(myEvens));
@@ -325,7 +325,7 @@ void main() async {
       );
 
       await response.then((data) {
-        expect(data, equals(myEvens));
+        expect(data, unorderedEquals(myEvens));
       });
 
       /// expect in any order

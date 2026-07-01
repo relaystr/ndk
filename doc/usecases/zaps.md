@@ -4,6 +4,8 @@ icon: zap
 
 [!badge variant="primary" text="high level"]
 
+[!badge text="CLI"](/guides/cli/zaps.md) — `ndk zaps invoice|zap|receipts`
+
 ## Example
 
 :::code source="../../packages/ndk/example/zaps/zap.dart" language="dart" range="18-51" title="zap, receipt" :::

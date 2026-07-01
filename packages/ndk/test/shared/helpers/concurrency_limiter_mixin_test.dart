@@ -11,7 +11,7 @@ class _Limiter with ConcurrencyLimiterMixin {
       : assert(maxConcurrentRequests > 0, 'maxConcurrentRequests must be > 0');
 }
 
-/// Mimics the way a real signer (NIP-07, Amber, NIP-46) drives the mixin:
+/// Mimics the way a real signer (NIP-07, NIP-55, NIP-46) drives the mixin:
 /// each operation is wrapped in `runThrottled`, and we observe the number
 /// of operations that are *actually* executing at the same time.
 class _PeakTrackingSigner with ConcurrencyLimiterMixin {

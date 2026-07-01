@@ -177,6 +177,15 @@ class Nip46EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }
 
   @override
+  bool get requiresInteractiveSigning => true;
+
+  @override
+  bool get requiresSignerNetwork => true;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => connection.relays;
+
+  @override
   Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
     final request = BunkerRequest(
       method: SignerMethod.nip04Decrypt,

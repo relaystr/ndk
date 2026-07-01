@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
+import 'package:ndk/shared/nips/nip01/event_kind_classification.dart';
+import 'package:ndk/shared/nips/nip01/event_eviction_planner.dart';
 import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
@@ -12,10 +15,8 @@ import 'schema/db_cashu_keyset.dart';
 import 'schema/db_cashu_mint_info.dart';
 import 'schema/db_cashu_proof.dart';
 import 'schema/db_cashu_secret_counter.dart';
-import 'schema/db_contact_list.dart';
 import 'schema/db_filter_fetched_range_record.dart';
 import 'schema/db_key_value.dart';
-import 'schema/db_metadata.dart';
 import 'schema/db_nip_01_event.dart';
 import 'schema/db_relay_set.dart';
 import 'schema/db_user_relay_list.dart';
@@ -27,10 +28,20 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       'default_wallet_for_receiving';
   static const String _defaultWalletForSendingKey =
       'default_wallet_for_sending';
+  static const String _eventSourcesKeyPrefix = 'event_sources:';
+  static const String _eventDeliveryRecordKeyPrefix = 'event_delivery_record:';
+  static const String _relayDeliveryTargetKeyPrefix = 'relay_delivery_target:';
+  static const String _decryptedEventPayloadKeyPrefix =
+      'decrypted_event_payload:';
 
   final Completer _initCompleter = Completer();
   Future get dbRdy => _initCompleter.future;
   late ObjectBoxInit _objectBox;
+  final Map<String, Set<String>> _eventSources = {};
+  final Map<String, EventDeliveryRecord> _eventDeliveryRecords = {};
+  final Map<String, RelayDeliveryTarget> _relayDeliveryTargets = {};
+  final Map<String, DecryptedEventPayloadRecord> _decryptedEventPayloadRecords =
+      {};
 
   /// crates objectbox db instace
   /// [attach] to attach to already open instance (e.g. for isolates)
@@ -58,16 +69,12 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<ContactList?> loadContactList(String pubKey) async {
     await dbRdy;
-    final contactListBox = _objectBox.store.box<DbContactList>();
-    final existingContact = contactListBox
-        .query(DbContactList_.pubKey.equals(pubKey))
-        .order(DbContactList_.createdAt, flags: Order.descending)
-        .build()
-        .findFirst();
-    if (existingContact == null) {
-      return null;
-    }
-    return existingContact.toNdk();
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: ContactList.kKind,
+    );
+    if (event == null) return null;
+    return ContactList.fromEvent(event);
   }
 
   @override
@@ -80,6 +87,372 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       return null;
     }
     return existingEvent.toNdk();
+  }
+
+  @override
+  Future<void> addEventSource({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    await addEventSources(eventId: eventId, relayUrls: [relayUrl]);
+  }
+
+  @override
+  Future<void> addEventSources({
+    required String eventId,
+    required Iterable<String> relayUrls,
+  }) async {
+    await dbRdy;
+    final sources = _eventSources.putIfAbsent(eventId, () => <String>{});
+    sources.addAll(relayUrls);
+    final sortedSources = sources.toList()..sort();
+    _upsertKeyValue(
+      _eventSourcesKey(eventId),
+      jsonEncode(sortedSources),
+    );
+  }
+
+  @override
+  Future<List<String>> loadEventSources(String eventId) async {
+    await dbRdy;
+    final cached = _eventSources[eventId];
+    if (cached != null) {
+      final sources = cached.toList()..sort();
+      return sources;
+    }
+    final stored = _getKeyValue(_eventSourcesKey(eventId));
+    if (stored == null) {
+      return [];
+    }
+    final sources =
+        (jsonDecode(stored) as List).map((entry) => entry.toString()).toSet();
+    _eventSources[eventId] = sources;
+    final sortedSources = sources.toList()..sort();
+    return sortedSources;
+  }
+
+  @override
+  Future<void> removeEventSources(String eventId) async {
+    await dbRdy;
+    _eventSources.remove(eventId);
+    _removeKeyValue(_eventSourcesKey(eventId));
+  }
+
+  @override
+  Future<void> saveEventDeliveryRecord(EventDeliveryRecord record) async {
+    await dbRdy;
+    _eventDeliveryRecords[record.eventId] = record;
+    _upsertKeyValue(
+      _eventDeliveryRecordKey(record.eventId),
+      jsonEncode(record.toJson()),
+    );
+  }
+
+  @override
+  Future<void> saveEventDeliveryRecords(
+      List<EventDeliveryRecord> records) async {
+    await dbRdy;
+    for (final record in records) {
+      _eventDeliveryRecords[record.eventId] = record;
+      _upsertKeyValue(
+        _eventDeliveryRecordKey(record.eventId),
+        jsonEncode(record.toJson()),
+      );
+    }
+  }
+
+  @override
+  Future<EventDeliveryRecord?> loadEventDeliveryRecord(String eventId) async {
+    await dbRdy;
+    final cached = _eventDeliveryRecords[eventId];
+    if (cached != null) {
+      return cached;
+    }
+    final stored = _getKeyValue(_eventDeliveryRecordKey(eventId));
+    if (stored == null) {
+      return null;
+    }
+    final record = EventDeliveryRecord.fromJson(
+        jsonDecode(stored) as Map<String, dynamic>);
+    _eventDeliveryRecords[eventId] = record;
+    return record;
+  }
+
+  @override
+  Future<List<EventDeliveryRecord>> loadEventDeliveryRecords({
+    EventDeliveryStatus? status,
+    int? limit,
+  }) async {
+    await dbRdy;
+    final records = _loadKeyValuesByPrefix(_eventDeliveryRecordKeyPrefix)
+        .map(
+          (entry) => EventDeliveryRecord.fromJson(
+            jsonDecode(entry.value!) as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+    _eventDeliveryRecords
+      ..clear()
+      ..addEntries(records.map((record) => MapEntry(record.eventId, record)));
+
+    var filtered = records.where((record) {
+      return status == null || record.status == status;
+    }).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    if (limit != null && limit < filtered.length) {
+      filtered = filtered.take(limit).toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  Future<void> removeEventDeliveryRecord(String eventId) async {
+    await dbRdy;
+    _eventDeliveryRecords.remove(eventId);
+    _removeKeyValue(_eventDeliveryRecordKey(eventId));
+  }
+
+  @override
+  Future<void> removeAllEventDeliveryRecords() async {
+    await dbRdy;
+    _eventDeliveryRecords.clear();
+    _removeKeyValuesByPrefix(_eventDeliveryRecordKeyPrefix);
+  }
+
+  @override
+  Future<void> saveRelayDeliveryTarget(RelayDeliveryTarget target) async {
+    await dbRdy;
+    _relayDeliveryTargets[target.key] = target;
+    _upsertKeyValue(
+      _relayDeliveryTargetKey(target.key),
+      jsonEncode(target.toJson()),
+    );
+  }
+
+  @override
+  Future<void> saveRelayDeliveryTargets(
+      List<RelayDeliveryTarget> targets) async {
+    await dbRdy;
+    for (final target in targets) {
+      _relayDeliveryTargets[target.key] = target;
+      _upsertKeyValue(
+        _relayDeliveryTargetKey(target.key),
+        jsonEncode(target.toJson()),
+      );
+    }
+  }
+
+  @override
+  Future<RelayDeliveryTarget?> loadRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    await dbRdy;
+    final key = '$eventId|$relayUrl';
+    final cached = _relayDeliveryTargets[key];
+    if (cached != null) {
+      return cached;
+    }
+    final stored = _getKeyValue(_relayDeliveryTargetKey(key));
+    if (stored == null) {
+      return null;
+    }
+    final target = RelayDeliveryTarget.fromJson(
+        jsonDecode(stored) as Map<String, dynamic>);
+    _relayDeliveryTargets[key] = target;
+    return target;
+  }
+
+  @override
+  Future<List<RelayDeliveryTarget>> loadRelayDeliveryTargets({
+    String? eventId,
+    String? relayUrl,
+    RelayDeliveryState? state,
+    bool excludeAcked = false,
+    int? limit,
+  }) async {
+    await dbRdy;
+    final targets = _loadKeyValuesByPrefix(_relayDeliveryTargetKeyPrefix)
+        .map(
+          (entry) => RelayDeliveryTarget.fromJson(
+            jsonDecode(entry.value!) as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+    _relayDeliveryTargets
+      ..clear()
+      ..addEntries(targets.map((target) => MapEntry(target.key, target)));
+
+    var filtered = targets.where((target) {
+      if (eventId != null && target.eventId != eventId) {
+        return false;
+      }
+      if (relayUrl != null && target.relayUrl != relayUrl) {
+        return false;
+      }
+      if (state != null && target.state != state) {
+        return false;
+      }
+      if (excludeAcked && target.state == RelayDeliveryState.acked) {
+        return false;
+      }
+      return true;
+    }).toList()
+      ..sort((a, b) {
+        final retryA = a.nextRetryAt ?? 0;
+        final retryB = b.nextRetryAt ?? 0;
+        if (retryA != retryB) {
+          return retryA.compareTo(retryB);
+        }
+        return a.key.compareTo(b.key);
+      });
+
+    if (limit != null && limit < filtered.length) {
+      filtered = filtered.take(limit).toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  Future<void> removeRelayDeliveryTarget({
+    required String eventId,
+    required String relayUrl,
+  }) async {
+    await dbRdy;
+    final key = '$eventId|$relayUrl';
+    _relayDeliveryTargets.remove(key);
+    _removeKeyValue(_relayDeliveryTargetKey(key));
+  }
+
+  @override
+  Future<void> removeRelayDeliveryTargets(String eventId) async {
+    await dbRdy;
+    _relayDeliveryTargets.removeWhere((key, _) => key.startsWith('$eventId|'));
+    _removeKeyValuesByPrefix(_relayDeliveryTargetKeyPrefixForEvent(eventId));
+  }
+
+  @override
+  Future<void> removeAllRelayDeliveryTargets() async {
+    await dbRdy;
+    _relayDeliveryTargets.clear();
+    _removeKeyValuesByPrefix(_relayDeliveryTargetKeyPrefix);
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecord(
+      DecryptedEventPayloadRecord record) async {
+    await dbRdy;
+    _decryptedEventPayloadRecords[record.key] = record;
+    _upsertKeyValue(
+      _decryptedEventPayloadKey(record.key),
+      jsonEncode(record.toJson()),
+    );
+  }
+
+  @override
+  Future<void> saveDecryptedEventPayloadRecords(
+      List<DecryptedEventPayloadRecord> records) async {
+    await dbRdy;
+    for (final record in records) {
+      _decryptedEventPayloadRecords[record.key] = record;
+      _upsertKeyValue(
+        _decryptedEventPayloadKey(record.key),
+        jsonEncode(record.toJson()),
+      );
+    }
+  }
+
+  @override
+  Future<DecryptedEventPayloadRecord?> loadDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    await dbRdy;
+    final key = '$eventId|$viewerPubKey';
+    final cached = _decryptedEventPayloadRecords[key];
+    if (cached != null) {
+      return cached;
+    }
+    final stored = _getKeyValue(_decryptedEventPayloadKey(key));
+    if (stored == null) {
+      return null;
+    }
+    final record = DecryptedEventPayloadRecord.fromJson(
+      jsonDecode(stored) as Map<String, dynamic>,
+    );
+    _decryptedEventPayloadRecords[key] = record;
+    return record;
+  }
+
+  @override
+  Future<List<DecryptedEventPayloadRecord>> loadDecryptedEventPayloadRecords({
+    String? eventId,
+    String? viewerPubKey,
+    DecryptedPayloadStatus? status,
+    int? limit,
+  }) async {
+    await dbRdy;
+    final records = _loadKeyValuesByPrefix(_decryptedEventPayloadKeyPrefix)
+        .map(
+          (entry) => DecryptedEventPayloadRecord.fromJson(
+            jsonDecode(entry.value!) as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+    _decryptedEventPayloadRecords
+      ..clear()
+      ..addEntries(records.map((record) => MapEntry(record.key, record)));
+
+    var filtered = records.where((record) {
+      if (eventId != null && record.eventId != eventId) {
+        return false;
+      }
+      if (viewerPubKey != null && record.viewerPubKey != viewerPubKey) {
+        return false;
+      }
+      if (status != null && record.status != status) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    filtered.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    if (limit != null && limit > 0 && filtered.length > limit) {
+      filtered = filtered.take(limit).toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecord({
+    required String eventId,
+    required String viewerPubKey,
+  }) async {
+    await dbRdy;
+    final key = '$eventId|$viewerPubKey';
+    _decryptedEventPayloadRecords.remove(key);
+    _removeKeyValue(_decryptedEventPayloadKey(key));
+  }
+
+  @override
+  Future<void> removeDecryptedEventPayloadRecords(String eventId) async {
+    await dbRdy;
+    final prefix = '$eventId|';
+    _decryptedEventPayloadRecords
+        .removeWhere((key, _) => key.startsWith(prefix));
+    _removeKeyValuesByPrefix(_decryptedEventPayloadKeyPrefixForEvent(eventId));
+  }
+
+  @override
+  Future<void> removeAllDecryptedEventPayloadRecords() async {
+    await dbRdy;
+    _decryptedEventPayloadRecords.clear();
+    _removeKeyValuesByPrefix(_decryptedEventPayloadKeyPrefix);
   }
 
   @override
@@ -167,57 +540,49 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
 
     // Build and execute the query
     final query = queryBuilder.build();
-    if (limit != null && limit > 0) {
-      query.limit = limit;
-    }
     final results = query.find();
 
-    return results.map((dbEvent) => dbEvent.toNdk()).toList();
+    final deletions = eventBox
+        .query(DbNip01Event_.kind.equals(5))
+        .build()
+        .find()
+        .map((dbEvent) => dbEvent.toNdk())
+        .toList();
+
+    var events = _applyEventVisibilityRules(
+        results.map((dbEvent) => dbEvent.toNdk()).toList(), deletions)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (limit != null && limit > 0 && events.length > limit) {
+      events = events.take(limit).toList();
+    }
+
+    return events;
   }
 
   @override
   Future<Metadata?> loadMetadata(String pubKey) async {
     await dbRdy;
-    final metadataBox = _objectBox.store.box<DbMetadata>();
-    final existingMetadata = metadataBox
-        .query(DbMetadata_.pubKey.equals(pubKey))
-        .order(DbMetadata_.updatedAt, flags: Order.descending)
-        .build()
-        .findFirst();
-    if (existingMetadata == null) {
-      return null;
-    }
-    return existingMetadata.toNdk();
+    final event = await _loadLatestVisibleEvent(
+      pubKey: pubKey,
+      kind: Metadata.kKind,
+    );
+    if (event == null) return null;
+    final metadata = Metadata.fromEvent(event);
+    metadata.refreshedTimestamp = Nip01Event.secondsSinceEpoch();
+    return metadata;
   }
 
   @override
   Future<List<Metadata?>> loadMetadatas(List<String> pubKeys) async {
     await dbRdy;
-    final metadataBox = _objectBox.store.box<DbMetadata>();
-    final existingMetadatas = metadataBox
-        .query(DbMetadata_.pubKey.oneOf(pubKeys))
-        .order(DbMetadata_.updatedAt, flags: Order.descending)
-        .build()
-        .find();
-
-    // Create a map for quick lookup
-    final metadataMap = <String, Metadata>{};
-    for (final dbMetadata in existingMetadatas) {
-      // Only keep the first (most recent) entry per pubKey
-      if (!metadataMap.containsKey(dbMetadata.pubKey)) {
-        metadataMap[dbMetadata.pubKey] = dbMetadata.toNdk();
-      }
-    }
-
-    // Return list in the same order as input, with null for not found
-    return pubKeys.map((pubKey) => metadataMap[pubKey]).toList();
+    return Future.wait(pubKeys.map(loadMetadata));
   }
 
   @override
   Future<void> removeAllContactLists() async {
     await dbRdy;
-    final contactListBox = _objectBox.store.box<DbContactList>();
-    contactListBox.removeAll();
+    await removeEvents(kinds: [ContactList.kKind]);
   }
 
   @override
@@ -225,6 +590,8 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     await dbRdy;
     final eventBox = _objectBox.store.box<DbNip01Event>();
     eventBox.removeAll();
+    _objectBox.store.box<DbUserRelayList>().removeAll();
+    _removeAllEventSidecars();
   }
 
   @override
@@ -233,37 +600,28 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     final eventBox = _objectBox.store.box<DbNip01Event>();
     final events =
         eventBox.query(DbNip01Event_.pubKey.equals(pubKey)).build().find();
+    final eventIds = events.map((e) => e.nostrId).toList();
     eventBox.removeMany(events.map((e) => e.dbId).toList());
+    _removeEventSidecarsByIds(eventIds);
+    await _syncUserRelayListProjection(pubKey);
   }
 
   @override
   Future<void> removeAllMetadatas() async {
     await dbRdy;
-    final metadataBox = _objectBox.store.box<DbMetadata>();
-    metadataBox.removeAll();
+    await removeEvents(kinds: [Metadata.kKind]);
   }
 
   @override
   Future<void> saveContactList(ContactList contactList) async {
     await dbRdy;
-    final contactListBox = _objectBox.store.box<DbContactList>();
-    final existingContact = contactListBox
-        .query(DbContactList_.pubKey.equals(contactList.pubKey))
-        .order(DbContactList_.createdAt, flags: Order.descending)
-        .build()
-        .findFirst();
-    if (existingContact != null) {
-      contactListBox.remove(existingContact.dbId);
-    }
-    contactListBox.put(DbContactList.fromNdk(contactList));
+    await saveEvent(contactList.toEvent());
   }
 
   @override
   Future<void> saveContactLists(List<ContactList> contactLists) async {
     await dbRdy;
-    final contactListBox = _objectBox.store.box<DbContactList>();
-    contactListBox
-        .putMany(contactLists.map((cl) => DbContactList.fromNdk(cl)).toList());
+    await saveEvents(contactLists.map((cl) => cl.toEvent()).toList());
   }
 
   @override
@@ -290,28 +648,13 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<void> saveMetadata(Metadata metadata) async {
     await dbRdy;
-    final metadataBox = _objectBox.store.box<DbMetadata>();
-    final existingMetadatas = metadataBox
-        .query(DbMetadata_.pubKey.equals(metadata.pubKey))
-        .order(DbMetadata_.updatedAt, flags: Order.descending)
-        .build()
-        .find();
-    if (existingMetadatas.length > 1) {
-      metadataBox.removeMany(existingMetadatas.map((e) => e.dbId).toList());
-    }
-    if (existingMetadatas.isNotEmpty &&
-        metadata.updatedAt! < existingMetadatas[0].updatedAt!) {
-      return;
-    }
-    metadataBox.put(DbMetadata.fromNdk(metadata));
+    await saveEvent(metadata.toEvent());
   }
 
   @override
   Future<void> saveMetadatas(List<Metadata> metadatas) async {
     await dbRdy;
-    for (final metadata in metadatas) {
-      await saveMetadata(metadata);
-    }
+    await saveEvents(metadatas.map((metadata) => metadata.toEvent()).toList());
   }
 
   @override
@@ -377,6 +720,11 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<UserRelayList?> loadUserRelayList(String pubKey) async {
     await dbRdy;
+    final fromEvents = await _deriveUserRelayListFromEvents(pubKey);
+    if (fromEvents != null) {
+      return fromEvents;
+    }
+
     final userRelayListBox = _objectBox.store.box<DbUserRelayList>();
     final existingUserRelayList = userRelayListBox
         .query(DbUserRelayList_.pubKey.equals(pubKey))
@@ -387,6 +735,66 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       return null;
     }
     return existingUserRelayList.toNdk();
+  }
+
+  Future<UserRelayList?> _deriveUserRelayListFromEvents(String pubKey) async {
+    final events = await loadEvents(
+      pubKeys: [pubKey],
+      kinds: [Nip65.kKind, ContactList.kKind],
+    );
+
+    Nip01Event? latestNip65;
+    Nip01Event? latestContactListWithRelays;
+    for (final event in events) {
+      if (event.kind == Nip65.kKind) {
+        latestNip65 ??= event;
+      } else if (event.kind == ContactList.kKind &&
+          ContactList.relaysFromContent(event).isNotEmpty) {
+        latestContactListWithRelays ??= event;
+      }
+    }
+
+    if (latestNip65 != null) {
+      return UserRelayList.fromNip65(Nip65.fromEvent(latestNip65));
+    }
+
+    if (latestContactListWithRelays != null) {
+      return UserRelayList.fromNip02EventContent(latestContactListWithRelays);
+    }
+
+    return null;
+  }
+
+  Future<void> _syncUserRelayListProjection(String pubKey) async {
+    final derived = await _deriveUserRelayListFromEvents(pubKey);
+    final userRelayListBox = _objectBox.store.box<DbUserRelayList>();
+    final existingUserRelayList = userRelayListBox
+        .query(DbUserRelayList_.pubKey.equals(pubKey))
+        .build()
+        .findFirst();
+    if (existingUserRelayList != null) {
+      userRelayListBox.remove(existingUserRelayList.dbId);
+    }
+    if (derived != null) {
+      userRelayListBox.put(DbUserRelayList.fromNdk(derived));
+    }
+  }
+
+  Future<void> _syncUserRelayListProjectionForEvent(Nip01Event event) async {
+    if (!_affectsUserRelayListProjection(event.kind)) {
+      return;
+    }
+    await _syncUserRelayListProjection(event.pubKey);
+  }
+
+  Future<void> _syncUserRelayListProjections(Iterable<String> pubKeys) async {
+    for (final pubKey in pubKeys.toSet()) {
+      await _syncUserRelayListProjection(pubKey);
+    }
+  }
+
+  bool _affectsUserRelayListProjection(int kind) {
+    return kind == ContactList.kKind || kind == Nip65.kKind;
   }
 
   @override
@@ -413,14 +821,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<void> removeContactList(String pubKey) async {
     await dbRdy;
-    final contactListBox = _objectBox.store.box<DbContactList>();
-    final existingContact = contactListBox
-        .query(DbContactList_.pubKey.equals(pubKey))
-        .build()
-        .findFirst();
-    if (existingContact != null) {
-      contactListBox.remove(existingContact.dbId);
-    }
+    await removeEvents(pubKeys: [pubKey], kinds: [ContactList.kKind]);
   }
 
   @override
@@ -431,6 +832,71 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
         eventBox.query(DbNip01Event_.nostrId.equals(id)).build().findFirst();
     if (existingEvent != null) {
       eventBox.remove(existingEvent.dbId);
+    }
+    _removeEventSidecarsByIds([id]);
+    if (existingEvent != null) {
+      await _syncUserRelayListProjectionForEvent(existingEvent.toNdk());
+    }
+  }
+
+  @override
+  Future<EvictionResult> evict(EvictionPolicy policy) async {
+    await dbRdy;
+    final eventBox = _objectBox.store.box<DbNip01Event>();
+    final rawEvents = eventBox.getAll().map((event) => event.toNdk()).toList();
+    final deliveryRecords = await loadEventDeliveryRecords();
+    final relayTargets = await loadRelayDeliveryTargets();
+    final lockedEventIds = <String>{
+      ...deliveryRecords.map((record) => record.eventId),
+      ...relayTargets.map((target) => target.eventId),
+    };
+    final plan = EventEvictionPlanner.plan(
+      rawEvents: rawEvents,
+      lockedEventIds: lockedEventIds,
+      policy: policy,
+    );
+
+    if (plan.eventIdsToRemove.isEmpty) {
+      return plan.toResult();
+    }
+
+    final query = eventBox
+        .query(DbNip01Event_.nostrId.oneOf(plan.eventIdsToRemove.toList()))
+        .build();
+    final results = query.find();
+    query.close();
+    eventBox.removeMany(results.map((event) => event.dbId).toList());
+    _removeEventSidecarsByIds(plan.eventIdsToRemove);
+
+    return plan.toResult();
+  }
+
+  void _removeEventSidecarsByIds(Iterable<String> eventIds) {
+    final eventIdSet = eventIds.toSet();
+    if (eventIdSet.isEmpty) return;
+
+    _eventSources.removeWhere((eventId, value) => eventIdSet.contains(eventId));
+    _eventDeliveryRecords.removeWhere(
+      (eventId, value) => eventIdSet.contains(eventId),
+    );
+    _relayDeliveryTargets.removeWhere(
+      (key, target) => eventIdSet.contains(target.eventId),
+    );
+    _decryptedEventPayloadRecords.removeWhere(
+      (key, record) => eventIdSet.contains(record.eventId),
+    );
+    final box = _objectBox.store.box<DbKeyValue>();
+    for (final eventId in eventIdSet) {
+      _removeKeyValue(_eventSourcesKey(eventId), box: box);
+      _removeKeyValue(_eventDeliveryRecordKey(eventId), box: box);
+      _removeKeyValuesByPrefix(
+        _relayDeliveryTargetKeyPrefixForEvent(eventId),
+        box: box,
+      );
+      _removeKeyValuesByPrefix(
+        _decryptedEventPayloadKeyPrefixForEvent(eventId),
+        box: box,
+      );
     }
   }
 
@@ -491,7 +957,83 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
     final results = query.find();
 
     // Remove matching events
+    final removedEventIds = results.map((e) => e.nostrId).toList();
+    final affectedPubKeys = results.map((e) => e.pubKey).toSet();
     eventBox.removeMany(results.map((e) => e.dbId).toList());
+    _removeEventSidecarsByIds(removedEventIds);
+    await _syncUserRelayListProjections(affectedPubKeys);
+  }
+
+  List<Nip01Event> _applyEventVisibilityRules(
+    List<Nip01Event> events,
+    List<Nip01Event> deletions,
+  ) {
+    final visible = <Nip01Event>[];
+    final replaceableWinners = <String, Nip01Event>{};
+    final now = Nip01Event.secondsSinceEpoch();
+
+    for (final event in events) {
+      if (_isExpired(event, now)) continue;
+      if (_isDeletedByAuthor(event, deletions)) continue;
+
+      final coordinateKey = _coordinateKey(event);
+      if (coordinateKey == null) {
+        visible.add(event);
+        continue;
+      }
+
+      final current = replaceableWinners[coordinateKey];
+      if (current == null || _isMoreRecentReplaceable(event, current)) {
+        replaceableWinners[coordinateKey] = event;
+      }
+    }
+
+    visible.addAll(replaceableWinners.values);
+    return visible;
+  }
+
+  bool _isDeletedByAuthor(Nip01Event target, List<Nip01Event> deletions) {
+    if (target.kind == 5) return false;
+
+    for (final deletion in deletions) {
+      if (deletion.pubKey != target.pubKey) continue;
+      if (deletion.getTags('e').contains(target.id.toLowerCase())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool _isExpired(Nip01Event event, int now) {
+    final expirationValue = event.getFirstTag('expiration');
+    if (expirationValue == null) return false;
+    final expiration = int.tryParse(expirationValue);
+    if (expiration == null) return false;
+    return expiration <= now;
+  }
+
+  String? _coordinateKey(Nip01Event event) {
+    if (!EventKindClassification.isReplaceableKind(event.kind)) return null;
+    final dTag = event.getDtag() ?? '';
+    return '${event.kind}:${event.pubKey}:$dTag';
+  }
+
+  bool _isMoreRecentReplaceable(Nip01Event candidate, Nip01Event current) {
+    if (candidate.createdAt != current.createdAt) {
+      return candidate.createdAt > current.createdAt;
+    }
+
+    return candidate.id.compareTo(current.id) < 0;
+  }
+
+  Future<Nip01Event?> _loadLatestVisibleEvent({
+    required String pubKey,
+    required int kind,
+  }) async {
+    final events = await loadEvents(pubKeys: [pubKey], kinds: [kind], limit: 1);
+    if (events.isEmpty) return null;
+    return events.first;
   }
 
   /// Find event DB IDs matching all given tag filters.
@@ -548,14 +1090,7 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<void> removeMetadata(String pubKey) async {
     await dbRdy;
-    final metadataBox = _objectBox.store.box<DbMetadata>();
-    final existingMetadata = metadataBox
-        .query(DbMetadata_.pubKey.equals(pubKey))
-        .build()
-        .findFirst();
-    if (existingMetadata != null) {
-      metadataBox.remove(existingMetadata.dbId);
-    }
+    await removeEvents(pubKeys: [pubKey], kinds: [Metadata.kKind]);
   }
 
   @override
@@ -659,26 +1194,18 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
   @override
   Future<Iterable<Metadata>> searchMetadatas(String search, int limit) async {
     await dbRdy;
-    final metadataBox = _objectBox.store.box<DbMetadata>();
+    final events = await loadEvents(kinds: [Metadata.kKind]);
+    final normalizedSearch = search.trim().toLowerCase();
+    final matches =
+        events.map((event) => Metadata.fromEvent(event)).where((metadata) {
+      if (normalizedSearch.isEmpty) return true;
+      return metadata.matchesSearch(normalizedSearch) ||
+          (metadata.about?.toLowerCase().contains(normalizedSearch) ?? false) ||
+          (metadata.cleanNip05?.contains(normalizedSearch) ?? false);
+    }).toList()
+          ..sort((a, b) => (b.updatedAt ?? 0).compareTo(a.updatedAt ?? 0));
 
-    // Create a query with OR condition
-    final query = metadataBox
-        .query(DbMetadata_.splitNameWords
-            .containsElement(search, caseSensitive: false)
-            .or(DbMetadata_.name
-                .startsWith(search, caseSensitive: false)
-                .or(DbMetadata_.splitDisplayNameWords
-                    .containsElement(search, caseSensitive: false))
-                .or(DbMetadata_.displayName
-                    .startsWith(search, caseSensitive: false))
-                .or(DbMetadata_.nip05
-                    .startsWith(search, caseSensitive: false))))
-        .order(DbMetadata_.name, flags: Order.descending)
-        .build();
-    query..limit = limit;
-    final results = query.find();
-
-    return results.map((dbMetadata) => dbMetadata.toNdk()).take(limit);
+    return matches.take(limit);
   }
 
   @override
@@ -1215,8 +1742,6 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
         store.box<DbNip01Event>().removeAll();
         store.box<DbUserRelayList>().removeAll();
         store.box<DbRelaySet>().removeAll();
-        store.box<DbContactList>().removeAll();
-        store.box<DbMetadata>().removeAll();
         store.box<DbNip05>().removeAll();
         store.box<DbFilterFetchedRangeRecord>().removeAll();
         store.box<DbKeyValue>().removeAll();
@@ -1227,6 +1752,10 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       },
       null,
     );
+    _eventSources.clear();
+    _eventDeliveryRecords.clear();
+    _relayDeliveryTargets.clear();
+    _decryptedEventPayloadRecords.clear();
   }
 
   @override
@@ -1282,5 +1811,76 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       }
     }
     return null;
+  }
+
+  String _eventSourcesKey(String eventId) => '$_eventSourcesKeyPrefix$eventId';
+
+  String _eventDeliveryRecordKey(String eventId) {
+    return '$_eventDeliveryRecordKeyPrefix$eventId';
+  }
+
+  String _relayDeliveryTargetKey(String key) {
+    return '$_relayDeliveryTargetKeyPrefix$key';
+  }
+
+  String _relayDeliveryTargetKeyPrefixForEvent(String eventId) {
+    return '$_relayDeliveryTargetKeyPrefix$eventId|';
+  }
+
+  String _decryptedEventPayloadKey(String key) {
+    return '$_decryptedEventPayloadKeyPrefix$key';
+  }
+
+  String _decryptedEventPayloadKeyPrefixForEvent(String eventId) {
+    return '$_decryptedEventPayloadKeyPrefix$eventId|';
+  }
+
+  String? _getKeyValue(String key) {
+    final box = _objectBox.store.box<DbKeyValue>();
+    final existing = _findKeyValue(box, key);
+    return existing?.value;
+  }
+
+  void _upsertKeyValue(String key, String? value) {
+    final box = _objectBox.store.box<DbKeyValue>();
+    _removeKeyValue(key, box: box);
+    box.put(DbKeyValue(key: key, value: value));
+  }
+
+  void _removeKeyValue(String key, {Box<DbKeyValue>? box}) {
+    final targetBox = box ?? _objectBox.store.box<DbKeyValue>();
+    final existing = _findKeyValue(targetBox, key);
+    if (existing != null) {
+      targetBox.remove(existing.dbId);
+    }
+  }
+
+  List<DbKeyValue> _loadKeyValuesByPrefix(String prefix) {
+    final box = _objectBox.store.box<DbKeyValue>();
+    return box.getAll().where((entry) => entry.key.startsWith(prefix)).toList();
+  }
+
+  void _removeKeyValuesByPrefix(String prefix, {Box<DbKeyValue>? box}) {
+    final targetBox = box ?? _objectBox.store.box<DbKeyValue>();
+    final idsToRemove = targetBox
+        .getAll()
+        .where((entry) => entry.key.startsWith(prefix))
+        .map((entry) => entry.dbId)
+        .toList();
+    if (idsToRemove.isNotEmpty) {
+      targetBox.removeMany(idsToRemove);
+    }
+  }
+
+  void _removeAllEventSidecars() {
+    _eventSources.clear();
+    _eventDeliveryRecords.clear();
+    _relayDeliveryTargets.clear();
+    _decryptedEventPayloadRecords.clear();
+    final box = _objectBox.store.box<DbKeyValue>();
+    _removeKeyValuesByPrefix(_eventSourcesKeyPrefix, box: box);
+    _removeKeyValuesByPrefix(_eventDeliveryRecordKeyPrefix, box: box);
+    _removeKeyValuesByPrefix(_relayDeliveryTargetKeyPrefix, box: box);
+    _removeKeyValuesByPrefix(_decryptedEventPayloadKeyPrefix, box: box);
   }
 }

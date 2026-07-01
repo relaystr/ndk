@@ -74,10 +74,10 @@ class Metadatas {
           (metadata == null ||
               loadedMetadata.updatedAt == null ||
               metadata.updatedAt == null ||
-              loadedMetadata.updatedAt! < metadata.updatedAt! ||
+              loadedMetadata.updatedAt! > metadata.updatedAt! ||
               forceRefresh)) {
         loadedMetadata.refreshedTimestamp = Helpers.now;
-        await _cacheManager.saveMetadata(loadedMetadata);
+        await _cacheManager.saveEvent(loadedMetadata.toEvent());
         metadata = loadedMetadata;
       }
     }
@@ -117,7 +117,7 @@ class Metadatas {
               metadatas[event.pubKey]!.updatedAt! < event.createdAt) {
             metadatas[event.pubKey] = Metadata.fromEvent(event);
             metadatas[event.pubKey]!.refreshedTimestamp = Helpers.now;
-            await _cacheManager.saveMetadata(metadatas[event.pubKey]!);
+            await _cacheManager.saveEvent(event);
             if (onLoad != null) {
               onLoad(metadatas[event.pubKey]!);
             }
@@ -174,7 +174,7 @@ class Metadatas {
 
     metadata.updatedAt = Helpers.now;
     metadata.refreshedTimestamp = Helpers.now;
-    await _cacheManager.saveMetadata(metadata);
+    await _cacheManager.saveEvent(metadata.toEvent());
 
     return metadata;
   }

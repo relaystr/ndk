@@ -3,38 +3,31 @@ import 'package:ndk/ndk.dart';
 import '../../../shared/helpers/relay_helper.dart';
 import '../../../shared/nips/nip09/deletion.dart';
 import '../../../shared/nips/nip25/reactions.dart';
-import '../../entities/broadcast_state.dart';
-import '../../entities/global_state.dart';
-import '../engines/network_engine.dart';
+import 'broadcast_sender.dart';
+import 'pending_broadcast_delivery.dart';
 
-/// class for low level nostr broadcasts / publish \
-/// wraps the engines to inject singer
+/// Public-facing broadcast facade. \
+/// Delegates immediate sending to [BroadcastSender] and coordinates pending
+/// delivery enrollment for specific-relay broadcasts. \
+/// The retry path in [PendingBroadcastDelivery] calls [BroadcastSender] directly,
+/// so it never re-enters this facade's enrollment logic.
 class Broadcast {
-  final NetworkEngine _engine;
+  final BroadcastSender _sender;
   final Accounts _accounts;
   final CacheManager _cacheManager;
-  final GlobalState _globalState;
-  final double _considerDonePercent;
-  final Duration _timeout;
-  final bool _saveToCache;
+  final PendingBroadcastDelivery? _pendingDelivery;
 
-  /// creates a new [Broadcast] instance
+  /// creates a new [Broadcast] facade instance
   ///
   Broadcast({
-    required GlobalState globalState,
-    required CacheManager cacheManager,
-    required NetworkEngine networkEngine,
+    required BroadcastSender broadcastSender,
     required Accounts accounts,
-    required double considerDonePercent,
-    required Duration timeout,
-    required bool saveToCache,
-  })  : _accounts = accounts,
+    required CacheManager cacheManager,
+    required PendingBroadcastDelivery pendingDelivery,
+  })  : _sender = broadcastSender,
+        _accounts = accounts,
         _cacheManager = cacheManager,
-        _engine = networkEngine,
-        _globalState = globalState,
-        _considerDonePercent = considerDonePercent,
-        _timeout = timeout,
-        _saveToCache = saveToCache;
+        _pendingDelivery = pendingDelivery;
 
   /// [throws] if the default signer and the custom signer are null \
   /// [returns] the signer that is not null, if both are provided returns [customSigner]
@@ -60,34 +53,123 @@ class Broadcast {
     Duration? timeout,
     bool? saveToCache,
   }) {
-    final myConsiderDonePercent = considerDonePercent ?? _considerDonePercent;
-    final myTimeout = timeout ?? _timeout;
-    final mySaveToCache = saveToCache ?? _saveToCache;
-
-    final broadcastState = BroadcastState(
-      considerDonePercent: myConsiderDonePercent,
-      timeout: myTimeout,
-    );
-    // register broadcast state
-    _globalState.inFlightBroadcasts[nostrEvent.id] = broadcastState;
-
-    // save event to cache if enabled
-    if (mySaveToCache) {
-      _cacheManager.saveEvent(nostrEvent);
-    }
-
+    // prep for pending delivery enrollment
+    final cleanedSpecificRelays =
+        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
     final signer = nostrEvent.sig == null
         ? _checkSinger(customSigner: customSigner)
         : null;
 
-    final cleanedSpecificRelays =
-        specificRelays != null ? cleanRelayUrls(specificRelays.toList()) : null;
-
-    return _engine.handleEventBroadcast(
+    // delegate immediate send to the sender
+    final response = _sender.broadcast(
       nostrEvent: nostrEvent,
-      signer: signer,
-      specificRelays: cleanedSpecificRelays,
-      broadcastState: broadcastState,
+      specificRelays: specificRelays,
+      customSigner: customSigner,
+      considerDonePercent: considerDonePercent,
+      timeout: timeout,
+      saveToCache: saveToCache,
+    );
+    final responseDoneFuture = response.broadcastDoneFuture;
+
+    // enroll in pending delivery for specific-relay broadcasts
+    final pendingDelivery = _pendingDelivery;
+    Future<void>? pendingEnrollment;
+    if (pendingDelivery != null &&
+        cleanedSpecificRelays != null &&
+        cleanedSpecificRelays.isNotEmpty) {
+      pendingEnrollment = pendingDelivery.enqueueSpecificRelayBroadcast(
+        event: nostrEvent,
+        relayUrls: cleanedSpecificRelays,
+        requiresInteractiveSigning:
+            signer != null && signer.requiresInteractiveSigning,
+      );
+      responseDoneFuture.then(
+        (responses) => pendingEnrollment!.then(
+          (_) => pendingDelivery.persistSpecificRelayBroadcastResult(
+            nostrEvent,
+            responses,
+          ),
+          onError: (_, __) {},
+        ),
+        onError: (_, __) {},
+      );
+    }
+
+    if (pendingEnrollment == null) {
+      return response;
+    }
+
+    final broadcastDoneFuture = pendingEnrollment.then(
+      (_) => responseDoneFuture,
+    );
+    return NdkBroadcastResponse(
+      publishEvent: response.publishEvent,
+      broadcastDoneStream: response.broadcastDone,
+      broadcastDoneFuture: broadcastDoneFuture,
+    );
+  }
+
+  /// Returns the joined persisted local-first delivery state for one event id.
+  ///
+  /// This lets apps inspect events that may still exist only locally after a
+  /// restart, including the last persisted per-relay outcome.
+  Future<EventDeliverySnapshot?> loadEventDelivery(String eventId) async {
+    final record = await _cacheManager.loadEventDeliveryRecord(eventId);
+    if (record == null) {
+      return null;
+    }
+
+    return _loadSnapshotForRecord(record);
+  }
+
+  /// Lists persisted delivery items.
+  ///
+  /// By default this returns only events that are not fully delivered yet.
+  Future<List<EventDeliverySnapshot>> loadDeliveries({
+    bool pendingOnly = true,
+    EventDeliveryStatus? status,
+    int? limit,
+  }) async {
+    final records = await _cacheManager.loadEventDeliveryRecords(
+      status: status,
+      limit: limit,
+    );
+    records.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    final snapshots = <EventDeliverySnapshot>[];
+    for (final record in records) {
+      if (pendingOnly && record.status == EventDeliveryStatus.delivered) {
+        continue;
+      }
+      snapshots.add(await _loadSnapshotForRecord(record));
+    }
+
+    return snapshots;
+  }
+
+  /// Convenience alias for app UIs that want items still pending broadcast.
+  Future<List<EventDeliverySnapshot>> loadPendingDeliveries({
+    int? limit,
+  }) {
+    return loadDeliveries(
+      pendingOnly: true,
+      limit: limit,
+    );
+  }
+
+  Future<EventDeliverySnapshot> _loadSnapshotForRecord(
+    EventDeliveryRecord record,
+  ) async {
+    final event = await _cacheManager.loadEvent(record.eventId);
+    final relayTargets = await _cacheManager.loadRelayDeliveryTargets(
+      eventId: record.eventId,
+    );
+    relayTargets.sort((a, b) => a.relayUrl.compareTo(b.relayUrl));
+
+    return EventDeliverySnapshot(
+      event: event,
+      record: record,
+      relayTargets: relayTargets,
     );
   }
 

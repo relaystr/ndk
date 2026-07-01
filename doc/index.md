@@ -12,18 +12,19 @@ NDK (Nostr Development Kit) is a Dart library that enhances the Nostr developmen
 NDK supplies you with high-level usecases like lists or metadata while still allowing you to use low-level queries enhanced with inbox/outbox (gossip) by default.\
 Our Target is to make it easy to build constrained Nostr clients, particularly for mobile devices.
 
+!!!
+Want to see NDK in action?
+
+The repository includes a **sample app** that demonstrates many implemented
+features, usecases, and Flutter widgets end to end.
+
+- [sample app live demo](https://dart-nostr.com/app/)
+- source: `packages/sample-app`
+!!!
+
 ## Apps using NDK
 
-- [sample app](https://dart-nostr.com/app/)
-- [yana](https://github.com/frnandu/yana)
-- [camelus](https://github.com/leo-lox/camelus)
-- [zap.stream](https://github.com/nostrlabs-io/zap-stream-flutter)
-- [zapstore](https://github.com/zapstore/zapstore)
-- [freeflow](https://github.com/nostrlabs-io/freeflow)
-- [hostr](https://github.com/sudonym-btc/hostr)
-- [bitblik](https://github.com/bit-blik)
-- [donow](https://github.com/nogringo/donow)
-- [submarine](https://github.com/nogringo/submarine)
+- [sample app](https://dart-nostr.com/app/), [yana](https://github.com/frnandu/yana), [camelus](https://github.com/leo-lox/camelus), [zap.stream](https://github.com/nostrlabs-io/zap-stream-flutter), [zapstore](https://github.com/zapstore/zapstore), [freeflow](https://github.com/nostrlabs-io/freeflow), [hostr](https://github.com/sudonym-btc/hostr), [bitblik](https://github.com/bit-blik/bitblik), [donow](https://github.com/nogringo/donow), [submarine](https://github.com/nogringo/submarine), [nostr-mail-client](https://github.com/nogringo/nostr-mail-client)
 
 # ➡️ [Getting Started 🔗](https://dart-nostr.com/guides/getting-started/)
 
@@ -40,18 +41,23 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - **Smart caching** to reduce network bandwidth and improve performance
 - **Concurrent event streaming** from both cache and network
 - **Request coverage control** to specify desired relay coverage per request
+- **Local-first delivery** so events can become visible from cache before every relay confirms them
+- **Background retry and recovery** for relay delivery across reconnects, periodic due-retry, and restart persistence when using a persistent cache
+- **Visibility-aware reads** that apply replaceable winner selection, expiration filtering, and deletion suppression consistently
 
 ### Account & Authentication
 
-- **Multiple signer support**: Built-in (BIP-340), WebEventSigner (fast web crypto), Amber, NIP-07 (web), and NIP-46 (remote signing/bunkers)
+- **Multiple signer support**: Built-in (BIP-340), WebEventSigner (fast web crypto), NIP-55 external signers, NIP-07 (web), and NIP-46 (remote signing/bunkers)
 - **Account management** with state tracking and multiple account support
 - **Relay authentication** (NIP-42) for private relay access
+- **Delayed external signing support** so local-first publish can survive signer approval delays or temporary signer unavailability
 
 ### High-Level Use Cases
 
 - **Metadata management**: Query and update user profiles with automatic caching
 - **Contact lists**: Follow/unfollow users and manage contact lists
 - **NIP-51 lists**: Public and private relay sets, mute lists, and custom lists
+- **DMs**: Cached direct-message loading with decrypted payload reuse and live updates
 - **Gift wrap** (NIP-59): Encrypted, metadata-obscured messaging
 - **Zaps** (NIP-57): Lightning payments on Nostr
 - **Nostr Wallet Connect** (NIP-47): Integrate Lightning wallets
@@ -67,6 +73,7 @@ Our Target is to make it easy to build constrained Nostr clients, particularly f
 - **Event verification**: BIP-340, Rust-based (recommended for mobile/desktop), or `NdkEventVerifier` from `ndk_flutter` (recommended for Flutter apps)
 - **Comprehensive logging** with configurable log levels and outputs
 - **Clean architecture** for maintainability and extensibility
+- **Decrypted payload sidecar cache** to avoid repeatedly asking slow or remote signers to decrypt the same encrypted events
 
 ## not Included
 

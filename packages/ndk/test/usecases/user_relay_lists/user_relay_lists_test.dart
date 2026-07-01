@@ -53,6 +53,7 @@ void main() async {
 
     tearDown(() async {
       await ndk.destroy();
+      await relay0.stopServer();
     });
 
     test('user relay lists equal', () {

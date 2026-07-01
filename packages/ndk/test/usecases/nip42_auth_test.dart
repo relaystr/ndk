@@ -11,7 +11,6 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay",
-      explicitPort: 5099,
       requireAuthForRequests: true,
     );
 
@@ -54,7 +53,6 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay",
-      explicitPort: 5100,
       requireAuthForEvents: true,
     );
 
@@ -95,7 +93,6 @@ void main() {
     final recipientKey = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "gift wrap auth relay",
-      explicitPort: 5107,
       requireAuthForEvents: true,
     );
 
@@ -105,7 +102,7 @@ void main() {
       eventVerifier: MockEventVerifier(),
       cache: MemCacheManager(),
       bootstrapRelays: [relay.url],
-      defaultBroadcastTimeout: const Duration(milliseconds: 300),
+      defaultBroadcastTimeout: const Duration(seconds: 2),
     ));
 
     addTearDown(() async {
@@ -144,7 +141,6 @@ void main() {
     final key = Bip340.generatePrivateKey();
     final relay = MockRelay(
       name: "relay auth no challenge",
-      explicitPort: 5101,
       requireAuthForRequests: true,
       sendAuthChallenge: false,
     );

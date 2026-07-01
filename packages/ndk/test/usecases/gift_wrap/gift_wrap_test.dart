@@ -31,6 +31,7 @@ void main() {
       accounts: ndk.accounts,
       eventVerifier: MockEventVerifier(),
       eventSignerFactory: ndk.config.eventSignerFactory,
+      decryptedEventPayloads: ndk.decryptedEventPayloads,
     );
   });
 

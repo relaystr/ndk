@@ -2,8 +2,8 @@ package relaystr.ndk
 
 /// Constants for the NIP-55 "Android Signer Application" protocol.
 ///
-/// NIP-55 is a protocol implemented by several external signer apps
-/// (Amber, Primal, Aegis, ...). The wire format below is generic.
+/// NIP-55 is a protocol implemented by several external signer apps.
+/// The wire format below is generic.
 
 const val nostrSignerScheme = "nostrsigner"
 

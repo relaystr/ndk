@@ -625,7 +625,7 @@ void main() async {
       await ndk.config.cache.saveEvent(version2);
       await ndk.config.cache.saveEvent(version3);
 
-      // Verify all versions are in cache
+      // Verify only the canonical current version is visible in cache
       List<Nip01Event> cachedBefore = await ndk.config.cache.loadEvents(
         kinds: [articleKind],
         pubKeys: [key0.publicKey],
@@ -633,7 +633,8 @@ void main() async {
           'd': [dTag]
         },
       );
-      expect(cachedBefore.length, 3);
+      expect(cachedBefore.length, 1);
+      expect(cachedBefore.first.content, 'version 3');
 
       // Delete using eventAndAllVersions
       await ndk.broadcast

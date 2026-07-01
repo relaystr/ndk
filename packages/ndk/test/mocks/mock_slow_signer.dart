@@ -3,7 +3,7 @@ import 'package:ndk/domain_layer/entities/pending_signer_request.dart';
 import 'package:ndk/domain_layer/repositories/event_signer.dart';
 
 /// A wrapper signer that adds a delay to simulate slow signing
-/// (like NIP-46, Amber, etc.) where user interaction is required.
+/// (like NIP-46, NIP-55, etc.) where user interaction is required.
 class MockSlowSigner implements EventSigner {
   final EventSigner _innerSigner;
   final Duration _delay;
@@ -13,6 +13,17 @@ class MockSlowSigner implements EventSigner {
     required Duration delay,
   })  : _innerSigner = innerSigner,
         _delay = delay;
+
+  @override
+  bool get requiresInteractiveSigning =>
+      _innerSigner.requiresInteractiveSigning;
+
+  @override
+  bool get requiresSignerNetwork => _innerSigner.requiresSignerNetwork;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls =>
+      _innerSigner.signerTransportRelayUrls;
 
   @override
   Future<Nip01Event> sign(Nip01Event event) async {

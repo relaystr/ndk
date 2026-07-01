@@ -13,6 +13,7 @@ import 'package:ndk_flutter/ndk_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_handler/protocol_handler.dart';
 
+import 'dm_live_state.dart';
 import 'l10n/generated/sample_app_localizations.dart';
 
 
@@ -21,6 +22,8 @@ bool signerAppAvailable = false;
 late Ndk ndk;
 final ndkFlutter = NdkFlutter(ndk: ndk);
 final localeNotifier = ValueNotifier<Locale>(const Locale('en'));
+DmLiveState? _dmLiveState;
+DmLiveState get dmLiveState => _dmLiveState ??= DmLiveState(ndk: ndk)..start();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +62,7 @@ Future<void> main() async {
       ),
     ),
   );
+  final _ = dmLiveState;
 
   await ndkFlutter.restoreAccountsState();
 
@@ -132,7 +136,10 @@ class _MyAppState extends State<MyApp> with ProtocolListener {
         routerConfig: appRouter,
         builder: (context, child) => Stack(
           children: [
-            child ?? const SizedBox.shrink(),
+            SafeArea(
+              top: false,
+              child: child ?? const SizedBox.shrink(),
+            ),
             NPendingRequests(ndkFlutter: ndkFlutter),
           ],
         ),

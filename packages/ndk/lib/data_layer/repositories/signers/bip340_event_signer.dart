@@ -63,6 +63,15 @@ class Bip340EventSigner implements EventSigner {
   });
 
   @override
+  bool get requiresInteractiveSigning => false;
+
+  @override
+  bool get requiresSignerNetwork => false;
+
+  @override
+  Iterable<String> get signerTransportRelayUrls => const <String>[];
+
+  @override
   Future<Nip01Event> sign(Nip01Event event) async {
     if (Helpers.isNotBlank(privateKey)) {
       return event.copyWith(sig: Bip340.sign(event.id, privateKey!));

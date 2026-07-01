@@ -4,6 +4,7 @@ import 'package:ndk/data_layer/repositories/wallets/sembast_wallets_repo.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
 import 'package:ndk/ndk.dart';
 
+import 'cli_accounts_store.dart';
 import 'cli_command.dart';
 
 class NdkCliApp {
@@ -51,12 +52,24 @@ class NdkCliApp {
     }
 
     final walletsRepo = await _createWalletsRepo();
-    final ndk = _createNdk(walletsRepo, globalOptions.logLevel);
+    final cache = await _createCache();
+    final ndk = _createNdk(walletsRepo, cache, globalOptions.logLevel);
     try {
-      return await command.run(
-          globalOptions.commandArgs.sublist(1), ndk, walletsRepo);
+      final accountsStore = await CliAccountsStore.load();
+      if (accountsStore.records.isNotEmpty) {
+        await restoreAccountsIntoNdk(ndk: ndk, store: accountsStore);
+      }
+      return await command.run(globalOptions.commandArgs.sublist(1), ndk,
+          walletsRepo, accountsStore);
     } finally {
-      await ndk.destroy();
+      // Swallow cleanup errors so a failing exit code reflects the actual
+      // command result, not post-run teardown noise (cashu wallet disposal
+      // can throw when no seed is configured).
+      try {
+        await ndk.destroy();
+      } catch (e) {
+        // ignore
+      }
     }
   }
 
@@ -99,11 +112,21 @@ class NdkCliApp {
     );
   }
 
-  Ndk _createNdk(WalletsRepo walletsRepo, LogLevel logLevel) {
+  Future<SembastCacheManager> _createCache() {
+    // Persist proofs/keysets/mint infos next to wallets_db.db so cashu
+    // operations work across CLI invocations.
+    return SembastCacheManager.create(
+      databasePath: '.',
+      databaseName: 'ndk_cache',
+    );
+  }
+
+  Ndk _createNdk(
+      WalletsRepo walletsRepo, SembastCacheManager cache, LogLevel logLevel) {
     Logger.setLogLevel(logLevel);
     return Ndk(
       NdkConfig(
-        cache: MemCacheManager(),
+        cache: cache,
         walletsRepo: walletsRepo,
         eventVerifier: _CliEventVerifier(),
         bootstrapRelays: const [],

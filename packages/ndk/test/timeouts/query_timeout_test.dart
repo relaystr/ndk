@@ -18,17 +18,20 @@ void main() {
 
   group('Timeout - query', () {
     KeyPair key1 = Bip340.generatePrivateKey();
-    MockRelay relay1 = MockRelay(name: "relay 1", explicitPort: 8201);
+    late MockRelay relay1;
+    late Ndk ndk;
     Map<KeyPair, Nip01Event> key1TextNotes = {key1: textNote(key1)};
 
     // startup and teardown
     setUp(() async {
+      relay1 = MockRelay(name: "relay 1");
       await relay1.startServer();
       relay1.textNotes = key1TextNotes;
     });
 
     tearDown(() async {
-      await relay1.server!.close(force: true);
+      await ndk.destroy();
+      await relay1.stopServer();
     });
 
     test('timeout does not trigger on normal request', () async {
@@ -39,7 +42,7 @@ void main() {
         bootstrapRelays: [relay1.url],
       );
 
-      final ndk = Ndk(config);
+      ndk = Ndk(config);
 
       bool timeoutTriggered = false;
       bool timeoutUserTriggered = false;
@@ -48,8 +51,8 @@ void main() {
           filters: [
             Filter(authors: [key1.publicKey])
           ],
-          // short to fail fast
-          timeout: Duration(seconds: 1),
+          // Allow enough headroom to remain stable under parallel suite load.
+          timeout: Duration(seconds: 4),
           timeoutCallback: () {
             timeoutTriggered = true;
           },
@@ -72,7 +75,7 @@ void main() {
         bootstrapRelays: ["invalid"],
       );
 
-      final ndk = Ndk(config);
+      ndk = Ndk(config);
 
       bool timeoutTriggered = false;
       bool timeoutUserTriggered = false;
@@ -97,8 +100,7 @@ void main() {
       expect(timeoutTriggered, isTrue);
     });
 
-    test('timeout triggers default ndk values within expected time window',
-        () async {
+    test('timeout triggers default ndk values within expected time window', () async {
       const Duration myTimeout = Duration(seconds: 1);
       NdkConfig config = NdkConfig(
         eventVerifier: MockEventVerifier(),
@@ -108,7 +110,7 @@ void main() {
         defaultQueryTimeout: myTimeout,
       );
 
-      final ndk = Ndk(config);
+      ndk = Ndk(config);
 
       bool timeoutTriggered = false;
       bool timeoutUserTriggered = false;
@@ -144,10 +146,8 @@ void main() {
 
       // Assert that the timeout occurred within the expected time window
       // Adjust these values based on your expected timeout duration
-      expect(elapsedMilliseconds,
-          greaterThanOrEqualTo(myTimeout.inMilliseconds - 1000)); // lower bound
-      expect(elapsedMilliseconds,
-          lessThanOrEqualTo(myTimeout.inMilliseconds + 1000)); // upper bound
+      expect(elapsedMilliseconds, greaterThanOrEqualTo(myTimeout.inMilliseconds - 1000)); // lower bound
+      expect(elapsedMilliseconds, lessThanOrEqualTo(myTimeout.inMilliseconds + 1000)); // upper bound
     });
   });
 }

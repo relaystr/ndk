@@ -20,7 +20,7 @@ Run build runner: (e.g for generating mocks)\
 
 The repo is setup as a monorepo and packages are split to enable user choice of what to include.\
 The main package is `ndk` which is the main entry point for the lib user. \
-Other packages like `objectbox` or `amber` are optional and can be included if needed.
+Other packages like `objectbox` or `ndk_flutter` are optional and can be included if needed.
 
 NDK uses Clean Architecture. Reasons for it being clear separation of concerns and therefore making it more accessible for future contributors.\
 You can read more about it [here](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).

@@ -38,7 +38,13 @@ class UserRelayList {
   }
 
   Nip65 toNip65() {
-    return Nip65.fromMap(pubKey, relays);
+    return Nip65(
+      pubKey: pubKey,
+      relays: {
+        for (final entry in relays.entries) entry.key: entry.value,
+      },
+      createdAt: createdAt,
+    );
   }
 
   static UserRelayList fromNip02EventContent(Nip01Event event) {

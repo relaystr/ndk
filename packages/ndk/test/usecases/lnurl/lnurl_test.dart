@@ -52,6 +52,8 @@ void main() {
       final Lnurl lnurl = Lnurl(transport: transport);
 
       final link = 'https://invalid.com';
+      when(client.get(Uri.parse(link), headers: {"Accept": "application/json"}))
+          .thenAnswer((_) async => http.Response('not found', 404));
 
       var lnurlResponse = await lnurl.getLnurlResponse(link);
       expect(lnurlResponse, isNull);

@@ -39,7 +39,9 @@ void main() async {
         List<ContactList> contactLists =
             responseList.map((event) => ContactList.fromEvent(event)).toList();
 
-        cacheManager.saveContactLists(contactLists);
+        await cacheManager.saveEvents(
+          contactLists.map((contactList) => contactList.toEvent()).toList(),
+        );
 
         ContactList? myContactList =
             await cacheManager.loadContactList(key.publicKey);

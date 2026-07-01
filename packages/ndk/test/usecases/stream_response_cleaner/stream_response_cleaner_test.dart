@@ -5,32 +5,115 @@ import 'package:ndk/domain_layer/usecases/stream_response_cleaner/stream_respons
 import 'package:ndk/ndk.dart';
 
 void main() async {
+  const int fixedCreatedAt = 1782139515;
+
   final List<Nip01Event> myEvents = [
     Nip01Event(
       pubKey: "pubKey1",
       kind: 1,
       tags: [],
       content: "content1_a",
+      createdAt: fixedCreatedAt,
     ),
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
+    Nip01Event(
+        pubKey: "pubKey1",
+        kind: 1,
+        tags: [],
+        content: "content1_b",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "duplicate",
+        kind: 1,
+        tags: [],
+        content: "duplicate",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey1",
+        kind: 1,
+        tags: [],
+        content: "content1_c",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey2",
+        kind: 1,
+        tags: [],
+        content: "content2_a",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "duplicate",
+        kind: 1,
+        tags: [],
+        content: "duplicate",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey2",
+        kind: 1,
+        tags: [],
+        content: "content2_b",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey2",
+        kind: 1,
+        tags: [],
+        content: "content2_c",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "duplicate",
+        kind: 1,
+        tags: [],
+        content: "duplicate",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "duplicate",
+        kind: 1,
+        tags: [],
+        content: "duplicate",
+        createdAt: fixedCreatedAt),
   ];
 
   final List<Nip01Event> myEventsNoDublicate = [
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_a"),
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_b"),
-    Nip01Event(pubKey: "pubKey1", kind: 1, tags: [], content: "content1_c"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_a"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_b"),
-    Nip01Event(pubKey: "pubKey2", kind: 1, tags: [], content: "content2_c"),
-    Nip01Event(pubKey: "duplicate", kind: 1, tags: [], content: "duplicate"),
+    Nip01Event(
+        pubKey: "pubKey1",
+        kind: 1,
+        tags: [],
+        content: "content1_a",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey1",
+        kind: 1,
+        tags: [],
+        content: "content1_b",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey1",
+        kind: 1,
+        tags: [],
+        content: "content1_c",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey2",
+        kind: 1,
+        tags: [],
+        content: "content2_a",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey2",
+        kind: 1,
+        tags: [],
+        content: "content2_b",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "pubKey2",
+        kind: 1,
+        tags: [],
+        content: "content2_c",
+        createdAt: fixedCreatedAt),
+    Nip01Event(
+        pubKey: "duplicate",
+        kind: 1,
+        tags: [],
+        content: "duplicate",
+        createdAt: fixedCreatedAt),
   ];
 
   group('stream response cleaner', () {

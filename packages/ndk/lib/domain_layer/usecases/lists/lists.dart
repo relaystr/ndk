@@ -1,14 +1,16 @@
 import 'package:rxdart/rxdart.dart';
+import 'dart:convert';
 
 import '../../../shared/nips/nip01/helpers.dart';
+import '../../entities/event_cache_records.dart';
 import '../../entities/filter.dart';
 import '../../entities/nip_01_event.dart';
 import '../../entities/nip_51_list.dart';
 import '../../repositories/cache_manager.dart';
 import '../../repositories/event_signer.dart';
-
 import '../accounts/accounts.dart';
 import '../broadcast/broadcast.dart';
+import '../decrypted_event_payloads/decrypted_event_payloads.dart';
 import '../requests/requests.dart';
 
 /// Lists usecase for access to NIP-51 lists and sets.
@@ -21,6 +23,7 @@ class Lists {
   final Broadcast _broadcast;
   final Accounts _accounts;
   final LocalEventSignerFactory _eventSignerFactory;
+  final DecryptedEventPayloads _decryptedEventPayloads;
 
   /// Creates a Lists usecase instance.
   Lists({
@@ -29,14 +32,79 @@ class Lists {
     required Broadcast broadcast,
     required Accounts accounts,
     required LocalEventSignerFactory eventSignerFactory,
+    required DecryptedEventPayloads decryptedEventPayloads,
   })  : _cacheManager = cacheManager,
         _requests = requests,
         _broadcast = broadcast,
         _accounts = accounts,
-        _eventSignerFactory = eventSignerFactory;
+        _eventSignerFactory = eventSignerFactory,
+        _decryptedEventPayloads = decryptedEventPayloads;
 
   EventSigner? get _eventSigner {
     return _accounts.getLoggedAccount()?.signer;
+  }
+
+  Future<String?> _loadPrivateTagsJson({
+    required Nip01Event event,
+    required EventSigner signer,
+  }) async {
+    final isNip04 = event.content.contains('?iv=');
+    return _decryptedEventPayloads.loadOrDecrypt(
+      event: event,
+      viewerPubKey: signer.getPublicKey(),
+      scheme:
+          isNip04 ? DecryptedPayloadScheme.nip04 : DecryptedPayloadScheme.nip44,
+      decrypt: () => isNip04
+          // ignore: deprecated_member_use_from_same_package
+          ? signer.decrypt(
+              event.content,
+              signer.getPublicKey(),
+            )
+          : signer.decryptNip44(
+              ciphertext: event.content,
+              senderPubKey: signer.getPublicKey(),
+            ),
+    );
+  }
+
+  Future<void> _applyPrivateTags({
+    required Nip01Event event,
+    required EventSigner signer,
+    required Nip51List list,
+  }) async {
+    if (!Helpers.isNotBlank(event.content) || !signer.canSign()) {
+      return;
+    }
+
+    try {
+      final json = await _loadPrivateTagsJson(event: event, signer: signer);
+      final tags = jsonDecode(json ?? '') as List<dynamic>;
+      list.parseTags(tags, private: true);
+    } catch (_) {
+      // Keep old behavior: fromEvent already logged decrypt/parse failures.
+    }
+  }
+
+  Future<Nip51List> _parseListEvent(
+    Nip01Event event,
+    EventSigner? signer,
+  ) async {
+    final list = await Nip51List.fromEvent(event, null);
+    if (signer != null) {
+      await _applyPrivateTags(event: event, signer: signer, list: list);
+    }
+    return list;
+  }
+
+  Future<Nip51Set?> _parseSetEvent(
+    Nip01Event event,
+    EventSigner? signer,
+  ) async {
+    final set = await Nip51Set.fromEvent(event, null);
+    if (set != null && signer != null) {
+      await _applyPrivateTags(event: event, signer: signer, list: set);
+    }
+    return set;
   }
 
   ///* lists *///
@@ -48,7 +116,7 @@ class Lists {
       (a, b) => b.createdAt.compareTo(a.createdAt),
     );
     return events.isNotEmpty
-        ? await Nip51List.fromEvent(events.first, signer)
+        ? await _parseListEvent(events.first, signer)
         : null;
   }
 
@@ -83,7 +151,7 @@ class Lists {
       ], timeout: timeout).stream) {
         if (refreshedList == null ||
             refreshedList.createdAt <= event.createdAt) {
-          refreshedList = await Nip51List.fromEvent(event, signer);
+          refreshedList = await _parseListEvent(event, signer);
           // if (Helpers.isNotBlank(event.content)) {
           //   Nip51List? decryptedList = await Nip51List.fromEvent(event, signer);
           //   refreshedList = decryptedList;
@@ -135,7 +203,7 @@ class Lists {
     events.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     await _cacheManager.saveEvent(events.last);
-    return await Nip51List.fromEvent(events.last, signer);
+    return await _parseListEvent(events.last, signer);
   }
 
   /// Adds an element to a NIP-51 list.
@@ -266,7 +334,7 @@ class Lists {
       (a, b) => b.createdAt.compareTo(a.createdAt),
     );
     return events.isNotEmpty
-        ? await Nip51Set.fromEvent(events.first, signer)
+        ? await _parseSetEvent(events.first, signer)
         : null;
   }
 
@@ -295,7 +363,7 @@ class Lists {
           final existingSet = relaySets[dtag];
 
           if (existingSet == null || existingSet.createdAt < event.createdAt) {
-            final newSet = await Nip51Set.fromEvent(event, signer);
+            final newSet = await _parseSetEvent(event, signer);
             if (newSet != null) {
               await _cacheManager.saveEvent(event);
               relaySets[newSet.name] = newSet;
@@ -347,11 +415,10 @@ class Lists {
       ], cacheRead: !forceRefresh).stream) {
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
           if (event.getDtag() != null && event.getDtag() == name) {
-            newRelaySet = await Nip51Set.fromEvent(event, signer);
+            newRelaySet = await _parseSetEvent(event, signer);
             await _cacheManager.saveEvent(event);
           } else if (Helpers.isNotBlank(event.content)) {
-            Nip51Set? decryptedRelaySet =
-                await Nip51Set.fromEvent(event, signer);
+            Nip51Set? decryptedRelaySet = await _parseSetEvent(event, signer);
             if (decryptedRelaySet != null && decryptedRelaySet.name == name) {
               newRelaySet = decryptedRelaySet;
               await _cacheManager.saveEvent(event);
@@ -638,7 +705,7 @@ class Lists {
         Nip51Set? newRelaySet = newRelaySets[event.getDtag()];
         if (newRelaySet == null || newRelaySet.createdAt < event.createdAt) {
           if (event.getDtag() != null) {
-            newRelaySet = await Nip51Set.fromEvent(event, signer);
+            newRelaySet = await _parseSetEvent(event, signer);
           }
           if (newRelaySet != null) {
             await _cacheManager.saveEvent(event);

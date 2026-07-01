@@ -1,8 +1,12 @@
 import 'dart:convert';
 
+import '../../domain_layer/entities/contact_list.dart';
+import '../../domain_layer/entities/metadata.dart';
 import '../../domain_layer/entities/nip_01_event.dart';
 import '../../shared/helpers/list_casting.dart';
+import '../../shared/nips/nip01/event_kind_classification.dart';
 import '../../shared/nips/nip19/nip19.dart';
+import '../../shared/nips/nip28/channel_metadata.dart';
 
 /// Data model for NIP-01 Event
 /// Extends [Nip01Event] entity with serialization methods to/from JSON and other formats
@@ -127,7 +131,7 @@ class Nip01EventModel extends Nip01Event {
 
   /// Encode this event as an naddr (NIP-19 addressable event coordinate)
   ///
-  /// Only works for addressable/replaceable events (kind >= 10000 or kind 0, 3, 41)
+  /// Only works for coordinate-capable replaceable events.
   /// Requires a "d" tag to identify the event.
   ///
   /// Returns a bech32-encoded naddr string or null if:
@@ -136,8 +140,9 @@ class Nip01EventModel extends Nip01Event {
   ///
   /// Usage: `final naddr = event.naddr;`
   String? get naddr {
-    // Check if this is an addressable event
-    if (!_isAddressableKind(kind)) {
+    // NIP-19 coordinates are valid for parameterized replaceables and
+    // singleton replaceable kinds that use an empty d-tag.
+    if (!_supportsCoordinate(kind)) {
       return null;
     }
 
@@ -160,22 +165,10 @@ class Nip01EventModel extends Nip01Event {
     return base64Encode(utf8.encode(json.encode(toJson())));
   }
 
-  /// Check if an event kind is addressable/replaceable
-  ///
-  /// According to NIP-01:
-  /// - Replaceable events: 0, 3, 41
-  /// - Parameterized replaceable events: 10000-19999, 30000-39999
-  bool _isAddressableKind(int kind) {
-    // Replaceable events
-    if (kind == 0 || kind == 3 || kind == 41) {
-      return true;
-    }
-
-    // Parameterized replaceable events
-    if ((kind >= 10000 && kind <= 19999) || (kind >= 30000 && kind <= 39999)) {
-      return true;
-    }
-
-    return false;
+  bool _supportsCoordinate(int kind) {
+    return EventKindClassification.isAddressableKind(kind) ||
+        kind == Metadata.kKind ||
+        kind == ContactList.kKind ||
+        kind == ChannelMetadata.kKind;
   }
 }

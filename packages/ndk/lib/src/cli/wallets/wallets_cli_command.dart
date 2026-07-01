@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:ndk/domain_layer/entities/wallet/wallet.dart';
-import 'package:ndk/domain_layer/entities/wallet/wallet_type.dart';
 import 'package:ndk/domain_layer/repositories/wallets_repo.dart';
+import 'package:ndk/entities.dart';
 import 'package:ndk/ndk.dart';
 
+import '../cli_accounts_store.dart';
 import '../cli_command.dart';
 
 class WalletsCliCommand implements CliCommand {
@@ -20,7 +20,12 @@ class WalletsCliCommand implements CliCommand {
       'wallets <list|add|remove|receive|send|balance|budget> [args]';
 
   @override
-  Future<int> run(List<String> args, Ndk ndk, WalletsRepo walletsRepo) async {
+  Future<int> run(
+    List<String> args,
+    Ndk ndk,
+    WalletsRepo walletsRepo,
+    CliAccountsStore accountsStore,
+  ) async {
     if (args.isEmpty || _isHelp(args.first)) {
       _printHelp();
       return 0;
@@ -63,6 +68,36 @@ class WalletsCliCommand implements CliCommand {
 
       if (subCommand == 'budget') {
         await _handleBudget(subArgs, walletsRepo, walletsUsecase, ndk);
+        return 0;
+      }
+
+      if (subCommand == 'set-default') {
+        await _handleSetDefault(subArgs, walletsRepo, walletsUsecase);
+        return 0;
+      }
+
+      if (subCommand == 'melt') {
+        await _handleMelt(subArgs, walletsRepo, walletsUsecase, ndk);
+        return 0;
+      }
+
+      if (subCommand == 'mint') {
+        await _handleMint(subArgs, walletsRepo, walletsUsecase, ndk);
+        return 0;
+      }
+
+      if (subCommand == 'swap-receive') {
+        await _handleSwapReceive(subArgs, ndk);
+        return 0;
+      }
+
+      if (subCommand == 'swap-spend') {
+        await _handleSwapSpend(subArgs, walletsRepo, walletsUsecase, ndk);
+        return 0;
+      }
+
+      if (subCommand == 'pay-stats') {
+        await _handlePayStats(subArgs, walletsRepo, walletsUsecase, ndk);
         return 0;
       }
 
@@ -355,6 +390,396 @@ class WalletsCliCommand implements CliCommand {
     }
   }
 
+  Future<void> _handleSetDefault(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+  ) async {
+    if (args.isEmpty || args.length > 2) {
+      stderr.writeln('Usage: ndk wallets set-default <walletId> '
+          '[receive|send|both] (default: both)');
+      throw ArgumentError('Invalid arguments for wallets set-default');
+    }
+    final walletId = args[0];
+    final scope = args.length == 2 ? args[1].toLowerCase() : 'both';
+    final wallets = await walletsRepo.getWallets();
+    final exists = wallets.any((w) => w.id == walletId);
+    if (!exists) {
+      throw ArgumentError('Wallet not found: $walletId');
+    }
+    switch (scope) {
+      case 'both':
+        walletsUsecase.setDefaultWallet(walletId);
+        break;
+      case 'receive':
+        walletsUsecase.setDefaultWalletForReceiving(walletId);
+        break;
+      case 'send':
+        walletsUsecase.setDefaultWalletForSending(walletId);
+        break;
+      default:
+        throw ArgumentError('Scope must be receive|send|both (got "$scope")');
+    }
+    stdout.writeln('Default ($scope) set to $walletId');
+    final updated = await walletsRepo.getWallets();
+    _printWallets(updated, walletsUsecase);
+  }
+
+  Future<void> _handleMelt(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+    Ndk ndk,
+  ) async {
+    final parsed = _parseCashuOpArgs(
+      args,
+      usageLine: 'ndk wallets melt <bolt11> [walletId] [--seed <mnemonic>]',
+      requireValue: true,
+      valueName: 'bolt11',
+    );
+    if (parsed.error != null) {
+      stderr.writeln(parsed.error);
+      return;
+    }
+    final wallet = await _resolveCashuWallet(
+      parsed.walletId,
+      walletsRepo,
+      walletsUsecase,
+    );
+    await _ensureSeed(ndk, parsed.seed);
+    final mintUrl = wallet.metadata['mintUrl'] as String;
+
+    stdout.writeln('Getting melt quote from $mintUrl ...');
+    final draft = await ndk.cashu.initiateRedeem(
+      mintUrl: mintUrl,
+      request: parsed.value!,
+      unit: 'sat',
+      method: 'bolt11',
+    );
+    final meltQuote = draft.qouteMelt;
+    if (meltQuote != null) {
+      final fee = meltQuote.feeReserve ?? 0;
+      stdout.writeln('Quote: amount=${meltQuote.amount} fee=$fee '
+          'total=${meltQuote.amount + fee} sat');
+    }
+    stdout.writeln('Melting ...');
+    await for (final tx in ndk.cashu.redeem(draftRedeemTransaction: draft)) {
+      stdout.writeln('  state: ${tx.state.value}');
+      if (tx.completionMsg != null) {
+        stdout.writeln('  msg: ${tx.completionMsg}');
+      }
+      if (tx.state.isDone) break;
+    }
+  }
+
+  Future<void> _handleMint(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+    Ndk ndk,
+  ) async {
+    final parsed = _parseCashuOpArgs(
+      args,
+      usageLine: 'ndk wallets mint <amountSats> [walletId] '
+          '[--seed <mnemonic>] [--wait]',
+      requireValue: true,
+      valueName: 'amountSats',
+      allowWait: true,
+    );
+    if (parsed.error != null) {
+      stderr.writeln(parsed.error);
+      return;
+    }
+    final amount = int.tryParse(parsed.value!);
+    if (amount == null || amount <= 0) {
+      throw ArgumentError('amountSats must be a positive integer');
+    }
+    final wallet = await _resolveCashuWallet(
+      parsed.walletId,
+      walletsRepo,
+      walletsUsecase,
+    );
+    await _ensureSeed(ndk, parsed.seed);
+    final mintUrl = wallet.metadata['mintUrl'] as String;
+
+    stdout.writeln('Requesting mint quote from $mintUrl for $amount sat ...');
+    final draft = await ndk.cashu.initiateFund(
+      mintUrl: mintUrl,
+      amount: amount,
+      unit: 'sat',
+      method: 'bolt11',
+    );
+    final invoice = draft.qoute?.request;
+    stdout.writeln('Pay this invoice to mint tokens:');
+    stdout.writeln('  $invoice');
+    if (!parsed.wait) {
+      stdout.writeln('(quote saved; run again with --wait to poll and mint '
+          'once paid)');
+      return;
+    }
+    stdout.writeln('Polling until paid ... (Ctrl+C to abort)');
+    await for (final tx in ndk.cashu.retrieveFunds(draftTransaction: draft)) {
+      stdout.writeln('  state: ${tx.state.value}');
+      if (tx.completionMsg != null) {
+        stdout.writeln('  msg: ${tx.completionMsg}');
+      }
+      if (tx.state.isDone) break;
+    }
+  }
+
+  Future<void> _handleSwapReceive(List<String> args, Ndk ndk) async {
+    final parsed = _parseCashuOpArgs(
+      args,
+      usageLine: 'ndk wallets swap-receive <cashuToken> [--seed <mnemonic>]',
+      requireValue: true,
+      valueName: 'cashuToken',
+    );
+    if (parsed.error != null) {
+      stderr.writeln(parsed.error);
+      return;
+    }
+    await _ensureSeed(ndk, parsed.seed);
+    stdout.writeln('Swapping incoming token ...');
+    await for (final tx in ndk.cashu.receive(parsed.value!)) {
+      stdout.writeln('  state: ${tx.state.value}');
+      if (tx.completionMsg != null) {
+        stdout.writeln('  msg: ${tx.completionMsg}');
+      }
+      if (tx.state.isDone) break;
+    }
+  }
+
+  Future<void> _handleSwapSpend(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+    Ndk ndk,
+  ) async {
+    final parsed = _parseCashuOpArgs(
+      args,
+      usageLine: 'ndk wallets swap-spend <amountSats> [walletId] '
+          '[--seed <mnemonic>]',
+      requireValue: true,
+      valueName: 'amountSats',
+    );
+    if (parsed.error != null) {
+      stderr.writeln(parsed.error);
+      return;
+    }
+    final amount = int.tryParse(parsed.value!);
+    if (amount == null || amount <= 0) {
+      throw ArgumentError('amountSats must be a positive integer');
+    }
+    final wallet = await _resolveCashuWallet(
+      parsed.walletId,
+      walletsRepo,
+      walletsUsecase,
+    );
+    await _ensureSeed(ndk, parsed.seed);
+    final mintUrl = wallet.metadata['mintUrl'] as String;
+
+    final result = await ndk.cashu.initiateSpend(
+      mintUrl: mintUrl,
+      amount: amount,
+      unit: 'sat',
+    );
+    stdout.writeln('Created spendable token ($amount sat):');
+    stdout.writeln(result.token.toV4TokenString());
+  }
+
+  Future<void> _handlePayStats(
+    List<String> args,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+    Ndk ndk,
+  ) async {
+    int? limit = 20;
+    String? walletId;
+    for (var i = 0; i < args.length; i++) {
+      final a = args[i];
+      if (a == '--limit' && i + 1 < args.length) {
+        limit = int.tryParse(args[++i]);
+        if (limit == null || limit <= 0) {
+          throw ArgumentError('Invalid --limit "${args[i]}"');
+        }
+      } else if (walletId == null && !a.startsWith('-')) {
+        walletId = a;
+      } else {
+        stderr.writeln('Usage: ndk wallets pay-stats [walletId] [--limit N]');
+        return;
+      }
+    }
+    final wallets = await walletsRepo.getWallets();
+    if (wallets.isEmpty) {
+      throw StateError('No wallets available');
+    }
+    final target = walletId ??
+        walletsUsecase.defaultWalletForReceiving?.id ??
+        wallets.first.id;
+    final wallet = wallets.firstWhere(
+      (w) => w.id == target,
+      orElse: () => throw ArgumentError('Wallet not found: $target'),
+    );
+
+    stdout.writeln('Transactions for ${wallet.id} (${wallet.type.value}):');
+    if (wallet.type == WalletType.NWC) {
+      await _printNwcTransactions(ndk, wallet, limit);
+    } else {
+      await _printStoredTransactions(walletsUsecase, wallet.id, limit);
+    }
+  }
+
+  Future<void> _printNwcTransactions(
+    Ndk ndk,
+    Wallet wallet,
+    int? limit,
+  ) async {
+    final nwcUrl = wallet.metadata['nwcUrl'] as String?;
+    if (nwcUrl == null || nwcUrl.isEmpty) {
+      throw StateError('NWC wallet missing metadata["nwcUrl"]');
+    }
+    final connection = await ndk.nwc.connect(nwcUrl, doGetInfoMethod: false);
+    try {
+      final resp = await ndk.nwc.listTransactions(
+        connection,
+        unpaid: true,
+        limit: limit,
+      );
+      if (resp.transactions.isEmpty) {
+        stdout.writeln('  (no transactions returned)');
+        return;
+      }
+      for (final tx in resp.transactions) {
+        final dir = tx.isIncoming ? 'IN ' : 'OUT';
+        final state = (tx.state ?? 'unknown').padRight(8);
+        final amt = '${tx.amountSat} sat'.padRight(12);
+        final fees = (tx.feesPaid ?? 0) > 0 ? ' fee=${tx.feesPaid}msat' : '';
+        final settled = tx.settledAt != null
+            ? ' settled=${_formatUnix(tx.settledAt!)}'
+            : '';
+        stdout.writeln('  $dir $state $amt$fees$settled');
+      }
+    } finally {
+      await ndk.nwc.disconnect(connection);
+    }
+  }
+
+  Future<void> _printStoredTransactions(
+    Wallets walletsUsecase,
+    String walletId,
+    int? limit,
+  ) async {
+    final txs = await walletsUsecase.getTransactions(
+      walletId: walletId,
+      limit: limit,
+    );
+    if (txs.isEmpty) {
+      stdout.writeln('  (no transactions stored)');
+      return;
+    }
+    for (final tx in txs) {
+      final dir = tx.changeAmount >= 0 ? 'IN ' : 'OUT';
+      final state = tx.state.value.padRight(8);
+      final amt = '${tx.changeAmount.abs()} ${tx.unit}'.padRight(12);
+      final date = tx.transactionDate != null
+          ? ' date=${_formatUnixMillis(tx.transactionDate!)}'
+          : '';
+      stdout.writeln('  $dir $state $amt$date');
+    }
+  }
+
+  String _formatUnix(int seconds) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true);
+    return dt.toIso8601String();
+  }
+
+  String _formatUnixMillis(int millis) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(millis, isUtc: true);
+    return dt.toIso8601String();
+  }
+
+  /// Resolves a cashu wallet by id (or default), throwing if it's not cashu.
+  Future<Wallet> _resolveCashuWallet(
+    String? walletId,
+    WalletsRepo walletsRepo,
+    Wallets walletsUsecase,
+  ) async {
+    final wallets = await walletsRepo.getWallets();
+    if (wallets.isEmpty) {
+      throw StateError('No wallets available');
+    }
+    String id;
+    if (walletId != null) {
+      id = walletId;
+    } else {
+      id = walletsUsecase.defaultWalletForReceiving?.id ?? wallets.first.id;
+    }
+    final wallet = wallets.firstWhere(
+      (w) => w.id == id,
+      orElse: () => throw ArgumentError('Wallet not found: $id'),
+    );
+    if (wallet.type != WalletType.CASHU) {
+      throw ArgumentError('Wallet $id is ${wallet.type.value}, expected cashu');
+    }
+    return wallet;
+  }
+
+  Future<void> _ensureSeed(Ndk ndk, String? seedFlag) async {
+    if (ndk.cashu.getCashuSeed().isSeedPhraseSet) return;
+    final seed = seedFlag ?? Platform.environment['NDK_CASHU_SEED'];
+    if (seed == null || seed.trim().isEmpty) {
+      throw StateError('Cashu seed phrase not set. '
+          'Pass --seed <mnemonic> or set NDK_CASHU_SEED env var.');
+    }
+    ndk.cashu.setCashuSeedPhrase(CashuUserSeedphrase(seedPhrase: seed.trim()));
+  }
+
+  _CashuOpArgs _parseCashuOpArgs(
+    List<String> args, {
+    required String usageLine,
+    required bool requireValue,
+    required String valueName,
+    bool allowWait = false,
+  }) {
+    String? value;
+    String? walletId;
+    String? seed;
+    var wait = false;
+    var positionalSeen = 0;
+    for (var i = 0; i < args.length; i++) {
+      final a = args[i];
+      if (a == '--seed' && i + 1 < args.length) {
+        seed = args[++i];
+        continue;
+      }
+      if (allowWait && a == '--wait') {
+        wait = true;
+        continue;
+      }
+      if (a.startsWith('-')) {
+        return _CashuOpArgs(error: 'Unknown option: $a\nUsage: $usageLine');
+      }
+      if (positionalSeen == 0) {
+        value = a;
+        positionalSeen++;
+      } else if (positionalSeen == 1) {
+        walletId = a;
+        positionalSeen++;
+      } else {
+        return _CashuOpArgs(error: 'Too many arguments.\nUsage: $usageLine');
+      }
+    }
+    if (requireValue && value == null) {
+      return _CashuOpArgs(error: 'Missing $valueName.\nUsage: $usageLine');
+    }
+    return _CashuOpArgs(
+      value: value,
+      walletId: walletId,
+      seed: seed,
+      wait: wait,
+    );
+  }
+
   void _printWallets(List<Wallet> wallets, Wallets walletsUsecase) {
     stdout.writeln('');
     if (wallets.isEmpty) {
@@ -401,7 +826,13 @@ class WalletsCliCommand implements CliCommand {
     out.writeln('  receive <amountSats> [walletId]');
     out.writeln('  send <bolt11> [walletId]');
     out.writeln('  balance [walletId]');
-    out.writeln('  budget [walletId]');
+    out.writeln('  budget [walletId]                              (NWC only)');
+    out.writeln('  set-default <walletId> [receive|send|both]');
+    out.writeln('  melt <bolt11> [walletId] [--seed <mnemonic>]  (cashu only)');
+    out.writeln('  mint <amountSats> [walletId] [--seed <mnemonic>] [--wait]');
+    out.writeln('  swap-receive <cashuToken> [--seed <mnemonic>]');
+    out.writeln('  swap-spend <amountSats> [walletId] [--seed <mnemonic>]');
+    out.writeln('  pay-stats [walletId] [--limit N]');
     out.writeln('');
     out.writeln('Examples:');
     out.writeln('  ndk wallets list');
@@ -416,6 +847,13 @@ class WalletsCliCommand implements CliCommand {
     out.writeln('  ndk wallets balance wallet_123');
     out.writeln('  ndk wallets budget');
     out.writeln('  ndk wallets budget wallet_123');
+    out.writeln('  ndk wallets set-default wallet_123 send');
+    out.writeln('  ndk wallets mint 100 --wait --seed "word1 word2 ..."');
+    out.writeln('  ndk wallets melt "lnbc1..."');
+    out.writeln('  ndk wallets swap-receive "cashuA..."');
+    out.writeln('  ndk wallets pay-stats --limit 50');
+    out.writeln(
+        'Cashu operations accept --seed or the NDK_CASHU_SEED env var.');
   }
 
   bool _isHelp(String value) {
@@ -426,4 +864,20 @@ class WalletsCliCommand implements CliCommand {
     final now = DateTime.now().microsecondsSinceEpoch;
     return 'wallet_$now';
   }
+}
+
+class _CashuOpArgs {
+  final String? value;
+  final String? walletId;
+  final String? seed;
+  final bool wait;
+  final String? error;
+
+  _CashuOpArgs({
+    this.value,
+    this.walletId,
+    this.seed,
+    this.wait = false,
+    this.error,
+  });
 }
