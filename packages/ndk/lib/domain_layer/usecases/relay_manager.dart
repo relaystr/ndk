@@ -51,6 +51,10 @@ class RelayManager<T> {
   /// stores timers for pending AUTH callbacks to clean them up on timeout
   final Map<String, Timer> _pendingAuthTimers = {};
 
+  /// Tracks relay connect attempts that are still finishing setup so callers
+  /// can wait for "socket open + listener attached", not just raw socket open.
+  final Map<String, Completer<bool>> _connectReadyCompleters = {};
+
   /// timeout for AUTH callbacks (how long to wait for AUTH OK)
   final Duration authCallbackTimeout;
 
@@ -201,10 +205,23 @@ class RelayManager<T> {
 
     if (isRelayConnecting(url)) {
       Logger.log.t(() => "relay is already connecting: $url");
+      final inFlightConnect = _connectReadyCompleters[url];
+      if (inFlightConnect != null) {
+        final connected = await inFlightConnect.future;
+        updateRelayConnectivity();
+        return Tuple(
+          connected,
+          connected
+              ? "relay finished connecting"
+              : "relay failed while connecting",
+        );
+      }
       updateRelayConnectivity();
-      return Tuple(true, "relay is still connecting");
+      return Tuple(false, "relay is still connecting");
     }
     RelayConnectivity? relayConnectivity = globalState.relays[url];
+    final connectCompleter = Completer<bool>();
+    _connectReadyCompleters[url] = connectCompleter;
 
     try {
       if (relayConnectivity == null) {
@@ -223,6 +240,12 @@ class RelayManager<T> {
       /// TO BE REMOVED, ONCE WE FIND A WAY OF AVOIDING PROBLEM WHEN CONNECTING TO THIS
       if (url.startsWith("wss://brb.io")) {
         relayConnectivity.relay.failedToConnect();
+        if (!connectCompleter.isCompleted) {
+          connectCompleter.complete(false);
+        }
+        if (identical(_connectReadyCompleters[url], connectCompleter)) {
+          _connectReadyCompleters.remove(url);
+        }
         updateRelayConnectivity();
         return Tuple(false, "bad relay");
       }
@@ -237,6 +260,10 @@ class RelayManager<T> {
         relayConnectivity!.stats.connectionErrors++;
         updateRelayConnectivity();
       });
+      // Start listening immediately so we don't miss early frames such as
+      // relay AUTH challenges that may arrive before the transport reports
+      // itself fully open.
+      _startListeningToSocket(relayConnectivity);
       final opened = await _waitForTransportOpen(
         relayConnectivity.relayTransport!,
         timeoutSeconds: connectTimeout,
@@ -248,14 +275,18 @@ class RelayManager<T> {
         );
       }
 
-      _startListeningToSocket(relayConnectivity);
-
       Logger.log.i(() => "connected to relay: $url");
       relayConnectivity.relay.succeededToConnect();
       relayConnectivity.stats.connections++;
       getRelayInfo(url).then((info) {
         relayConnectivity!.relayInfo = info;
       });
+      if (!connectCompleter.isCompleted) {
+        connectCompleter.complete(true);
+      }
+      if (identical(_connectReadyCompleters[url], connectCompleter)) {
+        _connectReadyCompleters.remove(url);
+      }
       updateRelayConnectivity();
       return Tuple(true, "");
     } catch (e) {
@@ -264,6 +295,12 @@ class RelayManager<T> {
     }
     relayConnectivity.relay.failedToConnect();
     relayConnectivity.stats.connectionErrors++;
+    if (!connectCompleter.isCompleted) {
+      connectCompleter.complete(false);
+    }
+    if (identical(_connectReadyCompleters[url], connectCompleter)) {
+      _connectReadyCompleters.remove(url);
+    }
     updateRelayConnectivity();
     return Tuple(false, "could not connect to $url");
   }
@@ -274,6 +311,13 @@ class RelayManager<T> {
     required ConnectionSource connectionSource,
     bool force = false,
   }) async {
+    final inFlightConnect = _connectReadyCompleters[url];
+    if (inFlightConnect != null) {
+      final connected = await inFlightConnect.future;
+      updateRelayConnectivity();
+      return connected;
+    }
+
     RelayConnectivity? relayConnectivity = globalState.relays[url];
     if (relayConnectivity != null && relayConnectivity.relayTransport != null) {
       try {
@@ -531,28 +575,36 @@ class RelayManager<T> {
         Logger.log.w(() => "Error closing relay ${relayConnectivity.url}: $e");
       }
       updateRelayConnectivity();
-      // reconnect on close
+      // Reconnect on close. close() above nulls relayTransport, so the only
+      // condition is that the relay is still tracked: deliberate closes cancel
+      // the stream subscription first and never reach this handler.
       if (allowReconnectRelays &&
-          globalState.relays[relayConnectivity.url] != null &&
-          globalState.relays[relayConnectivity.url]!.relayTransport != null) {
+          globalState.relays[relayConnectivity.url] != null) {
         Logger.log.i(() => "closed ${relayConnectivity.url}. Reconnecting");
         reconnectRelay(
           relayConnectivity.url,
           connectionSource: relayConnectivity.relay.connectionSource,
-        );
+        ).then((connected) {
+          updateRelayConnectivity();
+          if (connected) {
+            reSubscribeInFlightSubscriptions(relayConnectivity);
+          }
+        });
       }
     });
   }
 
-  // tracking to process in order
-  Completer<void>? _lastMessageCompleter;
+  // Track processing order per relay so EVENT/EOSE/AUTH/CLOSED ordering stays
+  // correct without introducing cross-relay head-of-line blocking.
+  final Map<String, Completer<void>> _lastMessageCompleters = {};
 
   Future<void> _handleIncomingMessage(
       dynamic message, RelayConnectivity relayConnectivity) async {
-    final previousMessage = _lastMessageCompleter;
+    final relayUrl = relayConnectivity.url;
+    final previousMessage = _lastMessageCompleters[relayUrl];
 
     final myCompleter = Completer<void>();
-    _lastMessageCompleter = myCompleter;
+    _lastMessageCompleters[relayUrl] = myCompleter;
 
     NostrMessageRaw nostrMsg;
     try {
@@ -569,18 +621,24 @@ class RelayManager<T> {
     if (previousMessage != null) {
       await previousMessage.future;
     }
-
-    myCompleter.complete();
-
-    _processDecodedMessage(nostrMsg, relayConnectivity, message);
+    try {
+      await _processDecodedMessage(nostrMsg, relayConnectivity, message);
+    } finally {
+      if (!myCompleter.isCompleted) {
+        myCompleter.complete();
+      }
+      if (identical(_lastMessageCompleters[relayUrl], myCompleter)) {
+        _lastMessageCompleters.remove(relayUrl);
+      }
+    }
   }
 
-  void _processDecodedMessage(NostrMessageRaw nostrMsg,
+  Future<void> _processDecodedMessage(NostrMessageRaw nostrMsg,
       RelayConnectivity relayConnectivity, dynamic message) {
     if (nostrMsg.type == NostrMessageRawType.unknown) {
       Logger.log.w(() =>
           "Received non NostrMessageRaw message from ${relayConnectivity.url}: $nostrMsg");
-      return;
+      return Future.value();
     }
 
     if (nostrMsg.type == NostrMessageRawType.ok) {
@@ -601,7 +659,7 @@ class RelayManager<T> {
           Logger.log.e(() => "AUTH failed for $eventId: $msg");
           _pendingAuthCallbacks.remove(eventId);
         }
-        return;
+        return Future.value();
       }
 
       //nip 20 used to notify clients if an EVENT was successful
@@ -611,7 +669,7 @@ class RelayManager<T> {
         // Check if this is auth-required for a broadcast - don't mark as done, will retry
         if (msg != null && msg.startsWith("auth-required")) {
           _handleBroadcastAuthRequired(eventId, relayConnectivity);
-          return; // Don't add to network controller yet, wait for retry result
+          return Future.value(); // Don't add to network controller yet, wait for retry result
         }
       }
       if (globalState.inFlightBroadcasts[eventId] != null &&
@@ -629,7 +687,7 @@ class RelayManager<T> {
         Logger.log.w(() =>
             "Received OK for broadcast $eventId but the network controller is already closed");
       }
-      return;
+      return Future.value();
     }
     if (nostrMsg.type == NostrMessageRawType.notice) {
       final eventJson = nostrMsg.otherData;
@@ -689,13 +747,13 @@ class RelayManager<T> {
 
       // If not eager auth, don't authenticate now - wait for auth-required
       if (!eagerAuth) {
-        return;
+        return Future.value();
       }
 
       if (_accounts == null) {
         Logger.log
             .w(() => "Received an AUTH challenge but no accounts configured");
-        return;
+        return Future.value();
       }
 
       // Collect accounts from active requests on this relay
@@ -716,11 +774,11 @@ class RelayManager<T> {
       if (accountsToAuth.isEmpty) {
         Logger.log.w(
             () => "Received an AUTH challenge but no accounts to authenticate");
-        return;
+        return Future.value();
       }
 
       _authenticateAccounts(relayConnectivity, challenge, accountsToAuth);
-      return;
+      return Future.value();
     }
     if (nostrMsg.type == NostrMessageRawType.negMsg) {
       final msgData = nostrMsg.otherData;
@@ -729,7 +787,7 @@ class RelayManager<T> {
         final payload = msgData[2] as String;
         onNegMsg!(subscriptionId, relayConnectivity.url, payload);
       }
-      return;
+      return Future.value();
     }
     if (nostrMsg.type == NostrMessageRawType.negErr) {
       final msgData = nostrMsg.otherData;
@@ -738,8 +796,9 @@ class RelayManager<T> {
         final errorMsg = msgData[2] as String;
         onNegErr!(subscriptionId, relayConnectivity.url, errorMsg);
       }
-      return;
+      return Future.value();
     }
+    return Future.value();
     //
     // if (eventJson[0] == 'COUNT') {
     //   log("COUNT: ${eventJson[1]}");

@@ -38,6 +38,8 @@ class PendingBroadcastDelivery {
   final Map<String, int> _latestSignAttemptIds = {};
   Iterable<String> Function()? _connectedRelayUrlsProvider;
   Timer? _retryTimer;
+  bool _stopped = false;
+  final Set<Future<void>> _inFlightOperations = {};
 
   PendingBroadcastDelivery({
     required CacheManager cacheManager,
@@ -58,18 +60,19 @@ class PendingBroadcastDelivery {
     required Future<bool> Function(String relayUrl) reconnectRelay,
     Duration retryInterval = defaultRetryInterval,
   }) {
+    _stopped = false;
     _connectedRelayUrlsProvider = connectedRelayUrls;
     _retryTimer?.cancel();
     _retryTimer = Timer.periodic(
       retryInterval,
-      (_) => unawaited(
+      (_) => _trackOperation(
         retryDueDeliveries(
           connectedRelayUrls: connectedRelayUrls,
           reconnectRelay: reconnectRelay,
         ),
       ),
     );
-    unawaited(
+    _trackOperation(
       retryDueDeliveries(
         connectedRelayUrls: connectedRelayUrls,
         reconnectRelay: reconnectRelay,
@@ -78,21 +81,48 @@ class PendingBroadcastDelivery {
   }
 
   Future<void> stop() async {
+    _stopped = true;
     _retryTimer?.cancel();
     _retryTimer = null;
+    final operations = _inFlightOperations.toList(growable: false);
+    if (operations.isNotEmpty) {
+      await Future.wait(operations);
+    }
+  }
+
+  void _trackOperation(Future<void> operation) {
+    if (_stopped) {
+      return;
+    }
+    _inFlightOperations.add(operation);
+    operation.whenComplete(() {
+      _inFlightOperations.remove(operation);
+    });
   }
 
   Future<void> retryDueDeliveries({
     required Iterable<String> Function() connectedRelayUrls,
     required Future<bool> Function(String relayUrl) reconnectRelay,
   }) async {
-    await _retryDueSigning();
+    if (_stopped) {
+      return;
+    }
+    await _retryDueSigning(
+      reconnectRelay: reconnectRelay,
+    );
+
+    if (_stopped) {
+      return;
+    }
 
     final connectedRelayUrlSet = connectedRelayUrls().toSet();
     final dueRelayUrlSet = await _relayUrlsWithDuePendingTargets();
     final relayUrls = dueRelayUrlSet.toList()..sort();
 
     for (final relayUrl in relayUrls) {
+      if (_stopped) {
+        return;
+      }
       if (connectedRelayUrlSet.contains(relayUrl)) {
         await flushForRelay(
           relayUrl,
@@ -131,10 +161,16 @@ class PendingBroadcastDelivery {
   /// Retry unsigned interactive-signing work associated with a signer
   /// transport relay that just became reachable.
   Future<void> retryInteractiveSigningForTransportRelay(String relayUrl) async {
+    if (_stopped) {
+      return;
+    }
     final records = await _cacheManager.loadEventDeliveryRecords();
     records.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     for (final record in records) {
+      if (_stopped) {
+        return;
+      }
       if (!record.requiresInteractiveSigning) {
         continue;
       }
@@ -167,6 +203,9 @@ class PendingBroadcastDelivery {
     required Iterable<String> relayUrls,
     required bool requiresInteractiveSigning,
   }) async {
+    if (_stopped) {
+      return;
+    }
     // One durable aggregate record plus one durable target per relay gives NDK
     // enough state to recover delivery after restart without mutating a shared
     // in-memory list.
@@ -220,6 +259,9 @@ class PendingBroadcastDelivery {
     Nip01Event event,
     List<RelayBroadcastResponse> responses,
   ) async {
+    if (_stopped) {
+      return;
+    }
     Logger.log.d(() =>
         'persist broadcast result ${event.id} -> ${responses.map((r) => r.relayUrl).toList()}');
 
@@ -290,6 +332,9 @@ class PendingBroadcastDelivery {
     String relayUrl, {
     bool onlyDue = false,
   }) async {
+    if (_stopped) {
+      return;
+    }
     // Per-relay flush serialization avoids two concurrent retry paths trying to
     // re-send the same relay targets at once.
     if (!_flushInProgress.add(relayUrl)) {
@@ -297,6 +342,9 @@ class PendingBroadcastDelivery {
     }
 
     try {
+      if (_stopped) {
+        return;
+      }
       final persistedTargets = await _cacheManager.loadRelayDeliveryTargets(
         relayUrl: relayUrl,
         excludeAcked: true,
@@ -317,6 +365,9 @@ class PendingBroadcastDelivery {
           'flush pending delivery for $relayUrl${onlyDue ? " (due only)" : ""} -> ${targets.map((t) => t.eventId).toList()}');
 
       for (final target in targets) {
+        if (_stopped) {
+          return;
+        }
         if (_sender.isEventInFlight(target.eventId)) {
           continue;
         }
@@ -440,12 +491,20 @@ class PendingBroadcastDelivery {
     return relayUrls;
   }
 
-  Future<void> _retryDueSigning() async {
+  Future<void> _retryDueSigning({
+    required Future<bool> Function(String relayUrl) reconnectRelay,
+  }) async {
+    if (_stopped) {
+      return;
+    }
     final now = Nip01Event.secondsSinceEpoch();
     final records = await _cacheManager.loadEventDeliveryRecords();
     records.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     for (final record in records) {
+      if (_stopped) {
+        return;
+      }
       if (!record.requiresInteractiveSigning) {
         continue;
       }
@@ -475,6 +534,20 @@ class PendingBroadcastDelivery {
         continue;
       }
 
+      final signer = _resolveSignerForEvent(event);
+      if (signer != null &&
+          signer.requiresSignerNetwork &&
+          !_isSignerTransportReachable(signer)) {
+        final signerRelayUrls = signer.signerTransportRelayUrls.toSet().toList()
+          ..sort();
+        for (final relayUrl in signerRelayUrls) {
+          await reconnectRelay(relayUrl);
+          if (_isSignerTransportReachable(signer)) {
+            break;
+          }
+        }
+      }
+
       await _ensureEventSigned(record, event: event);
     }
   }
@@ -483,6 +556,9 @@ class PendingBroadcastDelivery {
     EventDeliveryRecord record, {
     required Nip01Event event,
   }) async {
+    if (_stopped) {
+      return false;
+    }
     if (!record.requiresInteractiveSigning) {
       return true;
     }
@@ -619,6 +695,9 @@ class PendingBroadcastDelivery {
     required Nip01Event event,
     required Nip01Event signedEvent,
   }) async {
+    if (_stopped) {
+      return;
+    }
     if (!_isLatestSignAttempt(event.id, attemptId)) {
       return;
     }
@@ -651,6 +730,9 @@ class PendingBroadcastDelivery {
     required Object error,
     required StackTrace stackTrace,
   }) async {
+    if (_stopped) {
+      return;
+    }
     if (!_isLatestSignAttempt(event.id, attemptId)) {
       return;
     }
@@ -764,6 +846,9 @@ class PendingBroadcastDelivery {
   }
 
   Future<void> _flushConnectedTargetsForEvent(String eventId) async {
+    if (_stopped) {
+      return;
+    }
     final connectedRelayUrls = _connectedRelayUrlsProvider?.call().toSet();
     if (connectedRelayUrls == null || connectedRelayUrls.isEmpty) {
       return;

@@ -33,6 +33,9 @@ class MockRelay {
 
   // Track all connected clients with their subscriptions
   final Map<WebSocket, Map<String, List<Filter>>> _clientSubscriptions = {};
+
+  int get activeSubscriptionCount => _clientSubscriptions.values
+      .fold<int>(0, (count, subscriptions) => count + subscriptions.length);
   bool signEvents;
   bool requireAuthForRequests;
   bool requireAuthForEvents;

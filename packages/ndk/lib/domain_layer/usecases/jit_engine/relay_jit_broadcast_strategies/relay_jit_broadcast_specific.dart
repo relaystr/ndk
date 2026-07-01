@@ -69,10 +69,12 @@ class RelayJitBroadcastSpecificRelaysStrategy {
           return;
         }
 
-        final success = await relayManager.reconnectRelay(
-          relayUrl,
+        final success = (await relayManager.connectRelay(
+          dirtyUrl: relayUrl,
           connectionSource: ConnectionSource.broadcastSpecific,
-        );
+          connectTimeout: 1,
+        ))
+            .first;
         if (!success) {
           relayManager.failBroadcast(
             eventToPublish.id,

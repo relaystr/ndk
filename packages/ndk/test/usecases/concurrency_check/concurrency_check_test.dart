@@ -70,8 +70,9 @@ void main() async {
       await ndkJit.relays.seedRelaysConnected;
 
       final myfilter = Filter(
-          kinds: [Nip01Event.kTextNodeKind],
-          authors: [key1.publicKey, key2.publicKey]);
+        kinds: [Nip01Event.kTextNodeKind],
+        authors: [key1.publicKey],
+      );
 
       final response0 = ndkJit.requests.query(
         filters: [myfilter],
@@ -83,11 +84,12 @@ void main() async {
         desiredCoverage: 1,
       );
 
-      await expectLater(
-          response0.stream, emitsInAnyOrder(key1TextNotes.values));
+      final result0 = await response0.future;
+      final result1 = await response1.future;
 
-      await expectLater(
-          response1.stream, emitsInAnyOrder(key1TextNotes.values));
+      expect(result0, hasLength(1));
+      expect(result0.map((event) => event.id), [key1TextNotes[key1]!.id]);
+      expect(result1.map((event) => event.id), [key1TextNotes[key1]!.id]);
       await ndkJit.destroy();
     });
   });

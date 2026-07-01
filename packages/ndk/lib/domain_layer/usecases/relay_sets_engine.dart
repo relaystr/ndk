@@ -105,16 +105,24 @@ class RelaySetsEngine implements NetworkEngine {
       eventToPublish: nostrEvent,
       relayUrl: relayUrl,
     );
-    bool connected = false;
+
+    var connected = _relayManager.isRelayConnected(relayUrl);
     Object? error;
-    try {
-      connected = await _relayManager.reconnectRelay(relayUrl,
-          connectionSource: ConnectionSource.broadcastSpecific);
-    } catch (e) {
-      Logger.log.w(
-          () => "Error during reconnectRelay for $relayUrl in doRelayBroadcast",
-          error: e);
-      error = e;
+    if (!connected) {
+      try {
+        final result = await _relayManager.connectRelay(
+          dirtyUrl: relayUrl,
+          connectionSource: ConnectionSource.broadcastSpecific,
+          connectTimeout: 1,
+        );
+        connected = result.first;
+      } catch (e) {
+        Logger.log.w(
+          () => "Error during quick connect for $relayUrl in doRelayBroadcast",
+          error: e,
+        );
+        error = e;
+      }
     }
 
     if (connected) {

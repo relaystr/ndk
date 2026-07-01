@@ -23,6 +23,17 @@ void main() {
       await mockRelay.stopServer();
     });
 
+    Future<void> waitForSubscriptionRegistration() async {
+      final deadline = DateTime.now().add(const Duration(seconds: 2));
+      while (DateTime.now().isBefore(deadline)) {
+        if (mockRelay.activeSubscriptionCount > 0) {
+          return;
+        }
+        await Future.delayed(const Duration(milliseconds: 25));
+      }
+      throw TimeoutException('MockRelay did not register the subscription.');
+    }
+
     test('NDK A receives matching event broadcast by NDK B', () async {
       final keyPair = Bip340.generatePrivateKey();
 
@@ -58,7 +69,7 @@ void main() {
         }
       });
 
-      await Future.delayed(Duration(milliseconds: 200));
+      await waitForSubscriptionRegistration();
 
       final event = Nip01Event(
         pubKey: keyPair.publicKey,
@@ -129,7 +140,7 @@ void main() {
         }
       });
 
-      await Future.delayed(Duration(milliseconds: 200));
+      await waitForSubscriptionRegistration();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final currentEvent = Nip01Event(
