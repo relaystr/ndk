@@ -1,3 +1,7 @@
+## 0.8.4-dev.8
+
+ - **FIX**(test): apply tag filters in mock relay.
+
 ## 0.8.4-dev.7
 
  - **FIX**: randomize NIP-59 gift wrap timestamps.
