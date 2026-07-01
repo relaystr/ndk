@@ -34,6 +34,8 @@ class MockRelay {
   // Track all connected clients with their subscriptions
   final Map<WebSocket, Map<String, List<Filter>>> _clientSubscriptions = {};
 
+  int get connectedClientCount => _clientSubscriptions.length;
+
   int get activeSubscriptionCount => _clientSubscriptions.values
       .fold<int>(0, (count, subscriptions) => count + subscriptions.length);
   bool signEvents;
@@ -713,6 +715,16 @@ class MockRelay {
           eventTag[0] == tagName &&
           filterTag.value.contains(eventTag[1]));
     });
+  }
+
+  /// Closes all connected client sockets while keeping the server running,
+  /// simulating a relay-side disconnect.
+  Future<void> closeClientSockets() async {
+    final sockets = _clientSubscriptions.keys.toList();
+    for (final socket in sockets) {
+      await socket.close();
+    }
+    _clientSubscriptions.clear();
   }
 
   Future<void> stopServer() async {
