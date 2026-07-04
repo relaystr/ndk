@@ -108,7 +108,7 @@ class DartNdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     Intent.ACTION_VIEW,
                     Uri.parse("$nostrSignerScheme:$uriData")
                 )
-                if (requestType == "sign_event") {
+                if (requestType != "get_public_key") {
                     intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 }
                 intent.putExtra(keyType, requestType)
