@@ -17,6 +17,7 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
   String? _lastResult;
   String? _lastError;
   String? _ciphertext;
+  bool _isBulkSigning = false;
 
   void _showResult(String result) {
     setState(() {
@@ -44,6 +45,76 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
       final signed = await signer.sign(event);
       _showResult(l10n.pendingSignedResult('${signed.id.substring(0, 16)}...'));
     } catch (e) {
+      _showError(l10n.pendingSignFailed(e.toString()));
+    }
+  }
+
+  Future<void> _signEventsInParallel(EventSigner signer) async {
+    if (_isBulkSigning) return;
+
+    final l10n = context.l10n;
+    final pubkey = signer.getPublicKey();
+    final startedAt = DateTime.now();
+    final createdAt = startedAt.millisecondsSinceEpoch ~/ 1000;
+    final stopwatch = Stopwatch()..start();
+
+    setState(() {
+      _isBulkSigning = true;
+      _lastResult = 'Sending 50 sign event requests...';
+      _lastError = null;
+    });
+
+    Future<bool> signOne(int index) async {
+      final event = Nip01Event(
+        pubKey: pubkey,
+        kind: 1,
+        tags: [
+          ['client', 'ndk-sample-app'],
+          ['test', 'parallel-signing'],
+        ],
+        content:
+            'Parallel signer test #${index + 1}/50 from sample app - $startedAt',
+        createdAt: createdAt,
+      );
+
+      await signer.sign(event);
+      return true;
+    }
+
+    try {
+      final results = await Future.wait(
+        List.generate(50, (index) async {
+          try {
+            return await signOne(index);
+          } catch (_) {
+            return false;
+          }
+        }),
+      );
+
+      stopwatch.stop();
+      final signedCount = results.where((signed) => signed).length;
+      final failedCount = results.length - signedCount;
+
+      if (!mounted) return;
+      setState(() {
+        _isBulkSigning = false;
+        if (failedCount == 0) {
+          _lastResult =
+              'Signed 50/50 events in ${stopwatch.elapsedMilliseconds} ms';
+          _lastError = null;
+        } else {
+          _lastResult = null;
+          _lastError =
+              'Signed $signedCount/50 events; $failedCount failed in ${stopwatch.elapsedMilliseconds} ms';
+        }
+      });
+    } catch (e) {
+      stopwatch.stop();
+      if (!mounted) return;
+      setState(() {
+        _isBulkSigning = false;
+      });
       _showError(l10n.pendingSignFailed(e.toString()));
     }
   }
@@ -193,6 +264,21 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
                         onPressed: () => _signEvent(signer),
                         icon: const Icon(Icons.edit, size: 18),
                         label: Text(l10n.signEvent),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _isBulkSigning
+                            ? null
+                            : () => _signEventsInParallel(signer),
+                        icon: _isBulkSigning
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.bolt, size: 18),
+                        label: const Text('Sign 50 Events'),
                       ),
                       FilledButton.icon(
                         onPressed: () => _encryptNip44(signer),
