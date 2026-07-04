@@ -18,6 +18,7 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
   String? _lastError;
   String? _ciphertext;
   bool _isBulkSigning = false;
+  bool _isBulkEncrypting = false;
 
   void _showResult(String result) {
     setState(() {
@@ -131,6 +132,67 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
       _showResult(
           l10n.pendingEncryptedResult('${result?.substring(0, 30)}...'));
     } catch (e) {
+      _showError(l10n.pendingEncryptFailed(e.toString()));
+    }
+  }
+
+  Future<void> _encryptNip44InParallel(EventSigner signer) async {
+    if (_isBulkEncrypting) return;
+
+    final l10n = context.l10n;
+    final pubkey = signer.getPublicKey();
+    final startedAt = DateTime.now();
+    final stopwatch = Stopwatch()..start();
+
+    setState(() {
+      _isBulkEncrypting = true;
+      _lastResult = 'Sending 50 NIP-44 encrypt requests...';
+      _lastError = null;
+    });
+
+    Future<bool> encryptOne(int index) async {
+      await signer.encryptNip44(
+        plaintext:
+            'Parallel NIP-44 encryption test #${index + 1}/50 from sample app - $startedAt',
+        recipientPubKey: pubkey,
+      );
+      return true;
+    }
+
+    try {
+      final results = await Future.wait(
+        List.generate(50, (index) async {
+          try {
+            return await encryptOne(index);
+          } catch (_) {
+            return false;
+          }
+        }),
+      );
+
+      stopwatch.stop();
+      final encryptedCount = results.where((encrypted) => encrypted).length;
+      final failedCount = results.length - encryptedCount;
+
+      if (!mounted) return;
+      setState(() {
+        _isBulkEncrypting = false;
+        if (failedCount == 0) {
+          _lastResult =
+              'Encrypted 50/50 strings in ${stopwatch.elapsedMilliseconds} ms';
+          _lastError = null;
+        } else {
+          _lastResult = null;
+          _lastError =
+              'Encrypted $encryptedCount/50 strings; $failedCount failed in ${stopwatch.elapsedMilliseconds} ms';
+        }
+      });
+    } catch (e) {
+      stopwatch.stop();
+      if (!mounted) return;
+      setState(() {
+        _isBulkEncrypting = false;
+      });
       _showError(l10n.pendingEncryptFailed(e.toString()));
     }
   }
@@ -284,6 +346,21 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
                         onPressed: () => _encryptNip44(signer),
                         icon: const Icon(Icons.lock, size: 18),
                         label: Text(l10n.encrypt),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _isBulkEncrypting
+                            ? null
+                            : () => _encryptNip44InParallel(signer),
+                        icon: _isBulkEncrypting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.enhanced_encryption, size: 18),
+                        label: const Text('Encrypt 50 Strings'),
                       ),
                       FilledButton.icon(
                         onPressed: () => _decryptNip44(signer),
