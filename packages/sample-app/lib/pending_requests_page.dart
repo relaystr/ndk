@@ -18,6 +18,7 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
   String? _lastError;
   String? _ciphertext;
   bool _isBulkSigning = false;
+  bool _isDuplicateSigning = false;
   bool _isBulkEncrypting = false;
 
   void _showResult(String result) {
@@ -115,6 +116,69 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
       if (!mounted) return;
       setState(() {
         _isBulkSigning = false;
+      });
+      _showError(l10n.pendingSignFailed(e.toString()));
+    }
+  }
+
+  Future<void> _signSameEventInParallel(EventSigner signer) async {
+    if (_isDuplicateSigning) return;
+
+    final l10n = context.l10n;
+    final pubkey = signer.getPublicKey();
+    final startedAt = DateTime.now();
+    final event = Nip01Event(
+      pubKey: pubkey,
+      kind: 1,
+      tags: [
+        ['client', 'ndk-sample-app'],
+        ['test', 'duplicate-parallel-signing'],
+      ],
+      content: 'Duplicate signer test from sample app - $startedAt',
+      createdAt: startedAt.millisecondsSinceEpoch ~/ 1000,
+    );
+    final stopwatch = Stopwatch()..start();
+
+    setState(() {
+      _isDuplicateSigning = true;
+      _lastResult = 'Sending 10 sign requests for the same event...';
+      _lastError = null;
+    });
+
+    try {
+      final results = await Future.wait(
+        List.generate(10, (_) async {
+          try {
+            final signed = await signer.sign(event);
+            return signed.id == event.id;
+          } catch (_) {
+            return false;
+          }
+        }),
+      );
+
+      stopwatch.stop();
+      final signedCount = results.where((signed) => signed).length;
+      final failedCount = results.length - signedCount;
+
+      if (!mounted) return;
+      setState(() {
+        _isDuplicateSigning = false;
+        if (failedCount == 0) {
+          _lastResult =
+              'Signed the same event 10/10 times in ${stopwatch.elapsedMilliseconds} ms';
+          _lastError = null;
+        } else {
+          _lastResult = null;
+          _lastError =
+              'Signed the same event $signedCount/10 times; $failedCount failed in ${stopwatch.elapsedMilliseconds} ms';
+        }
+      });
+    } catch (e) {
+      stopwatch.stop();
+      if (!mounted) return;
+      setState(() {
+        _isDuplicateSigning = false;
       });
       _showError(l10n.pendingSignFailed(e.toString()));
     }
@@ -341,6 +405,21 @@ class _PendingRequestsPageState extends State<PendingRequestsPage> {
                               )
                             : const Icon(Icons.bolt, size: 18),
                         label: const Text('Sign 50 Events'),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _isDuplicateSigning
+                            ? null
+                            : () => _signSameEventInParallel(signer),
+                        icon: _isDuplicateSigning
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.repeat, size: 18),
+                        label: const Text('Sign Same Event x10'),
                       ),
                       FilledButton.icon(
                         onPressed: () => _encryptNip44(signer),
