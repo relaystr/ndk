@@ -397,13 +397,24 @@ class SembastCacheManager extends CacheManager {
     final stateRecords = await _loadEventCacheStateRecords();
     final deliveryRecords = await loadEventDeliveryRecords();
     final relayTargets = await loadRelayDeliveryTargets();
+    final activeDeliveryEventIds = deliveryRecords
+        .where((record) => record.status != EventDeliveryStatus.delivered)
+        .map((record) => record.eventId)
+        .toSet();
     final lockedEventIds = <String>{
-      ...deliveryRecords.map((record) => record.eventId),
-      ...relayTargets.map((target) => target.eventId),
+      ...activeDeliveryEventIds,
+      ...relayTargets
+          .where((target) => target.state != RelayDeliveryState.acked)
+          .map((target) => target.eventId),
     };
+    final deliveredEventIds = deliveryRecords
+        .where((record) => record.status == EventDeliveryStatus.delivered)
+        .map((record) => record.eventId)
+        .toSet();
     final plan = EventEvictionPlanner.planFromStateRecords(
       stateRecords: stateRecords,
       lockedEventIds: lockedEventIds,
+      deliveredEventIds: deliveredEventIds,
       policy: policy,
     );
 

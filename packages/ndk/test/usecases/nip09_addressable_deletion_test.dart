@@ -46,6 +46,7 @@ void main() {
       final plan = EventEvictionPlanner.plan(
         rawEvents: [target, deletion],
         lockedEventIds: const {},
+        deliveredEventIds: const {},
         policy: const EvictionPolicy(),
         now: 1700000100,
       );
@@ -70,6 +71,7 @@ void main() {
       final plan = EventEvictionPlanner.plan(
         rawEvents: [deletion, newerVersion],
         lockedEventIds: const {},
+        deliveredEventIds: const {},
         policy: const EvictionPolicy(),
         now: 1700000100,
       );
@@ -93,6 +95,7 @@ void main() {
       final plan = EventEvictionPlanner.planFromStateRecords(
         stateRecords: stateRecords,
         lockedEventIds: const {},
+        deliveredEventIds: const {},
         policy: const EvictionPolicy(),
         now: 1700000100,
       );

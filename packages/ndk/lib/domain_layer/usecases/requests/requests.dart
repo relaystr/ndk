@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../../config/request_defaults.dart';
 import '../../../shared/logger/logger.dart';
+import '../../../shared/nips/nip01/event_kind_classification.dart';
 import '../../../shared/nips/nip01/helpers.dart';
 import '../../entities/account.dart';
 import '../../entities/event_filter.dart';
@@ -90,6 +91,16 @@ class Requests {
   Future<Nip01Event?> _persistAndFilterVisibleNetworkEvent(
     Nip01Event event,
   ) async {
+    // Ephemeral events (NIP-01 kinds 20000-29999) are non-persistent by
+    // definition. They must not be written to cache — relays don't store them
+    // either. Inbound events flow through to the subscriber but are not
+    // persisted, preventing unbounded cache growth. Locally-created ephemeral
+    // events (broadcast / pending-delivery) bypass this path and remain cached
+    // for local-first delivery and retry.
+    if (EventKindClassification.isEphemeralKind(event.kind)) {
+      return event;
+    }
+
     await _cacheWrite.cacheManager.saveEvent(event);
     if (event.sources.isNotEmpty) {
       await _cacheWrite.cacheManager.addEventSources(

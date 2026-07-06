@@ -242,13 +242,24 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     final rawEvents = rawRows.map(_eventFromRow).toList();
     final deliveryRecords = await loadEventDeliveryRecords();
     final relayTargets = await loadRelayDeliveryTargets();
+    final activeDeliveryEventIds = deliveryRecords
+        .where((record) => record.status != EventDeliveryStatus.delivered)
+        .map((record) => record.eventId)
+        .toSet();
     final lockedEventIds = <String>{
-      ...deliveryRecords.map((record) => record.eventId),
-      ...relayTargets.map((target) => target.eventId),
+      ...activeDeliveryEventIds,
+      ...relayTargets
+          .where((target) => target.state != RelayDeliveryState.acked)
+          .map((target) => target.eventId),
     };
+    final deliveredEventIds = deliveryRecords
+        .where((record) => record.status == EventDeliveryStatus.delivered)
+        .map((record) => record.eventId)
+        .toSet();
     final plan = EventEvictionPlanner.plan(
       rawEvents: rawEvents,
       lockedEventIds: lockedEventIds,
+      deliveredEventIds: deliveredEventIds,
       policy: policy,
     );
 

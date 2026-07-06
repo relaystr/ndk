@@ -9,6 +9,7 @@ class EventEvictionPlan {
   final int removedExpired;
   final int removedDeleted;
   final int removedSuperseded;
+  final int removedDeliveredEphemeral;
   final int removedByKindCap;
   final int keptDueToDeliveryState;
   final int keptProtected;
@@ -18,6 +19,7 @@ class EventEvictionPlan {
     required this.removedExpired,
     required this.removedDeleted,
     required this.removedSuperseded,
+    required this.removedDeliveredEphemeral,
     required this.removedByKindCap,
     required this.keptDueToDeliveryState,
     required this.keptProtected,
@@ -29,6 +31,7 @@ class EventEvictionPlan {
       removedExpired: removedExpired,
       removedDeleted: removedDeleted,
       removedSuperseded: removedSuperseded,
+      removedDeliveredEphemeral: removedDeliveredEphemeral,
       removedByKindCap: removedByKindCap,
       keptDueToDeliveryState: keptDueToDeliveryState,
       keptProtected: keptProtected,
@@ -52,6 +55,7 @@ class EventEvictionPlanner {
   static EventEvictionPlan planFromStateRecords({
     required List<EventCacheStateRecord> stateRecords,
     required Set<String> lockedEventIds,
+    required Set<String> deliveredEventIds,
     required EvictionPolicy policy,
     int? now,
   }) {
@@ -60,6 +64,7 @@ class EventEvictionPlanner {
     var removedExpired = 0;
     var removedDeleted = 0;
     var removedSuperseded = 0;
+    var removedDeliveredEphemeral = 0;
     var removedByKindCap = 0;
     var keptDueToDeliveryState = 0;
     var keptProtected = 0;
@@ -88,6 +93,14 @@ class EventEvictionPlanner {
           !record.isCurrent) {
         eventIdsToRemove.add(record.eventId);
         removedSuperseded++;
+        continue;
+      }
+
+      if (policy.sweepDeliveredEphemeral &&
+          EventKindClassification.isEphemeralKind(record.kind) &&
+          deliveredEventIds.contains(record.eventId)) {
+        eventIdsToRemove.add(record.eventId);
+        removedDeliveredEphemeral++;
         continue;
       }
 
@@ -123,6 +136,7 @@ class EventEvictionPlanner {
       removedExpired: removedExpired,
       removedDeleted: removedDeleted,
       removedSuperseded: removedSuperseded,
+      removedDeliveredEphemeral: removedDeliveredEphemeral,
       removedByKindCap: removedByKindCap,
       keptDueToDeliveryState: keptDueToDeliveryState,
       keptProtected: keptProtected,
@@ -132,6 +146,7 @@ class EventEvictionPlanner {
   static EventEvictionPlan plan({
     required List<Nip01Event> rawEvents,
     required Set<String> lockedEventIds,
+    required Set<String> deliveredEventIds,
     required EvictionPolicy policy,
     int? now,
   }) {
@@ -144,6 +159,7 @@ class EventEvictionPlanner {
     var removedExpired = 0;
     var removedDeleted = 0;
     var removedSuperseded = 0;
+    var removedDeliveredEphemeral = 0;
     var removedByKindCap = 0;
     var keptDueToDeliveryState = 0;
     var keptProtected = 0;
@@ -177,6 +193,14 @@ class EventEvictionPlanner {
         continue;
       }
 
+      if (policy.sweepDeliveredEphemeral &&
+          EventKindClassification.isEphemeralKind(event.kind) &&
+          deliveredEventIds.contains(event.id)) {
+        eventIdsToRemove.add(event.id);
+        removedDeliveredEphemeral++;
+        continue;
+      }
+
       if (visibleIds.contains(event.id)) {
         if (_isCapProtected(event, policy)) {
           keptProtected++;
@@ -207,6 +231,7 @@ class EventEvictionPlanner {
       removedExpired: removedExpired,
       removedDeleted: removedDeleted,
       removedSuperseded: removedSuperseded,
+      removedDeliveredEphemeral: removedDeliveredEphemeral,
       removedByKindCap: removedByKindCap,
       keptDueToDeliveryState: keptDueToDeliveryState,
       keptProtected: keptProtected,

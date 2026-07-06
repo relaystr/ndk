@@ -658,6 +658,58 @@ void main() {
         expect(() async => await cacheManager.close(), returnsNormally);
       });
     });
+
+    group('Eviction tests', () {
+      test('default eviction removes delivered ephemeral events', () async {
+        final event = Nip01Event(
+          pubKey: 'ephemeral-author',
+          kind: 21133,
+          tags: const [],
+          content: 'ephemeral pending-delivery payload',
+          createdAt: 1700000000,
+        );
+        await cacheManager.saveEvent(event);
+        await cacheManager.saveEventDeliveryRecord(
+          EventDeliveryRecord(
+            eventId: event.id,
+            status: EventDeliveryStatus.delivered,
+            createdAt: 1700000000,
+            updatedAt: 1700000001,
+            completedAt: 1700000001,
+          ),
+        );
+
+        final result = await cacheManager.evict(const EvictionPolicy());
+
+        expect(result.removedDeliveredEphemeral, 1);
+        expect(await cacheManager.loadEvent(event.id), isNull);
+      });
+
+      test('default eviction keeps delivered non-ephemeral events', () async {
+        final event = Nip01Event(
+          pubKey: 'regular-author',
+          kind: 1,
+          tags: const [],
+          content: 'regular delivered event',
+          createdAt: 1700000100,
+        );
+        await cacheManager.saveEvent(event);
+        await cacheManager.saveEventDeliveryRecord(
+          EventDeliveryRecord(
+            eventId: event.id,
+            status: EventDeliveryStatus.delivered,
+            createdAt: 1700000100,
+            updatedAt: 1700000101,
+            completedAt: 1700000101,
+          ),
+        );
+
+        final result = await cacheManager.evict(const EvictionPolicy());
+
+        expect(result.removedDeliveredEphemeral, 0);
+        expect(await cacheManager.loadEvent(event.id), isNotNull);
+      });
+    });
   });
 
   // Run shared test suite for comprehensive coverage

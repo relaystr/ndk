@@ -532,13 +532,24 @@ class MemCacheManager implements CacheManager {
 
   @override
   Future<EvictionResult> evict(EvictionPolicy policy) async {
+    final activeDeliveryEventIds = eventDeliveryRecords.values
+        .where((record) => record.status != EventDeliveryStatus.delivered)
+        .map((record) => record.eventId)
+        .toSet();
     final lockedEventIds = <String>{
-      ...eventDeliveryRecords.keys,
-      ...relayDeliveryTargets.values.map((target) => target.eventId),
+      ...activeDeliveryEventIds,
+      ...relayDeliveryTargets.values
+          .where((target) => target.state != RelayDeliveryState.acked)
+          .map((target) => target.eventId),
     };
+    final deliveredEventIds = eventDeliveryRecords.values
+        .where((record) => record.status == EventDeliveryStatus.delivered)
+        .map((record) => record.eventId)
+        .toSet();
     final plan = EventEvictionPlanner.planFromStateRecords(
       stateRecords: eventCacheStateRecords.values.toList(),
       lockedEventIds: lockedEventIds,
+      deliveredEventIds: deliveredEventIds,
       policy: policy,
     );
 

@@ -22,6 +22,7 @@ class EvictionPolicy {
   final bool sweepExpired;
   final bool sweepDeleted;
   final bool sweepSuperseded;
+  final bool sweepDeliveredEphemeral;
   final Map<int, int> kindCaps;
   final Set<int> protectedKinds;
   final Set<String> protectedEventIds;
@@ -32,6 +33,7 @@ class EvictionPolicy {
     this.sweepExpired = true,
     this.sweepDeleted = true,
     this.sweepSuperseded = true,
+    this.sweepDeliveredEphemeral = true,
     this.kindCaps = const {},
     this.protectedKinds = kDefaultProtectedKinds,
     this.protectedEventIds = const {},
@@ -43,6 +45,7 @@ class EvictionPolicy {
       : sweepExpired = true,
         sweepDeleted = true,
         sweepSuperseded = true,
+        sweepDeliveredEphemeral = true,
         kindCaps = const {},
         protectedKinds = kDefaultProtectedKinds,
         protectedEventIds = const {},
@@ -86,6 +89,7 @@ class EvictionResult {
   final int removedExpired;
   final int removedDeleted;
   final int removedSuperseded;
+  final int removedDeliveredEphemeral;
   final int removedByKindCap;
   final int keptDueToDeliveryState;
   final int keptProtected;
@@ -95,6 +99,7 @@ class EvictionResult {
     this.removedExpired = 0,
     this.removedDeleted = 0,
     this.removedSuperseded = 0,
+    this.removedDeliveredEphemeral = 0,
     this.removedByKindCap = 0,
     this.keptDueToDeliveryState = 0,
     this.keptProtected = 0,
