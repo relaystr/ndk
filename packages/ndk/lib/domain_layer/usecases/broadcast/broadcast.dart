@@ -83,25 +83,22 @@ class Broadcast {
         requiresInteractiveSigning:
             signer != null && signer.requiresInteractiveSigning,
       );
-      responseDoneFuture.then(
-        (responses) => pendingEnrollment!.then(
-          (_) => pendingDelivery.persistSpecificRelayBroadcastResult(
-            nostrEvent,
-            responses,
-          ),
-          onError: (_, __) {},
-        ),
-        onError: (_, __) {},
-      );
     }
 
     if (pendingEnrollment == null) {
       return response;
     }
 
-    final broadcastDoneFuture = pendingEnrollment.then(
-      (_) => responseDoneFuture,
-    );
+    final broadcastDoneFuture = responseDoneFuture.then((responses) async {
+      try {
+        await pendingEnrollment!;
+        await pendingDelivery!.persistSpecificRelayBroadcastResult(
+          nostrEvent,
+          responses,
+        );
+      } catch (_, __) {}
+      return responses;
+    });
     return NdkBroadcastResponse(
       publishEvent: response.publishEvent,
       broadcastDoneStream: response.broadcastDone,

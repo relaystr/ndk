@@ -278,6 +278,7 @@ class PendingBroadcastDelivery {
 
     final updatedTargets = <RelayDeliveryTarget>[];
     final policy = DeliveryPolicy.forEvent(event);
+    final attemptTimestamp = Nip01Event.secondsSinceEpoch();
     for (final response in responses) {
       final current = targetsByRelay[response.relayUrl];
       if (current == null) {
@@ -285,7 +286,6 @@ class PendingBroadcastDelivery {
       }
 
       final isAcked = response.okReceived && response.broadcastSuccessful;
-      final attemptTimestamp = Nip01Event.secondsSinceEpoch();
       final nextState = policy.resolveNextState(response);
       final nextRetryAt = policy.shouldRetryState(nextState)
           ? attemptTimestamp +
@@ -309,6 +309,30 @@ class PendingBroadcastDelivery {
       );
     }
 
+    if (policy.kind == DeliveryPolicyKind.doNotRetry) {
+      final updatedRelayUrls = {
+        for (final target in updatedTargets) target.relayUrl,
+      };
+      for (final current in existingTargets) {
+        if (updatedRelayUrls.contains(current.relayUrl)) {
+          continue;
+        }
+        if (current.state == RelayDeliveryState.acked ||
+            current.state == RelayDeliveryState.permanentFailure) {
+          continue;
+        }
+        updatedTargets.add(
+          current.copyWith(
+            state: RelayDeliveryState.permanentFailure,
+            attemptCount: current.attemptCount + 1,
+            lastAttemptAt: attemptTimestamp,
+            nextRetryAt: null,
+            lastError: 'broadcast completed without relay acknowledgement',
+          ),
+        );
+      }
+    }
+
     if (updatedTargets.isNotEmpty) {
       await _cacheManager.saveRelayDeliveryTargets(updatedTargets);
     }
@@ -316,17 +340,21 @@ class PendingBroadcastDelivery {
     final allTargets =
         await _cacheManager.loadRelayDeliveryTargets(eventId: event.id);
     final deliveryStatus = _resolveDeliveryStatus(existing, allTargets);
+    final completionTimestamp =
+        deliveryStatus == EventDeliveryStatus.delivered ||
+                deliveryStatus == EventDeliveryStatus.failed
+            ? Nip01Event.secondsSinceEpoch()
+            : null;
 
     await _cacheManager.saveEventDeliveryRecord(
       existing.copyWith(
         status: deliveryStatus,
         updatedAt: Nip01Event.secondsSinceEpoch(),
-        completedAt: deliveryStatus == EventDeliveryStatus.delivered
-            ? Nip01Event.secondsSinceEpoch()
-            : null,
+        completedAt: completionTimestamp,
       ),
     );
-    await _purgeEphemeralIfTerminal(event.id, deliveryStatus, event.kind);
+    await _purgeEphemeralIfResolved(
+        event.id, deliveryStatus, event.kind, allTargets);
   }
 
   Future<void> flushForRelay(
@@ -895,25 +923,35 @@ class PendingBroadcastDelivery {
             : null,
       ),
     );
-    await _purgeEphemeralIfTerminal(
+    await _purgeEphemeralIfResolved(
       record.eventId,
       resolvedStatus,
       _resolveEventKindFromRecord(record),
+      targets,
     );
   }
 
   /// Ephemeral events carry no lasting cache value. Once their delivery reaches
-  /// a terminal state (delivered or failed) drop the event and every
+  /// a fully-resolved state, drop the event and every
   /// eventId-keyed sidecar immediately, instead of waiting for a background
   /// eviction pass. [removeEvent] wipes the event plus its sources, delivery
   /// record, relay delivery targets, decrypted payloads and state record.
-  Future<void> _purgeEphemeralIfTerminal(
+  Future<void> _purgeEphemeralIfResolved(
     String eventId,
     EventDeliveryStatus status,
     int? kind,
+    List<RelayDeliveryTarget> targets,
   ) async {
-    if (status != EventDeliveryStatus.delivered &&
-        status != EventDeliveryStatus.failed) {
+    final isResolved = status == EventDeliveryStatus.delivered ||
+        status == EventDeliveryStatus.failed ||
+        (status == EventDeliveryStatus.partiallyDelivered &&
+            targets.isNotEmpty &&
+            targets.every(
+              (t) =>
+                  t.state == RelayDeliveryState.acked ||
+                  t.state == RelayDeliveryState.permanentFailure,
+            ));
+    if (!isResolved) {
       return;
     }
     if (kind == null || !EventKindClassification.isEphemeralKind(kind)) {
