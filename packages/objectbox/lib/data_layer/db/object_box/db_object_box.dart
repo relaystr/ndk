@@ -867,19 +867,64 @@ class DbObjectBox extends WalletsRepo implements CacheManager {
       policy: policy,
     );
 
-    if (plan.eventIdsToRemove.isEmpty) {
+    // Sweep leftover delivery records whose event was kept (or never stored).
+    // A terminally failed record swept here unpins its event for the next run.
+    final remainingDeliveryRecords = deliveryRecords
+        .where((record) => !plan.eventIdsToRemove.contains(record.eventId))
+        .toList();
+    final deliverySweep = EventEvictionPlanner.planDeliverySweep(
+      deliveryRecords: remainingDeliveryRecords,
+      policy: policy,
+    );
+
+    if (plan.eventIdsToRemove.isEmpty &&
+        deliverySweep.deliveryEventIdsToRemove.isEmpty) {
       return plan.toResult();
     }
 
-    final query = eventBox
-        .query(DbNip01Event_.nostrId.oneOf(plan.eventIdsToRemove.toList()))
-        .build();
-    final results = query.find();
-    query.close();
-    eventBox.removeMany(results.map((event) => event.dbId).toList());
-    _removeEventSidecarsByIds(plan.eventIdsToRemove);
+    if (plan.eventIdsToRemove.isNotEmpty) {
+      final query = eventBox
+          .query(DbNip01Event_.nostrId.oneOf(plan.eventIdsToRemove.toList()))
+          .build();
+      final results = query.find();
+      query.close();
+      eventBox.removeMany(results.map((event) => event.dbId).toList());
+      _removeEventSidecarsByIds(plan.eventIdsToRemove);
+    }
 
-    return plan.toResult();
+    if (deliverySweep.deliveryEventIdsToRemove.isNotEmpty) {
+      _removeDeliveryRecordsByIds(deliverySweep.deliveryEventIdsToRemove);
+    }
+
+    return plan.toResult().copyWith(
+          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+          removedTerminalFailedDeliveries:
+              deliverySweep.removedTerminalFailedDeliveries,
+        );
+  }
+
+  /// Removes only the delivery record and relay delivery targets for
+  /// [eventIds]. Unlike [_removeEventSidecarsByIds] this leaves the event, its
+  /// provenance sources and decrypted payload sidecars intact, so it is safe to
+  /// call for events that are being kept in cache.
+  void _removeDeliveryRecordsByIds(Iterable<String> eventIds) {
+    final eventIdSet = eventIds.toSet();
+    if (eventIdSet.isEmpty) return;
+
+    _eventDeliveryRecords.removeWhere(
+      (eventId, value) => eventIdSet.contains(eventId),
+    );
+    _relayDeliveryTargets.removeWhere(
+      (key, target) => eventIdSet.contains(target.eventId),
+    );
+    final box = _objectBox.store.box<DbKeyValue>();
+    for (final eventId in eventIdSet) {
+      _removeKeyValue(_eventDeliveryRecordKey(eventId), box: box);
+      _removeKeyValuesByPrefix(
+        _relayDeliveryTargetKeyPrefixForEvent(eventId),
+        box: box,
+      );
+    }
   }
 
   void _removeEventSidecarsByIds(Iterable<String> eventIds) {

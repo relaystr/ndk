@@ -39,6 +39,32 @@ class EventEvictionPlan {
   }
 }
 
+/// Result of planning a standalone delivery-record sweep.
+///
+/// This is independent of event eviction: it targets [EventDeliveryRecord]s
+/// (and their [RelayDeliveryTarget]s) that are no longer useful, regardless of
+/// whether their parent event is still cached.
+class DeliverySweepPlan {
+  /// Event ids whose delivery record + relay delivery targets should be removed.
+  final Set<String> deliveryEventIdsToRemove;
+  final int removedCompletedDeliveries;
+  final int removedTerminalFailedDeliveries;
+
+  const DeliverySweepPlan({
+    required this.deliveryEventIdsToRemove,
+    required this.removedCompletedDeliveries,
+    required this.removedTerminalFailedDeliveries,
+  });
+
+  static const empty = DeliverySweepPlan(
+    deliveryEventIdsToRemove: <String>{},
+    removedCompletedDeliveries: 0,
+    removedTerminalFailedDeliveries: 0,
+  );
+
+  bool get isEmpty => deliveryEventIdsToRemove.isEmpty;
+}
+
 /// Pure planner for cache eviction decisions.
 ///
 /// This class is backend-agnostic: it receives raw events plus a small amount
@@ -140,6 +166,55 @@ class EventEvictionPlanner {
       removedByKindCap: removedByKindCap,
       keptDueToDeliveryState: keptDueToDeliveryState,
       keptProtected: keptProtected,
+    );
+  }
+
+  /// Plans removal of standalone delivery records that have outlived their
+  /// usefulness: delivered records past their retention, and (when enabled)
+  /// terminally failed records past theirs.
+  ///
+  /// Delivered records are keyed off `completedAt` (falling back to
+  /// `updatedAt`); failed records off `updatedAt`.
+  static DeliverySweepPlan planDeliverySweep({
+    required List<EventDeliveryRecord> deliveryRecords,
+    required EvictionPolicy policy,
+    int? now,
+  }) {
+    if (!policy.sweepCompletedDeliveries &&
+        !policy.sweepTerminalFailedDeliveries) {
+      return DeliverySweepPlan.empty;
+    }
+
+    final currentTime = now ?? Nip01Event.secondsSinceEpoch();
+    final toRemove = <String>{};
+    var removedCompleted = 0;
+    var removedFailed = 0;
+
+    for (final record in deliveryRecords) {
+      if (policy.sweepCompletedDeliveries &&
+          record.status == EventDeliveryStatus.delivered) {
+        final completedAt = record.completedAt ?? record.updatedAt;
+        if (currentTime - completedAt >=
+            policy.completedDeliveryRetention.inSeconds) {
+          if (toRemove.add(record.eventId)) removedCompleted++;
+          continue;
+        }
+      }
+
+      if (policy.sweepTerminalFailedDeliveries &&
+          record.status == EventDeliveryStatus.failed) {
+        if (currentTime - record.updatedAt >=
+            policy.terminalFailedDeliveryRetention.inSeconds) {
+          if (toRemove.add(record.eventId)) removedFailed++;
+          continue;
+        }
+      }
+    }
+
+    return DeliverySweepPlan(
+      deliveryEventIdsToRemove: toRemove,
+      removedCompletedDeliveries: removedCompleted,
+      removedTerminalFailedDeliveries: removedFailed,
     );
   }
 

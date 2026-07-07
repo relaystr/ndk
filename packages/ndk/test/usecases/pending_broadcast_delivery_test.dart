@@ -153,6 +153,107 @@ void main() {
       expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
     });
 
+    test('purges ephemeral event and sidecars once delivery is complete',
+        () async {
+      final ephemeralEvent = Nip01Event(
+        id: 'ephemeral-1',
+        pubKey: 'pubkey',
+        createdAt: 1700000000,
+        kind: 21000,
+        tags: const [],
+        content: 'ephemeral note',
+        sig: 'sig',
+      );
+      await cacheManager.saveEvent(ephemeralEvent);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: ephemeralEvent.id,
+          status: EventDeliveryStatus.pending,
+          createdAt: ephemeralEvent.createdAt,
+          updatedAt: ephemeralEvent.createdAt,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: ephemeralEvent.id,
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.pending,
+        ),
+      );
+
+      await pendingDelivery.persistSpecificRelayBroadcastResult(
+        ephemeralEvent,
+        [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: true,
+            broadcastSuccessful: true,
+          ),
+        ],
+      );
+
+      expect(await cacheManager.loadEvent(ephemeralEvent.id), isNull);
+      expect(
+        await cacheManager.loadEventDeliveryRecord(ephemeralEvent.id),
+        isNull,
+      );
+      expect(
+        await cacheManager.loadRelayDeliveryTargets(eventId: ephemeralEvent.id),
+        isEmpty,
+      );
+    });
+
+    test('keeps ephemeral event cached while delivery is not yet terminal',
+        () async {
+      final ephemeralEvent = Nip01Event(
+        id: 'ephemeral-auth',
+        pubKey: 'pubkey',
+        createdAt: 1700000000,
+        kind: 21000,
+        tags: const [],
+        content: 'ephemeral awaiting auth',
+        sig: 'sig',
+      );
+      await cacheManager.saveEvent(ephemeralEvent);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: ephemeralEvent.id,
+          status: EventDeliveryStatus.pending,
+          createdAt: ephemeralEvent.createdAt,
+          updatedAt: ephemeralEvent.createdAt,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: ephemeralEvent.id,
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.pending,
+        ),
+      );
+
+      // auth-required is a non-terminal outcome (status -> needsAction), so the
+      // event and its delivery state must survive for a later auth-gated retry.
+      await pendingDelivery.persistSpecificRelayBroadcastResult(
+        ephemeralEvent,
+        [
+          RelayBroadcastResponse(
+            relayUrl: 'wss://relay.example',
+            okReceived: false,
+            broadcastSuccessful: false,
+            msg: 'auth-required: need to authenticate',
+          ),
+        ],
+      );
+
+      expect(await cacheManager.loadEvent(ephemeralEvent.id), isNotNull);
+      final record =
+          await cacheManager.loadEventDeliveryRecord(ephemeralEvent.id);
+      expect(record, isNotNull);
+      expect(record!.status, EventDeliveryStatus.needsAction);
+    });
+
     test('signs remote-signer events before broadcasting', () async {
       final unsignedEvent = Nip01Event(
         id: 'event-remote-sign',

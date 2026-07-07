@@ -418,22 +418,42 @@ class SembastCacheManager extends CacheManager {
       policy: policy,
     );
 
-    if (plan.eventIdsToRemove.isEmpty) {
-      return plan.toResult();
+    if (plan.eventIdsToRemove.isNotEmpty) {
+      final removedEvents = rawEvents
+          .where((event) => plan.eventIdsToRemove.contains(event.id))
+          .toList();
+      await _eventsStore
+          .records(plan.eventIdsToRemove.toList())
+          .delete(_database);
+      await _removeEventSidecarsByIds(plan.eventIdsToRemove);
+      await _refreshDerivedStateForPubKeys(
+        removedEvents.map((event) => event.pubKey).toSet(),
+      );
     }
 
-    final removedEvents = rawEvents
-        .where((event) => plan.eventIdsToRemove.contains(event.id))
+    // Sweep leftover delivery records whose event was kept (or never stored).
+    // A terminally failed record swept here unpins its event for the next run.
+    final remainingDeliveryRecords = deliveryRecords
+        .where((record) => !plan.eventIdsToRemove.contains(record.eventId))
         .toList();
-    await _eventsStore
-        .records(plan.eventIdsToRemove.toList())
-        .delete(_database);
-    await _removeEventSidecarsByIds(plan.eventIdsToRemove);
-    await _refreshDerivedStateForPubKeys(
-      removedEvents.map((event) => event.pubKey).toSet(),
+    final deliverySweep = EventEvictionPlanner.planDeliverySweep(
+      deliveryRecords: remainingDeliveryRecords,
+      policy: policy,
     );
+    if (deliverySweep.deliveryEventIdsToRemove.isNotEmpty) {
+      final ids = deliverySweep.deliveryEventIdsToRemove.toList();
+      await _eventDeliveryStore.records(ids).delete(_database);
+      await _relayDeliveryTargetStore.delete(
+        _database,
+        finder: sembast.Finder(filter: sembast.Filter.inList('eventId', ids)),
+      );
+    }
 
-    return plan.toResult();
+    return plan.toResult().copyWith(
+          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+          removedTerminalFailedDeliveries:
+              deliverySweep.removedTerminalFailedDeliveries,
+        );
   }
 
   @override

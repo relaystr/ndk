@@ -180,8 +180,8 @@ void main() {
     });
 
     test(
-        'broadcasting an ephemeral event saves it to cache '
-        '(local-first delivery)', () async {
+        'broadcasting an ephemeral event purges it from cache once delivery '
+        'is terminal (ephemeral cache is transient)', () async {
       final mockRelay = MockRelay(name: 'ephemeral-broadcast-test');
       await mockRelay.startServer();
       addTearDown(() => mockRelay.stopServer());
@@ -206,9 +206,11 @@ void main() {
         pubKey: authorKey.publicKey,
         kind: ephemeralKind,
         tags: const [],
-        content: 'outgoing ephemeral — must be cached for retry',
+        content: 'outgoing ephemeral — transient in cache',
       );
 
+      // saveToCache persists the event immediately so the local-first path can
+      // deliver (and retry) it while the outcome is still pending.
       await ndk.broadcast
           .broadcast(
             nostrEvent: ephemeralEvent,
@@ -217,19 +219,23 @@ void main() {
           )
           .broadcastDoneFuture;
 
-      // Give the async save a moment to settle.
+      // Give the async purge a moment to settle.
       await Future.delayed(const Duration(milliseconds: 200));
 
+      // Ephemeral events use a doNotRetry delivery policy: once a relay has
+      // responded (here: acked -> delivered) there is nothing left to retry.
+      // The local-first cache copy and its delivery record are dropped
+      // immediately instead of lingering until a background eviction pass.
       final cached =
           cache.events.values.where((e) => e.kind == ephemeralKind);
       expect(
         cached,
-        hasLength(1),
+        isEmpty,
         reason:
-            'Broadcast ephemeral events must be cached for local-first '
-            'delivery and retry.',
+            'Delivered ephemeral events must be purged; relays do not persist '
+            'them and doNotRetry means nothing will re-broadcast them.',
       );
-      expect(cached.first.id, equals(ephemeralEvent.id));
+      expect(await cache.loadEventDeliveryRecord(ephemeralEvent.id), isNull);
 
       await ndk.destroy();
     });

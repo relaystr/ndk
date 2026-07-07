@@ -95,7 +95,9 @@ class CacheEvictionScheduler {
         () =>
             'cache eviction finished ($reason): removed=${result.removedEvents}, '
             'expired=${result.removedExpired}, deleted=${result.removedDeleted}, '
-            'superseded=${result.removedSuperseded}, capped=${result.removedByKindCap}',
+            'superseded=${result.removedSuperseded}, capped=${result.removedByKindCap}, '
+            'deliveredDeliveries=${result.removedCompletedDeliveries}, '
+            'failedDeliveries=${result.removedTerminalFailedDeliveries}',
       );
     } catch (e, st) {
       Logger.log.e(

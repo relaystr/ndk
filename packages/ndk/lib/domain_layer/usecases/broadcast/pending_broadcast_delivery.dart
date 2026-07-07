@@ -326,6 +326,7 @@ class PendingBroadcastDelivery {
             : null,
       ),
     );
+    await _purgeEphemeralIfTerminal(event.id, deliveryStatus, event.kind);
   }
 
   Future<void> flushForRelay(
@@ -894,6 +895,45 @@ class PendingBroadcastDelivery {
             : null,
       ),
     );
+    await _purgeEphemeralIfTerminal(
+      record.eventId,
+      resolvedStatus,
+      _resolveEventKindFromRecord(record),
+    );
+  }
+
+  /// Ephemeral events carry no lasting cache value. Once their delivery reaches
+  /// a terminal state (delivered or failed) drop the event and every
+  /// eventId-keyed sidecar immediately, instead of waiting for a background
+  /// eviction pass. [removeEvent] wipes the event plus its sources, delivery
+  /// record, relay delivery targets, decrypted payloads and state record.
+  Future<void> _purgeEphemeralIfTerminal(
+    String eventId,
+    EventDeliveryStatus status,
+    int? kind,
+  ) async {
+    if (status != EventDeliveryStatus.delivered &&
+        status != EventDeliveryStatus.failed) {
+      return;
+    }
+    if (kind == null || !EventKindClassification.isEphemeralKind(kind)) {
+      return;
+    }
+    await _cacheManager.removeEvent(eventId);
+  }
+
+  int? _resolveEventKindFromRecord(EventDeliveryRecord record) {
+    final json = record.serializedEventJson;
+    if (json == null || json.isEmpty) {
+      return null;
+    }
+    try {
+      final decoded = jsonDecode(json);
+      if (decoded is Map && decoded['kind'] is int) {
+        return decoded['kind'] as int;
+      }
+    } catch (_) {}
+    return null;
   }
 
   bool _isAddressableKind(int kind) {

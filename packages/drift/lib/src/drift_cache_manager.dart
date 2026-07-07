@@ -263,17 +263,67 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
       policy: policy,
     );
 
-    if (plan.eventIdsToRemove.isEmpty) {
+    // Sweep leftover delivery records whose event was kept (or never stored).
+    // A terminally failed record swept here unpins its event for the next run.
+    final remainingDeliveryRecords = deliveryRecords
+        .where((record) => !plan.eventIdsToRemove.contains(record.eventId))
+        .toList();
+    final deliverySweep = EventEvictionPlanner.planDeliverySweep(
+      deliveryRecords: remainingDeliveryRecords,
+      policy: policy,
+    );
+
+    if (plan.eventIdsToRemove.isEmpty &&
+        deliverySweep.deliveryEventIdsToRemove.isEmpty) {
       return plan.toResult();
     }
 
     final idsToRemove = plan.eventIdsToRemove.toList();
     await _db.transaction(() async {
-      await (_db.delete(_db.events)..where((t) => t.id.isIn(idsToRemove))).go();
-      await _removeEventSidecarsByIds(idsToRemove);
+      if (idsToRemove.isNotEmpty) {
+        await (_db.delete(_db.events)
+              ..where((t) => t.id.isIn(idsToRemove)))
+            .go();
+        await _removeEventSidecarsByIds(idsToRemove);
+      }
+      if (deliverySweep.deliveryEventIdsToRemove.isNotEmpty) {
+        await _removeDeliveryRecordsByIds(
+          deliverySweep.deliveryEventIdsToRemove,
+        );
+      }
     });
 
-    return plan.toResult();
+    return plan.toResult().copyWith(
+          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+          removedTerminalFailedDeliveries:
+              deliverySweep.removedTerminalFailedDeliveries,
+        );
+  }
+
+  /// Removes only the delivery record, relay delivery targets and delivery
+  /// snapshot for [eventIds]. Unlike [_removeEventSidecarsByIds] this leaves the
+  /// event, its provenance sources and decrypted payload sidecars intact, so it
+  /// is safe to call for events that are being kept in cache.
+  Future<void> _removeDeliveryRecordsByIds(Iterable<String> eventIds) async {
+    final ids = eventIds.toSet().toList();
+    if (ids.isEmpty) return;
+
+    await (_db.delete(
+      _db.eventDeliveryRecordsTable,
+    )..where((t) => t.eventId.isIn(ids))).go();
+    await (_db.delete(
+      _db.relayDeliveryTargetsTable,
+    )..where((t) => t.eventId.isIn(ids))).go();
+    await (_db.delete(_db.keyValues)..where((kv) {
+          final conditions = ids
+              .map((id) => kv.key.equals(_eventDeliverySnapshotKey(id)))
+              .toList();
+          if (conditions.length == 1) {
+            return conditions.first;
+          }
+          return conditions.reduce((a, b) => a | b);
+        }))
+        .go();
   }
 
   @override

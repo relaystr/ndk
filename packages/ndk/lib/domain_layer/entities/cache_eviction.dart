@@ -23,6 +23,34 @@ class EvictionPolicy {
   final bool sweepDeleted;
   final bool sweepSuperseded;
   final bool sweepDeliveredEphemeral;
+
+  /// Remove [EventDeliveryRecord]s (and their [RelayDeliveryTarget]s) that
+  /// reached [EventDeliveryStatus.delivered] longer than
+  /// [completedDeliveryRetention] ago.
+  ///
+  /// Delivery records are otherwise cleaned only when their parent event is
+  /// physically evicted. Non-ephemeral events usually stay in cache forever, so
+  /// without this sweep their delivery records — including the redundant
+  /// serialized event copy — accumulate indefinitely.
+  final bool sweepCompletedDeliveries;
+
+  /// Minimum age (since `completedAt`) before a delivered record is swept.
+  final Duration completedDeliveryRetention;
+
+  /// Remove terminally failed [EventDeliveryRecord]s (status
+  /// [EventDeliveryStatus.failed]) older than
+  /// [terminalFailedDeliveryRetention].
+  ///
+  /// Off by default: a failed record may still hold the only local copy of an
+  /// event that never reached any relay, so removing it is potential data loss.
+  /// A non-acked target also pins its event against eviction, so leaving failed
+  /// records around forever keeps the event and its sidecars pinned too. Enable
+  /// this to reclaim that space once failures are considered permanent.
+  final bool sweepTerminalFailedDeliveries;
+
+  /// Minimum age (since `updatedAt`) before a failed record is swept.
+  final Duration terminalFailedDeliveryRetention;
+
   final Map<int, int> kindCaps;
   final Set<int> protectedKinds;
   final Set<String> protectedEventIds;
@@ -34,6 +62,10 @@ class EvictionPolicy {
     this.sweepDeleted = true,
     this.sweepSuperseded = true,
     this.sweepDeliveredEphemeral = true,
+    this.sweepCompletedDeliveries = true,
+    this.completedDeliveryRetention = const Duration(hours: 8),
+    this.sweepTerminalFailedDeliveries = false,
+    this.terminalFailedDeliveryRetention = const Duration(hours: 24),
     this.kindCaps = const {},
     this.protectedKinds = kDefaultProtectedKinds,
     this.protectedEventIds = const {},
@@ -46,6 +78,10 @@ class EvictionPolicy {
         sweepDeleted = true,
         sweepSuperseded = true,
         sweepDeliveredEphemeral = true,
+        sweepCompletedDeliveries = true,
+        completedDeliveryRetention = const Duration(hours: 8),
+        sweepTerminalFailedDeliveries = false,
+        terminalFailedDeliveryRetention = const Duration(hours: 24),
         kindCaps = const {},
         protectedKinds = kDefaultProtectedKinds,
         protectedEventIds = const {},
@@ -94,6 +130,14 @@ class EvictionResult {
   final int keptDueToDeliveryState;
   final int keptProtected;
 
+  /// Standalone delivery records swept because they were delivered and aged
+  /// past [EvictionPolicy.completedDeliveryRetention].
+  final int removedCompletedDeliveries;
+
+  /// Standalone delivery records swept because they terminally failed and aged
+  /// past [EvictionPolicy.terminalFailedDeliveryRetention].
+  final int removedTerminalFailedDeliveries;
+
   const EvictionResult({
     required this.removedEvents,
     this.removedExpired = 0,
@@ -103,7 +147,39 @@ class EvictionResult {
     this.removedByKindCap = 0,
     this.keptDueToDeliveryState = 0,
     this.keptProtected = 0,
+    this.removedCompletedDeliveries = 0,
+    this.removedTerminalFailedDeliveries = 0,
   });
 
   static const empty = EvictionResult(removedEvents: 0);
+
+  EvictionResult copyWith({
+    int? removedEvents,
+    int? removedExpired,
+    int? removedDeleted,
+    int? removedSuperseded,
+    int? removedDeliveredEphemeral,
+    int? removedByKindCap,
+    int? keptDueToDeliveryState,
+    int? keptProtected,
+    int? removedCompletedDeliveries,
+    int? removedTerminalFailedDeliveries,
+  }) {
+    return EvictionResult(
+      removedEvents: removedEvents ?? this.removedEvents,
+      removedExpired: removedExpired ?? this.removedExpired,
+      removedDeleted: removedDeleted ?? this.removedDeleted,
+      removedSuperseded: removedSuperseded ?? this.removedSuperseded,
+      removedDeliveredEphemeral:
+          removedDeliveredEphemeral ?? this.removedDeliveredEphemeral,
+      removedByKindCap: removedByKindCap ?? this.removedByKindCap,
+      keptDueToDeliveryState:
+          keptDueToDeliveryState ?? this.keptDueToDeliveryState,
+      keptProtected: keptProtected ?? this.keptProtected,
+      removedCompletedDeliveries:
+          removedCompletedDeliveries ?? this.removedCompletedDeliveries,
+      removedTerminalFailedDeliveries: removedTerminalFailedDeliveries ??
+          this.removedTerminalFailedDeliveries,
+    );
+  }
 }

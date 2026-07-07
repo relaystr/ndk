@@ -553,20 +553,34 @@ class MemCacheManager implements CacheManager {
       policy: policy,
     );
 
-    if (plan.eventIdsToRemove.isEmpty) {
-      return plan.toResult();
+    if (plan.eventIdsToRemove.isNotEmpty) {
+      final removedEvents = events.values
+          .where((event) => plan.eventIdsToRemove.contains(event.id))
+          .toList();
+      events.removeWhere((key, value) => plan.eventIdsToRemove.contains(key));
+      _removeEventSidecarsByIds(plan.eventIdsToRemove);
+      await _refreshDerivedStateForPubKeys(
+        removedEvents.map((event) => event.pubKey).toSet(),
+      );
     }
 
-    final removedEvents = events.values
-        .where((event) => plan.eventIdsToRemove.contains(event.id))
-        .toList();
-    events.removeWhere((key, value) => plan.eventIdsToRemove.contains(key));
-    _removeEventSidecarsByIds(plan.eventIdsToRemove);
-    await _refreshDerivedStateForPubKeys(
-      removedEvents.map((event) => event.pubKey).toSet(),
+    // Sweep leftover delivery records whose event was kept (or never stored).
+    // A terminally failed record swept here unpins its event for the next run.
+    final deliverySweep = EventEvictionPlanner.planDeliverySweep(
+      deliveryRecords: eventDeliveryRecords.values.toList(),
+      policy: policy,
     );
+    for (final eventId in deliverySweep.deliveryEventIdsToRemove) {
+      eventDeliveryRecords.remove(eventId);
+      relayDeliveryTargets
+          .removeWhere((key, target) => target.eventId == eventId);
+    }
 
-    return plan.toResult();
+    return plan.toResult().copyWith(
+          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+          removedTerminalFailedDeliveries:
+              deliverySweep.removedTerminalFailedDeliveries,
+        );
   }
 
   @override

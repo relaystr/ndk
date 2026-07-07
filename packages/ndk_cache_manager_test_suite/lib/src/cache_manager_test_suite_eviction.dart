@@ -221,4 +221,132 @@ void _runEvictionTests(CacheManager Function() getCacheManager) {
     expect(result.removedEvents, equals(0));
     expect(await cacheManager.loadEvent(metadata.id), isNotNull);
   });
+
+  test('evict sweeps aged delivered delivery records but keeps the event',
+      () async {
+    final cacheManager = getCacheManager();
+    final now = Nip01Event.secondsSinceEpoch();
+    final event = Nip01Event(
+      pubKey: 'evict_delivered_pubkey',
+      kind: 1,
+      tags: const [],
+      content: 'delivered note',
+      createdAt: now - 100000,
+    );
+
+    await cacheManager.saveEvent(event);
+    await cacheManager.saveEventDeliveryRecord(
+      EventDeliveryRecord(
+        eventId: event.id,
+        status: EventDeliveryStatus.delivered,
+        createdAt: now - 100000,
+        updatedAt: now - 100000,
+        completedAt: now - (9 * 3600), // 9h ago, past the 8h retention
+      ),
+    );
+    await cacheManager.saveRelayDeliveryTarget(
+      RelayDeliveryTarget(
+        eventId: event.id,
+        relayUrl: 'wss://relay.example',
+        reason: RelayDeliveryReason.authorWrite,
+        state: RelayDeliveryState.acked,
+      ),
+    );
+
+    final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
+
+    expect(result.removedCompletedDeliveries, equals(1));
+    expect(await cacheManager.loadEventDeliveryRecord(event.id), isNull);
+    expect(
+      await cacheManager.loadRelayDeliveryTargets(eventId: event.id),
+      isEmpty,
+    );
+    expect(await cacheManager.loadEvent(event.id), isNotNull);
+  });
+
+  test('evict keeps delivered delivery records still within retention',
+      () async {
+    final cacheManager = getCacheManager();
+    final now = Nip01Event.secondsSinceEpoch();
+    final event = Nip01Event(
+      pubKey: 'evict_delivered_recent_pubkey',
+      kind: 1,
+      tags: const [],
+      content: 'recent delivered note',
+      createdAt: now - 100,
+    );
+
+    await cacheManager.saveEvent(event);
+    await cacheManager.saveEventDeliveryRecord(
+      EventDeliveryRecord(
+        eventId: event.id,
+        status: EventDeliveryStatus.delivered,
+        createdAt: now - 100,
+        updatedAt: now - 100,
+        completedAt: now - 3600, // 1h ago, within the 8h retention
+      ),
+    );
+
+    final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
+
+    expect(result.removedCompletedDeliveries, equals(0));
+    expect(await cacheManager.loadEventDeliveryRecord(event.id), isNotNull);
+  });
+
+  test('evict keeps terminally failed delivery records by default', () async {
+    final cacheManager = getCacheManager();
+    final now = Nip01Event.secondsSinceEpoch();
+    final event = Nip01Event(
+      pubKey: 'evict_failed_pubkey',
+      kind: 1,
+      tags: const [],
+      content: 'failed note',
+      createdAt: now - 100000,
+    );
+
+    await cacheManager.saveEvent(event);
+    await cacheManager.saveEventDeliveryRecord(
+      EventDeliveryRecord(
+        eventId: event.id,
+        status: EventDeliveryStatus.failed,
+        createdAt: now - 100000,
+        updatedAt: now - (48 * 3600), // 48h ago
+      ),
+    );
+
+    final result = await cacheManager.evict(const EvictionPolicy.safeSweep());
+
+    expect(result.removedTerminalFailedDeliveries, equals(0));
+    expect(await cacheManager.loadEventDeliveryRecord(event.id), isNotNull);
+  });
+
+  test('evict sweeps aged terminally failed delivery records when enabled',
+      () async {
+    final cacheManager = getCacheManager();
+    final now = Nip01Event.secondsSinceEpoch();
+    final event = Nip01Event(
+      pubKey: 'evict_failed_enabled_pubkey',
+      kind: 1,
+      tags: const [],
+      content: 'failed note',
+      createdAt: now - 100000,
+    );
+
+    await cacheManager.saveEvent(event);
+    await cacheManager.saveEventDeliveryRecord(
+      EventDeliveryRecord(
+        eventId: event.id,
+        status: EventDeliveryStatus.failed,
+        createdAt: now - 100000,
+        updatedAt: now - (48 * 3600), // 48h ago, past the 24h retention
+      ),
+    );
+
+    final result = await cacheManager.evict(
+      const EvictionPolicy(sweepTerminalFailedDeliveries: true),
+    );
+
+    expect(result.removedTerminalFailedDeliveries, equals(1));
+    expect(await cacheManager.loadEventDeliveryRecord(event.id), isNull);
+  });
 }
