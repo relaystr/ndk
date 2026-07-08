@@ -424,6 +424,13 @@ class PendingBroadcastDelivery {
         }
         var event = loadedEvent;
 
+        if (_isExpiredEvent(event)) {
+          Logger.log.d(
+              () => 'drop expired pending delivery ${event.id} for $relayUrl');
+          await _discardEventDelivery(event.id);
+          continue;
+        }
+
         if (await _isObsoleteReplaceableOrAddressableEvent(event)) {
           Logger.log.d(
               () => 'drop obsolete pending delivery ${event.id} for $relayUrl');
@@ -466,6 +473,20 @@ class PendingBroadcastDelivery {
     } finally {
       _flushInProgress.remove(relayUrl);
     }
+  }
+
+  /// A NIP-40 expired event has no delivery value: relays reject it and it will
+  /// be swept from cache, so stop retrying and drop the durable delivery state.
+  bool _isExpiredEvent(Nip01Event event) {
+    final rawValue = event.getFirstTag('expiration');
+    if (rawValue == null) {
+      return false;
+    }
+    final expiration = int.tryParse(rawValue);
+    if (expiration == null) {
+      return false;
+    }
+    return expiration <= Nip01Event.secondsSinceEpoch();
   }
 
   Future<bool> _isObsoleteReplaceableOrAddressableEvent(
@@ -554,6 +575,11 @@ class PendingBroadcastDelivery {
         record: record,
       );
       if (event == null) {
+        await _discardEventDelivery(record.eventId);
+        continue;
+      }
+
+      if (_isExpiredEvent(event)) {
         await _discardEventDelivery(record.eventId);
         continue;
       }

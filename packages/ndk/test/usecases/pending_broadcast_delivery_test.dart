@@ -125,6 +125,54 @@ void main() {
       expect(broadcast.broadcastedEvents.map((e) => e.id), [event.id]);
     });
 
+    test('drops expired pending delivery instead of rebroadcasting', () async {
+      final now = Nip01Event.secondsSinceEpoch();
+      final expiredEvent = Nip01Event(
+        id: 'event-expired',
+        pubKey: 'pubkey',
+        createdAt: now - 120,
+        kind: Nip01Event.kTextNodeKind,
+        tags: [
+          ['expiration', '${now - 60}'],
+        ],
+        content: 'note',
+        sig: 'sig',
+      );
+      await cacheManager.saveEvent(expiredEvent);
+      await cacheManager.saveEventDeliveryRecord(
+        EventDeliveryRecord(
+          eventId: expiredEvent.id,
+          status: EventDeliveryStatus.pending,
+          createdAt: expiredEvent.createdAt,
+          updatedAt: expiredEvent.createdAt,
+        ),
+      );
+      await cacheManager.saveRelayDeliveryTarget(
+        RelayDeliveryTarget(
+          eventId: expiredEvent.id,
+          relayUrl: 'wss://relay.example',
+          reason: RelayDeliveryReason.explicit,
+          state: RelayDeliveryState.transientFailure,
+          attemptCount: 1,
+          lastAttemptAt: now - 61,
+          nextRetryAt: now - 1,
+        ),
+      );
+
+      await pendingDelivery.flushForRelay(
+        'wss://relay.example',
+        onlyDue: true,
+      );
+
+      expect(broadcast.broadcastedEvents, isEmpty);
+      expect(await cacheManager.loadEventDeliveryRecord(expiredEvent.id),
+          isNull);
+      expect(
+        await cacheManager.loadRelayDeliveryTargets(eventId: expiredEvent.id),
+        isEmpty,
+      );
+    });
+
     test(
         'periodic retry forces reconnect for disconnected relays with due targets',
         () async {
