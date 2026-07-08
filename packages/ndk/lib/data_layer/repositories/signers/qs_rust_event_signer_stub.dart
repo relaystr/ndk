@@ -54,7 +54,7 @@ class QsRustEventSigner implements EventSigner {
 
   @override
   @Deprecated('Use nip44 decrypt instead. Deprecated by nostr spec. (nip04)')
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) {
+  Future<String?> decrypt(String msg, String destPubKey) {
     throw UnsupportedError(
       'QsRustEventSigner is not available on this platform. '
       'FFI is not supported on web.',
@@ -63,7 +63,7 @@ class QsRustEventSigner implements EventSigner {
 
   @override
   @Deprecated('Use nip44 encrypt instead. Deprecated by nostr spec. (nip04)')
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) {
+  Future<String?> encrypt(String msg, String destPubKey) {
     throw UnsupportedError(
       'QsRustEventSigner is not available on this platform. '
       'FFI is not supported on web.',

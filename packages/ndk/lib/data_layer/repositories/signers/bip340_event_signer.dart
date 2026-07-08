@@ -76,12 +76,12 @@ class Bip340EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     return Nip04.decrypt(privateKey!, destPubKey, msg);
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     return Nip04.encrypt(privateKey!, destPubKey, msg);
   }
 
