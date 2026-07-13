@@ -37,10 +37,10 @@ abstract class EventSigner {
   String getPublicKey();
 
   @Deprecated('Use nip44 decrypt instead. Deprecated by nostr spec. (nip04)')
-  Future<String?> decrypt(String msg, String destPubKey, {String? id});
+  Future<String?> decrypt(String msg, String destPubKey);
 
   @Deprecated('Use nip44 encrypt instead. Deprecated by nostr spec. (nip04)')
-  Future<String?> encrypt(String msg, String destPubKey, {String? id});
+  Future<String?> encrypt(String msg, String destPubKey);
 
   bool canSign();
 

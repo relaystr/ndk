@@ -68,7 +68,7 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   /// Wraps an async operation to track it as a pending request
   Future<T> _trackRequest<T>(
     SignerMethod method,
-    Future<T> Function() operation, {
+    Future<T> Function(String requestId) operation, {
     Nip01Event? event,
     String? plaintext,
     String? ciphertext,
@@ -100,7 +100,7 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
           if (!_pendingRequests.containsKey(requestId)) {
             throw SignerRequestCancelledException(requestId);
           }
-          return await operation();
+          return await operation(requestId);
         })
         .then((result) {
           if (!completer.isCompleted) {
@@ -123,11 +123,11 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
 
   @override
   Future<Nip01Event> sign(Nip01Event event) async {
-    return _trackRequest(SignerMethod.signEvent, () async {
+    return _trackRequest(SignerMethod.signEvent, (requestId) async {
       final map = await nip55Signer.signEvent(
         currentUser: _currentUser,
         eventJson: Nip01EventModel.fromEntity(event).toJsonString(),
-        id: event.id,
+        id: requestId,
       );
       return event.copyWith(sig: _extractResult(map));
     }, event: event);
@@ -139,15 +139,15 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     return _trackRequest(
       SignerMethod.nip04Decrypt,
-      () async {
+      (requestId) async {
         final map = await nip55Signer.nip04Decrypt(
           ciphertext: msg,
           currentUser: _currentUser,
           pubKey: destPubKey,
-          id: id,
+          id: requestId,
         );
         return _extractResult(map);
       },
@@ -157,15 +157,15 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     return _trackRequest(
       SignerMethod.nip04Encrypt,
-      () async {
+      (requestId) async {
         final map = await nip55Signer.nip04Encrypt(
           plaintext: msg,
           currentUser: _currentUser,
           pubKey: destPubKey,
-          id: id,
+          id: requestId,
         );
         return _extractResult(map);
       },
@@ -186,11 +186,12 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }) async {
     return _trackRequest(
       SignerMethod.nip44Encrypt,
-      () async {
+      (requestId) async {
         final map = await nip55Signer.nip44Encrypt(
           plaintext: plaintext,
           currentUser: _currentUser,
           pubKey: recipientPubKey,
+          id: requestId,
         );
         return _extractResult(map);
       },
@@ -206,11 +207,12 @@ class Nip55EventSigner with ConcurrencyLimiterMixin implements EventSigner {
   }) async {
     return _trackRequest(
       SignerMethod.nip44Decrypt,
-      () async {
+      (requestId) async {
         final map = await nip55Signer.nip44Decrypt(
           ciphertext: ciphertext,
           currentUser: _currentUser,
           pubKey: senderPubKey,
+          id: requestId,
         );
         return _extractResult(map);
       },

@@ -149,14 +149,14 @@ class QsRustEventSigner implements EventSigner {
 
   @override
   @Deprecated('Use nip44 decrypt instead. Deprecated by nostr spec. (nip04)')
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) {
+  Future<String?> decrypt(String msg, String destPubKey) {
     throw UnimplementedError(
         'NIP-04 decrypt is not supported by QsRustEventSigner');
   }
 
   @override
   @Deprecated('Use nip44 encrypt instead. Deprecated by nostr spec. (nip04)')
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) {
+  Future<String?> encrypt(String msg, String destPubKey) {
     throw UnimplementedError(
         'NIP-04 encrypt is not supported by QsRustEventSigner');
   }

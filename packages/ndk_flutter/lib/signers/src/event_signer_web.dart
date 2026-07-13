@@ -113,7 +113,7 @@ class WebEventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     if (privateKey == null || privateKey!.isEmpty) {
       throw Exception('Private key is required for decryption');
     }
@@ -125,7 +125,7 @@ class WebEventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     if (privateKey == null || privateKey!.isEmpty) {
       throw Exception('Private key is required for encryption');
     }

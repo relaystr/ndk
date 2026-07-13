@@ -16,7 +16,7 @@ class Nip07EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> decrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> decrypt(String msg, String destPubKey) async {
     throw UnsupportedError('NIP-07 is not available on this platform');
   }
 
@@ -29,7 +29,7 @@ class Nip07EventSigner implements EventSigner {
   }
 
   @override
-  Future<String?> encrypt(String msg, String destPubKey, {String? id}) async {
+  Future<String?> encrypt(String msg, String destPubKey) async {
     throw UnsupportedError('NIP-07 is not available on this platform');
   }
 
