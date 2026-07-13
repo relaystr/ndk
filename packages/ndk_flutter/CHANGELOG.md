@@ -1,3 +1,10 @@
+## 0.8.4-dev.12
+
+ - **REFACTOR**(signers): remove id parameter from EventSigner nip04 methods.
+ - **FIX**(ndk_flutter): use unique NIP-55 ids for signing requests.
+ - **FIX**(ndk_flutter): correlate NIP-55 encryption requests.
+ - **FIX**(ndk_flutter): handle batched NIP-55 signer results.
+
 ## 0.8.4-dev.11
 
  - **REFACTOR**: make NWC QR scanning host-provided.
