@@ -1,3 +1,7 @@
+## 0.8.4-dev.10
+
+ - **FIX**: complete cache-served queries without waiting for timeout.
+
 ## 0.8.4-dev.9
 
  - **REFACTOR**(signers): remove id parameter from EventSigner nip04 methods.
