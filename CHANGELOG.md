@@ -15,6 +15,38 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`ndk` - `v0.8.4-dev.10`](#ndk---v084-dev10)
+ - [`ndk_objectbox` - `v0.2.12-dev.10`](#ndk_objectbox---v0212-dev10)
+ - [`ndk_drift` - `v0.1.1-dev.12`](#ndk_drift---v011-dev12)
+ - [`ndk_flutter` - `v0.8.4-dev.13`](#ndk_flutter---v084-dev13)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.10`
+ - `ndk_drift` - `v0.1.1-dev.12`
+ - `ndk_flutter` - `v0.8.4-dev.13`
+
+---
+
+#### `ndk` - `v0.8.4-dev.10`
+
+ - **FIX**: complete cache-served queries without waiting for timeout.
+
+
+## 2026-07-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`ndk` - `v0.8.4-dev.9`](#ndk---v084-dev9)
  - [`ndk_flutter` - `v0.8.4-dev.12`](#ndk_flutter---v084-dev12)
  - [`ndk_objectbox` - `v0.2.12-dev.9`](#ndk_objectbox---v0212-dev9)

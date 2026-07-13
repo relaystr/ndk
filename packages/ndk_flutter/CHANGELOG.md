@@ -1,3 +1,7 @@
+## 0.8.4-dev.13
+
+ - Update a dependency to the latest release.
+
 ## 0.8.4-dev.12
 
  - **REFACTOR**(signers): remove id parameter from EventSigner nip04 methods.
