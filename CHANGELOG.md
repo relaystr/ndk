@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-07-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`ndk` - `v0.8.4-dev.9`](#ndk---v084-dev9)
+ - [`ndk_flutter` - `v0.8.4-dev.12`](#ndk_flutter---v084-dev12)
+ - [`ndk_objectbox` - `v0.2.12-dev.9`](#ndk_objectbox---v0212-dev9)
+ - [`ndk_drift` - `v0.1.1-dev.11`](#ndk_drift---v011-dev11)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `ndk_objectbox` - `v0.2.12-dev.9`
+ - `ndk_drift` - `v0.1.1-dev.11`
+
+---
+
+#### `ndk` - `v0.8.4-dev.9`
+
+ - **REFACTOR**(signers): remove id parameter from EventSigner nip04 methods.
+
+#### `ndk_flutter` - `v0.8.4-dev.12`
+
+ - **REFACTOR**(signers): remove id parameter from EventSigner nip04 methods.
+ - **FIX**(ndk_flutter): use unique NIP-55 ids for signing requests.
+ - **FIX**(ndk_flutter): correlate NIP-55 encryption requests.
+ - **FIX**(ndk_flutter): handle batched NIP-55 signer results.
+
+
 ## 2026-07-01
 
 ### Changes
