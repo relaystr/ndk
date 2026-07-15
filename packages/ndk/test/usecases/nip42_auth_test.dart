@@ -87,7 +87,8 @@ void main() {
     await relay.stopServer();
   });
 
-  test('gift wrap broadcast on auth-required relay should authenticate as sender',
+  test(
+      'gift wrap broadcast on auth-required relay should authenticate as sender',
       timeout: const Timeout(Duration(seconds: 5)), () async {
     final senderKey = Bip340.generatePrivateKey();
     final recipientKey = Bip340.generatePrivateKey();

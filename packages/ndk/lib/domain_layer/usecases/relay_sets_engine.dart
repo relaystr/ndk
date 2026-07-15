@@ -164,11 +164,12 @@ class RelaySetsEngine implements NetworkEngine {
     final visibleEvents = await _cacheManager.loadEvents(
       pubKeys: [event.pubKey],
       kinds: [event.kind],
-      tags: EventKindClassification.isAddressableKind(event.kind) && dTag != null
-          ? {
-              'd': [dTag],
-            }
-          : null,
+      tags:
+          EventKindClassification.isAddressableKind(event.kind) && dTag != null
+              ? {
+                  'd': [dTag],
+                }
+              : null,
       limit: 1,
     );
 

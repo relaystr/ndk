@@ -281,9 +281,9 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     final idsToRemove = plan.eventIdsToRemove.toList();
     await _db.transaction(() async {
       if (idsToRemove.isNotEmpty) {
-        await (_db.delete(_db.events)
-              ..where((t) => t.id.isIn(idsToRemove)))
-            .go();
+        await (_db.delete(
+          _db.events,
+        )..where((t) => t.id.isIn(idsToRemove))).go();
         await _removeEventSidecarsByIds(idsToRemove);
       }
       if (deliverySweep.deliveryEventIdsToRemove.isNotEmpty) {
@@ -294,10 +294,10 @@ class DriftCacheManager extends WalletsRepo implements CacheManager {
     });
 
     return plan.toResult().copyWith(
-          removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
-          removedTerminalFailedDeliveries:
-              deliverySweep.removedTerminalFailedDeliveries,
-        );
+      removedCompletedDeliveries: deliverySweep.removedCompletedDeliveries,
+      removedTerminalFailedDeliveries:
+          deliverySweep.removedTerminalFailedDeliveries,
+    );
   }
 
   /// Removes only the delivery record, relay delivery targets and delivery

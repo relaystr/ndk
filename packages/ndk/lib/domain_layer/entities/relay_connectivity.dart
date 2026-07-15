@@ -45,7 +45,8 @@ class RelayConnectivity<T> {
       await streamSubscription.cancel();
     }
     if (transport != null) {
-      await transport.close().timeout(const Duration(seconds: 3), onTimeout: () {
+      await transport.close().timeout(const Duration(seconds: 3),
+          onTimeout: () {
         Logger.log.w(() => "timeout while trying to close socket $url");
       });
     }

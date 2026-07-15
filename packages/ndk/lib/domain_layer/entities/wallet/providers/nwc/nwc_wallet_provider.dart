@@ -24,7 +24,8 @@ class NwcWalletProvider implements WalletProvider {
 
   /// Subscriptions to NWC notification streams, one per wallet.
   /// Cancelled in [removeWallet].
-  final Map<String, StreamSubscription<dynamic>> _notificationSubscriptions = {};
+  final Map<String, StreamSubscription<dynamic>> _notificationSubscriptions =
+      {};
 
   NwcWalletProvider(this._nwcUseCase);
 
@@ -143,17 +144,15 @@ class NwcWalletProvider implements WalletProvider {
   }
 
   @override
-  Future<PayInvoiceResponse> send(Wallet wallet, String invoice, {Duration? timeout}) async {
+  Future<PayInvoiceResponse> send(Wallet wallet, String invoice,
+      {Duration? timeout}) async {
     final nwcWallet = wallet as NwcWallet;
 
     await initialize(wallet);
     final connection = _connectionOrThrow(nwcWallet);
 
-    final response = await _nwcUseCase.payInvoice(
-      connection,
-      invoice: invoice,
-      timeout: timeout
-    );
+    final response = await _nwcUseCase.payInvoice(connection,
+        invoice: invoice, timeout: timeout);
     await _refreshAll(nwcWallet);
     return response;
   }

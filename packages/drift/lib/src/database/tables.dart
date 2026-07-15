@@ -92,7 +92,8 @@ class EventDeliveryRecordsTable extends Table {
   IntColumn get updatedAt => integer()();
   IntColumn get signedAt => integer().nullable()();
   IntColumn get completedAt => integer().nullable()();
-  BoolColumn get requiresNetworkSigner => boolean().withDefault(const Constant(false))();
+  BoolColumn get requiresNetworkSigner =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {eventId};

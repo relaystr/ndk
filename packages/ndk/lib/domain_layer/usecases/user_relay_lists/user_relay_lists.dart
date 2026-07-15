@@ -123,7 +123,8 @@ class UserRelayLists {
           pubKey: contactList.pubKey,
           kind: ContactList.kKind,
         );
-        if (existingEvent == null || existingEvent.createdAt < contactList.createdAt) {
+        if (existingEvent == null ||
+            existingEvent.createdAt < contactList.createdAt) {
           eventsToSave.add(contactList.toEvent());
         }
       }
@@ -223,8 +224,7 @@ class UserRelayLists {
     final latestSourceEvent = await _loadCachedUserRelaySourceEvent(
       _signer.getPublicKey(),
     );
-    bool refresh =
-        userRelayList == null ||
+    bool refresh = userRelayList == null ||
         latestSourceEvent == null ||
         latestSourceEvent.createdAt < sometimeAgo;
 

@@ -165,8 +165,8 @@ void main() {
       );
 
       expect(broadcast.broadcastedEvents, isEmpty);
-      expect(await cacheManager.loadEventDeliveryRecord(expiredEvent.id),
-          isNull);
+      expect(
+          await cacheManager.loadEventDeliveryRecord(expiredEvent.id), isNull);
       expect(
         await cacheManager.loadRelayDeliveryTargets(eventId: expiredEvent.id),
         isEmpty,

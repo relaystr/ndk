@@ -340,8 +340,7 @@ void main() {
 
       final decrypted = await giftWrap.fromGiftWrap(giftWrap: wrap);
 
-      final fromCache =
-          await giftWrap.tryFromGiftWrapFromCache(giftWrap: wrap);
+      final fromCache = await giftWrap.tryFromGiftWrapFromCache(giftWrap: wrap);
       expect(fromCache, isNotNull);
       expect(fromCache!.id, decrypted.id);
       expect(fromCache.content, decrypted.content);
@@ -353,7 +352,8 @@ void main() {
         viewerPubKey: alice.publicKey,
       );
       expect(rec, isNotNull);
-      expect(jsonDecode(rec!.plaintextContent!)['kind'], GiftWrap.kSealEventKind);
+      expect(
+          jsonDecode(rec!.plaintextContent!)['kind'], GiftWrap.kSealEventKind);
     });
   });
 }

@@ -90,8 +90,7 @@ class Follows {
             .subtract(kRefreshContactListDuration)
             .millisecondsSinceEpoch ~/
         1000;
-    bool refresh = contactList == null ||
-        contactList.createdAt < sometimeAgo;
+    bool refresh = contactList == null || contactList.createdAt < sometimeAgo;
     if (refresh) {
       contactList = await getContactList(pubkey, forceRefresh: true);
     }

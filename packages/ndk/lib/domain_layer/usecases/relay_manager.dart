@@ -463,7 +463,8 @@ class RelayManager<T> {
     final String encodedMsg = jsonEncode(msg.toJson());
     if (!identical(relayConnectivity.relayTransport, transport) ||
         !transport.isOpen()) {
-      throw StateError("transport closed before send: ${relayConnectivity.url}");
+      throw StateError(
+          "transport closed before send: ${relayConnectivity.url}");
     }
     _sendRaw(relayConnectivity, transport, encodedMsg);
   }
@@ -669,7 +670,8 @@ class RelayManager<T> {
         // Check if this is auth-required for a broadcast - don't mark as done, will retry
         if (msg != null && msg.startsWith("auth-required")) {
           _handleBroadcastAuthRequired(eventId, relayConnectivity);
-          return Future.value(); // Don't add to network controller yet, wait for retry result
+          return Future
+              .value(); // Don't add to network controller yet, wait for retry result
         }
       }
       if (globalState.inFlightBroadcasts[eventId] != null &&

@@ -26,7 +26,9 @@ void main() {
       await tempDir.delete(recursive: true);
     });
 
-    test('cache-backed subscription emits cached event first and later continues with live relay updates', () async {
+    test(
+        'cache-backed subscription emits cached event first and later continues with live relay updates',
+        () async {
       final relay = MockRelay(name: 'subscription-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final cachedEvent = Nip01Utils.signWithPrivateKey(
@@ -96,7 +98,9 @@ void main() {
       await relay.stopServer();
     });
 
-    test('cache-backed subscription does not emit tombstoned foreign events or resurrect them later', () async {
+    test(
+        'cache-backed subscription does not emit tombstoned foreign events or resurrect them later',
+        () async {
       final relay = MockRelay(name: 'subscription-delete-relay');
       final remoteAuthor = Bip340.generatePrivateKey();
       final targetEvent = Nip01Utils.signWithPrivateKey(

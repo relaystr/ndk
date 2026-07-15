@@ -130,7 +130,7 @@ String encodeStyle(Style style, Uint8List bytes) {
       return encodeWithSeparator(bytes, '-');
     case Style.minimal:
       return encodeMinimal(bytes);
-    }
+  }
 }
 
 Uint8List decodeStyle(Style style, String str) {
@@ -141,5 +141,5 @@ Uint8List decodeStyle(Style style, String str) {
       return decode(str, '-', 4);
     case Style.minimal:
       return decode(str, '', 2);
-    }
+  }
 }

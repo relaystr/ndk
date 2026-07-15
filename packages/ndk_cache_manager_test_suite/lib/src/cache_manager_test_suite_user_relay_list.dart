@@ -131,8 +131,7 @@ void _runUserRelayListTests(CacheManager Function() getCacheManager) {
       kind: ContactList.kKind,
       createdAt: 1000,
       tags: const [],
-      content:
-          '{"wss://legacy-relay.com":{"read":true,"write":true}}',
+      content: '{"wss://legacy-relay.com":{"read":true,"write":true}}',
     );
     final kind10002 = Nip65(
       pubKey: 'relay_precedence_pubkey',

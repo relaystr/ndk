@@ -127,7 +127,8 @@ void main() {
     await ndk.destroy();
   });
 
-  test("should fail gracefully when NIP-77 not supported", skip: true, () async {
+  test("should fail gracefully when NIP-77 not supported", skip: true,
+      () async {
     final relayUrl = "wss://relay.primal.net";
 
     final ndk = Ndk(

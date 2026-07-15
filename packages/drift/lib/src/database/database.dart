@@ -132,20 +132,29 @@ class NdkCacheDatabase extends _$NdkCacheDatabase {
     for (final row in rows) {
       final createdAt = row.read<int>('created_at');
       if (createdAt <= 0) continue;
-      final contactList = ContactList(
-        pubKey: row.read<String>('pub_key'),
-        contacts: _decodeStringList(row.readNullable<String>('contacts_json')),
-      )
-        ..contactRelays =
-            _decodeStringList(row.readNullable<String>('contact_relays_json'))
-        ..petnames = _decodeStringList(row.readNullable<String>('petnames_json'))
-        ..followedTags =
-            _decodeStringList(row.readNullable<String>('followed_tags_json'))
-        ..followedCommunities = _decodeStringList(
-            row.readNullable<String>('followed_communities_json'))
-        ..followedEvents =
-            _decodeStringList(row.readNullable<String>('followed_events_json'))
-        ..createdAt = createdAt;
+      final contactList =
+          ContactList(
+              pubKey: row.read<String>('pub_key'),
+              contacts: _decodeStringList(
+                row.readNullable<String>('contacts_json'),
+              ),
+            )
+            ..contactRelays = _decodeStringList(
+              row.readNullable<String>('contact_relays_json'),
+            )
+            ..petnames = _decodeStringList(
+              row.readNullable<String>('petnames_json'),
+            )
+            ..followedTags = _decodeStringList(
+              row.readNullable<String>('followed_tags_json'),
+            )
+            ..followedCommunities = _decodeStringList(
+              row.readNullable<String>('followed_communities_json'),
+            )
+            ..followedEvents = _decodeStringList(
+              row.readNullable<String>('followed_events_json'),
+            )
+            ..createdAt = createdAt;
       await _insertProjectedEvent(
         contactList.toEvent(),
         sources: _decodeStringList(row.readNullable<String>('sources_json')),

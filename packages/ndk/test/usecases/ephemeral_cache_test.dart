@@ -91,12 +91,10 @@ void main() {
         privateKey: authorKey.privateKey!,
       );
 
-      await broadcasterNdk.broadcast
-          .broadcast(
-            nostrEvent: signedEvent,
-            specificRelays: [mockRelay.url],
-          )
-          .broadcastDoneFuture;
+      await broadcasterNdk.broadcast.broadcast(
+        nostrEvent: signedEvent,
+        specificRelays: [mockRelay.url],
+      ).broadcastDoneFuture;
 
       await completer.future.timeout(const Duration(seconds: 5));
 
@@ -170,8 +168,7 @@ void main() {
       expect(
         results.map((e) => e.id),
         contains(ephemeralEvent.id),
-        reason:
-            'Cache read must stay enabled for ephemeral kinds so that '
+        reason: 'Cache read must stay enabled for ephemeral kinds so that '
             'locally-stored events (broadcasts, pending deliveries) remain '
             'discoverable by queries.',
       );
@@ -226,8 +223,7 @@ void main() {
       // responded (here: acked -> delivered) there is nothing left to retry.
       // The local-first cache copy and its delivery record are dropped
       // immediately instead of lingering until a background eviction pass.
-      final cached =
-          cache.events.values.where((e) => e.kind == ephemeralKind);
+      final cached = cache.events.values.where((e) => e.kind == ephemeralKind);
       expect(
         cached,
         isEmpty,
@@ -360,12 +356,10 @@ void main() {
         ),
         privateKey: key.privateKey!,
       );
-      await broadcasterNdk.broadcast
-          .broadcast(
-            nostrEvent: textNote,
-            specificRelays: [mockRelay.url],
-          )
-          .broadcastDoneFuture;
+      await broadcasterNdk.broadcast.broadcast(
+        nostrEvent: textNote,
+        specificRelays: [mockRelay.url],
+      ).broadcastDoneFuture;
 
       await textNoteReceived.future.timeout(const Duration(seconds: 5));
 
@@ -379,12 +373,10 @@ void main() {
         ),
         privateKey: key.privateKey!,
       );
-      await broadcasterNdk.broadcast
-          .broadcast(
-            nostrEvent: ephemeralEvent,
-            specificRelays: [mockRelay.url],
-          )
-          .broadcastDoneFuture;
+      await broadcasterNdk.broadcast.broadcast(
+        nostrEvent: ephemeralEvent,
+        specificRelays: [mockRelay.url],
+      ).broadcastDoneFuture;
 
       await ephemeralReceived.future.timeout(const Duration(seconds: 5));
 
@@ -405,8 +397,7 @@ void main() {
       expect(
         cache.events[receivedEphemeral!.id],
         isNull,
-        reason:
-            'Ephemeral events in a mixed-kinds request must not be cached.',
+        reason: 'Ephemeral events in a mixed-kinds request must not be cached.',
       );
 
       await subscriberNdk.destroy();

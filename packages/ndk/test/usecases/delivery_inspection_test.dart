@@ -3,7 +3,8 @@ import 'package:test/test.dart';
 
 void main() {
   group('delivery inspection', () {
-    test('loads pending local-first deliveries with relay-specific outcomes', () async {
+    test('loads pending local-first deliveries with relay-specific outcomes',
+        () async {
       final cache = MemCacheManager();
       final ndk = Ndk(
         NdkConfig(
@@ -78,7 +79,8 @@ void main() {
 
       expect(pending, hasLength(1));
       expect(pending.single.event?.id, pendingEvent.id);
-      expect(pending.single.record.status, EventDeliveryStatus.partiallyDelivered);
+      expect(
+          pending.single.record.status, EventDeliveryStatus.partiallyDelivered);
       expect(pending.single.isPendingDelivery, isTrue);
       expect(pending.single.isOnlyLocal, isTrue);
       expect(
@@ -90,7 +92,8 @@ void main() {
       );
       expect(
         pending.single.relayTargets
-            .firstWhere((target) => target.relayUrl == 'wss://relay-b.example.com')
+            .firstWhere(
+                (target) => target.relayUrl == 'wss://relay-b.example.com')
             .lastError,
         'rate-limited: retry later',
       );

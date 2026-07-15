@@ -16,7 +16,6 @@ import 'package:protocol_handler/protocol_handler.dart';
 import 'dm_live_state.dart';
 import 'l10n/generated/sample_app_localizations.dart';
 
-
 bool signerAppAvailable = false;
 
 late Ndk ndk;

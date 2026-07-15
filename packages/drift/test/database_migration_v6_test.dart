@@ -92,8 +92,9 @@ void main() {
   const bob = 'bobPubKey';
 
   test('v5 -> v6 migrates legacy metadata rows into events', () async {
-    final db = openV5Database(metadataInserts: [
-      '''
+    final db = openV5Database(
+      metadataInserts: [
+        '''
       INSERT INTO metadatas
         (pub_key, name, display_name, picture, about, updated_at,
          sources_json, tags_json, raw_content_json)
@@ -102,7 +103,8 @@ void main() {
          '["wss://relay1"]', '[]',
          '{"name":"alice","display_name":"Alice","picture":"https://pic","about":"hi"}');
       ''',
-    ]);
+      ],
+    );
     final cacheManager = DriftCacheManager(db);
 
     final metadata = await cacheManager.loadMetadata(alice);
@@ -116,29 +118,34 @@ void main() {
     await db.close();
   });
 
-  test('v5 -> v6 migrates legacy metadata without raw content from columns',
-      () async {
-    final db = openV5Database(metadataInserts: [
-      '''
+  test(
+    'v5 -> v6 migrates legacy metadata without raw content from columns',
+    () async {
+      final db = openV5Database(
+        metadataInserts: [
+          '''
       INSERT INTO metadatas
         (pub_key, name, nip05, updated_at, sources_json, tags_json)
       VALUES
         ('$bob', 'bob', 'bob@example.com', 1700000001, '[]', '[]');
       ''',
-    ]);
-    final cacheManager = DriftCacheManager(db);
+        ],
+      );
+      final cacheManager = DriftCacheManager(db);
 
-    final metadata = await cacheManager.loadMetadata(bob);
-    expect(metadata, isNotNull);
-    expect(metadata!.name, 'bob');
-    expect(metadata.nip05, 'bob@example.com');
+      final metadata = await cacheManager.loadMetadata(bob);
+      expect(metadata, isNotNull);
+      expect(metadata!.name, 'bob');
+      expect(metadata.nip05, 'bob@example.com');
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
   test('v5 -> v6 migrates legacy contact lists into events', () async {
-    final db = openV5Database(contactListInserts: [
-      '''
+    final db = openV5Database(
+      contactListInserts: [
+        '''
       INSERT INTO contact_lists
         (pub_key, contacts_json, contact_relays_json, petnames_json,
          followed_tags_json, followed_communities_json, followed_events_json,
@@ -147,7 +154,8 @@ void main() {
         ('$alice', '["$bob"]', '["wss://relay1"]', '["bobby"]',
          '["nostr"]', '[]', '[]', 1700000000, '["wss://relay1"]');
       ''',
-    ]);
+      ],
+    );
     final cacheManager = DriftCacheManager(db);
 
     final contactList = await cacheManager.loadContactList(alice);
@@ -178,23 +186,27 @@ void main() {
   });
 
   test('newer signed event wins over a projected legacy row', () async {
-    final db = openV5Database(metadataInserts: [
-      '''
+    final db = openV5Database(
+      metadataInserts: [
+        '''
       INSERT INTO metadatas
         (pub_key, name, updated_at, sources_json, tags_json, raw_content_json)
       VALUES
         ('$alice', 'old-name', 1700000000, '[]', '[]', '{"name":"old-name"}');
       ''',
-    ]);
+      ],
+    );
     final cacheManager = DriftCacheManager(db);
 
-    await cacheManager.saveEvent(Nip01Event(
-      pubKey: alice,
-      kind: Metadata.kKind,
-      tags: [],
-      content: '{"name":"new-name"}',
-      createdAt: 1700000500,
-    ));
+    await cacheManager.saveEvent(
+      Nip01Event(
+        pubKey: alice,
+        kind: Metadata.kKind,
+        tags: [],
+        content: '{"name":"new-name"}',
+        createdAt: 1700000500,
+      ),
+    );
 
     final metadata = await cacheManager.loadMetadata(alice);
     expect(metadata!.name, 'new-name');
@@ -203,12 +215,14 @@ void main() {
   });
 
   test('legacy rows without a usable timestamp are skipped', () async {
-    final db = openV5Database(metadataInserts: [
-      '''
+    final db = openV5Database(
+      metadataInserts: [
+        '''
       INSERT INTO metadatas (pub_key, name, sources_json, tags_json)
       VALUES ('$alice', 'no-timestamp', '[]', '[]');
       ''',
-    ]);
+      ],
+    );
     final cacheManager = DriftCacheManager(db);
 
     expect(await cacheManager.loadMetadata(alice), isNull);
