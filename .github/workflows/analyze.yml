@@ -1,0 +1,67 @@
+name: analyze
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: Analyze ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: ./packages/bip32_keys
+            pub_get_directory: .
+            pub_get_command: dart pub get
+            analyze_command: flutter analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/ndk
+            pub_get_directory: .
+            pub_get_command: dart pub get
+            analyze_command: flutter analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/ndk_cache_manager_test_suite
+            pub_get_directory: .
+            pub_get_command: dart pub get
+            analyze_command: flutter analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/objectbox
+            pub_get_directory: .
+            pub_get_command: dart pub get
+            analyze_command: flutter analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/drift
+            pub_get_directory: .
+            pub_get_command: dart pub get
+            analyze_command: flutter analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/ndk_flutter
+            pub_get_directory: .
+            pub_get_command: dart pub get
+            analyze_command: flutter analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/bc_ur
+            pub_get_directory: ./packages/bc_ur
+            pub_get_command: dart pub get
+            analyze_command: dart analyze --fatal-infos --fatal-warnings .
+          - package: ./packages/sample-app
+            pub_get_directory: ./packages/sample-app
+            pub_get_command: flutter pub get
+            analyze_command: flutter analyze --fatal-infos --fatal-warnings .
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+          architecture: x64
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.pub_get_directory }}
+        run: ${{ matrix.pub_get_command }}
+
+      - name: Analyze package
+        working-directory: ${{ matrix.package }}
+        run: ${{ matrix.analyze_command }}
