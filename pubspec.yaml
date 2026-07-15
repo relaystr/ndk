@@ -20,7 +20,7 @@ workspace:
 melos:
   scripts:
     analyze:
-      exec: flutter analyze .
+      exec: flutter analyze --fatal-infos --fatal-warnings .
       description: Analyze a specific package in this project.
 
     check-format:
